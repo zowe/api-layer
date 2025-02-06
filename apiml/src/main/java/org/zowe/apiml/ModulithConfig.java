@@ -60,7 +60,7 @@ public class ModulithConfig {
     private InstanceInfo getInstanceInfo(String serviceId) {
         var leaseInfo = LeaseInfo.Builder.newBuilder()
             .setDurationInSecs(Integer.MAX_VALUE)
-            .setEvictionTimestamp(Long.MAX_VALUE)
+            //.setEvictionTimestamp(Long.MAX_VALUE)
             .setRegistrationTimestamp(System.currentTimeMillis())
             .setRenewalTimestamp(System.currentTimeMillis())
             .setRenewalIntervalInSecs(Integer.MAX_VALUE)
