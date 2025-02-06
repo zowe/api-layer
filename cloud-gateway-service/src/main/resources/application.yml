@@ -48,6 +48,16 @@ apiml:
         registry:
             enabled: false
             metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
+    cloud:
+        gateway:
+            discovery:
+                locator:
+                    enabled: false
+                    lowerCaseServiceId: true
+    application:
+        name: cloudGateway
+    main:
+        allow-circular-references: true
 
 server:
     http2:
@@ -63,17 +73,6 @@ server:
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
-
-    cloud:
-        gateway:
-            discovery:
-                locator:
-                    enabled: false
-                    lowerCaseServiceId: true
-    application:
-        name: cloudGateway
-    main:
-        allow-circular-references: true
 
 logbackServiceName: ZWEACG1
 
