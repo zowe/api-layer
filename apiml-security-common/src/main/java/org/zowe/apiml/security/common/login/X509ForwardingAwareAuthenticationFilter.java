@@ -10,28 +10,28 @@
 
 package org.zowe.apiml.security.common.login;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 
 @Slf4j
-public class X509AuthenticationFilter extends NonCompulsoryAuthenticationProcessingFilter {
+public class X509ForwardingAwareAuthenticationFilter extends NonCompulsoryAuthenticationProcessingFilter {
 
     private final AuthenticationProvider authenticationProvider;
     private final AuthenticationSuccessHandler successHandler;
 
-    public X509AuthenticationFilter(String endpoint,
-                                    AuthenticationSuccessHandler successHandler,
-                                    AuthenticationProvider authenticationProvider) {
+    public X509ForwardingAwareAuthenticationFilter(String endpoint,
+                                                   AuthenticationSuccessHandler successHandler,
+                                                   AuthenticationProvider authenticationProvider) {
         super(endpoint);
         this.authenticationProvider = authenticationProvider;
         this.successHandler = successHandler;
