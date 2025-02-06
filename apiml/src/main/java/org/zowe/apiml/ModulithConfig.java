@@ -17,6 +17,7 @@ import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
@@ -25,6 +26,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
@@ -37,6 +39,7 @@ import reactor.core.publisher.Flux;
 import java.util.*;
 
 @Configuration
+@RequiredArgsConstructor
 public class ModulithConfig {
 
     @Value("${server.ssl.enabled:true}")
@@ -52,6 +55,7 @@ public class ModulithConfig {
     private int port;
 
     private final Map<String, InstanceInfo> localInstances = new HashMap<>();
+    private final ApplicationContext applicationContext;
 
     private InstanceInfo getInstanceInfo(String serviceId) {
         var leaseInfo = LeaseInfo.Builder.newBuilder()
@@ -112,6 +116,8 @@ public class ModulithConfig {
         localInstances.put(CoreService.GATEWAY.getServiceId(), getInstanceInfo(CoreService.GATEWAY.getServiceId()));
         localInstances.put(CoreService.DISCOVERY.getServiceId(), getInstanceInfo(CoreService.DISCOVERY.getServiceId()));
         localInstances.put(CoreService.ZAAS.getServiceId(), getInstanceInfo(CoreService.ZAAS.getServiceId()));
+
+        EurekaServerContextHolder.initialize(applicationContext.getBean(EurekaServerContext.class));
     }
 
     @EventListener
