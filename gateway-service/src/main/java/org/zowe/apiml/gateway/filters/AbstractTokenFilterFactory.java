@@ -12,13 +12,11 @@ package org.zowe.apiml.gateway.filters;
 
 import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
@@ -30,36 +28,22 @@ import reactor.core.publisher.Mono;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFactory.Config, D> extends AbstractAuthSchemeFactory<T, ZaasTokenResponse, D> {
+public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFactory.Config> extends AbstractAuthSchemeFactory<T, ZaasTokenResponse> {
 
-    protected AbstractTokenFilterFactory(Class<T> configClazz, WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
-        super(configClazz, webClient, instanceInfoService, messageService);
+    protected AbstractTokenFilterFactory(Class<T> configClazz, InstanceInfoService instanceInfoService, MessageService messageService) {
+        super(configClazz, instanceInfoService, messageService);
     }
-
-    public abstract String getEndpointUrl(ServiceInstance instance);
 
     @Override
     public GatewayFilter apply(T config) {
         try {
-            return createGatewayFilter(config, null);
+            return createGatewayFilter(config);
         } catch (Exception e) {
             return ((exchange, chain) -> {
                 ServerHttpRequest request = updateHeadersForError(exchange, e.getMessage());
                 return chain.filter(exchange.mutate().request(request).build());
             });
         }
-    }
-
-    @Override
-    protected Class<ZaasTokenResponse> getResponseClass() {
-        return ZaasTokenResponse.class;
-    }
-
-    @Override
-    protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, D data) {
-        String tokensUrl = getEndpointUrl(instance);
-        return webClient.post()
-            .uri(tokensUrl);
     }
 
     @Override

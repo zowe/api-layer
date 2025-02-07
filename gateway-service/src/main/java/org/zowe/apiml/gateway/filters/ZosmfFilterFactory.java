@@ -10,24 +10,28 @@
 
 package org.zowe.apiml.gateway.filters;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.zaas.ZaasTokenResponse;
+import reactor.core.publisher.Mono;
+
+import java.util.function.Function;
 
 
 @Service
-public class ZosmfFilterFactory extends AbstractTokenFilterFactory<AbstractTokenFilterFactory.Config, Object> {
+public class ZosmfFilterFactory extends AbstractTokenFilterFactory<AbstractTokenFilterFactory.Config> {
 
-    public ZosmfFilterFactory(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
-        super(AbstractTokenFilterFactory.Config.class, webClient, instanceInfoService, messageService);
+    private final ZaasSchemeTransform zaasSchemeTransform;
+
+    public ZosmfFilterFactory(ZaasSchemeTransform zaasSchemeTransform, InstanceInfoService instanceInfoService, MessageService messageService) {
+        super(AbstractTokenFilterFactory.Config.class, instanceInfoService, messageService);
+        this.zaasSchemeTransform = zaasSchemeTransform;
     }
 
     @Override
-    public String getEndpointUrl(ServiceInstance instance) {
-        return String.format("%s://%s:%d/%s/scheme/zosmf", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
+    protected Function<RequestCredentials, Mono<AuthorizationResponse<ZaasTokenResponse>>> getAuthorizationResponseTransformer() {
+        return zaasSchemeTransform::zosmf;
     }
 
 }
