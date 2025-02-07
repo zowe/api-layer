@@ -43,7 +43,7 @@ public class MyApplicationsResource extends ApplicationsResource {
         return Mono.just(super.getApplicationResource(null, appId));
     }
 
-    @GetMapping(produces = { "application/xml", "application/json" }, consumes = MediaType.ALL_VALUE)
+    @GetMapping(value = {"","/"}, produces = { "application/xml", "application/json" }, consumes = MediaType.ALL_VALUE)
     public Mono<String> getAllContainer(
         @Nullable @RequestHeader(HEADER_ACCEPT) String acceptHeader,
         @Nullable @RequestHeader(HEADER_ACCEPT_ENCODING) String acceptEncoding,
@@ -98,8 +98,6 @@ public class MyApplicationsResource extends ApplicationsResource {
         @Nullable @RequestParam("status") String status,
        @Nullable @RequestParam("lastDirtyTimestamp") String lastDirtyTimestamp) {
         boolean isFromReplicaNode = "true".equals(isReplication);
-//        var appResource =  getApplicationResource(null,appName);
-//        var ii =  appResource.getInstanceInfo(instanceId);
         boolean isSuccess = registry.renew(appName, instanceId, isFromReplicaNode);
 
         // Not found in the registry, immediately ask for a register
@@ -124,6 +122,28 @@ public class MyApplicationsResource extends ApplicationsResource {
         }
         log.debug("Found (Renew): {} - {}; reply status={}", appName, instanceId, response.getStatus());
         return Mono.just(response);
+    }
+
+    @DeleteMapping(value = "/{appName}/{instanceId}")
+    public Mono<Response> cancelLease(
+        @Nullable @RequestHeader(PeerEurekaNode.HEADER_REPLICATION) String isReplication,
+        @PathVariable String appName,
+        @PathVariable String instanceId) {
+        try {
+            boolean isSuccess = registry.cancel(appName, instanceId,
+                "true".equals(isReplication));
+
+            if (isSuccess) {
+                log.debug("Found (Cancel): {} - {}", appName, instanceId);
+                return Mono.just(Response.ok().build());
+            } else {
+                log.info("Not Found (Cancel): {} - {}", appName, instanceId);
+                return Mono.just(Response.status(Response.Status.NOT_FOUND).build());
+            }
+        } catch (Throwable e) {
+            log.error("Error (cancel): {} - {}", appName, instanceId, e);
+            return Mono.just(Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
+        }
     }
 
 
