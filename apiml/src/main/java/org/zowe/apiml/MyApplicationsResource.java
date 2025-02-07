@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -42,7 +43,7 @@ public class MyApplicationsResource extends ApplicationsResource {
         return Mono.just(super.getApplicationResource(null, appId));
     }
 
-    @GetMapping
+    @GetMapping(produces = { "application/xml", "application/json" }, consumes = MediaType.ALL_VALUE)
     public Mono<String> getAllContainer(
         @Nullable @RequestHeader(HEADER_ACCEPT) String acceptHeader,
         @Nullable @RequestHeader(HEADER_ACCEPT_ENCODING) String acceptEncoding,
