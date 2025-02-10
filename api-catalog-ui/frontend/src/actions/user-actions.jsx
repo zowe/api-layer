@@ -40,7 +40,6 @@ function login(credentials) {
                 if (credentials.newPassword) {
                     showUpdatePassSuccess = true;
                 }
-                const dashBoardPath = '/dashboard';
                 localStorage.setItem('username', credentials.username);
                 dispatch(success(token, showUpdatePassSuccess));
             },

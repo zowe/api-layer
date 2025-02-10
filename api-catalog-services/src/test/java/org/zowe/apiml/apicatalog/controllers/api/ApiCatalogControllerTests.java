@@ -226,10 +226,10 @@ class ApiCatalogControllerTests {
             given(cachedApiDocService.getDefaultApiDocForService(serviceId)).willReturn("mockApiDoc");
 
             ResponseEntity<APIService> apiServicesById = underTest.getAPIServicesById(serviceId);
-            assertEquals(apiServicesById.getStatusCode(), HttpStatus.OK);
+            assertEquals(HttpStatus.OK, apiServicesById.getStatusCode());
             assertNotNull(apiServicesById.getBody());
-            assertEquals(apiServicesById.getBody().getApiDoc(), "mockApiDoc");
-            assertEquals(apiServicesById.getBody().getDefaultApiVersion(), "v1");
+            assertEquals( "mockApiDoc", apiServicesById.getBody().getApiDoc());
+            assertEquals("v1", apiServicesById.getBody().getDefaultApiVersion());
         }
 
         @Test
@@ -244,7 +244,7 @@ class ApiCatalogControllerTests {
             given(cachedApiDocService.getDefaultApiDocForService(serviceId)).willReturn(null);
 
             ResponseEntity<APIService> apiServicesById = underTest.getAPIServicesById(serviceId);
-            assertEquals(apiServicesById.getStatusCode(), HttpStatus.OK);
+            assertEquals(HttpStatus.OK, apiServicesById.getStatusCode());
             assertNotNull(apiServicesById.getBody());
             assertNull(apiServicesById.getBody().getApiDoc());
         }
