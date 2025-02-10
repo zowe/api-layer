@@ -11,6 +11,8 @@
 package org.zowe.apiml.integration.zos;
 
 import io.restassured.RestAssured;
+import io.restassured.config.RestAssuredConfig;
+import io.restassured.config.SSLConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -205,6 +207,11 @@ class PassTicketTest implements TestWithStartedInstances {
 
         @Nested
         class ReturnForbidden {
+            @BeforeEach
+            void resetCertsToNone() {
+                RestAssured.config = RestAssuredConfig.newConfig().sslConfig(SSLConfig.sslConfig().relaxedHTTPSValidation());
+            }
+
             @Test
             void givenNoCertificate() {
                 given()
@@ -220,6 +227,11 @@ class PassTicketTest implements TestWithStartedInstances {
 
         @Nested
         class ReturnMethodNotAllowed {
+            @BeforeEach
+            void setUpCertificate() {
+                RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+            }
+
             @Test
             void givenInvalidHttpMethod() {
                 String expectedMessage = "Authentication method 'GET' is not supported for URL '" + ZAAS_PASSTICKET_PATH + "'";

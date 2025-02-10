@@ -11,6 +11,8 @@
 package org.zowe.apiml.zaas.security.config;
 
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
@@ -18,26 +20,24 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
-import org.zowe.apiml.zaas.utils.X509Utils;
-import org.zowe.apiml.security.common.login.X509AuthenticationFilter;
+import org.zowe.apiml.security.common.login.X509ForwardingAwareAuthenticationFilter;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
+import org.zowe.apiml.zaas.security.service.AuthenticationService;
+import org.zowe.apiml.zaas.utils.X509Utils;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
-class X509AuthenticationFilterTest {
+class X509ForwardingAwareAuthenticationFilterTest {
 
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
 
-    private X509AuthenticationFilter x509AuthenticationFilter;
+    private X509ForwardingAwareAuthenticationFilter x509ForwardingAwareAuthenticationFilter;
 
     private AuthenticationSuccessHandler successHandler;
 
@@ -55,7 +55,7 @@ class X509AuthenticationFilterTest {
         authenticationProvider = mock(AuthenticationProvider.class);
         filterChain = mock(FilterChain.class);
         authenticationService = mock(AuthenticationService.class);
-        x509AuthenticationFilter = new X509AuthenticationFilter("/api/v1/zaas/auth/login", successHandler, authenticationProvider);
+        x509ForwardingAwareAuthenticationFilter = new X509ForwardingAwareAuthenticationFilter("/api/v1/zaas/auth/login", successHandler, authenticationProvider);
 
         when(authenticationService.getJwtTokenFromRequest(httpServletRequest)).thenReturn(Optional.of("jwt"));
     }
@@ -67,7 +67,7 @@ class X509AuthenticationFilterTest {
         httpServletRequest.setAttribute("client.auth.X509Certificate", x509Certificate);
         httpServletResponse = new MockHttpServletResponse();
 
-        x509AuthenticationFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        x509ForwardingAwareAuthenticationFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
         verify(authenticationProvider).authenticate(new X509AuthenticationToken(x509Certificate));
     }
@@ -82,7 +82,7 @@ class X509AuthenticationFilterTest {
         httpServletResponse = new MockHttpServletResponse();
         when(authenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate)))
             .thenReturn(new TokenAuthentication("user", "jwt"));
-        x509AuthenticationFilter.doFilter(httpServletRequest, httpServletResponse, filterChain);
+        x509ForwardingAwareAuthenticationFilter.doFilter(httpServletRequest, httpServletResponse, filterChain);
 
         verify(authenticationProvider).authenticate(new X509AuthenticationToken(x509Certificate));
     }
@@ -93,7 +93,7 @@ class X509AuthenticationFilterTest {
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletResponse = new MockHttpServletResponse();
 
-        x509AuthenticationFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        x509ForwardingAwareAuthenticationFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
 
         verify(authenticationProvider, times(0)).authenticate(new X509AuthenticationToken(x509Certificate));
     }

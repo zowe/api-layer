@@ -58,7 +58,7 @@ public class InfinispanConfig {
     private String port;
     @Value("${jgroups.bind.address}")
     private String address;
-    @Value("${jgroups.keyExchange.port:7118}")
+    @Value("${jgroups.keyExchange.port:7601}")
     private String keyExchangePort;
 
     @PostConstruct
