@@ -197,7 +197,7 @@ public class ApiCatalogController {
                 service.setApiDoc(apiDoc);
                 List<String> apiVersions = cachedApiDocService.getApiVersionsForService(id);
                 service.setApiVersions(apiVersions);
-                log.debug("Got API versions: {}", apiVersions!= null ? apiVersions.size() : 0);
+                log.debug("Got API versions: {}", apiVersions != null ? apiVersions.size() : 0);
                 String defaultApiVersion = cachedApiDocService.getDefaultApiVersionForService(id);
                 log.debug("Default API version: {}", defaultApiVersion);
                 service.setDefaultApiVersion(defaultApiVersion);
