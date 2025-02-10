@@ -20,16 +20,16 @@ function BigShield({children, disableButton}) {
     const [stack, setStack] = useState(null);
     const [componentStack, setComponentStack] = useState(null);
     const path = '/dashboard';
+    const location = useLocation();
+    const navigate = useNavigate();
+
     const handleGoToHome = () => {
-        const navigate = useNavigate();
         setError(null)
         navigate(path);
     };
 
     if (error) {
         const iconBack = <ArrowBackIosNewIcon />;
-
-        const location = useLocation();
 
         if (typeof disableButton === 'undefined') {
             disableButton = location.pathname === path;

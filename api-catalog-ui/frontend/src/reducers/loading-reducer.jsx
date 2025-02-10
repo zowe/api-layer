@@ -10,7 +10,7 @@
 
 const loadingReducer = (state = {}, action = {}) => {
     const { type } = action;
-    const matches = /(.*)_(TILES_REQUEST|TILES_SUCCESS|FAILURE|FAILED|INVALIDPASSWORD|EXPIREDPASSWORD|TILES_NEW_SUCCESS|NEW_SERVICE_SUCCESS|NEW_SERVICE_REQUEST)/.exec(type);
+    const matches = /^([^_]*)_(TILES_REQUEST|TILES_SUCCESS|FAILURE|FAILED|INVALIDPASSWORD|EXPIREDPASSWORD|TILES_NEW_SUCCESS|NEW_SERVICE_SUCCESS|NEW_SERVICE_REQUEST)$/.exec(type);
 
     // not a *_REQUEST / *_SUCCESS /  *_FAILURE actions, so we ignore them
     if (!matches) {
