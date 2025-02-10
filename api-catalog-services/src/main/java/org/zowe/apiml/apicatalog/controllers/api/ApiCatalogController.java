@@ -158,9 +158,9 @@ public class ApiCatalogController {
     }
 
     /**
-     * Get all containers (and included services)
+     * Get a specific service by id
      *
-     * @return a containers by id
+     * @return a service by id
      */
     @GetMapping(value = "/services/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Retrieves a specific service information",
@@ -179,24 +179,32 @@ public class ApiCatalogController {
     })
     public ResponseEntity<APIService> getAPIServicesById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalThrowable {
         try {
-            var service = cachedProductFamilyService.getServices().get(id);
-            log.debug("Getting service by id {}", id);
-            if (service != null) {
-                String apiDoc = cachedApiDocService.getDefaultApiDocForService(id);
-                log.debug("Getting service: {} with status {}", service.getServiceId(), service.getStatus());
-                if (apiDoc != null) {
-                    log.debug("API doc was retrieved");
-                    service.setApiDoc(apiDoc);
-                    List<String> apiVersions = cachedApiDocService.getApiVersionsForService(id);
-                    service.setApiVersions(apiVersions);
-                    log.debug("Got api versions: {}", apiVersions != null ? apiVersions.size() : 0);
-                    String defaultApiVersion = cachedApiDocService.getDefaultApiVersionForService(id);
-                    log.debug("Default api version: {}", defaultApiVersion);
-                    service.setDefaultApiVersion(defaultApiVersion);
-                }
-                return new ResponseEntity<>(service, HttpStatus.OK);
+
+            var services = cachedProductFamilyService.getServices();
+            if (services == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            var service = services.get(id);
+            if (service == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            log.debug("Getting service by id {}", id);
+            String apiDoc = cachedApiDocService.getDefaultApiDocForService(id);
+            log.debug("Getting service: {} with status {}", service.getServiceId(), service.getStatus());
+
+            if (apiDoc != null) {
+                log.debug("API doc was retrieved");
+                service.setApiDoc(apiDoc);
+                List<String> apiVersions = cachedApiDocService.getApiVersionsForService(id);
+                service.setApiVersions(apiVersions);
+                log.debug("Got API versions: {}", apiVersions!= null ? apiVersions.size() : 0);
+                String defaultApiVersion = cachedApiDocService.getDefaultApiVersionForService(id);
+                log.debug("Default API version: {}", defaultApiVersion);
+                service.setDefaultApiVersion(defaultApiVersion);
+            } else {
+                log.debug("No API doc was retrieved for service with id {}", id);
+            }
+            return new ResponseEntity<>(service, HttpStatus.OK);
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.serviceCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalThrowable(e);
