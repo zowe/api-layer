@@ -92,6 +92,7 @@ public class WebSecurity {
     public static final String CONFORMANCE_LONG_URL = CONTEXT_PATH + "/api/v1" + "/conformance/**";
     public static final String VALIDATE_SHORT_URL = "gateway/validate";
     public static final String VALIDATE_LONG_URL = "gateway/api/v1/validate";
+    public static final String TICKET_LONG_URL = "gateway/api/v1/auth/ticket";
     public static final String COOKIE_NONCE = "oidc_nonce";
     public static final String COOKIE_STATE = "oidc_state";
     public static final String COOKIE_RETURN_URL = "oidc_return_url";
@@ -329,8 +330,10 @@ public class WebSecurity {
         return defaultSecurityConfig(http).build();
     }
 
+
+
     @Bean
-    @Order(1)
+    @Order(2)
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
         return defaultSecurityConfig(http)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
@@ -364,6 +367,22 @@ public class WebSecurity {
             )
             .addFilterAfter(new TokenAuthFilter(tokenProvider, authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION)
+            .build();
+    }
+
+    // Endpoints protected with X509
+    @Bean
+    @Order(3)
+    public SecurityWebFilterChain ticketSecurityWebFilterChain(ServerHttpSecurity http) {
+        return defaultSecurityConfig(http)
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
+                TICKET_LONG_URL
+            ))
+            .authorizeExchange(authorizeExchangeSpec ->
+                authorizeExchangeSpec
+                    .anyExchange().authenticated()
+            )
+
             .build();
     }
 

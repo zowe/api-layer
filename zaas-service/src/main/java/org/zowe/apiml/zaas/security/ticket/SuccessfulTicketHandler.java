@@ -90,6 +90,10 @@ public class SuccessfulTicketHandler implements AuthenticationSuccessHandler {
         if (StringUtils.isBlank(applicationName)) {
             throw new ApplicationNameNotFoundException("ApplicationName not provided.");
         }
+        return getTicketResponse(tokenAuthentication, userId, applicationName);
+    }
+    public TicketResponse getTicketResponse(TokenAuthentication tokenAuthentication, String userId, String applicationName) throws ApplicationNameNotFoundException, IRRPassTicketGenerationException {
+
 
         String ticket = passTicketService.generate(userId, applicationName);
 

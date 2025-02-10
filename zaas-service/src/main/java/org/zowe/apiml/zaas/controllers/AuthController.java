@@ -42,13 +42,18 @@ import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.OIDCProvider;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.ticket.TicketRequest;
+import org.zowe.apiml.ticket.TicketResponse;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderJWK;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.zaas.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -72,6 +77,7 @@ public class AuthController {
     private final JwtSecurity jwtSecurity;
     private final ZosmfService zosmfService;
     private final MessageService messageService;
+    private final SuccessfulTicketHandler successfulTicketHandler;
 
     private final AccessTokenProvider tokenProvider;
 
@@ -82,7 +88,7 @@ public class AuthController {
     private static final String TOKEN_KEY = "token";
     private static final ObjectWriter writer = new ObjectMapper().writer();
 
-    public static final String CONTROLLER_PATH = "/zaas/api/v1/auth";  // NOSONAR: URL is always using / to separate path segments
+    public static final String CONTROLLER_PATH = "/gateway/api/v1/auth";  // NOSONAR: URL is always using / to separate path segments
     public static final String INVALIDATE_PATH = "/invalidate/**";  // NOSONAR
     public static final String DISTRIBUTE_PATH = "/distribute/**";  // NOSONAR
     public static final String PUBLIC_KEYS_PATH = "/keys/public";  // NOSONAR
@@ -94,7 +100,28 @@ public class AuthController {
     public static final String CURRENT_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/current";
     public static final String OIDC_TOKEN_VALIDATE = "/oidc-token/validate"; // NOSONAR
     public static final String OIDC_WEBFINGER_PATH = "/oidc/webfinger";
+    public static final String TICKET = "/ticket";
 
+
+    @PostMapping(path = TICKET)
+
+    @Operation(summary = "Generate passticket.",
+        tags = {"Security"},
+        operationId = "generatePassticket",
+        description = "Use the `/auth/ticket` API to generate a passticket.",
+        security = {
+            @SecurityRequirement(name = "ClientCert")
+        })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully generated"),
+        @ApiResponse(responseCode = "401", description = "Invalid token"),
+        @ApiResponse(responseCode = "503", description = "Authentication service is not available")
+    })
+    public Mono<ResponseEntity<TicketResponse>> getPassticket(@RequestBody TicketRequest ticketRequest) throws Exception {
+        var tr = successfulTicketHandler.getTicketResponse(new TokenAuthentication("token"), "userId", ticketRequest.getApplicationName());
+        return Mono.just(ResponseEntity.ok(tr));
+
+    }
     @DeleteMapping(path = INVALIDATE_PATH)
     @Hidden
     @Operation(summary = "Logout JWT token.",
