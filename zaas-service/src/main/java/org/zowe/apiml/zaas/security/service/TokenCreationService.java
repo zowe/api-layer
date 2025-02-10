@@ -79,13 +79,14 @@ public class TokenCreationService {
     }
 
     public String createSafIdTokenWithoutCredentials(String user, String applId) throws IRRPassTicketGenerationException {
-
-        char[] passTicket = "".toCharArray();
+        char[] passTicket = null;
         try {
             passTicket = passTicketService.generate(user, applId).toCharArray();
             return safIdtProvider.generate(user, passTicket, applId);
         } finally {
-            Arrays.fill(passTicket, (char) 0);
+            if (passTicket != null) {
+                Arrays.fill(passTicket, (char) 0);
+            }
         }
     }
 

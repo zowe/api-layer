@@ -22,7 +22,6 @@ import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
@@ -31,7 +30,9 @@ import org.zowe.apiml.ticket.TicketResponse;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 import reactor.core.publisher.Mono;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
@@ -192,43 +193,6 @@ public class ZaasSchemeTransformRest implements ZaasSchemeTransform {
                 null
             )
         );
-    }
-
-    static class ErrorHeaders implements ClientResponse.Headers {
-
-        private final HttpHeaders httpHeaders = new HttpHeaders();
-
-        ErrorHeaders(String message) {
-            // FIXME: access to the ApimlConstants
-            // httpHeaders.add(ApimlConstants.AUTH_FAIL_HEADER, message);
-            httpHeaders.add("X-Zowe-Auth-Failure", message);
-        }
-
-        @Override
-        public OptionalLong contentLength() {
-            return toOptionalLong(this.httpHeaders.getContentLength());
-        }
-
-        @Override
-        public Optional<MediaType> contentType() {
-            return Optional.ofNullable(this.httpHeaders.getContentType());
-        }
-
-        @Override
-        public List<String> header(String headerName) {
-            List<String> headerValues = this.httpHeaders.get(headerName);
-            return (headerValues != null ? headerValues : Collections.emptyList());
-        }
-
-        @Override
-        public HttpHeaders asHttpHeaders() {
-            return this.httpHeaders;
-        }
-
-        private OptionalLong toOptionalLong(long value) {
-            return (value != -1 ? OptionalLong.of(value) : OptionalLong.empty());
-        }
-
     }
 
 }
