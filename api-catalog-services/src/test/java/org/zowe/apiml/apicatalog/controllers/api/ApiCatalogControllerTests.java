@@ -195,11 +195,8 @@ class ApiCatalogControllerTests {
     class WhenGettingSpecificService {
         private final String serviceId = "service1";
         private final APIService service =  new APIService.Builder(serviceId)
-            .title("service-1")
-            .description("service-1")
             .secured(true)
             .baseUrl("url")
-            .homePageUrl("home")
             .basePath("base")
             .sso(false)
             .apis(Collections.emptyMap())
@@ -207,7 +204,7 @@ class ApiCatalogControllerTests {
 
         @Test
         void thenReturnNotFound() {
-            given(cachedProductFamilyService.getServices().get(serviceId)).willReturn(null);
+            given(cachedProductFamilyService.getServices()).willReturn(null);
 
             String pathToServices = "/services";
             RestAssuredMockMvc.given().
@@ -226,25 +223,25 @@ class ApiCatalogControllerTests {
             given(cachedProductFamilyService.getServices()).willReturn(services);
 
             given(cachedApiDocService.getDefaultApiVersionForService(serviceId)).willReturn(defaultApiVersion);
-            given(cachedApiDocService.getDefaultApiDocForService(serviceId)).willReturn(serviceId);
+            given(cachedApiDocService.getDefaultApiDocForService(serviceId)).willReturn("mockApiDoc");
 
             ResponseEntity<APIService> apiServicesById = underTest.getAPIServicesById(serviceId);
             assertEquals(apiServicesById.getStatusCode(), HttpStatus.OK);
             assertNotNull(apiServicesById.getBody());
-            assertEquals(apiServicesById.getBody().getApiDoc(), serviceId);
+            assertEquals(apiServicesById.getBody().getApiDoc(), "mockApiDoc");
             assertEquals(apiServicesById.getBody().getDefaultApiVersion(), "v1");
         }
 
         @Test
         void thenReturnOkWithApiDocNull() throws ContainerStatusRetrievalThrowable {
             String defaultApiVersion = "v1";
-            String serviceId = "service1";
 
             Map<String, APIService> services = new ConcurrentHashMap<>();
             services.put(serviceId, service);
             given(cachedProductFamilyService.getServices()).willReturn(services);
 
             given(cachedApiDocService.getDefaultApiVersionForService(serviceId)).willReturn(defaultApiVersion);
+            given(cachedApiDocService.getDefaultApiDocForService(serviceId)).willReturn(null);
 
             ResponseEntity<APIService> apiServicesById = underTest.getAPIServicesById(serviceId);
             assertEquals(apiServicesById.getStatusCode(), HttpStatus.OK);
