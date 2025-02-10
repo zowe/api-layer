@@ -183,6 +183,8 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
             exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, "Invalid client certificate in request. Error message: " + e.getMessage());
         }
 
+        zaasRequestBuilder.requestURI(exchange.getRequest().getURI().toString());
+
         return zaasRequestBuilder;
     }
 

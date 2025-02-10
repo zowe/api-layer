@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.filters;
 import lombok.Builder;
 import lombok.Value;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +27,8 @@ public class RequestCredentials {
     private final Map<String, String> cookies;
     private final Map<String, String[]> headers;
     private final String x509Certificate;
+
+    private final String requestURI;
 
     static class RequestCredentialsBuilder {
 
@@ -42,7 +45,7 @@ public class RequestCredentials {
             if (this.headers == null) {
                 this.headers = new HashMap<>();
             }
-            this.headers.merge(name, value, (a, b) -> ArrayUtils.addAll(a, b));
+            this.headers.merge(StringUtils.lowerCase(name), value, (a, b) -> ArrayUtils.addAll(a, b));
 
             return this;
         }
