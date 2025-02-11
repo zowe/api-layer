@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -29,9 +28,8 @@ import org.zowe.apiml.product.instance.lookup.InstanceLookupExecutor;
 import java.util.Collections;
 
 import static java.time.Duration.ofMillis;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTimeout;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -79,8 +77,10 @@ class GatewayInstanceInitializerTest {
     @TestConfiguration
     static class TestConfig {
 
-        @MockBean
-        private EurekaClient eurekaClient;
+        @Bean
+        public EurekaClient eurekaClient() {
+            return mock(EurekaClient.class);
+        }
 
         @Bean
         public GatewayClient gatewayClient() {
@@ -88,16 +88,16 @@ class GatewayInstanceInitializerTest {
         }
 
         @Bean
-        public InstanceLookupExecutor instanceLookupExecutor() {
+        public InstanceLookupExecutor instanceLookupExecutor(EurekaClient eurekaClient) {
             return new InstanceLookupExecutor(
                 eurekaClient
             );
         }
 
         @Bean
-        public GatewayInstanceInitializer gatewayInstanceInitializer(ApplicationEventPublisher applicationEventPublisher) {
+        public GatewayInstanceInitializer gatewayInstanceInitializer(ApplicationEventPublisher applicationEventPublisher, EurekaClient eurekaClient) {
             return new GatewayInstanceInitializer(
-                instanceLookupExecutor(),
+                instanceLookupExecutor(eurekaClient),
                 applicationEventPublisher,
                 gatewayClient()
             );

@@ -2,7 +2,7 @@ environment.older: false
 
 logging:
     level:
-        ROOT: TRACE
+        ROOT: INFO
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
@@ -177,4 +177,4 @@ management:
 ---
 spring.config.activate.on-profile: dev
 
-logbackServiceName: ZWEAGW1
+logbackServiceName: ZWEAZS1

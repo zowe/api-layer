@@ -10,13 +10,16 @@
 
 package org.zowe.apiml.security.common.login;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
@@ -41,9 +44,7 @@ public abstract class NonCompulsoryAuthenticationProcessingFilter extends Abstra
 
         try {
             authResult = attemptAuthentication(request, response);
-        }
-
-        catch (AuthenticationException failed) {
+        } catch (AuthenticationException failed) {
             // Authentication failed
             unsuccessfulAuthentication(request, response, failed);
             return;

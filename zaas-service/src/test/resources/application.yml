@@ -1,6 +1,6 @@
 logging:
     level:
-        ROOT: TRACE
+        ROOT: INFO
 
 apiml:
     service:
@@ -188,4 +188,4 @@ management:
 ---
 spring.config.activate.on-profile: dev
 
-logbackServiceName: ZWEAGW1
+logbackServiceName: ZWEAZS1

@@ -60,7 +60,7 @@ public class AcceptForwardedClientCertFilterFactory extends AbstractGatewayFilte
         return (exchange, chain) -> {
             SslInfo sslInfo = exchange.getRequest().getSslInfo();
             X509Certificate[] x509Certificates = sslInfo == null ? null : sslInfo.getPeerCertificates();
-            if ((x509Certificates != null) && (x509Certificates.length > 0) && certificateValidator.isTrusted(x509Certificates)) {
+            if ((x509Certificates != null) && (x509Certificates.length > 0) && certificateValidator.hasGatewayChain(x509Certificates)) {
                 X509Certificate[] forwardedClientCertificate = getClientCertificateFromHeader(exchange.getRequest());
                 if (forwardedClientCertificate.length > 0) {
                     log.debug("Accepting forwarded client certificate {}", forwardedClientCertificate[0].getSubjectX500Principal().getName());
