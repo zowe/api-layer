@@ -11,7 +11,7 @@
 package org.zowe.apiml.filter;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.codec.binary.Base64;
+import org.springframework.lang.NonNull;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.commons.attls.InboundAttls;
 
@@ -19,12 +19,14 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 
 /**
  * This filter will add X509 certificate from InboundAttls
@@ -33,14 +35,14 @@ import java.security.cert.X509Certificate;
 public class AttlsFilter extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         byte[] rawCertificate = null;
 
         try {
             rawCertificate = InboundAttls.getCertificate();
         } catch (Exception e) {
             log.error("Not possible to get rawCertificate from AT-TLS context", e);
-            AttlsErrorHandler.handleError(response, "Exception reading rawCertificate");
+            AttlsErrorHandler.handleError(response, "Exception getting rawCertificate");
         }
 
         if (rawCertificate != null && rawCertificate.length > 0) {
@@ -59,7 +61,7 @@ public class AttlsFilter extends OncePerRequestFilter {
     private String convert(byte[] rawCertificate) {
         StringBuilder sb = new StringBuilder();
         sb.append("-----BEGIN CERTIFICATE-----\n");
-        sb.append(Base64.encodeBase64String(rawCertificate));
+        sb.append(Base64.getEncoder().encodeToString(rawCertificate));
         sb.append("\n-----END CERTIFICATE-----");
         return sb.toString();
     }
