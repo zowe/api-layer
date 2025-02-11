@@ -34,21 +34,26 @@ function DetailPage({
     const [error, setError] = useState(null);
     const serviceId = useParams();
 
-
-
     useEffect(() => {
+        if (!serviceId || !serviceId['*']) {
+            console.error("No valid serviceId found:", serviceId);
+            return;
+        }
 
+        console.log("Fetching service with ID:", serviceId['*']);
         fetchNewService(serviceId['*']);
 
         if (fetchServiceError) {
+            console.warn("Service fetch error:", fetchServiceError);
             fetchServiceStop();
             setError(formatError(fetchServiceError));
         }
-        return () => {
-            fetchServiceStop();
-        }
-    }, [fetchServiceError,fetchServiceStop,fetchNewService]);
 
+        return () => {
+            console.log("Cleaning up service fetch");
+            fetchServiceStop();
+        };
+    }, [serviceId['*']]);
 
     const navigate = useNavigate();
     const handleGoBack = () => {

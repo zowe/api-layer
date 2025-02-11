@@ -10,7 +10,7 @@
 
 import {useEffect} from 'react';
 import {Tab, Tabs, Tooltip, Typography, withStyles} from '@material-ui/core';
-import {Link as RouterLink, useParams, useLocation, useMatch} from 'react-router';
+import {Link as RouterLink, useLocation} from 'react-router';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
 import {sortServices} from '../../selectors/selectors';

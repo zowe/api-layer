@@ -24,7 +24,9 @@ const tilesReducerDefaultState = {
     tile: {},
     tiles: [],
     services: [],
+    service: {},
     id: '',
+    tilesLoading: false,
     error: null,
 };
 
@@ -67,8 +69,7 @@ const tilesReducer = (state = tilesReducerDefaultState, action = {}) => {
             };
        case FETCH_NEW_SERVICE_REQUEST:
             return {
-                services: [],
-                tiles: state.tiles,
+                ...state,
                 id: action.payload,
                 serviceLoading: true,
                 error: null,
