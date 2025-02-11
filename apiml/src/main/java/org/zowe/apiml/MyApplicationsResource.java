@@ -30,7 +30,6 @@ import static org.zowe.apiml.EurekaConfiguration.JACKSON_JSON;
 @Slf4j
 public class MyApplicationsResource extends ApplicationsResource {
     private static final String HEADER_ACCEPT = "Accept";
-    private static final String HEADER_ACCEPT_ENCODING = "Accept-Encoding";
 
     @Autowired
     private PeerAwareInstanceRegistry registry;
@@ -38,29 +37,31 @@ public class MyApplicationsResource extends ApplicationsResource {
     private final EurekaServerConfig serverConfig;
 
     @GetMapping("/{appId}")
-    public Mono<ApplicationResource> getAppResource(
-        @PathVariable("appId") String appId) {
-        return Mono.just(super.getApplicationResource(null, appId));
+    public Mono<String> getAppResource(
+        @Nullable @RequestHeader(HEADER_ACCEPT) String acceptHeader,
+        @PathVariable("appId") String appId
+    ) {
+        var appResource = super.getApplicationResource(null, appId);
+        var response = appResource.getApplication(null, acceptHeader, null);
+        return Mono.just((String) response.getEntity());
     }
 
     @GetMapping(value = {"","/"}, produces = { "application/xml", "application/json" }, consumes = MediaType.ALL_VALUE)
     public Mono<String> getAllContainer(
         @Nullable @RequestHeader(HEADER_ACCEPT) String acceptHeader,
-        @Nullable @RequestHeader(HEADER_ACCEPT_ENCODING) String acceptEncoding,
         @Nullable @RequestHeader(EurekaAccept.HTTP_X_EUREKA_ACCEPT) String eurekaAccept,
         @Nullable @RequestParam(value = "regions", required = false) String regionsStr) {
 
-        var res = super.getContainers(null, acceptHeader, acceptEncoding, eurekaAccept, null, regionsStr);
+        var res = super.getContainers(null, acceptHeader, null, eurekaAccept, null, regionsStr);
         return Mono.just((String)res.getEntity());
     }
 
     @GetMapping("/delta")
     public Mono<String> getContainerDiff(
         @Nullable @RequestHeader(HEADER_ACCEPT) String acceptHeader,
-        @Nullable @RequestHeader(HEADER_ACCEPT_ENCODING) String acceptEncoding,
         @Nullable @RequestHeader(EurekaAccept.HTTP_X_EUREKA_ACCEPT) String eurekaAccept,
         @Nullable @RequestParam("regions") String regionsStr) {
-        return Mono.just((String)super.getContainerDifferential(null, acceptHeader, acceptEncoding, eurekaAccept, null, regionsStr).getEntity());
+        return Mono.just((String)super.getContainerDifferential(null, acceptHeader, null, eurekaAccept, null, regionsStr).getEntity());
     }
 
         @PostMapping(value = "/{appName}")
