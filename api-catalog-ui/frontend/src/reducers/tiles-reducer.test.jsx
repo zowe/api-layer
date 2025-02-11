@@ -194,10 +194,8 @@ describe('>>> Tile reducer tests', () => {
                 {
                     id: '',
                     tiles: [],
-                    updates: [],
                     error: null,
                     services: [],
-                    polling: false,
                 },
                 {
                     type: FETCH_NEW_SERVICE_REQUEST,

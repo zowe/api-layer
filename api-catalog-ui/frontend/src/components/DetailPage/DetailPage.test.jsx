@@ -55,6 +55,12 @@ jest.mock("../ServiceTab/ServiceTabContainer", () => ({
     __esModule: true,
    default: jest.fn(() => ({})),
 }));
+
+jest.mock('react-router', () => ({
+    ...jest.requireActual('react-router'),
+    useParams: () => ({ '*': 'mockServiceId' }), // Provide a valid serviceId
+}));
+
 describe('>>> Detailed Page component tests', () => {
     afterEach(() => {
         jest.clearAllMocks();
