@@ -24,10 +24,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.catalina.Host;
-import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.tomcat.util.net.SSLHostConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
@@ -51,6 +49,8 @@ import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 @Configuration
@@ -225,18 +225,21 @@ public class ModulithConfig {
     public WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> internalPortCustomizer(
         @Value("${apiml.service.scheme:https}") String scheme,
         @Value("${apiml.internal.port:8888}") int internalPort
-    ) throws LifecycleException {
+    ) {
         return factory -> {
             var connector = new Connector();
+
+            try {
+                Method method = TomcatReactiveWebServerFactory.class.getDeclaredMethod("customizeConnector", Connector.class);
+                method.setAccessible(true);
+                method.invoke(factory, connector);
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+
             connector.setPort(internalPort);
-            connector.setScheme(scheme);
-            connector.setSecure("https".equals(scheme));
 
-            var sslHostConfig = new SSLHostConfig();
-            // TODO: correct the configuration to respect Spring config file
-            connector.addSslHostConfig(sslHostConfig);
-
-            factory.getAdditionalTomcatConnectors().add(connector);
+            factory.addAdditionalTomcatConnectors(connector);
         };
     }
 
