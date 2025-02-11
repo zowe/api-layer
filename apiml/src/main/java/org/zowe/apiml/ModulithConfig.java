@@ -17,7 +17,6 @@ import com.netflix.appinfo.LeaseInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
-import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,6 +42,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.TomcatHttpHandlerAdapter;
 import org.springframework.web.context.ServletContextAware;
+import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.constants.CoreService;
@@ -119,10 +119,11 @@ public class ModulithConfig {
             .build();
     }
 
-    private PeerAwareInstanceRegistry getRegistry() {
+    private ApimlInstanceRegistry getRegistry() {
         return Optional.ofNullable(EurekaServerContextHolder.getInstance())
             .map(EurekaServerContextHolder::getServerContext)
             .map(EurekaServerContext::getRegistry)
+            .map(ApimlInstanceRegistry.class::cast)
             .orElse(null);
     }
 
@@ -139,7 +140,7 @@ public class ModulithConfig {
     public void onApplicationEvent(EurekaRegistryAvailableEvent event) {
         var registry = getRegistry();
         for (Map.Entry<String, InstanceInfo> entry : localInstances.entrySet()) {
-            registry.register(getInstanceInfo(entry.getKey()), Integer.MAX_VALUE, CoreService.GATEWAY.getServiceId().equals(entry.getKey()));
+            registry.registerStatically(getInstanceInfo(entry.getKey()), CoreService.GATEWAY.getServiceId().equals(entry.getKey()));
         }
     }
 

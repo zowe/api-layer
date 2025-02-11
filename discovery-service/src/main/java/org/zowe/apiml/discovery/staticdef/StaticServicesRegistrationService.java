@@ -10,10 +10,7 @@
 
 package org.zowe.apiml.discovery.staticdef;
 
-import org.zowe.apiml.discovery.EurekaRegistryAvailableListener;
-import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.LeaseInfo;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
@@ -21,8 +18,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.discovery.ApimlInstanceRegistry;
+import org.zowe.apiml.discovery.EurekaRegistryAvailableListener;
+import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -40,8 +42,6 @@ public class StaticServicesRegistrationService {
     private final MetadataDefaultsService metadataDefaultsService;
 
     private final List<InstanceInfo> staticInstances = new CopyOnWriteArrayList<>();
-
-    private final Timer renewalTimer = new Timer();
 
     @Autowired
     public StaticServicesRegistrationService(ServiceDefinitionProcessor serviceDefinitionProcessor, MetadataDefaultsService metadataDefaultsService) {
@@ -61,24 +61,6 @@ public class StaticServicesRegistrationService {
      */
     public void registerServices() {
         registerServices(staticApiDefinitionsDirectories);
-        startRenewalTimer();
-    }
-
-    private void startRenewalTimer() {
-        renewalTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                renewInstances();
-            }
-        }, LeaseInfo.DEFAULT_LEASE_RENEWAL_INTERVAL * 1000L, LeaseInfo.DEFAULT_LEASE_RENEWAL_INTERVAL * 1000L);
-    }
-
-    synchronized void renewInstances() {
-        log.debug("Renewing static instances");
-        PeerAwareInstanceRegistry registry = getRegistry();
-        for (InstanceInfo instance : getStaticInstances()) {
-            registry.renew(instance.getAppName(), instance.getId(), false);
-        }
     }
 
     /**
@@ -106,7 +88,7 @@ public class StaticServicesRegistrationService {
      * Registers all statically defined APIs in a directory.
      */
     StaticRegistrationResult registerServices(String staticApiDefinitionsDirectories) {
-        PeerAwareInstanceRegistry registry = getRegistry();
+        var registry = getRegistry();
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(staticApiDefinitionsDirectories);
 
         // at first register service additional data, becase static could be also updated
@@ -117,14 +99,14 @@ public class StaticServicesRegistrationService {
         for (InstanceInfo instanceInfo : result.getInstances()) {
             result.getRegisteredServices().add(instanceInfo.getInstanceId());
             staticInstances.add(instanceInfo);
-            registry.register(instanceInfo, false);
+            registry.registerStatically(instanceInfo, false);
         }
 
         return result;
     }
 
-    private PeerAwareInstanceRegistry getRegistry() {
-        return getServerContext().getRegistry();
+    private ApimlInstanceRegistry getRegistry() {
+        return (ApimlInstanceRegistry) getServerContext().getRegistry();
     }
 
     private EurekaServerContext getServerContext() {
