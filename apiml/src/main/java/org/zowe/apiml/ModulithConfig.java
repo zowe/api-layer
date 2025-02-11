@@ -23,11 +23,11 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.Context;
 import org.apache.catalina.Host;
 import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.cloud.client.ServiceInstance;
@@ -214,16 +214,7 @@ public class ModulithConfig {
     }
 
     @Bean
-    public TomcatContextCustomizer servletContextPropagator(List<ServletContextAware> listeners) {
-        return context -> {
-            var sc = context.getServletContext();
-            listeners.forEach(l -> l.setServletContext(sc));
-        };
-    }
-
-    @Bean
     public WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> internalPortCustomizer(
-        @Value("${apiml.service.scheme:https}") String scheme,
         @Value("${apiml.internal.port:8888}") int internalPort
     ) {
         return factory -> {
@@ -248,7 +239,8 @@ public class ModulithConfig {
     public TomcatReactiveWebServerFactory tomcatReactiveWebServerWithFiltersFactory(
         @Value("${apiml.service.port:10010}") int externalPort,
         MessageService messageService,
-        HttpHandler httpHandler
+        HttpHandler httpHandler,
+        List<ServletContextAware> servletContextAwareListeners
     ) throws JsonProcessingException {
 
         String error404Message = new ObjectMapper().writeValueAsString(
@@ -285,6 +277,12 @@ public class ModulithConfig {
             @Override
             protected void prepareContext(Host host, TomcatHttpHandlerAdapter servlet) {
                 super.prepareContext(host, new ServletWithFilters(httpHandler, servlet, externalPortBlockingFilter));
+            }
+
+            @Override
+            protected void configureContext(Context context) {
+                servletContextAwareListeners.forEach(l -> l.setServletContext(context.getServletContext()));
+                super.configureContext(context);
             }
         };
     }
