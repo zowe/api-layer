@@ -10,8 +10,7 @@
 
 package org.zowe.apiml;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.LeaseInfo;
 import com.netflix.discovery.shared.Application;
@@ -19,8 +18,6 @@ import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.*;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.catalina.Context;
 import org.apache.catalina.Host;
@@ -43,6 +40,7 @@ import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.TomcatHttpHandlerAdapter;
 import org.springframework.web.context.ServletContextAware;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
+import org.zowe.apiml.filter.PreFluxFilter;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.constants.CoreService;
@@ -106,7 +104,7 @@ public class ModulithConfig {
             //.setVIPAddressDeser(String vipAddress)
             //.setSecureVIPAddress(final String secureVIPAddress)
             //.setSecureVIPAddressDeser(String secureVIPAddress)
-            //.setDataCenterInfo(DataCenterInfo datacenter)
+            .setDataCenterInfo(() -> DataCenterInfo.Name.MyOwn)
             .setLeaseInfo(leaseInfo)
             //.add(String key, String val)
             //.setMetadata(Map<String, String> mt)
@@ -238,46 +236,15 @@ public class ModulithConfig {
     @Bean
     @Primary
     public TomcatReactiveWebServerFactory tomcatReactiveWebServerWithFiltersFactory(
-        @Value("${apiml.service.port:10010}") int externalPort,
-        MessageService messageService,
         HttpHandler httpHandler,
+        List<PreFluxFilter> preFluxFilters,
         List<ServletContextAware> servletContextAwareListeners
-    ) throws JsonProcessingException {
-
-        String error404Message = new ObjectMapper().writeValueAsString(
-            messageService.createMessage("org.zowe.apiml.common.notFound").mapToView()
-        );
-
-        var externalPortBlockingFilter = new Filter() {
-
-            boolean isBlocked(HttpServletRequest request) {
-                if (request.getServerPort() != externalPort) {
-                    return false;
-                }
-
-                return
-                    StringUtils.equals(request.getRequestURI(), "/eureka") ||
-                    StringUtils.startsWith(request.getRequestURI(), "/eureka/");
-            }
-
-            @Override
-            public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-                HttpServletRequest request = (HttpServletRequest) req;
-                HttpServletResponse response = (HttpServletResponse) res;
-
-                if (isBlocked(request)) {
-                    response.getOutputStream().print(error404Message);
-                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                } else {
-                    chain.doFilter(request, response);
-                }
-            }
-        };
+    ) {
 
         return new TomcatReactiveWebServerFactory() {
             @Override
             protected void prepareContext(Host host, TomcatHttpHandlerAdapter servlet) {
-                super.prepareContext(host, new ServletWithFilters(httpHandler, servlet, externalPortBlockingFilter));
+                super.prepareContext(host, new ServletWithFilters(httpHandler, servlet, preFluxFilters));
             }
 
             @Override
@@ -293,7 +260,7 @@ public class ModulithConfig {
         private final Servlet servlet;
         private final FilterChain filterChain;
 
-        public ServletWithFilters(HttpHandler httpHandler, TomcatHttpHandlerAdapter servlet, Filter...filters) {
+        public ServletWithFilters(HttpHandler httpHandler, TomcatHttpHandlerAdapter servlet, Collection<? extends Filter> filters) {
             super(httpHandler);
             this.servlet = servlet;
 
