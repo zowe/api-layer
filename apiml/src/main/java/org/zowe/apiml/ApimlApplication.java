@@ -13,6 +13,7 @@ package org.zowe.apiml;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.ReactiveOAuth2ClientAutoConfiguration;
+import org.springframework.cloud.netflix.eureka.server.EurekaController;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 
@@ -20,10 +21,16 @@ import org.springframework.context.annotation.FilterType;
     exclude = {ReactiveOAuth2ClientAutoConfiguration.class}
 )
 @ComponentScan(
-    excludeFilters = @ComponentScan.Filter(
-        type = FilterType.REGEX,
-        pattern = ".*Application"
-    )
+    excludeFilters = {
+        @ComponentScan.Filter(
+            type = FilterType.REGEX,
+            pattern = ".*Application"
+        ),
+        @ComponentScan.Filter(
+            type = FilterType.ASSIGNABLE_TYPE,
+            classes = EurekaController.class
+        )
+    }
 )
 public class ApimlApplication {
 

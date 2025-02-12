@@ -1,6 +1,7 @@
 eureka:
     dashboard:
-        path: /dashbrd
+        path: /eureka
+        enabled: false
     instance:
         instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
         hostname: ${apiml.service.hostname}
