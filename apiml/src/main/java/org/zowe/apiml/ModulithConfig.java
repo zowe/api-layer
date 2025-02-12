@@ -10,17 +10,25 @@
 
 package org.zowe.apiml;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.LeaseInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
-import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.Context;
+import org.apache.catalina.Host;
+import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
@@ -29,13 +37,20 @@ import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvail
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
+import org.springframework.http.server.reactive.HttpHandler;
+import org.springframework.http.server.reactive.TomcatHttpHandlerAdapter;
 import org.springframework.web.context.ServletContextAware;
+import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Flux;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 @Configuration
@@ -104,10 +119,11 @@ public class ModulithConfig {
             .build();
     }
 
-    private PeerAwareInstanceRegistry getRegistry() {
+    private ApimlInstanceRegistry getRegistry() {
         return Optional.ofNullable(EurekaServerContextHolder.getInstance())
             .map(EurekaServerContextHolder::getServerContext)
             .map(EurekaServerContext::getRegistry)
+            .map(ApimlInstanceRegistry.class::cast)
             .orElse(null);
     }
 
@@ -124,7 +140,7 @@ public class ModulithConfig {
     public void onApplicationEvent(EurekaRegistryAvailableEvent event) {
         var registry = getRegistry();
         for (Map.Entry<String, InstanceInfo> entry : localInstances.entrySet()) {
-            registry.register(getInstanceInfo(entry.getKey()), Integer.MAX_VALUE, CoreService.GATEWAY.getServiceId().equals(entry.getKey()));
+            registry.registerStatically(getInstanceInfo(entry.getKey()), CoreService.GATEWAY.getServiceId().equals(entry.getKey()));
         }
     }
 
@@ -199,21 +215,75 @@ public class ModulithConfig {
     }
 
     @Bean
-    public TomcatContextCustomizer servletContextPropagator(List<ServletContextAware> listeners) {
-        return context -> {
-            var sc = context.getServletContext();
-            listeners.forEach(l -> l.setServletContext(sc));
+    public WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> internalPortCustomizer(
+        @Value("${apiml.internal.port:8888}") int internalPort
+    ) {
+        return factory -> {
+            var connector = new Connector();
+
+            try {
+                Method method = TomcatReactiveWebServerFactory.class.getDeclaredMethod("customizeConnector", Connector.class);
+                method.setAccessible(true);
+                method.invoke(factory, connector);
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+
+            connector.setPort(internalPort);
+
+            factory.addAdditionalTomcatConnectors(connector);
         };
     }
 
-    /*
     @Bean
     @Primary
-    public TomcatReactiveWebServerFactory tomcatReactiveWebServerWithFiltersFactory(HttpHandler httpHandler, List<FilterRegistrationBean> filters) {
+    public TomcatReactiveWebServerFactory tomcatReactiveWebServerWithFiltersFactory(
+        @Value("${apiml.service.port:10010}") int externalPort,
+        MessageService messageService,
+        HttpHandler httpHandler,
+        List<ServletContextAware> servletContextAwareListeners
+    ) throws JsonProcessingException {
+
+        String error404Message = new ObjectMapper().writeValueAsString(
+            messageService.createMessage("org.zowe.apiml.common.notFound").mapToView()
+        );
+
+        var externalPortBlockingFilter = new Filter() {
+
+            boolean isBlocked(HttpServletRequest request) {
+                if (request.getServerPort() != externalPort) {
+                    return false;
+                }
+
+                return
+                    StringUtils.equals(request.getRequestURI(), "/eureka") ||
+                    StringUtils.startsWith(request.getRequestURI(), "/eureka/");
+            }
+
+            @Override
+            public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+                HttpServletRequest request = (HttpServletRequest) req;
+                HttpServletResponse response = (HttpServletResponse) res;
+
+                if (isBlocked(request)) {
+                    response.getOutputStream().print(error404Message);
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                } else {
+                    chain.doFilter(request, response);
+                }
+            }
+        };
+
         return new TomcatReactiveWebServerFactory() {
             @Override
             protected void prepareContext(Host host, TomcatHttpHandlerAdapter servlet) {
-                super.prepareContext(host, new ServletWithFilters(httpHandler, servlet, filters));
+                super.prepareContext(host, new ServletWithFilters(httpHandler, servlet, externalPortBlockingFilter));
+            }
+
+            @Override
+            protected void configureContext(Context context) {
+                servletContextAwareListeners.forEach(l -> l.setServletContext(context.getServletContext()));
+                super.configureContext(context);
             }
         };
     }
@@ -223,13 +293,13 @@ public class ModulithConfig {
         private final Servlet servlet;
         private final FilterChain filterChain;
 
-        public ServletWithFilters(HttpHandler httpHandler, TomcatHttpHandlerAdapter servlet, List<FilterRegistrationBean> filters) {
+        public ServletWithFilters(HttpHandler httpHandler, TomcatHttpHandlerAdapter servlet, Filter...filters) {
             super(httpHandler);
             this.servlet = servlet;
 
             FilterChain filterChain = servlet::service;
             for (var filter : filters) {
-                filterChain = createFilterChain(filter.getFilter(), filterChain);
+                filterChain = createFilterChain(filter, filterChain);
             }
             this.filterChain = filterChain;
         }
@@ -269,6 +339,6 @@ public class ModulithConfig {
             servlet.destroy();
         }
 
-    }*/
+    }
 
 }
