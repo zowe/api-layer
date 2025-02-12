@@ -22,6 +22,9 @@ import org.zowe.apiml.message.core.MessageService;
 
 import java.io.IOException;
 
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.apache.http.HttpHeaders.CONTENT_TYPE;
+
 @Component
 public class HideEurekaFilter extends PreFluxFilter {
 
@@ -40,6 +43,7 @@ public class HideEurekaFilter extends PreFluxFilter {
             StringUtils.equals(request.getRequestURI(), "/eureka") ||
             StringUtils.startsWith(request.getRequestURI(), "/eureka/")
         ) {
+            response.addHeader(CONTENT_TYPE, APPLICATION_JSON);
             response.getOutputStream().print(error404Message);
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         } else {
