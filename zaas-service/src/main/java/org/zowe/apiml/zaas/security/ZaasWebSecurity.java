@@ -26,11 +26,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
-import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -87,9 +84,7 @@ public class ZaasWebSecurity {
             }
             return Mono.just(new UsernamePasswordAuthenticationToken(loginRequest.get().getUsername(), loginRequest.get()));
         });
-        authWebFilter.setAuthenticationSuccessHandler(new ServerAuthenticationSuccessHandler() {
-            @Override
-            public Mono<Void> onAuthenticationSuccess(WebFilterExchange webFilterExchange, Authentication authentication) {
+        authWebFilter.setAuthenticationSuccessHandler((webFilterExchange, authentication) -> {
                 TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
                 String token = tokenAuthentication.getCredentials();
 
@@ -97,7 +92,7 @@ public class ZaasWebSecurity {
                 webFilterExchange.getExchange().getResponse().setStatusCode(HttpStatus.NO_CONTENT);
                 return Mono.empty();
             }
-        });
+        );
         return authWebFilter;
     }
 
@@ -202,15 +197,16 @@ public class ZaasWebSecurity {
      * @throws AuthenticationCredentialsNotFoundException if the login object has wrong format
      */
     private Mono<LoginRequest> getCredentialsFromBody(ServerHttpRequest request) {
-        return Mono.from(request.getBody().map(dataBuffer -> {
+        return Mono.from(request.getBody().flatMap(dataBuffer -> {
             try (var is = dataBuffer.asInputStream();
                  var bis = new BufferedInputStream(is)) {
-                return mapper.readValue(bis, LoginRequest.class);
+                return Mono.just(mapper.readValue(bis, LoginRequest.class));
             } catch (IOException e) {
                 log.debug("Authentication problem: login object has wrong format");
-                throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
+                return Mono.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format."));
             }
-        }));
+        })).onErrorResume(throwable -> Mono.empty());
 
     }
+
 }
