@@ -209,6 +209,8 @@ public class ModulithConfig {
 
         messageService.loadMessages("/gateway-log-messages.yml");
         messageService.loadMessages("/zaas-log-messages.yml");
+
+        messageService.loadMessages("/apiml-log-messages.yml");
         return messageService;
     }
 

@@ -10,12 +10,14 @@
 
 package org.zowe.apiml.security.client.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class MessageServiceConfig {
 
     @Bean

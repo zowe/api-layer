@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.message.yaml;
 
+import org.springframework.util.CollectionUtils;
 import org.zowe.apiml.message.core.*;
 import org.zowe.apiml.message.template.MessageTemplates;
 import org.yaml.snakeyaml.Yaml;
@@ -54,7 +55,9 @@ public class YamlMessageService extends AbstractMessageService {
         try (InputStream in = YamlMessageService.class.getResourceAsStream(messagesFilePath)) {
             Yaml yaml = new Yaml();
             MessageTemplates messageTemplates = yaml.loadAs(in, MessageTemplates.class);
-            super.addMessageTemplates(messageTemplates);
+            if (!CollectionUtils.isEmpty(messageTemplates.getMessages())) {
+                super.addMessageTemplates(messageTemplates);
+            }
         } catch (YAMLException | IOException | IllegalArgumentException e) {
             throw new MessageLoadException("There is problem with reading application messages file: " + messagesFilePath, e);
         }
