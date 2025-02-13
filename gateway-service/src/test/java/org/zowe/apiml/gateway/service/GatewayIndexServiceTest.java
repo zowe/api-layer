@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.service;
 
 
-import org.apache.groovy.util.Maps;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -21,30 +20,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.web.reactive.function.client.ClientRequest;
-import org.springframework.web.reactive.function.client.ClientResponse;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
-import org.springframework.web.reactive.function.client.ExchangeFunction;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.*;
 import org.zowe.apiml.services.ServiceInfo;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.util.AbstractMap;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.REGISTRATION_TYPE;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.RegistrationType.ADDITIONAL;
 
 @ExtendWith(MockitoExtension.class)
 class GatewayIndexServiceTest {
@@ -67,7 +56,11 @@ class GatewayIndexServiceTest {
 
     @BeforeEach
     void setUp() {
-        lenient().when(eurekaInstance.getMetadata()).thenReturn(Maps.of(APIML_ID, "testApimlIdA"));
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put(APIML_ID, "testApimlIdA");
+        metadata.put(REGISTRATION_TYPE, ADDITIONAL.getValue());
+
+        lenient().when(eurekaInstance.getMetadata()).thenReturn(metadata);
         lenient().when(eurekaInstance.getInstanceId()).thenReturn("testInstanceIdA");
 
         serviceInfoA = new ServiceInfo();
@@ -81,7 +74,7 @@ class GatewayIndexServiceTest {
         serviceInfoB.getApiml().setApiInfo(Collections.singletonList(sysviewApiInfo));
 
         webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
-        gatewayIndexService = new GatewayIndexService(webClient, 60);
+        gatewayIndexService = new GatewayIndexService(webClient, 60, null);
     }
 
     @Nested
