@@ -38,7 +38,7 @@ import java.util.Map;
 @Primary
 @RestController
 @RequestMapping("${eureka.dashboard.path:/eureka}")
-public class EurekaControllerWebFlux {
+public class EurekaDashboardController {
 
     private final EurekaController original;
 
@@ -47,7 +47,7 @@ public class EurekaControllerWebFlux {
     private final Template statusTemplate;
     private final Template lastnTemplate;
 
-    public EurekaControllerWebFlux(
+    public EurekaDashboardController(
         ApplicationInfoManager applicationInfoManager, EurekaProperties eurekaProperties,
         FreeMarkerConfigurer freeMarkerConfigurer, MessageSource messageSource
     ) throws IOException {

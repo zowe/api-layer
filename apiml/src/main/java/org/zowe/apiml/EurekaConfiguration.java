@@ -67,7 +67,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -150,12 +149,6 @@ public class EurekaConfiguration implements WebMvcConfigurer {
     @Bean
     public HasFeatures eurekaServerFeature() {
         return HasFeatures.namedFeature("Eureka Server", EurekaServerAutoConfiguration.class);
-    }
-
-    @Bean
-    @ConditionalOnProperty(prefix = "eureka.dashboard", name = "enabled", matchIfMissing = true)
-    public EurekaController eurekaController(EurekaProperties eurekaProperties) {
-        return new EurekaController(this.applicationInfoManager, eurekaProperties);
     }
 
     static {
