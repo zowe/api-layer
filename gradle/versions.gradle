@@ -27,7 +27,7 @@ dependencyResolutionManagement {
             version('zosUtils', '2.0.5')
             version('archaius', '0.7.12')
             version('awaitility', '4.2.2')
-            version('awsJavaSdk', '1.12.780')
+            version('awsJavaSdk', '1.12.781')
             version('bouncyCastle', '1.78.1')
             // forced version in root gradle.build file. Version 3.x requieres Java 11
             version('caffeine', '2.9.3')
@@ -70,7 +70,7 @@ dependencyResolutionManagement {
             version('jjwtFull', '0.9.1')
             version('joda', '2.12.7')
             version('jsonPath', '2.9.0')
-            version('jsonSmart', '2.5.1')
+            version('jsonSmart', '2.5.2')
             version('jsonUnit', '3.4.1')
             version('json', '20240303')
             version('jsr305', '3.0.2')
