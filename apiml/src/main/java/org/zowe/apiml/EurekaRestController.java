@@ -25,7 +25,6 @@ import jakarta.annotation.Nullable;
 import jakarta.ws.rs.core.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -35,12 +34,10 @@ import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.apache.http.HttpHeaders.*;
+import static org.apache.http.HttpHeaders.ACCEPT;
+import static org.apache.http.HttpHeaders.ACCEPT_ENCODING;
 import static org.zowe.apiml.EurekaConfiguration.JACKSON_JSON;
 
 @RestController
@@ -51,7 +48,6 @@ import static org.zowe.apiml.EurekaConfiguration.JACKSON_JSON;
 public class EurekaRestController {
 
     private static final String EUREKA_VERSION = "v2";
-    private static final String HEADER_GZIP_VALUE = "gzip";
 
     private final ApplicationsResource applicationsResource = new ApplicationsResource();
     private final VIPResource vipResource = new VIPResource();
@@ -61,32 +57,16 @@ public class EurekaRestController {
     private final ASGResource asgResource = new ASGResource();
     private final PeerReplicationResource peerReplicationResource = new PeerReplicationResource();
 
-    private String fixAcceptEncoding(String acceptEncoding) {
-        if (acceptEncoding == null) {
-            return null;
-        }
-
-        // to remove gzip
-        return Arrays.stream(StringUtils.split(acceptEncoding, ","))
-            .map(StringUtils::trim)
-            .filter(value -> !StringUtils.equals(value, HEADER_GZIP_VALUE))
-            .collect(Collectors.joining(", "));
-
-    }
-
     private UriInfo getUriInfo(ServerWebExchange serverWebExchange) {
         return new UriInfoAdapter(serverWebExchange.getRequest());
     }
 
     private Mono<ResponseEntity<?>> convertResponse(Response response) {
-        String contentType = response.getHeaderString(CONTENT_TYPE);
-        if (StringUtils.isEmpty(contentType)) {
-            contentType = APPLICATION_JSON;
-        }
-
         return Mono.just(ResponseEntity
             .status(response.getStatus())
-            .header(CONTENT_TYPE, contentType)
+            .headers(headers -> response.getHeaders().entrySet().forEach(
+                newHeader -> headers.addAll(newHeader.getKey(), newHeader.getValue().stream().map(String::valueOf).toList()))
+            )
             .body(response.getEntity()));
     }
 
@@ -99,7 +79,7 @@ public class EurekaRestController {
         @Nullable @RequestParam("regions") String regionsStr
     ) {
         return convertResponse(applicationsResource.getContainers(
-            EUREKA_VERSION, acceptHeader, fixAcceptEncoding(acceptEncoding), eurekaAccept, getUriInfo(serverWebExchange), regionsStr
+            EUREKA_VERSION, acceptHeader, acceptEncoding, eurekaAccept, getUriInfo(serverWebExchange), regionsStr
         ));
     }
 
@@ -112,7 +92,7 @@ public class EurekaRestController {
         @Nullable @RequestParam("regions") String regionsStr
     ) {
         return convertResponse(applicationsResource.getContainerDifferential(
-            EUREKA_VERSION, acceptHeader, fixAcceptEncoding(acceptEncoding), eurekaAccept, getUriInfo(serverWebExchange), regionsStr
+            EUREKA_VERSION, acceptHeader, acceptEncoding, eurekaAccept, getUriInfo(serverWebExchange), regionsStr
         ));
     }
 
