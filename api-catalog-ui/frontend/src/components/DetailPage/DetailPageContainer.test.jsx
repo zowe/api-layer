@@ -12,6 +12,7 @@ import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import DetailPageContainer from './DetailPageContainer';
+import {HashRouter} from "react-router";
 
 const mockStore = configureStore();
 
@@ -59,9 +60,11 @@ describe('DetailPage Container', () => {
             listen: jest.fn(),
         };
         container = render(
-            <Provider store={store}>
-                <DetailPageContainer match={match} history={history} />
-            </Provider>
+            <HashRouter>
+                <Provider store={store}>
+                    <DetailPageContainer match={match} history={history} />
+                </Provider>
+            </HashRouter>
         );
     });
 

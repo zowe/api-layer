@@ -11,35 +11,41 @@ import { connect } from 'react-redux';
 import {
     fetchTilesFailed,
     fetchTilesStart,
-    fetchNewTiles,
     fetchTilesStop,
-    fetchTilesSuccess,
+    fetchTilesSuccess, fetchNewService, fetchServiceStop, fetchServiceFailed,
 } from '../../actions/catalog-tile-actions';
-import { clearService } from '../../actions/selected-service-actions';
+import {clearService, selectService} from '../../actions/selected-service-actions';
 import { createLoadingSelector } from '../../selectors/selectors';
 import DetailPage from './DetailPage';
 
-const loadingSelector = createLoadingSelector(['FETCH_TILES']);
+const loadingSelector = createLoadingSelector(['FETCH']);
 
 const mapStateToProps = (state) => ({
     tile: state.tilesReducer.tile,
     services: state.tilesReducer.services,
     tiles: state.tilesReducer.tiles,
     fetchTilesError: state.tilesReducer.error,
+    fetchServiceError: state.tilesReducer.error,
     selectedTile: state.selectedServiceReducer.selectedTile,
     selectedService: state.selectedServiceReducer.selectedService,
-    selectedContentAnchor: state.selectedServiceReducer.selectedContentAnchor,
     isLoading: loadingSelector(state),
-    currentTileId: state.tilesReducer.currentTileId,
+    authentication: state.authenticationReducer,
+    service: state.tilesReducer.service,
+    serviceLoading: state.tilesReducer.serviceLoading,
+    tilesLoading: state.tilesReducer.tilesLoading,
 });
 
 const mapDispatchToProps = (dispatch) => ({
     fetchTilesStart: (id) => dispatch(fetchTilesStart(id)),
-    fetchNewTiles: (id) => dispatch(fetchNewTiles(id)),
     fetchTilesSuccess: (tiles) => dispatch(fetchTilesSuccess(tiles)),
     fetchTilesFailed: (error) => dispatch(fetchTilesFailed(error)),
     fetchTilesStop: () => dispatch(fetchTilesStop()),
     clearService: () => dispatch(clearService()),
+    selectService: (service, tileId) => dispatch(selectService(service, tileId)),
+    fetchServiceStop: () => dispatch(fetchServiceStop()),
+    fetchNewService: (id) => dispatch(fetchNewService(id)),
+    fetchServiceFailed: (id) => dispatch(fetchServiceFailed(id)),
+
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(DetailPage);

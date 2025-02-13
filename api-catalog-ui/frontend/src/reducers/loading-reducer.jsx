@@ -10,8 +10,7 @@
 
 const loadingReducer = (state = {}, action = {}) => {
     const { type } = action;
-
-    const matches = /(.*)_(REQUEST|SUCCESS|FAILURE|FAILED|INVALIDPASSWORD|EXPIREDPASSWORD)/.exec(type);
+    const matches = /^([^_]*)_(TILES_REQUEST|TILES_SUCCESS|FAILURE|FAILED|INVALIDPASSWORD|EXPIREDPASSWORD|TILES_NEW_SUCCESS|NEW_SERVICE_SUCCESS|NEW_SERVICE_REQUEST)$/.exec(type);
 
     // not a *_REQUEST / *_SUCCESS /  *_FAILURE actions, so we ignore them
     if (!matches) {
@@ -20,7 +19,8 @@ const loadingReducer = (state = {}, action = {}) => {
 
     // Store whether a request is happening at the moment or not a *REQUEST action will be true
     const [, requestName, requestState] = matches;
-    const isRequest = requestState === 'REQUEST';
+    const isRequest = requestState.includes('REQUEST');
+
     return {
         ...state,
         [requestName]: isRequest,

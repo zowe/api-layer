@@ -14,16 +14,16 @@ import {
     fetchTilesStart,
     fetchTilesSuccess,
     fetchTilesStop,
-    storeCurrentTileId,
+    fetchNewService,
 } from '../../actions/catalog-tile-actions';
-import { clearService, storeContentAnchor } from '../../actions/selected-service-actions';
+import {clearService, selectService} from '../../actions/selected-service-actions';
 import { filterText, clear } from '../../actions/filter-actions';
 import { createLoadingSelector, getFilteredServices } from '../../selectors/selectors';
 import { clearError, refreshedStaticApi } from '../../actions/refresh-static-apis-actions';
 import { selectEnabler, wizardToggleDisplay } from '../../actions/wizard-actions';
 import { userActions } from '../../actions/user-actions';
 
-const loadingSelector = createLoadingSelector(['FETCH_TILES']);
+const loadingSelector = createLoadingSelector(['FETCH']);
 
 const mapStateToProps = (state) => ({
     searchCriteria: state.filtersReducer.text,
@@ -34,7 +34,7 @@ const mapStateToProps = (state) => ({
     refreshedStaticApisError: state.refreshStaticApisReducer.error,
     refreshTimestamp: state.refreshStaticApisReducer.refreshTimestamp,
     authentication: state.authenticationReducer,
-    currentTileId: state.tilesReducer.currentTileId,
+
 });
 
 const mapDispatchToProps = {
@@ -50,8 +50,8 @@ const mapDispatchToProps = {
     wizardToggleDisplay,
     selectEnabler,
     closeAlert: () => userActions.closeAlert(),
-    storeCurrentTileId: (id) => storeCurrentTileId(id),
-    storeContentAnchor: (id) => storeContentAnchor(id),
+    selectService: (service, tileId) => selectService(service, tileId),
+    fetchNewService: (id) => fetchNewService(id)
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Dashboard);

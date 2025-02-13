@@ -46,6 +46,13 @@ messages:
       reason: "Unable to fetch API documentation."
       action: "Make sure the service documentation url or server transport encoding is configured correctly."
 
+    - key: org.zowe.apiml.apicatalog.serviceCouldNotBeRetrieved
+      number: ZWEAC106
+      type: ERROR
+      text: "Could not retrieve service. Status: %s"
+      reason: "Service could not be retrieved."
+      action: "Check the status of the message for more information and the health of the Discovery Service."
+
     # HTTP, Protocol messages
     # 400-499\
     # TLS, Certificate messages

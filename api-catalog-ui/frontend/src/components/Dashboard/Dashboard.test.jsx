@@ -7,31 +7,25 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { render, screen } from '@testing-library/react';
+import {fireEvent, render, screen} from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { shallow } from 'enzyme';
-import { describe, expect, it, jest } from '@jest/globals';
+
 import Dashboard from './Dashboard';
 import { categoryData } from '../Wizard/configs/wizard_categories';
+import '@testing-library/jest-dom';
 
-jest.mock(
-    '../Wizard/WizardContainer',
-    () =>
-        // eslint-disable-next-line react/display-name
-        function () {
-            const WizardContainer = 'WizardContainerMock';
-            return <WizardContainer />;
-        }
-);
-jest.mock(
-    '../Wizard/ConfirmDialogContainer',
-    () =>
-        // eslint-disable-next-line react/display-name
-        function () {
-            const ConfirmDialogContainer = 'ConfirmDialogContainerMock';
-            return <ConfirmDialogContainer />;
-        }
-);
+jest.mock('../Wizard/WizardContainer');
+jest.mock('../Wizard/ConfirmDialogContainer');
+
+const mockNavigate = jest.fn();
+jest.mock('react-router', () => {
+    return {
+        __esModule: true,
+        ...jest.requireActual('react-router'),
+        useNavigate: () => mockNavigate,
+    };
+});
 
 const ajaxError = {
     message: 'ajax Error 404',
@@ -97,29 +91,10 @@ describe('>>> Dashboard component tests', () => {
         );
     });
 
-    it('should stop epic on unmount', () => {
-        const fetchTilesStop = jest.fn();
-        const clear = jest.fn();
-        const wrapper = shallow(
-            <Dashboard
-                tiles={null}
-                fetchTilesStart={jest.fn()}
-                fetchTilesStop={fetchTilesStop}
-                clearService={jest.fn()}
-                clear={clear}
-                assertAuthorization={jest.fn()}
-                authentication={jest.fn()}
-            />
-        );
-        const instance = wrapper.instance();
-        instance.componentWillUnmount();
-        expect(fetchTilesStop).toHaveBeenCalled();
-        expect(clear).toHaveBeenCalled();
-    });
 
-    it('should trigger filterText on handleSearch', () => {
+    it('should trigger filterText on handleSearch', async () => {
         const filterText = jest.fn();
-        const wrapper = shallow(
+        render(
             <Dashboard
                 tiles={null}
                 fetchTilesStart={jest.fn()}
@@ -131,14 +106,14 @@ describe('>>> Dashboard component tests', () => {
                 authentication={jest.fn()}
             />
         );
-        const instance = wrapper.instance();
-        instance.handleSearch();
-        expect(filterText).toHaveBeenCalled();
+        fireEvent.change(screen.getByPlaceholderText('Search...'),{target: {value: 'a'}});
+
+         expect(filterText).toHaveBeenCalled();
     });
 
     it('should refresh static APIs on button click', () => {
         const refreshedStaticApi = jest.fn();
-        const wrapper = shallow(
+        render(
             <Dashboard
                 tiles={null}
                 fetchTilesStart={jest.fn()}
@@ -151,14 +126,13 @@ describe('>>> Dashboard component tests', () => {
                 authentication={jest.fn()}
             />
         );
-        const instance = wrapper.instance();
-        instance.refreshStaticApis();
+        fireEvent.click(screen.getByText('Refresh Static APIs'));
         expect(refreshedStaticApi).toHaveBeenCalled();
     });
 
     it('should toggle display on button click', () => {
         const wizardToggleDisplay = jest.fn();
-        const wrapper = shallow(
+        render(
             <Dashboard
                 tiles={null}
                 fetchTilesStart={jest.fn()}
@@ -168,10 +142,11 @@ describe('>>> Dashboard component tests', () => {
                 clear={jest.fn()}
                 assertAuthorization={jest.fn()}
                 authentication={jest.fn()}
+                selectEnabler={jest.fn()}
             />
         );
-        const instance = wrapper.instance();
-        instance.toggleWizard();
+        fireEvent.click(screen.getByText('Onboard New API'));
+        fireEvent.click(screen.getByText('Spring Enabler'));
         expect(wizardToggleDisplay).toHaveBeenCalled();
     });
 

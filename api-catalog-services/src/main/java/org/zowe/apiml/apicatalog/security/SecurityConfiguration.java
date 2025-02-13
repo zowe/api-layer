@@ -171,7 +171,7 @@ public class SecurityConfiguration {
                     .requestMatchers("/application/health").permitAll());
             }
 
-            mainframeCredentialsConfiguration(baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers("/static-api/**","/containers/**","/application/**",APIDOC_ROUTES))))
+            mainframeCredentialsConfiguration(baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers("/static-api/**","/containers/**","/application/**","/services/**",APIDOC_ROUTES))))
                 .authorizeHttpRequests(requests -> requests
                     .anyRequest().authenticated()
                 )

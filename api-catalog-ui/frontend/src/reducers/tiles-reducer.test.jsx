@@ -15,9 +15,7 @@ import {
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
     FETCH_TILES_RETRY,
-    FETCH_NEW_TILES_REQUEST,
-    FETCH_NEW_TILES_SUCCESS,
-    STORE_CURRENT_TILEID,
+    FETCH_NEW_SERVICE_REQUEST, FETCH_NEW_SERVICE_SUCCESS,
 } from '../constants/catalog-tile-constants';
 
 describe('>>> Tile reducer tests', () => {
@@ -49,6 +47,8 @@ describe('>>> Tile reducer tests', () => {
             id: '',
             tiles: [],
             error: null,
+            services: undefined,
+            tilesLoading: true
         };
 
         // NOTE: Updates might be redundant
@@ -96,6 +96,7 @@ describe('>>> Tile reducer tests', () => {
             tiles: [sampleTile],
             services: [sampleTile],
             error: null,
+            tilesLoading: false,
         };
 
         expect(
@@ -157,13 +158,35 @@ describe('>>> Tile reducer tests', () => {
         ).toEqual(expectedState);
     });
 
-    it('should handle STORE_CURRENT_TILEID', () => {
+    it('should handle FETCH_NEW_SERVICE_SUCCESS', () => {
         const expectedState = {
             id: '',
-            tiles: [],
-            services: [],
+            service: sampleTile.services[0],
             error: null,
-            currentTileId: [sampleTile],
+            serviceLoading: false
+        };
+
+        expect(
+            tilesReducer(
+                {
+                    id: '',
+                    error: null,
+                },
+                {
+                    type: FETCH_NEW_SERVICE_SUCCESS,
+                    payload: sampleTile.services[0],
+                }
+            )
+        ).toEqual(expectedState);
+    });
+
+    it('should handle FETCH_NEW_SERVICE_REQUEST', () => {
+        const expectedState = {
+            tiles: [],
+            id: '',
+            error: null,
+            services: [],
+            serviceLoading: true,
         };
 
         expect(
@@ -171,64 +194,11 @@ describe('>>> Tile reducer tests', () => {
                 {
                     id: '',
                     tiles: [],
+                    error: null,
                     services: [],
-                    error: null,
-                    currentTileId: sampleTile.id,
                 },
                 {
-                    type: STORE_CURRENT_TILEID,
-                    payload: [sampleTile],
-                }
-            )
-        ).toEqual(expectedState);
-    });
-
-    it('should handle FETCH_NEW_TILES_SUCCESS', () => {
-        const expectedState = {
-            id: '',
-            tiles: [sampleTile],
-            services: [sampleTile],
-            error: null,
-        };
-
-        expect(
-            tilesReducer(
-                {
-                    id: '',
-                    tiles: [sampleTile],
-                    services: [sampleTile],
-                    error: null,
-                },
-                {
-                    type: FETCH_NEW_TILES_SUCCESS,
-                    payload: [sampleTile],
-                }
-            )
-        ).toEqual(expectedState);
-    });
-
-    it('should handle FETCH_NEW_TILES_REQUEST', () => {
-        const expectedState = {
-            tiles: [],
-            id: '',
-            currentTileId: 'id',
-            error: null,
-            services: [],
-        };
-
-        expect(
-            tilesReducer(
-                {
-                    id: '',
-                    tiles: [],
-                    updates: [],
-                    error: null,
-                    currentTileId: 'id',
-                    services: [],
-                    polling: false,
-                },
-                {
-                    type: FETCH_NEW_TILES_REQUEST,
+                    type: FETCH_NEW_SERVICE_REQUEST,
                     payload: '',
                 }
             )

@@ -10,9 +10,19 @@
 import { shallow } from 'enzyme';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import App from './App';
 
+const mockNavigate = jest.fn();
+const mockLocation = jest.fn();
+jest.mock('react-router', () => {
+    return {
+        __esModule: true,
+        ...jest.requireActual('react-router'),
+        useNavigate: () => mockNavigate,
+        useLocation: () => mockLocation,
+    };
+});
 describe('>>> App component tests', () => {
     it('should call render', () => {
         const history = { push: jest.fn() };

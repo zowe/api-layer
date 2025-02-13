@@ -27,6 +27,7 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
                 error: null,
                 user: action.user,
                 showHeader: true,
+                loginSuccess: true,
                 showUpdatePassSuccess: action.showUpdatePassSuccess,
             };
         case userConstants.USERS_LOGIN_FAILURE:
@@ -36,6 +37,7 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
         case userConstants.AUTHENTICATION_FAILURE:
             return {
                 error: action.error,
+                authenticationFailed: true,
                 sessionOn: sessionDefaultState.sessionOn,
                 onCompleteHandling: () => {
                     sessionDefaultState.sessionOn = false;
