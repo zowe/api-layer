@@ -40,17 +40,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.OIDCProvider;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
+import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderJWK;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
-import org.zowe.apiml.zaas.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
 import reactor.core.publisher.Mono;
@@ -61,6 +61,7 @@ import java.security.PublicKey;
 import java.util.*;
 
 import static org.apache.http.HttpStatus.*;
+import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
 
 /**
  * Controller offer method to control security. It can contain method for user and also method for calling services
@@ -77,7 +78,7 @@ public class AuthController {
     private final JwtSecurity jwtSecurity;
     private final ZosmfService zosmfService;
     private final MessageService messageService;
-    private final SuccessfulTicketHandler successfulTicketHandler;
+    private final PassTicketService passTicketService;
 
     private final AccessTokenProvider tokenProvider;
 
@@ -117,11 +118,13 @@ public class AuthController {
         @ApiResponse(responseCode = "401", description = "Invalid token"),
         @ApiResponse(responseCode = "503", description = "Authentication service is not available")
     })
-    public Mono<ResponseEntity<TicketResponse>> getPassticket(@RequestBody TicketRequest ticketRequest) throws Exception {
-        var tr = successfulTicketHandler.getTicketResponse(new TokenAuthentication("token"), "userId", ticketRequest.getApplicationName());
-        return Mono.just(ResponseEntity.ok(tr));
+    public Mono<ResponseEntity<TicketResponse>> getPassticket(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed) throws Exception {
+        var ticket = passTicketService.generate(authSourceParsed.getUserId(), ticketRequest.getApplicationName());
+
+        return Mono.just(ResponseEntity.ok(new TicketResponse(null, authSourceParsed.getUserId(), ticketRequest.getApplicationName(), ticket)));
 
     }
+
     @DeleteMapping(path = INVALIDATE_PATH)
     @Hidden
     @Operation(summary = "Logout JWT token.",
@@ -130,7 +133,7 @@ public class AuthController {
         description = "Use the `/auth/invalidate` API to invalidate token on specific instance of Gateway.",
         security = {
             @SecurityRequirement(name = "ClientCert")
-    })
+        })
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully invalidated"),
         @ApiResponse(responseCode = "400", description = "Invalid token"),
@@ -520,7 +523,7 @@ public class AuthController {
             @SecurityRequirement(name = "Bearer"),
             @SecurityRequirement(name = "CookieAuth"),
             @SecurityRequirement(name = "LoginBasicAuth")
-    })
+        })
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "404", description = "WebFinger is disabled"),

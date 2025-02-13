@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Origin;
@@ -50,7 +51,20 @@ public class JwtAuthSourceService extends TokenAuthSourceService {
     }
 
     @Override
-    public Optional<String> getToken(HttpServletRequest request) {
+    public Optional<String> getToken(HttpServletRequest servletRequest) {
+        Optional<String> tokenOptional = authenticationService.getJwtTokenFromRequest(servletRequest);
+        if (tokenOptional.isPresent()) {
+            AuthSource.Origin origin = authenticationService.getTokenOrigin(tokenOptional.get());
+            if (Origin.ZOSMF == origin || Origin.ZOWE == origin) {
+                return tokenOptional;
+            }
+        }
+        return Optional.empty();
+    }
+
+
+    @Override
+    public Optional<String> getToken(ServerHttpRequest request) {
         Optional<String> tokenOptional = authenticationService.getJwtTokenFromRequest(request);
         if (tokenOptional.isPresent()) {
             AuthSource.Origin origin = authenticationService.getTokenOrigin(tokenOptional.get());

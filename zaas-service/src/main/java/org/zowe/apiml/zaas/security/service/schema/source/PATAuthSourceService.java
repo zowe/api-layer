@@ -13,6 +13,8 @@ package org.zowe.apiml.zaas.security.service.schema.source;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -51,11 +53,16 @@ public class PATAuthSourceService extends TokenAuthSourceService {
 
     @Override
     public Optional<AuthSource> getAuthSourceFromRequest(HttpServletRequest request) {
-        Optional<AuthSource> authSource = super.getAuthSourceFromRequest(request);
+        return getAuthSource(super.getAuthSourceFromRequest(request),request.getHeader(SERVICE_ID_HEADER));
+    }
+    @Override
+    public Optional<AuthSource> getAuthSourceFromRequest(ServerHttpRequest request) {
+        return getAuthSource(super.getAuthSourceFromRequest(request),request.getHeaders().getFirst(SERVICE_ID_HEADER));
+    }
 
+    public Optional<AuthSource> getAuthSource(Optional<AuthSource> authSource, String defaultServiceId) {
         if (authSource.isPresent()) {
             PATAuthSource patAuthSource = (PATAuthSource) authSource.get();
-            String defaultServiceId = request.getHeader(SERVICE_ID_HEADER);
             patAuthSource.setDefaultServiceId(defaultServiceId);
         }
 
@@ -64,11 +71,15 @@ public class PATAuthSourceService extends TokenAuthSourceService {
 
     @Override
     public Optional<String> getToken(HttpServletRequest request) {
-        Optional<String> tokenOptional = authenticationService.getJwtTokenFromRequest(request);
-        if (!tokenOptional.isPresent()) {
-            // try to get token also from PAT specific cookie or header
-            tokenOptional = authenticationService.getPATFromRequest(request);
-        }
+        return getTokenFromRequest(authenticationService.getJwtTokenFromRequest(request).or(()->authenticationService.getPATFromRequest(request)));
+    }
+
+    @Override
+    public Optional<String> getToken(ServerHttpRequest request) {
+        return getTokenFromRequest(authenticationService.getJwtTokenFromRequest(request).or(()->authenticationService.getPATFromRequest(request)));
+    }
+
+    public Optional<String> getTokenFromRequest(Optional<String> tokenOptional) {
         if (tokenOptional.isPresent()) {
             AuthSource.Origin origin = authenticationService.getTokenOrigin(tokenOptional.get());
             if (AuthSource.Origin.ZOWE_PAT == origin) {

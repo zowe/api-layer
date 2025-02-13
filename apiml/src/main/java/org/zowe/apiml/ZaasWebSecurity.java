@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas.security;
+package org.zowe.apiml;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -30,11 +30,13 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.gateway.x509.X509Util;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.util.CookieUtil;
 import org.zowe.apiml.zaas.security.config.CompoundAuthManager;
+import org.zowe.apiml.zaas.zaas.ExtractAuthSourceWebFilter;
 import reactor.core.publisher.Mono;
 
 import java.io.BufferedInputStream;
@@ -49,9 +51,11 @@ import java.util.Optional;
 @Slf4j
 public class ZaasWebSecurity {
     public static final String LOGIN = "/gateway/api/v1/auth/login";
+    public static final String TICKET_LONG_URL = "gateway/api/v1/auth/ticket";
 
     private final CompoundAuthManager compoundAuthManager;
     private final AuthConfigurationProperties authConfigurationProperties;
+    private final ExtractAuthSourceWebFilter extractAuthSourceWebFilter;
 
     private final ObjectMapper mapper;
 
@@ -74,6 +78,28 @@ public class ZaasWebSecurity {
 
             .build();
     }
+
+
+    // Endpoints protected with X509
+    @Bean
+    @Order(3)
+    public SecurityWebFilterChain ticketSecurityWebFilterChain(ServerHttpSecurity http) {
+        return defaultSecurityConfig(http).x509(x509 -> x509
+                .principalExtractor(X509Util.x509PrincipalExtractor())
+                .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
+            )
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
+                TICKET_LONG_URL
+            ))
+            .authorizeExchange(authorizeExchangeSpec ->
+                authorizeExchangeSpec
+                    .anyExchange().authenticated()
+            )
+            .addFilterAfter(extractAuthSourceWebFilter,SecurityWebFiltersOrder.AUTHENTICATION)
+
+            .build();
+    }
+
 
     AuthenticationWebFilter authenticationWebFilter() {
         var authWebFilter = new AuthenticationWebFilter(compoundAuthManager);

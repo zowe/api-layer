@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
@@ -56,7 +57,15 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
 
     @Override
     public Optional<String> getToken(HttpServletRequest request) {
-        Optional<String> tokenOptional = authenticationService.getJwtTokenFromRequest(request);
+        return getTokenFromRequest(authenticationService.getJwtTokenFromRequest(request));
+    }
+
+    @Override
+    public Optional<String> getToken(ServerHttpRequest request) {
+        return getTokenFromRequest(authenticationService.getJwtTokenFromRequest(request));
+    }
+
+    public Optional<String> getTokenFromRequest(Optional<String > tokenOptional) {
         if (tokenOptional.isPresent()) {
             AuthSource.Origin origin = authenticationService.getTokenOrigin(tokenOptional.get());
             if (AuthSource.Origin.OIDC == origin) {

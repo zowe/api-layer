@@ -33,9 +33,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
@@ -409,23 +412,61 @@ public class AuthenticationService {
      * @return the JWT token
      */
     public Optional<String> getJwtTokenFromRequest(@NonNull HttpServletRequest request) {
-        Optional<String> fromCookie = getTokenFromCookie(request, authConfigurationProperties.getCookieProperties().getCookieName());
-        return fromCookie.isPresent() ?
-            fromCookie : extractJwtTokenFromAuthorizationHeader(request.getHeader(HttpHeaders.AUTHORIZATION));
+        Optional<String> fromCookie = getTokenFromCookie(request.getCookies(), authConfigurationProperties.getCookieProperties().getCookieName());
+        return getJWT(fromCookie,request.getHeader(HttpHeaders.AUTHORIZATION));
+    }
+
+    /**
+     * Get the JWT token from the authorization header in the http request
+     * <p>
+     * Order:
+     * 1. Cookie
+     * 2. Authorization header
+     *
+     * @param request the http request
+     * @return the JWT token
+     */
+    public Optional<String> getJwtTokenFromRequest(@NonNull ServerHttpRequest request) {
+        var coo = getCookies(request.getCookies());
+        Optional<String> fromCookie = getTokenFromCookie(coo, authConfigurationProperties.getCookieProperties().getCookieName());
+        return getJWT(fromCookie,request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION));
     }
 
     public Optional<String> getPATFromRequest(@NonNull HttpServletRequest request) {
-        Optional<String> fromCookie = getTokenFromCookie(request, authConfigurationProperties.getCookieProperties().getCookieNamePAT());
+        Optional<String> fromCookie = getTokenFromCookie(request.getCookies(), authConfigurationProperties.getCookieProperties().getCookieNamePAT());
+        return getPAT(fromCookie,request.getHeader(ApimlConstants.PAT_HEADER_NAME));
+    }
+    public Optional<String> getPATFromRequest(@NonNull ServerHttpRequest request) {
+        var coo = getCookies(request.getCookies());
+        Optional<String> fromCookie = getTokenFromCookie(coo, authConfigurationProperties.getCookieProperties().getCookieNamePAT());
+        return getPAT(fromCookie,request.getHeaders().getFirst(ApimlConstants.PAT_HEADER_NAME));
+
+    }
+
+    private Optional<String> getPAT(Optional<String> fromCookie, String header) {
         return fromCookie.isPresent() ?
-            fromCookie : getAccessTokenFromHeader(request.getHeader(ApimlConstants.PAT_HEADER_NAME));
+            fromCookie : getAccessTokenFromHeader(header);
+    }
+
+    private Optional<String> getJWT(Optional<String> fromCookie, String header) {
+        return fromCookie.isPresent() ?
+            fromCookie : extractJwtTokenFromAuthorizationHeader(header);
+    }
+
+    private Cookie[] getCookies(MultiValueMap<String, HttpCookie> cookies) {
+        return cookies.values()
+            .stream()
+            .flatMap(List::stream)
+            .map(httpCookie -> new Cookie(httpCookie.getName(), httpCookie.getValue()))
+            .toArray(Cookie[]::new);
     }
 
     private Optional<String> getAccessTokenFromHeader(String header) {
         return header != null ? Optional.of(header) : Optional.empty();
     }
 
-    private Optional<String> getTokenFromCookie(HttpServletRequest request, String cookieName) {
-        Cookie[] cookies = request.getCookies();
+    private Optional<String> getTokenFromCookie(Cookie[] cookies, String cookieName) {
+
         if (cookies == null) return Optional.empty();
         return Arrays.stream(cookies)
             .filter(cookie -> cookie.getName().equals(cookieName))

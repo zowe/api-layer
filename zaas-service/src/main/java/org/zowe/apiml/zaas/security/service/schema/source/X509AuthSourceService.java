@@ -12,6 +12,7 @@ package org.zowe.apiml.zaas.security.service.schema.source;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
@@ -54,8 +55,16 @@ public class X509AuthSourceService implements AuthSourceService {
      */
     @Override
     public Optional<AuthSource> getAuthSourceFromRequest(HttpServletRequest request) {
-        logger.log(MessageType.DEBUG, "Getting X509 client certificate from custom attribute 'client.auth.X509Certificate'.");
-        X509Certificate clientCert = getCertificateFromRequest(request, "client.auth.X509Certificate");
+        return getAuthSource((X509Certificate[])request.getAttribute("client.auth.X509Certificate"));
+    }
+
+    @Override
+    public Optional<AuthSource> getAuthSourceFromRequest(ServerHttpRequest request) {
+        return getAuthSource((X509Certificate[])request.getAttributes().get("client.auth.X509Certificate"));
+    }
+
+    public Optional<AuthSource> getAuthSource(X509Certificate[] clientCerts){
+        var clientCert = getOne(clientCerts);
         clientCert = isValid(clientCert) ? clientCert : null;
         logger.log(MessageType.DEBUG, String.format("X509 client certificate %s in request.", clientCert == null ? "not found" : "found"));
         return clientCert == null ? Optional.empty() : Optional.of(new X509AuthSource(clientCert));

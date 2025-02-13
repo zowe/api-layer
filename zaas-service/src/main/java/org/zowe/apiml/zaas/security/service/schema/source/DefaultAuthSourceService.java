@@ -18,6 +18,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.AuthSourceType;
@@ -94,23 +95,44 @@ public class DefaultAuthSourceService implements AuthSourceService {
      */
     @Override
     public Optional<AuthSource> getAuthSourceFromRequest(HttpServletRequest request) {
+        return getAuthSource(request,request.getRequestURI());
+    }
+
+    @Override
+    public Optional<AuthSource> getAuthSourceFromRequest(ServerHttpRequest request) {
+        return getAuthSource(request,request.getURI().toString());
+    }
+
+    private Optional<AuthSource> getAuthSource(Object request, String uri) {
         AuthSourceService service = getService(AuthSourceType.JWT);
-        Optional<AuthSource> authSource = service.getAuthSourceFromRequest(request);
-        if (!authSource.isPresent() && isPATEnabled) {
+        Optional<AuthSource> authSource = getAuthSourceFromRequest(request,service);
+        if (authSource.isEmpty() && isPATEnabled) {
             service = getService(AuthSourceType.PAT);
-            authSource = service.getAuthSourceFromRequest(request);
+            authSource = getAuthSourceFromRequest(request,service);
         }
-        if (!authSource.isPresent() && isOIDCEnabled) {
+        if (authSource.isEmpty() && isOIDCEnabled) {
             service = getService(AuthSourceType.OIDC);
-            authSource = service.getAuthSourceFromRequest(request);
+            authSource = getAuthSourceFromRequest(request,service);
         }
-        if (!authSource.isPresent() && isX509Enabled) {
+        if (authSource.isEmpty() && isX509Enabled) {
             service = getService(AuthSourceType.CLIENT_CERT);
-            authSource = service.getAuthSourceFromRequest(request);
+            authSource = getAuthSourceFromRequest(request,service);
         }
-        authSource.ifPresent(source -> log.debug(LOG_MESSAGE, request.getRequestURI(), source.getType()));
+        authSource.ifPresent(source -> log.debug(LOG_MESSAGE, uri, source.getType()));
         return authSource;
     }
+
+    private Optional<AuthSource> getAuthSourceFromRequest(Object request, AuthSourceService service) {
+        if(request instanceof HttpServletRequest req) {
+            return service.getAuthSourceFromRequest(req);
+        } else if(request instanceof ServerHttpRequest req) {
+            return service.getAuthSourceFromRequest(req);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+
 
     /**
      * Delegates the validation of the authentication source to a corresponding service.

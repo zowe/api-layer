@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.zaas.security.service.schema.source;
 
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 
@@ -24,6 +25,7 @@ public abstract class TokenAuthSourceService implements AuthSourceService {
     public abstract Function<String, AuthSource> getMapper();
 
     public abstract Optional<String> getToken(HttpServletRequest request);
+    public abstract Optional<String> getToken(ServerHttpRequest request);
 
     /**
      * Core method of the interface. Gets source of authentication (JWT token) from request.
@@ -38,5 +40,18 @@ public abstract class TokenAuthSourceService implements AuthSourceService {
         getLogger().log(MessageType.DEBUG, String.format("JWT token %s in request.", authToken.isPresent() ? "found" : "not found"));
         return authToken.map(getMapper());
 
+    }
+    /**
+     * Core method of the interface. Gets source of authentication (JWT token) from request.
+     * <p>
+     *
+     * @return Optional<AuthSource> which hold original source of authentication (JWT token)
+     * or Optional.empty() when no authentication source found.
+     */
+    public Optional<AuthSource> getAuthSourceFromRequest(ServerHttpRequest request) {
+        getLogger().log(MessageType.DEBUG, "Getting JWT token from request.");
+        Optional<String> authToken = getToken(request);
+        getLogger().log(MessageType.DEBUG, String.format("JWT token %s in request.", authToken.isPresent() ? "found" : "not found"));
+        return authToken.map(getMapper());
     }
 }

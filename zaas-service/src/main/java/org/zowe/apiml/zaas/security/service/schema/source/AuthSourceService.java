@@ -11,6 +11,8 @@
 package org.zowe.apiml.zaas.security.service.schema.source;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+
 import java.util.Optional;
 
 /**
@@ -23,6 +25,7 @@ public interface AuthSourceService {
      * @return AuthSource object which hold original source of authentication (JWT token, client certificate etc.)
      */
     Optional<AuthSource> getAuthSourceFromRequest(HttpServletRequest request);
+    Optional<AuthSource> getAuthSourceFromRequest(ServerHttpRequest request);
 
     /**
      * Implements validation logic for specific source of authentication.
