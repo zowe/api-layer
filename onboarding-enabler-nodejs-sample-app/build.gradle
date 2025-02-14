@@ -28,6 +28,8 @@ npmInstall.args = ['--registry', 'https://zowe.jfrog.io/artifactory/api/npm/npm-
 
 build.dependsOn npmInstall
 
+npmInstall.dependsOn ":onboarding-enabler-nodejs:build"
+
 task nodeClean(type: Delete) {
     group = 'node'
     if (rootProject.cleanNodeModules == 'true') {
