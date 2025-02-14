@@ -23,7 +23,7 @@ jobs:
         timeout-minutes: 40
 
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
               with:
                   ref: ${{ github.head_ref }}
                   token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
@@ -43,12 +43,14 @@ jobs:
               run: git config user.name "Zowe Robot"
 
             - name: Release to NPM automatic
+              shell: bash
               run: |
                   cd onboarding-enabler-nodejs
                   echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
                   npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }} --allow-same-version
                   npm publish --access public
                   git add package.json
+                  git add package-lock.json
                   git commit -m "[skip ci] Update version"
                   git push --no-verify
                   cd ..
