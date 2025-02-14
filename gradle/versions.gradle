@@ -60,7 +60,7 @@ dependencyResolutionManagement {
             version('jjwt', '0.12.6')
             version('jodaTime', '2.13.1')
             version('jsonPath', '2.9.0')
-            version('jsonSmart', '2.5.1')
+            version('jsonSmart', '2.5.2')
             version('junitJupiter', '5.11.4')
             version('junitPlatform', '1.11.4')
             version('lettuce', '6.5.3.RELEASE')
