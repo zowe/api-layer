@@ -31,7 +31,7 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
 
     private static WebTestClient client;
 
-    final int bucketCapacity = 60;
+    final int bucketCapacity = 20;
 
     @BeforeAll
     static void setUpTester() {
@@ -65,12 +65,10 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
 
     @Test
     void testRateLimitingWhenExceeded() {
-        for (int i = 0; i < bucketCapacity; i++) {
-            System.out.println("Request: " + i);
-            client.get()
-                .cookie("apimlAuthenticationToken", "validTokenValue")
-                .exchange().expectStatus().isOk();
-        }
+        IntStream.range(0, bucketCapacity).parallel().forEach(i -> client.get()
+            .cookie("apimlAuthenticationToken", "validTokenValue")
+            .exchange().expectStatus().isOk());
+
 
         client.get()
             .cookie("apimlAuthenticationToken", "validTokenValue")
@@ -85,7 +83,7 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
         // the first user requires access
         IntStream.range(0, bucketCapacity).parallel().forEach(i -> client.get()
             .cookie("apimlAuthenticationToken", "theFirstUser")
-            .exchange());
+            .exchange().expectStatus().isOk());
         //access should be denied
         client.get()
             .cookie("apimlAuthenticationToken", "theFirstUser")
