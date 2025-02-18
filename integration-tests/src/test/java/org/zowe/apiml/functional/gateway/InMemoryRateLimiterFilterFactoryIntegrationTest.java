@@ -65,16 +65,19 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
 
     @Test
     void testRateLimitingWhenExceeded() {
-        IntStream.range(0, bucketCapacity).parallel().forEach(i -> client.get()
-            .cookie("apimlAuthenticationToken", "validTokenValue")
-            .exchange());
+        for (int i = 0; i < bucketCapacity; i++) {
+            System.out.println("Request: " + i);
+            client.get()
+                .cookie("apimlAuthenticationToken", "validTokenValue")
+                .exchange().expectStatus().isOk();
+        }
 
         client.get()
             .cookie("apimlAuthenticationToken", "validTokenValue")
             .exchange()
             .expectStatus().isEqualTo(HttpStatus.TOO_MANY_REQUESTS)
             .expectBody()
-            .jsonPath("$.messages[0].messageReason").isEqualTo("Connections limit exceeded.");;
+            .jsonPath("$.messages[0].messageReason").isEqualTo("Connections limit exceeded.");
     }
 
     @Test
