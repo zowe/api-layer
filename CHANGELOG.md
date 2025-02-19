@@ -20,7 +20,6 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Change port to handle AT-TLS client aware mode (#3863) ([8917d1f](https://github.com/zowe/api-layer/commit/8917d1f)), closes [#3863](https://github.com/zowe/api-layer/issues/3863)
 * Bugfix:  Update default javax.net.ssl log level (#3872) ([82414a4](https://github.com/zowe/api-layer/commit/82414a4)), closes [#3872](https://github.com/zowe/api-layer/issues/3872)
 * Bugfix:  Throw insecureHttpWarning message only when AT-TLS is not enabled (#3810) ([b846083](https://github.com/zowe/api-layer/commit/b846083)), closes [#3810](https://github.com/zowe/api-layer/issues/3810)
-* Bugfix:  Fix unreachable return statement in zowe-cli-id-federation (#3772) ([19e3dd5](https://github.com/zowe/api-layer/commit/19e3dd5)), closes [#3772](https://github.com/zowe/api-layer/issues/3772)
 * Bugfix:  Fix WebSocket session opening to be non-blocking and callback-based (#3695) ([b6f2461](https://github.com/zowe/api-layer/commit/b6f2461)), closes [#3695](https://github.com/zowe/api-layer/issues/3695)
 * Bugfix:  Fix Zowe cli plugin and enable manual trigger only (#3804) ([6ba9242](https://github.com/zowe/api-layer/commit/6ba9242)), closes [#3804](https://github.com/zowe/api-layer/issues/3804)
 
