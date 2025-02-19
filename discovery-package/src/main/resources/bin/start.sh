@@ -169,7 +169,7 @@ get_enabled_protocol_limit() {
     value_component=$(eval echo \$$key_component)
     key_zowe="ZWE_zowe_network_${target}_tls_${type}Tls"
     value_zowe=$(eval echo \$$key_zowe)
-    enabled_protocol_limit=${value_component:-${value_zowe:-default}}
+    enabled_protocol_limit=${value_component:-${value_zowe:-${default}}}
 }
 
 extract_between() {
