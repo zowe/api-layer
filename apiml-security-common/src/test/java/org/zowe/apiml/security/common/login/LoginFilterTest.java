@@ -34,6 +34,7 @@ import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -43,14 +44,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
 class LoginFilterTest {
+
     private static final String VALID_JSON = "{\"username\": \"user\", \"password\": \"pwd\"}";
     private static final String JSON_WITH_NEW_PW = "{\"username\": \"user\", \"password\": \"pwd\", \"newPassword\": \"newPwd\"}";
     private static final String EMPTY_JSON = "{\"username\": \"\", \"password\": \"\"}";
+    private static final String VALID_PAT_JSON = "{\"scopes\": [\"gateway\"]}";
     private static final String VALID_AUTH_HEADER = "Basic dXNlcjpwd2Q=";
     private static final String INVALID_AUTH_HEADER = "Basic dXNlcj11c2Vy";
     private static final String INVALID_ENCODED_AUTH_HEADER = "Basic dXNlcj1";
@@ -106,7 +110,7 @@ class LoginFilterTest {
             if (newPassword == null) {
                 authentication = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER, PASSWORD));
             } else {
-                 authentication = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER, PASSWORD, NEW_PASSWORD));
+                authentication = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER, PASSWORD, NEW_PASSWORD));
             }
             assertEquals(authentication, invocation.getArguments()[0]);
             called.set(true);
@@ -121,6 +125,25 @@ class LoginFilterTest {
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletRequest.setContent(VALID_JSON.getBytes());
         httpServletResponse = new MockHttpServletResponse();
+
+        AtomicBoolean called = assertAuthenticateCalled(null);
+
+        loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+
+        assertTrue(called.get());
+    }
+
+    @Test
+    void shouldSkipBodyIfPATProcessed() throws ServletException, IOException {
+        httpServletRequest = new MockHttpServletRequest();
+        httpServletResponse = new MockHttpServletResponse();
+
+        httpServletRequest.addHeader(HttpHeaders.AUTHORIZATION, VALID_AUTH_HEADER);
+
+        // set up PAT already processed
+        httpServletRequest.setMethod(HttpMethod.POST.name());
+        httpServletRequest.setContent(VALID_PAT_JSON.getBytes());
+        httpServletRequest.setAttribute(StoreAccessTokenInfoFilter.TOKEN_REQUEST, new Object()); // PAT attribute
 
         AtomicBoolean called = assertAuthenticateCalled(null);
 
