@@ -7,7 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { withRouter } from 'react-router-dom';
 import App from './App';
 
-export default withRouter(App);
+const withRouter = (App) =>{
+    return (props) =>{
+        return <App {...props}/>
+    }
+}
+
+export default withRouter(App)

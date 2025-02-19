@@ -11,7 +11,7 @@ import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import { Router } from 'react-router-dom';
+import {HashRouter, Router} from 'react-router';
 import LoginContainer from './LoginContainer';
 
 const mockStore = configureStore();
@@ -23,19 +23,12 @@ describe('Login Container', () => {
         store = mockStore({
             authenticationReducer: {},
         });
-        const history = {
-            location: {
-                pathname: {},
-            },
-            push: jest.fn(),
-            listen: jest.fn(),
-        };
         container = render(
-            <Router history={history}>
+            <HashRouter>
                 <Provider store={store}>
                     <LoginContainer />
                 </Provider>
-            </Router>
+            </HashRouter>
         );
     });
 

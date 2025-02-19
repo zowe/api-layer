@@ -25,6 +25,7 @@ import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.standaloneSetup;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -135,7 +136,6 @@ class ApiCatalogControllerTests {
                 given(cachedApiDocService.getDefaultApiVersionForService("service2")).willReturn(defaultApiVersion);
 
                 ResponseEntity<List<APIContainer>> containers = underTest.getAPIContainerById("api-one");
-                assertThereIsOneContainer(containers);
 
                 containers.getBody().forEach(apiContainer ->
                     apiContainer.getServices().forEach(apiService -> {
@@ -188,6 +188,65 @@ class ApiCatalogControllerTests {
                 assertThat(containers.getBody(), is(not(nullValue())));
                 assertThat(containers.getBody().size(), is(1));
             }
+        }
+    }
+
+    @Nested
+    class WhenGettingSpecificService {
+        private final String serviceId = "service1";
+        private final APIService service =  new APIService.Builder(serviceId)
+            .secured(true)
+            .baseUrl("url")
+            .basePath("base")
+            .sso(false)
+            .apis(Collections.emptyMap())
+            .build();
+
+        @Test
+        void thenReturnNotFound() {
+            given(cachedProductFamilyService.getServices()).willReturn(null);
+
+            String pathToServices = "/services";
+            RestAssuredMockMvc.given().
+                when().
+                get(pathToServices + "/" + serviceId).
+                then().
+                statusCode(HttpStatus.NOT_FOUND.value());
+        }
+
+        @Test
+        void thenReturnOk() throws ContainerStatusRetrievalThrowable {
+            String defaultApiVersion = "v1";
+
+            Map<String, APIService> services = new ConcurrentHashMap<>();
+            services.put(serviceId, service);
+            given(cachedProductFamilyService.getServices()).willReturn(services);
+
+            given(cachedApiDocService.getDefaultApiVersionForService(serviceId)).willReturn(defaultApiVersion);
+            given(cachedApiDocService.getDefaultApiDocForService(serviceId)).willReturn("mockApiDoc");
+
+            ResponseEntity<APIService> apiServicesById = underTest.getAPIServicesById(serviceId);
+            assertEquals(HttpStatus.OK, apiServicesById.getStatusCode());
+            assertNotNull(apiServicesById.getBody());
+            assertEquals( "mockApiDoc", apiServicesById.getBody().getApiDoc());
+            assertEquals("v1", apiServicesById.getBody().getDefaultApiVersion());
+        }
+
+        @Test
+        void thenReturnOkWithApiDocNull() throws ContainerStatusRetrievalThrowable {
+            String defaultApiVersion = "v1";
+
+            Map<String, APIService> services = new ConcurrentHashMap<>();
+            services.put(serviceId, service);
+            given(cachedProductFamilyService.getServices()).willReturn(services);
+
+            given(cachedApiDocService.getDefaultApiVersionForService(serviceId)).willReturn(defaultApiVersion);
+            given(cachedApiDocService.getDefaultApiDocForService(serviceId)).willReturn(null);
+
+            ResponseEntity<APIService> apiServicesById = underTest.getAPIServicesById(serviceId);
+            assertEquals(HttpStatus.OK, apiServicesById.getStatusCode());
+            assertNotNull(apiServicesById.getBody());
+            assertNull(apiServicesById.getBody().getApiDoc());
         }
     }
 

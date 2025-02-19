@@ -56,28 +56,20 @@ describe('>>> Catalog tiles actions tests', () => {
 
     it('should create when start fetching new tiles', () => {
         const expectedAction = {
-            type: constants.FETCH_NEW_TILES_REQUEST,
+            type: constants.FETCH_NEW_SERVICE_REQUEST,
             payload: '',
         };
 
-        expect(actions.fetchNewTiles('')).toEqual(expectedAction);
+        expect(actions.fetchNewService('')).toEqual(expectedAction);
     });
 
     it('should create when fetching new tiles is successful', () => {
         const expectedAction = {
-            type: constants.FETCH_NEW_TILES_SUCCESS,
+            type: constants.FETCH_NEW_SERVICE_SUCCESS,
             payload: [],
         };
 
-        expect(actions.fetchNewTilesSuccess([])).toEqual(expectedAction);
+        expect(actions.fetchNewServiceSuccess([])).toEqual(expectedAction);
     });
 
-    it('should create when storing current tile ID', () => {
-        const expectedAction = {
-            type: constants.STORE_CURRENT_TILEID,
-            payload: 'id',
-        };
-
-        expect(actions.storeCurrentTileId('id')).toEqual(expectedAction);
-    });
 });

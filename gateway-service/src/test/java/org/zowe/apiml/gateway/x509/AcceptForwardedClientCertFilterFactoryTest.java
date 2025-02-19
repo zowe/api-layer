@@ -64,7 +64,7 @@ class AcceptForwardedClientCertFilterFactoryTest {
     @Test
     void givenClientCertificateInHeader_andTrustedClientCertificateInHandshake_thenUpdateWebExchange() {
         var validator = mock(CertificateValidator.class);
-        when(validator.isTrusted(any())).thenReturn(true);
+        when(validator.hasGatewayChain(any())).thenReturn(true);
         var factory = new AcceptForwardedClientCertFilterFactory(validator);
         var exchange = mock(ServerWebExchange.class);
         var req = mock(ServerHttpRequest.class);
@@ -89,7 +89,7 @@ class AcceptForwardedClientCertFilterFactoryTest {
     @Test
     void givenClientCertificateInHeader_andInvalidClientCertificateInHandshake_thenDoNothing() {
         var validator = mock(CertificateValidator.class);
-        when(validator.isTrusted(any())).thenReturn(false);
+        when(validator.hasGatewayChain(any())).thenReturn(false);
         var factory = new AcceptForwardedClientCertFilterFactory(validator);
         var exchange = mock(ServerWebExchange.class);
         var req = mock(ServerHttpRequest.class);

@@ -13,6 +13,7 @@ import PersonIcon from '@material-ui/icons/Person';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import productImage from '../../assets/images/api-catalog-logo.png';
 import customDoc from '../../assets/images/custom-doc.png';
+import {useNavigate} from "react-router";
 
 const useStyles = makeStyles({
     root: {
@@ -51,13 +52,14 @@ const StyledMenu = styled((props) => (
         },
     },
 }));
-function Header(props) {
+function Header({ logout, tiles }) {
     const [open, setOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
-    const { logout, tiles } = props;
     const classes = useStyles();
+    const navigate = useNavigate();
     const handleLogout = () => {
         logout();
+        navigate('/login');
     };
 
     const closeMenu = () => {

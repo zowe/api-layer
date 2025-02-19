@@ -14,7 +14,13 @@ import configureStore from 'redux-mock-store';
 import HeaderContainer from './HeaderContainer';
 
 const mockStore = configureStore();
-
+jest.mock('react-router', () => {
+    return {
+        __esModule: true,
+        ...jest.requireActual('react-router'),
+        useNavigate: () => jest.fn(),
+    };
+});
 describe('Header Container', () => {
     let store;
     let container;

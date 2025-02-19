@@ -9,8 +9,7 @@
  */
 import { Typography, IconButton, Snackbar } from '@material-ui/core';
 import { Alert } from '@mui/material';
-import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import React, {useEffect} from 'react';
 import Footer from '../Footer/Footer';
 import SearchCriteria from '../Search/SearchCriteria';
 import Shield from '../ErrorBoundary/Shield/Shield';
@@ -24,54 +23,40 @@ import { enablerData } from '../Wizard/configs/wizard_onboarding_methods';
 import ConfirmDialogContainer from '../Wizard/ConfirmDialogContainer';
 import { customUIStyle } from '../../utils/utilFunctions';
 import { sortServices } from '../../selectors/selectors';
+import {useNavigate} from "react-router";
 
-export default class Dashboard extends Component {
-    componentDidMount() {
-        const { fetchTilesStart, clearService } = this.props;
+function Dashboard({
+                       tiles,
+                       searchCriteria,
+                       isLoading,
+                       fetchTilesError,
+                       fetchTilesStop,
+                       fetchTilesStart,
+                       clearService,
+                       refreshedStaticApisError,
+                       clearError,
+                       authentication,
+                       selectEnabler,
+                       clear,
+                       refreshedStaticApi,
+                       wizardToggleDisplay,
+                       filterText,
+                       closeAlert,
+                       selectService,
+                       fetchNewService
+                   }) {
+    const navigate = useNavigate();
+    useEffect(() => {
         clearService();
         fetchTilesStart();
-    }
+        if (!authentication.user) {
+            navigate('/login');
+        }
+        return function cleanup () {
+            clear();
+        }
+    }, []);
 
-    componentWillUnmount() {
-        const { fetchTilesStop, clear } = this.props;
-        clear();
-        fetchTilesStop();
-    }
-
-    handleSearch = (value) => {
-        const { filterText } = this.props;
-        filterText(value);
-    };
-
-    refreshStaticApis = () => {
-        const { refreshedStaticApi } = this.props;
-        refreshedStaticApi();
-    };
-
-    toggleWizard = () => {
-        const { wizardToggleDisplay } = this.props;
-        wizardToggleDisplay();
-    };
-
-    handleClose = () => {
-        const { closeAlert } = this.props;
-        closeAlert();
-    };
-
-    render() {
-        const {
-            tiles,
-            history,
-            searchCriteria,
-            isLoading,
-            fetchTilesError,
-            fetchTilesStop,
-            refreshedStaticApisError,
-            clearError,
-            authentication,
-            storeCurrentTileId,
-            storeContentAnchor,
-        } = this.props;
         const hasSearchCriteria =
             typeof searchCriteria !== 'undefined' &&
             searchCriteria !== undefined &&
@@ -96,16 +81,16 @@ export default class Dashboard extends Component {
             <div className="main-content dashboard-content">
                 <div id="dash-buttons">
                     <DialogDropdown
-                        selectEnabler={this.props.selectEnabler}
+                        selectEnabler={selectEnabler}
                         data={enablerData}
-                        toggleWizard={this.toggleWizard}
+                        toggleWizard={wizardToggleDisplay}
                         visible
                     />
                     <IconButton
                         id="refresh-api-button"
                         size="medium"
                         variant="outlined"
-                        onClick={this.refreshStaticApis}
+                        onClick={refreshedStaticApi}
                         style={{ borderRadius: '0.1875em' }}
                     >
                         Refresh Static APIs
@@ -115,9 +100,9 @@ export default class Dashboard extends Component {
                 <Snackbar
                     anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                     open={authentication.showUpdatePassSuccess}
-                    onClose={this.handleClose}
+                    onClose={closeAlert}
                 >
-                    <Alert onClose={this.handleClose} severity="success" sx={{ width: '100%' }}>
+                    <Alert onClose={closeAlert} severity="success" sx={{ width: '100%' }}>
                         Your mainframe password was successfully changed.
                     </Alert>
                 </Snackbar>
@@ -138,9 +123,6 @@ export default class Dashboard extends Component {
                     <div className="apis">
                         <div
                             id="grid-container"
-                            onScroll={(e) => {
-                                this.dashboardTileScroll(e);
-                            }}
                         >
                             <div className="filtering-container">
                                 <div id="search">
@@ -148,7 +130,7 @@ export default class Dashboard extends Component {
                                         <SearchCriteria
                                             id="search-input"
                                             placeholder="Search..."
-                                            doSearch={this.handleSearch}
+                                            doSearch={filterText}
                                         />
                                     </Shield>
                                 </div>
@@ -163,12 +145,12 @@ export default class Dashboard extends Component {
                                             .filter((tile) => tile.services.includes(service))
                                             .map((tile) => (
                                                 <Tile
-                                                    storeCurrentTileId={storeCurrentTileId}
-                                                    storeContentAnchor={storeContentAnchor}
                                                     service={service}
                                                     key={service}
                                                     tile={tile}
-                                                    history={history}
+                                                    selectService={selectService}
+                                                    fetchTilesStart={fetchTilesStart}
+                                                    fetchNewService={fetchNewService}
                                                 />
                                             ))
                                     )}
@@ -188,12 +170,8 @@ export default class Dashboard extends Component {
                 )}
             </div>
         );
-    }
+
 }
 
-Dashboard.propTypes = {
-    tiles: PropTypes.shape({
-        filter: PropTypes.func.isRequired,
-    }).isRequired,
-    storeContentAnchor: PropTypes.func.isRequired,
-};
+export default Dashboard;
+

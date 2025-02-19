@@ -11,8 +11,8 @@ import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import { Router } from 'react-router-dom';
 import ServicesNavigationBarContainer from './ServicesNavigationBarContainer';
+import {HashRouter} from "react-router";
 
 const mockStore = configureStore();
 
@@ -37,19 +37,12 @@ describe('ServiceNavigationBar Container', () => {
                 text: 'test',
             },
         });
-        const history = {
-            location: {
-                pathname: {},
-            },
-            push: jest.fn(),
-            listen: jest.fn(),
-        };
         container = render(
-            <Router history={history}>
+            <HashRouter>
                 <Provider store={store}>
                     <ServicesNavigationBarContainer services={tiles.services} />
                 </Provider>
-            </Router>
+            </HashRouter>
         );
     });
 

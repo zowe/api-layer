@@ -210,13 +210,12 @@ ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
 get_enabled_protocol_limit() {
     target=$1
     type=$2
+    default=$3
     key_component="ZWE_configs_zowe_network_${target}_tls_${type}Tls"
     value_component=$(eval echo \$$key_component)
-    key_gateway="ZWE_components_gateway_zowe_network_${target}_tls_${type}Tls"
-    value_gateway=$(eval echo \$$key_gateway)
     key_zowe="ZWE_zowe_network_${target}_tls_${type}Tls"
     value_zowe=$(eval echo \$$key_zowe)
-    enabled_protocol_limit=${value_component:-${value_gateway:-${value_zowe:-}}}
+    enabled_protocol_limit=${value_component:-${value_zowe:-${default}}}
 }
 
 extract_between() {
@@ -225,9 +224,9 @@ extract_between() {
 
 get_enabled_protocol() {
     target=$1
-    get_enabled_protocol_limit "${target}" "min"
+    get_enabled_protocol_limit "${target}" "min" "TLSv1.2"
     enabled_protocols_min=${enabled_protocol_limit}
-    get_enabled_protocol_limit "${target}" "max"
+    get_enabled_protocol_limit "${target}" "max" "TLSv1.3"
     enabled_protocols_max=${enabled_protocol_limit}
 
     if [ "${enabled_protocols_min:-}" = "${enabled_protocols_max:-}" ]; then
@@ -243,8 +242,7 @@ get_enabled_protocol() {
     fi
 }
 
-get_enabled_protocol_limit "server" "max"
-server_protocol=${enabled_protocol_limit:-"TLS"}
+server_protocol="TLS"
 get_enabled_protocol "server"
 server_enabled_protocols=${result:-"TLSv1.3"}
 server_ciphers=${ZWE_configs_zowe_network_server_tls_ciphers:-${ZWE_components_gateway_zowe_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384}}}
