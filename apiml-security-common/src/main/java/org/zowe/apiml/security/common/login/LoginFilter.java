@@ -11,6 +11,7 @@
 package org.zowe.apiml.security.common.login;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
@@ -27,6 +28,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
+import org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -41,6 +43,7 @@ import java.util.Optional;
 /**
  * Filter to process authentication requests with the username and password in JSON format.
  */
+@Slf4j
 public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
@@ -199,12 +202,12 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
      */
     private Optional<LoginRequest> getCredentialsFromBody(HttpServletRequest request) {
         try {
-            if (request.getInputStream().available() == 0) {
+            if (request.getInputStream().available() == 0 || request.getAttribute(StoreAccessTokenInfoFilter.TOKEN_REQUEST) != null) {
                 return Optional.empty();
             }
             return Optional.of(mapper.readValue(request.getInputStream(), LoginRequest.class));
         } catch (IOException e) {
-            logger.debug("Authentication problem: login object has wrong format");
+            log.debug("Authentication problem: login object has wrong format: {}", e.getMessage(), e);
             throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
         }
     }
