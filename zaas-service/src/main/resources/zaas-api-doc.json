@@ -26,7 +26,7 @@
                             }
                         }
                     },
-                    "description": "Specifies the user credentials to be authenticated."
+                    "description": "Specifies the user credentials to be authenticated. If newPassword is provided and the password is valid, the password is changed to newPassword"
                 },
                 "security": [
                     {
@@ -259,6 +259,9 @@
                         "type": "string"
                     },
                     "password": {
+                        "type": "string"
+                    },
+                    "newPassword": {
                         "type": "string"
                     }
                 },
