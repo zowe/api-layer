@@ -121,7 +121,7 @@ class DeterministicLoadBalancerTest {
         }
 
         @Nested
-        class GivenTokenExists {
+        class GivenTokenExistsInCookie {
 
             @Test
             void whenTokenIsInvalid_thenUseDefaultList() {
@@ -278,10 +278,85 @@ class DeterministicLoadBalancerTest {
 
         }
 
-        /**
-         *
-         *
-         */
+        @Nested
+        class GivenTokenExistsInHeader {
+
+            @Test
+            void whenTokenIsInvalid_thenUseDefaultList() {
+                var requestData = mock(RequestData.class);
+                var context = new RequestDataContext(requestData);
+
+                var headers = new HttpHeaders();
+                headers.add(HttpHeaders.AUTHORIZATION, "Basic aaaaaaaaaa");
+                when(requestData.getHeaders()).thenReturn(headers);
+
+                when(requestData.getCookies()).thenReturn(new LinkedMultiValueMap<>());
+                when(request.getContext()).thenReturn(context);
+
+                StepVerifier.create(loadBalancer.get(request))
+                    .assertNext(chosenInstances -> {
+                        assertNotNull(chosenInstances);
+                        assertEquals(2, chosenInstances.size());
+                    })
+                    .expectComplete()
+                    .verify();
+            }
+
+            @Nested
+            class GivenTokenIsValid {
+
+                @BeforeEach
+                void setUp() {
+                    var requestData = mock(RequestData.class);
+                    var context = new RequestDataContext(requestData);
+
+                    MultiValueMap<String, String> cookie = new LinkedMultiValueMap<>();
+
+                    var headers = new HttpHeaders();
+                    headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + VALID_TOKEN);
+                    when(requestData.getHeaders()).thenReturn(headers);
+                    when(requestData.getCookies()).thenReturn(cookie);
+                    when(request.getContext()).thenReturn(context);
+                    when(clock.now()).thenReturn(Date.from(Instant.ofEpochSecond(1721552753)));
+                }
+
+                @Nested
+                class GivenServiceUsesSticky {
+
+                    @BeforeEach
+                    void setUp() {
+                        Map<String, String> metadata = new HashMap<>();
+                        metadata.put("apiml.lb.type", "authentication");
+                        when(instance1.getMetadata()).thenReturn(metadata);
+                    }
+
+                    @Nested
+                    class GivenCacheHasPreference {
+
+                        @Test
+                        void whenInstanceExists_thenUpdateList() {
+                            when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(new LoadBalancerCacheRecord("instance1")));
+                            when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1"))))
+                                .thenReturn(Mono.empty());
+
+                            StepVerifier.create(loadBalancer.get(request))
+                                .assertNext(chosenInstances -> {
+                                    assertNotNull(chosenInstances);
+                                    assertEquals(1, chosenInstances.size());
+                                    assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+                                })
+                                .expectComplete()
+                                .verify();
+                        }
+
+                    }
+
+                }
+
+            }
+
+        }
+
         @Nested
         class GivenStickyBalancerIgnored {
 
