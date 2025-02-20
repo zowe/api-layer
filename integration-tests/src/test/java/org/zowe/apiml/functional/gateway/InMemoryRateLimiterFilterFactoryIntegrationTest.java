@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.util.categories.RateLimitTest;
+import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import reactor.netty.http.client.HttpClient;
 
@@ -31,7 +32,7 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
 
     private static WebTestClient client;
 
-    final int bucketCapacity = 20;
+    final int bucketCapacity = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getBucketCapacity();
 
     @BeforeAll
     static void setUpTester() {
