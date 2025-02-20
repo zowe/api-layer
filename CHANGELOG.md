@@ -2,11 +2,14 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `APIML 2.18.3 / Zowe 2.18.1 (2025-02-17)`
+## `APIML 2.18.4 / Zowe 2.18.1 (2025-02-20)`
 
 * Feature:  Support client AT-TLS setting (#3825) ([999d062](https://github.com/zowe/api-layer/commit/999d062)), closes [#3825](https://github.com/zowe/api-layer/pull/3825)
 
 
+* Bugfix:  Fix failing LoginFilter in AccessToken generate filter chain (#3984) ([7acb2ee](https://github.com/zowe/api-layer/commit/7acb2ee)), closes [#3984](https://github.com/zowe/api-layer/issues/3984)
+* Bugfix:  Set default ssl.protocol (#3994) ([8abb6e6](https://github.com/zowe/api-layer/commit/8abb6e6)), closes [#3994](https://github.com/zowe/api-layer/issues/3994)
+* Bugfix:  Improve PassTicket logging (#3996) ([8223a14](https://github.com/zowe/api-layer/commit/8223a14)), closes [#3996](https://github.com/zowe/api-layer/issues/3996)
 * Bugfix:  Fix 'exampleSetFlag' leaking in api doc (#3934) ([0211ba5](https://github.com/zowe/api-layer/commit/0211ba5)), closes [#3934](https://github.com/zowe/api-layer/issues/3934)
 * Bugfix:  Fix Cloud Gateway configuration (#3956) ([72d8125](https://github.com/zowe/api-layer/commit/72d8125)), closes [#3956](https://github.com/zowe/api-layer/issues/3956)
 * Bugfix:  Fix initialization of the API Catalog (#3959) ([51a1fc5](https://github.com/zowe/api-layer/commit/51a1fc5)), closes [#3959](https://github.com/zowe/api-layer/issues/3959)
