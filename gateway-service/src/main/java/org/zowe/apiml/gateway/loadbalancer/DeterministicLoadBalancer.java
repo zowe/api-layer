@@ -128,8 +128,8 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
     }
 
     private String getTokenFromHeader(RequestDataContext ctx) {
-        var authHeader = ctx.getClientRequest().getHeaders().get(HttpHeaders.AUTHORIZATION);
-        var token = authHeader == null || authHeader.isEmpty() ? null : authHeader.get(0);
+        var authHeaderValues = ctx.getClientRequest().getHeaders().get(HttpHeaders.AUTHORIZATION);
+        var token = authHeaderValues == null || authHeaderValues.isEmpty() ? null : authHeaderValues.get(0);
         if (token != null && token.startsWith(ApimlConstants.BEARER_AUTHENTICATION_PREFIX)) {
             token = token.replaceFirst(ApimlConstants.BEARER_AUTHENTICATION_PREFIX, "").trim();
             if (token.isEmpty()) {
@@ -294,7 +294,7 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
     }
 
     private String extractSubFromToken(String token) {
-        if (token != null && !token.isEmpty()) {
+        if (StringUtils.isNotEmpty(token)) {
             Claims claims = getJwtClaims(token);
             if (claims != null) {
                 return claims.getSubject();
