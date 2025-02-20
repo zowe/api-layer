@@ -112,6 +112,7 @@ logging:
         reactor.netty.http.client.HttpClient: DEBUG
         reactor.netty.http.client.HttpClientConnect: DEBUG
         com.netflix: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
 
 ---
 spring.config.activate.on-profile: attls
