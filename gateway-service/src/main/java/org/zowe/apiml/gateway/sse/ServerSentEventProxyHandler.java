@@ -31,6 +31,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.RoutedServicesUser;
+import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.util.UrlUtils;
 import reactor.core.publisher.Flux;
 import reactor.netty.http.client.HttpClient;
@@ -75,9 +76,19 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
 
     @PostConstruct
     void initWebClient() throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
+        updateStorePaths();
         webClient = WebClient.builder().clientConnector(new ReactorClientHttpConnector(
             HttpClient.create().secure(SslProvider.builder().sslContext(getSslContext()).build())
         )).build();
+    }
+
+    void updateStorePaths() {
+        if (SecurityUtils.isKeyring(trustStore)) {
+            trustStore = SecurityUtils.formatKeyringUrl(trustStore);
+            if (trustStorePassword == null || trustStorePassword.length == 0) {
+                trustStorePassword = "password".toCharArray();
+            }
+        }
     }
 
     private SslContext getSslContext() throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
