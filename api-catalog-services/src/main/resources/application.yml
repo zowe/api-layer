@@ -211,6 +211,7 @@ logging:
         com.netflix: INFO
         org.ehcache: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
 
 ---
 spring:
