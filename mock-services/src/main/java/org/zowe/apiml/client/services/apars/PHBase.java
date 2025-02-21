@@ -70,7 +70,7 @@ public class PHBase extends FunctionalApar {
         String authorization = headers.get(AUTHORIZATION_HEADER);
 
         if (authorization != null) {
-            if (authorization.startsWith("Bearer")) {
+            if (!isValidAuthHeader(authorization)) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
         } else {
