@@ -56,6 +56,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
             .get(URL)
             .then()
             .body("headers.cookie", startsWith("apimlAuthenticationToken"))
+            .body("headers.authorization", startsWith("Bearer"))
             .statusCode(200);
     }
 
@@ -100,6 +101,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
                 .get(URL)
                 .then()
                 .body("headers.cookie", is("apimlAuthenticationToken=" + jwt))
+                .body("headers.authorization", is("Bearer " + jwt))
                 .statusCode(200);
         }
 
@@ -117,6 +119,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
                 .then()
                 .body("cookies.apimlAuthenticationToken", is(jwt))
                 .body("cookies.XSRF-TOKEN", is("another-token-in-cookies"))
+                .body("headers.authorization", is("Bearer " + jwt))
                 .statusCode(200);
         }
 
@@ -151,6 +154,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
                 .get(URL)
                 .then()
                 .body("headers.cookie", startsWith("apimlAuthenticationToken="))
+                .body("headers.authorization", startsWith("Bearer "))
                 .statusCode(200);
         }
     }
