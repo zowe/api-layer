@@ -229,7 +229,7 @@ public class FunctionalApar implements Apar {
             return jwtTokenService.validateJwtToken(jwtToken);
         }
 
-        return true;
+        return false;
     }
 
     private String getAuthCookie(Map<String, String> headers) {
