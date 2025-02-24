@@ -20,7 +20,7 @@ It utilizes the Apache HTTP Client to send an HTTPS request with client certific
    export CLIENT_CERT_PATH="<CLIENT_CERT_PATH>"
    export CLIENT_CERT_PASSWORD="<CLIENT_CERT_PASSWORD>"
    export CLIENT_CERT_ALIAS="<CLIENT_CERT_ALIAS>"
-   export PRIVATE_KEY_ALIAS="<CLIENT_CERT_ALIAS>"
+   export PRIVATE_KEY_ALIAS="<PRIVATE_KEY_ALIAS>"
    ```
    **Windows:**
 
@@ -29,7 +29,7 @@ It utilizes the Apache HTTP Client to send an HTTPS request with client certific
    set CLIENT_CERT_PATH="<CLIENT_CERT_PATH>"
    set CLIENT_CERT_PASSWORD="<CLIENT_CERT_PASSWORD>"
    set CLIENT_CERT_ALIAS="<CLIENT_CERT_ALIAS>"
-   set PRIVATE_KEY_ALIAS="<CLIENT_CERT_ALIAS>"
+   set PRIVATE_KEY_ALIAS="<PRIVATE_KEY_ALIAS>"
    ```
 
 3. Run the JAR located inside the `build/libs` folder with the SSL debug argument:
