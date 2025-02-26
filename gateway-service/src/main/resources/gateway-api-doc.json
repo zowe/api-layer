@@ -1001,7 +1001,7 @@
                     },
                     "serviceId": {
                         "type": "string",
-                        "description": ""
+                        "description": "Service ID to be validated as required scope in the token"
                     }
                 },
                 "example": {
