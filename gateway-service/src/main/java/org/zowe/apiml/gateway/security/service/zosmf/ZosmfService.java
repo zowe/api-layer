@@ -160,7 +160,6 @@ public class ZosmfService extends AbstractZosmfService {
     public AuthenticationResponse authenticate(Authentication authentication) {
         AuthenticationResponse authenticationResponse;
         if (loginEndpointExists()) {
-            log.debug("Login endpoint exists. Issuing authentication request...");
             authenticationResponse = issueAuthenticationRequest(
                 authentication,
                 getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT),
