@@ -4,6 +4,14 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 ## `APIML 3.1.5 / Zowe 3.1.0 (2025-02-03)`
 
+__Breaking changes in API ML__
+
+| Change in Zowe V3.1.0                                                                                                             | Required action
+|-------------------------------------------------------------------------------------------------------------------------------| --
+| APIML does not allow special characters in URL.                  | URLs that contain slash, backslash, period, percent or semicolon as encoded characters are rejected with 400. This change was unintended and will be fixed in Zowe 3.2.
+
+__Changelog__
+
 * Feature:  Override external URL for additional registration (#3935) ([d5dd912](https://github.com/zowe/api-layer/commit/d5dd912)), closes [#3935](https://github.com/zowe/api-layer/issues/3935)
 * Feature:  Support OIDC token to authenticate in API Catalog (#3925) ([a4ead1d](https://github.com/zowe/api-layer/commit/a4ead1d)), closes [#3925](https://github.com/zowe/api-layer/issues/3925)
 * Feature:  Allows to obtain certificates from multiple sources (#3914) ([2e028cb](https://github.com/zowe/api-layer/commit/2e028cb)), closes [#3914](https://github.com/zowe/api-layer/issues/3914)
