@@ -112,7 +112,7 @@ class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstance
                 URI uri = HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, ARGUMENT);
 
                 given()
-                    .auth().preemptive().basic(USERNAME, new String(PASSWORD))
+                    .auth().preemptive().basic(USERNAME, PASSWORD)
                     .header("X-CSRF-ZOSMF-HEADER", "zosmf")
                 .when()
                     .get(uri)

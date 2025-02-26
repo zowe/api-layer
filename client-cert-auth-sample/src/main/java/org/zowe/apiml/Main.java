@@ -20,14 +20,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
+import java.util.Optional;
 
 public class Main {
 
-    private static final String API_URL = "https://localhost:8080/gateway/api/v1/auth/login"; // Replace with your API URL
-    private static final String CLIENT_CERT_PATH = "../keystore/client_cert/client-certs.p12"; // Replace with your client cert path
-    private static final String CLIENT_CERT_PASSWORD = "password"; // Replace with your cert password
-    private static final String CLIENT_CERT_ALIAS = "apimtst"; // Replace with your signed client cert alias
-    private static final String PRIVATE_KEY_ALIAS = "apimtst"; // Replace with your private key alias
+    private static final String API_URL = Optional.ofNullable(System.getenv("API_URL")).orElse("https://localhost:8080") + "/gateway/api/v1/auth/login"; // Replace with your API URL
+    private static final String CLIENT_CERT_PATH = Optional.ofNullable(System.getenv("CLIENT_CERT_PATH")).orElse("client-cert.p12"); // Replace with your client cert path
+    private static final String CLIENT_CERT_PASSWORD = Optional.ofNullable(System.getenv("CLIENT_CERT_PASSWORD")).orElse("password"); // Replace with your cert password
+    private static final String CLIENT_CERT_ALIAS = Optional.ofNullable(System.getenv("CLIENT_CERT_ALIAS")).orElse("apimtst"); // Replace with your signed client cert alias
+    private static final String PRIVATE_KEY_ALIAS = Optional.ofNullable(System.getenv("PRIVATE_KEY_ALIAS")).orElse("apimtst"); // Replace with your private key alias
 
 
     public static void main(String[] args) {

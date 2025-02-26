@@ -12,10 +12,7 @@ package org.zowe.apiml.gateway.acceptance;
 
 import com.sun.net.httpserver.HttpExchange;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.http.HttpHeaders;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
@@ -262,7 +259,7 @@ public abstract class TokenSchemeTest {
         private MockService service;
 
         @BeforeAll
-        void initService() throws IOException {
+        void initService() {
             service = createService();
         }
 
@@ -303,8 +300,9 @@ public abstract class TokenSchemeTest {
                 .authenticationScheme(getAuthenticationScheme())
                 .addEndpoint("/service/test/success")
                     .assertion(he -> assertEquals(JWT, getCookie(he, COOKIE_NAME)))
+                    .assertion(he -> assertEquals(1, he.getRequestHeaders().get(HttpHeaders.AUTHORIZATION).size()))
+                    .assertion(he -> assertEquals("Bearer " + JWT, he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
 
-                    .assertion(he -> assertNull(he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
                     .assertion(he -> assertNull(he.getRequestHeaders().getFirst("x-service-id")))
                     .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-SAF-Token")))
                     .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-Public")))
@@ -323,7 +321,8 @@ public abstract class TokenSchemeTest {
                 .addEndpoint("/service/test/fail")
                     .assertion(he -> assertNull(getCookie(he, COOKIE_NAME)))
 
-                    .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
+                    .assertion(he -> assertEquals(1, he.getRequestHeaders().get(HttpHeaders.AUTHORIZATION).size()))
+                    .assertion(he -> assertNotEquals("Bearer " + JWT, he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
                     .assertion(he -> assertNull(he.getRequestHeaders().getFirst("x-service-id")))
                     .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst("X-SAF-Token")))
                     .assertion(he -> assertNull(he.getRequestHeaders().getFirst("X-Certificate-Public")))
