@@ -997,7 +997,7 @@
                 "properties": {
                     "token": {
                         "type": "string",
-                        "description": ""
+                        "description": "OIDC token to be validated"
                     },
                     "serviceId": {
                         "type": "string",
