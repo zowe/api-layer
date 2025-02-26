@@ -50,6 +50,7 @@ import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
+import org.springframework.security.web.server.firewall.StrictServerWebExchangeFirewall;
 import org.springframework.security.web.server.savedrequest.CookieServerRequestCache;
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
@@ -113,6 +114,9 @@ public class WebSecurity {
 
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
+
+    @Value("${apiml.security.enableStrictUrlValidation:false}")
+    private boolean isStrictUrlValidationEnabled;
 
     private final ClientConfiguration clientConfiguration;
 
@@ -485,6 +489,22 @@ public class WebSecurity {
                 .build();
             return chain.filter(writeableExchange);
         };
+    }
+
+    @Bean
+    public StrictServerWebExchangeFirewall httpFirewall() {
+        StrictServerWebExchangeFirewall firewall = new StrictServerWebExchangeFirewall();
+
+        if (isStrictUrlValidationEnabled) {
+            return firewall;
+        }
+
+        firewall.setAllowUrlEncodedSlash(true);
+        firewall.setAllowBackSlash(true);
+        firewall.setAllowUrlEncodedPercent(true);
+        firewall.setAllowUrlEncodedPeriod(true);
+        firewall.setAllowSemicolon(true);
+        return firewall;
     }
 
 }
