@@ -22,13 +22,17 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.util.categories.InfinispanStorageTest;
+import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
+import org.zowe.apiml.util.config.SafIdtConfiguration;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -42,7 +46,9 @@ import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
- class PATWithAllSchemesTest {
+class PATWithAllSchemesTest {
+
+    private static final SafIdtConfiguration safIdtConfig = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
 
     static Stream<Arguments> authentication() {
         return Stream.of(
@@ -54,28 +60,32 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
     }
 
     static Stream<Arguments> schemas() {
-        return Stream.of(
+        List<Arguments> schemasTest = new ArrayList<>();
+        schemasTest.add(
             Arguments.of("zowejwt", HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST), (Consumer<Response>) r -> {
-                assertEquals(HttpStatus.SC_OK, r.getStatusCode() );
+                assertEquals(HttpStatus.SC_OK, r.getStatusCode());
                 assertThat(r.getBody().path("headers.cookie"), containsString(COOKIE_NAME));
                 String jwt = r.getBody().path("headers.authorization").toString();
                 try {
-                   String issuer = JWTParser.parse(jwt.substring(ApimlConstants.BEARER_AUTHENTICATION_PREFIX.length()).trim()).getJWTClaimsSet().toJSONObject().get("iss").toString();
+                    String issuer = JWTParser.parse(jwt.substring(ApimlConstants.BEARER_AUTHENTICATION_PREFIX.length()).trim()).getJWTClaimsSet().toJSONObject().get("iss").toString();
                     assertEquals("APIML", issuer);
                 } catch (ParseException e) {
                     fail(e);
                 }
-            }),
+            }));
+        schemasTest.add(
             Arguments.of("dcpassticket", HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT), (Consumer<Response>) r -> {
-                assertEquals(HttpStatus.SC_OK, r.getStatusCode() );
+                assertEquals(HttpStatus.SC_OK, r.getStatusCode());
                 assertThat(r.getBody().path("headers.authorization"), startsWith("Basic "));
                 assertThat(r.getBody().path("cookies"), not(hasKey(COOKIE_NAME)));
-            }),
+            }));
+        if (safIdtConfig.isEnabled()) {
             Arguments.of("dcsafidt", HttpRequestUtils.getUriFromGateway(SAF_IDT_REQUEST), (Consumer<Response>) r -> {
-                assertEquals(HttpStatus.SC_OK, r.getStatusCode() );
+                assertEquals(HttpStatus.SC_OK, r.getStatusCode());
                 assertThat(r.getBody().path("headers"), hasKey("x-saf-token"));
-            })
-        );
+            });
+        }
+        return schemasTest.stream();
     }
 
     static Stream<Arguments> authSchemas() {
@@ -97,10 +107,13 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
         String name, URI urlSpecification, Consumer<Response> validation) {
         String pat = personalAccessToken(Collections.singleton(name));
 
-        validation.accept(authenticationAction.apply(given(), pat)
+        Response response = authenticationAction.apply(given(), pat)
             .config(SslContext.tlsWithoutCert)
-        .when()
-            .get(urlSpecification)
-        );
+            .when()
+            .get(urlSpecification);
+
+        assertEquals(HttpStatus.SC_OK, response.getStatusCode(), "Expected HTTP 200 OK response");
+
+        validation.accept(response);
     }
 }

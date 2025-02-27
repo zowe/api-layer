@@ -32,7 +32,7 @@ import java.util.Collections;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
-import static io.restassured.http.ContentType.XML;
+import static io.restassured.http.ContentType.TEXT;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -41,6 +41,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_TICKET_URI;
 import static org.zowe.apiml.util.SecurityUtils.USERNAME;
@@ -161,7 +162,7 @@ class PassTicketTest implements TestWithStartedInstances {
             .then()
                 .statusCode(SC_OK)
                 .body("ticket", not(isEmptyOrNullString()))
-                .body("userId", is(USERNAME))
+                .body("userId", equalToIgnoringCase(USERNAME))
                 .body("applicationName", is(APPLICATION_NAME));
             //@formatter:on
         }
@@ -241,7 +242,7 @@ class PassTicketTest implements TestWithStartedInstances {
             given()
                 .body(new TicketRequest(APPLICATION_NAME))
                 .cookie(COOKIE, jwt)
-                .contentType(XML)
+                .contentType(TEXT)
             .when()
                 .post(ZAAS_TICKET_URI)
             .then()

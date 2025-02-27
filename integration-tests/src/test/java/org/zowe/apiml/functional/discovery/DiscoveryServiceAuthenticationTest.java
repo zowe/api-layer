@@ -14,11 +14,11 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.DisplayName;
 
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
@@ -46,8 +46,10 @@ class DiscoveryServiceAuthenticationTest {
 
     @Nested
     class GivenBearerAuthentication {
+
         @Nested
         class WhenAccessingProtectedEndpoint {
+
             @Test
             void thenAuthenticate() {
                 String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
@@ -58,13 +60,17 @@ class DiscoveryServiceAuthenticationTest {
                     .then()
                     .statusCode(is(SC_OK));
             }
+
         }
+
     }
 
     @Nested
     class GivenInvalidBearerAuthentication {
+
         @Nested
         class WhenAccessingProtectedEndpoint {
+
             @Test
             void thenReturnUnauthorized() {
                 String expectedMessage = "Token is not valid for URL '" + ACTUATOR_ENDPOINT + "'";
@@ -78,21 +84,33 @@ class DiscoveryServiceAuthenticationTest {
                         "messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage)
                     );
             }
+
         }
+
     }
 
-    @Nested
-    @Tag("HealthEndpointProtectionDisabledTest")
-    class GivenHealthEndpointProtectionDisabled {
+    @Test
+    @TestsNotMeantForZowe("Automation needs unprotected health endpoint")
+    @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication enabled.")
+    void thenDoNotRequireAuthentication() {
+        given()
+            .when()
+            .get(DiscoveryUtils.getDiscoveryUrl() + DISCOVERY_HEALTH_ENDPOINT)
+            .then()
+            .statusCode(is(SC_UNAUTHORIZED));
 
-        @Test
-        @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication disabled.")
-        void thenDoNotRequireAuthentication() {
-            given()
-                .when()
-                .get(DiscoveryUtils.getDiscoveryUrl() + DISCOVERY_HEALTH_ENDPOINT)
-                .then()
-                .statusCode(is(SC_OK));
-        }
+    }
+
+    @Test
+    @TestsNotMeantForZowe("Automation needs unprotected health endpoint")
+    @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication enabled with authentication.")
+    void thenDoNotAuthenticateTheRequest() {
+        String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
+        given()
+            .header("Authorization", "Bearer " + token)
+            .get(DiscoveryUtils.getDiscoveryUrl() + DISCOVERY_HEALTH_ENDPOINT)
+            .then()
+            .statusCode(is(SC_OK));
+
     }
 }

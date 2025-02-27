@@ -54,6 +54,11 @@ server:
         ssl:
             keyAlias: localhost-multi
             keyStore: keystore/localhost/localhost-multi.keystore.p12
+
+    webSocket:
+        requestBufferSize: 16348
+    max-http-request-header-size: 16348
+
     ssl:
         keyAlias: localhost
         keyPassword: password

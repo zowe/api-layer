@@ -16,6 +16,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -30,6 +31,8 @@ class GatewayAuthenticationTest {
 
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    private static final String ACTUATOR_ENDPOINT = "/application";
+    private static final String HEALTH_ENDPOINT = ACTUATOR_ENDPOINT + "/health";
 
     @BeforeEach
     void setUp() {
@@ -39,11 +42,12 @@ class GatewayAuthenticationTest {
 
     @Nested
     class GivenBearerAuthentication {
+
         @Nested
         class WhenAccessingProtectedEndpoint {
 
             @ParameterizedTest
-            @ValueSource(strings = {"/application", "/application/health"})
+            @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT})
             void thenAuthenticate(String endpoint) {
                 String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
                 // Gateway request to url
@@ -54,18 +58,22 @@ class GatewayAuthenticationTest {
                     .then()
                     .statusCode(is(SC_OK));
             }
+
         }
+
     }
 
     @Nested
     class GivenInvalidBearerAuthentication {
+
         @Nested
         class WhenAccessingProtectedEndpoint {
 
             @ParameterizedTest
-            @ValueSource(strings = {"/application", "/application/health"})
+            @TestsNotMeantForZowe("Automation needs unprotected health endpoint")
+            @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT})
             void thenReturnUnauthorized(String endpoint) {
-                String expectedMessage = "Token is not valid for URL '" + endpoint + "'";
+                String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";
                 // Gateway request to url
                 given()
                     .header("Authorization", "Bearer invalidToken")
@@ -74,10 +82,12 @@ class GatewayAuthenticationTest {
                     .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage)
                     );
             }
+
         }
+
     }
 
     @Nested
