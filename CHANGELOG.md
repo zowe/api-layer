@@ -2,11 +2,11 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `2.18.6 (2025-02-27)`
+## `APIML 2.18.6 / Zowe 2.18.1 (2025-02-27)`
 
 
-
-
+* Bugfix:  Fix login filter check causing 400 Invalid credentials (#4014) ([84cac88](https://github.com/zowe/api-layer/commit/84cac88)), closes [#4014](https://github.com/zowe/api-layer/issues/4014)
+* Bugfix:  Add missing OIDC documentation to OpenAPI (#4013) ([d60d23d](https://github.com/zowe/api-layer/commit/d60d23d)), closes [#4013](https://github.com/zowe/api-layer/issues/4013)
 
 
 ## `APIML 2.18.5 / Zowe 2.18.1 (2025-02-21)`
