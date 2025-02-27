@@ -2,6 +2,13 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `APIML 2.18.5 / Zowe 2.18.1 (2025-02-21)`
+
+
+* Bugfix:  Add newPassword to Open API Documentation of the login endpoint (#4002) ([5c9c827](https://github.com/zowe/api-layer/commit/5c9c827)), closes [#4002](https://github.com/zowe/api-layer/issues/4002)
+* Bugfix:  Fix four slashes support in SSE class (#4001) ([92371af](https://github.com/zowe/api-layer/commit/92371af)), closes [#4001](https://github.com/zowe/api-layer/issues/4001)
+
+
 ## `APIML 2.18.4 / Zowe 2.18.1 (2025-02-20)`
 
 * Feature:  Support client AT-TLS setting (#3825) ([999d062](https://github.com/zowe/api-layer/commit/999d062)), closes [#3825](https://github.com/zowe/api-layer/pull/3825)
