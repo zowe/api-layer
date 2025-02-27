@@ -30,7 +30,7 @@ public class LocalHandshake implements Verifier {
     }
 
     @Override
-    public void verify() {
+    public boolean verify() {
         try { //NOSONAR
             SSLServerSocket listener = (SSLServerSocket) sslContextFactory.getSslContextWithKeystore().getServerSocketFactory().createServerSocket(0);
 //            start listening on socket to do a SSL handshake
@@ -48,6 +48,8 @@ public class LocalHandshake implements Verifier {
                 client.executeCall(new URL(address));
                 System.out.println("Handshake was successful. Certificate stored under alias \"" + keyAlias + "\" is trusted by truststore \"" + trustStore
                     + "\".");
+
+                return true;
             } catch (SSLHandshakeException e) {
                 System.out.println("Handshake failed. Certificate stored under alias \"" + keyAlias + "\" is not trusted by truststore \"" + trustStore
                     + "\". Error message: " + e.getMessage());
@@ -57,5 +59,7 @@ public class LocalHandshake implements Verifier {
         } catch (KeyStoreException e) {
             System.err.println("Failed when loading key alias. " + e.getMessage());
         }
+
+        return false;
     }
 }
