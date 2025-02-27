@@ -12,7 +12,6 @@ package org.zowe.apiml.integration.authentication.providers;
 
 import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
-import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -28,8 +27,6 @@ import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
@@ -69,14 +66,11 @@ class ZosmfLoginTest implements TestWithStartedInstances {
             String dsname1 = "SYS1.PARMLIB";
             String dsname2 = "SYS1.PROCLIB";
 
-            List<NameValuePair> arguments = new ArrayList<>();
-            arguments.add(new BasicNameValuePair("dslevel", "sys1.p*"));
-
             given()
                 .config(SslContext.clientCertUser)
                 .header("X-CSRF-ZOSMF-HEADER", "")
                 .when()
-                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, new BasicNameValuePair("dslevel", "sys1.p*")))
                 .then()
                 .statusCode(is(SC_OK))
                 .body(

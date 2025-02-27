@@ -29,7 +29,6 @@ import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
 
 import java.net.URI;
-import java.util.Collections;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
@@ -227,7 +226,7 @@ class ServicesInfoTest implements TestWithStartedInstances {
                 given()
                     .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
                     .when()
-                    .get(getUriFromGateway(ROUTED_SERVICE, Collections.singletonList(new BasicNameValuePair("apiId", API_CATALOG_SERVICE_API_ID))))
+                    .get(getUriFromGateway(ROUTED_SERVICE, new BasicNameValuePair("apiId", API_CATALOG_SERVICE_API_ID)))
                     .then()
                     .statusCode(is(SC_OK))
                     .header(VERSION_HEADER, CURRENT_VERSION)
