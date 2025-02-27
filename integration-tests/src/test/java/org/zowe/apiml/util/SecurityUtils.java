@@ -18,26 +18,30 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import io.restassured.RestAssured;
-import io.restassured.config.HttpClientConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
+import io.restassured.filter.log.LogDetail;
 import io.restassured.http.Cookie;
-import io.restassured.response.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
+import org.apache.http.ParseException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.ssl.TrustStrategy;
+import org.apache.http.util.EntityUtils;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -46,6 +50,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.gateway.security.login.SuccessfulAccessTokenHandler;
@@ -58,13 +63,13 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.Key;
 import java.security.KeyManagementException;
 import java.security.KeyPair;
@@ -75,14 +80,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Security;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -103,30 +106,29 @@ import static org.zowe.apiml.util.requests.Endpoints.ROUTED_QUERY;
 import static org.zowe.apiml.util.requests.Endpoints.ZOSMF_AUTH_ENDPOINT;
 
 public class SecurityUtils {
-    public final static String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
+    public static final String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
 
-    private final static GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-    private final static TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
+    private static final GatewayServiceConfiguration serviceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    private static final TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
 
-    private final static String gatewayScheme = serviceConfiguration.getScheme();
-    private final static String gatewayHost = serviceConfiguration.getHost();
-    private final static int gatewayPort = serviceConfiguration.getPort();
+    private static final String GATEWAY_SCHEME = serviceConfiguration.getScheme();
+    private static final String GATEWAY_HOST = StringUtils.isBlank(serviceConfiguration.getDvipaHost()) ? serviceConfiguration.getHost() : serviceConfiguration.getDvipaHost();
+    private static final int GATEWAY_PORT = serviceConfiguration.getPort();
 
-    private final static String zosmfScheme = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getScheme();
-    private final static String zosmfHost = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getHost();
-    private final static int zosmfPort = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getPort();
+    private static final String ZOSMF_SCHEME = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getScheme();
+    private static final String ZOSMF_HOST = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getHost();
+    private static final int ZOSMF_PORT = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getPort();
 
-    public final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    public final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    public static final String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    public static final String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    public static final String OKTA_HOSTNAME = ConfigReader.environmentConfiguration().getIdpConfiguration().getHost();
+    public static final String OKTA_CLIENT_ID = ConfigReader.environmentConfiguration().getOidcConfiguration().getClientId();
+    public static final String OKTA_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getUser();
+    public static final String OKTA_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getPassword();
+    public static final String OKTA_ALT_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternateUser();
+    public static final String OKTA_ALT_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternatePassword();
 
-    public final static String OKTA_HOSTNAME = ConfigReader.environmentConfiguration().getIdpConfiguration().getHost();
-    public final static String OKTA_CLIENT_ID = ConfigReader.environmentConfiguration().getOidcConfiguration().getClientId();
-    public final static String OKTA_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getUser();
-    public final static String OKTA_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getPassword();
-    public final static String OKTA_ALT_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternateUser();
-    public final static String OKTA_ALT_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternatePassword();
-
-    public final static String COOKIE_NAME = "apimlAuthenticationToken";
+    public static final String COOKIE_NAME = "apimlAuthenticationToken";
     public static final String PAT_COOKIE_AUTH_NAME = "personalAccessToken";
 
     protected static String getUsername() {
@@ -136,11 +138,11 @@ public class SecurityUtils {
     //@formatter:off
 
     public static String getGatewayUrl(String path) {
-        return getGatewayUrl(path, gatewayPort);
+        return getGatewayUrl(path, GATEWAY_PORT);
     }
 
     public static String getGatewayUrl(String path, int port) {
-        return String.format("%s://%s:%d%s", gatewayScheme, gatewayHost, port, path);
+        return String.format("%s://%s:%d%s", GATEWAY_SCHEME, GATEWAY_HOST, port, path);
     }
 
     public static String getGatewayLogoutUrl(String path) {
@@ -165,18 +167,20 @@ public class SecurityUtils {
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
-        String cookie = given()
-            .contentType(JSON)
-            .body(loginRequest)
-            .when()
-            .post(gatewayLoginEndpoint)
-            .then()
-            .statusCode(is(SC_NO_CONTENT))
-            .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
-            .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
-
-        RestAssured.config = RestAssured.config().sslConfig(originalConfig);
-        return cookie;
+        try {
+            return given()
+                .contentType(JSON)
+                .body(loginRequest)
+                .when()
+                .post(gatewayLoginEndpoint)
+                .then()
+                .log().ifValidationFails(LogDetail.ALL)
+                .statusCode(is(SC_NO_CONTENT))
+                .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
+                .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
+        } finally{
+            RestAssured.config = RestAssured.config().sslConfig(originalConfig);
+        }
     }
 
     /**
@@ -230,7 +234,7 @@ public class SecurityUtils {
             CookieStore cookieStore = new BasicCookieStore();
             context.setAttribute(HttpClientContext.COOKIE_STORE, cookieStore);
 
-            HttpUriRequest request = new HttpPost(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_AUTH_ENDPOINT));
+            HttpUriRequest request = new HttpPost(String.format("%s://%s:%d%s", ZOSMF_SCHEME, ZOSMF_HOST, ZOSMF_PORT, ZOSMF_AUTH_ENDPOINT));
             request.addHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
             request.addHeader(HttpHeaders.AUTHORIZATION, String.format("Basic %s", java.util.Base64.getEncoder().encodeToString(String.format("%s:%s", USERNAME, PASSWORD).getBytes())));
             request.addHeader("X-CSRF-ZOSMF-HEADER", "csrf");
@@ -258,27 +262,27 @@ public class SecurityUtils {
      * @return
      */
     public static String getZosmfToken(String cookie) {
-        return getZosmfToken(String.format("%s://%s:%d%s", zosmfScheme, zosmfHost, zosmfPort, ZOSMF_AUTH_ENDPOINT), cookie, SC_OK);
+        return getZosmfToken(String.format("%s://%s:%d%s", ZOSMF_SCHEME, ZOSMF_HOST, ZOSMF_PORT, ZOSMF_AUTH_ENDPOINT), cookie, SC_OK);
     }
 
     private static String getZosmfToken(String url, String cookie, int expectedCode) {
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
-        String zosmfToken = given()
-            .contentType(JSON)
-            .auth().preemptive().basic(USERNAME, PASSWORD)
-            .header("X-CSRF-ZOSMF-HEADER", "")
-            .when()
-            .post(url)
-            .then()
-            .statusCode(is(expectedCode))
-            .cookie(cookie, not(isEmptyString()))
-            .extract().cookie(cookie);
-
-        RestAssured.config = RestAssured.config().sslConfig(originalConfig);
-
-        return zosmfToken;
+        try {
+            return given()
+                .contentType(JSON)
+                .auth().preemptive().basic(USERNAME, PASSWORD)
+                .header("X-CSRF-ZOSMF-HEADER", "")
+                .when()
+                .post(url)
+                .then()
+                .statusCode(is(expectedCode))
+                .cookie(cookie, not(isEmptyString()))
+                .extract().cookie(cookie);
+        } finally{
+            RestAssured.config = RestAssured.config().sslConfig(originalConfig);
+        }
     }
 
     public static String generateZoweJwtWithLtpa(String ltpaToken) throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
@@ -329,9 +333,18 @@ public class SecurityUtils {
 
     public static String getClientCertificate() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
         KeyStore ks = loadKeystore(SecurityUtils.tlsConfiguration.getClientKeystore());
-        Certificate certificate = ks.getCertificate(ks.aliases().nextElement());
+        String clientCN = SecurityUtils.tlsConfiguration.getClientCN();
+        Enumeration<String> aliases = ks.aliases();
 
-        return Base64.encode(certificate.getEncoded()).toString();
+        while (aliases.hasMoreElements()) {
+            X509Certificate certificate = (X509Certificate) ks.getCertificate(aliases.nextElement());
+            if (certificate.getSubjectX500Principal().getName().contains("CN=" + clientCN)) {
+                return Base64.encode(certificate.getEncoded()).toString();
+            }
+        }
+
+        throw new IllegalArgumentException(
+            String.format("TlsConfiguration error: provided client CN: %s is not present in client keystore %s", clientCN, tlsConfiguration.getClientKeystore()));
     }
 
     public static String getDummyClientCertificate()throws CertificateException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException, IOException {
@@ -375,17 +388,19 @@ public class SecurityUtils {
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
-        String token = given()
-            .contentType(JSON).header("Authorization", "Basic " + Base64.encode(USERNAME + ":" + PASSWORD))
-            .body(accessTokenRequest)
-            .when()
-            .post(gatewayGenerateAccessTokenEndpoint)
-            .then()
-            .statusCode(is(SC_OK))
-            .extract().body().asString();
-
-        RestAssured.config = RestAssured.config().sslConfig(originalConfig);
-        return token;
+        try {
+            return given()
+                .contentType(JSON).header("Authorization", "Basic " + Base64.encode(USERNAME + ":" + PASSWORD))
+                .body(accessTokenRequest)
+                .when()
+                .post(gatewayGenerateAccessTokenEndpoint)
+                .then()
+                .log().ifValidationFails(LogDetail.ALL)
+                .statusCode(is(SC_OK))
+                .extract().body().asString();
+        } finally {
+            RestAssured.config = RestAssured.config().sslConfig(originalConfig);
+        }
     }
 
     public static String personalAccessTokenWithClientCert(RestAssuredConfig sslConfig) {
@@ -396,16 +411,17 @@ public class SecurityUtils {
         SuccessfulAccessTokenHandler.AccessTokenRequest accessTokenRequest = new SuccessfulAccessTokenHandler.AccessTokenRequest(60, scopes);
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
 
-        String token = given().config(sslConfig)
-            .body(accessTokenRequest)
-            .when()
-            .post(gatewayGenerateAccessTokenEndpoint)
-            .then()
-            .statusCode(is(SC_OK))
-            .extract().body().asString();
-
-        RestAssured.config = RestAssured.config().sslConfig(originalConfig);
-        return token;
+        try {
+            return given().config(sslConfig)
+                .body(accessTokenRequest)
+                .when()
+                .post(gatewayGenerateAccessTokenEndpoint)
+                .then()
+                .statusCode(is(SC_OK))
+                .extract().body().asString();
+        } finally {
+            RestAssured.config = RestAssured.config().sslConfig(originalConfig);
+        }
     }
 
     public static String validOktaAccessToken(boolean userHasMappingDefined) {
@@ -421,47 +437,66 @@ public class SecurityUtils {
         assertNotNull(sessionToken, "Failed to get session token from Okta authentication.");
 
         // retrieve the access token from Okta using session token
-        Map<String, String> queryParams = new HashMap<>();
-        queryParams.put("client_id", OKTA_CLIENT_ID);
-        queryParams.put("redirect_uri", "https://localhost:10010/login/oauth2/code/okta");
-        queryParams.put("response_type", "token");
-        queryParams.put("response_mode", "form_post");
-        queryParams.put("sessionToken", sessionToken);
-        queryParams.put("scope", "openid");
-        queryParams.put("state", "TEST");
-        queryParams.put("nonce", "TEST");
-        Response authResponse = given()
-                .config(RestAssured.config().httpClient(HttpClientConfig.httpClientConfig().setParam("http.connection.timeout", 30 * 1000)))
-                .queryParams(queryParams)
-            .when()
-                .get(OKTA_HOSTNAME + "/oauth2/v1/authorize")
-            .then()
-                .statusCode(200)
-                .extract().response();
 
-        // The response is HTML form where access token is hidden input field (this is controlled by response_mode = form_post)
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) {
+            URIBuilder uriBuilder = new URIBuilder(OKTA_HOSTNAME + "/oauth2/v1/authorize");
+            uriBuilder.setParameter("client_id", OKTA_CLIENT_ID);
+            uriBuilder.setParameter("redirect_uri", "https://localhost:10010/login/oauth2/code/okta");
+            uriBuilder.setParameter("response_type", "token");
+            uriBuilder.setParameter("response_mode", "form_post");
+            uriBuilder.setParameter("sessionToken", sessionToken);
+            uriBuilder.setParameter("scope", "openid");
+            uriBuilder.setParameter("state", "TEST");
+            uriBuilder.setParameter("nonce", "TEST");
+            HttpGet request = new HttpGet(uriBuilder.build());
+            CloseableHttpResponse response = httpClient.execute(request);
 
-        String body = authResponse.getBody().asString();
-        String accessToken = StringUtils.substringBetween(body, "name=\"access_token\" value=\"", "\"/>");
-        assertNotNull(accessToken, "Failed to locate access token in the Okta /authorize response.");
-        return accessToken;
+            if (response.getStatusLine().getStatusCode() == 200) {
+                // The response is HTML form where access token is hidden input field (this is controlled by response_mode = form_post)
+
+                String body = EntityUtils.toString(response.getEntity());
+                String accessToken = StringUtils.substringBetween(body, "name=\"access_token\" value=\"", "\"/>");
+                assertNotNull(accessToken, "Failed to locate access token in the Okta /authorize response.");
+                return accessToken;
+            } else {
+                throw new RuntimeException("Failed obtaining OKTA access token: " + response.getStatusLine().getStatusCode() + ": " + EntityUtils.toString(response.getEntity()));
+            }
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static String getOktaSession(String username, String password) {
         assertNotNull(username, "OKTA username is not set.");
         assertNotNull(password, "OKTA password is not set.");
         JSONObject requestBody = new JSONObject();
-        requestBody.put("username", username);
-        requestBody.put("password", password);
+        try {
+            requestBody.put("username", username);
+            requestBody.put("password", password);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
-        return given()
-            .contentType(JSON)
-            .body(requestBody.toString())
-            .when()
-            .post(OKTA_HOSTNAME + "/api/v1/authn")
-            .then()
-            .statusCode(200)
-            .extract().path("sessionToken");
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) {
+            URIBuilder uriBuilder = new URIBuilder(OKTA_HOSTNAME + "/api/v1/authn");
+
+            HttpPost request = new HttpPost(uriBuilder.build());
+            request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+            StringEntity entity = new StringEntity(requestBody.toString());
+            request.setEntity(entity);
+            CloseableHttpResponse response = httpClient.execute(request);
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                // The response is HTML form where access token is hidden input field (this is controlled by response_mode = form_post)
+
+                String responseBody = EntityUtils.toString(response.getEntity());
+                return new JSONObject(responseBody).getString("sessionToken");
+            } else {
+                throw new RuntimeException("Failed obtaining OKTA access token: " + response.getStatusLine().getStatusCode() + ": " + EntityUtils.toString(response.getEntity()));
+            }
+        } catch (IOException | URISyntaxException | ParseException | JSONException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static String expiredOktaAccessToken() {
