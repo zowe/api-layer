@@ -99,7 +99,7 @@ dependencyResolutionManagement {
             }
             version('netflixCommonsUtil', '0.3.0')
             version('netflixServo', '0.13.2')
-            version('netty', '4.1.118.Final')
+            version('netty', '4.1.119.Final')
             version('nettyReactor', '1.1.23')
             version('nimbusJoseJwt', '9.40')
             version('openApiDiff', '2.0.1')
