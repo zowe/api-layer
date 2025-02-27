@@ -2,6 +2,13 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `2.18.6 (2025-02-27)`
+
+
+
+
+
+
 ## `APIML 2.18.5 / Zowe 2.18.1 (2025-02-21)`
 
 
