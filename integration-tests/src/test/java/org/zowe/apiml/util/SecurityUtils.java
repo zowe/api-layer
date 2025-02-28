@@ -178,7 +178,7 @@ public class SecurityUtils {
                 .statusCode(is(SC_NO_CONTENT))
                 .cookie(GATEWAY_TOKEN_COOKIE_NAME, not(isEmptyString()))
                 .extract().cookie(GATEWAY_TOKEN_COOKIE_NAME);
-        } finally{
+        } finally {
             RestAssured.config = RestAssured.config().sslConfig(originalConfig);
         }
     }
@@ -280,7 +280,7 @@ public class SecurityUtils {
                 .statusCode(is(expectedCode))
                 .cookie(cookie, not(isEmptyString()))
                 .extract().cookie(cookie);
-        } finally{
+        } finally {
             RestAssured.config = RestAssured.config().sslConfig(originalConfig);
         }
     }
