@@ -34,11 +34,15 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Filter to process authentication requests with the username and password in JSON format.
@@ -202,13 +206,26 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
      */
     private Optional<LoginRequest> getCredentialsFromBody(HttpServletRequest request) {
         try {
-            if (request.getInputStream().available() == 0 || request.getAttribute(StoreAccessTokenInfoFilter.TOKEN_REQUEST) != null) {
+            if (request.getAttribute(StoreAccessTokenInfoFilter.TOKEN_REQUEST) != null) {
+                log.debug("Request body was processed by personal access token filter.");
                 return Optional.empty();
             }
-            return Optional.of(mapper.readValue(request.getInputStream(), LoginRequest.class));
+
+            String requestBody = readInputStream(request.getInputStream());
+            if (StringUtils.isBlank(requestBody)) {
+                log.debug("Request body was empty.");
+                return Optional.empty();
+            }
+            return Optional.of(mapper.readValue(requestBody, LoginRequest.class));
         } catch (IOException e) {
             log.debug("Authentication problem: login object has wrong format: {}", e.getMessage(), e);
             throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
+        }
+    }
+
+    private String readInputStream(InputStream inputStream) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            return reader.lines().collect(Collectors.joining("\n"));
         }
     }
 }
