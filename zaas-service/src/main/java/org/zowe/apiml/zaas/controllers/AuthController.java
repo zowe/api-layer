@@ -299,16 +299,23 @@ public class AuthController {
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Valid token"),
-        @ApiResponse(responseCode = "401", description = "Invalid token")
+        @ApiResponse(responseCode = "401", description = "Invalid token"),
+        @ApiResponse(responseCode = "403", description = "Valid token missing scope for the called service")
     })
     public ResponseEntity<Void> validateAccessToken(@RequestBody ValidateRequestModel validateRequestModel) {
         String token = validateRequestModel.getToken();
         String serviceId = validateRequestModel.getServiceId();
-        if (tokenProvider.isValidForScopes(token, serviceId) &&
-            !tokenProvider.isInvalidated(token)) {
+
+        boolean calledServiceIsPresentInScopes = tokenProvider.isValidForScopes(token, serviceId);
+        boolean tokenValid = !tokenProvider.isInvalidated(token);
+
+        if (calledServiceIsPresentInScopes && tokenValid) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else if (!calledServiceIsPresentInScopes) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } else {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
     @GetMapping(path = DISTRIBUTE_PATH)
