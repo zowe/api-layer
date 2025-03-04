@@ -277,6 +277,20 @@ class AuthControllerTest {
                             .content(body.toString()))
                         .andExpect(status().is(SC_UNAUTHORIZED));
                 }
+
+                @Test
+                void whenTokenIsValid_invalidScopeReturns403() throws Exception {
+                    String validTokenWithoutRelevantScope = "token";
+                    // The token doesn't have the scope relevant for the service called
+                    when(tokenProvider.isValidForScopes(validTokenWithoutRelevantScope, "service")).thenReturn(false);
+                    // The token is valid
+                    when(tokenProvider.isInvalidated(validTokenWithoutRelevantScope)).thenReturn(false);
+
+                    mockMvc.perform(post("/zaas/api/v1/auth/access-token/validate")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_FORBIDDEN));
+                }
             }
         }
 
