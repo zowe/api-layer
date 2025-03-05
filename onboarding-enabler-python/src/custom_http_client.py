@@ -23,7 +23,7 @@ config_loader = ConfigLoader("service-configuration.yml")
 ssl_config = config_loader.config.get("ssl", {})
 
 
-class MyHttpResponse(http_client.HttpResponse):
+class HttpResponse(http_client.HttpResponse):
     def __init__(self, raw_response, body_text):
         super().__init__(raw_response)
         self.raw_response = raw_response
@@ -35,7 +35,7 @@ class MyHttpResponse(http_client.HttpResponse):
         return self._body_text
 
 
-class MyHttpClient(http_client.HttpClient):
+class HttpClient(http_client.HttpClient):
     async def urlopen(self, request: Union[str, http_client.HttpRequest] = None,
                       data: bytes = None, timeout: float = None) -> http_client.HttpResponse:
         # Load SSL configuration from ConfigLoader
@@ -88,10 +88,10 @@ class MyHttpClient(http_client.HttpClient):
 
                     if 'application/xml' not in content_type and method == "GET":
                         raise ValueError("Received non-XML response from Eureka server.")
-                    return MyHttpResponse(response, body_text)
+                    return HttpResponse(response, body_text)
             except aiohttp.ClientError as e:
                 raise http_client.URLError(f"Error connecting to {url}: {e}")
 
 
 # Set the custom HTTP client to override the one used in `py_eureka_client.http_client`
-http_client.set_http_client(MyHttpClient())
+http_client.set_http_client(HttpClient())
