@@ -11,9 +11,16 @@
 import json
 import ssl
 from typing import Union
+import importlib
 
 import aiohttp
 import py_eureka_client.http_client as http_client
+
+config = importlib.import_module('onboarding-enabler-python.src.config')
+ConfigLoader = getattr(config, 'ConfigLoader')
+# Load the configuration using ConfigLoader (same as PythonEnabler)
+config_loader = ConfigLoader("service-configuration.yml")
+ssl_config = config_loader.config.get("ssl", {})
 
 
 class MyHttpResponse(http_client.HttpResponse):
@@ -31,7 +38,20 @@ class MyHttpResponse(http_client.HttpResponse):
 class MyHttpClient(http_client.HttpClient):
     async def urlopen(self, request: Union[str, http_client.HttpRequest] = None,
                       data: bytes = None, timeout: float = None) -> http_client.HttpResponse:
-        # Determine the URL and method (POST or GET) based on the request and data
+        # Load SSL configuration from ConfigLoader
+        ca_cert = ssl_config.get("caFile")
+        certfile = ssl_config.get("certificate")
+        keyfile = ssl_config.get("keystore")
+        password = ssl_config.get("keyPassword", None)
+
+        if not (ca_cert and certfile and keyfile):
+            raise ValueError("SSL certificate paths are missing in service-configuration.yml")
+
+        # Create SSL context
+        ssl_context = ssl.create_default_context(cafile=ca_cert)
+        ssl_context.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
+
+        # Determine the URL and method (POST or GET)
         url = request if isinstance(request, str) else request.url
         method = "POST" if data else "GET"
 
@@ -41,21 +61,12 @@ class MyHttpClient(http_client.HttpClient):
 
         client_timeout = aiohttp.ClientTimeout(total=timeout) if timeout else None
 
-        # Create an SSLContext using SSL material
-        ssl_context = ssl.create_default_context(cafile='../keystore/localhost/trusted_CAs.cer')
-        ssl_context.load_cert_chain(
-            certfile='../keystore/localhost/localhost.keystore.cer',
-            keyfile='../keystore/localhost/localhost.keystore.key',
-            password='password'
-        )
-
         async with aiohttp.ClientSession(timeout=client_timeout) as session:
             try:
                 if data and isinstance(data, dict):
-                    data = json.dumps(data)
-                    data = data.encode('utf-8')
-                if data:
+                    data = json.dumps(data).encode('utf-8')
                     print("Payload (data):", data.decode("utf-8"))
+
                 async with session.request(
                     method=method,
                     url=url,

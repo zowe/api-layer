@@ -27,7 +27,7 @@ If the APIML is already running then you should see the following messages:
 
 Then you can access it via Gateway by issuing the following command:
 
-    http --verify=../keystore/local_ca/localca.cer GET https://localhost:10010//pythonservice/api/v1/hello
+    http --verify=../keystore/local_ca/localca.cer GET https://localhost:10010/pythonservice/api/v1/hello
 
 ## Registration to the Discovery Service
 

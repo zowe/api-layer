@@ -15,6 +15,7 @@ from flask import Flask, jsonify
 import ssl
 import yaml
 import json
+
 # Add the parent directory of 'onboarding-enabler-python' to sys.path
 base_directory = os.path.dirname(os.path.abspath(__file__))
 parent_directory = os.path.abspath(os.path.join(base_directory, '..'))
@@ -40,11 +41,15 @@ config_file_path = os.path.join(base_directory, 'service-configuration.yml')
 # Initialize the enabler using the SDK
 enabler = PythonEnabler(config_file=config_file_path)
 
+# Load SSL configuration from service-configuration.yml
+ssl_config = enabler.ssl_config
+cert_file = ssl_config.get("certificate")
+key_file = ssl_config.get("keystore")
+
+if not cert_file or not key_file:
+    raise ValueError("SSL certificate or key file is missing in service-configuration.yml")
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS)
-ssl_context.load_cert_chain(
-    "../keystore/localhost/localhost.keystore.cer",  # Path to your certificate file
-    "../keystore/localhost/localhost.keystore.key"  # Path to your key file
-)
+ssl_context.load_cert_chain(certfile=cert_file, keyfile=key_file)
 
 
 @app.route("/pythonservice/registerInfo", methods=['GET'])
@@ -52,6 +57,7 @@ def register_python_enabler():
     """Test Endpoint to manually register the service."""
     enabler.register()
     return jsonify({"message": "Registered with Python eureka client to Discovery service"})
+
 
 @app.route("/pythonservice/unregisterInfo", methods=['GET'])
 def unregister_python_enabler():
@@ -77,13 +83,12 @@ def getSwagger():
         )
         return response
 
-# investigate how to get /python_enabler_service/application/info link on discovery service
-# localhost:10018/python_enabler_service/application/info works if routed correctly on line 71, but link doesn't appear in discovery service.
-# Only localhost:10018/application/info appears in discovery service
+
 @app.route("/pythonservice/application/info", methods=['GET'])
 def getApplicationInfo():
     data = {"build": {"name": "python-service", "operatingSystem": "Mac OS X (11.6.7)", "time": 1660222556.497000000,
-                      "machine": "Amandas-MacBook-Pro.local", "number": "n/a", "version": "2.3.3-SNAPSHOT", "by": "<userId>",
+                      "machine": "Amandas-MacBook-Pro.local", "number": "n/a", "version": "2.3.3-SNAPSHOT",
+                      "by": "<userId>",
                       "group": "api-layer", "artifact": "python-service"}}
     response = app.response_class(
         response=json.dumps(data),
@@ -91,6 +96,7 @@ def getApplicationInfo():
         mimetype='application/json'
     )
     return response
+
 
 @app.route("/pythonservice/application/health", methods=['GET'])
 def getApplicationHealth():
@@ -101,6 +107,7 @@ def getApplicationHealth():
         mimetype='application/json'
     )
     return response
+
 
 if __name__ == "__main__":
     # Load SSL configuration
