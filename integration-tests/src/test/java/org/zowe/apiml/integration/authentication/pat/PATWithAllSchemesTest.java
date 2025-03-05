@@ -61,18 +61,18 @@ class PATWithAllSchemesTest {
 
     static Stream<Arguments> schemas() {
         List<Arguments> schemasTest = new ArrayList<>();
-        schemasTest.add(
-            Arguments.of("zowejwt", HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST), (Consumer<Response>) r -> {
-                assertEquals(HttpStatus.SC_OK, r.getStatusCode());
-                assertThat(r.getBody().path("headers.cookie"), containsString(COOKIE_NAME));
-                String jwt = r.getBody().path("headers.authorization").toString();
-                try {
-                    String issuer = JWTParser.parse(jwt.substring(ApimlConstants.BEARER_AUTHENTICATION_PREFIX.length()).trim()).getJWTClaimsSet().toJSONObject().get("iss").toString();
-                    assertEquals("APIML", issuer);
-                } catch (ParseException e) {
-                    fail(e);
-                }
-            }));
+        schemasTest.add(Arguments.of("zowejwt", HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST), (Consumer<Response>) r -> {
+            assertEquals(HttpStatus.SC_OK, r.getStatusCode());
+            assertNotNull(r.getBody().path("headers.authorization"));
+            String jwt = r.getBody().path("headers.cookie").toString();
+            assertThat(jwt, containsString(COOKIE_NAME));
+            try {
+                String issuer = JWTParser.parse(jwt.substring(COOKIE_NAME.length()).trim()).getJWTClaimsSet().toJSONObject().get("iss").toString();
+                assertEquals("zOSMF", issuer);
+            } catch (ParseException e) {
+                fail(e);
+            }
+        }));
         schemasTest.add(
             Arguments.of("dcpassticket", HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT), (Consumer<Response>) r -> {
                 assertEquals(HttpStatus.SC_OK, r.getStatusCode());
