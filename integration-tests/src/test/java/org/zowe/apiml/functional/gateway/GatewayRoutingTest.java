@@ -113,7 +113,7 @@ class GatewayRoutingTest implements TestWithStartedInstances {
 
     @Test
     void testRoutingWithSpecialCharacters() throws URISyntaxException {
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "/discoverableclient/api/v1/%5C%2F%25%2E%3B/greeting");
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "/discoverableclient/api/v1/%2F%5C%2F%25%2E%3B/greeting");
         given()
             .urlEncodingEnabled(false)
             .get(new URI(scgUrl)).then().statusCode(200);
