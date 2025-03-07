@@ -28,9 +28,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.web.server.Ssl;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.server.WebFilter;
+import org.zowe.apiml.gateway.GatewayServiceApplication;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.SslProvider;
 
@@ -131,42 +136,70 @@ class ConnectionsConfigTest {
     }
 
     @Nested
-    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"management.port=-1"})
+    @SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = { "management.port=-1" },
+        classes = { GatewayServiceApplication.class, ConnectionsConfigTest.SslDetectorConfig.class }
+    )
     class ChooseAlias {
 
         @LocalServerPort
         protected int port;
 
-        @Value("${server.ssl.keyAlias}")
-        private String keyAlias;
+        @Nested
+        class UsingX509KeyManagerSelectedAlias {
 
-        @MockitoSpyBean
-        private ConnectionsConfig connectionsConfig;
+            @Value("${server.ssl.keyAlias}")
+            private String keyAlias;
 
-        @Test
-        void whenAliasIsSet_thenReturnItByX509KeyManagerSelectedAlias() {
-            AtomicReference<X509KeyManager> returnValue = new AtomicReference<>();
-            doAnswer(answer -> {
-                if (returnValue.get() == null) {
-                    returnValue.set(spy((X509KeyManager) answer.callRealMethod()));
-                }
-                return returnValue.get();
-            }).when(connectionsConfig).x509KeyManagerSelectedAlias(any());
+            @MockitoSpyBean
+            private ConnectionsConfig connectionsConfig;
 
-            var sslContext = connectionsConfig.getSslContext(true);
-            var sslProvider =  SslProvider.builder().sslContext(sslContext).build();
-            var httpClient = HttpClient.create().secure(sslProvider);
-            try {
+            @Test
+            void whenAliasIsSet_thenReturnItByX509KeyManagerSelectedAlias() {
+                AtomicReference<X509KeyManager> returnValue = new AtomicReference<>();
+                doAnswer(answer -> {
+                    if (returnValue.get() == null) {
+                        returnValue.set(spy((X509KeyManager) answer.callRealMethod()));
+                    }
+                    return returnValue.get();
+                }).when(connectionsConfig).x509KeyManagerSelectedAlias(any());
+
+                var sslContext = connectionsConfig.getSslContext(true);
+                var sslProvider = SslProvider.builder().sslContext(sslContext).build();
+                var httpClient = HttpClient.create().secure(sslProvider);
                 reset(returnValue.get());
                 httpClient.get()
                     .uri(String.format("https://localhost:%d/", port))
                     .response().block();
-            } catch (Exception e) {
-                // the HTTP call is just to load the key
+                assertNotNull(SslDetectorConfig.sslInfoHolder.get());
+
+                verify(returnValue.get(), atLeastOnce()).chooseClientAlias(any(), any(), any());
+                assertEquals(keyAlias, returnValue.get().chooseClientAlias(null, null, null));
             }
 
-            verify(returnValue.get(), atLeastOnce()).chooseClientAlias(any(), any(), any());
-            assertEquals(keyAlias, returnValue.get().chooseClientAlias(null, null, null));
+        }
+
+        @Nested
+        class Negative {
+
+            @Autowired
+            private ConnectionsConfig connectionsConfig;
+
+            @Test
+            void whenAliasIsInvalid_thenNoCertificateProvided() {
+                ReflectionTestUtils.setField(connectionsConfig, "keyAlias", "invalid");
+
+                var sslContext = connectionsConfig.getSslContext(true);
+                var sslProvider = SslProvider.builder().sslContext(sslContext).build();
+                var httpClient = HttpClient.create().secure(sslProvider);
+                httpClient.get()
+                    .uri(String.format("https://localhost:%d/", port))
+                    .response().block();
+
+                assertNull(SslDetectorConfig.sslInfoHolder.get());
+            }
+
         }
 
     }
@@ -280,6 +313,21 @@ class ConnectionsConfigTest {
         void givenDelegator_whenGetStatusPageUrl_thenCallInstanceInfo() {
             doReturn("statuspageUrl").when(instanceInfo).getStatusPageUrl();
             assertEquals("statuspageUrl", delegator.getStatusPageUrl());
+        }
+
+    }
+
+    @Configuration
+    static class SslDetectorConfig {
+
+        static final AtomicReference<SslInfo> sslInfoHolder = new AtomicReference<>();
+
+        @Bean
+        WebFilter sslDetector() {
+            return (exchange, chain) -> {
+                sslInfoHolder.set(exchange.getRequest().getSslInfo());
+                return chain.filter(exchange);
+            };
         }
 
     }
