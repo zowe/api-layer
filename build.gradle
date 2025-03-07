@@ -53,8 +53,8 @@ apply from: 'gradle/coverage.gradle'
 apply from: 'gradle/code-quality.gradle'
 apply from: 'gradle/lite.gradle'
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
 
 allprojects {
     apply plugin: 'idea'
@@ -125,8 +125,8 @@ configure(subprojects.findAll { it.name in [
 configure(subprojects.findAll {it.name != 'platform'}) {
     apply plugin: 'java-library'
 
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 
     test {
         useJUnitPlatform()
