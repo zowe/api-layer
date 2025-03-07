@@ -64,10 +64,12 @@ class PATWithAllSchemesTest {
         schemasTest.add(Arguments.of("zowejwt", HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST), (Consumer<Response>) r -> {
             assertEquals(HttpStatus.SC_OK, r.getStatusCode());
             assertNotNull(r.getBody().path("headers.authorization"));
-            String jwt = r.getBody().path("headers.cookie").toString();
-            assertThat(jwt, containsString(COOKIE_NAME));
+            String cookies = r.getBody().path("headers.cookie").toString();
+            assertThat(cookies, containsString(COOKIE_NAME));
+            String jwt = cookies.substring(cookies.indexOf(COOKIE_NAME));
+            jwt = jwt.substring(jwt.indexOf("=") + 1, jwt.contains(";") ? jwt.indexOf(";") : jwt.length());
             try {
-                String issuer = JWTParser.parse(jwt.substring(COOKIE_NAME.length()).trim()).getJWTClaimsSet().toJSONObject().get("iss").toString();
+                String issuer = JWTParser.parse(jwt).getJWTClaimsSet().toJSONObject().get("iss").toString();
                 assertEquals("zOSMF", issuer);
             } catch (ParseException e) {
                 fail(e);
