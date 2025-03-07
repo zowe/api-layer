@@ -22,16 +22,23 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.web.server.Ssl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.tcp.SslProvider;
 
+import javax.net.ssl.X509KeyManager;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -119,6 +126,47 @@ class ConnectionsConfigTest {
             assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "trustStorePath")).isEqualTo("/path2");
             assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "keyStorePassword")).isNull();
             assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "trustStorePassword")).isNull();
+        }
+
+    }
+
+    @Nested
+    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"management.port=-1"})
+    class ChooseAlias {
+
+        @LocalServerPort
+        protected int port;
+
+        @Value("${server.ssl.keyAlias}")
+        private String keyAlias;
+
+        @MockitoSpyBean
+        private ConnectionsConfig connectionsConfig;
+
+        @Test
+        void whenAliasIsSet_thenReturnItByX509KeyManagerSelectedAlias() {
+            AtomicReference<X509KeyManager> returnValue = new AtomicReference<>();
+            doAnswer(answer -> {
+                if (returnValue.get() == null) {
+                    returnValue.set(spy((X509KeyManager) answer.callRealMethod()));
+                }
+                return returnValue.get();
+            }).when(connectionsConfig).x509KeyManagerSelectedAlias(any());
+
+            var sslContext = connectionsConfig.getSslContext(true);
+            var sslProvider =  SslProvider.builder().sslContext(sslContext).build();
+            var httpClient = HttpClient.create().secure(sslProvider);
+            try {
+                reset(returnValue.get());
+                httpClient.get()
+                    .uri(String.format("https://localhost:%d/", port))
+                    .response().block();
+            } catch (Exception e) {
+                // the HTTP call is just to load the key
+            }
+
+            verify(returnValue.get(), atLeastOnce()).chooseClientAlias(any(), any(), any());
+            assertEquals(keyAlias, returnValue.get().chooseClientAlias(null, null, null));
         }
 
     }
