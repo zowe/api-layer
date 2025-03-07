@@ -221,85 +221,85 @@ class ConnectionsConfigTest {
             private static final X509Certificate[] CERTIFICATES = new X509Certificate[0];
             private static final PrivateKey PRIVATE_KEY = mock(PrivateKey.class);
 
-            private final X509KeyManager ORIG_KEY_MANAGER = mock(X509KeyManager.class);
-            private final KeyManagerFactory ORIG_KEY_MANAGER_FACTORY = new KeyManagerFactoryWrapper(ORIG_KEY_MANAGER);
+            private final X509KeyManager origKeyManager = mock(X509KeyManager.class);
+            private final KeyManagerFactory origKeyManagerFactory = new KeyManagerFactoryWrapper(origKeyManager);
 
             @Test
             void whenGetClientAliases_thenRecall() {
-                doReturn(ALIASES).when(ORIG_KEY_MANAGER).getClientAliases(KEY_TYPE, ISSUERS);
+                doReturn(ALIASES).when(origKeyManager).getClientAliases(KEY_TYPE, ISSUERS);
                 assertSame(ALIASES,
-                    new ConnectionsConfig.X509KeyManagerSelectedAlias(ORIG_KEY_MANAGER_FACTORY, CONFIG_ALIAS)
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
                         .getClientAliases(KEY_TYPE, ISSUERS)
                 );
-                verify(ORIG_KEY_MANAGER).getClientAliases(KEY_TYPE, ISSUERS);
+                verify(origKeyManager).getClientAliases(KEY_TYPE, ISSUERS);
             }
 
             @Test
             void givenNoAlias_whenChooseClientAlias_thenRecall() {
-                doReturn(ALIAS).when(ORIG_KEY_MANAGER).chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET);
+                doReturn(ALIAS).when(origKeyManager).chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET);
                 assertSame(ALIAS,
-                    new ConnectionsConfig.X509KeyManagerSelectedAlias(ORIG_KEY_MANAGER_FACTORY, null)
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, null)
                         .chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET)
                 );
-                verify(ORIG_KEY_MANAGER).chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET);
+                verify(origKeyManager).chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET);
             }
 
             @Test
             void givenAlias_whenChooseClientAlias_thenReturnAlias() {
                 assertSame(CONFIG_ALIAS,
-                    new ConnectionsConfig.X509KeyManagerSelectedAlias(ORIG_KEY_MANAGER_FACTORY, CONFIG_ALIAS)
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
                         .chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET)
                 );
-                verify(ORIG_KEY_MANAGER, never()).chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET);
+                verify(origKeyManager, never()).chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET);
             }
 
             @Test
             void whenGetServerAliases_thenRecall() {
-                doReturn(ALIASES).when(ORIG_KEY_MANAGER).getServerAliases(KEY_TYPE, ISSUERS);
+                doReturn(ALIASES).when(origKeyManager).getServerAliases(KEY_TYPE, ISSUERS);
                 assertSame(ALIASES,
-                    new ConnectionsConfig.X509KeyManagerSelectedAlias(ORIG_KEY_MANAGER_FACTORY, CONFIG_ALIAS)
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
                         .getServerAliases(KEY_TYPE, ISSUERS)
                 );
-                verify(ORIG_KEY_MANAGER).getServerAliases(KEY_TYPE, ISSUERS);
+                verify(origKeyManager).getServerAliases(KEY_TYPE, ISSUERS);
             }
 
             @Test
             void givenNoAlias_whenChooseServerAlias_thenRecall() {
-                doReturn(ALIAS).when(ORIG_KEY_MANAGER).chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET);
+                doReturn(ALIAS).when(origKeyManager).chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET);
                 assertSame(ALIAS,
-                    new ConnectionsConfig.X509KeyManagerSelectedAlias(ORIG_KEY_MANAGER_FACTORY, null)
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, null)
                         .chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET)
                 );
-                verify(ORIG_KEY_MANAGER).chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET);
+                verify(origKeyManager).chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET);
             }
 
             @Test
             void givenAlias_whenChooseServerAlias_thenReturnAlias() {
                 assertSame(CONFIG_ALIAS,
-                    new ConnectionsConfig.X509KeyManagerSelectedAlias(ORIG_KEY_MANAGER_FACTORY, CONFIG_ALIAS)
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
                         .chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET)
                 );
-                verify(ORIG_KEY_MANAGER, never()).chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET);
+                verify(origKeyManager, never()).chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET);
             }
 
             @Test
             void whenGetCertificateChain_thenRecall() {
-                doReturn(CERTIFICATES).when(ORIG_KEY_MANAGER).getCertificateChain(ALIAS);
+                doReturn(CERTIFICATES).when(origKeyManager).getCertificateChain(ALIAS);
                 assertSame(CERTIFICATES,
-                    new ConnectionsConfig.X509KeyManagerSelectedAlias(ORIG_KEY_MANAGER_FACTORY, CONFIG_ALIAS)
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
                         .getCertificateChain(ALIAS)
                 );
-                verify(ORIG_KEY_MANAGER).getCertificateChain(ALIAS);
+                verify(origKeyManager).getCertificateChain(ALIAS);
             }
 
             @Test
             void whenGetPrivateKey_thenRecall() {
-                doReturn(PRIVATE_KEY).when(ORIG_KEY_MANAGER).getPrivateKey(ALIAS);
+                doReturn(PRIVATE_KEY).when(origKeyManager).getPrivateKey(ALIAS);
                 assertSame(PRIVATE_KEY,
-                    new ConnectionsConfig.X509KeyManagerSelectedAlias(ORIG_KEY_MANAGER_FACTORY, CONFIG_ALIAS)
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
                         .getPrivateKey(ALIAS)
                 );
-                verify(ORIG_KEY_MANAGER).getPrivateKey(ALIAS);
+                verify(origKeyManager).getPrivateKey(ALIAS);
             }
 
         }
