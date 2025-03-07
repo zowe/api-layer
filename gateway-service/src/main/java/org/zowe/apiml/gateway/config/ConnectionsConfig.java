@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.config;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.appinfo.*;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
@@ -231,7 +232,7 @@ public class ConnectionsConfig {
         };
     }
 
-    // for testing purposes
+    @VisibleForTesting
     X509KeyManager x509KeyManagerSelectedAlias(KeyManagerFactory keyManagerFactory) {
         return new X509KeyManagerSelectedAlias(keyManagerFactory, keyAlias);
     }
