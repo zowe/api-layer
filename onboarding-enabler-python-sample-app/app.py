@@ -15,7 +15,8 @@ from flask import Flask, jsonify
 import ssl
 import yaml
 import json
-
+# onboarding_enabler_python_src = os.path.abspath(os.path.join(os.path.dirname(__file__), "../onboarding-enabler-python/src"))
+# sys.path.insert(0, onboarding_enabler_python_src)
 # Add the parent directory of 'onboarding-enabler-python' to sys.path
 base_directory = os.path.dirname(os.path.abspath(__file__))
 parent_directory = os.path.abspath(os.path.join(base_directory, '..'))

@@ -8,27 +8,20 @@
  * Copyright Contributors to the Zowe Project.
 """
 
-import importlib
 import logging
-import ssl
 
 import py_eureka_client.logger as eurekalogger
 from py_eureka_client import eureka_client as ec
-
-# Dynamically import the config module
-config = importlib.import_module('onboarding-enabler-python.src.config')
-httpClient = importlib.import_module('onboarding-enabler-python.src.custom_http_client')
-ConfigLoader = getattr(config, 'ConfigLoader')
-
+from custom_http_client import *
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 eurekalogger.set_level("DEBUG")
 
 
 class PythonEnabler:
-    logger.info("Python Onboarding Enabler initialized")
 
     def __init__(self, config_file='service-configuration.yml', discovery_service=None):
+        logger.info("Python Onboarding Enabler initialized")
         self.ssl_context = None
         self.config_loader = ConfigLoader(config_file)
         self.config_data = self.config_loader.config
@@ -61,8 +54,7 @@ class PythonEnabler:
             self.ssl_context = ssl_context
             logger.info("SSL environment configured.")
         else:
-            logger.error("SSL configuration is incomplete. Certificate, key, and CA files must be provided.")
-            self.ssl_context = None
+            ValueError("SSL configuration is incomplete. Certificate, key, and CA files must be provided.")
 
     def register(self):
         """Register the service with the Discovery Service, using SSL if configured."""

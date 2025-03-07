@@ -11,14 +11,11 @@
 import json
 import ssl
 from typing import Union
-import importlib
+from config import ConfigLoader
 
 import aiohttp
 import py_eureka_client.http_client as http_client
 
-config = importlib.import_module('onboarding-enabler-python.src.config')
-ConfigLoader = getattr(config, 'ConfigLoader')
-# Load the configuration using ConfigLoader (same as PythonEnabler)
 config_loader = ConfigLoader("service-configuration.yml")
 ssl_config = config_loader.config.get("ssl", {})
 
@@ -45,7 +42,7 @@ class HttpClient(http_client.HttpClient):
         password = ssl_config.get("keyPassword", None)
 
         if not (ca_cert and certfile and keyfile):
-            raise ValueError("SSL certificate paths are missing in service-configuration.yml")
+            raise ValueError("SSL certificate configuration is missing in service-configuration.yml")
 
         # Create SSL context
         ssl_context = ssl.create_default_context(cafile=ca_cert)
