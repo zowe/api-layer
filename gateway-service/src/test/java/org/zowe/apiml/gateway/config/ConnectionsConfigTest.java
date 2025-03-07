@@ -15,6 +15,7 @@ import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClientConfig;
+import io.netty.handler.ssl.util.KeyManagerFactoryWrapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -39,8 +40,13 @@ import org.zowe.apiml.gateway.GatewayServiceApplication;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.SslProvider;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.X509KeyManager;
 import java.net.MalformedURLException;
+import java.net.Socket;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -198,6 +204,102 @@ class ConnectionsConfigTest {
                     .response().block();
 
                 assertNull(SslDetectorConfig.sslInfoHolder.get());
+            }
+
+        }
+
+        @Nested
+        class Wrapper {
+
+            private static final String CONFIG_ALIAS = "configAlias";
+            private static final String ALIAS = "alias";
+            private static final String[] ALIASES = new String[] { "alias" };
+            private static final String KEY_TYPE = "keyType";
+            private static final String[] KEY_TYPES = new String[] { KEY_TYPE };
+            private static final Principal[] ISSUERS = new Principal[0];
+            private static final Socket SOCKET = mock(Socket.class);
+            private static final X509Certificate[] CERTIFICATES = new X509Certificate[0];
+            private static final PrivateKey PRIVATE_KEY = mock(PrivateKey.class);
+
+            private final X509KeyManager ORIG_KEY_MANAGER = mock(X509KeyManager.class);
+            private final KeyManagerFactory ORIG_KEY_MANAGER_FACTORY = new KeyManagerFactoryWrapper(ORIG_KEY_MANAGER);
+
+            @Test
+            void whenGetClientAliases_thenRecall() {
+                doReturn(ALIASES).when(ORIG_KEY_MANAGER).getClientAliases(KEY_TYPE, ISSUERS);
+                assertSame(ALIASES,
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(ORIG_KEY_MANAGER_FACTORY, CONFIG_ALIAS)
+                        .getClientAliases(KEY_TYPE, ISSUERS)
+                );
+                verify(ORIG_KEY_MANAGER).getClientAliases(KEY_TYPE, ISSUERS);
+            }
+
+            @Test
+            void givenNoAlias_whenChooseClientAlias_thenRecall() {
+                doReturn(ALIAS).when(ORIG_KEY_MANAGER).chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET);
+                assertSame(ALIAS,
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(ORIG_KEY_MANAGER_FACTORY, null)
+                        .chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET)
+                );
+                verify(ORIG_KEY_MANAGER).chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET);
+            }
+
+            @Test
+            void givenAlias_whenChooseClientAlias_thenReturnAlias() {
+                assertSame(CONFIG_ALIAS,
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(ORIG_KEY_MANAGER_FACTORY, CONFIG_ALIAS)
+                        .chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET)
+                );
+                verify(ORIG_KEY_MANAGER, never()).chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET);
+            }
+
+            @Test
+            void whenGetServerAliases_thenRecall() {
+                doReturn(ALIASES).when(ORIG_KEY_MANAGER).getServerAliases(KEY_TYPE, ISSUERS);
+                assertSame(ALIASES,
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(ORIG_KEY_MANAGER_FACTORY, CONFIG_ALIAS)
+                        .getServerAliases(KEY_TYPE, ISSUERS)
+                );
+                verify(ORIG_KEY_MANAGER).getServerAliases(KEY_TYPE, ISSUERS);
+            }
+
+            @Test
+            void givenNoAlias_whenChooseServerAlias_thenRecall() {
+                doReturn(ALIAS).when(ORIG_KEY_MANAGER).chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET);
+                assertSame(ALIAS,
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(ORIG_KEY_MANAGER_FACTORY, null)
+                        .chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET)
+                );
+                verify(ORIG_KEY_MANAGER).chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET);
+            }
+
+            @Test
+            void givenAlias_whenChooseServerAlias_thenReturnAlias() {
+                assertSame(CONFIG_ALIAS,
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(ORIG_KEY_MANAGER_FACTORY, CONFIG_ALIAS)
+                        .chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET)
+                );
+                verify(ORIG_KEY_MANAGER, never()).chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET);
+            }
+
+            @Test
+            void whenGetCertificateChain_thenRecall() {
+                doReturn(CERTIFICATES).when(ORIG_KEY_MANAGER).getCertificateChain(ALIAS);
+                assertSame(CERTIFICATES,
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(ORIG_KEY_MANAGER_FACTORY, CONFIG_ALIAS)
+                        .getCertificateChain(ALIAS)
+                );
+                verify(ORIG_KEY_MANAGER).getCertificateChain(ALIAS);
+            }
+
+            @Test
+            void whenGetPrivateKey_thenRecall() {
+                doReturn(PRIVATE_KEY).when(ORIG_KEY_MANAGER).getPrivateKey(ALIAS);
+                assertSame(PRIVATE_KEY,
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(ORIG_KEY_MANAGER_FACTORY, CONFIG_ALIAS)
+                        .getPrivateKey(ALIAS)
+                );
+                verify(ORIG_KEY_MANAGER).getPrivateKey(ALIAS);
             }
 
         }
