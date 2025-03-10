@@ -70,7 +70,7 @@ class PATWithAllSchemesTest {
             jwt = jwt.substring(jwt.indexOf("=") + 1, jwt.contains(";") ? jwt.indexOf(";") : jwt.length());
             try {
                 String issuer = JWTParser.parse(jwt).getJWTClaimsSet().toJSONObject().get("iss").toString();
-                assertEquals("zOSMF", issuer);
+                assertEquals("zOSMF", issuer, "Issuer did not match. Response from Discoverable Client was: " + r.getBody().asPrettyString());
             } catch (ParseException e) {
                 fail(e);
             }
