@@ -113,10 +113,28 @@ class GatewayRoutingTest implements TestWithStartedInstances {
 
     @Test
     void testRoutingWithSpecialCharacters() throws URISyntaxException {
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "/discoverableclient/api/v1/%2F%5C%2F%25%2E%3B/greeting");
+        // \/%.;
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "/discoverableclient/api/v1/%5C%2F%25%2E%3B/greeting");
         given()
             .urlEncodingEnabled(false)
             .get(new URI(scgUrl)).then().statusCode(200);
     }
 
+    @Test
+    void testRoutingWithSpecialCharactersForUssFiles() throws URISyntaxException {
+        // /.$-_#@{A-Z0-9/+ *%
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "/discoverableclient/api/v1/%2F.%24-_%23%40%7BA-Z0-9%2F%2B%20%2A%25/greeting");
+        given()
+            .urlEncodingEnabled(false)
+            .get(new URI(scgUrl)).then().statusCode(200);
+    }
+
+    @Test
+    void testRoutingWithSpecialCharactersForDataSets() throws URISyntaxException {
+        // #@$-.
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "/discoverableclient/api/v1/%23%40%24-./greeting");
+        given()
+            .urlEncodingEnabled(false)
+            .get(new URI(scgUrl)).then().statusCode(200);
+    }
 }
