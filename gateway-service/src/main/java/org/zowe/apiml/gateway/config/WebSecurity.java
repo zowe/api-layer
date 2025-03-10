@@ -494,12 +494,12 @@ public class WebSecurity {
     @Bean
     public StrictServerWebExchangeFirewall httpFirewall() {
         StrictServerWebExchangeFirewall firewall = new StrictServerWebExchangeFirewall();
-
         if (isStrictUrlValidationEnabled) {
             return firewall;
         }
 
         firewall.setAllowUrlEncodedSlash(true);
+        firewall.setAllowUrlEncodedDoubleSlash(true);
         firewall.setAllowBackSlash(true);
         firewall.setAllowUrlEncodedPercent(true);
         firewall.setAllowUrlEncodedPeriod(true);
