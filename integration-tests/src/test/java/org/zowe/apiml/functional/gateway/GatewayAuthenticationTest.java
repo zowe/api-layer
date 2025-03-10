@@ -73,7 +73,7 @@ class GatewayAuthenticationTest {
             @TestsNotMeantForZowe("Automation needs unprotected health endpoint")
             @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT})
             void thenReturnUnauthorized(String endpoint) {
-                String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";
+                String expectedMessage = "Token is not valid for URL '" + endpoint + "'";
                 // Gateway request to url
                 given()
                     .header("Authorization", "Bearer invalidToken")
@@ -82,7 +82,7 @@ class GatewayAuthenticationTest {
                     .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
                     );
             }
 

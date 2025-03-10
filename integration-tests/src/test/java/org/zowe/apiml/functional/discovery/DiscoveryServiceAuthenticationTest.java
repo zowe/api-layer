@@ -12,10 +12,9 @@ package org.zowe.apiml.functional.discovery;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
@@ -91,13 +90,13 @@ class DiscoveryServiceAuthenticationTest {
 
     @Test
     @TestsNotMeantForZowe("Automation needs unprotected health endpoint")
-    @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication enabled.")
+    @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication disabled.")
     void thenDoNotRequireAuthentication() {
         given()
             .when()
             .get(DiscoveryUtils.getDiscoveryUrl() + DISCOVERY_HEALTH_ENDPOINT)
             .then()
-            .statusCode(is(SC_UNAUTHORIZED));
+            .statusCode(is(SC_OK));
 
     }
 
