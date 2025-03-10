@@ -75,7 +75,7 @@ public class PH34912 extends FunctionalApar {
     }
 
     private boolean isUnauthorized(Map<String, String> headers) {
-        return containsInvalidOrNoUser(headers) && !ltpaIsPresent(headers);
+        return containsInvalidOrNoUser(headers) && noLtpaCookie(headers);
     }
 
     private boolean isInternalError(LoginBody body) {

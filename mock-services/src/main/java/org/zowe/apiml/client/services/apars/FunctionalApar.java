@@ -13,7 +13,6 @@ package org.zowe.apiml.client.services.apars;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.zowe.apiml.client.model.LoginBody;
 import org.zowe.apiml.client.services.JwtTokenService;
 
@@ -196,13 +195,13 @@ public class FunctionalApar implements Apar {
         throw new IllegalArgumentException("Headers did not have cookie or authorization field");
     }
 
-    protected boolean ltpaIsPresent(Map<String, String> headers) {
+    protected boolean noLtpaCookie(Map<String, String> headers) {
         String cookie = getAuthCookie(headers);
-        return cookie != null && cookie.contains(LTPA_TOKEN_NAME);
+        return cookie == null || !cookie.contains(LTPA_TOKEN_NAME);
     }
 
     protected boolean validLtpaCookie(Map<String, String> headers) {
-        if (!ltpaIsPresent(headers)) {
+        if (noLtpaCookie(headers)) {
             return false;
         }
         String token = jwtTokenService.extractLtpaToken(headers);
@@ -217,19 +216,6 @@ public class FunctionalApar implements Apar {
         String jwtToken = jwtTokenService.extractToken(headers);
         return jwtTokenService.validateJwtToken(jwtToken);
 
-    }
-
-    protected boolean isValidAuthHeader(String authHeader) {
-        if (!StringUtils.hasText(authHeader)) {
-            return false;
-        }
-
-        if (authHeader.startsWith("Bearer")) {
-            String jwtToken = authHeader.length() > 8 ? authHeader.substring(7) : "";
-            return jwtTokenService.validateJwtToken(jwtToken);
-        }
-
-        return true;
     }
 
     private String getAuthCookie(Map<String, String> headers) {

@@ -30,9 +30,9 @@ public class PH12143 extends FunctionalApar {
     @Override
     protected ResponseEntity<?> handleAuthenticationCreate(Map<String, String> headers, HttpServletResponse response) {
         if (noAuthentication(headers)) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        if (containsInvalidOrNoUser(headers) && !ltpaIsPresent(headers)) {
+        if (isUnauthorized(headers)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
@@ -42,18 +42,15 @@ public class PH12143 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleAuthenticationVerify(Map<String, String> headers, HttpServletResponse response) {
-
-        if (containsInvalidOrNoUser(headers) && !isValidJwtCookie(headers) && !ltpaIsPresent(headers)) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }
-        String[] credentials = getPiecesOfCredentials(headers);
-        return validJwtResponse(response, credentials[0], keystorePath);
+        return handleAuthenticationCreate(headers, response);
     }
 
     @Override
     protected ResponseEntity<?> handleAuthenticationDelete(Map<String, String> headers) {
-
-        if (containsInvalidOrNoUser(headers) && !ltpaIsPresent(headers) && !isValidJwtCookie(headers)) {
+        if (noAuthentication(headers)) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (isValidJwtCookie(headers) || isUnauthorized(headers)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -73,5 +70,9 @@ public class PH12143 extends FunctionalApar {
             "    }\n" +
             "  ]\n" +
             "}", HttpStatus.OK);
+    }
+
+    private boolean isUnauthorized(Map<String, String> headers) {
+        return containsInvalidOrNoUser(headers) && noLtpaCookie(headers);
     }
 }

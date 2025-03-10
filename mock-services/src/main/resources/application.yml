@@ -1,7 +1,3 @@
-logging:
-    level:
-        ROOT: INFO
-        org.apache.tomcat.util.net.SSLUtilBase: ERROR
 spring:
     application:
         name: Mock services
