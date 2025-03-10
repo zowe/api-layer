@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.config;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.appinfo.*;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
@@ -74,9 +75,14 @@ import reactor.netty.tcp.SslProvider;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509KeyManager;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URL;
 import java.security.KeyStore;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -226,6 +232,11 @@ public class ConnectionsConfig {
         };
     }
 
+    @VisibleForTesting
+    X509KeyManager x509KeyManagerSelectedAlias(KeyManagerFactory keyManagerFactory) {
+        return new X509KeyManagerSelectedAlias(keyManagerFactory, keyAlias);
+    }
+
     /**
      * @return io.netty.handler.ssl.SslContext for http client.
      */
@@ -243,7 +254,7 @@ public class ConnectionsConfig {
                 log.info("Loading keystore: {}: {}", keyStoreType, keyStorePath);
                 KeyStore keyStore = SecurityUtils.loadKeyStore(keyStoreType, keyStorePath, keyStorePassword);
                 keyManagerFactory.init(keyStore, keyStorePassword);
-                builder.keyManager(keyManagerFactory);
+                builder.keyManager(x509KeyManagerSelectedAlias(keyManagerFactory));
             } else {
                 KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
                 emptyKeystore.load(null, null);
@@ -536,6 +547,54 @@ public class ConnectionsConfig {
             String getHomePageUrl();
             String getStatusPageUrl();
 
+        }
+
+    }
+
+    static class X509KeyManagerSelectedAlias implements X509KeyManager {
+
+        private final X509KeyManager originalKm;
+        private final String keyAlias;
+
+        X509KeyManagerSelectedAlias(KeyManagerFactory keyManagerFactory, String keyAlias) {
+            this.originalKm = (X509KeyManager) keyManagerFactory.getKeyManagers()[0];
+            this.keyAlias = keyAlias;
+        }
+
+        @Override
+        public String[] getClientAliases(String keyType, Principal[] issuers) {
+            return originalKm.getClientAliases(keyType, issuers);
+        }
+
+        @Override
+        public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
+            if (keyAlias != null) {
+                return keyAlias;
+            }
+            return originalKm.chooseClientAlias(keyType, issuers, socket);
+        }
+
+        @Override
+        public String[] getServerAliases(String keyType, Principal[] issuers) {
+            return originalKm.getServerAliases(keyType, issuers);
+        }
+
+        @Override
+        public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
+            if (keyAlias != null) {
+                return keyAlias;
+            }
+            return originalKm.chooseServerAlias(keyType, issuers, socket);
+        }
+
+        @Override
+        public X509Certificate[] getCertificateChain(String alias) {
+            return originalKm.getCertificateChain(alias);
+        }
+
+        @Override
+        public PrivateKey getPrivateKey(String alias) {
+            return originalKm.getPrivateKey(alias);
         }
 
     }
