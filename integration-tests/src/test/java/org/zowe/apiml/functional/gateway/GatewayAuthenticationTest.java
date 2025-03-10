@@ -70,7 +70,6 @@ class GatewayAuthenticationTest {
         class WhenAccessingProtectedEndpoint {
 
             @ParameterizedTest
-            @TestsNotMeantForZowe("Automation needs unprotected health endpoint")
             @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT})
             void thenReturnUnauthorized(String endpoint) {
                 String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";

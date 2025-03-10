@@ -225,7 +225,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,shutdown
+                include: health,info,shutdown,hystrixstream
     health:
         defaults:
             enabled: false
