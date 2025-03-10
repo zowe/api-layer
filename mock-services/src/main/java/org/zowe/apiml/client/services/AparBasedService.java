@@ -11,7 +11,6 @@
 package org.zowe.apiml.client.services;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +32,6 @@ public class AparBasedService {
     private final List<String> appliedApars;
     private final Versions versions;
 
-    @Autowired
     public AparBasedService(@Value("${zosmf.baseVersion}") String baseVersion, @Value("${zosmf.appliedApars}") List<String> appliedApars, Versions versions) {
         this.baseVersion = baseVersion;
         this.appliedApars = appliedApars;

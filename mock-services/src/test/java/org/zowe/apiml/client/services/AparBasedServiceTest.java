@@ -64,7 +64,7 @@ class AparBasedServiceTest {
             Optional<ResponseEntity<?>> expectedResult = Optional.of(new ResponseEntity<>(HttpStatus.OK));
             ResponseEntity<?> expected = expectedResult.get();
             when(versions.fullSetOfApplied(any(), any())).thenReturn(Collections.singletonList(apar));
-            when(apar.apply(ArgumentMatchers.<Object>any())).thenReturn(expectedResult);
+            when(apar.apply(any(Object[].class))).thenReturn(expectedResult);
 
             ResponseEntity<?> result = underTest.process(SERVICE, METHOD, response, HEADERS);
             assertThat(result, is(expected));
@@ -80,8 +80,8 @@ class AparBasedServiceTest {
             aparList.add(apar);
             aparList.add(apar2);
             when(versions.fullSetOfApplied(any(), any())).thenReturn(aparList);
-            when(apar.apply(ArgumentMatchers.<Object>any())).thenReturn(Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT)));
-            when(apar2.apply(ArgumentMatchers.<Object>any())).thenReturn(expectedResult);
+            when(apar.apply(any(Object[].class))).thenReturn(Optional.of(new ResponseEntity<>(HttpStatus.NO_CONTENT)));
+            when(apar2.apply(any(Object[].class))).thenReturn(expectedResult);
 
             ResponseEntity<?> result = underTest.process(SERVICE, METHOD, response, HEADERS);
             assertThat(result, is(expected));

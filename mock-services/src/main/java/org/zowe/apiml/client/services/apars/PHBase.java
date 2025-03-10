@@ -34,7 +34,7 @@ public class PHBase extends FunctionalApar {
         if (noAuthentication(headers)) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        if (containsInvalidOrNoUser(headers) && noLtpaCookie(headers)) {
+        if (containsInvalidOrNoUser(headers) && !ltpaIsPresent(headers)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
@@ -70,11 +70,11 @@ public class PHBase extends FunctionalApar {
         String authorization = headers.get(AUTHORIZATION_HEADER);
 
         if (authorization != null) {
-            if (authorization.startsWith("Bearer")) {
+            if (!isValidAuthHeader(authorization) && !ltpaIsPresent(headers)) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
         } else {
-            if (noLtpaCookie(headers) || !isValidJwtCookie(headers)) {
+            if (!isValidJwtCookie(headers) && !ltpaIsPresent(headers)) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
         }

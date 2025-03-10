@@ -47,6 +47,6 @@ public class AuthenticateApar extends FunctionalApar {
     }
 
     private boolean isUnauthorized(Map<String, String> headers) {
-        return containsInvalidOrNoUser(headers) && noLtpaCookie(headers);
+        return containsInvalidOrNoUser(headers) && !ltpaIsPresent(headers);
     }
 }
