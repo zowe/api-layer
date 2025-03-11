@@ -64,7 +64,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public void invalidateAllTokensForUser(String userId, long timestamp) throws CachingServiceClientException {
-        String hashedUserId = getHash(userId);
+        String hashedUserId = getHash(userId.trim().toUpperCase());
         if (timestamp == 0) {
             timestamp = System.currentTimeMillis();
         }
@@ -72,7 +72,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public void invalidateAllTokensForService(String serviceId, long timestamp) throws CachingServiceClientException {
-        String hashedServiceId = getHash(serviceId);
+        String hashedServiceId = getHash(serviceId.trim().toLowerCase());
         if (timestamp == 0) {
             timestamp = System.currentTimeMillis();
         }
@@ -82,7 +82,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     public boolean isInvalidated(String token) throws CachingServiceClientException {
         QueryResponse parsedToken = authenticationService.parseJwtWithSignature(token);
         String hashedToken = getHash(token);
-        String hashedUserId = getHash(parsedToken.getUserId());
+        String hashedUserId = getHash(parsedToken.getUserId().trim().toUpperCase());
         List<String> hashedServiceIds = parsedToken.getScopes().stream().map(this::getHash).collect(Collectors.toList());
 
         Map<String, Map<String, String>> cacheMap = cachingServiceClient.readAllMaps();

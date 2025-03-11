@@ -267,7 +267,6 @@ public class NewSecurityConfiguration {
                 )))
                         .authorizeRequests(requests -> requests
                                 .anyRequest().authenticated())
-                        .x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
                         .authenticationProvider(compoundAuthProvider) // for authenticating credentials
                         .apply(new CustomSecurityFilters());
                 return http.build();
@@ -314,7 +313,6 @@ public class NewSecurityConfiguration {
                 )))
                         .authorizeRequests(requests -> requests
                                 .anyRequest().authenticated())
-                        .x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
                         .addFilterAfter(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                         .addFilterAfter(new ExtractAuthSourceFilter(authSourceService, authExceptionHandler), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                         .addFilterAfter(new ZaasAuthenticationFilter(authSourceService, authExceptionHandler), CategorizeCertsFilter.class);
