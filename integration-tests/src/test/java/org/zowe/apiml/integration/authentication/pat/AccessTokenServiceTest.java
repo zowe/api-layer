@@ -126,7 +126,7 @@ public class AccessTokenServiceTest {
             .when()
                 .post(VALIDATE_ENDPOINT)
             .then()
-                .statusCode(401);
+                .statusCode(403);
         }
 
     }

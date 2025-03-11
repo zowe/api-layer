@@ -37,6 +37,7 @@ public class TokenProvider extends AbstractAuthProviderFilter<QueryResponse> {
             .retrieve()
             .onStatus(HttpStatusCode::is5xxServerError, clientResponse -> Mono.empty())
             .bodyToMono(QueryResponse.class)
+            // Most probably add the information with just
             .onErrorResume(exception -> exception instanceof WebClientResponseException.Unauthorized ? Mono.just(new QueryResponse()) : Mono.error(exception));
     }
 
