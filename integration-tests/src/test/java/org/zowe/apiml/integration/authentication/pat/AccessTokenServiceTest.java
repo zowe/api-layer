@@ -320,7 +320,7 @@ public class AccessTokenServiceTest {
                 .when()
                 .delete(REVOKE_FOR_USER_ENDPOINT)
                 .then()
-                .statusCode(403);
+                .statusCode(401);
         }
     }
 
