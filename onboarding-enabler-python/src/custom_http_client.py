@@ -17,7 +17,6 @@ import aiohttp
 import py_eureka_client.http_client as http_client
 
 config_loader = ConfigLoader("service-configuration.yml")
-ssl_config = config_loader.config.get("ssl", {})
 
 
 class HttpResponse(http_client.HttpResponse):
@@ -36,6 +35,8 @@ class HttpClient(http_client.HttpClient):
     async def urlopen(self, request: Union[str, http_client.HttpRequest] = None,
                       data: bytes = None, timeout: float = None) -> http_client.HttpResponse:
         # Load SSL configuration from ConfigLoader
+        ssl_config = config_loader.config.get("ssl", {})
+
         ca_cert = ssl_config.get("caFile")
         certfile = ssl_config.get("certificate")
         keyfile = ssl_config.get("keystore")
