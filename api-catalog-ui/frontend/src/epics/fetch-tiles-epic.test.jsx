@@ -133,7 +133,7 @@ test('it should request, fail with a terminating FAILED action with an enclosed 
 
     const ts = createTestScheduler(deepEquals);
     const dependencies = {
-        ajax: () => throwError(ajax500Error),
+        ajax: () => throwError(() => ajax500Error),
         scheduler: ts,
     };
 
@@ -169,7 +169,7 @@ test('it should fail when runs out of retry attempts', () => {
         )
     );
     const dependencies = {
-        ajax: () => throwError(retryError),
+        ajax: () => throwError(() => retryError),
         scheduler: ts,
     };
 
@@ -193,7 +193,7 @@ test('it when retries then no response', () => {
 
     const ts = createTestScheduler((actualResult) => expect(actualResult).toEqual([]));
     const dependencies = {
-        ajax: () => throwError(retryError),
+        ajax: () => throwError(() => retryError),
         scheduler: ts,
     };
 

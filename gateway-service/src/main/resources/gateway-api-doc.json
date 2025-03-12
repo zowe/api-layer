@@ -38,7 +38,7 @@
                             }
                         }
                     },
-                    "description": "Specifies the user credentials to be authenticated."
+                    "description": "Specifies the user credentials to be authenticated. If newPassword is provided and the password is valid, the password is changed to newPassword"
                 },
                 "security": [
                     {
@@ -639,6 +639,33 @@
                 }
             }
         },
+
+        "/auth/oidc-token/validate": {
+            "post": {
+                "tags": ["OIDC"],
+                "summary": "Validate OIDC token",
+                "description": "Use the /oidc-token/validate API to validate token against configured OIDC provider. The Gateway can verify token locally or remotely depends on API Mediation Layer configuration.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OIDCValidationRequest"
+                            }
+                        }
+                    },
+                    "description": "Specifies the OIDC token for validation without scopes (serviceId will be ignored)."
+                },
+                "responses": {
+                    "204": {
+                        "description": "Valid token"
+                    },
+                    "401": {
+                        "description": "Invalid token or OIDC provider is not defined"
+                    }
+                }
+            }
+        },
+
         "/services": {
             "get": {
                 "tags": ["Services"],
@@ -911,6 +938,9 @@
                     },
                     "password": {
                         "type": "string"
+                    },
+                    "newPassword": {
+                        "type": "string"
                     }
                 },
                 "required": ["username", "password"],
@@ -960,6 +990,23 @@
                 "required": ["applicationName"],
                 "example": {
                     "applicationName": "ZOWEAPPL"
+                }
+            },
+            "OIDCValidationRequest": {
+                "type": "object",
+                "properties": {
+                    "token": {
+                        "type": "string",
+                        "description": "OIDC token to be validated"
+                    },
+                    "serviceId": {
+                        "type": "string",
+                        "description": "Service ID to be validated as required scope in the token"
+                    }
+                },
+                "example": {
+                    "serviceId": "string",
+                    "token": "string"
                 }
             },
             "TicketResponse": {

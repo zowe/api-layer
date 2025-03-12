@@ -24,6 +24,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
@@ -44,11 +45,14 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ServerSentEventProxyHandlerTest {
+
     private static final String HOST = "host.com";
     private static final int PORT = 10010;
     private static final String SERVICE_URL = "/service";
@@ -73,6 +77,20 @@ class ServerSentEventProxyHandlerTest {
         mockDiscoveryClient = mock(DiscoveryClient.class);
         underTest = Mockito.spy(new ServerSentEventProxyHandler(mockDiscoveryClient, messageService));
         underTest.initWebClient();
+    }
+
+    @Test
+    void givenFourSlashesKeyring_thenFixFormat() {
+        ReflectionTestUtils.setField(underTest, "trustStorePassword", new char[]{});
+        ReflectionTestUtils.setField(underTest, "trustStore", "safkeyring:////USER/KEYRING");
+
+        try {
+            underTest.initWebClient();
+        } catch (Exception e) {
+            // ignore
+        }
+        assertArrayEquals(new char[]{'p','a','s','s','w','o','r','d'}, (char[]) ReflectionTestUtils.getField(underTest, "trustStorePassword"));
+        assertEquals("safkeyring://USER/KEYRING", ReflectionTestUtils.getField(underTest, "trustStore"));
     }
 
     @Nested
@@ -253,6 +271,7 @@ class ServerSentEventProxyHandlerTest {
         }
     }
 
+    @SuppressWarnings("unused") // parameterized test
     private static Stream<Arguments> endpoints() {
         return Stream.of(
             Arguments.of(GATEWAY_PATH, ENDPOINT),

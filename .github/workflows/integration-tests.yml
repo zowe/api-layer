@@ -19,7 +19,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
@@ -71,7 +71,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/metrics-service:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -84,7 +84,7 @@ jobs:
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITests-${{ env.JOB_ID }}
@@ -118,7 +118,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -164,7 +164,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -180,7 +180,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CloudGatewayProxy-${{ env.JOB_ID }}
@@ -208,7 +208,7 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -224,7 +224,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CloudGatewayServiceRouting-${{ env.JOB_ID }}
@@ -288,7 +288,7 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_SERVICEURL: /
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -304,7 +304,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CloudGatewayCentralRegistry-${{ env.JOB_ID }}
@@ -352,7 +352,7 @@ jobs:
             # Coverage results are not stored in this job as it would not provide much additional data
 
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITestsRegistration-${{ env.JOB_ID }}
@@ -407,7 +407,7 @@ jobs:
                     ZOSMF_APPLIEDAPARS: PH34201
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -426,7 +426,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITestsZaas-${{ env.JOB_ID }}
@@ -482,7 +482,7 @@ jobs:
                 if: always()
 
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITestsZosmfRsu2012-${{ env.JOB_ID }}
@@ -523,7 +523,7 @@ jobs:
                     ZOSMF_APPLIEDAPARS: PH12143,RSU2012,PH34201
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -535,7 +535,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CITestsZosmfPH34201-${{ env.JOB_ID }}
@@ -587,7 +587,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITestsZosmfWithoutJwt-${{ env.JOB_ID }}
@@ -628,7 +628,7 @@ jobs:
                     ZOSMF_APPLIEDAPARS: AuthenticateApar
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -640,7 +640,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITestsZosmfWithoutJwtWithAuthenticateEndpoint-${{ env.JOB_ID }}
@@ -696,7 +696,7 @@ jobs:
                 if: always()
 
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
@@ -759,7 +759,7 @@ jobs:
 
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
@@ -774,7 +774,7 @@ jobs:
         timeout-minutes: 15
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -827,7 +827,7 @@ jobs:
 
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: ContainerCITestsWithRedisSentinel-${{ env.JOB_ID }}
@@ -887,7 +887,7 @@ jobs:
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -907,7 +907,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CITestsHA-${{ env.JOB_ID }}
@@ -968,7 +968,7 @@ jobs:
                     APIML_ROUTING_INSTANCEIDHEADER: true
                     APIML_LOADBALANCER_DISTRIBUTE: true
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1002,7 +1002,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: LbHaTests-${{ env.JOB_ID }}
@@ -1052,7 +1052,7 @@ jobs:
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1072,7 +1072,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CITestsDiscoveryChaoticHA-${{ env.JOB_ID }}
@@ -1122,7 +1122,7 @@ jobs:
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1142,7 +1142,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CITestsGatewayChaoticHA-${{ env.JOB_ID }}
@@ -1196,7 +1196,7 @@ jobs:
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1216,7 +1216,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CITestsDiscoverableClientChaoticHA-${{ env.JOB_ID }}
@@ -1270,7 +1270,7 @@ jobs:
                     SERVER_INTERNAL_PORT: 10027
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1297,7 +1297,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CITestsWebSocketChaoticHA-${{ env.JOB_ID }}
@@ -1356,7 +1356,7 @@ jobs:
                     ZOSMF_APPLIEDAPARS: AuthenticateApar
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1371,7 +1371,7 @@ jobs:
                 if: always()
 
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CITestsWithInfinispan-${{ env.JOB_ID }}
@@ -1418,7 +1418,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/metrics-service:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
@@ -1432,7 +1432,7 @@ jobs:
                 with:
                    working-directory: metrics-service-ui/frontend
             -   name: Cache NPM and Cypress 📦
-                uses: actions/cache@v2
+                uses: actions/cache@v4
                 with:
                     path: |
                         ~/.cache/Cypress
@@ -1459,13 +1459,13 @@ jobs:
                     cd metrics-service-ui/frontend
                     npm run cy:e2e:ci
             -   name: Upload screenshots API Catalog
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: failure()
                 with:
                     name: cypress-snapshots
                     path: api-catalog-ui/frontend/cypress/screenshots
             -   name: Upload screenshots Metrics service
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: failure()
                 with:
                     name: cypress-snapshots
@@ -1496,7 +1496,7 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1508,7 +1508,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Store results
-                uses: actions/upload-artifact@v3
+                uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: CITestsServicePrefixReplacer-${{ env.JOB_ID }}
@@ -1535,39 +1535,39 @@ jobs:
                         17
                         8
 
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: ContainerCITests-${{ env.JOB_ID }}
                     path: containercitests
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: CITestsWithInfinispan-${{ env.JOB_ID }}
                     path: citestswithinfinispan
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: ContainerCITestsZosmfRsu2012-${{ env.JOB_ID }}
                     path: containercitestszosmfrsu2012
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
                     path: ContainerCITestsWithRedisReplica
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: ContainerCITestsWithRedisSentinel-${{ env.JOB_ID }}
                     path: ContainerCITestsWithRedisSentinel
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: ContainerCITestsInternalPort-${{ env.JOB_ID }}
                     path: containercitestsinternalport
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: CloudGatewayProxy-${{ env.JOB_ID }}
                     path: cloudgatewayproxy
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: CITestsWebSocketChaoticHA-${{ env.JOB_ID }}
                     path: citestswebsocketchaoticha
-            -   uses: actions/download-artifact@v3
+            -   uses: actions/download-artifact@v4
                 with:
                     name: CloudGatewayServiceRouting-${{ env.JOB_ID }}
                     path: cloudgatewayservicerouting
