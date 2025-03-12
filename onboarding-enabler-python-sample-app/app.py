@@ -11,10 +11,13 @@
 import importlib.util
 import sys
 import os
-from flask import Flask, jsonify
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 import ssl
 import yaml
 import json
+import uvicorn
+
 # Add the parent directory of 'onboarding-enabler-python' to sys.path
 base_directory = os.path.dirname(os.path.abspath(__file__))
 parent_directory = os.path.abspath(os.path.join(base_directory, '..'))
@@ -32,8 +35,6 @@ spec.loader.exec_module(module)
 # Access the PythonEnabler class dynamically
 PythonEnabler = module.PythonEnabler
 
-app = Flask(__name__)
-
 # Construct the absolute path to the configuration file
 config_file_path = os.path.join(base_directory, 'service-configuration.yml')
 
@@ -45,76 +46,58 @@ ssl_config = enabler.ssl_config
 cert_file = ssl_config.get("certificate")
 key_file = ssl_config.get("keystore")
 
-if not cert_file or not key_file:
-    raise ValueError("SSL certificate or key file is missing in service-configuration.yml")
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS)
 ssl_context.load_cert_chain(certfile=cert_file, keyfile=key_file)
 
+app = FastAPI(title="Python Sample Service", description="FastAPI implementation of Python Sample Service")
 
-@app.route("/pythonservice/registerInfo", methods=['GET'])
+@app.get("/pythonservice/registerInfo")
 def register_python_enabler():
     """Test Endpoint to manually register the service."""
     enabler.register()
-    return jsonify({"message": "Registered with Python eureka client to Discovery service"})
+    return {"message": "Registered with Python eureka client to Discovery service"}
 
-
-@app.route("/pythonservice/unregisterInfo", methods=['GET'])
+@app.get("/pythonservice/unregisterInfo")
 def unregister_python_enabler():
     """Test Endpoint to manually unregister the service."""
     enabler.unregister()
-    return jsonify({"message": "Unregistered Python eureka client from Discovery service"})
+    return {"message": "Unregistered Python eureka client from Discovery service"}
 
 
-@app.route("/pythonservice/hello", methods=['GET'])
+@app.get("/pythonservice/hello")
 def hello():
     """Simple hello endpoint for testing."""
-    return jsonify({"message": "Hello world in swagger"})
+    return {"message": "Hello world in swagger"}
 
 
-@app.route("/pythonservice/apidoc", methods=['GET'])
-def getSwagger():
+@app.get("/pythonservice/apidoc")
+def get_swagger():
     with open('pythonSwagger.json') as f:
-        data = yaml.load(f, Loader=yaml.FullLoader)
-        response = app.response_class(
-            response=json.dumps(data),
-            status=200,
-            mimetype='application/json'
-        )
-        return response
+        data = yaml.safe_load(f)
+    return JSONResponse(content=data)
 
 
-@app.route("/pythonservice/application/info", methods=['GET'])
-def getApplicationInfo():
-    data = {"build": {"name": "python-service", "operatingSystem": "Mac OS X (11.6.7)", "time": 1660222556.497000000,
-                      "machine": "Amandas-MacBook-Pro.local", "number": "n/a", "version": "2.3.3-SNAPSHOT",
-                      "by": "<userId>",
-                      "group": "api-layer", "artifact": "python-service"}}
-    response = app.response_class(
-        response=json.dumps(data),
-        status=200,
-        mimetype='application/json'
-    )
-    return response
+@app.get("/pythonservice/application/info")
+def get_application_info():
+    return {
+        "build": {
+            "name": "python-service",
+            "operatingSystem": "Mac OS X (11.6.7)",
+            "time": 1660222556.497,
+            "machine": "Amandas-MacBook-Pro.local",
+            "number": "n/a",
+            "version": "2.3.0",
+        }
+    }
 
 
-@app.route("/pythonservice/application/health", methods=['GET'])
-def getApplicationHealth():
-    data = {"status": "UP"}
-    response = app.response_class(
-        response=json.dumps(data),
-        status=200,
-        mimetype='application/json'
-    )
-    return response
+@app.get("/pythonservice/application/health")
+def get_application_health():
+    return {"status": "UP"}
 
 
 if __name__ == "__main__":
     # Load SSL configuration
-    ssl_context = (
-        "../keystore/localhost/localhost.keystore.cer",  # Path to your certificate file
-        "../keystore/localhost/localhost.keystore.key"  # Path to your key file
-    )
-
-    # Register the service on startup
     enabler.register()
-    app.run(port=10018, ssl_context=ssl_context)
+    uvicorn.run(app, host="0.0.0.0", port=10018, ssl_certfile="../keystore/localhost/localhost.keystore.cer",
+                ssl_keyfile="../keystore/localhost/localhost.keystore.key")
