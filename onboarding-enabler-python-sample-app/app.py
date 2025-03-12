@@ -46,7 +46,7 @@ ssl_config = enabler.ssl_config
 cert_file = ssl_config.get("certificate")
 key_file = ssl_config.get("keystore")
 
-ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 ssl_context.load_cert_chain(certfile=cert_file, keyfile=key_file)
 
 app = FastAPI(title="Python Sample Service", description="FastAPI implementation of Python Sample Service")
