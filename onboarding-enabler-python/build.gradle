@@ -1,21 +1,24 @@
+def venvPath = System.getProperty('os.name').toLowerCase().contains('windows') ? 'venv\\Scripts\\' : 'venv/bin/'
+
 task createVenv(type: Exec) {
     commandLine 'python', '-m', 'venv', 'venv'
 }
 
 task installDependencies(type: Exec) {
     dependsOn createVenv
-    commandLine './venv/bin/pip', 'install', '-r', 'requirements.txt'
+    commandLine "${venvPath}pip", 'install', '-r', 'requirements.txt'
 }
 
 task buildPython(type: Exec) {
     dependsOn installDependencies
-    commandLine './venv/bin/python', 'setup.py', 'bdist_wheel'
+    commandLine 'rm', '-rf', 'build/', 'dist/'
+    commandLine "${venvPath}python", 'setup.py', 'sdist', 'bdist_wheel'
 }
 
 task runPython(type: Exec) {
     dependsOn installDependencies
     workingDir './onboarding-enabler-python-sample-app'
-    commandLine './venv/bin/python', 'app.py'
+    commandLine "${venvPath}python", 'src/app.py'
 }
 
 jar {
