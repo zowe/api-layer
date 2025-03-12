@@ -35,7 +35,7 @@ Install the package using pip:
             enabler.unregister()
     ```
 
-2. Create a yaml file named `service-configuration.yml`, add the configuration properties and place the yaml file inside the root directory at the same level of your `app.py`.
+2. Create a yaml file named `service-configuration.yml`, add the configuration properties and place the yaml file inside a `/config` directory at the same level of your `app.py`.
    Below is an example of the configuration.
 
    **Example:**

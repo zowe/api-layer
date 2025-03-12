@@ -16,7 +16,7 @@ from config import ConfigLoader
 import aiohttp
 import py_eureka_client.http_client as http_client
 
-config_loader = ConfigLoader("service-configuration.yml")
+config_loader = ConfigLoader("config/service-configuration.yml")
 
 
 class HttpResponse(http_client.HttpResponse):

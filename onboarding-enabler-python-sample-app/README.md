@@ -14,7 +14,7 @@ This is an example about how an API service implemented in Python can be registe
 You can start the service using by running:
 
  ```shell
- cd onboarding-enabler-python-sample-app
+ cd onboarding-enabler-python-sample-app/src
  python app.py
  ```
  

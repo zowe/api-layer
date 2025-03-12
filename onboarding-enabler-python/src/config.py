@@ -18,9 +18,6 @@ class ConfigLoader:
         # Assign the absolute path directly passed from app.py
         self.config_file = config_file
 
-        # Print for debugging
-        print(f"Configuration file path: {self.config_file}")
-
         self.config = self.load_config()
 
     def load_config(self):
@@ -30,7 +27,7 @@ class ConfigLoader:
                 config = yaml.safe_load(f) or {}
             return config
         except FileNotFoundError:
-            logger.error("Configuration file not found.")
+            logger.error("Configuration file not found. Ensure that it's located inside the config folder.")
             return {}
         except yaml.YAMLError as e:
             logger.error(f"Error parsing YAML file: {e}")

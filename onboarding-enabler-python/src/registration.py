@@ -20,7 +20,7 @@ eurekalogger.set_level("DEBUG")
 
 class PythonEnabler:
 
-    def __init__(self, config_file='service-configuration.yml', discovery_service=None):
+    def __init__(self, config_file='config/service-configuration.yml', discovery_service=None):
         logger.info("Python Onboarding Enabler initialized")
         self.ssl_context = None
         self.config_loader = ConfigLoader(config_file)
