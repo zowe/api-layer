@@ -16,7 +16,7 @@ with open("requirements.txt", "r") as requirements:
     required = requirements.read().splitlines()
 
 setup(
-    name="zowe/apiml-onboarding-enabler-python",
+    name="zowe-apiml-onboarding-enabler-python",
     version="3.0.0",
     packages=find_packages(),
     description="Python enabler for Zowe API Mediation Layer",

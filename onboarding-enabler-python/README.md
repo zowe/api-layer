@@ -2,27 +2,40 @@
 
 This is the onboarding Python enabler for [Zowe API Mediation Layer](https://github.com/zowe/api-layer) (part of [Zowe](https://zowe.org)) that allows to register a Python based service to the API Mediation Layer Discovery Service. It uses [py-eureka-client](https://pypi.org/project/py-eureka-client/).
 
+### Installation
+
+Install the package using pip:
+
+```shell
+    pip install zowe-apiml-onboarding-enabler-python
+```
+
 ### How to use
 
-1. Install
+1. Import the Enabler in Your Python Service. Add the following code block to register your service with Eureka:
 
-
-
-2. Inside your 
+    **Example:**
 
     ```python
-  
+        from fastapi import FastAPI
+        from zowe_apiml_onboarding_enabler_python import PythonEnabler
     
+        app = FastAPI()
+        enabler = PythonEnabler(config_file="service-configuration.yml")
+    
+        @app.on_event("startup")
+        def register_service():
+            enabler.register()
     ```
-   To make sure that your application will automatically unregister from Eureka once shut down, you can use the `unregister()` function, like shown in the example below.
-   **Example:**
-
+    To make sure that your application will automatically unregister from Eureka once shut down, you can use the `unregister()` function, like shown in the example below.
+    
     ```python
-    
-        
+     @app.on_event("shutdown")
+        def unregister_service():
+            enabler.unregister()
     ```
 
-3. Create a yaml file named `service-configuration.yml`, add the configuration properties and place the yaml file inside the root directory at the same level of your `app.py`.
+2. Create a yaml file named `service-configuration.yml`, add the configuration properties and place the yaml file inside the root directory at the same level of your `app.py`.
    Below is an example of the configuration.
 
    **Example:**
@@ -77,4 +90,4 @@ This is the onboarding Python enabler for [Zowe API Mediation Layer](https://git
 
     ```
 
-4. Start your Python service and verify that it registers to the Zowe API Mediation Layer.
+3. Start your Python service and verify that it registers to the Zowe API Mediation Layer.
