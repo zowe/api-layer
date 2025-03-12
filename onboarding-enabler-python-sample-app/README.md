@@ -3,7 +3,7 @@
 This is an example about how an API service implemented in Python can be registered to the API Mediation Layer using the Python Onboarding Enabler SDK. 
 
 
- [app.py](app.py) starts the API service implemented in Python and Flask and registers it to the Discovery service using the Python Onboarding Enabler.
+ [app.py](src/app.py) starts the API service implemented in Python and Flask and registers it to the Discovery service using the Python Onboarding Enabler.
 
  This example contains the full HTTPS validation of both Discovery Service and the Hello World service.
 

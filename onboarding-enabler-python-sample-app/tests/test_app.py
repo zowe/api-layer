@@ -1,24 +1,35 @@
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, MagicMock, mock_open
-import yaml
+from unittest.mock import patch, mock_open
 import json
 
-from app import app
-
-# Mock content for pythonSwagger.json
 mock_swagger_json = json.dumps({"swagger": "2.0", "info": {"version": "1.0.0"}})
 
-@pytest.fixture
-def client():
-    return TestClient(app)
-
-@pytest.fixture
+@pytest.fixture(scope="module")
 def mock_enabler():
-    with patch("app.enabler") as mock:
-        mock.register = MagicMock()
-        mock.unregister = MagicMock()
-        yield mock
+    """Mock PythonEnabler"""
+    with patch("registration.PythonEnabler") as mock_class:
+        instance = mock_class.return_value
+        instance.register.return_value = None
+        instance.unregister.return_value = None
+        instance.ssl_config = {
+            "certificate": "/dev/null",
+            "keystore": "/dev/null",
+            "caFile": "/dev/null"
+        }
+        yield instance
+
+@pytest.fixture(scope="module")
+def mock_ssl():
+    with patch("ssl.SSLContext.load_cert_chain"):
+        yield
+
+
+@pytest.fixture(scope="module")
+def client(mock_enabler, mock_ssl):
+    with patch("builtins.open", mock_open(read_data="ssl:\n  certificate: /dev/null\n  keystore: /dev/null\n")):
+        from src.app import app
+        return TestClient(app)
 
 
 def test_register_python_enabler(client, mock_enabler):

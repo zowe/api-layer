@@ -17,34 +17,19 @@ import ssl
 import yaml
 import json
 import uvicorn
-
+from registration import PythonEnabler
 # Add the parent directory of 'onboarding-enabler-python' to sys.path
 base_directory = os.path.dirname(os.path.abspath(__file__))
-parent_directory = os.path.abspath(os.path.join(base_directory, '..'))
-sys.path.insert(0, parent_directory)
-
-# Define the path to the registration module file
-module_name = "registration"
-module_path = os.path.join(parent_directory, 'onboarding-enabler-python', 'src', 'registration.py')
-
-# Dynamically load the module
-spec = importlib.util.spec_from_file_location(module_name, module_path)
-module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(module)
-
-# Access the PythonEnabler class dynamically
-PythonEnabler = module.PythonEnabler
-
-# Construct the absolute path to the configuration file
 config_file_path = os.path.join(base_directory, 'service-configuration.yml')
 
-# Initialize the enabler using the SDK
 enabler = PythonEnabler(config_file=config_file_path)
 
-# Load SSL configuration from service-configuration.yml
 ssl_config = enabler.ssl_config
-cert_file = ssl_config.get("certificate")
-key_file = ssl_config.get("keystore")
+cert_file = os.path.abspath(os.path.join(base_directory, ssl_config.get("certificate")))
+key_file = os.path.abspath(os.path.join(base_directory, ssl_config.get("keystore")))
+
+if not cert_file or not key_file:
+    raise ValueError("SSL certificate or key file is missing in service-configuration.yml")
 
 ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 ssl_context.load_cert_chain(certfile=cert_file, keyfile=key_file)
@@ -99,5 +84,5 @@ def get_application_health():
 if __name__ == "__main__":
     # Load SSL configuration
     enabler.register()
-    uvicorn.run(app, host="0.0.0.0", port=10018, ssl_certfile="../keystore/localhost/localhost.keystore.cer",
-                ssl_keyfile="../keystore/localhost/localhost.keystore.key")
+    uvicorn.run(app, host="0.0.0.0", port=10018, ssl_certfile="../../keystore/localhost/localhost.keystore.cer",
+                ssl_keyfile="../../keystore/localhost/localhost.keystore.key")
