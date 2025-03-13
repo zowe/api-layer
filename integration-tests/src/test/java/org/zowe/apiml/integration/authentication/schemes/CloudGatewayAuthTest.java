@@ -37,36 +37,43 @@ import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.zowe.apiml.util.SecurityUtils.*;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.zowe.apiml.util.SecurityUtils.generateJwtWithRandomSignature;
+import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
+import static org.zowe.apiml.util.SecurityUtils.validOktaAccessToken;
 import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
+import static org.zowe.apiml.util.requests.Endpoints.SAF_IDT_REQUEST;
+import static org.zowe.apiml.util.requests.Endpoints.ZOSMF_REQUEST;
+import static org.zowe.apiml.util.requests.Endpoints.ZOWE_JWT_REQUEST;
 
 @ZaasTest
 public class CloudGatewayAuthTest implements TestWithStartedInstances {
 
-    private static final CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
-    private static final SafIdtConfiguration safIdtConf = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
+    private static final CloudGatewayConfiguration CLOUD_GATEWAY_CONFIGURATION = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
+    private static final SafIdtConfiguration SAF_IDT_CONF = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
 
     static Stream<Arguments> validToBeTransformed() {
         List<Arguments> arguments = new ArrayList<>(Arrays.asList(
             Arguments.of("Zowe auth scheme", ZOWE_JWT_REQUEST, (Consumer<Response>) response -> {
-                assertNotNull(response.jsonPath().getString("cookies.apimlAuthenticationToken"));
-                assertNull(response.jsonPath().getString("headers.authorization"));
-                assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
+                assertNotNull(response.jsonPath().getString("cookies.apimlAuthenticationToken"), "Expected not null apimlAuthenticationToken. Response was: " + response.asPrettyString());
+                assertNull(response.jsonPath().getString("headers.authorization"), "Expected null Authorization header. Response was: " + response.asPrettyString());
+                assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")), "Expected empty certs list. Response was: " + response.asPrettyString());
             }),
             Arguments.of("z/OSMF auth scheme", ZOSMF_REQUEST, (Consumer<Response>) response -> {
-                assertNotNull(response.jsonPath().getString("cookies.jwtToken"));
-                assertNull(response.jsonPath().getString("headers.authorization"));
-                assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
+                assertNotNull(response.jsonPath().getString("cookies.jwtToken"), "Expected not null jwtToken cookie. Response was: " + response.asPrettyString());
+                assertNull(response.jsonPath().getString("headers.authorization"), "Expected null Authorization header. Response was: " + response.asPrettyString());
+                assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")), "Expected empty certs list. Response was: " + response.asPrettyString());
             }),
             Arguments.of("PassTicket auth scheme", REQUEST_INFO_ENDPOINT, (Consumer<Response>) response -> {
-                assertNotNull(response.jsonPath().getString("headers.authorization"));
-                assertTrue(response.jsonPath().getString("headers.authorization").startsWith("Basic "));
+                assertNotNull(response.jsonPath().getString("headers.authorization"), "Expected not null Authorization header. Response was: " + response.asPrettyString());
+                assertTrue(response.jsonPath().getString("headers.authorization").startsWith("Basic "), "Expected basic Authorization present. Response was: " + response.asPrettyString());
                 assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
             })
         ));
-        if (safIdtConf.isEnabled()) {
+        if (SAF_IDT_CONF.isEnabled()) {
             arguments.add(Arguments.of("SAF IDT auth scheme", SAF_IDT_REQUEST, (Consumer<Response>) response -> {
                 assertNull(response.jsonPath().getString("cookies.jwtToken"));
                 assertNotNull(response.jsonPath().getString("headers.x-saf-token"));
@@ -79,10 +86,10 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
     static Stream<Arguments> noAuthTransformation() {
         Consumer<Response> assertions = response -> {
             assertEquals(200, response.getStatusCode());
-            assertNull(response.jsonPath().getString("cookies.apimlAuthenticationToken"));
-            assertNull(response.jsonPath().getString("cookies.jwtToken"));
-            assertNull(response.jsonPath().getString("headers.authorization"));
-            assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
+            assertNull(response.jsonPath().getString("cookies.apimlAuthenticationToken"), "Expected cookies.apimlAuthenticationToken to be Null. Response is: " + response.asPrettyString());
+            assertNull(response.jsonPath().getString("cookies.jwtToken"), "Expected cookies.jwtToken to be Null. Response is: " + response.asPrettyString());
+            assertNull(response.jsonPath().getString("headers.authorization"), "Expected headers.authorization to be Null. Response is: " + response.asPrettyString());
+            assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")), "Expected empty certs. Response is: " + response.asPrettyString());
         };
 
         List<Arguments> arguments = new ArrayList<>(Arrays.asList(
@@ -90,7 +97,7 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
             Arguments.of("z/OSMF auth scheme", ZOSMF_REQUEST, assertions),
             Arguments.of("PassTicket auth scheme", REQUEST_INFO_ENDPOINT, assertions)
         ));
-        if (safIdtConf.isEnabled()) {
+        if (SAF_IDT_CONF.isEnabled()) {
             arguments.add(Arguments.of("SAF IDT auth scheme", SAF_IDT_REQUEST, assertions));
         }
         return arguments.stream();
@@ -115,8 +122,8 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
 
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + gatewayToken)
-            .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .when()
+                .get(String.format("%s://%s:%s%s", CLOUD_GATEWAY_CONFIGURATION.getScheme(), CLOUD_GATEWAY_CONFIGURATION.getHost(), CLOUD_GATEWAY_CONFIGURATION.getPort(), basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -129,8 +136,8 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
 
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + pat)
-            .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .when()
+                .get(String.format("%s://%s:%s%s", CLOUD_GATEWAY_CONFIGURATION.getScheme(), CLOUD_GATEWAY_CONFIGURATION.getHost(), CLOUD_GATEWAY_CONFIGURATION.getPort(), basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -140,8 +147,8 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
         void givenValidRequest_thenClientCertIsTransformed(String title, String basePath, Consumer<Response> assertions) {
             Response response = given()
                 .config(SslContext.clientCertValid)
-            .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .when()
+                .get(String.format("%s://%s:%s%s", CLOUD_GATEWAY_CONFIGURATION.getScheme(), CLOUD_GATEWAY_CONFIGURATION.getHost(), CLOUD_GATEWAY_CONFIGURATION.getPort(), basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -153,8 +160,8 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
 
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + oAuthToken)
-            .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .when()
+                .get(String.format("%s://%s:%s%s", CLOUD_GATEWAY_CONFIGURATION.getScheme(), CLOUD_GATEWAY_CONFIGURATION.getHost(), CLOUD_GATEWAY_CONFIGURATION.getPort(), basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -171,10 +178,10 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
 
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + pat)
-            .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .when()
+                .get(String.format("%s://%s:%s%s", CLOUD_GATEWAY_CONFIGURATION.getScheme(), CLOUD_GATEWAY_CONFIGURATION.getHost(), CLOUD_GATEWAY_CONFIGURATION.getPort(), basePath));
             assertions.accept(response);
-            assertEquals(200, response.getStatusCode());
+            assertEquals(200, response.getStatusCode(), "Expected 200 while using token " + pat);
         }
 
         @ParameterizedTest(name = "givenInvalidRequest_thenClientCertIsNotTransformed {0} [{index}]")
@@ -182,8 +189,8 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
         void givenInvalidRequest_thenClientCertIsNotTransformed(String title, String basePath, Consumer<Response> assertions) {
             Response response = given()
                 .config(SslContext.selfSignedUntrusted)
-            .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .when()
+                .get(String.format("%s://%s:%s%s", CLOUD_GATEWAY_CONFIGURATION.getScheme(), CLOUD_GATEWAY_CONFIGURATION.getHost(), CLOUD_GATEWAY_CONFIGURATION.getPort(), basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -195,8 +202,8 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
 
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + oAuthToken)
-            .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .when()
+                .get(String.format("%s://%s:%s%s", CLOUD_GATEWAY_CONFIGURATION.getScheme(), CLOUD_GATEWAY_CONFIGURATION.getHost(), CLOUD_GATEWAY_CONFIGURATION.getPort(), basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -205,7 +212,7 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
         @MethodSource("org.zowe.apiml.integration.authentication.schemes.CloudGatewayAuthTest#noAuthTransformation")
         void givenNoCredentials_thenNoCredentialsAreProvided(String title, String basePath, Consumer<Response> assertions) {
             Response response = when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .get(String.format("%s://%s:%s%s", CLOUD_GATEWAY_CONFIGURATION.getScheme(), CLOUD_GATEWAY_CONFIGURATION.getHost(), CLOUD_GATEWAY_CONFIGURATION.getPort(), basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
@@ -215,8 +222,8 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
         void givenInvalidCredentials_thenNoCredentialsAreProvided(String title, String basePath, Consumer<Response> assertions) {
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer invalidToken")
-            .when()
-                .get(String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath));
+                .when()
+                .get(String.format("%s://%s:%s%s", CLOUD_GATEWAY_CONFIGURATION.getScheme(), CLOUD_GATEWAY_CONFIGURATION.getHost(), CLOUD_GATEWAY_CONFIGURATION.getPort(), basePath));
             assertions.accept(response);
             assertEquals(200, response.getStatusCode());
         }
