@@ -7,7 +7,7 @@ This is the onboarding Python enabler for [Zowe API Mediation Layer](https://git
 Install the package using pip:
 
 ```shell
-    pip install zowe-apiml-onboarding-enabler-python
+    pip install onboarding_enabler_python
 ```
 
 ### How to use
@@ -18,7 +18,7 @@ Install the package using pip:
 
     ```python
         from fastapi import FastAPI
-        from zowe_apiml_onboarding_enabler_python import PythonEnabler
+        from onboarding_enabler_python.registration import PythonEnabler
     
         app = FastAPI()
         enabler = PythonEnabler(config_file="service-configuration.yml")
