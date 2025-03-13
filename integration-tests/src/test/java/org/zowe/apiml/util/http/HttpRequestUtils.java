@@ -75,8 +75,7 @@ public class HttpRequestUtils {
                 .addParameters(Arrays.asList(arguments))
                 .build();
         } catch (URISyntaxException e) {
-            log.error("Can't create URI for endpoint '{}'", endpoint);
-            e.printStackTrace();
+            log.error("Can't create URI for endpoint '{}'", endpoint, e);
         }
 
         return uri;
