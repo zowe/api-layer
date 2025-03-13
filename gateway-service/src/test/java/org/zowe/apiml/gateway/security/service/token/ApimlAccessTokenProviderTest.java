@@ -142,7 +142,7 @@ class ApimlAccessTokenProviderTest {
 
     @Test
     void givenTokenWithUserIdMatchingRule_returnInvalidated() {
-        String userId = accessTokenProvider.getHash("user");
+        String userId = accessTokenProvider.getHash("USER");
 
         when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
         Map<String, String> invalidUsers = new HashMap<>();
