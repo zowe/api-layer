@@ -8,17 +8,13 @@
  * Copyright Contributors to the Zowe Project.
 """
 
-import importlib.util
-import sys
 import os
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 import ssl
 import yaml
-import json
 import uvicorn
 from onboarding_enabler_python.registration import PythonEnabler
-# Add the parent directory of 'onboarding-enabler-python' to sys.path
 base_directory = os.path.dirname(os.path.abspath(__file__))
 config_file_path = os.path.join(base_directory, 'config/service-configuration.yml')
 
