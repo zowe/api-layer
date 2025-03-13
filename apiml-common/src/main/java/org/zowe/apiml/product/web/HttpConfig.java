@@ -216,6 +216,9 @@ public class HttpConfig {
         setTruststore(sslContextFactory);
         log.debug("jettySslContextFactory: {}", sslContextFactory.dump());
         sslContextFactory.setHostnameVerifier(secureHostnameVerifier());
+        if (nonStrictVerifySslCertificatesOfServices) {
+            sslContextFactory.setEndpointIdentificationAlgorithm(null);
+        }
         if (!verifySslCertificatesOfServices) {
             sslContextFactory.setTrustAll(true);
         }
