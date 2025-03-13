@@ -21,7 +21,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
@@ -86,6 +88,11 @@ class SafResourceAccessSafTest {
     @Test
     void testHasSafResourceAccess_whenNoResponse_thenTrue() {
         assertTrue(safResourceAccessVerifying.hasSafResourceAccess(authentication, CLASS, RESOURCE, LEVEL.name()));
+    }
+
+    @Test
+    void testHasSafResourceAccess_whenUseridEmpty_thenFalse() {
+        assertFalse(safResourceAccessVerifying.hasSafResourceAccess(new UsernamePasswordAuthenticationToken("", "token"), CLASS, RESOURCE, LEVEL.name()));
     }
 
     @Builder

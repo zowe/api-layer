@@ -1352,8 +1352,6 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    ZOSMF_APPLIEDAPARS: AuthenticateApar
 
         steps:
             -   uses: actions/checkout@v4

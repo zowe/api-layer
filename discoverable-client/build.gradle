@@ -10,6 +10,11 @@ plugins {
     alias(libs.plugins.gradle.git.properties)
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 normalization {
     runtimeClasspath {
         ignore("**/*git.properties*")
