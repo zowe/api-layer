@@ -8,6 +8,7 @@
  * Copyright Contributors to the Zowe Project.
 """
 from setuptools import setup, find_packages
+from _version import __version__
 
 with open("README.md", "r") as read_me:
     long_description = read_me.read()
@@ -16,9 +17,10 @@ with open("requirements.txt", "r") as requirements:
     required = requirements.read().splitlines()
 
 setup(
-    name="zowe-apiml-onboarding-enabler-python",
-    version="3.0.0",
-    packages=find_packages(),
+    name="onboarding-enabler-python",
+    version=__version__,
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
     description="Python enabler for Zowe API Mediation Layer",
     long_description=long_description,
     long_description_content_type="text/markdown",

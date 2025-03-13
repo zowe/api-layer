@@ -11,7 +11,7 @@
 import json
 import ssl
 from typing import Union
-from config import ConfigLoader
+from .config import ConfigLoader
 
 import aiohttp
 import py_eureka_client.http_client as http_client
@@ -63,7 +63,6 @@ class HttpClient(http_client.HttpClient):
             try:
                 if data and isinstance(data, dict):
                     data = json.dumps(data).encode('utf-8')
-                    print("Payload (data):", data.decode("utf-8"))
 
                 async with session.request(
                     method=method,
@@ -76,8 +75,6 @@ class HttpClient(http_client.HttpClient):
                     status_code = response.status
 
                     body_text = await response.text()
-                    print(f"Status Code: {status_code}")
-                    print(f"Content-Type: {content_type}")
 
                     # Accept 200 (OK), 201 (Created) or 204 (No Content) as valid status codes for successful
                     # registration

@@ -97,12 +97,11 @@ jobs:
               id: update-version
               shell: python
               run: |
-               import os, sys
-               sys.path.append("src")
+               import os
                from _version import __version__
                new_version = "${{ github.event.inputs.release_version }}"
                if new_version:
-                with open("onboarding-enabler-python/src/_version.py", 'w') as f:
+                with open("onboarding-enabler-python/_version.py", 'w') as f:
                 f.write("__version__ = \"" + new_version + "\"\n")
                else:
                 new_version = __version__
@@ -112,7 +111,7 @@ jobs:
             - name: Update version (git)
               run: |
                   cd onboarding-enabler-python
-                  git add src/_version.py
+                  git add _version.py
 
             - name: Build Python Package
               run: |

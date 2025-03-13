@@ -17,7 +17,7 @@ import ssl
 import yaml
 import json
 import uvicorn
-from registration import PythonEnabler
+from onboarding_enabler_python.registration import PythonEnabler
 # Add the parent directory of 'onboarding-enabler-python' to sys.path
 base_directory = os.path.dirname(os.path.abspath(__file__))
 config_file_path = os.path.join(base_directory, 'config/service-configuration.yml')

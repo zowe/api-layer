@@ -12,7 +12,7 @@ import logging
 
 import py_eureka_client.logger as eurekalogger
 from py_eureka_client import eureka_client as ec
-from custom_http_client import *
+from .custom_http_client import *
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 eurekalogger.set_level("DEBUG")
