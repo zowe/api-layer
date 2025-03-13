@@ -123,10 +123,14 @@ public class RauditxService {
         if (!StringUtils.isBlank(userId)) {
             SafResourceAccessVerifying safResourceAccessVerifying = getNativeSafResourceAccessVerifying();
             if (safResourceAccessVerifying != null) {
-                hasAccess = safResourceAccessVerifying.hasSafResourceAccess(
-                    new UsernamePasswordAuthenticationToken(userId, null),
-                    "FACILITY", "IRR.RAUDITX", "READ"
-                );
+                try {
+                    hasAccess = safResourceAccessVerifying.hasSafResourceAccess(
+                        new UsernamePasswordAuthenticationToken(userId, null),
+                        "FACILITY", "IRR.RAUDITX", "READ"
+                    );
+                } catch (Exception e) {
+                    log.warn("Cannot verify Rauditx record off z/OS. {}", e.getMessage(), e);
+                }
             }
         }
         if (!hasAccess) {
