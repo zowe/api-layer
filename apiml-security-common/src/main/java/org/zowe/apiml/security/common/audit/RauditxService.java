@@ -129,7 +129,7 @@ public class RauditxService {
                         "FACILITY", "IRR.RAUDITX", "READ"
                     );
                 } catch (Exception e) {
-                    log.debug("CThere was a problem while verifying user access. {}", e.getMessage(), e);
+                    log.debug("There was a problem while verifying user access. {}", e.getMessage(), e);
                 }
             }
         }
