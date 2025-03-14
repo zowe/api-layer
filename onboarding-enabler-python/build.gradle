@@ -11,8 +11,8 @@ task installDependencies(type: Exec) {
 
 task buildPython(type: Exec) {
     dependsOn installDependencies
-    commandLine 'rm', '-rf', 'build/', 'dist/'
-    commandLine "${venvPath}python", 'setup.py', 'sdist', 'bdist_wheel'
+    commandLine 'rm', '-rf', 'build', 'dist'
+    commandLine "${venvPath}python", '-m', 'build'
 }
 
 jar {

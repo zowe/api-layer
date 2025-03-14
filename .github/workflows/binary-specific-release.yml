@@ -91,7 +91,7 @@ jobs:
                   cd onboarding-enabler-python
                   python -m venv venv
                   source venv/bin/activate
-                  python -m pip install --upgrade pip setuptools wheel twine
+                  python -m pip install --upgrade pip setuptools wheel twine build
                   if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
             - name: Update version
               id: update-version
