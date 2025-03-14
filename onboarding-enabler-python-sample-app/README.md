@@ -1,6 +1,6 @@
 # Hello World API Service in Python
 
-This is an example about how an API service implemented in Python can be registered to the API Mediation Layer using the Python Onboarding Enabler SDK. 
+This is an example about how an API service implemented in Python can be registered to the API Mediation Layer using the [Python Onboarding Enabler SDK](../onboarding-enabler-python). 
 
 
  [app.py](src/app.py) starts the API service implemented in Python and Flask and registers it to the Discovery service using the Python Onboarding Enabler.
@@ -9,16 +9,29 @@ This is an example about how an API service implemented in Python can be registe
 
  The certificate, private key for the service, and the local CA certificate are loaded from `keystore/localhost/localhost.keystore.p12`.
  
- ## How to run
+## How to run
 
-You can start the service using by running:
+1. Create a new virtual environment:
 
- ```shell
- cd onboarding-enabler-python-sample-app/src
- python app.py
- ```
+    **Mac/Linux**
+    ```shell
+    python -m venv test_env
+    source test_env/bin/activate  # Mac/Linux
+    test_env\Scripts\activate     # Windows      
+    ```
+   
+2. Install your package in editable mode:
+    ```shell
+    pip install -e onboarding-enabler-python
+    ```
+   
+3. You can now start the service using by running:
+    ```shell
+    cd onboarding-enabler-python-sample-app/src
+    python app.py
+    ```
  
- from the root project.
+from the root project.
 
 If the APIML is already running then you should see the following messages:
 
