@@ -26,6 +26,8 @@ logging:
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.eclipse.jetty.util.ssl: ERROR
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        com.ibm.eserver.zos.racf: ALL
+        com.ibm.eserver.zos.racf.nls.IRRTraceMessages: ALL
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
