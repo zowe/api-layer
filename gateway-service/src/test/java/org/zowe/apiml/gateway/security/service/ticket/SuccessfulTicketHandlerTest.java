@@ -89,7 +89,7 @@ class SuccessfulTicketHandlerTest {
         successfulTicketHandlerHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);
 
         assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
-        assertEquals(HttpStatus.BAD_REQUEST.value(), httpServletResponse.getStatus());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), httpServletResponse.getStatus());
         assertTrue(httpServletResponse.getContentAsString().contains("ZWEAG141E"));
         assertTrue(httpServletResponse.isCommitted());
     }

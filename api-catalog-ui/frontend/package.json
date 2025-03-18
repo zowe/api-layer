@@ -145,7 +145,7 @@
         "dompurify": "3.1.7",
         "serve-static": "1.16.2",
         "body-parser": "1.20.3",
-        "axios": "1.7.9",
+        "axios": "1.8.3",
         "path-to-regexp": "1.9.0",
         "cookie": "0.7.2"
     },

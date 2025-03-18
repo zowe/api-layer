@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.util.config;
 
+import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 
 import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
@@ -18,8 +19,9 @@ import static org.zowe.apiml.util.requests.Endpoints.ROUTED_AUTH;
 public class ConfigReaderZaasClient {
 
         public static ConfigProperties getConfigProperties() {
+            GatewayServiceConfiguration gatewayConfig = environmentConfiguration().getGatewayServiceConfiguration();
             return ConfigProperties.builder()
-                .apimlHost(environmentConfiguration().getGatewayServiceConfiguration().getHost())
+                .apimlHost(StringUtils.isNotBlank(gatewayConfig.getDvipaHost()) ? gatewayConfig.getDvipaHost() : gatewayConfig.getHost())
                 .apimlPort(environmentConfiguration().getGatewayServiceConfiguration().getPort() + "")
                 .apimlBaseUrl(ROUTED_AUTH)
                 .keyStorePath(environmentConfiguration().getTlsConfiguration().getKeyStore())

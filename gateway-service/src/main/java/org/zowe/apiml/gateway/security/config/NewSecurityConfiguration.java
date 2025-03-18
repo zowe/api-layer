@@ -267,7 +267,6 @@ public class NewSecurityConfiguration {
                 )))
                         .authorizeRequests(requests -> requests
                                 .anyRequest().authenticated())
-                        .x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
                         .authenticationProvider(compoundAuthProvider) // for authenticating credentials
                         .apply(new CustomSecurityFilters());
                 return http.build();
