@@ -16,6 +16,8 @@ dependencies {
     implementation libs.logback.core
     implementation libs.logback.classic
 
+    api(files("libs/IRRRacf.jar"))
+
     implementation libs.jsr305
 
     implementation libs.javax.servlet.api

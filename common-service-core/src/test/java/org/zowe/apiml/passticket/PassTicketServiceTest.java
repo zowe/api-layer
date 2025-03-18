@@ -48,7 +48,7 @@ class PassTicketServiceTest {
     }
 
     @Test
-    void testInit() throws IRRPassTicketEvaluationException, IRRPassTicketGenerationException {
+    void testInit() throws IRRPassTicketEvaluationException, IRRPassTicketGenerationException, com.ibm.eserver.zos.racf.IRRPassTicketGenerationException {
         PassTicketService passTicketService = new PassTicketService();
         ReflectionTestUtils.setField(passTicketService, "irrPassTicket", new IRRPassTicket() {
             @Override

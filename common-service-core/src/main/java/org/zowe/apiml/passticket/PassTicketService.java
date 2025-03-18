@@ -28,7 +28,7 @@ import java.util.Set;
 @Slf4j
 public class PassTicketService {
 
-    private final IRRPassTicket irrPassTicket;
+    private IRRPassTicket irrPassTicket;
 
     @SuppressWarnings("unchecked")
     public PassTicketService() {
@@ -50,8 +50,12 @@ public class PassTicketService {
     // IRRPassTicket is not thread-safe, must be synchronized
     public synchronized String generate(String userId, String applId) throws IRRPassTicketGenerationException {
         try {
+            com.ibm.eserver.zos.racf.IRRPassTicket irrPassTicket = new com.ibm.eserver.zos.racf.IRRPassTicket();
             return irrPassTicket.generate(userId.toUpperCase(), applId.toUpperCase());
-        } catch (IRRPassTicketGenerationException | RuntimeException e) {
+        } catch (com.ibm.eserver.zos.racf.IRRPassTicketGenerationException e) {
+            log.debug("Error during pass ticket generation, userId={}, applid={}, exception={}", userId, applId, e);
+            throw new IRRPassTicketGenerationException(e.getSafRc(), e.getRacfRc(), e.getRacfRsn());
+        } catch (RuntimeException e) {
             log.debug("Error during pass ticket generation, userId={}, applid={}, exception={}", userId, applId, e);
             throw e;
         }
