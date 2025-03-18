@@ -38,6 +38,7 @@ logging:
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        javax.net.ssl: ERROR # For running with java 17
 eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
@@ -165,6 +166,7 @@ logging:
         org.springframework: INFO
         org.apache: INFO
         org.apache.http: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         com.netflix: INFO
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN

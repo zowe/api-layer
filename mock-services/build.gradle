@@ -94,7 +94,6 @@ dependencies {
     implementation libs.spring.messaging
     implementation libs.spring.webmvc
 
-    implementation libs.bootstrap
     implementation libs.jquery
 
     implementation libs.gson

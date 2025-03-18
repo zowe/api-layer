@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
@@ -65,7 +66,7 @@ public class DiscoveryClientConfig {
     private final AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
     private final ApimlDiscoveryClientFactory apimlDiscoveryClientFactory;
     private final ApplicationContext context;
-    private final EurekaJerseyClientImpl.EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
+    private final Supplier<EurekaJerseyClientImpl.EurekaJerseyClientBuilder> eurekaJerseyClientBuilder;
 
     @Bean
     public List<AdditionalRegistration> additionalRegistration(StandardEnvironment environment) {
@@ -118,7 +119,7 @@ public class DiscoveryClientConfig {
         configBean.setServiceUrl(urls);
 
         MutableDiscoveryClientOptionalArgs args = new MutableDiscoveryClientOptionalArgs();
-        args.setEurekaJerseyClient(eurekaJerseyClientBuilder.build());
+        args.setEurekaJerseyClient(eurekaJerseyClientBuilder.get().build());
 
         InstanceInfo newInfo = apimlDiscoveryClientFactory.createInstanceInfo(appManager.getEurekaInstanceConfig());
         InstanceInfo ii = rewriteInstanceInfoRoutes(apimlRegistration, newInfo);

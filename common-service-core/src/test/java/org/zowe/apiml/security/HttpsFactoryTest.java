@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Test;
 class HttpsFactoryTest {
     private static final String EUREKA_URL_NO_SCHEME = "://localhost:10011/eureka/";
     private static final String TEST_SERVICE_ID = "service1";
+    private static final boolean ATTLS = false;
     private static final String INCORRECT_PARAMETER_VALUE = "WRONG";
 
     private HttpsConfig.HttpsConfigBuilder httpsConfigBuilder;
@@ -116,21 +117,6 @@ class HttpsFactoryTest {
     }
 
     @Test
-    void shouldSetSystemSslProperties() {
-        HttpsConfig httpsConfig = httpsConfigBuilder.build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
-        httpsFactory.setSystemSslProperties();
-
-        assertEquals(SecurityUtils.formatKeyringUrl(httpsConfig.getKeyStore()), System.getProperty("javax.net.ssl.keyStore"));
-        assertEquals(String.valueOf(httpsConfig.getKeyStorePassword()), System.getProperty("javax.net.ssl.keyStorePassword"));
-        assertEquals(httpsConfig.getKeyStoreType(), System.getProperty("javax.net.ssl.keyStoreType"));
-
-        assertEquals(SecurityUtils.formatKeyringUrl(httpsConfig.getTrustStore()), System.getProperty("javax.net.ssl.trustStore"));
-        assertEquals(String.valueOf(httpsConfig.getTrustStorePassword()), System.getProperty("javax.net.ssl.trustStorePassword"));
-        assertEquals(httpsConfig.getTrustStoreType(), System.getProperty("javax.net.ssl.trustStoreType"));
-    }
-
-    @Test
     void shouldCreateDefaultHostnameVerifier() {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
@@ -151,7 +137,7 @@ class HttpsFactoryTest {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
         EurekaJerseyClientImpl.EurekaJerseyClientBuilder clientBuilder =
-            httpsFactory.createEurekaJerseyClientBuilder("https" + EUREKA_URL_NO_SCHEME, TEST_SERVICE_ID);
+            httpsFactory.createEurekaJerseyClientBuilder("https" + EUREKA_URL_NO_SCHEME, TEST_SERVICE_ID, ATTLS);
         assertNotNull(clientBuilder);
     }
 
@@ -160,7 +146,7 @@ class HttpsFactoryTest {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
         EurekaJerseyClientImpl.EurekaJerseyClientBuilder clientBuilder =
-            httpsFactory.createEurekaJerseyClientBuilder("http" + EUREKA_URL_NO_SCHEME, TEST_SERVICE_ID);
+            httpsFactory.createEurekaJerseyClientBuilder("http" + EUREKA_URL_NO_SCHEME, TEST_SERVICE_ID, ATTLS);
         assertNotNull(clientBuilder);
     }
 }

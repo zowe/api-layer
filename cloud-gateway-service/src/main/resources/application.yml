@@ -48,6 +48,16 @@ apiml:
         registry:
             enabled: false
             metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
+    cloud:
+        gateway:
+            discovery:
+                locator:
+                    enabled: false
+                    lowerCaseServiceId: true
+    application:
+        name: cloudGateway
+    main:
+        allow-circular-references: true
 
 server:
     http2:
@@ -64,17 +74,6 @@ server:
         trustStorePassword: password
         trustStoreType: PKCS12
 
-    cloud:
-        gateway:
-            discovery:
-                locator:
-                    enabled: false
-                    lowerCaseServiceId: true
-    application:
-        name: cloudGateway
-    main:
-        allow-circular-references: true
-
 logbackServiceName: ZWEACG1
 
 logging:
@@ -86,6 +85,7 @@ logging:
         org.springframework.context.support: WARN
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
+        javax.net.ssl: ERROR # For running with java 17
 
 management:
     endpoint:
@@ -112,6 +112,7 @@ logging:
         reactor.netty.http.client.HttpClient: DEBUG
         reactor.netty.http.client.HttpClientConnect: DEBUG
         com.netflix: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
 
 ---
 spring.config.activate.on-profile: attls

@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.passticket;
 
+import org.zowe.apiml.passticket.AbstractIRRPassTicketException.ErrorCode;
 import org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl;
 import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 
@@ -72,7 +73,27 @@ class PassTicketServiceTest {
     }
 
     @Test
+    void testFailGenerate() {
+        PassTicketService passTicketService = new PassTicketService();
+        ReflectionTestUtils.setField(passTicketService, "irrPassTicket", new IRRPassTicket() {
+            @Override
+            public void evaluate(String userId, String applId, String passTicket) {
+                evaluated = userId + "-" + applId + "-" + passTicket;
+            }
+
+            @Override
+            public String generate(String userId, String applId) throws IRRPassTicketGenerationException {
+                throw new IRRPassTicketGenerationException(ErrorCode.ERR_8_12_16);
+            }
+        });
+
+        assertThrows(IRRPassTicketGenerationException.class, () -> passTicketService.generate("userId", "applId"));
+
+    }
+
+    @Test
     void testProxy() throws IRRPassTicketGenerationException {
+        @SuppressWarnings("unchecked")
         IRRPassTicket irrPassTicket = ClassOrDefaultProxyUtils.createProxy(
             IRRPassTicket.class,
             "notExistingClass",
@@ -157,7 +178,7 @@ class PassTicketServiceTest {
         assertEquals(16, e.getRacfRsn());
         assertNotNull(e.getErrorCode());
         assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_8_16, e.getErrorCode());
-        assertEquals("Error on generation of PassTicket: Not authorized to use this service. Verify that the user and the application name are valid, and check that corresponding permissions have been set up.", e.getMessage());
+        assertEquals("Error on generation of PassTicket: Not authorized to use this service. Verify that the user and the application name are valid, and check that corresponding permissions have been set up.: safRc=8, racfRc=8, racfRsn=16", e.getMessage());
     }
 
     @Test

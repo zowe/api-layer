@@ -91,7 +91,10 @@ exports[`id-federation map system test should display the help 1`] = `
 
    --cert-file (local file path)
 
-      The file path to a certificate file to use for authentication
+      The file path to a certificate file to use for authentication.
+
+      Note: The CLI does not support certificate files that require a password. For
+      more information, search Troubleshooting PEM Certificates in Zowe Docs.
 
    --cert-key-file (local file path)
 

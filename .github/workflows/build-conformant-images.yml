@@ -47,11 +47,6 @@ jobs:
             matrix:
                 service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service, cloud-gateway-service ]
                 os: [ ubuntu, ubi ]
-                include:
-                    -   os: ubuntu
-                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
-                    -   os: ubi
-                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
         runs-on: ubuntu-latest
         if: ${{ inputs.service == 'all' }}
         steps:
@@ -93,11 +88,6 @@ jobs:
             matrix:
                 service: [ gateway-service, discovery-service, api-catalog-services, caching-service, metrics-service, cloud-gateway-service ]
                 os: [ ubuntu, ubi ]
-                include:
-                    -   os: ubuntu
-                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
-                    -   os: ubi
-                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
         runs-on: ubuntu-latest
         if: ${{ inputs.service == 'all' }}
         steps:
@@ -185,11 +175,6 @@ jobs:
             matrix:
                 arch: [ amd64, s390x ]
                 os: [ ubuntu, ubi ]
-                include:
-                    -   os: ubuntu
-                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubuntu
-                    -   os: ubi
-                        BUILD_ARG_LIST: ZOWE_BASE_IMAGE=latest-ubi
         runs-on: ubuntu-latest
         if: ${{ inputs.service != 'all' }}
         steps:

@@ -27,14 +27,17 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.util.TestWithStartedInstances;
-import org.zowe.apiml.util.categories.*;
+import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
+import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
+import org.zowe.apiml.util.categories.InfinispanStorageTest;
+import org.zowe.apiml.util.categories.MainframeDependentTests;
+import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.config.CloudGatewayConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -42,11 +45,18 @@ import java.util.stream.Stream;
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.integration.penetration.JwtPenTest.getToken;
-import static org.zowe.apiml.util.SecurityUtils.*;
+import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
+import static org.zowe.apiml.util.SecurityUtils.PASSWORD;
+import static org.zowe.apiml.util.SecurityUtils.PAT_COOKIE_AUTH_NAME;
+import static org.zowe.apiml.util.SecurityUtils.USERNAME;
+import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
+import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
 import static org.zowe.apiml.util.requests.Endpoints.PASSTICKET_TEST_ENDPOINT;
 import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
 
@@ -242,10 +252,8 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             void givenIssuedForIncorrectApplId(String token, String cookie) {
                 String expectedMessage = "Error on evaluation of PassTicket";
 
-                URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(
-                    PASSTICKET_TEST_ENDPOINT,
-                    Collections.singletonList(new BasicNameValuePair("applId", "XBADAPPL"))
-                );
+                URI discoverablePassticketUrl = HttpRequestUtils.getUriFromGateway(PASSTICKET_TEST_ENDPOINT,
+                    new BasicNameValuePair("applId", "XBADAPPL"));
 
                 given()
                     .cookie(cookie, token)
