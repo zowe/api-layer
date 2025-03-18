@@ -28,23 +28,27 @@ import java.util.Set;
 @Slf4j
 public class PassTicketService {
 
-    private IRRPassTicket irrPassTicket;
+    private IRRPassTicket irrPassTicket = null;
 
-    @SuppressWarnings("unchecked")
     public PassTicketService() {
-        this.irrPassTicket = ClassOrDefaultProxyUtils.createProxy(IRRPassTicket.class,
-            "com.ibm.eserver.zos.racf.IRRPassTicket", DefaultPassTicketImpl::new,
-            new ClassOrDefaultProxyUtils.ByMethodName<>(
-                "com.ibm.eserver.zos.racf.IRRPassTicketEvaluationException",
-                IRRPassTicketEvaluationException.class, "getSafRc", "getRacfRc", "getRacfRsn"),
-            new ClassOrDefaultProxyUtils.ByMethodName<>(
-                "com.ibm.eserver.zos.racf.IRRPassTicketGenerationException",
-                IRRPassTicketGenerationException.class, "getSafRc", "getRacfRc", "getRacfRsn"));
+        // this.irrPassTicket = ClassOrDefaultProxyUtils.createProxy(IRRPassTicket.class,
+        //     "com.ibm.eserver.zos.racf.IRRPassTicket", DefaultPassTicketImpl::new,
+        //     new ClassOrDefaultProxyUtils.ByMethodName<>(
+        //         "com.ibm.eserver.zos.racf.IRRPassTicketEvaluationException",
+        //         IRRPassTicketEvaluationException.class, "getSafRc", "getRacfRc", "getRacfRsn"),
+        //     new ClassOrDefaultProxyUtils.ByMethodName<>(
+        //         "com.ibm.eserver.zos.racf.IRRPassTicketGenerationException",
+        //         IRRPassTicketGenerationException.class, "getSafRc", "getRacfRc", "getRacfRsn"));
     }
 
     // IRRPassTicket is not thread-safe, must be synchronized
     public synchronized void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
-        irrPassTicket.evaluate(userId.toUpperCase(), applId.toUpperCase(), passTicket.toUpperCase());
+        com.ibm.eserver.zos.racf.IRRPassTicket irrPassTicket = new com.ibm.eserver.zos.racf.IRRPassTicket();
+        try {
+            irrPassTicket.evaluate(userId.toUpperCase(), applId.toUpperCase(), passTicket.toUpperCase());
+        } catch (com.ibm.eserver.zos.racf.IRRPassTicketEvaluationException e) {
+            throw new IRRPassTicketEvaluationException(e.getSafRc(), e.getRacfRc(), e.getRacfRsn());
+        }
     }
 
     // IRRPassTicket is not thread-safe, must be synchronized
