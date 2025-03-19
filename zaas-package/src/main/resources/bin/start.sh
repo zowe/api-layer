@@ -140,6 +140,7 @@ if [ "$(uname)" = "OS/390" ]
 then
     QUICK_START=-Xquickstart
     ZAAS_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
+    CONSOLE_LOG_CHARSET=${CONSOLE_LOG_CHARSET:-IBM-1047}
 else
     ZAAS_LOADER_PATH=${COMMON_LIB}
 fi
@@ -299,6 +300,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} ${JAVA_BIN_DIR}java \
     ${ADD_OPENS} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
+    -Dlogging.charset.console=${CONSOLE_LOG_CHARSET:-IBM-1047} \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \

@@ -18,6 +18,7 @@
     <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter" />
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <charset>${logging.charset.console:-UTF-8}</charset>
             <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
                 <pattern>${apimlLogPattern}</pattern>
             </layout>
