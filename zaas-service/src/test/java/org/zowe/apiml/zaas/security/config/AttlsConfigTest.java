@@ -18,10 +18,10 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 
 import javax.net.ssl.SSLException;
@@ -46,8 +46,10 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
     }
 )
 @TestInstance(Lifecycle.PER_CLASS)
-@MockBean(name = "x509Mapper", classes = AuthenticationMapper.class)
 public class AttlsConfigTest {
+
+    @MockitoBean(name = "x509Mapper")
+    private AuthenticationMapper x509Mapper;
 
     @Autowired
     HttpSecurity http;

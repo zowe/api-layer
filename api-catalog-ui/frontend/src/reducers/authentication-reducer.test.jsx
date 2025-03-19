@@ -29,7 +29,7 @@ describe('>>> Authentication reducer tests', () => {
             type: userConstants.USERS_LOGIN_SUCCESS,
             user: 'user',
         };
-        expect(authenticationReducer({}, action)).toEqual({ error: null, user: 'user', showHeader: true });
+        expect(authenticationReducer({}, action)).toEqual({ error: null,loginSuccess: true, user: 'user', showHeader: true,showUpdatePassSuccess: undefined });
         expect(authenticationReducer()).toEqual({ sessionOn: true });
     });
 

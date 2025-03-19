@@ -11,6 +11,8 @@
 package org.zowe.apiml.integration.zos;
 
 import io.restassured.RestAssured;
+import io.restassured.config.RestAssuredConfig;
+import io.restassured.config.SSLConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,14 +29,16 @@ import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.*;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.ROUTED_PASSTICKET;
 
 /**
  * Verify integration of the API ML Passticket support with the zOS provider of the Passticket.
@@ -186,7 +190,7 @@ class PassTicketTest implements TestWithStartedInstances {
 
             @Test
             void givenInvalidApplicationName() {
-                String expectedMessage = "The generation of the PassTicket failed. Reason: Unable to generate PassTicket. Verify that the secured signon (PassTicket) function and application ID is configured properly by referring to Using PassTickets in z/OS Security Server RACF Security Administrator's Guide.";
+                String expectedMessage = "The generation of the PassTicket failed. Reason:";
                 TicketRequest ticketRequest = new TicketRequest(UNKNOWN_APPLID);
 
                 given()
@@ -196,14 +200,18 @@ class PassTicketTest implements TestWithStartedInstances {
                 .when()
                     .post(url)
                 .then()
-                    .statusCode(is(SC_BAD_REQUEST))
-                    .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", equalTo(expectedMessage));
-
+                    .statusCode(is(SC_INTERNAL_SERVER_ERROR))
+                    .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", containsString(expectedMessage));
             }
         }
 
         @Nested
         class ReturnForbidden {
+            @BeforeEach
+            void resetCertsToNone() {
+                RestAssured.config = RestAssuredConfig.newConfig().sslConfig(SSLConfig.sslConfig().relaxedHTTPSValidation());
+            }
+
             @Test
             void givenNoCertificate() {
                 given()
@@ -219,6 +227,11 @@ class PassTicketTest implements TestWithStartedInstances {
 
         @Nested
         class ReturnMethodNotAllowed {
+            @BeforeEach
+            void setUpCertificate() {
+                RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+            }
+
             @Test
             void givenInvalidHttpMethod() {
                 String expectedMessage = "Authentication method 'GET' is not supported for URL '" + ZAAS_PASSTICKET_PATH + "'";

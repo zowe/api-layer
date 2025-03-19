@@ -29,13 +29,13 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
@@ -538,9 +538,22 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     @Nested
     @ExtendWith(SpringExtension.class)
     @ContextConfiguration(classes = { CacheConfig.class, AuthenticationService.class, AuthConfigurationProperties.class })
-    @MockBean({ JwtSecurity.class, ZosmfService.class, EurekaClient.class, GatewayClient.class })
-    @MockBean(name = "restTemplateWithKeystore", value = RestTemplate.class)
     class GivenCacheJWTTest {
+
+        @MockitoBean
+        private JwtSecurity jwtSecurity;
+
+        @MockitoBean
+        private ZosmfService zosmfService;
+
+        @MockitoBean
+        private EurekaClient eurekaClient;
+
+        @MockitoBean
+        private GatewayClient gatewayClient;
+
+        @MockitoBean(name = "restTemplateWithKeystore")
+        private RestTemplate restTemplateWithKeystore;
 
         @Autowired
         private AuthenticationService authService;

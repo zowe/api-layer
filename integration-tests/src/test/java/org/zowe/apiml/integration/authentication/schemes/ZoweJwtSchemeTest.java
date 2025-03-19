@@ -21,6 +21,7 @@ import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.InfinispanStorageTest;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
+import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -41,6 +42,9 @@ import static org.zowe.apiml.util.requests.Endpoints.ZOWE_JWT_REQUEST;
 class ZoweJwtSchemeTest implements TestWithStartedInstances {
 
     private static URI URL;
+    private static final String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private static final String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+
 
     @BeforeAll
     static void init() throws Exception {
@@ -56,6 +60,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
             .get(URL)
             .then()
             .body("headers.cookie", startsWith("apimlAuthenticationToken"))
+            .body("headers.authorization", startsWith("Bearer"))
             .statusCode(200);
     }
 
@@ -68,6 +73,20 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
             .then()
             .body("headers.x-zowe-auth-failure", is("ZWEAG160E No authentication provided in the request"))
             .header("x-zowe-auth-failure", is("ZWEAG160E No authentication provided in the request"))
+            .statusCode(200);
+    }
+
+    @Test
+    void givenBasicAuthHeader_authenticationIsPassedUnchanged() {
+        given()
+            .config(SslContext.tlsWithoutCert)
+            .auth().preemptive().basic(USERNAME, PASSWORD)
+            .when()
+            .get(URL)
+            .then()
+            .log().all()
+            .body("headers.cookie", nullValue())
+            .body("headers.authorization", startsWith("Basic"))
             .statusCode(200);
     }
 
@@ -100,6 +119,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
                 .get(URL)
                 .then()
                 .body("headers.cookie", is("apimlAuthenticationToken=" + jwt))
+                .body("headers.authorization", is("Bearer " + jwt))
                 .statusCode(200);
         }
 
@@ -117,6 +137,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
                 .then()
                 .body("cookies.apimlAuthenticationToken", is(jwt))
                 .body("cookies.XSRF-TOKEN", is("another-token-in-cookies"))
+                .body("headers.authorization", is("Bearer " + jwt))
                 .statusCode(200);
         }
 
@@ -151,6 +172,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
                 .get(URL)
                 .then()
                 .body("headers.cookie", startsWith("apimlAuthenticationToken="))
+                .body("headers.authorization", startsWith("Bearer "))
                 .statusCode(200);
         }
     }

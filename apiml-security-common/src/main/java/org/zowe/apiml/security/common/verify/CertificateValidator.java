@@ -56,7 +56,7 @@ public class CertificateValidator {
      * @param certs Certificates to compare with known trusted ones
      * @return true if all given certificates are known false otherwise
      */
-    public boolean isTrusted(X509Certificate[] certs) {
+    public boolean hasGatewayChain(X509Certificate[] certs) {
         if ((proxyCertificatesEndpoints == null) || (proxyCertificatesEndpoints.length == 0)) {
             log.debug("No endpoint configured to retrieve trusted certificates. Provide URL via apiml.security.x509.certificatesUrls");
             return false;

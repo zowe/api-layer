@@ -15,6 +15,7 @@ import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClientConfig;
+import io.netty.handler.ssl.util.KeyManagerFactoryWrapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,16 +23,33 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.web.server.Ssl;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.server.reactive.SslInfo;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.server.WebFilter;
+import org.zowe.apiml.gateway.GatewayServiceApplication;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.tcp.SslProvider;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.X509KeyManager;
 import java.net.MalformedURLException;
+import java.net.Socket;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -119,6 +137,171 @@ class ConnectionsConfigTest {
             assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "trustStorePath")).isEqualTo("/path2");
             assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "keyStorePassword")).isNull();
             assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "trustStorePassword")).isNull();
+        }
+
+    }
+
+    @Nested
+    @SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = { "management.port=-1" },
+        classes = { GatewayServiceApplication.class, ConnectionsConfigTest.SslDetectorConfig.class }
+    )
+    class ChooseAlias {
+
+        @LocalServerPort
+        protected int port;
+
+        @Nested
+        class UsingX509KeyManagerSelectedAlias {
+
+            @Value("${server.ssl.keyAlias}")
+            private String keyAlias;
+
+            @MockitoSpyBean
+            private ConnectionsConfig connectionsConfig;
+
+            @Test
+            void whenAliasIsSet_thenReturnItByX509KeyManagerSelectedAlias() {
+                AtomicReference<X509KeyManager> returnValue = new AtomicReference<>();
+                doAnswer(answer -> {
+                    if (returnValue.get() == null) {
+                        returnValue.set(spy((X509KeyManager) answer.callRealMethod()));
+                    }
+                    return returnValue.get();
+                }).when(connectionsConfig).x509KeyManagerSelectedAlias(any());
+
+                var sslContext = connectionsConfig.getSslContext(true);
+                var sslProvider = SslProvider.builder().sslContext(sslContext).build();
+                var httpClient = HttpClient.create().secure(sslProvider);
+                reset(returnValue.get());
+                httpClient.get()
+                    .uri(String.format("https://localhost:%d/", port))
+                    .response().block();
+                assertNotNull(SslDetectorConfig.sslInfoHolder.get());
+
+                verify(returnValue.get(), atLeastOnce()).chooseClientAlias(any(), any(), any());
+                assertEquals(keyAlias, returnValue.get().chooseClientAlias(null, null, null));
+            }
+
+        }
+
+        @Nested
+        class Negative {
+
+            @Autowired
+            private ConnectionsConfig connectionsConfig;
+
+            @Test
+            void whenAliasIsInvalid_thenNoCertificateProvided() {
+                ReflectionTestUtils.setField(connectionsConfig, "keyAlias", "invalid");
+
+                var sslContext = connectionsConfig.getSslContext(true);
+                var sslProvider = SslProvider.builder().sslContext(sslContext).build();
+                var httpClient = HttpClient.create().secure(sslProvider);
+                httpClient.get()
+                    .uri(String.format("https://localhost:%d/", port))
+                    .response().block();
+
+                assertNull(SslDetectorConfig.sslInfoHolder.get());
+            }
+
+        }
+
+        @Nested
+        class Wrapper {
+
+            private static final String CONFIG_ALIAS = "configAlias";
+            private static final String ALIAS = "alias";
+            private static final String[] ALIASES = new String[] { "alias" };
+            private static final String KEY_TYPE = "keyType";
+            private static final String[] KEY_TYPES = new String[] { KEY_TYPE };
+            private static final Principal[] ISSUERS = new Principal[0];
+            private static final Socket SOCKET = mock(Socket.class);
+            private static final X509Certificate[] CERTIFICATES = new X509Certificate[0];
+            private static final PrivateKey PRIVATE_KEY = mock(PrivateKey.class);
+
+            private final X509KeyManager origKeyManager = mock(X509KeyManager.class);
+            private final KeyManagerFactory origKeyManagerFactory = new KeyManagerFactoryWrapper(origKeyManager);
+
+            @Test
+            void whenGetClientAliases_thenRecall() {
+                doReturn(ALIASES).when(origKeyManager).getClientAliases(KEY_TYPE, ISSUERS);
+                assertSame(ALIASES,
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
+                        .getClientAliases(KEY_TYPE, ISSUERS)
+                );
+                verify(origKeyManager).getClientAliases(KEY_TYPE, ISSUERS);
+            }
+
+            @Test
+            void givenNoAlias_whenChooseClientAlias_thenRecall() {
+                doReturn(ALIAS).when(origKeyManager).chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET);
+                assertSame(ALIAS,
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, null)
+                        .chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET)
+                );
+                verify(origKeyManager).chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET);
+            }
+
+            @Test
+            void givenAlias_whenChooseClientAlias_thenReturnAlias() {
+                assertSame(CONFIG_ALIAS,
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
+                        .chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET)
+                );
+                verify(origKeyManager, never()).chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET);
+            }
+
+            @Test
+            void whenGetServerAliases_thenRecall() {
+                doReturn(ALIASES).when(origKeyManager).getServerAliases(KEY_TYPE, ISSUERS);
+                assertSame(ALIASES,
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
+                        .getServerAliases(KEY_TYPE, ISSUERS)
+                );
+                verify(origKeyManager).getServerAliases(KEY_TYPE, ISSUERS);
+            }
+
+            @Test
+            void givenNoAlias_whenChooseServerAlias_thenRecall() {
+                doReturn(ALIAS).when(origKeyManager).chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET);
+                assertSame(ALIAS,
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, null)
+                        .chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET)
+                );
+                verify(origKeyManager).chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET);
+            }
+
+            @Test
+            void givenAlias_whenChooseServerAlias_thenReturnAlias() {
+                assertSame(CONFIG_ALIAS,
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
+                        .chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET)
+                );
+                verify(origKeyManager, never()).chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET);
+            }
+
+            @Test
+            void whenGetCertificateChain_thenRecall() {
+                doReturn(CERTIFICATES).when(origKeyManager).getCertificateChain(ALIAS);
+                assertSame(CERTIFICATES,
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
+                        .getCertificateChain(ALIAS)
+                );
+                verify(origKeyManager).getCertificateChain(ALIAS);
+            }
+
+            @Test
+            void whenGetPrivateKey_thenRecall() {
+                doReturn(PRIVATE_KEY).when(origKeyManager).getPrivateKey(ALIAS);
+                assertSame(PRIVATE_KEY,
+                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
+                        .getPrivateKey(ALIAS)
+                );
+                verify(origKeyManager).getPrivateKey(ALIAS);
+            }
+
         }
 
     }
@@ -232,6 +415,21 @@ class ConnectionsConfigTest {
         void givenDelegator_whenGetStatusPageUrl_thenCallInstanceInfo() {
             doReturn("statuspageUrl").when(instanceInfo).getStatusPageUrl();
             assertEquals("statuspageUrl", delegator.getStatusPageUrl());
+        }
+
+    }
+
+    @Configuration
+    static class SslDetectorConfig {
+
+        static final AtomicReference<SslInfo> sslInfoHolder = new AtomicReference<>();
+
+        @Bean
+        WebFilter sslDetector() {
+            return (exchange, chain) -> {
+                sslInfoHolder.set(exchange.getRequest().getSslInfo());
+                return chain.filter(exchange);
+            };
         }
 
     }

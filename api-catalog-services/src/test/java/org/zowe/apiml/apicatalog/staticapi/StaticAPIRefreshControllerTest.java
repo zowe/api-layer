@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.apicatalog.staticapi;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import org.springframework.web.client.RestClientException;
 import org.zowe.apiml.apicatalog.services.status.model.ServiceNotFoundException;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -45,6 +47,11 @@ class StaticAPIRefreshControllerTest {
 
     @Autowired
     private StaticAPIService staticAPIService;
+
+    @BeforeEach
+    void setUp() {
+        reset(staticAPIService);
+    }
 
     @Test
     void givenServiceNotFoundException_whenCallRefreshAPI_thenResponseShouldBe503WithSpecificMessage() throws Exception {

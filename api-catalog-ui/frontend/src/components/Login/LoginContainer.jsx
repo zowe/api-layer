@@ -8,7 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import Login from './Login';
 import { userActions } from '../../actions/user-actions';
 import { createLoadingSelector } from '../../selectors/selectors';
@@ -27,4 +26,11 @@ const mapDispatchToProps = {
     validateInput: (credentials) => userActions.validateInput(credentials),
 };
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Login));
+const withRouter = (Login) =>{
+    return (props) =>{
+        return <Login {...props}/>
+    }
+}
+
+
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Login))

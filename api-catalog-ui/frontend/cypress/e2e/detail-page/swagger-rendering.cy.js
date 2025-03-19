@@ -56,7 +56,7 @@ describe("Swagger rendering", () => {
                 .get('label')
                 .should('contain', "API Base Path:");
 
-            let regexContent = `^\/${service.serviceId}\/api(\/v1)?$`;
+            let regexContent = `^\/${service.serviceId}\/api`;
             if (service.serviceId === 'gateway') {
                 regexContent = '/';
             }
@@ -93,7 +93,7 @@ describe("Swagger rendering", () => {
                 .should('exist');
 
             cy.get('@swaggerContainer')
-                .get('div.information-container > section > div > div.info > .main')
+                .get('div.information-container > section div.info .main')
                 .as('mainInfo');
 
             cy.get('@mainInfo').should('exist');

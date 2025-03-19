@@ -1,4 +1,4 @@
-#!/bin/sh
+ #!/bin/sh
 
 ################################################################################
 # This program and the accompanying materials are made available under the terms of the
@@ -92,20 +92,6 @@ then
     QUICK_START=-Xquickstart
 fi
 
-if [ -z "${ZWE_configs_storage_infinispan_persistence_dataLocation}" ]; then
-  if [ -n "${ZWE_zowe_workspaceDirectory}" ]; then
-    ZWE_configs_storage_infinispan_persistence_dataLocation="${ZWE_zowe_workspaceDirectory}/caching-service/data"
-  fi
-fi
-if [ -z "${ZWE_configs_storage_infinispan_persistence_indexLocation}" ]; then
-  if [ -n "${ZWE_zowe_workspaceDirectory}" ]; then
-    ZWE_configs_storage_infinispan_persistence_indexLocation="${ZWE_zowe_workspaceDirectory}/caching-service/index"
-  fi
-fi
-if [ -z "${ZWE_configs_storage_infinispan_initialHosts}" ]; then
-  ZWE_configs_storage_infinispan_initialHosts="${ZWE_haInstance_hostname:-localhost}[${ZWE_configs_storage_infinispan_jgroups_port:-7098}]"
-fi
-
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -152,13 +138,12 @@ fi
 get_enabled_protocol_limit() {
     target=$1
     type=$2
+    default=$3
     key_component="ZWE_configs_zowe_network_${target}_tls_${type}Tls"
     value_component=$(eval echo \$$key_component)
-    key_gateway="ZWE_components_gateway_zowe_network_${target}_tls_${type}Tls"
-    value_gateway=$(eval echo \$$key_gateway)
     key_zowe="ZWE_zowe_network_${target}_tls_${type}Tls"
     value_zowe=$(eval echo \$$key_zowe)
-    enabled_protocol_limit=${value_component:-${value_gateway:-${value_zowe:-}}}
+    enabled_protocol_limit=${value_component:-${value_zowe:-${default}}}
 }
 
 extract_between() {
@@ -167,9 +152,9 @@ extract_between() {
 
 get_enabled_protocol() {
     target=$1
-    get_enabled_protocol_limit "${target}" "min"
+    get_enabled_protocol_limit "${target}" "min" "TLSv1.2"
     enabled_protocols_min=${enabled_protocol_limit}
-    get_enabled_protocol_limit "${target}" "max"
+    get_enabled_protocol_limit "${target}" "max" "TLSv1.3"
     enabled_protocols_max=${enabled_protocol_limit}
 
     if [ "${enabled_protocols_min:-}" = "${enabled_protocols_max:-}" ]; then
@@ -185,11 +170,10 @@ get_enabled_protocol() {
     fi
 }
 
-get_enabled_protocol_limit "server" "max"
-server_protocol=${enabled_protocol_limit:-"TLS"}
+server_protocol="TLS"
 get_enabled_protocol "server"
 server_enabled_protocols=${result:-"TLSv1.3"}
-server_ciphers=${ZWE_configs_zowe_network_server_tls_ciphers:-${ZWE_components_gateway_zowe_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384}}}
+server_ciphers=${ZWE_configs_zowe_network_server_tls_ciphers:-${ZWE_components_gateway_zowe_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384,TLS_DHE_DSS_WITH_AES_256_GCM_SHA384,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_DSS_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV}}}
 get_enabled_protocol "client"
 client_enabled_protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${result:-${server_enabled_protocols}}}
 client_ciphers=${ZWE_configs_zowe_network_client_tls_ciphers:-${ZWE_components_gateway_zowe_network_client_tls_ciphers:-${ZWE_zowe_network_client_tls_ciphers:-${server_ciphers}}}}
@@ -230,6 +214,16 @@ if [ -n "${ZWE_java_home}" ]; then
     JAVA_BIN_DIR=${ZWE_java_home}/bin/
 fi
 
+# migration step of Infinispan since version 3.2 (see #https://github.com/zowe/api-layer/pull/3960)
+original_infinispan_data_location="${ZWE_configs_storage_infinispan_persistence_dataLocation:-${ZWE_zowe_workspaceDirectory:-$(pwd)}}/caching-service/data"
+if [ -d "${original_infinispan_data_location}" ]; then
+    mv -f "${original_infinispan_data_location}" "${ZWE_zowe_workspaceDirectory:-$(pwd)}/caching-service/${ZWE_haInstance_id:-localhost}/data"
+fi
+original_infinispan_index_location="${ZWE_configs_storage_infinispan_persistence_indexLocation:-${ZWE_zowe_workspaceDirectory:-$(pwd)}}/caching-service/index"
+if [ -d "${original_infinispan_index_location}" ]; then
+    mv -f "${original_infinispan_index_location}" "${ZWE_zowe_workspaceDirectory:-$(pwd)}/caching-service/${ZWE_haInstance_id:-localhost}/index"
+fi
+
 CACHING_CODE=CS
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
@@ -259,11 +253,9 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Dcaching.storage.mode=${ZWE_configs_storage_mode:-inMemory} \
   -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
   -Djgroups.bind.address=${ZWE_configs_storage_infinispan_jgroups_host:-${ZWE_haInstance_hostname:-localhost}} \
-  -Djgroups.bind.port=${ZWE_configs_storage_infinispan_jgroups_port:-7098} \
-  -Djgroups.keyExchange.port=${ZWE_configs_storage_infinispan_jgroups_keyExchange_port:-7118} \
-  -Dcaching.storage.infinispan.persistence.dataLocation=${ZWE_configs_storage_infinispan_persistence_dataLocation:-data} \
-  -Dcaching.storage.infinispan.persistence.indexLocation=${ZWE_configs_storage_infinispan_persistence_indexLocation:-index} \
-  -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-localhost[7098]} \
+  -Djgroups.bind.port=${ZWE_configs_storage_infinispan_jgroups_port:-7600} \
+  -Djgroups.keyExchange.port=${ZWE_configs_storage_infinispan_jgroups_keyExchange_port:-7601} \
+  -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-localhost[7600]} \
   -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \
   -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
   -Dserver.ssl.keyStore="${keystore_location}" \

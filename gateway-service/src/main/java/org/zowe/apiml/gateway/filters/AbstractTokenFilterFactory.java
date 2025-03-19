@@ -30,6 +30,8 @@ import reactor.core.publisher.Mono;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.zowe.apiml.constants.ApimlConstants.BEARER_AUTHENTICATION_PREFIX;
+
 public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFactory.Config, D> extends AbstractAuthSchemeFactory<T, ZaasTokenResponse, D> {
 
     protected AbstractTokenFilterFactory(Class<T> configClazz, WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
@@ -90,6 +92,7 @@ public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFa
                         response.get().getToken()
                     );
                     headers.set(HttpHeaders.COOKIE, cookieHeader);
+                    headers.set(HttpHeaders.AUTHORIZATION, BEARER_AUTHENTICATION_PREFIX + " "  + response.get().getToken());
                 }).build();
                 exchange = exchange.mutate().request(request).build();
             }

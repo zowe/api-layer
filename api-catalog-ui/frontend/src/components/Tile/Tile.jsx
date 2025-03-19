@@ -7,85 +7,72 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Card, CardActionArea, CardContent, Typography } from '@material-ui/core';
-import React, { Component } from 'react';
+import {Card, CardActionArea, CardContent, Typography} from '@material-ui/core';
 import Brightness1RoundedIcon from '@material-ui/icons/Brightness1Rounded';
 import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import PropTypes from 'prop-types';
+import {useNavigate} from "react-router";
 
-export default class Tile extends Component {
-    getTileStatus = (tile) => {
-        const unknownIcon = <HelpOutlineIcon id="unknown" style={{ color: 'rgb(51, 56, 64)', fontSize: '12px' }} />;
-        if (tile === null || tile === undefined) {
+function Tile({service,fetchNewService}) {
+    const navigate = useNavigate();
+    const getTileStatus = (service) => {
+        const unknownIcon = <>
+            <HelpOutlineIcon id="unknown" style={{color: 'rgb(51, 56, 64)', fontSize: '12px'}}/>
+            Status unknown
+        </>;
+        if (service === null || service === undefined) {
             return unknownIcon;
         }
-        const { status } = tile;
+        const {status} = service;
         switch (status) {
             case 'UP':
-                return <Brightness1RoundedIcon id="success" style={{ color: 'rgb(42, 133, 78)', fontSize: '12px' }} />;
+                return <>
+                    <Brightness1RoundedIcon data-testid="success-icon" id="success"
+                                            style={{color: 'rgb(42, 133, 78)', fontSize: '12px'}}/>
+                    The service is running
+                </>;
             case 'DOWN':
-                return <ReportProblemIcon id="danger" style={{ color: 'rgb(222, 27, 27)', fontSize: '12px' }} />;
+                return <>
+                    <ReportProblemIcon id="danger" data-testid="danger-icon" style={{color: 'rgb(222, 27, 27)', fontSize: '12px'}}/>
+                    The service is not running
+                </>
             default:
                 return unknownIcon;
         }
     };
 
-    getTileStatusText = (tile) => {
-        if (tile === null || tile === undefined) {
-            return 'Status unknown';
-        }
-        const { status } = tile;
-        switch (status) {
-            case 'UP':
-                return 'The service is running';
-            case 'DOWN':
-                return 'The service is not running';
-            default:
-                return 'Status unknown';
-        }
-    };
-
-    handleClick = () => {
-        const { tile, history, storeCurrentTileId, service } = this.props;
+    const handleClick = () => {
         const tileRoute = `/service/${service.serviceId}`;
-        storeCurrentTileId(tile.id);
-        history.push(tileRoute);
+        fetchNewService(service.serviceId);
+        // selectService(service, tile.id);
+        navigate(tileRoute);
         localStorage.setItem('serviceId', service.serviceId);
     };
 
-    render() {
-        const { tile, service } = this.props;
-        return (
-            <Card key={tile.id} className="grid-tile pop grid-item" onClick={this.handleClick} data-testid="tile">
-                <CardActionArea style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="card-action">
-                    <CardContent style={{ fontSize: '0.875em', color: 'rgb(88, 96, 110)' }} className="tile">
-                        <div className="tile-ctn">
-                            <div className="tile-title">
-                                <Typography id="tileLabel" className="grid-tile-status">
-                                    {this.getTileStatus(tile)}
-                                    {this.getTileStatusText(tile)}
+    return (
+        <Card key={service.serviceId} className="grid-tile pop grid-item" onClick={handleClick} data-testid="tile">
+            <CardActionArea style={{fontSize: '0.875em', color: 'rgb(88, 96, 110)'}} className="card-action">
+                <CardContent style={{fontSize: '0.875em', color: 'rgb(88, 96, 110)'}} className="tile">
+                    <div className="tile-ctn">
+                        <div className="tile-title">
+                            <Typography id="tileLabel" className="grid-tile-status">
+                                {getTileStatus(service)}
+                            </Typography>
+                            <Typography id="tiles-service-title" variant="subtitle1">
+                                {service.title}
+                            </Typography>
+                            {service.sso && (
+                                <Typography variant="h6" id="grid-tile-sso">
+                                    (SSO)
                                 </Typography>
-                                <Typography id="tiles-service-title" variant="subtitle1">
-                                    {service.title}
-                                </Typography>
-                                {service.sso && (
-                                    <Typography variant="h6" id="grid-tile-sso">
-                                        (SSO)
-                                    </Typography>
-                                )}
-                            </div>
+                            )}
                         </div>
-                    </CardContent>
-                </CardActionArea>
-            </Card>
-        );
-    }
+                    </div>
+                </CardContent>
+            </CardActionArea>
+        </Card>
+    );
+
 }
 
-Tile.propTypes = {
-    service: PropTypes.shape({
-        title: PropTypes.string,
-        sso: PropTypes.bool,
-    }).isRequired,
-};
+export default Tile;

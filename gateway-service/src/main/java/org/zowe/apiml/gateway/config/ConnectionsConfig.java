@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.config;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.appinfo.*;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
@@ -36,27 +37,27 @@ import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.gateway.config.*;
+import org.springframework.cloud.gateway.config.HttpClientCustomizer;
+import org.springframework.cloud.gateway.config.HttpClientFactory;
+import org.springframework.cloud.gateway.config.HttpClientProperties;
+import org.springframework.cloud.gateway.config.HttpClientSslConfigurer;
 import org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter;
-import org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
-import org.springframework.cloud.netflix.eureka.RestTemplateTimeoutProperties;
+import org.springframework.cloud.netflix.eureka.RestClientTimeoutProperties;
 import org.springframework.cloud.netflix.eureka.http.DefaultEurekaClientHttpRequestFactorySupplier;
-import org.springframework.cloud.netflix.eureka.http.RestTemplateDiscoveryClientOptionalArgs;
-import org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClientFactories;
+import org.springframework.cloud.netflix.eureka.http.RestClientDiscoveryClientOptionalArgs;
+import org.springframework.cloud.netflix.eureka.http.RestClientTransportClientFactories;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.*;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.WebFilter;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.web.util.pattern.PathPatternParser;
 import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.config.AdditionalRegistrationCondition;
 import org.zowe.apiml.config.AdditionalRegistrationParser;
@@ -74,9 +75,14 @@ import reactor.netty.tcp.SslProvider;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509KeyManager;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URL;
 import java.security.KeyStore;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -226,6 +232,11 @@ public class ConnectionsConfig {
         };
     }
 
+    @VisibleForTesting
+    X509KeyManager x509KeyManagerSelectedAlias(KeyManagerFactory keyManagerFactory) {
+        return new X509KeyManagerSelectedAlias(keyManagerFactory, keyAlias);
+    }
+
     /**
      * @return io.netty.handler.ssl.SslContext for http client.
      */
@@ -243,7 +254,7 @@ public class ConnectionsConfig {
                 log.info("Loading keystore: {}: {}", keyStoreType, keyStorePath);
                 KeyStore keyStore = SecurityUtils.loadKeyStore(keyStoreType, keyStorePath, keyStorePassword);
                 keyManagerFactory.init(keyStore, keyStorePassword);
-                builder.keyManager(keyManagerFactory);
+                builder.keyManager(x509KeyManagerSelectedAlias(keyManagerFactory));
             } else {
                 KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
                 emptyKeystore.load(null, null);
@@ -270,23 +281,23 @@ public class ConnectionsConfig {
         } else {
             appManager = manager;
         }
-        RestTemplateDiscoveryClientOptionalArgs args1 = defaultArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
-        RestTemplateTransportClientFactories factories = new RestTemplateTransportClientFactories(args1);
+        RestClientDiscoveryClientOptionalArgs args1 = defaultArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
+        RestClientTransportClientFactories factories = new RestClientTransportClientFactories(args1);
         final CloudEurekaClient cloudEurekaClient = new CloudEurekaClient(appManager, config, factories, args1, this.context);
         cloudEurekaClient.registerHealthCheck(healthCheckHandler);
         return cloudEurekaClient;
     }
 
     private static DefaultEurekaClientHttpRequestFactorySupplier getDefaultEurekaClientHttpRequestFactorySupplier() {
-        RestTemplateTimeoutProperties properties = new RestTemplateTimeoutProperties();
+        RestClientTimeoutProperties properties = new RestClientTimeoutProperties();
         properties.setConnectTimeout(180000);
         properties.setConnectRequestTimeout(180000);
         properties.setSocketTimeout(180000);
         return new DefaultEurekaClientHttpRequestFactorySupplier(properties);
     }
 
-    public RestTemplateDiscoveryClientOptionalArgs defaultArgs(DefaultEurekaClientHttpRequestFactorySupplier factorySupplier) {
-        RestTemplateDiscoveryClientOptionalArgs clientArgs = new RestTemplateDiscoveryClientOptionalArgs(factorySupplier);
+    public RestClientDiscoveryClientOptionalArgs defaultArgs(DefaultEurekaClientHttpRequestFactorySupplier factorySupplier) {
+        RestClientDiscoveryClientOptionalArgs clientArgs = new RestClientDiscoveryClientOptionalArgs(factorySupplier, RestClient::builder);
 
         if (eurekaServerUrl.startsWith("http://")) {
             apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
@@ -299,6 +310,7 @@ public class ConnectionsConfig {
     }
 
     @Bean
+    @DependsOn("discoveryClient")
     public List<AdditionalRegistration> additionalRegistration() {
         List<AdditionalRegistration> additionalRegistrations = new AdditionalRegistrationParser().extractAdditionalRegistrations(System.getenv());
         log.debug("Parsed {} additional registration: {}", additionalRegistrations.size(), additionalRegistrations);
@@ -337,8 +349,8 @@ public class ConnectionsConfig {
 
         updateMetadata(newInfo, apimlRegistration);
 
-        RestTemplateDiscoveryClientOptionalArgs args1 = defaultArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
-        RestTemplateTransportClientFactories factories = new RestTemplateTransportClientFactories(args1);
+        RestClientDiscoveryClientOptionalArgs args1 = defaultArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
+        RestClientTransportClientFactories factories = new RestClientTransportClientFactories(args1);
         return eurekaFactory.createCloudEurekaClient(new AdditionalEurekaConfiguration(eurekaInstanceConfig, newInfo), newInfo, configBean, context, factories, args1);
     }
 
@@ -408,17 +420,13 @@ public class ConnectionsConfig {
     }
 
     @Bean
-    public UrlBasedCorsConfigurationSource corsConfigurationSource(RoutePredicateHandlerMapping handlerMapping, GlobalCorsProperties globalCorsProperties, CorsUtils corsUtils) {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(new PathPatternParser());
-        source.setCorsConfigurations(globalCorsProperties.getCorsConfigurations());
-        corsUtils.registerDefaultCorsConfiguration(source::registerCorsConfiguration);
-        handlerMapping.setCorsConfigurationSource(source);
-        return source;
+    public CorsUtils corsUtils() {
+        return new CorsUtils(corsEnabled, null);
     }
 
     @Bean
-    public CorsUtils corsUtils() {
-        return new CorsUtils(corsEnabled, null);
+    public WebFilter corsWebFilter(ServiceCorsUpdater serviceCorsUpdater) {
+        return new CorsWebFilter(serviceCorsUpdater.getUrlBasedCorsConfigurationSource());
     }
 
     public InstanceInfo create(EurekaInstanceConfig config)  {
@@ -539,6 +547,54 @@ public class ConnectionsConfig {
             String getHomePageUrl();
             String getStatusPageUrl();
 
+        }
+
+    }
+
+    static class X509KeyManagerSelectedAlias implements X509KeyManager {
+
+        private final X509KeyManager originalKm;
+        private final String keyAlias;
+
+        X509KeyManagerSelectedAlias(KeyManagerFactory keyManagerFactory, String keyAlias) {
+            this.originalKm = (X509KeyManager) keyManagerFactory.getKeyManagers()[0];
+            this.keyAlias = keyAlias;
+        }
+
+        @Override
+        public String[] getClientAliases(String keyType, Principal[] issuers) {
+            return originalKm.getClientAliases(keyType, issuers);
+        }
+
+        @Override
+        public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
+            if (keyAlias != null) {
+                return keyAlias;
+            }
+            return originalKm.chooseClientAlias(keyType, issuers, socket);
+        }
+
+        @Override
+        public String[] getServerAliases(String keyType, Principal[] issuers) {
+            return originalKm.getServerAliases(keyType, issuers);
+        }
+
+        @Override
+        public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
+            if (keyAlias != null) {
+                return keyAlias;
+            }
+            return originalKm.chooseServerAlias(keyType, issuers, socket);
+        }
+
+        @Override
+        public X509Certificate[] getCertificateChain(String alias) {
+            return originalKm.getCertificateChain(alias);
+        }
+
+        @Override
+        public PrivateKey getPrivateKey(String alias) {
+            return originalKm.getPrivateKey(alias);
         }
 
     }

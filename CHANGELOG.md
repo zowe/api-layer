@@ -2,7 +2,7 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `APIML 3.1.3 / Zowe 3.1.0 (2025-02-03)`
+## `APIML 3.1.5 / Zowe 3.1.0 (2025-02-03)`
 
 * Feature:  Override external URL for additional registration (#3935) ([d5dd912](https://github.com/zowe/api-layer/commit/d5dd912)), closes [#3935](https://github.com/zowe/api-layer/issues/3935)
 * Feature:  Support OIDC token to authenticate in API Catalog (#3925) ([a4ead1d](https://github.com/zowe/api-layer/commit/a4ead1d)), closes [#3925](https://github.com/zowe/api-layer/issues/3925)
@@ -39,7 +39,8 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Configure SSL context for webclient (#3811) ([476c69b](https://github.com/zowe/api-layer/commit/476c69b)), closes [#3811](https://github.com/zowe/api-layer/issues/3811)
 * Bugfix:  Minor fixes in logs (#3806) ([5abc91e](https://github.com/zowe/api-layer/commit/5abc91e)), closes [#3806](https://github.com/zowe/api-layer/issues/3806)
 * Bugfix:  Change refill strategy for API rate limiting (#3949) ([32793d87](https://github.com/zowe/api-layer/commit/32793d87)), closes [#3949](https://github.com/zowe/api-layer/issues/3949)
-* Bugfix:  Fix LogBack turbofilters configuration (#3954) ([fc8b58d5](https://github.com/zowe/api-layer/commit/fc8b58d5)), closes [#3954](https://github.com/zowe/api-layer/issues/3954)
+* Bugfix:  Fix LogBack configuration (#3962) ([56edec3](https://github.com/zowe/api-layer/commit/56edec3)), closes [#3962](https://github.com/zowe/api-layer/issues/3962)
+* Bugfix:  Fix order of Gateway filter to avoid random malfunction of routing (#3966) ([4751f53](https://github.com/zowe/api-layer/commit/4751f53)), closes [#3966](https://github.com/zowe/api-layer/issues/3966)
 
 ## `APIML 3.0.36 / Zowe 3.0.0 (2024-10-01)`
 
@@ -58,6 +59,7 @@ __Breaking changes in API ML__
 | z/OSMF in version V2R5 with APAR PH12143 applied                                                                              | If you are running a version of z/OS before 3.1, validate that the PH12143 APAR was applied to the z/OSMF installation used by Zowe. The Zowe YAML parameter components.gateway.apiml.security.auth.zosmf.jwtAutoconfiguration for the gateway component has changed. The value auto is no longer allowed. Choose either the default jwt or ltpa depending on if your z/OSMF is set up for JWT use as recommended. See example-zowe.yaml for new component values.
 | Configuration of keyrings now requires transformation from safkeyring://// to safkeyring://                                   | If your Zowe configuration contains safkeyring:////, change this part to safkeyring://.
 | Support access to z/OSMF only through /ibmzosmf route. V3 will not support access through the /zosmf route                    | If you use z/OSMF via {apimlUrl}/zosmf/{zosmfEndpoint} you need to move to {apimlUrl}/ibmzosmf/{zosmfEndpoint}.
+| Error code change for nonexistent services | Nonexistent service returns 404 with error code ZWEAO404E
 
 __New features and enhancements in API ML__
 

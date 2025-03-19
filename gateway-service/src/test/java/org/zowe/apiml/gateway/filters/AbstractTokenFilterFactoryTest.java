@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -79,6 +80,7 @@ class AbstractTokenFilterFactoryTest {
                     .build()
                 ));
                 assertEquals("cookieName=cookieValue", request.getHeaders().getFirst("cookie"));
+                assertEquals("Bearer cookieValue" , request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION));
             }
 
         }

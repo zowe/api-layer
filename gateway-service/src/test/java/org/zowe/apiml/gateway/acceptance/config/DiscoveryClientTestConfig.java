@@ -21,14 +21,15 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.netflix.eureka.RestTemplateTimeoutProperties;
+import org.springframework.cloud.netflix.eureka.RestClientTimeoutProperties;
 import org.springframework.cloud.netflix.eureka.http.DefaultEurekaClientHttpRequestFactorySupplier;
-import org.springframework.cloud.netflix.eureka.http.RestTemplateDiscoveryClientOptionalArgs;
-import org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClientFactories;
+import org.springframework.cloud.netflix.eureka.http.RestClientDiscoveryClientOptionalArgs;
+import org.springframework.cloud.netflix.eureka.http.RestClientTransportClientFactories;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.web.client.RestClient;
 import org.zowe.apiml.gateway.acceptance.netflix.ApimlDiscoveryClientStub;
 import org.zowe.apiml.gateway.acceptance.netflix.ApplicationRegistry;
 import reactor.core.publisher.Flux;
@@ -91,9 +92,9 @@ public class DiscoveryClientTestConfig {
         }
 
 
-        var factorySupplier = new DefaultEurekaClientHttpRequestFactorySupplier(new RestTemplateTimeoutProperties());
-        var args1 = new RestTemplateDiscoveryClientOptionalArgs(factorySupplier);
-        var factories = new RestTemplateTransportClientFactories(args1);
+        var factorySupplier = new DefaultEurekaClientHttpRequestFactorySupplier(new RestClientTimeoutProperties());
+        var args1 = new RestClientDiscoveryClientOptionalArgs(factorySupplier, RestClient::builder);
+        var factories = new RestClientTransportClientFactories(args1);
         final var discoveryClient = new ApimlDiscoveryClientStub(appManager, config, this.context, applicationRegistry, factories, args1);
         discoveryClient.registerHealthCheck(healthCheckHandler);
 

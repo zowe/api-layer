@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     IconButton,
     InputAdornment,
@@ -32,6 +32,7 @@ import Spinner from '../Spinner/Spinner';
 import './Login.css';
 import Footer from '../Footer/Footer';
 import getBaseUrl from "../../helpers/urls";
+import {useNavigate} from "react-router";
 
 function Login(props) {
     const [username, setUsername] = useState('');
@@ -50,6 +51,13 @@ function Login(props) {
     const enterNewPassMsg = 'Enter a new password for account';
     const invalidPassMsg = 'The specified username or password is invalid.';
 
+    // const { error, user, showHeader } = useSelector((state) => state);
+    const navigate = useNavigate();
+    useEffect(() => {
+        if(authentication.loginSuccess){
+            navigate('/dashboard');
+        }
+    }, [authentication]);
     /**
      * Detect caps lock being off when typing.
      * @param keyEvent On key up event.
@@ -117,11 +125,12 @@ function Login(props) {
 
     function handleSubmit(e) {
         e.preventDefault();
-        localStorage.setItem('username', username);
+
         if (username && password && newPassword) {
             login({ username, password, newPassword });
         } else if (username && password) {
-            login({ username, password });
+           login({ username, password }, "nehehe");
+
         }
         setSubmitted(true);
     }
@@ -139,7 +148,7 @@ function Login(props) {
         }
     }
 
-    loadOidcProviders();
+    // loadOidcProviders();
 
     let errorData = { messageText: null, expired: false, invalidNewPassword: true, invalidCredentials: false };
     if (

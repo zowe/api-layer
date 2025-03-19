@@ -17,7 +17,7 @@ import { createEpicMiddleware } from 'redux-observable';
 import { ajax } from 'rxjs/ajax';
 import logger from 'redux-logger';
 import * as log from 'loglevel';
-import { HashRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router';
 import { PersistGate } from 'redux-persist/integration/react';
 import { createBlacklistFilter } from 'redux-persist-transform-filter';
 
@@ -55,6 +55,7 @@ const persistConfig = {
 const epicMiddleware = createEpicMiddleware({
     dependencies: { ajax },
 });
+
 const composeEnhancers = compose;
 const middlewares = [epicMiddleware, thunk, reduxCatch(errorHandler)];
 if (typeof process !== 'undefined' && process?.env?.NODE_ENV !== 'production') {
@@ -66,6 +67,8 @@ epicMiddleware.run(rootEpic);
 const persistor = persistStore(store);
 
 const container = document.getElementById('root');
+
+// const navigate = useNavigate();
 createRoot(container).render(
     <HashRouter>
         <Provider store={store}>

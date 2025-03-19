@@ -25,6 +25,7 @@ import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache.LoadBalancerCacheRecord;
 import reactor.core.publisher.Flux;
@@ -114,10 +115,30 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
 
     private Mono<String> getSub(Object requestContext) {
         if (requestContext instanceof RequestDataContext ctx) {
-            var token = Optional.ofNullable(ctx.getClientRequest().getCookies().get("apimlAuthenticationToken")).map(list -> list.get(0)).orElse("");
+            var token = Optional.ofNullable(getTokenFromCookie(ctx))
+                                .orElseGet(() -> getTokenFromHeader(ctx));
             return Mono.just(extractSubFromToken(token));
         }
         return Mono.just("");
+    }
+
+    private String getTokenFromCookie(RequestDataContext ctx) {
+        var tokens = ctx.getClientRequest().getCookies().get("apimlAuthenticationToken");
+        return tokens == null || tokens.isEmpty() ? null : tokens.get(0);
+    }
+
+    private String getTokenFromHeader(RequestDataContext ctx) {
+        var authHeaderValues = ctx.getClientRequest().getHeaders().get(HttpHeaders.AUTHORIZATION);
+        var token = authHeaderValues == null || authHeaderValues.isEmpty() ? null : authHeaderValues.get(0);
+        if (token != null && token.startsWith(ApimlConstants.BEARER_AUTHENTICATION_PREFIX)) {
+            token = token.replaceFirst(ApimlConstants.BEARER_AUTHENTICATION_PREFIX, "").trim();
+            if (token.isEmpty()) {
+                return null;
+            }
+
+            return token;
+        }
+        return null;
     }
 
     /**
@@ -273,7 +294,7 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
     }
 
     private String extractSubFromToken(String token) {
-        if (!token.isEmpty()) {
+        if (StringUtils.isNotEmpty(token)) {
             Claims claims = getJwtClaims(token);
             if (claims != null) {
                 return claims.getSubject();

@@ -41,7 +41,7 @@ logging:
         org.ehcache: WARN
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         org.springframework.security.web: INFO
-
+        org.apache.tomcat.util.net.jsse: INFO
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
@@ -215,6 +215,7 @@ logging:
         org.apache: INFO
         org.apache.http: DEBUG
         org.apache.tomcat.util.net: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         com.netflix: INFO
         org.ehcache: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG

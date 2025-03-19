@@ -22,15 +22,18 @@ describe('>>> Search bar component tests', () => {
     });
 
     it('should clear search criteria', () => {
-        const wrapper = enzyme.shallow(<SearchCriteria />);
+        let searchedText = 'somethingBefore';
+        const wrapper = enzyme.shallow(<SearchCriteria doSearch={(criteria) => {searchedText = criteria}} />);
         wrapper.setState({ criteria: 'foo' });
         const instance = wrapper.instance();
         instance.clearSearch();
         expect(wrapper.state().criteria).toEqual('');
+        expect(searchedText).toEqual('');
     });
 
     it('should handle search criteria', () => {
-        const wrapper = enzyme.shallow(<SearchCriteria />);
+        let searchedText = '';
+        const wrapper = enzyme.shallow(<SearchCriteria doSearch={(criteria) => {searchedText = criteria}} />);
         wrapper.setState({ criteria: '' });
         const instance = wrapper.instance();
         const e = {
@@ -40,18 +43,7 @@ describe('>>> Search bar component tests', () => {
         };
         instance.handleCriteriaChange(e);
         expect(wrapper.state().criteria).toEqual('foo');
+        expect(searchedText).toEqual('foo');
     });
 
-    it('should handle search criteria', () => {
-        const wrapper = enzyme.shallow(<SearchCriteria />);
-        wrapper.setState({ criteria: '' });
-        const instance = wrapper.instance();
-        const e = {
-            currentTarget: {
-                value: 'foo',
-            },
-        };
-        instance.handleCriteriaChange(e);
-        expect(wrapper.state().criteria).toEqual('foo');
-    });
 });

@@ -1,20 +1,48 @@
-/*
- * This program and the accompanying materials are made available under the terms of the
- * Eclipse Public License v2.0 which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v20.html
- *
- * SPDX-License-Identifier: EPL-2.0
- *
- * Copyright Contributors to the Zowe Project.
- */
-import { shallow } from 'enzyme';
+import {render, screen, fireEvent, waitFor} from '@testing-library/react';
 import PageNotFound from './PageNotFound';
+import '@testing-library/jest-dom';
+import {BrowserRouter, Route, Routes, useNavigate} from "react-router";
 
-describe('>>> Detailed Page component tests', () => {
-    it('should handle a dashboard button click', () => {
-        const historyMock = { push: jest.fn() };
-        const wrapper = shallow(<PageNotFound history={historyMock} />);
-        wrapper.find('[data-testid="go-home-button"]').simulate('click');
-        expect(historyMock.push.mock.calls[0]).toEqual(['/dashboard']);
+const mockNavigate = jest.fn();
+jest.mock('react-router', () => {
+    return {
+        __esModule: true,
+        ...jest.requireActual('react-router'),
+        useNavigate: () => mockNavigate,
+    };
+});
+
+describe('PageNotFound Component', () => {
+
+
+    it('should render the page not found message and button', () => {
+
+        render(<BrowserRouter>
+            <Routes>
+                <Route path="*" element= {<PageNotFound />}/>
+            </Routes>
+        </BrowserRouter>)
+
+        // Check if the text is rendered
+        expect(screen.getByText('Page Not Found')).toBeInTheDocument();
+
+        // Check if the button is rendered
+        expect(screen.getByTestId('go-home-button')).toBeInTheDocument();
+    });
+
+    it('should navigate to /dashboard when the "Go to Dashboard" button is clicked', async () => {
+
+        render(<BrowserRouter>
+            <Routes>
+                <Route path="*" element= {<PageNotFound />}/>
+            </Routes>
+        </BrowserRouter>)
+
+        fireEvent.click(screen.getByTestId('go-home-button'));
+        await waitFor(() => {
+            expect(mockNavigate).toHaveBeenCalled();
+            }
+        )
+
     });
 });

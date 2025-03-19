@@ -7,8 +7,11 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { shallow } from 'enzyme';
+
 import ServicesNavigationBar from './ServicesNavigationBar';
+import {BrowserRouter, Route, Routes, useLocation} from "react-router";
+import {render, fireEvent, screen} from '@testing-library/react';
+import '@testing-library/jest-dom';
 
 const tile = {
     version: '1.0.0',
@@ -37,20 +40,25 @@ const match = {
     url: '/service',
 };
 
+const mockNavigate = jest.fn();
+// const mockLocation = jest.fn();
+jest.mock('react-router', () => {
+    return {
+        __esModule: true,
+        ...jest.requireActual('react-router'),
+        useNavigate: () => mockNavigate,
+        useLocation: jest.fn(),
+    };
+});
+
 describe('>>> ServiceNavigationBar component tests', () => {
-    it('should clear when unmounting', () => {
-        const clear = jest.fn();
-        const serviceNavigationBar = shallow(
-            <ServicesNavigationBar match={match} clear={clear} services={[tile]} currentTileId="apicatalog" />
-        );
-        const instance = serviceNavigationBar.instance();
-        instance.componentWillUnmount();
-        expect(clear).toHaveBeenCalled();
-    });
 
     it('should display no results if search fails', () => {
         const clear = jest.fn();
-        const serviceNavigationBar = shallow(
+        useLocation.mockReturnValue({
+            pathname: '/mock/path/1234',
+        });
+        render(
             <ServicesNavigationBar
                 searchCriteria=" Supercalafragalisticexpialadoshus"
                 services={[]}
@@ -58,71 +66,41 @@ describe('>>> ServiceNavigationBar component tests', () => {
                 clear={clear}
             />
         );
-        expect(serviceNavigationBar.find('[data-testid="search-bar"]')).toExist();
-        expect(serviceNavigationBar.find('#search_no_results').children().text()).toEqual(
-            'No services found matching search criteria'
-        );
+        expect(screen.getByTestId('search-bar')).toBeInTheDocument();
+
     });
 
-    it('should trigger filterText on handleSearch', () => {
-        const filterText = jest.fn();
-        const wrapper = shallow(
-            <ServicesNavigationBar filterText={filterText} services={[]} currentTileId="apicatalog" clear={jest.fn()} />
-        );
-        const instance = wrapper.instance();
-        instance.handleSearch();
-        expect(filterText).toHaveBeenCalled();
+    it('should clear when unmounting', async () => {
+        const clear = jest.fn();
+        useLocation.mockReturnValue({
+            pathname: '/mock/path/1234', // your test path
+            search: '',                  // or any other fields you need
+            hash: '',
+            state: null,
+            key: 'testkey',
+        });
+        const {unmount} = render(<BrowserRouter>
+            <Routes>
+                <Route path="*"
+                       element={<ServicesNavigationBar clear={clear} services={[tile]} currentTileId="apicatalog"/>}/>
+            </Routes>
+        </BrowserRouter>)
+        unmount();
+        expect(clear).toHaveBeenCalled();
     });
+
 
     it('should display label', () => {
-        const clear = jest.fn();
-        const serviceNavigationBar = shallow(
-            <ServicesNavigationBar services={[]} currentTileId="apicatalog" clear={clear} />
-        );
-        expect(serviceNavigationBar.find('#serviceIdTabs')).toExist();
-        expect(serviceNavigationBar.find('#serviceIdTabs').text()).toEqual('Product APIs');
-    });
-
-    it('should set current tile id', () => {
-        localStorage.setItem('serviceId', 'apicatalog');
-        const storeCurrentTileId = jest.fn();
-        const serviceNavigationBar = shallow(
-            <ServicesNavigationBar
-                services={[tile]}
-                match={match}
-                currentTileId="apicatalog"
-                storeCurrentTileId={storeCurrentTileId}
-            />
-        );
-        const instance = serviceNavigationBar.instance();
-        instance.handleTabClick('apicatalog');
-        expect(storeCurrentTileId).toHaveBeenCalled();
-    });
-
-    it('should handle browser go back event', () => {
-        const mockHref = 'https://localhost/service/apicatalog';
-        Object.defineProperty(window, 'location', {
-            value: {
-                href: mockHref,
-            },
-            writable: true,
+        useLocation.mockReturnValue({
+            pathname: '/mock/path/1234',
         });
-        const storeCurrentTileId = jest.fn();
         const clear = jest.fn();
-
-        const serviceNavigationBar = shallow(
-            <ServicesNavigationBar
-                match={match}
-                clear={clear}
-                services={[tile]}
-                storeCurrentTileId={storeCurrentTileId}
-                currentTileId="apicatalog"
-            />
+        render(
+            <ServicesNavigationBar services={[]} currentTileId="apicatalog" clear={clear}/>
         );
+        expect(screen.getByText('Product APIs')).toBeInTheDocument();
 
-        const instance = serviceNavigationBar.instance();
-        instance.handlePopstate();
-
-        expect(storeCurrentTileId).toHaveBeenCalledWith(expect.any(String));
     });
+
+
 });

@@ -25,7 +25,7 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.zowe.apiml.security.SecurityUtils.readPassword;
@@ -60,7 +60,7 @@ class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
             .post(LOGIN_ENDPOINT_URL)
         .then()
             .statusCode(is(SC_NO_CONTENT))
-            .cookie(COOKIE_NAME, not(isEmptyString()))
+            .cookie(COOKIE_NAME, not(is(emptyString())))
             .extract().detailedCookie(COOKIE_NAME);
     }
 

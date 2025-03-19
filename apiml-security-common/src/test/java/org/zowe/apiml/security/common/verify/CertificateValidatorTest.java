@@ -15,9 +15,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.security.common.utils.X509Utils;
@@ -56,20 +56,20 @@ public class CertificateValidatorTest {
 
         @BeforeEach
         void setUp() {
-            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoints", new String[] {URL_PROVIDE_TWO_TRUSTED_CERTS});
+            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoints", new String[]{URL_PROVIDE_TWO_TRUSTED_CERTS});
         }
         @Test
         void whenAllCertificatesFoundThenTheyAreTrusted() {
-            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert1}));
-            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert2}));
-            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert1, cert2}));
+            assertTrue(certificateValidator.hasGatewayChain(new X509Certificate[]{cert1}));
+            assertTrue(certificateValidator.hasGatewayChain(new X509Certificate[]{cert2}));
+            assertTrue(certificateValidator.hasGatewayChain(new X509Certificate[]{cert1, cert2}));
         }
 
         @Test
         void whenSomeCertificateNotFoundThenAllUntrusted() {
-            assertFalse(certificateValidator.isTrusted(new X509Certificate[]{cert3}));
-            assertFalse(certificateValidator.isTrusted(new X509Certificate[]{cert1, cert3}));
-            assertFalse(certificateValidator.isTrusted(new X509Certificate[]{cert2, cert3}));
+            assertFalse(certificateValidator.hasGatewayChain(new X509Certificate[]{cert3}));
+            assertFalse(certificateValidator.hasGatewayChain(new X509Certificate[]{cert1, cert3}));
+            assertFalse(certificateValidator.hasGatewayChain(new X509Certificate[]{cert2, cert3}));
         }
     }
 
@@ -78,13 +78,13 @@ public class CertificateValidatorTest {
 
         @BeforeEach
         void setUp() {
-            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoints", new String[] {URL_WITH_NO_TRUSTED_CERTS});
+            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoints", new String[]{URL_WITH_NO_TRUSTED_CERTS});
         }
         @Test
         void thenAnyCertificateIsNotTrusted() {
-            assertFalse(certificateValidator.isTrusted(new X509Certificate[]{cert1}));
-            assertFalse(certificateValidator.isTrusted(new X509Certificate[]{cert2}));
-            assertFalse(certificateValidator.isTrusted(new X509Certificate[]{cert3}));
+            assertFalse(certificateValidator.hasGatewayChain(new X509Certificate[]{cert1}));
+            assertFalse(certificateValidator.hasGatewayChain(new X509Certificate[]{cert2}));
+            assertFalse(certificateValidator.hasGatewayChain(new X509Certificate[]{cert3}));
         }
     }
 
@@ -114,23 +114,25 @@ public class CertificateValidatorTest {
 
         @BeforeEach
         void setUp() {
-            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoints", new String[] {URL_PROVIDE_TWO_TRUSTED_CERTS, URL_PROVIDE_THIRD_TRUSTED_CERT});
+            ReflectionTestUtils.setField(certificateValidator, "proxyCertificatesEndpoints", new String[]{URL_PROVIDE_TWO_TRUSTED_CERTS, URL_PROVIDE_THIRD_TRUSTED_CERT});
         }
 
         @Test
         void whenAllCertificatesFoundThenTheyAreTrusted() {
-            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert1}));
-            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert2}));
-            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert3}));
-            assertTrue(certificateValidator.isTrusted(new X509Certificate[]{cert1, cert3}));
+            assertTrue(certificateValidator.hasGatewayChain(new X509Certificate[]{cert1}));
+            assertTrue(certificateValidator.hasGatewayChain(new X509Certificate[]{cert2}));
+            assertTrue(certificateValidator.hasGatewayChain(new X509Certificate[]{cert3}));
+            assertTrue(certificateValidator.hasGatewayChain(new X509Certificate[]{cert1, cert3}));
         }
 
     }
 
     @Nested
     @Import(CertificateValidator.class)
-    @MockBean(TrustedCertificatesProvider.class)
     class Configuration {
+
+        @MockitoBean
+        private TrustedCertificatesProvider trustedCertificatesProvider;
 
         @Nested
         @TestPropertySource(properties = {
@@ -144,7 +146,7 @@ public class CertificateValidatorTest {
 
             @Test
             void thenUrlIsSetAsListCorrectly() {
-                assertArrayEquals(new String[] {"url1"}, (String[]) ReflectionTestUtils.getField(certificateValidator, "proxyCertificatesEndpoints"));
+                assertArrayEquals(new String[]{"url1"}, (String[]) ReflectionTestUtils.getField(certificateValidator, "proxyCertificatesEndpoints"));
             }
 
         }
@@ -161,7 +163,7 @@ public class CertificateValidatorTest {
 
             @Test
             void thenUrlsAreSetCorrectly() {
-                assertArrayEquals(new String[] {"url1", "url2"}, (String[]) ReflectionTestUtils.getField(certificateValidator, "proxyCertificatesEndpoints"));
+                assertArrayEquals(new String[]{"url1", "url2"}, (String[]) ReflectionTestUtils.getField(certificateValidator, "proxyCertificatesEndpoints"));
             }
 
         }
