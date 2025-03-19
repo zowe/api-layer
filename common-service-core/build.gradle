@@ -17,6 +17,7 @@ dependencies {
     implementation libs.logback.classic
 
     api(files("libs/IRRRacf.jar"))
+    api(files("libs/RACF.jar"))
 
     implementation libs.jsr305
 

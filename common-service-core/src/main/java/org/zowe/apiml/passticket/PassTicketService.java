@@ -22,6 +22,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.ibm.os390.security.PlatformThread;
+
 /**
  * This class allows to get a PassTicket from SAF.
  */
@@ -54,6 +56,7 @@ public class PassTicketService {
     // IRRPassTicket is not thread-safe, must be synchronized
     public synchronized String generate(String userId, String applId) throws IRRPassTicketGenerationException {
         try {
+            log.info("activeUserid={}", PlatformThread.getUserName());
             com.ibm.eserver.zos.racf.IRRPassTicket irrPassTicket = new com.ibm.eserver.zos.racf.IRRPassTicket();
             return irrPassTicket.generate(userId.toUpperCase(), applId.toUpperCase());
         } catch (com.ibm.eserver.zos.racf.IRRPassTicketGenerationException e) {
