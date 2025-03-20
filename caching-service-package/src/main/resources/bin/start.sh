@@ -45,29 +45,25 @@
 # - ZWE_haInstance_hostname
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
-if [ -n "${LAUNCH_COMPONENT}" ]
-then
+if [ -n "${LAUNCH_COMPONENT}" ]; then
     JAR_FILE="${LAUNCH_COMPONENT}/caching-service.jar"
 else
     JAR_FILE="$(pwd)/bin/caching-service.jar"
 fi
 
-echo "jar file: "${JAR_FILE}
+echo "jar file: ${JAR_FILE}"
 # API Mediation Layer Debug Mode
-export LOG_LEVEL=
+unset LOG_LEVEL
 
-if [ "${ZWE_configs_debug}" = "true" ]
-then
+if [ "${ZWE_configs_debug}" = "true" ]; then
   export LOG_LEVEL="debug"
 fi
 
-if [ -z "${LIBRARY_PATH}" ]
-then
+if [ -z "${LIBRARY_PATH}" ]; then
     LIBRARY_PATH="../common-java-lib/bin/"
 fi
 
-if [ -n "${ZWE_configs_storage_vsam_name}" ]
-then
+if [ -n "${ZWE_configs_storage_vsam_name}" ]; then
     VSAM_FILE_NAME=//\'${ZWE_configs_storage_vsam_name}\'
 fi
 
@@ -85,9 +81,39 @@ else
   nonStrictVerifySslCertificatesOfServices=false
 fi
 
-if [ "$(uname)" = "OS/390" ]
-then
-    QUICK_START=-Xquickstart
+# Check for Java version and set Java options in case the version is 17 or newer
+ZOWE_CONSOLE_LOG_CHARSET=UTF-8
+JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
+    | grep "major version" \
+    | cut -d " " -f5)
+ADD_OPENS=""
+if [ $JAVA_VERSION -ge 61 ]; then
+    ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
+                --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+                --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
+                --add-opens=java.base/java.util=ALL-UNNAMED
+                --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+                --add-opens=java.base/javax.net.ssl=ALL-UNNAMED
+                --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+                --add-opens=java.base/java.io=ALL-UNNAMED"
+
+    if [ "${keystore_type}" = "JCERACFKS" ]; then
+        keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
+        truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    elif [ "${keystore_type}" = "JCECCARACFKS" ]; then
+        keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+        truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
+        keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+        truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    fi
+fi
+
+if [ "$(uname)" = "OS/390" ]; then
+    QUICK_START="-Xquickstart"
+    if [ $JAVA_VERSION -ge 65 ]; then # Java 21
+        ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
+    fi
 fi
 
 if [ -z "${ZWE_configs_storage_infinispan_persistence_dataLocation}" ]; then
@@ -196,33 +222,6 @@ truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certi
 #   -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
 #   -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
 
-# Check for Java version and set --add-opens Java option in case the version is 17 or later
-JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
-    | grep "major version" \
-    | cut -d " " -f5)
-ADD_OPENS=""
-if [ $JAVA_VERSION -ge 61 ]; then
-    ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
-                --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
-                --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
-                --add-opens=java.base/java.util=ALL-UNNAMED
-                --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
-                --add-opens=java.base/javax.net.ssl=ALL-UNNAMED
-                --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
-                --add-opens=java.base/java.io=ALL-UNNAMED"
-
-    if [ "${keystore_type}" = "JCERACFKS" ]; then
-    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
-    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
-    elif [ "${keystore_type}" = "JCECCARACFKS" ]; then
-    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
-    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
-    elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
-    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
-    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
-    fi
-fi
-
 LOGBACK=""
 if [ -n "${ZWE_configs_logging_config}" ]; then
     LOGBACK="-Dlogging.config=${ZWE_configs_logging_config}"
@@ -248,6 +247,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
   ${LOGBACK} \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
+  -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
   -Djava.io.tmpdir=${TMPDIR:-/tmp} \
   -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
   -Dspring.profiles.include=$LOG_LEVEL \
