@@ -87,7 +87,17 @@ dependencyResolutionManagement {
                 prefer '1.2.13'
             }
             version('lombok', '1.18.32')
-            version('mockitoCore', '5.6.0')
+            version('lombok', '1.18.36')
+            version('mockitoCore') {
+                // version 5.x requires Java 11
+                strictly '[4.11.0, 5.0.0['
+                prefer '4.11.0'
+            }
+            version('mockitoInline') {
+                // version 5.x requires Java 11
+                strictly '[4.11.0, 5.0.0['
+                prefer '4.11.0'
+            }
             version('netflixCommonsUtil', '0.3.0')
             version('netflixServo', '0.13.2')
             version('netty', '4.1.119.Final')
@@ -288,6 +298,7 @@ dependencyResolutionManagement {
             library('lombok', 'org.projectlombok', 'lombok').versionRef('lombok')
             library('mockito_core', 'org.mockito', 'mockito-core').versionRef('mockitoCore')
             library('mockito_jupiter', 'org.mockito', 'mockito-junit-jupiter').versionRef('mockitoCore')
+            library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInline')
             library('netflix_commons_util', 'com.netflix.netflix-commons', 'netflix-commons-util').versionRef('netflixCommonsUtil')
             library('netflix_servo', 'com.netflix.servo', 'servo-core').versionRef('netflixServo')
             library('netty', 'io.netty', 'netty-all').versionRef('netty')
