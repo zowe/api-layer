@@ -7,19 +7,19 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Component } from 'react';
 import { IconButton, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import PropTypes from 'prop-types';
+import {useNavigate} from "react-router";
 
-export default class PageNotFound extends Component {
-    handleGoToHome = () => {
-        const { history } = this.props;
-        history.push('/dashboard');
+function PageNotFound() {
+
+    const navigate = useNavigate();
+    const handleGoToHome = () => {
+        navigate('/dashboard');
     };
 
-    render() {
-        const iconBack = <ChevronLeftIcon />;
+
+    const iconBack = <ChevronLeftIcon />;
         return (
             <div>
                 <br />
@@ -30,7 +30,7 @@ export default class PageNotFound extends Component {
                     <IconButton
                         id="go-back-button"
                         data-testid="go-home-button"
-                        onClick={this.handleGoToHome}
+                        onClick={handleGoToHome}
                         size="medium"
                     >
                         {iconBack}
@@ -39,11 +39,12 @@ export default class PageNotFound extends Component {
                 </div>
             </div>
         );
-    }
+
 }
 
-PageNotFound.propTypes = {
-    history: PropTypes.shape({
-        push: PropTypes.func.isRequired,
-    }).isRequired,
-};
+export default PageNotFound;
+// PageNotFound.propTypes = {
+//     history: PropTypes.shape({
+//         push: PropTypes.func.isRequired,
+//     }).isRequired,
+// };

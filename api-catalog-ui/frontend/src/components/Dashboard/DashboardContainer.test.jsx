@@ -12,6 +12,7 @@ import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import DashboardContainer from './DashboardContainer';
+import {HashRouter} from "react-router";
 
 const mockStore = configureStore();
 jest.mock(
@@ -56,13 +57,13 @@ describe('Dashboard Container', () => {
                 error: null,
             },
         });
-        const history = {
-            push: jest.fn(),
-        };
         container = render(
-            <Provider store={store}>
-                <DashboardContainer history={history} />
-            </Provider>
+            <HashRouter>
+                <Provider store={store}>
+                    <DashboardContainer />
+                </Provider>
+            </HashRouter>
+
         );
     });
 

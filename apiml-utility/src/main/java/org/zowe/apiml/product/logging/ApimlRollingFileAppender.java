@@ -29,7 +29,7 @@ public class ApimlRollingFileAppender<E> extends RollingFileAppender<E> { // NOS
      * @return true if everything is ok, false otherwise.
      */
     protected boolean verifyStartupParams() {
-        String debug = System.getProperty("spring.profiles.include");
+        String debug = System.getProperty("spring.profiles.active");
         if (debug == null || !debug.contains("debug")) {
             addInfo("The level isn't set to debug. File appender will be disabled.");
             return false;

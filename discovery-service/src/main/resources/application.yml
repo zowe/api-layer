@@ -169,6 +169,7 @@ logging:
         org.apache: INFO
         org.apache.http: DEBUG
         org.apache.tomcat.util.net: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         com.netflix: INFO
         com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
         org.ehcache: INFO

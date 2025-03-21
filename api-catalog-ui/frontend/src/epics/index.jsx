@@ -9,6 +9,6 @@
  */
 
 import { combineEpics } from 'redux-observable';
-import { fetchTilesPollingEpic, fetchTilesPollingEpic2 } from './fetch-tiles';
+import {fetchServicePollingEpic, fetchTilesPollingEpic} from './fetch-tiles';
 
-export const rootEpic = combineEpics(fetchTilesPollingEpic, fetchTilesPollingEpic2);
+export const rootEpic = combineEpics(fetchTilesPollingEpic, fetchServicePollingEpic);

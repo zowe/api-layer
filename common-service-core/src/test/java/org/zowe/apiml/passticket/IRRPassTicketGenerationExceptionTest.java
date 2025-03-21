@@ -23,7 +23,7 @@ class IRRPassTicketGenerationExceptionTest {
         assertEquals(16, exception.getRacfRc());
         assertEquals(32, exception.getRacfRsn());
         assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_32, exception.getErrorCode());
-        assertEquals("Error on generation of PassTicket: " + AbstractIRRPassTicketException.ErrorCode.ERR_8_16_32.getMessage(), exception.getMessage());
+        assertEquals("Error on generation of PassTicket: " + AbstractIRRPassTicketException.ErrorCode.ERR_8_16_32.getMessage() + ": safRc=8, racfRc=16, racfRsn=32", exception.getMessage());
 
         IRRPassTicketGenerationException exception2 = new IRRPassTicketGenerationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_12_8);
         assertEquals(8, exception2.getSafRc());

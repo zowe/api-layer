@@ -13,7 +13,7 @@ spring:
 caching:
     storage:
         infinispan:
-            initialHosts: localhost[7098]
+            initialHosts: localhost[7600]
             persistence:
                 dataLocation: data
 apiml:

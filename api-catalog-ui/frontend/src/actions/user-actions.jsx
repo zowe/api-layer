@@ -10,9 +10,9 @@
 
 import userConstants from '../constants/user-constants';
 import { userService } from '../services';
-import history from '../helpers/history';
 
 function login(credentials) {
+
     function request(user) {
         return { type: userConstants.USERS_LOGIN_REQUEST, user };
     }
@@ -40,14 +40,8 @@ function login(credentials) {
                 if (credentials.newPassword) {
                     showUpdatePassSuccess = true;
                 }
-                const dashBoardPath = '/dashboard';
+                localStorage.setItem('username', credentials.username);
                 dispatch(success(token, showUpdatePassSuccess));
-                if (history.location.pathname !== dashBoardPath) {
-                    history.replace(dashBoardPath);
-                    window.location.reload();
-                } else {
-                    history.push(dashBoardPath);
-                }
             },
             (error) => {
                 if (error.messageNumber === 'ZWEAT413E') {
@@ -78,7 +72,6 @@ function logout() {
         userService.logout().then(
             () => {
                 dispatch(success());
-                history.push('/login');
             },
             (error) => {
                 dispatch(failure(error));
@@ -87,16 +80,14 @@ function logout() {
     };
 }
 
-function authenticationFailure(error) {
+const authenticationFailure = (error) =>{
     function failure(err) {
-        return { type: userConstants.AUTHENTICATION_FAILURE, err };
+        return { type: userConstants.AUTHENTICATION_FAILURE, error: err };
     }
     return (dispatch) => {
         dispatch(failure(error));
         if (error.xhr.getResponseHeader('WWW-Authenticate')) {
             window.location.href = process.env.REACT_APP_CATALOG_HOMEPAGE;
-        } else {
-            history.push('/login');
         }
     };
 }

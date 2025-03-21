@@ -18,7 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(properties = {"caching.storage.mode=infinispan",
-    "jgroups.bind.port=7099", "jgroups.bind.address=localhost", "apiml.enabled=false"})
+    "jgroups.bind.port=7600", "jgroups.bind.address=localhost", "apiml.enabled=false"})
 class InfinispanStartupTest {
 
     @Autowired

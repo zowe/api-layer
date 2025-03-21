@@ -18,7 +18,7 @@ caching:
                 trustStore: ${server.ssl.trustStore}
                 trustStorePassword: ${server.ssl.trustStorePassword}
         infinispan:
-            initialHosts: localhost[7098]
+            initialHosts: localhost[7600]
             persistence:
                 dataLocation: data
 logging:
@@ -211,5 +211,6 @@ logging:
     level:
         ROOT: INFO
         org.apache.tomcat.util.net: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.jgroups: DEBUG
         org.infinispan: DEBUG

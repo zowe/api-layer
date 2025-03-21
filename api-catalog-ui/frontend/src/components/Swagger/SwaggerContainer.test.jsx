@@ -20,14 +20,12 @@ describe('Swagger Container', () => {
     let container;
     beforeEach(() => {
         store = mockStore({
-            selectedServiceReducer: {
-                selectedService: {
-                    apis: [],
-                    serviceId: 'service',
-                },
-            },
             tilesReducer: {
                 tiles: [{}],
+                service: {
+                    apis: [],
+                    serviceId: 'service',
+                }
             },
         });
         container = render(

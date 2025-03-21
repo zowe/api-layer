@@ -197,6 +197,13 @@ management:
             enabled: true
 
 ---
+spring.config.activate.on-profile: debug
+
+logging:
+    level:
+        ROOT: DEBUG
+
+---
 spring.config.activate.on-profile: dev
 
 logging:

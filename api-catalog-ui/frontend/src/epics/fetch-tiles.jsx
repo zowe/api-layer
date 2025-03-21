@@ -14,12 +14,18 @@ import { ofType } from 'redux-observable';
 import process from 'process';
 window.process = process; // Polyfill process for the browser
 import { catchError, debounceTime, exhaustMap, map, mergeMap, retryWhen, takeUntil } from 'rxjs/operators';
-import { FETCH_TILES_REQUEST, FETCH_NEW_TILES_REQUEST, FETCH_TILES_STOP } from '../constants/catalog-tile-constants';
+import {
+    FETCH_TILES_REQUEST,
+    FETCH_TILES_STOP,
+    FETCH_NEW_SERVICE_REQUEST,
+    FETCH_SERVICE_STOP
+} from '../constants/catalog-tile-constants';
 import {
     fetchTilesFailed,
     fetchTilesRetry,
     fetchTilesSuccess,
-    fetchNewTilesSuccess,
+    fetchNewServiceSuccess,
+    fetchServiceFailed,
 } from '../actions/catalog-tile-actions';
 import { userActions } from '../actions/user-actions';
 import getBaseUrl from '../helpers/urls';
@@ -56,6 +62,19 @@ function checkOrigin() {
  */
 function getUrl(action) {
     let url = `${getBaseUrl()}${process?.env.REACT_APP_CATALOG_UPDATE}`;
+    if (action.payload !== undefined) {
+        url += `/${action.payload}`;
+    }
+    return url;
+}
+
+/**
+ * Construct the URL to fetch container data from the service
+ * @param action the payload will contain a container Id
+ * @returns the URL to call
+ */
+function getServiceUrl(action) {
+    let url = `${getBaseUrl()}${process?.env.REACT_APP_CATALOG_UPDATE_SERVICE}`;
     if (action.payload !== undefined) {
         url += `/${action.payload}`;
     }
@@ -132,9 +151,9 @@ const createFetchTilesEpic =
                                     return fetchFailedAction(
                                         action.payload.length > 0
                                             ? new Error(
-                                                  `Could not retrieve details for Tile with ID: ${action.payload}`
+                                                  `Could not retrieve details for ID: ${action.payload}`
                                               )
-                                            : new Error(`Could not retrieve any Tiles`)
+                                            : new Error(`Could not retrieve any items`)
                                     );
                                 }
                                 return fetchSuccessAction(response);
@@ -170,6 +189,7 @@ export const fetchTilesPollingEpic = createFetchTilesEpic(
     retryMechanism
 );
 
+
 /**
  * Epic used to schedule call to fetch tiles from the containers endpoint. This is required to dynamically
  * populate the navigation side bar in the detail page and refresh it based on the scheduled period
@@ -178,12 +198,12 @@ export const fetchTilesPollingEpic = createFetchTilesEpic(
  * @param ajax ajax call
  * @param scheduler scheduler
  */
-export const fetchTilesPollingEpic2 = createFetchTilesEpic(
-    FETCH_NEW_TILES_REQUEST,
-    fetchNewTilesSuccess,
-    fetchTilesFailed,
-    FETCH_TILES_STOP,
-    getUrl,
+export const fetchServicePollingEpic = createFetchTilesEpic(
+    FETCH_NEW_SERVICE_REQUEST,
+    fetchNewServiceSuccess,
+    fetchServiceFailed,
+    FETCH_SERVICE_STOP,
+    getServiceUrl,
     checkOrigin,
     retryMechanism
 );

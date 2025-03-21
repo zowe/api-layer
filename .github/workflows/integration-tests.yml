@@ -414,7 +414,7 @@ jobs:
                     ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "caching-service"
-                    JGROUPS_BIND_PORT: "7099"
+                    JGROUPS_BIND_PORT: "7600"
             central-gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
@@ -1271,10 +1271,10 @@ jobs:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
-                    JGROUPS_BIND_PORT: "7099"
+                    JGROUPS_BIND_PORT: "7600"
                     SERVER_SSL_KEYSTORETYPE: "PKCS12"
                     CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data_replica"
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service-2[7098]"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service-2[7600]"
                     CACHING_STORAGE_MODE: "infinispan"
                     APIML_SERVICE_PORT: "10022"
                     JGROUPS_BIND_ADDRESS: "caching-service"
@@ -1283,10 +1283,10 @@ jobs:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
-                    JGROUPS_BIND_PORT: "7098"
+                    JGROUPS_BIND_PORT: "7600"
                     SERVER_SSL_KEYSTORETYPE: "PKCS12"
                     CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data"
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7099]"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600]"
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "caching-service-2"
                     APIML_SERVICE_HOSTNAME: "caching-service-2"

@@ -12,6 +12,15 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Header from './Header';
 
+const mockNavigate = jest.fn();
+jest.mock('react-router', () => {
+    return {
+        __esModule: true,
+        ...jest.requireActual('react-router'),
+        useNavigate: () => mockNavigate,
+    };
+});
+
 describe('>>> Header component tests', () => {
     it('should display a Link', () => {
         const sample = enzyme.shallow(<Header />);

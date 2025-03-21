@@ -27,6 +27,7 @@ export default class DialogDropdown extends Component {
     }
 
     componentDidMount() {
+
         this.openOnClick();
     }
 

@@ -97,7 +97,8 @@ public class SafResourceAccessSaf implements SafResourceAccessVerifying {
     @Override
     public boolean hasSafResourceAccess(Authentication authentication, String resourceClass, String resourceName, String accessLevel) {
         String userid = authentication.getName();
-        if (StringUtils.isEmpty(userid)) {
+        if (StringUtils.isEmpty(userid) || userid.length() > 8) {
+            log.debug("UserId {} is not valid for SAF permissions check", userid);
             return false;
         }
         AccessLevel level = AccessLevel.valueOf(accessLevel);

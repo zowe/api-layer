@@ -33,7 +33,7 @@ class ApimlRollingFileAppenderTest {
 
     @Test
     void givenLogLevelAndWorkspaceDirectory_whenTheApplicationStarts_thenTheParamtersAreVerified() {
-        System.setProperty("spring.profiles.include", "debug");
+        System.setProperty("spring.profiles.active", "debug");
         System.setProperty("apiml.logs.location", "validLocation");
 
         boolean result = underTest.verifyStartupParams();
@@ -43,7 +43,7 @@ class ApimlRollingFileAppenderTest {
     @Test
     void givenNullLogLevelAndWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerDoesntStart() {
         System.setProperty("apiml.logs.location", "validLocation");
-        System.setProperty("spring.profiles.include", "");
+        System.setProperty("spring.profiles.active", "");
 
         boolean result = underTest.verifyStartupParams();
         assertThat(result, is(false));
@@ -52,7 +52,7 @@ class ApimlRollingFileAppenderTest {
     @Test
     void givenLogLevelAndNullWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerDoesntStart() {
         System.setProperty("apiml.logs.location", "");
-        System.setProperty("spring.profiles.include", "debug");
+        System.setProperty("spring.profiles.active", "debug");
 
         boolean result = underTest.verifyStartupParams();
         assertThat(result, is(false));
@@ -60,7 +60,7 @@ class ApimlRollingFileAppenderTest {
 
     @Test
     void givenLogLevelAndWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerStarts() {
-        System.setProperty("spring.profiles.include", "debug");
+        System.setProperty("spring.profiles.active", "debug");
         System.setProperty("apiml.logs.location", "validLocation");
 
         TimeBasedRollingPolicy<Object> tbrp = new TimeBasedRollingPolicy<>();

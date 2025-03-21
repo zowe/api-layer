@@ -88,7 +88,7 @@ class InstanceInitializeServiceTest {
             .findFirst();
 
         Assertions.assertTrue(catalogApplication.isPresent());
-        verify(cachedServicesService).updateService(catalogApplication.get().getName(), catalogApplication.get());
+        verify(cachedServicesService, times(2)).updateService(catalogApplication.get().getName(), catalogApplication.get());
 
 
         instanceInfoMap.values()
@@ -146,11 +146,11 @@ class InstanceInitializeServiceTest {
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
 
         instanceInfo = getStandardInstance(
-                CoreService.ZAAS.getServiceId(),
-                InstanceInfo.InstanceStatus.UP,
-                getMetadataByCatalogUiTitleId("apimediationlayer", "/" + CoreService.ZAAS.getServiceId()),
-                "zaas",
-                "https://localhost:9090/");
+            CoreService.ZAAS.getServiceId(),
+            InstanceInfo.InstanceStatus.UP,
+            getMetadataByCatalogUiTitleId("apimediationlayer", "/" + CoreService.ZAAS.getServiceId()),
+            "zaas",
+            "https://localhost:9090/");
         instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
 
         instanceInfo = getStandardInstance(

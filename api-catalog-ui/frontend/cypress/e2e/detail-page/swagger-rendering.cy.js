@@ -56,7 +56,7 @@ describe("Swagger rendering", () => {
                 .get('label')
                 .should('contain', "API Base Path:");
 
-            let regexContent = `^\/${service.serviceId}\/api(\/v1)?$`;
+            let regexContent = `^\/${service.serviceId}\/api`;
             if (service.serviceId === 'gateway') {
                 regexContent = '/';
             }

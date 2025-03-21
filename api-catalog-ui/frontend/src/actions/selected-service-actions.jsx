@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import { CLEAR_SERVICE, SELECT_SERVICE, STORE_CONTENT_ANCHOR } from '../constants/selected-service-constants';
+import { CLEAR_SERVICE, SELECT_SERVICE } from '../constants/selected-service-constants';
 
 export function selectService(selectedService = {}, selectedTile = '') {
     return {
@@ -26,9 +26,3 @@ export function clearService() {
     };
 }
 
-export function storeContentAnchor(id) {
-    return {
-        type: STORE_CONTENT_ANCHOR,
-        payload: id,
-    };
-}
