@@ -122,7 +122,6 @@ ZOWE_CONSOLE_LOG_CHARSET=UTF-8
 if [ "$(uname)" = "OS/390" ]
 then
     QUICK_START=-Xquickstart
-    CONSOLE_LOG_CHARSET=${CONSOLE_LOG_CHARSET:-IBM-1047}
 
     JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
         | grep "major version" \
