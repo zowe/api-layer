@@ -12,11 +12,14 @@ package org.zowe.apiml;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.ReactiveOAuth2ClientAutoConfiguration;
 import org.springframework.cloud.netflix.eureka.server.EurekaController;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 
-@SpringBootApplication
+@SpringBootApplication(
+    exclude = { ReactiveOAuth2ClientAutoConfiguration.class }
+)
 @ComponentScan(
     excludeFilters = {
         @ComponentScan.Filter(
