@@ -19,6 +19,29 @@ eurekalogger.set_level("DEBUG")
 
 
 class PythonEnabler:
+    """
+    A class that enables a Python service to register and unregister with Discovery Service using Eureka.
+
+    Attributes:
+        ssl_context (ssl.SSLContext): Configured SSL context for HTTPS requests.
+        config_loader (ConfigLoader): Loader instance for parsing the YAML configuration.
+        config_data (dict): Parsed configuration data.
+        discovery_service (str): Eureka server discovery URL.
+        ssl_config (dict): SSL configuration extracted from the config.
+
+    Methods:
+        get_discovery_service():
+            Constructs the Discovery Service URL.
+
+        setup_ssl_environment():
+            Initializes the SSL context using provided certificate files.
+
+        register():
+            Registers the current service instance with Discovery Service.
+
+        unregister():
+            Unregisters the service from Eureka.
+    """
 
     def __init__(self, config_file='config/service-configuration.yml', discovery_service=None):
         logger.info("Python Onboarding Enabler initialized")

@@ -20,6 +20,18 @@ config_loader = ConfigLoader("config/service-configuration.yml")
 
 
 class HttpResponse(http_client.HttpResponse):
+    """
+    Custom HTTP response wrapper that caches body text of an aiohttp response.
+
+    Attributes:
+        raw_response (aiohttp.ClientResponse): Raw HTTP response from aiohttp.
+        _body_text (str): Cached body of the response.
+
+    Properties:
+        body_text:
+            Returns the cached response body text.
+    """
+
     def __init__(self, raw_response, body_text):
         super().__init__(raw_response)
         self.raw_response = raw_response
@@ -32,6 +44,14 @@ class HttpResponse(http_client.HttpResponse):
 
 
 class HttpClient(http_client.HttpClient):
+    """
+    Custom implementation of Eureka HTTP client with TLS support using aiohttp.
+
+    Methods:
+        async urlopen(request: Union[str, http_client.HttpRequest], data: bytes, timeout: float) -> HttpResponse:
+            Sends an HTTPS request using aiohttp. Supports GET and POST. Automatically applies configured SSL context.
+    """
+
     async def urlopen(self, request: Union[str, http_client.HttpRequest] = None,
                       data: bytes = None, timeout: float = None) -> http_client.HttpResponse:
         # Load SSL configuration from ConfigLoader

@@ -14,6 +14,18 @@ logger = logging.getLogger(__name__)
 
 
 class ConfigLoader:
+    """
+    Utility class to load YAML configuration files.
+
+    Attributes:
+        config_file (str): Absolute path to the configuration file.
+        config (dict): Parsed YAML configuration.
+
+    Methods:
+        load_config():
+            Loads and parses the YAML file. Logs error if file is missing or malformed.
+    """
+
     def __init__(self, config_file):
         # Assign the absolute path directly passed from app.py
         self.config_file = config_file
