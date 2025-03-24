@@ -27,7 +27,7 @@ import reactor.core.publisher.Mono;
 import static reactor.core.publisher.Mono.empty;
 import static reactor.core.publisher.Mono.error;
 
-@Component
+@Component("gatewayCachingServiceClient")
 @Slf4j
 public class CachingServiceClient {
 

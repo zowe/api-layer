@@ -55,6 +55,7 @@ import java.util.Optional;
 public class ModulithConfig {
 
     private final ApplicationContext applicationContext;
+    private final GatewayMetadata gatewayMetadata;
     private final Map<String, InstanceInfo> instances = new HashMap<>();;
 
     @Value("${server.ssl.enabled:true}")
@@ -70,6 +71,8 @@ public class ModulithConfig {
     private int port;
 
     private InstanceInfo getInstanceInfo(String serviceId) {
+
+
         // TODO: Does this support HA?
         var leaseInfo = LeaseInfo.Builder.newBuilder()
             .setDurationInSecs(Integer.MAX_VALUE)
@@ -79,10 +82,13 @@ public class ModulithConfig {
             .setServiceUpTimestamp(System.currentTimeMillis())
             .build();
 
+        var scheme = https ? "https" : "http";
+
         return InstanceInfo.Builder.newBuilder()
             .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
             .setAppName(serviceId)
             .setHostName(hostname)
+            .setHomePageUrl(null, String.format("%s://%s:%d", scheme, hostname, port)) //TODO Will it break something else other than catalog?
             .setStatus(InstanceInfo.InstanceStatus.UP)
             .setIPAddr(ipAddress)
             .setPort(port)
@@ -93,6 +99,7 @@ public class ModulithConfig {
             .setDataCenterInfo(() -> DataCenterInfo.Name.MyOwn)
             .setLeaseInfo(leaseInfo)
             .setLastUpdatedTimestamp(System.currentTimeMillis())
+            .setMetadata(gatewayMetadata.getMetadata())
             .build();
     }
 

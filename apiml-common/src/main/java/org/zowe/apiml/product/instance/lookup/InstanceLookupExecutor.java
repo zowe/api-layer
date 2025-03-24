@@ -64,7 +64,7 @@ public class InstanceLookupExecutor {
             handleFailureConsumer.accept(e, false);
         } catch (Exception e) {
             handleFailureConsumer.accept(e, true);
-            log.debug("Unexpected exception while retrieving '{}' service from Eureka", serviceId);
+            log.debug("Unexpected exception while retrieving '{}' service from Eureka", serviceId, e);
         }
 
     }
