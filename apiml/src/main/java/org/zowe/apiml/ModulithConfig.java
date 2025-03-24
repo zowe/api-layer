@@ -13,6 +13,8 @@ package org.zowe.apiml;
 import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.LeaseInfo;
+import org.apache.catalina.Context;
+import org.apache.catalina.Host;
 import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
@@ -21,14 +23,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
+import org.springframework.http.server.reactive.HttpHandler;
+import org.springframework.http.server.reactive.TomcatHttpHandlerAdapter;
+import org.springframework.web.context.ServletContextAware;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
@@ -46,7 +54,7 @@ import java.util.Optional;
 @Slf4j
 public class ModulithConfig {
 
-    private final EurekaServerContext eurekaContext;
+    private final ApplicationContext applicationContext;
     private final Map<String, InstanceInfo> instances = new HashMap<>();;
 
     @Value("${server.ssl.enabled:true}")
@@ -100,7 +108,7 @@ public class ModulithConfig {
     void createLocalInstances() {
         instances.put(CoreService.GATEWAY.getServiceId(), getInstanceInfo(CoreService.GATEWAY.getServiceId()));
         instances.put(CoreService.DISCOVERY.getServiceId(), getInstanceInfo(CoreService.DISCOVERY.getServiceId()));
-        EurekaServerContextHolder.initialize(eurekaContext);
+        EurekaServerContextHolder.initialize(applicationContext.getBean(EurekaServerContext.class));
     }
 
     @EventListener
@@ -183,5 +191,25 @@ public class ModulithConfig {
         return messageService;
     }
 
+    @Bean
+    @Primary
+    public TomcatReactiveWebServerFactory tomcatReactiveWebServerWithFiltersFactory(
+        HttpHandler httpHandler,
+        List<ServletContextAware> servletContextAwareListeners
+    ) {
+
+        return new TomcatReactiveWebServerFactory() {
+            @Override
+            protected void prepareContext(Host host, TomcatHttpHandlerAdapter servlet) {
+                super.prepareContext(host, servlet);
+            }
+
+            @Override
+            protected void configureContext(Context context) {
+                servletContextAwareListeners.forEach(l -> l.setServletContext(context.getServletContext()));
+                super.configureContext(context);
+            }
+        };
+    }
 
 }
