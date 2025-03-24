@@ -2,7 +2,6 @@ buildscript {
     repositories mavenRepositories
     dependencies {
         classpath libs.spring.boot.gradle.plugin
-        classpath libs.gradle.git.properties
         classpath libs.jgit
     }
 }
@@ -12,14 +11,26 @@ plugins {
 }
 
 group = 'org.zowe.apiml'
-version = '3.1.13-SNAPSHOT'
 
 apply plugin: 'org.springframework.boot'
 
 
 dependencies {
-    implementation libs.spring.boot.starter.web
-    testImplementation libs.junit.jupiter
+    implementation(project(":gateway-service"))
+    implementation(project(":discovery-service"))
+
+    implementation(libs.bundles.modulith)
+    implementation(libs.spring.boot.starter.web)
+//    implementation(libs.spring.cloud.starter.eureka.server)
+
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
+
+    testImplementation(libs.modulith.test)
+    testImplementation(libs.junit.jupiter)
 }
 
 test {

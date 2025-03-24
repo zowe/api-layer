@@ -73,6 +73,7 @@ spring:
         allow-circular-references: true
         banner-mode: ${apiml.banner:"off"}
         web-application-type: reactive
+        allow-bean-definition-overriding: true
 
 springdoc:
     api-docs:
