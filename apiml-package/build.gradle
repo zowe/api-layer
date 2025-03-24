@@ -10,7 +10,7 @@ configurations {
 def resourceDir = 'src/main/resources/'
 
 dependencies {
-    zaasServiceJar(project(path: ":apiml-service", configuration: "liteJarConfiguration"))
+    zaasServiceJar(project(path: ":apiml", configuration: "liteJarConfiguration"))
 }
 
 task packageZaas(type: Zip) {
