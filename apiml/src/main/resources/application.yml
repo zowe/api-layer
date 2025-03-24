@@ -43,12 +43,12 @@ eureka:
                 authentication:
                     sso: true
     client:
-        fetchRegistry: true
-        registerWithEureka: true
+        fetchRegistry: false
+        registerWithEureka: false
         instanceInfoReplicationIntervalSeconds: 1
         region: default
         serviceUrl:
-            defaultZone: ${apiml.service.discoveryServiceUrls}
+            defaultZone: ${apiml.discovery.allPeersUrls}
         healthcheck:
             enabled: true
     server:
@@ -75,7 +75,7 @@ spring:
                         redirectUri: "{baseUrl}/gateway/{action}/oauth2/code/{registrationId}"
     main:
         allow-circular-references: true
-        banner-mode: ${apiml.banner:"off"}
+        banner-mode: ${apiml.banner:"console"}
         web-application-type: reactive
         allow-bean-definition-overriding: true
 

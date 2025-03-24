@@ -19,7 +19,7 @@ import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 /**
  * Error service configuration
  */
-@Configuration
+@Configuration("gatewayMessageServiceConfiguration")
 @ConditionalOnMissingBean(name = "modulithConfig")
 public class MessageServiceConfiguration {
 

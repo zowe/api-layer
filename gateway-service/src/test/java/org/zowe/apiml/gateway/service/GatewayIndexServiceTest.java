@@ -33,6 +33,7 @@ import reactor.test.StepVerifier;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,17 +46,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.REGISTRATION_TYPE;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.RegistrationType.ADDITIONAL;
 
 @ExtendWith(MockitoExtension.class)
 class GatewayIndexServiceTest {
 
-    private GatewayIndexService gatewayIndexService;
-    private final ParameterizedTypeReference<List<ServiceInfo>> serviceInfoType = new ParameterizedTypeReference<List<ServiceInfo>>() {
-    };
-    private ServiceInfo serviceInfoA, serviceInfoB;
-    private WebClient webClient;
     private final static String API_CATALOG_API_ID = "zowe.apiml.apicatalog";
     private final static String SERVICE_ID = "mockzosmf";
+
+    private final ParameterizedTypeReference<List<ServiceInfo>> serviceInfoType = new ParameterizedTypeReference<List<ServiceInfo>>() { };
+
     @Mock
     private ClientResponse clientResponse;
     @Mock
@@ -65,8 +66,16 @@ class GatewayIndexServiceTest {
     @Mock
     private ExchangeFilterFunction exchangeFilterFunction;
 
+    private GatewayIndexService gatewayIndexService;
+    private ServiceInfo serviceInfoA, serviceInfoB;
+    private WebClient webClient;
+
     @BeforeEach
     void setUp() {
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put(APIML_ID, "testApimlIdA");
+        metadata.put(REGISTRATION_TYPE, ADDITIONAL.getValue());
+
         lenient().when(eurekaInstance.getMetadata()).thenReturn(Maps.of(APIML_ID, "testApimlIdA"));
         lenient().when(eurekaInstance.getInstanceId()).thenReturn("testInstanceIdA");
 
@@ -81,7 +90,7 @@ class GatewayIndexServiceTest {
         serviceInfoB.getApiml().setApiInfo(Collections.singletonList(sysviewApiInfo));
 
         webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
-        gatewayIndexService = new GatewayIndexService(webClient, 60);
+        gatewayIndexService = new GatewayIndexService(webClient, 60, null);
     }
 
     @Nested
