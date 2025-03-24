@@ -1,4 +1,6 @@
 ext.projectsNeedLicense = [
+    'apiml',
+    'apiml-package',
     'api-catalog-services',
     'api-catalog-ui',
     'api-catalog-package',

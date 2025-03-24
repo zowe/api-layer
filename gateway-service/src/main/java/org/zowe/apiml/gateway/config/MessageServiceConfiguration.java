@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.message.core.MessageService;
@@ -19,6 +20,7 @@ import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
  * Error service configuration
  */
 @Configuration
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class MessageServiceConfiguration {
 
     @Bean

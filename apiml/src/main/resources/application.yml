@@ -1,4 +1,6 @@
 eureka:
+    dashboard:
+        path: /eureka
     instance:
         instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
         hostname: ${apiml.service.hostname}
@@ -49,7 +51,9 @@ eureka:
             defaultZone: ${apiml.service.discoveryServiceUrls}
         healthcheck:
             enabled: true
-
+    server:
+        max-threads-for-peer-replication: 2
+        useReadOnlyResponseCache: false
 spring:
     cloud:
         gateway:
@@ -83,6 +87,14 @@ springdoc:
 apiml:
     catalog:
         serviceId: apicatalog
+    discovery:
+        staticApiDefinitionsDirectories: config/local/api-defs
+        # Not used in HTTPS mode and not applicable for Zowe
+        # The `apiml.discovery` node contains discovery-service only configuration
+        userid: eureka  # Userid that Eureka server will use to check authentication of its clients (other services)
+        password: password  # Password that Eureka server will use to check authentication of its clients (other services)
+        allPeersUrls: http://${apiml.discovery.userid}:${apiml.discovery.password}@${apiml.service.hostname}:${apiml.service.port}/eureka/
+
     gateway:
         registry:
             enabled: false
@@ -129,6 +141,7 @@ server:
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
+
 
 logbackServiceName: ZWEAGW1
 

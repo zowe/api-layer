@@ -76,6 +76,13 @@ project(":platform") {
 }
 
 // Packaging project; sonar does not apply
+project(":apiml-package") {
+    sonar {
+        skipProject = true
+    }
+}
+
+// Packaging project; sonar does not apply
 project(":api-catalog-package") {
     sonar {
         skipProject = true

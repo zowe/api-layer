@@ -20,6 +20,7 @@ ext.javaLibraries = [
 
 ext.servicesToPublish = [
     'apiml',
+    'apiml-package',
     'apiml-common-lib-package',
     'api-catalog-services',
     'api-catalog-package',

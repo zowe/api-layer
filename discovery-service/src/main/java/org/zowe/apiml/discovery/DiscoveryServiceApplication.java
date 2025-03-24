@@ -18,6 +18,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
@@ -32,6 +33,7 @@ import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
     "org.zowe.apiml.product.web"
 })
 @EnableApimlLogger
+@EnableWebSecurity
 @EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
 public class DiscoveryServiceApplication implements ApplicationListener<ApplicationReadyEvent> {
 

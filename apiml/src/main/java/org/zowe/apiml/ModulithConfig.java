@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.config;
+package org.zowe.apiml;
 
 import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.InstanceInfo;
@@ -16,8 +16,8 @@ import com.netflix.appinfo.LeaseInfo;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
@@ -29,10 +29,11 @@ import java.util.Map;
 import java.util.Optional;
 
 @Configuration
-public class ModulithConfiguration {
+@RequiredArgsConstructor
+public class ModulithConfig {
 
     private final EurekaServerContext eurekaContext;
-    private final Map<String, InstanceInfo> instances;
+    private final Map<String, InstanceInfo> instances = new HashMap<>();;
 
     @Value("${server.ssl.enabled:true}")
     private boolean https;
@@ -46,12 +47,8 @@ public class ModulithConfiguration {
     @Value("${apiml.service.port:10010}")
     private int port;
 
-    public ModulithConfiguration(EurekaServerContext eurekaContext) {
-        this.eurekaContext = eurekaContext;
-        this.instances = new HashMap<>();
-    }
-
     private InstanceInfo getInstanceInfo(String serviceId) {
+        // TODO: Does this support HA?
         var leaseInfo = LeaseInfo.Builder.newBuilder()
             .setDurationInSecs(Integer.MAX_VALUE)
             .setRegistrationTimestamp(System.currentTimeMillis())

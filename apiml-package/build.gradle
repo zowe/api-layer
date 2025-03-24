@@ -1,0 +1,81 @@
+ext {
+    artifactName = 'apiml-package'
+    pullNo = project.hasProperty("pullRequest") && project.getProperty("pullRequest") != null ? "-" + project.getProperty("pullRequest") : ""
+}
+
+configurations {
+    zaasServiceJar
+    zip
+}
+def resourceDir = 'src/main/resources/'
+
+dependencies {
+    zaasServiceJar(project(path: ":apiml-service", configuration: "liteJarConfiguration"))
+}
+
+task packageZaas(type: Zip) {
+    archiveFileName = artifactName + pullNo + ".zip"
+    includeEmptyDirs = true
+
+    into('/') {
+        from "$buildDir/convert/manifest.yaml"
+        from "../schemas/zaas-schema.json"
+    }
+
+    into('bin/') {
+        from configurations.zaasServiceJar
+        from "$resourceDir/bin/start.sh"
+        from "$resourceDir/bin/validate.sh"
+    }
+}
+
+// TODO should z/OSMF static definition be part of this package now?
+
+// save build information to manifest
+packageZaas.doFirst {
+    String manifest = file('src/main/resources/manifest.yaml').text
+
+    def getCommitHash = 'git rev-parse --verify HEAD'.execute()
+    def commit_hash = new ByteArrayOutputStream()
+    def command_err = new ByteArrayOutputStream()
+    getCommitHash.consumeProcessOutput(commit_hash, command_err)
+    getCommitHash.waitForOrKill(1000)
+
+    manifest = manifest.replaceAll("\\{\\{build.branch\\}\\}", System.getenv("BRANCH_NAME") ?: "")
+        .replaceAll("\\{\\{build.number\\}\\}", System.getenv("BUILD_NUMBER") ?: "")
+        .replaceAll("\\{\\{build.commitHash\\}\\}", commit_hash.toString().trim())
+        .replaceAll("\\{\\{build.timestamp\\}\\}", (new Date()).getTime().toString())
+
+    Provider<Directory> output = layout.buildDirectory.dir("convert")
+    def scriptOutputDir = output.get().asFile
+    if (!scriptOutputDir.exists()) {
+        scriptOutputDir.mkdirs()
+    }
+
+    Provider<RegularFile> manifestOutput = layout.buildDirectory.file("convert/manifest.yaml")
+    File convertedManifest = manifestOutput.get().asFile
+    if (convertedManifest.exists()) {
+        convertedManifest.delete()
+    }
+    convertedManifest.createNewFile()
+    convertedManifest.write(manifest)
+}
+
+jar.dependsOn(packageZaas)
+build.dependsOn(packageZaas)
+
+artifacts {
+    zip packageZaas
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
+        }
+    }
+}
+
+jar {
+    enabled false
+}
