@@ -16,6 +16,7 @@ eureka:
 spring:
     cloud:
         gateway:
+            route-refresh-listener.enabled: false
             x-forwarded:
                 prefix-append: false
                 prefix-enabled: true
@@ -150,27 +151,38 @@ logging:
     config: classpath:logback-gateway.xml
     level:
         ROOT: INFO
+        # New Config
         com.netflix: WARN
-        com.netflix.discovery: ERROR
         com.netflix.config: ERROR
-        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.netflix.discovery: ERROR
         com.netflix.discovery.DiscoveryClient: OFF
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.sun.jersey.server.impl.application.WebApplicationImpl: WARN
+        io.netty.resolver.dns: WARN
+        io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
+        javax.net.ssl: ERROR
+        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.eclipse.jetty: WARN
+        org.ehcache: WARN
+        org.springframework: WARN
+        org.springframework.beans: WARN
+        org.springframework.boot.autoconfigure.web: DEBUG
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.springframework.cloud.gateway: DEBUG
         org.springframework.cloud.gateway.filter: WARN
         org.springframework.cloud.gateway.route: WARN
         org.springframework.context.support: WARN
-        org.springframework.beans: WARN
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
+        org.springframework.http.server.reactive: DEBUG
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        org.springframework.security.web: INFO
+        org.springframework.web.reactive: DEBUG
+        org.zowe.apiml: INFO
+        reactor.netty: DEBUG
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
-        io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
-        io.netty.resolver.dns: WARN
-        javax.net.ssl: ERROR
-        org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        org.springframework.cloud.gateway: DEBUG
-        org.springframework.http.server.reactive: DEBUG
-        org.springframework.web.reactive: DEBUG
-        org.springframework.boot.autoconfigure.web: DEBUG
-        reactor.netty: DEBUG
 
 management:
     endpoint:
@@ -190,18 +202,27 @@ spring.config.activate.on-profile: debug
 
 logging:
     level:
-        org.zowe.apiml: DEBUG
-        org.springframework.cloud.gateway: DEBUG
+        com.netflix: INFO # Update to DEBUG
+        com.netflix.discovery.shared.transport.decorator: DEBUG
+        com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
+        javax.net.ssl: ERROR
+        org.apache: INFO
+        org.apache.http: DEBUG
+        org.apache.tomcat.util.net: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
+        org.ehcache: INFO
+        org.springframework: INFO
+        org.springframework.cloud.gateway: TRACE
+        org.springframework.cloud.gateway.filter: TRACE
+        org.springframework.cloud.gateway.route: TRACE
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.springframework.security: DEBUG
         org.springframework.web.reactive: DEBUG
         org.springframework.web.reactive.socket: DEBUG
+        org.zowe.apiml: DEBUG
         reactor.netty.http.client: DEBUG
         reactor.netty.http.client.HttpClient: DEBUG
         reactor.netty.http.client.HttpClientConnect: DEBUG
-        com.netflix: DEBUG
-        org.apache.tomcat.util.net: DEBUG
-        javax.net.ssl: ERROR
 
 ---
 spring.config.activate.on-profile: attls

@@ -40,6 +40,7 @@ import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -87,7 +88,6 @@ public class ModulithConfig {
     private int port;
 
     private InstanceInfo getInstanceInfo(String serviceId) {
-        // TODO: Does this support HA?
         var leaseInfo = LeaseInfo.Builder.newBuilder()
             .setDurationInSecs(Integer.MAX_VALUE)
             .setRegistrationTimestamp(System.currentTimeMillis())
@@ -97,6 +97,15 @@ public class ModulithConfig {
             .build();
 
         var scheme = https ? "https" : "http";
+
+        Map<String, String> metadata = new HashMap<>();
+        switch (serviceId) {
+            case "gateway":
+                metadata = eurekaInstanceGw.getMetadataMap();
+                metadata.put("management.port", "10010");
+                break;
+            default:
+        }
 
         return InstanceInfo.Builder.newBuilder()
             .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
@@ -113,7 +122,8 @@ public class ModulithConfig {
             .setDataCenterInfo(() -> DataCenterInfo.Name.MyOwn)
             .setLeaseInfo(leaseInfo)
             .setLastUpdatedTimestamp(System.currentTimeMillis())
-            .setMetadata(eurekaInstanceGw.getMetadataMap())
+            .setMetadata(metadata)
+            .setVIPAddress(serviceId)
             .build();
     }
 
@@ -160,6 +170,11 @@ public class ModulithConfig {
             }
         };
     }
+
+    @Bean
+    public RouteRefreshListener routeRefreshListener(ApplicationEventPublisher publisher) {
+		return new RouteRefreshListener(publisher);
+	}
 
     @Bean
     public DiscoveryClient registryDiscoveryClient() {

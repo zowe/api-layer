@@ -18,7 +18,17 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 
 @SpringBootApplication(
-    exclude = { ReactiveOAuth2ClientAutoConfiguration.class }
+    exclude = { ReactiveOAuth2ClientAutoConfiguration.class },
+    scanBasePackages = {
+        "org.zowe.apiml.gateway",
+        "org.zowe.apiml.product.web",
+        "org.zowe.apiml.product.gateway",
+        "org.zowe.apiml.product.version",
+        "org.zowe.apiml.product.logging",
+        "org.zowe.apiml.product.security",
+        "org.zowe.apiml.security",
+        "org.zowe.apiml.discovery"
+    }
 )
 @ComponentScan(
     excludeFilters = {
