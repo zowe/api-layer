@@ -13,17 +13,26 @@ package org.zowe.apiml;
 import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.LeaseInfo;
-import org.apache.catalina.Context;
-import org.apache.catalina.Host;
 import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.Context;
+import org.apache.catalina.Host;
+import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
@@ -38,11 +47,16 @@ import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.TomcatHttpHandlerAdapter;
 import org.springframework.web.context.ServletContextAware;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
+import org.zowe.apiml.filter.PreFluxFilter;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Flux;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -202,13 +216,14 @@ public class ModulithConfig {
     @Primary
     public TomcatReactiveWebServerFactory tomcatReactiveWebServerWithFiltersFactory(
         HttpHandler httpHandler,
+        List<PreFluxFilter> preFluxFilters,
         List<ServletContextAware> servletContextAwareListeners
     ) {
 
         return new TomcatReactiveWebServerFactory() {
             @Override
             protected void prepareContext(Host host, TomcatHttpHandlerAdapter servlet) {
-                super.prepareContext(host, servlet);
+                super.prepareContext(host, new ServletWithFilters(httpHandler, servlet, preFluxFilters));
             }
 
             @Override
@@ -217,6 +232,89 @@ public class ModulithConfig {
                 super.configureContext(context);
             }
         };
+    }
+
+    /**
+     * Create a custom Tomcat connector with same customizations as the main external (GW) connector to handle
+     * "legacy" connections in v3 meant to go to Eureka / Discovery Service
+     *
+     * @param internalDiscoveryPort port that will handle legacy Discovery Service connections
+     * @return
+     */
+    @Bean
+    public WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> internalPortCustomizer(
+        @Value("${apiml.internal-discovery.port:10011}") int internalDiscoveryPort
+    ) {
+        return factory -> {
+            var connector = new Connector();
+
+            try {
+                // FIXME is it possible without reflection?
+                Method method = TomcatReactiveWebServerFactory.class.getDeclaredMethod("customizeConnector", Connector.class);
+                method.setAccessible(true);
+                method.invoke(factory, connector);
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+
+            connector.setPort(internalDiscoveryPort);
+
+            factory.addAdditionalTomcatConnectors(connector);
+        };
+
+    }
+
+    static class ServletWithFilters extends TomcatHttpHandlerAdapter {
+
+        private final Servlet servlet;
+        private final FilterChain filterChain;
+
+        public ServletWithFilters(HttpHandler httpHandler, TomcatHttpHandlerAdapter servlet, Collection<? extends Filter> filters) {
+            super(httpHandler);
+            this.servlet = servlet;
+
+            FilterChain filterChain = servlet::service;
+            for (var filter : filters) {
+                filterChain = createFilterChain(filter, filterChain);
+            }
+            this.filterChain = filterChain;
+        }
+
+        FilterChain createFilterChain(Filter filter, FilterChain filterChain) {
+            return (request, response) -> {
+                filter.doFilter(request, response, filterChain);
+            };
+        }
+
+        @Override
+        public void init(ServletConfig config) {
+            try {
+                servlet.init(config);
+            } catch (ServletException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public ServletConfig getServletConfig() {
+            return servlet.getServletConfig();
+        }
+
+        @Override
+        public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+            this.filterChain.doFilter(req, res);
+        }
+
+        @Override
+        public String getServletInfo() {
+            return servlet.getServletInfo();
+        }
+
+        @Override
+        public void destroy() {
+            servlet.destroy();
+        }
+
     }
 
 }
