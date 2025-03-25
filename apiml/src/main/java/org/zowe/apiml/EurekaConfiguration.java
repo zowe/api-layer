@@ -1,4 +1,14 @@
 /*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
+/*
  * Copyright 2013-2024 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +23,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.zowe.apiml;
 
 import com.netflix.appinfo.ApplicationInfoManager;
