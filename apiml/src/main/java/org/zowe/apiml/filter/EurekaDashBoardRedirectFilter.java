@@ -29,7 +29,7 @@ public class EurekaDashBoardRedirectFilter extends PreFluxFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         if (StringUtils.equals(request.getRequestURI(), "/")) {
-            response.sendRedirect("/eureka");
+            request.getSession().getServletContext().getRequestDispatcher("/eureka").forward(request, response);
         } else {
             chain.doFilter(request, response);
         }

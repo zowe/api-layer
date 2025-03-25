@@ -31,6 +31,7 @@ import org.apache.catalina.Host;
 import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.cloud.client.ServiceInstance;
@@ -65,12 +66,13 @@ import java.util.Optional;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableConfigurationProperties
 @Slf4j
 public class ModulithConfig {
 
     private final ApplicationContext applicationContext;
-    private final GatewayMetadata gatewayMetadata;
-    private final Map<String, InstanceInfo> instances = new HashMap<>();;
+    private final Map<String, InstanceInfo> instances = new HashMap<>();
+    private final GatewayEurekaInstanceConfigBean eurekaInstanceGw;
 
     @Value("${server.ssl.enabled:true}")
     private boolean https;
@@ -85,8 +87,6 @@ public class ModulithConfig {
     private int port;
 
     private InstanceInfo getInstanceInfo(String serviceId) {
-
-
         // TODO: Does this support HA?
         var leaseInfo = LeaseInfo.Builder.newBuilder()
             .setDurationInSecs(Integer.MAX_VALUE)
@@ -113,7 +113,7 @@ public class ModulithConfig {
             .setDataCenterInfo(() -> DataCenterInfo.Name.MyOwn)
             .setLeaseInfo(leaseInfo)
             .setLastUpdatedTimestamp(System.currentTimeMillis())
-            .setMetadata(gatewayMetadata.getMetadata())
+            .setMetadata(eurekaInstanceGw.getMetadataMap())
             .build();
     }
 
