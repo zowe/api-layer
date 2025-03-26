@@ -34,51 +34,51 @@ import org.springframework.util.Assert;
 @Slf4j
 public class RouteRefreshListener implements ApplicationListener<ApplicationEvent> {
 
-	private final ApplicationEventPublisher publisher;
+    private final ApplicationEventPublisher publisher;
 
-	private HeartbeatMonitor monitor = new HeartbeatMonitor();
+    private HeartbeatMonitor monitor = new HeartbeatMonitor();
 
-	public RouteRefreshListener(ApplicationEventPublisher publisher) {
-		Assert.notNull(publisher, "publisher may not be null");
-		this.publisher = publisher;
-	}
+    public RouteRefreshListener(ApplicationEventPublisher publisher) {
+        Assert.notNull(publisher, "publisher may not be null");
+        this.publisher = publisher;
+    }
 
-	@Override
-	public void onApplicationEvent(ApplicationEvent event) {
-		if (event instanceof ContextRefreshedEvent) {
-			ContextRefreshedEvent refreshedEvent = (ContextRefreshedEvent) event;
-			boolean isManagementCtxt = WebServerApplicationContext
-				.hasServerNamespace(refreshedEvent.getApplicationContext(), "management");
-			boolean isLoadBalancerCtxt = refreshedEvent.getApplicationContext().getDisplayName() != null
-					&& refreshedEvent.getApplicationContext().getDisplayName().startsWith("LoadBalancerClientFactory-");
+    @Override
+    public void onApplicationEvent(ApplicationEvent event) {
+        if (event instanceof ContextRefreshedEvent) {
+            ContextRefreshedEvent refreshedEvent = (ContextRefreshedEvent) event;
+            boolean isManagementCtxt = WebServerApplicationContext
+                .hasServerNamespace(refreshedEvent.getApplicationContext(), "management");
+            boolean isLoadBalancerCtxt = refreshedEvent.getApplicationContext().getDisplayName() != null
+                    && refreshedEvent.getApplicationContext().getDisplayName().startsWith("LoadBalancerClientFactory-");
 
-			if (!isManagementCtxt && !isLoadBalancerCtxt) {
-				reset();
-			}
-		}
-		else if (event instanceof RefreshScopeRefreshedEvent || event instanceof InstanceRegisteredEvent) {
-			reset();
-		} else if (event instanceof EurekaInstanceRegisteredEvent) {
+            if (!isManagementCtxt && !isLoadBalancerCtxt) {
+                reset();
+            }
+        }
+        else if (event instanceof RefreshScopeRefreshedEvent || event instanceof InstanceRegisteredEvent) {
+            reset();
+        } else if (event instanceof EurekaInstanceRegisteredEvent) {
             reset();
         }
-		else if (event instanceof ParentHeartbeatEvent) {
-			ParentHeartbeatEvent e = (ParentHeartbeatEvent) event;
-			resetIfNeeded(e.getValue());
-		}
-		else if (event instanceof HeartbeatEvent) {
-			HeartbeatEvent e = (HeartbeatEvent) event;
-			resetIfNeeded(e.getValue());
-		}
-	}
+        else if (event instanceof ParentHeartbeatEvent) {
+            ParentHeartbeatEvent e = (ParentHeartbeatEvent) event;
+            resetIfNeeded(e.getValue());
+        }
+        else if (event instanceof HeartbeatEvent) {
+            HeartbeatEvent e = (HeartbeatEvent) event;
+            resetIfNeeded(e.getValue());
+        }
+    }
 
-	private void resetIfNeeded(Object value) {
-		if (this.monitor.update(value)) {
-			reset();
-		}
-	}
+    private void resetIfNeeded(Object value) {
+        if (this.monitor.update(value)) {
+            reset();
+        }
+    }
 
-	private void reset() {
-		this.publisher.publishEvent(new RefreshRoutesEvent(this));
-	}
+    private void reset() {
+        this.publisher.publishEvent(new RefreshRoutesEvent(this));
+    }
 
 }

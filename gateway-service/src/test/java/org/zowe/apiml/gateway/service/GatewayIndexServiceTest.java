@@ -26,6 +26,7 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.zowe.apiml.gateway.services.ServicesInfoService;
 import org.zowe.apiml.services.ServiceInfo;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -33,7 +34,6 @@ import reactor.test.StepVerifier;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -65,6 +65,8 @@ class GatewayIndexServiceTest {
     private ServiceInstance eurekaInstance;
     @Mock
     private ExchangeFilterFunction exchangeFilterFunction;
+    @Mock
+    private ServicesInfoService servicesInfoService;
 
     private GatewayIndexService gatewayIndexService;
     private ServiceInfo serviceInfoA, serviceInfoB;
@@ -72,11 +74,11 @@ class GatewayIndexServiceTest {
 
     @BeforeEach
     void setUp() {
-        Map<String, String> metadata = new HashMap<>();
-        metadata.put(APIML_ID, "testApimlIdA");
-        metadata.put(REGISTRATION_TYPE, ADDITIONAL.getValue());
-
-        lenient().when(eurekaInstance.getMetadata()).thenReturn(Maps.of(APIML_ID, "testApimlIdA"));
+        lenient().when(eurekaInstance.getMetadata())
+            .thenReturn(Maps.of(
+                    APIML_ID, "testApimlIdA",
+                    REGISTRATION_TYPE, ADDITIONAL.getValue()
+                ));
         lenient().when(eurekaInstance.getInstanceId()).thenReturn("testInstanceIdA");
 
         serviceInfoA = new ServiceInfo();
@@ -90,8 +92,10 @@ class GatewayIndexServiceTest {
         serviceInfoB.getApiml().setApiInfo(Collections.singletonList(sysviewApiInfo));
 
         webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
-        gatewayIndexService = new GatewayIndexService(webClient, 60, null);
+        gatewayIndexService = new GatewayIndexService(webClient, 60, servicesInfoService);
     }
+
+    // TODO Add test when primary registration
 
     @Nested
     class WhenIndexingGatewayService {
@@ -106,7 +110,6 @@ class GatewayIndexServiceTest {
 
         @Test
         void shouldCacheListOfTheServices() {
-
             StepVerifier.FirstStep<List<ServiceInfo>> servicesVerifier = StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance));
 
             servicesVerifier

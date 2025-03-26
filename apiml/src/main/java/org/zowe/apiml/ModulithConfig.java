@@ -173,8 +173,8 @@ public class ModulithConfig {
 
     @Bean
     public RouteRefreshListener routeRefreshListener(ApplicationEventPublisher publisher) {
-		return new RouteRefreshListener(publisher);
-	}
+        return new RouteRefreshListener(publisher);
+    }
 
     @Bean
     public DiscoveryClient registryDiscoveryClient() {

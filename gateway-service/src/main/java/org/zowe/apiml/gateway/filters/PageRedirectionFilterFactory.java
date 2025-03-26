@@ -10,12 +10,12 @@
 
 package org.zowe.apiml.gateway.filters;
 
-import com.netflix.appinfo.InstanceInfo;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -69,7 +69,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
         return ((Stream<?>) discoveryClient.getInstances(config.serviceId).stream())
             .findAny()
-                .map(InstanceInfo.class::cast)
+                .map(ServiceInstance.class::cast)
                 .map(serviceInstance -> {
                         Map<String, String> metadata = serviceInstance.getMetadata();
                         RoutedServices routes = metadataParser.parseRoutes(metadata);
