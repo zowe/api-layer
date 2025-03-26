@@ -30,7 +30,6 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
@@ -202,7 +201,7 @@ class PassTicketTest implements TestWithStartedInstances {
                     .when()
                     .post(url)
                     .then()
-                    .statusCode(is(SC_INTERNAL_SERVER_ERROR))
+                    .statusCode(is(SC_BAD_REQUEST))
                     .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", containsString(expectedMessage));
 
             }

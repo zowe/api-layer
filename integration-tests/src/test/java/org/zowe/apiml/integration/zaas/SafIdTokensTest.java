@@ -184,7 +184,7 @@ public class SafIdTokensTest implements TestWithStartedInstances {
             .when()
                 .post(ZAAS_SAFIDT_URI)
             .then()
-                .statusCode(is(SC_INTERNAL_SERVER_ERROR))
+                .statusCode(is(SC_BAD_REQUEST))
                 .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", containsString(expectedMessage));
             //@formatter:on
         }
