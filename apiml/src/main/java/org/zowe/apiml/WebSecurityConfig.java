@@ -27,6 +27,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpBasicServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
+import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
+import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher.MatchResult;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.zowe.apiml.gateway.filters.security.BasicAuthFilter;
@@ -64,13 +67,16 @@ public class WebSecurityConfig {
     private int internalDiscoveryPort;
 
     private static final List<String> UNAUTHENTICATED_PATTERNS = List.of("/application/",
-    "/favicon.ico",
+    "/eureka/css/**",
+    "/eureka/js/**",
+    "/eureka/fonts/**",
+    "/eureka/images/**",
     "/application/info",
-    "/application/health",
-    "/eureka/css/",
-    "/eureka/js/",
-    "/eureka/fonts/",
-    "/eureka/images/");
+    "/favicon.ico");
+
+    private ServerWebExchangeMatcher discoveryPortMatcher = exchange -> exchange.getRequest().getURI().getPort() == internalDiscoveryPort ? MatchResult.match() : MatchResult.notMatch();
+    private ServerWebExchangeMatcher isInUnauthenticatedPaths = ServerWebExchangeMatchers.pathMatchers(UNAUTHENTICATED_PATTERNS.toArray(new String[]{}));
+    private ServerWebExchangeMatcher notInUnauthenticatedPaths = new NegatedServerWebExchangeMatcher(isInUnauthenticatedPaths);
 
     @Bean
     public SecurityWebFilterChain errorFilterChain(ServerHttpSecurity http) {
@@ -86,16 +92,12 @@ public class WebSecurityConfig {
     @Bean
     public SecurityWebFilterChain clientCertificateFilterChain(ServerHttpSecurity http) {
         http
-            .securityMatcher(matcher -> { // Matches Discovery internal port and URLs with /eureka/**
-                var uri = matcher.getRequest().getURI();
-                var port = uri.getPort();
-                if (port == internalDiscoveryPort
-                    && UNAUTHENTICATED_PATTERNS.stream().noneMatch(p -> uri.getPath().startsWith(p))
-                    && uri.getPath().startsWith("/eureka/")) {
-                        return MatchResult.match();
-                }
-                return MatchResult.notMatch();
-            })
+            .securityMatcher(new AndServerWebExchangeMatcher(
+                discoveryPortMatcher,
+                ServerWebExchangeMatchers.pathMatchers("/eureka/**"),
+                exchange -> exchange.getRequest().getURI().getPath().startsWith("/eureka/") ? MatchResult.match() : MatchResult.notMatch(),
+                notInUnauthenticatedPaths
+            ))
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec
                     .anyExchange().authenticated()
@@ -129,14 +131,10 @@ public class WebSecurityConfig {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
-            .securityMatcher(matcher -> {
-                var uri = matcher.getRequest().getURI();
-                var port = uri.getPort();
-                if (port == internalDiscoveryPort && UNAUTHENTICATED_PATTERNS.stream().anyMatch(p -> uri.getPath().startsWith(p))) {
-                    return MatchResult.match();
-                }
-                return MatchResult.notMatch();
-            })
+            .securityMatcher(new AndServerWebExchangeMatcher(
+                discoveryPortMatcher,
+                isInUnauthenticatedPaths
+            ))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchange -> {
                 exchange
@@ -166,21 +164,17 @@ public class WebSecurityConfig {
         HttpBasicServerAuthenticationEntryPoint entryPoint = new HttpBasicServerAuthenticationEntryPoint();
         entryPoint.setRealm(DISCOVERY_REALM);
         return http
-        .securityMatcher(matcher -> {
-            var uri = matcher.getRequest().getURI();
-            var port = uri.getPort();
-            if (port == internalDiscoveryPort && UNAUTHENTICATED_PATTERNS.stream().noneMatch(p -> uri.getPath().startsWith(p))) {
-                return MatchResult.match();
-            }
-            return MatchResult.notMatch();
-        })
-        .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
-        .httpBasic(spec -> spec.authenticationEntryPoint(entryPoint))
-        .authenticationManager(reactiveAuthenticationManager())
-        .addFilterAt(new TokenAuthFilter(tokenProvider, authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
-        .addFilterAt(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION)
-        .addFilterAt(new CookieAuthFilter(authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
-        .build();
+            .securityMatcher(new AndServerWebExchangeMatcher(
+                discoveryPortMatcher,
+                notInUnauthenticatedPaths
+            ))
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .httpBasic(spec -> spec.authenticationEntryPoint(entryPoint))
+            .authenticationManager(reactiveAuthenticationManager())
+            .addFilterAt(new TokenAuthFilter(tokenProvider, authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAt(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAt(new CookieAuthFilter(authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
+            .build();
     }
 
     @Bean
