@@ -84,27 +84,24 @@
 
 if [ -n "${LAUNCH_COMPONENT}" ]
 then
-    JAR_FILE="${LAUNCH_COMPONENT}/gateway-service-lite.jar"
+    JAR_FILE="${LAUNCH_COMPONENT}/apiml-service-lite.jar"
 else
-    JAR_FILE="$(pwd)/bin/gateway-service-lite.jar"
+    JAR_FILE="$(pwd)/bin/apiml-service-lite.jar"
 fi
 echo "jar file: "${JAR_FILE}
-# script assumes it's in the gateway component directory and common_lib needs to be relative path
+# script assumes it's in the apiml component directory and common_lib needs to be relative path
 
-if [ -z "${CMMN_LB}" ]
-then
+if [ -z "${CMMN_LB}" ]; then
     COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
 else
-    COMMON_LIB=${CMMN_LB}
+    COMMON_LIB="${CMMN_LB}"
 fi
 
-if [ -z "${LIBRARY_PATH}" ]
-then
+if [ -z "${LIBRARY_PATH}" ]; then
     LIBRARY_PATH="../common-java-lib/bin/"
 fi
 
-if [ "${ZWE_configs_debug}" = "true" ]
-then
+if [ "${ZWE_configs_debug}" = "true" ]; then
     if [ -n "${ZWE_configs_spring_profiles_active}" ];
     then
         ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
@@ -131,10 +128,8 @@ else
 fi
 
 ZOWE_CONSOLE_LOG_CHARSET=UTF-8
-if [ "$(uname)" = "OS/390" ]
-then
-    QUICK_START=-Xquickstart
-    GATEWAY_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
+if [ "$(uname)" = "OS/390" ]; then
+    QUICK_START="-Xquickstart"
 
     JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
         | grep "major version" \
@@ -361,8 +356,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \
-    -Dloader.path=${GATEWAY_LOADER_PATH} \
-    -jar ${JAR_FILE} &
+    -jar "${JAR_FILE}" &
 
 pid=$!
 echo "pid=${pid}"
