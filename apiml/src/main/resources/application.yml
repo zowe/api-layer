@@ -168,21 +168,22 @@ logging:
         org.ehcache: WARN
         org.springframework: WARN
         org.springframework.beans: WARN
-        org.springframework.boot.autoconfigure.web: DEBUG
+        org.springframework.boot.autoconfigure.web: WARN
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
-        org.springframework.cloud.gateway: DEBUG
+        org.springframework.cloud.gateway: INFO
         org.springframework.cloud.gateway.filter: WARN
         org.springframework.cloud.gateway.route: WARN
         org.springframework.context.support: WARN
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
-        org.springframework.http.server.reactive: DEBUG
+        org.springframework.http.server.reactive: INFO
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         org.springframework.security.web: INFO
-        org.springframework.web.reactive: DEBUG
+        org.springframework.web.reactive: INFO
         org.zowe.apiml: INFO
         reactor.netty: DEBUG
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
+        org.springframework.security: TRACE
 
 management:
     endpoint:
@@ -212,13 +213,14 @@ logging:
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.ehcache: INFO
         org.springframework: INFO
-        org.springframework.cloud.gateway: TRACE
-        org.springframework.cloud.gateway.filter: TRACE
-        org.springframework.cloud.gateway.route: TRACE
+        # org.springframework.cloud.gateway: TRACE
+        # org.springframework.cloud.gateway.filter: TRACE
+        # org.springframework.cloud.gateway.route: TRACE
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
-        org.springframework.security: DEBUG
-        org.springframework.web.reactive: DEBUG
-        org.springframework.web.reactive.socket: DEBUG
+        org.springframework.security: TRACE
+        org.springframework.security.web: TRACE
+        # org.springframework.web.reactive: DEBUG
+        # org.springframework.web.reactive.socket: DEBUG
         org.zowe.apiml: DEBUG
         reactor.netty.http.client: DEBUG
         reactor.netty.http.client.HttpClient: DEBUG

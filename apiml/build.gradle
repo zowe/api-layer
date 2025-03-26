@@ -65,7 +65,7 @@ dependencies {
     implementation libs.spring.cloud.starter.eureka.server
     implementation libs.spring.cloud.starter.gateway
     implementation libs.spring.boot.starter.actuator
-
+    implementation libs.spring.boot.starter.security
     testImplementation(libs.modulith.test)
 
     compileOnly libs.lombok
