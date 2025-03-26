@@ -12,11 +12,8 @@ package org.zowe.apiml;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
@@ -27,7 +24,6 @@ import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpBasicServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
@@ -54,7 +50,6 @@ public class WebSecurityConfig {
 
     private final BasicAuthProvider basicAuthProvider;
     private final TokenProvider tokenProvider;
-    private final ApplicationContext applicationContext;
 
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
@@ -68,49 +63,16 @@ public class WebSecurityConfig {
     @Value("${apiml.internal-discovery.port:10011}")
     private int internalDiscoveryPort;
 
-    @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE + 2)
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        var patterns = List.of("/application/",
-            "/favicon.ico",
-            "/application/info",
-            "/application/health",
-            "/eureka/css/",
-            "/eureka/js/",
-            "/eureka/fonts/",
-            "/eureka/images/");
-
-        return http
-            .securityMatcher(matcher -> {
-                var uri = matcher.getRequest().getURI();
-                var port = uri.getPort();
-                if (port == internalDiscoveryPort && patterns.stream().anyMatch(p -> uri.getPath().startsWith(p))) {
-                    return MatchResult.match();
-                }
-                return MatchResult.notMatch();
-            })
-            .csrf(ServerHttpSecurity.CsrfSpec::disable)
-            .authorizeExchange(exchange -> {
-                exchange
-                    .pathMatchers(
-         "/eureka/css/**",
-                        "/eureka/js/**",
-                        "/eureka/fonts/**",
-                        "/eureka/images/**",
-                        "/application/info",
-                        "/favicon.ico"
-                    )
-                    .permitAll();
-
-                if (!isHealthEndpointProtected) {
-                    exchange.pathMatchers("/application/health").permitAll();
-                }
-                exchange.anyExchange().authenticated();
-            }).build();
-    }
+    private static final List<String> UNAUTHENTICATED_PATTERNS = List.of("/application/",
+    "/favicon.ico",
+    "/application/info",
+    "/application/health",
+    "/eureka/css/",
+    "/eureka/js/",
+    "/eureka/fonts/",
+    "/eureka/images/");
 
     @Bean
-    @Order(1)
     public SecurityWebFilterChain errorFilterChain(ServerHttpSecurity http) {
         return http
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/error"))
@@ -122,14 +84,15 @@ public class WebSecurityConfig {
     * Filter chain for protecting endpoints with client certificate
     */
     @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityWebFilterChain clientCertificateFilterChain(ServerHttpSecurity http) {
         http
             .securityMatcher(matcher -> { // Matches Discovery internal port and URLs with /eureka/**
                 var uri = matcher.getRequest().getURI();
                 var port = uri.getPort();
-                if (port == internalDiscoveryPort && uri.getPath().startsWith("/eureka/")) {
-                    return MatchResult.match();
+                if (port == internalDiscoveryPort
+                    && UNAUTHENTICATED_PATTERNS.stream().noneMatch(p -> uri.getPath().startsWith(p))
+                    && uri.getPath().startsWith("/eureka/")) {
+                        return MatchResult.match();
                 }
                 return MatchResult.notMatch();
             })
@@ -163,18 +126,50 @@ public class WebSecurityConfig {
             .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.FORBIDDEN)));
     }
 
+    @Bean
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+        http
+            .securityMatcher(matcher -> {
+                var uri = matcher.getRequest().getURI();
+                var port = uri.getPort();
+                if (port == internalDiscoveryPort && UNAUTHENTICATED_PATTERNS.stream().anyMatch(p -> uri.getPath().startsWith(p))) {
+                    return MatchResult.match();
+                }
+                return MatchResult.notMatch();
+            })
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .authorizeExchange(exchange -> {
+                exchange
+                    .pathMatchers(
+         "/eureka/css/**",
+                        "/eureka/js/**",
+                        "/eureka/fonts/**",
+                        "/eureka/images/**",
+                        "/application/info",
+                        "/favicon.ico"
+                    )
+                    .permitAll();
+
+                if (!isHealthEndpointProtected) {
+                    exchange.pathMatchers("/application/health").permitAll();
+                }
+                exchange.anyExchange().authenticated();
+            });
+        return http.build();
+    }
+
     /**
     * Filter chain for protecting endpoints with MF credentials (basic or token)
     */
     @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE + 1)
     public SecurityWebFilterChain discoveryBasicAuthOrToken(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
         HttpBasicServerAuthenticationEntryPoint entryPoint = new HttpBasicServerAuthenticationEntryPoint();
         entryPoint.setRealm(DISCOVERY_REALM);
         return http
         .securityMatcher(matcher -> {
-            var port = matcher.getRequest().getURI().getPort();
-            if (port == internalDiscoveryPort) {
+            var uri = matcher.getRequest().getURI();
+            var port = uri.getPort();
+            if (port == internalDiscoveryPort && UNAUTHENTICATED_PATTERNS.stream().noneMatch(p -> uri.getPath().startsWith(p))) {
                 return MatchResult.match();
             }
             return MatchResult.notMatch();
