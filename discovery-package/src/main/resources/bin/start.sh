@@ -60,8 +60,7 @@ if [ -z "${LIBRARY_PATH}" ]; then
     LIBRARY_PATH="../common-java-lib/bin/"
 fi
 
-if [ "${ZWE_configs_debug}" = "true" ]
-then
+if [ "${ZWE_configs_debug}" = "true" ]; then
     if [ -n "${ZWE_configs_spring_profiles_active}" ];
     then
         ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
@@ -222,7 +221,7 @@ truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certi
 
 keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}"
 truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
-#echo "keystore='$keystore_location' truststore='$truststore_location'"
+
 if [ "${keystore_type}" = "JCERACFKS" ]; then
     keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
     truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
@@ -233,9 +232,6 @@ elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
     keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
     truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
 fi
-# NOTE: these are moved from below
-# -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
-# -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
 
 if [ "${ATTLS_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
   keystore_type=
