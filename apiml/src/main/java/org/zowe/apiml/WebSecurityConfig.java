@@ -158,8 +158,6 @@ public class WebSecurityConfig {
     */
     @Bean
     public SecurityWebFilterChain discoveryBasicAuthOrToken(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
-        HttpBasicServerAuthenticationEntryPoint entryPoint = new HttpBasicServerAuthenticationEntryPoint();
-        entryPoint.setRealm(DISCOVERY_REALM);
         return http
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
