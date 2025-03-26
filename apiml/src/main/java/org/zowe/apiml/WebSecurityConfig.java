@@ -14,12 +14,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.authentication.HttpBasicServerAuthenticationEntryPoint;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
+import org.zowe.apiml.gateway.filters.security.BasicAuthFilter;
+import org.zowe.apiml.gateway.filters.security.CookieAuthFilter;
+import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
 import org.zowe.apiml.gateway.service.TokenProvider;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -45,37 +50,6 @@ public class WebSecurityConfig {
 
     @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifySslCertificatesOfServices;
-
-    @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-//        http.securityMatcher(ServerWebExchangeMatchers.pathMatchers(
-//            "/application/**",
-//            "/favicon.ico",
-//            "/application/info",
-//            "/application/health",
-//            "/eureka/css/**",
-//            "/eureka/js/**",
-//            "/eureka/fonts/**",
-//            "/eureka/images/**"
-//        ));
-
-        http.csrf(ServerHttpSecurity.CsrfSpec::disable);
-        http.authorizeExchange(exchange -> {
-            exchange
-                .pathMatchers(
-                    "/**"
-                ).authenticated();
-
-//            if (!isHealthEndpointProtected) {
-//                exchange.pathMatchers("/application/health").permitAll();
-//            }
-//
-//            exchange.anyExchange().authenticated();
-        });
-
-        return http.build();
-    }
 
 //    @Bean
 //    @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -154,23 +128,23 @@ public class WebSecurityConfig {
 //            .csrf(ServerHttpSecurity.CsrfSpec::disable);
 //    }
 //
-//    /**
-//     * Filter chain for protecting endpoints with MF credentials (basic or token)
-//     */
-//    @Bean
-//    @Order(3)
-//    public SecurityWebFilterChain basicAuthOrTokenFilterChain(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
-//        HttpBasicServerAuthenticationEntryPoint entryPoint = new HttpBasicServerAuthenticationEntryPoint();
-//        entryPoint.setRealm(DISCOVERY_REALM);
-//        return http
-//            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/application/**", "/*"))
-//            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
-//            .httpBasic(spec -> spec.authenticationEntryPoint(entryPoint))
-//            .addFilterAt(new TokenAuthFilter(tokenProvider, authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
-//            .addFilterAt(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION)
-//            .addFilterAt(new CookieAuthFilter(authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
-//            .build();
-//    }
+    /**
+     * Filter chain for protecting endpoints with MF credentials (basic or token)
+     */
+    @Bean
+    @Order(3)
+    public SecurityWebFilterChain basicAuthOrTokenFilterChain(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
+        HttpBasicServerAuthenticationEntryPoint entryPoint = new HttpBasicServerAuthenticationEntryPoint();
+        entryPoint.setRealm(DISCOVERY_REALM);
+        return http
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/application/**", "/*", "/eureka"))
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .httpBasic(spec -> spec.authenticationEntryPoint(entryPoint))
+            .addFilterAt(new TokenAuthFilter(tokenProvider, authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAt(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAt(new CookieAuthFilter(authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
+            .build();
+    }
 //
 //    /**
 //     * Filter chain for protecting endpoints with MF credentials (basic or token) or x509 certificate
@@ -202,5 +176,13 @@ public class WebSecurityConfig {
 //            .authorities(List.of())
 //            .build();
 //        return new MapReactiveUserDetailsService(user);
+//    }
+
+//    /**
+//     * Used for dummy authentication provider
+//     */
+//    @Bean
+//    public BCryptPasswordEncoder passwordEncoder() {
+//        return new BCryptPasswordEncoder(10);
 //    }
 }
