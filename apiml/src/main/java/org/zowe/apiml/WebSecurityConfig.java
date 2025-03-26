@@ -12,6 +12,7 @@ package org.zowe.apiml;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -29,6 +30,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpBasicServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher.MatchResult;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
+import org.zowe.apiml.gateway.controllers.GatewayExceptionHandler;
 import org.zowe.apiml.gateway.filters.security.BasicAuthFilter;
 import org.zowe.apiml.gateway.filters.security.CookieAuthFilter;
 import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
@@ -53,6 +55,7 @@ public class WebSecurityConfig {
     private final TokenProvider tokenProvider;
     private final HandlerInitializer handlerInitializer;
     private final AuthConfigurationProperties securityConfigurationProperties;
+    private final ApplicationContext applicationContext;
 
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
@@ -131,6 +134,10 @@ public class WebSecurityConfig {
             }
             return MatchResult.notMatch();
         })
+        .authorizeExchange(authorizeExchangeSpec ->
+            authorizeExchangeSpec
+                .anyExchange().authenticated()
+        )
         .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
         .formLogin(ServerHttpSecurity.FormLoginSpec::disable);
 
@@ -147,13 +154,17 @@ public class WebSecurityConfig {
     }
 
     public ServerHttpSecurity x509SecurityConfig(ServerHttpSecurity http) {
+        var gatewayExceptionHandler = applicationContext.getBean(GatewayExceptionHandler.class);
         return http
             .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .x509(x509 -> x509
                 .principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
             )
-            .csrf(ServerHttpSecurity.CsrfSpec::disable);
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec.authenticationEntryPoint(
+                gatewayExceptionHandler::handleAuthenticationException)
+            );
     }
 
     /**
