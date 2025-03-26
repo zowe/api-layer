@@ -82,8 +82,7 @@
 # - ZWE_zowe_network_server_tls_attls
 # - ZWE_DISCOVERY_SERVICES_LIST
 
-if [ -n "${LAUNCH_COMPONENT}" ]
-then
+if [ -n "${LAUNCH_COMPONENT}" ]; then
     JAR_FILE="${LAUNCH_COMPONENT}/apiml-service-lite.jar"
 else
     JAR_FILE="$(pwd)/bin/apiml-service-lite.jar"
@@ -184,16 +183,15 @@ fi
 
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/classic
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/j9vm
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
+LIBPATH="$LIBPATH":"${JAVA_HOME}/bin"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/bin/classic"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/bin/j9vm"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390x/classic"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390x/default"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390x/j9vm"
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
-if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]
-then
+if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]; then
     LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
 fi
 
