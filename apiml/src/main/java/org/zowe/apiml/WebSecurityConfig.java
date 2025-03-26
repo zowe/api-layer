@@ -19,7 +19,10 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.authentication.HttpBasicServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher;
@@ -54,9 +57,6 @@ public class WebSecurityConfig {
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
-    @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
-    private boolean nonStrictVerifySslCertificatesOfServices;
-
     @Value("${apiml.internal-discovery.port:10011}")
     private int internalDiscoveryPort;
 
@@ -68,9 +68,9 @@ public class WebSecurityConfig {
     "/application/info",
     "/favicon.ico");
 
-    private ServerWebExchangeMatcher discoveryPortMatcher = exchange -> exchange.getRequest().getURI().getPort() == internalDiscoveryPort ? MatchResult.match() : MatchResult.notMatch();
-    private ServerWebExchangeMatcher isInUnauthenticatedPaths = ServerWebExchangeMatchers.pathMatchers(UNAUTHENTICATED_PATTERNS.toArray(new String[]{}));
-    private ServerWebExchangeMatcher notInUnauthenticatedPaths = new NegatedServerWebExchangeMatcher(isInUnauthenticatedPaths);
+    private final ServerWebExchangeMatcher discoveryPortMatcher = exchange -> exchange.getRequest().getURI().getPort() == internalDiscoveryPort ? MatchResult.match() : MatchResult.notMatch();
+    private final ServerWebExchangeMatcher isInUnauthenticatedPaths = ServerWebExchangeMatchers.pathMatchers(UNAUTHENTICATED_PATTERNS.toArray(new String[]{}));
+    private final ServerWebExchangeMatcher notInUnauthenticatedPaths = new NegatedServerWebExchangeMatcher(isInUnauthenticatedPaths);
 
     @Bean
     public SecurityWebFilterChain errorFilterChain(ServerHttpSecurity http) {
@@ -165,8 +165,11 @@ public class WebSecurityConfig {
             .addFilterAfter(new TokenAuthFilter(tokenProvider, authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new CookieAuthFilter(authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
-            .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)))
             .build();
     }
 
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
 }
