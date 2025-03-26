@@ -183,6 +183,7 @@ logging:
         reactor.netty: DEBUG
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
+        org.springframework.security: TRACE
 
 management:
     endpoint:
