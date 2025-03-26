@@ -82,8 +82,7 @@
 # - ZWE_zowe_network_server_tls_attls
 # - ZWE_DISCOVERY_SERVICES_LIST
 
-if [ -n "${LAUNCH_COMPONENT}" ]
-then
+if [ -n "${LAUNCH_COMPONENT}" ]; then
     JAR_FILE="${LAUNCH_COMPONENT}/gateway-service-lite.jar"
 else
     JAR_FILE="$(pwd)/bin/gateway-service-lite.jar"
@@ -91,20 +90,17 @@ fi
 echo "jar file: "${JAR_FILE}
 # script assumes it's in the gateway component directory and common_lib needs to be relative path
 
-if [ -z "${CMMN_LB}" ]
-then
+if [ -z "${CMMN_LB}" ]; then
     COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
 else
-    COMMON_LIB=${CMMN_LB}
+    COMMON_LIB="${CMMN_LB}"
 fi
 
-if [ -z "${LIBRARY_PATH}" ]
-then
+if [ -z "${LIBRARY_PATH}" ]; then
     LIBRARY_PATH="../common-java-lib/bin/"
 fi
 
-if [ "${ZWE_configs_debug}" = "true" ]
-then
+if [ "${ZWE_configs_debug}" = "true" ]; then
     if [ -n "${ZWE_configs_spring_profiles_active}" ];
     then
         ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
@@ -131,10 +127,9 @@ else
 fi
 
 ZOWE_CONSOLE_LOG_CHARSET=UTF-8
-if [ "$(uname)" = "OS/390" ]
-then
-    QUICK_START=-Xquickstart
-    GATEWAY_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
+GATEWAY_LOADER_PATH=${COMMON_LIB}
+if [ "$(uname)" = "OS/390" ]; then
+    QUICK_START="-Xquickstart"
 
     JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
         | grep "major version" \
@@ -143,8 +138,6 @@ then
     if [ $JAVA_VERSION -ge 65 ]; then # Java 21
         ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
     fi
-else
-    GATEWAY_LOADER_PATH=${COMMON_LIB}
 fi
 
 # Check if the directory containing the ZAAS shared JARs was set and append it to the ZAAS loader path
@@ -192,9 +185,9 @@ LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/classic
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/j9vm
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390x/classic
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390x/default
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390x/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
 if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]
@@ -361,8 +354,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \
-    -Dloader.path=${GATEWAY_LOADER_PATH} \
-    -jar ${JAR_FILE} &
+    -jar "${JAR_FILE}" &
 
 pid=$!
 echo "pid=${pid}"

@@ -136,9 +136,9 @@ LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/classic
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/j9vm
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390x/classic
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390x/default
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390x/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
 ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
