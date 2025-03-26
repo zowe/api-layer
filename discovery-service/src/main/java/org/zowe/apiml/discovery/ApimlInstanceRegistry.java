@@ -36,6 +36,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -257,7 +258,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
             } catch (Throwable t) {
                 throw new IllegalArgumentException(EXCEPTION_MESSAGE, t);
             } finally {
-                if (staticRegistrationIds.removeAll(registry.get(appName).keySet())) {
+                if (staticRegistrationIds.removeAll(Optional.ofNullable(registry.get(appName)).orElse(Collections.emptyMap()).keySet())) {
                     // do not change count of instances if it was registered statically
                     expectedNumberOfClientsSendingRenews = backup;
                 }

@@ -13,7 +13,7 @@ package org.zowe.apiml.discovery.staticdef;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
-import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
+import com.netflix.eureka.registry.InstanceRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -73,7 +73,7 @@ public class StaticServicesRegistrationService {
         staticInstances.clear();
         StaticRegistrationResult result = registerServices(staticApiDefinitionsDirectories);
 
-        PeerAwareInstanceRegistry registry = getRegistry();
+        InstanceRegistry registry = getRegistry();
         for (InstanceInfo info: oldStaticInstances) {
             if (!result.getRegisteredServices().contains(info.getInstanceId())) {
                 log.info("Instance {} is not defined in the new static API definitions. It will be removed", info.getInstanceId());

@@ -13,7 +13,6 @@ package org.zowe.apiml.discovery.metadata;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
-import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
+import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.discovery.EurekaInstanceRegisteredListener;
 import org.zowe.apiml.discovery.staticdef.ServiceDefinitionProcessor;
 import org.zowe.apiml.discovery.staticdef.StaticRegistrationResult;
@@ -36,7 +36,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,11 +62,11 @@ class MetadataDefaultsServiceTest {
     @Spy
     private ServiceDefinitionProcessorMock serviceDefinitionProcessor;
 
-    private PeerAwareInstanceRegistry mockRegistry;
+    private ApimlInstanceRegistry mockRegistry;
 
     @BeforeEach
     void setUp() {
-        mockRegistry = mock(PeerAwareInstanceRegistry.class);
+        mockRegistry = mock(ApimlInstanceRegistry.class);
         doAnswer(x -> {
             EurekaInstanceRegisteredEvent event = mock(EurekaInstanceRegisteredEvent.class);
             when(event.getInstanceInfo()).thenReturn(x.getArgument(0));

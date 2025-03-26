@@ -10,18 +10,17 @@
 
 package org.zowe.apiml.discovery;
 
-import com.netflix.appinfo.*;
+import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.eureka.*;
+import com.netflix.eureka.DefaultEurekaServerConfig;
+import com.netflix.eureka.EurekaServerConfig;
 import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.*;
 import org.junit.jupiter.api.Nested;
-
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -35,9 +34,18 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.WrongMethodTypeException;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ApimlInstanceRegistryTest {
+
     private ApimlInstanceRegistry apimlInstanceRegistry;
 
     private EurekaServerConfig serverConfig;
@@ -272,6 +280,7 @@ class ApimlInstanceRegistryTest {
         @Nested
         @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         class WhenCancelRegistration {
+
             @Test
             void thenIsSuccessful() throws Throwable {
                 MethodHandle methodHandle = mock(MethodHandle.class);
