@@ -13,7 +13,7 @@ dependencies {
     zaasServiceJar(project(path: ":apiml", configuration: "liteJarConfiguration"))
 }
 
-task packageZaas(type: Zip) {
+task packageApiml(type: Zip) {
     archiveFileName = artifactName + pullNo + ".zip"
     includeEmptyDirs = true
 
@@ -32,7 +32,7 @@ task packageZaas(type: Zip) {
 // TODO should z/OSMF static definition be part of this package now?
 
 // save build information to manifest
-packageZaas.doFirst {
+packageApiml.doFirst {
     String manifest = file('src/main/resources/manifest.yaml').text
 
     def getCommitHash = 'git rev-parse --verify HEAD'.execute()
@@ -61,11 +61,11 @@ packageZaas.doFirst {
     convertedManifest.write(manifest)
 }
 
-jar.dependsOn(packageZaas)
-build.dependsOn(packageZaas)
+jar.dependsOn(packageApiml)
+build.dependsOn(packageApiml)
 
 artifacts {
-    zip packageZaas
+    zip packageApiml
 }
 
 publishing {
