@@ -16,3 +16,9 @@ messages:
 
     # Service specific messages
     # 700-999
+    - key: org.zowe.apiml.zaas.security.invalidToken
+      number: ZWEAG102
+      type: ERROR
+      text: "Token is not valid"
+      reason: "The JWT token is not valid."
+      action: "Provide a valid token."
