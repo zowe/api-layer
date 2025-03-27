@@ -40,15 +40,41 @@ export function refreshStaticApisError(error) {
 export function refreshedStaticApi() {
     const url = `${getBaseUrl()}/static-api/refresh`;
     return (dispatch) => {
-        fetch(url, {
-            method: 'POST',
-        })
-            .then((res) => res.json())
-            // eslint-disable-next-line no-use-before-define
-            .then(fetchHandler, (error) => dispatch(refreshStaticApisError(error)))
-            .then(() => dispatch(refreshStaticApisSuccess()))
+        fetch(url, { method: 'POST' })
+            .then((res) => {
+                if (!res.ok) {
+                    return res.text().then(text => {
+                        let errorJson;
+                        try {
+                            errorJson = JSON.parse(text);
+                        } catch {
+                            errorJson = {
+                                messageNumber: 'ZWEAD702E',
+                                messageContent: text || res.statusText,
+                                messageType: 'ERROR'
+                            };
+                        }
+                        dispatch(refreshStaticApisError(errorJson));
+                        throw errorJson;
+                    });
+                }
+                return res.json();
+            })
+            .then((data) => {
+                fetchHandler(data);
+                dispatch(refreshStaticApisSuccess());
+            })
             .catch((error) => {
-                dispatch(refreshStaticApisError(error));
+                console.error("Error refreshing static APIs:", error);
+                if (error.messageNumber) {
+                    dispatch(refreshStaticApisError(error));
+                } else {
+                    dispatch(refreshStaticApisError({
+                        messageNumber: 'ZWEAD703E',
+                        messageContent: error.message || 'Network error',
+                        messageType: 'ERROR'
+                    }));
+                }
             });
     };
 }
