@@ -69,7 +69,7 @@ public class DiscoveryUtils {
             url.append("/apps");
         }
 
-        final ResponseBody body = given()
+        final ResponseBody<?> body = given()
             .get(url.toString())
             .body();
 
