@@ -312,7 +312,8 @@ task runContainerTests(type: Test) {
     description "Run only tests without long tests"
 
     outputs.cacheIf { false }
-    systemProperty "environment.config", "-docker"
+    def envConfig = System.getenv("ENV_CONFIG") ? System.getenv("ENV_CONFIG") : "docker"
+    systemProperty "environment.config", "-$envConfig"
 
     systemProperties System.properties
     useJUnitPlatform {

@@ -74,7 +74,7 @@ public class StaticServicesRegistrationService {
         StaticRegistrationResult result = registerServices(staticApiDefinitionsDirectories);
 
         InstanceRegistry registry = getRegistry();
-        for (InstanceInfo info: oldStaticInstances) {
+        for (InstanceInfo info : oldStaticInstances) {
             if (!result.getRegisteredServices().contains(info.getInstanceId())) {
                 log.info("Instance {} is not defined in the new static API definitions. It will be removed", info.getInstanceId());
                 registry.cancel(info.getAppName(), info.getId(), false);
