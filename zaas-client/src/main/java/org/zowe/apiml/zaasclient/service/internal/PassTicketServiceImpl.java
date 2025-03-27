@@ -60,7 +60,7 @@ class PassTicketServiceImpl implements PassTicketService {
         } catch (ZaasConfigurationException e) {
             throw e;
         } catch (Exception e) {
-            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e);
+            throw new ZaasClientException(ZaasClientErrorCodes.INTERNAL_SERVER_ERROR, e);
         }
     }
 

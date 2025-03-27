@@ -49,13 +49,6 @@ messages:
       reason: "Unable to generate PassTicket."
       action: "Verify that the secured signon (PassTicket) function and application ID is configured properly by referring to Using PassTickets in the guide for your security provider"
 
-    - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.INTERNAL_SERVER_ERROR
-      number: ZWEAS418
-      type: ERROR
-      text: "The generation of the PassTicket failed. Verify that the user and the application name are valid, and check that corresponding permissions have been set up"
-      reason: "Unable to generate PassTicket."
-      action: "Supply a valid user and application name, and check that corresponding permissions have been set up."
-
     - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.TOKEN_NOT_PROVIDED
       number: ZWEAS401
       type: ERROR
@@ -113,6 +106,13 @@ messages:
       text: "The SSL configuration contained invalid path."
       reason: "There was an invalid path to either trust store or keystore"
       action: "Ensure that both provided paths are resolved to valid trust store and valid key store"
+
+    - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.INTERNAL_SERVER_ERROR
+      number: ZWEAS504
+      type: ERROR
+      text: "Internal server error while generating PassTicket: %s"
+      reason: "Unable to generate PassTicket."
+      action: "Supply a valid user and application name, and check that corresponding permissions have been set up."
 
     # Various messages
     # 600-699
