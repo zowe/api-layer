@@ -22,6 +22,10 @@ public class EurekaClientConfiguration extends DefaultEurekaClientConfig {
         this.config = config;
     }
 
+    protected ApiMediationServiceConfig getConfig() {
+        return config;
+    }
+
     @Override
     public boolean shouldRegisterWithEureka() {
         return true;
