@@ -27,7 +27,6 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher.MatchResult;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.zowe.apiml.gateway.filters.security.BasicAuthFilter;
-import org.zowe.apiml.gateway.filters.security.CookieAuthFilter;
 import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
 import org.zowe.apiml.gateway.service.TokenProvider;
@@ -54,9 +53,6 @@ public class WebSecurityConfig {
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
-    @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
-    private boolean nonStrictVerifySslCertificatesOfServices;
-
     @Value("${apiml.internal-discovery.port:10011}")
     private int internalDiscoveryPort;
 
@@ -68,9 +64,9 @@ public class WebSecurityConfig {
     "/application/info",
     "/favicon.ico");
 
-    private ServerWebExchangeMatcher discoveryPortMatcher = exchange -> exchange.getRequest().getURI().getPort() == internalDiscoveryPort ? MatchResult.match() : MatchResult.notMatch();
-    private ServerWebExchangeMatcher isInUnauthenticatedPaths = ServerWebExchangeMatchers.pathMatchers(UNAUTHENTICATED_PATTERNS.toArray(new String[]{}));
-    private ServerWebExchangeMatcher notInUnauthenticatedPaths = new NegatedServerWebExchangeMatcher(isInUnauthenticatedPaths);
+    private final ServerWebExchangeMatcher discoveryPortMatcher = exchange -> exchange.getRequest().getURI().getPort() == internalDiscoveryPort ? MatchResult.match() : MatchResult.notMatch();
+    private final ServerWebExchangeMatcher isInUnauthenticatedPaths = ServerWebExchangeMatchers.pathMatchers(UNAUTHENTICATED_PATTERNS.toArray(new String[]{}));
+    private final ServerWebExchangeMatcher notInUnauthenticatedPaths = new NegatedServerWebExchangeMatcher(isInUnauthenticatedPaths);
 
     @Bean
     public SecurityWebFilterChain errorFilterChain(ServerHttpSecurity http) {
@@ -164,8 +160,6 @@ public class WebSecurityConfig {
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new TokenAuthFilter(tokenProvider, authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION)
-            .addFilterAfter(new CookieAuthFilter(authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
-            .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.UNAUTHORIZED)))
             .build();
     }
 
