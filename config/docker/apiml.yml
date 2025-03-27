@@ -21,8 +21,6 @@ eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
         registryFetchIntervalSeconds: 1
----
-spring.config.activate.on-profile: https
 
 server:
     address: ${apiml.service.hostname}
