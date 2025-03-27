@@ -85,7 +85,7 @@ public class WebSecurityConfig {
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
                 ServerWebExchangeMatchers.pathMatchers("/eureka/**"),
-                exchange -> exchange.getRequest().getURI().getPath().startsWith("/eureka/") ? MatchResult.match() : MatchResult.notMatch(),
+                exchange -> exchange.getRequest().getURI().getPath().startsWith("/eureka/") ? MatchResult.match() : MatchResult.notMatch(), // Prevents matching /eureka (mapping for homepage in modulith)
                 notInUnauthenticatedPaths
             ))
             .authorizeExchange(authorizeExchangeSpec ->
@@ -104,6 +104,25 @@ public class WebSecurityConfig {
                 );
         }
 
+        return http.build();
+    }
+
+    @Bean
+    public SecurityWebFilterChain basicAuthOrTokenOrCertFilterChain(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
+        http
+            .securityMatcher(new AndServerWebExchangeMatcher(
+                discoveryPortMatcher,
+                ServerWebExchangeMatchers.pathMatchers("/discovery/**"),
+                notInUnauthenticatedPaths
+            ))
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .addFilterAfter(new TokenAuthFilter(tokenProvider, authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION);
+
+        if (verifySslCertificatesOfServices) {
+            return x509SecurityConfig(http).build();
+        }
         return http.build();
     }
 

@@ -8,32 +8,46 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.discovery.staticdef;
+package org.zowe.apiml;
 
 import com.netflix.appinfo.InstanceInfo;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.zowe.apiml.discovery.staticdef.StaticRegistrationResult;
+import org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+
+
 @RestController
-@RequestMapping("/discovery/api/v1/staticApi")
 @RequiredArgsConstructor
-@ConditionalOnMissingBean(name = "modulithConfig")
-public class StaticApiRestController {
+@RequestMapping("/discovery/api/v1/staticApi")
+@DependsOn("modulithConfig")
+@Slf4j
+public class StaticDefinitionsRefreshRestController {
+
     private final StaticServicesRegistrationService registrationService;
 
     @GetMapping(produces = "application/json")
-    public List<InstanceInfo> list() {
-        return registrationService.getStaticInstances();
+    public Mono<ResponseEntity<List<InstanceInfo>>> list() {
+        return Mono.just(
+            ResponseEntity.ok()
+                .body(registrationService.getStaticInstances()));
     }
 
     @PostMapping(produces = "application/json")
-    public StaticRegistrationResult reload() {
-        return registrationService.reloadServices();
+    public Mono<ResponseEntity<StaticRegistrationResult>> reload() {
+        return Mono.just(
+            ResponseEntity.ok()
+                .body(registrationService.reloadServices()));
     }
+
 }
