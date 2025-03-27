@@ -36,7 +36,7 @@ public class TokenAuthFilter implements WebFilter {
     public static final String HEADER_PREFIX = "Bearer ";
     private final TokenProvider tokenProvider;
     private final AuthConfigurationProperties authConfigurationProperties;
-
+    private final AuthExceptionHandlerReactive authExceptionHandlerReactive;
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         var token = resolveToken(exchange.getRequest()).filter(StringUtils::isNotBlank);
@@ -48,7 +48,8 @@ public class TokenAuthFilter implements WebFilter {
                     return chain.filter(exchange)
                         .contextWrite(context -> ReactiveSecurityContextHolder.withAuthentication(authentication));
                 }
-                return chain.filter(exchange);
+                return authExceptionHandlerReactive.handleTokenNotValid(exchange);
+
             })
         ).orElseGet(() -> chain.filter(exchange));
     }
