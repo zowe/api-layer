@@ -49,6 +49,13 @@ messages:
       reason: "Unable to generate PassTicket."
       action: "Verify that the secured signon (PassTicket) function and application ID is configured properly by referring to Using PassTickets in the guide for your security provider"
 
+    - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.INVALID_REQUEST_AUTHENTICATION
+      number: ZWEAS500
+      type: ERROR
+      text: "The generation of the PassTicket failed. Verify that the user and the application name are valid, and check that corresponding permissions have been set up"
+      reason: "Unable to generate PassTicket."
+      action: "Supply a valid user and application name, and check that corresponding permissions have been set up."
+
     - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.TOKEN_NOT_PROVIDED
       number: ZWEAS401
       type: ERROR

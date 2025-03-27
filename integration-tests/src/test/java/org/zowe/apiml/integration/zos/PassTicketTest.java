@@ -33,6 +33,7 @@ import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
@@ -201,7 +202,7 @@ class PassTicketTest implements TestWithStartedInstances {
                     .when()
                     .post(url)
                     .then()
-                    .statusCode(is(SC_BAD_REQUEST))
+                    .statusCode(is(SC_INTERNAL_SERVER_ERROR))
                     .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", containsString(expectedMessage));
 
             }

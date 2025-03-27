@@ -36,6 +36,7 @@ import static io.restassured.http.ContentType.TEXT;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
@@ -203,7 +204,7 @@ class PassTicketTest implements TestWithStartedInstances {
             .when()
                 .post(ZAAS_TICKET_URI)
             .then()
-                .statusCode(is(SC_BAD_REQUEST))
+                .statusCode(is(SC_INTERNAL_SERVER_ERROR))
                 .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", containsString(expectedMessage));
             //@formatter:on
         }
