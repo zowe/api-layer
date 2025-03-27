@@ -25,7 +25,7 @@ public enum ZaasClientErrorCodes {
         "and application ID is configured properly by referring to  Using PassTickets in the guide for your security provider", 400),
     TOKEN_NOT_PROVIDED("ZWEAS401E", "Token is not provided", 401),
     SERVICE_UNAVAILABLE("ZWEAS404E", "Gateway service is unavailable", 404),
-    INVALID_REQUEST_AUTHENTICATION("ZWEAS500E", "The generation of the PassTicket failed. Verify that the user and the application name are valid, and check that corresponding permissions have been set up.", 500),
+    INVALID_REQUEST_AUTHENTICATION("ZWEAS418E", "The generation of the PassTicket failed. Verify that the user and the application name are valid, and check that corresponding permissions have been set up.", 500),
     EXPIRED_PASSWORD("ZWEAT412E", "The specified password is expired", 401),
     APPLICATION_NAME_NOT_FOUND("ZWEAS417E", "The application name wasn't found", 404);
 
