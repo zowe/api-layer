@@ -78,7 +78,7 @@ class PassTicketServiceImpl implements PassTicketService {
             } else if (statusCode == 400) {
                 throw new ZaasClientException(ZaasClientErrorCodes.BAD_REQUEST, obtainedMessage);
             } else if (statusCode == 500) {
-                throw new ZaasClientException(ZaasClientErrorCodes.INVALID_REQUEST_AUTHENTICATION, obtainedMessage);
+                throw new ZaasClientException(ZaasClientErrorCodes.INTERNAL_SERVER_ERROR, obtainedMessage);
             } else {
                 throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, obtainedMessage);
             }
