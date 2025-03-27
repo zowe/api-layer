@@ -7,6 +7,7 @@
     <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter" />
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
+            <charset>${CONSOLE_LOG_CHARSET:-${logging.charset.console:-${file.encoding:-UTF-8}}}</charset>
             <pattern>%cyan(%d{yyyy-MM-dd HH:mm:ss.SSS,UTC}) %gray(&lt;${logbackService:-${logbackServiceName}}:%thread:${PID:- }&gt;){magenta} %X{userid:-} %highlight(%-5level) %magenta(\(%logger{15}\)){cyan} %msg%n</pattern>
         </encoder>
     </appender>
