@@ -16,3 +16,9 @@ messages:
 
     # Service specific messages
     # 700-999
+    -   key: org.zowe.apiml.common.unauthorized
+        number: ZWEAO402
+        type: ERROR
+        text: "The request has not been applied because it lacks valid authentication credentials."
+        reason: "The accessed resource requires authentication. The request is missing valid authentication credentials or the token expired."
+        action: "Review the product documentation for more details about acceptable authentication. Verify that your credentials are valid and contact security administrator to obtain valid credentials."

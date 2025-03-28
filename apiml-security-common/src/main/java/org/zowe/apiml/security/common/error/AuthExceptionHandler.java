@@ -122,7 +122,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
 
     private void handleTokenNotValid(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
-        String error = this.messageService.createMessage("org.zowe.apiml.zaas.security.invalidToken").mapToLogMessage();
+        String error = this.messageService.createMessage("org.zowe.apiml.common.unauthorized").mapToLogMessage();
         response.addHeader(ApimlConstants.AUTH_FAIL_HEADER, error);
         writeErrorResponse(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, request, response);
     }
