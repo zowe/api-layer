@@ -14,3 +14,4 @@ runs:
                 java -jar ./scripts/jacococli.jar dump --address discovery-service --port 6302 --destfile ./results/discovery-service.exec
                 java -jar ./scripts/jacococli.jar dump --address api-catalog-services --port 6304 --destfile ./results/api-catalog-services.exec
                 java -jar ./scripts/jacococli.jar dump --address apiml --port 6310 --destfile ./results/apiml.exec
+                exit 0

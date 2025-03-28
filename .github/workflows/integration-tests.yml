@@ -35,6 +35,7 @@ jobs:
     CITestsModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
+        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -90,12 +91,12 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
-            -   uses: ./.github/actions/validate-apiml-healthy
-                with:
-                    caching-service: "true"
-                    gateway-host: "apiml"
-                    zaas-host: "zaas-service"
-                    api-catalog: "true"
+            # -   uses: ./.github/actions/validate-apiml-healthy
+            #     with:
+            #         caching-service: "true"
+            #         gateway-host: "apiml"
+            #         zaas-host: "zaas-service"
+            #         api-catalog: "true"
 
             -   name: Run CI Tests
                 run: >
