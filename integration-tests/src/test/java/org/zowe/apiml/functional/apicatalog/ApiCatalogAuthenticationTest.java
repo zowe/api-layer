@@ -110,6 +110,7 @@ class ApiCatalogAuthenticationTest {
     class WhenAccessingCatalog {
         @Nested
         class ReturnOk {
+
             @ParameterizedTest(name = "givenValidBasicAuthentication {index} {0} ")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
             void givenValidBasicAuthentication(String endpoint, Request request) {
@@ -302,26 +303,29 @@ class ApiCatalogAuthenticationTest {
                 .then()
                 .statusCode(HttpStatus.UNAUTHORIZED.value());
         }
-    }
-        @Test
-        @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication enabled.")
-        void thenDoNotAuthenticate() {
-            given()
-                .when()
-                .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
-                .then()
-                .statusCode(is(SC_UNAUTHORIZED));
 
     }
 
-        @Test
-        @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication provided.")
-        void thenAuthenticateTheRequest() {
-            given()
-                .auth().basic(USERNAME, PASSWORD)
-                .when()
-                .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
-                .then()
-                .statusCode(is(SC_OK));
+    @Test
+    @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication enabled.")
+    void thenDoNotAuthenticate() {
+        given()
+        .when()
+            .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
+        .then()
+            .statusCode(is(SC_UNAUTHORIZED));
+
     }
+
+    @Test
+    @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication provided.")
+    void thenAuthenticateTheRequest() {
+        given()
+            .auth().basic(USERNAME, PASSWORD)
+        .when()
+            .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
+        .then()
+            .statusCode(is(SC_OK));
+    }
+
 }

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.discovery.staticdef.StaticRegistrationResult;
 import org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 
@@ -45,8 +46,16 @@ public class StaticDefinitionsRefreshRestController {
 
     @PostMapping(produces = "application/json")
     public Mono<ResponseEntity<StaticRegistrationResult>> reload() {
-        return Mono.fromCallable(() -> registrationService.reloadServices())
-            .map(result -> ResponseEntity.ok().body(result));
+        return Mono.just("ignore")
+            .publishOn(Schedulers.boundedElastic())
+            .map(x -> {
+                return registrationService.reloadServices();
+            })
+            .map(result -> {
+                log.error("returning {}", result);
+                return ResponseEntity.ok().body(result);
+            });
+
     }
 
 }
