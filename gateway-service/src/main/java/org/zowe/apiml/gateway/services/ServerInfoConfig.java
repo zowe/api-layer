@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.gateway.services;
 
-import com.netflix.discovery.EurekaClient;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
@@ -26,10 +26,12 @@ public class ServerInfoConfig {
     }
 
     @Bean
-    public ServicesInfoService servicesInfoService(EurekaClient eurekaClient,
-        EurekaMetadataParser eurekaMetadataParser, GatewayClient gatewayClient
+    public ServicesInfoService servicesInfoService(
+        DiscoveryClient discoveryClient,
+        EurekaMetadataParser eurekaMetadataParser,
+        GatewayClient gatewayClient
     ) {
-        return new ServicesInfoService(eurekaClient, eurekaMetadataParser, gatewayClient, new TransformService(gatewayClient));
+        return new ServicesInfoService(discoveryClient, eurekaMetadataParser, gatewayClient, new TransformService(gatewayClient));
     }
 
 }
