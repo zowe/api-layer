@@ -14,7 +14,6 @@ spring:
         ansi:
             enabled: always
 
-
 server:
     address: ${apiml.service.hostname}
     max-http-header-size: 40000

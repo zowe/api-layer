@@ -8,7 +8,7 @@ def setJib(componentName, javaAgentPort, debugPort) {
     jib.to.image = imageName
     jib.to.auth.username = project.hasProperty("zowe.docker.username") ? project.getProperty("zowe.docker.username") : ""
     jib.to.auth.password = project.hasProperty("zowe.docker.password") ? project.getProperty("zowe.docker.password") : ""
-    jib.container.ports = ['6300-6310','5120-5140','10010-10020']
+    jib.container.ports = ['6300-6310','5120-5140','10010-10025']
     jib.container.args = ['--spring.config.additional-location=file:/docker/' + componentName + '.yml']
     jib.container.jvmFlags = javaAgentOptions + addOpensOptions
     jib.extraDirectories.paths = ['../config', '../keystore', '../scripts']
