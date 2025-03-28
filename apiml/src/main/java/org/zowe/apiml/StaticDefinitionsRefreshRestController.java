@@ -48,13 +48,8 @@ public class StaticDefinitionsRefreshRestController {
     public Mono<ResponseEntity<StaticRegistrationResult>> reload() {
         return Mono.just("ignore")
             .publishOn(Schedulers.boundedElastic())
-            .map(x -> {
-                return registrationService.reloadServices();
-            })
-            .map(result -> {
-                log.error("returning {}", result);
-                return ResponseEntity.ok().body(result);
-            });
+            .map(x -> registrationService.reloadServices())
+            .map(result -> ResponseEntity.ok().body(result));
 
     }
 

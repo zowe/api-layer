@@ -91,7 +91,7 @@ public class StaticServicesRegistrationService {
         var registry = getRegistry();
         StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(staticApiDefinitionsDirectories);
 
-        // at first register service additional data, becase static could be also updated
+        // at first register service additional data, because static could be also updated
         final Map<String, ServiceOverrideData> additionalServiceMetadata = result.getAdditionalServiceMetadata();
         metadataDefaultsService.setAdditionalServiceMetadata(additionalServiceMetadata);
 
