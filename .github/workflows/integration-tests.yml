@@ -98,6 +98,10 @@ jobs:
             #         zaas-host: "zaas-service"
             #         api-catalog: "true"
 
+            -   name: Simple wait
+                run: >
+                    sleep 60s
+
             -   name: Run CI Tests
                 run: >
                     ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runContainerTests --info
