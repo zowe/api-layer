@@ -61,9 +61,6 @@ class TokenAuthFilterTest {
     @Mock
     private AuthConfigurationProperties authConfigurationProperties;
 
-    @Mock
-    private AuthExceptionHandlerReactive authExceptionHandlerReactive;
-
     private TokenAuthFilter tokenAuthFilter;
 
     @Nested
@@ -73,7 +70,7 @@ class TokenAuthFilterTest {
         void setUp() {
             when(serverWebExchange.getRequest()).thenReturn(httpRequest);
 
-            tokenAuthFilter = new TokenAuthFilter(tokenProvider, authConfigurationProperties, authExceptionHandlerReactive);
+            tokenAuthFilter = new TokenAuthFilter(tokenProvider, authConfigurationProperties);
         }
 
         @Nested
