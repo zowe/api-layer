@@ -91,12 +91,16 @@ class ApiCatalogAuthenticationTest {
 
     @BeforeAll
     static void setUp() throws Exception {
+        var catalogConfig = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration();
         RestAssured.useRelaxedHTTPSValidation();
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
 
         List<DiscoveryUtils.InstanceInfo> apiCatalogInstances = DiscoveryUtils.getInstances(CATALOG_SERVICE_ID);
         if (StringUtils.isEmpty(apiCatalogServiceUrl)) {
-            apiCatalogServiceUrl = apiCatalogInstances.stream().findFirst().map(i -> String.format("%s", i.getUrl()))
+            apiCatalogServiceUrl = apiCatalogInstances.stream()
+                .filter(catalogInstance -> catalogInstance.getPort() == catalogConfig.getPort())
+                .findFirst()
+                .map(i -> String.format("%s", i.getUrl()))
                 .orElseThrow(() -> new RuntimeException("Cannot determine API Catalog service from Discovery"));
         }
     }
