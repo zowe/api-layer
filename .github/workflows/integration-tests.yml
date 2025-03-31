@@ -96,16 +96,9 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
-            # -   uses: ./.github/actions/validate-apiml-healthy
-            #     with:
-            #         caching-service: "true"
-            #         gateway-host: "apiml"
-            #         zaas-host: "zaas-service"
-            #         api-catalog: "true"
-
-            -   name: Simple wait
+            -   name: Run startup check
                 run: >
-                    sleep 60s
+                    ./gradlew runStartUpCheck --info --scan -Ddiscoverableclient.instances=1
 
             -   name: Run CI Tests
                 run: >
