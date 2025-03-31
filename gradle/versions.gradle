@@ -15,7 +15,7 @@ dependencyResolutionManagement {
             version('springRetry', '2.0.11')
 
             version('glassfishHk2', '3.1.1')
-            version('zosUtils', '2.0.5')
+            version('zosUtils', '2.0.6')
             version('aws', '1.12.780')
             version('awaitility', '4.2.2')
             version('bouncyCastle', '1.80')

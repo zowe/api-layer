@@ -33,25 +33,14 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
-import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.APPLICATION_NAME_NOT_FOUND;
-import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.EMPTY_NULL_AUTHORIZATION_HEADER;
-import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.EMPTY_NULL_USERNAME_PASSWORD;
-import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.SERVICE_UNAVAILABLE;
-import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.TOKEN_NOT_PROVIDED;
+import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.*;
 import static org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes.IO_CONFIGURATION_ISSUE;
 
 @ExtendWith(MockitoExtension.class)
@@ -68,6 +57,7 @@ class ZaasClientTest {
     private static final String VALID_USERNAME = "username";
     private static final char[] VALID_NEW_PASSWORD = "username".toCharArray();
     private static final String VALID_APPLICATION_ID = "APPLID";
+    private static final String INVALID_APPLICATION_ID = "XBADAPPL";
     private static final String VALID_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 
     private static final String[] SSL_SYSTEM_ENVIRONMENT_VALUES = {
@@ -159,6 +149,13 @@ class ZaasClientTest {
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> underTest.passTicket(token, applicationId));
 
         assertThatExceptionContainValidCode(exception, errorCode);
+    }
+
+    @Test
+    void givenValidTokenInvalidApplId_whenPassTicketApiIsCalled_thenRaisedClientExceptionIsRethrown() throws Exception {
+        when(passTickets.passTicket(anyString(), anyString())).thenThrow(new ZaasClientException(INTERNAL_SERVER_ERROR));
+        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> underTest.passTicket(VALID_TOKEN, INVALID_APPLICATION_ID));
+        assertTrue(exception.getMessage().contains("'ZWEAS504E', message='Internal server error while generating PassTicket.'"));
     }
 
     @Test
