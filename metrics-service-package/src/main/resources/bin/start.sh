@@ -85,6 +85,13 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
+if [ "${ZWE_components_metrics_service_enabled:-false}" = "false" ]; then
+  if [ -n "${ZWE_configs_spring_profiles_active:-}" ]; then
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-},"
+  fi
+  ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-},nohystrix"
+fi
+
 ATTLS_ENABLED="false"
 if [ -n "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
     ATTLS_ENABLED="true"

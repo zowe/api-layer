@@ -382,3 +382,16 @@ logging:
     level:
         root: INFO
         org.zowe.apiml.gateway.security.service.zosmf: DEBUG
+
+---
+spring:
+    profiles: nohystrix
+
+management:
+    metrics.binders.hystrix.enabled: false
+    endpoint.hystrix.stream.enabled: false
+hystrix:
+    shareSecurityContext: false
+    metrics.enabled:
+spring.cloud.circuitbreaker.hystrix.enabled: false
+
