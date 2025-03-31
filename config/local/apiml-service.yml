@@ -18,3 +18,16 @@ server:
         # org.springframework.boot.autoconfigure.web: TRACE
         # reactor.netty: TRACE
         # redisratelimiter: TRACE
+
+apiml:
+    gateway:
+        servicesToLimitRequestRate: discoverableclient
+        cookieNameForRateLimiter: apimlAuthenticationToken
+    security:
+        auth:
+            jwt:
+                customAuthHeader: customJwtHeader
+            passticket:
+                customUserHeader: customUserHeader
+                customAuthHeader: customPassticketHeader
+
