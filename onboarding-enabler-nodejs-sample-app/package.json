@@ -19,10 +19,10 @@
         "express": "4.21.2"
     },
     "overrides": {
-        "tough-cookie": "5.1.1"
+        "tough-cookie": "5.1.2"
     },
     "engines": {
         "npm": "=10.9.2",
-        "node": "=20.18.3"
+        "node": "=20.19.0"
     }
 }
