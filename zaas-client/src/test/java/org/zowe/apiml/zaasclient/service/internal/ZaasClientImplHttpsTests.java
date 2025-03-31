@@ -362,7 +362,7 @@ class ZaasClientImplHttpsTests {
         when(response.getEntity()).thenReturn(httpsEntity);
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.logout("invalid"));
 
-        assertTrue(exception.getMessage().contains("'ZWEAS130E', message='Invalid token provided'"));
+        assertTrue(exception.getMessage().contains("'ZWEAO402E'"));
     }
 
     @Test

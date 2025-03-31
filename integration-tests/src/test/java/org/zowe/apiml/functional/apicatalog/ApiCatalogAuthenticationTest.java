@@ -196,7 +196,7 @@ class ApiCatalogAuthenticationTest {
             @ParameterizedTest(name = "givenInvalidBearerAuthentication {index} {0}")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
             void givenInvalidBearerAuthentication(String endpoint, Request request) throws URISyntaxException {
-                String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID_PATH + new URIBuilder().setPath(endpoint).build() + "'";
+                String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";
 
                 request.execute(
                         given()
@@ -206,14 +206,14 @@ class ApiCatalogAuthenticationTest {
                     )
                     .then()
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage)
                     ).statusCode(is(SC_UNAUTHORIZED));
             }
 
             @ParameterizedTest(name = "givenInvalidTokenInCookie {index} {0}")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
-            void givenInvalidTokenInCookie(String endpoint, Request request) throws URISyntaxException {
-                String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID_PATH + new URIBuilder().setPath(endpoint).build() + "'";
+            void givenInvalidTokenInCookie(String endpoint, Request request)  {
+                String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";
                 String invalidToken = "nonsense";
 
                 request.execute(
@@ -225,7 +225,7 @@ class ApiCatalogAuthenticationTest {
                     .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage)
                     );
             }
         }

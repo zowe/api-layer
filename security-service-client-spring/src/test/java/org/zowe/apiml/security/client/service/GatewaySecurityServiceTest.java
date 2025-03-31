@@ -140,10 +140,10 @@ class GatewaySecurityServiceTest {
 
             @Test
             void givenGatewayUnauthorized_thenThrowException() {
-                String responseBody = MESSAGE_KEY_STRING + "org.zowe.apiml.security.query.invalidToken\"";
+                String responseBody = MESSAGE_KEY_STRING + "org.zowe.apiml.common.unauthorized\"";
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_UNAUTHORIZED, responseBody);
                 Exception exception = assertThrows(TokenNotValidException.class, () -> securityService.query("token"));
-                assertEquals("Token is not valid.", exception.getMessage());
+                assertEquals("The request has not been applied because it lacks valid authentication credentials.", exception.getMessage());
             }
         }
 

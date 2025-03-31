@@ -19,7 +19,7 @@ public enum ZaasClientErrorCodes {
     INVALID_AUTHENTICATION("ZWEAS120E", "Invalid username or password", 401),
     EMPTY_NULL_USERNAME_PASSWORD("ZWEAS121E", "Empty or null username or password values provided", 400),
     EMPTY_NULL_AUTHORIZATION_HEADER("ZWEAS122E", "Empty or null authorization header provided", 400),
-    INVALID_JWT_TOKEN("ZWEAS130E", "Invalid token provided", 400),
+    INVALID_JWT_TOKEN("ZWEAO402E", "The request has not been applied because it lacks valid authentication credentials.", 400),
     GENERIC_EXCEPTION("ZWEAS170E", "An exception occurred while trying to get the token", 500),
     BAD_REQUEST("ZWEAS400E", "Unable to generate PassTicket. Verify that the secured signon (PassTicket) function " +
         "and application ID is configured properly by referring to  Using PassTickets in the guide for your security provider", 400),

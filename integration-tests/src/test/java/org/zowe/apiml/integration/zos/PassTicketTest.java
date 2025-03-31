@@ -137,7 +137,7 @@ class PassTicketTest implements TestWithStartedInstances {
             @Test
             void givenInvalidTokenInCookie() {
                 String jwt = "invalidToken";
-                String expectedMessage = "Token is not valid for URL '" + ZAAS_PASSTICKET_PATH + "'";
+                String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";
 
                 given()
                     .contentType(JSON)
@@ -147,13 +147,13 @@ class PassTicketTest implements TestWithStartedInstances {
                     .post(url)
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED))
-                    .body("messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage));
+                    .body("messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage));
             }
 
             @Test
             void givenInvalidTokenInHeader() {
                 String jwt = "invalidToken";
-                String expectedMessage = "Token is not valid for URL '" + ZAAS_PASSTICKET_PATH + "'";
+                String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";
 
                 given()
                     .contentType(JSON)
@@ -163,7 +163,7 @@ class PassTicketTest implements TestWithStartedInstances {
                     .post(url)
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED))
-                    .body("messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage));
+                    .body("messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage));
             }
         }
 
