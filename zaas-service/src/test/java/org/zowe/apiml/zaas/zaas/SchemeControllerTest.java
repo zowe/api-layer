@@ -272,8 +272,8 @@ class SchemeControllerTest {
                         .requestAttr(AUTH_SOURCE_ATTR, authSource))
                     .andExpect(status().is(SC_UNAUTHORIZED))
                     .andExpect(jsonPath("$.messages", hasSize(1)))
-                    .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAG102E"))
-                    .andExpect(jsonPath("$.messages[0].messageContent", is("Token is not valid")));
+                    .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAO402E"))
+                    .andExpect(jsonPath("$.messages[0].messageContent", is("The request has not been applied because it lacks valid authentication credentials.")));
             }
 
             @Test
@@ -323,8 +323,8 @@ class SchemeControllerTest {
                         .requestAttr(AUTH_SOURCE_ATTR, authSource))
                     .andExpect(status().is(SC_UNAUTHORIZED))
                     .andExpect(jsonPath("$.messages", hasSize(1)))
-                    .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAG102E"))
-                    .andExpect(jsonPath("$.messages[0].messageContent", is("Token is not valid")));
+                    .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAO402E"))
+                    .andExpect(jsonPath("$.messages[0].messageContent", is("The request has not been applied because it lacks valid authentication credentials.")));
             }
 
             @Test
