@@ -47,6 +47,7 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @GeneralAuthenticationTest
 class ApiCatalogAuthenticationTest {
+
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
 
@@ -297,12 +298,17 @@ class ApiCatalogAuthenticationTest {
 
         @Test
         void givenOnlyValidCertificate_whenAccessNotCertificateAuthedRoute_thenReturnUnauthorized() {
-            given()
-                .config(SslContext.clientCertApiml)
+            try {
+                given()
+                    .config(SslContext.clientCertApiml)
                 .when()
-                .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_ACTUATOR_ENDPOINT)
+                    .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_ACTUATOR_ENDPOINT)
                 .then()
-                .statusCode(HttpStatus.UNAUTHORIZED.value());
+                    .statusCode(HttpStatus.UNAUTHORIZED.value());
+            catch (Exception e) {
+                fail("Failure to GET " + apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_ACTUATOR_ENDPOINT);
+            }
+
         }
 
     }
