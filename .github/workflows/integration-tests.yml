@@ -98,7 +98,7 @@ jobs:
 
             -   name: Run startup check
                 run: >
-                    ./gradlew runStartUpCheck --info --scan -Ddiscoverableclient.instances=1
+                    ./gradlew runStartUpCheck --info --scan -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith
 
             -   name: Run CI Tests
                 run: >
