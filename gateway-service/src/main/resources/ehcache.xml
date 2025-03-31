@@ -69,7 +69,7 @@
     </cache>
 
     <cache alias="zosmfJwtEndpoint">
-        <key-type copier="org.ehcache.impl.copy.SerializingCopier">org.springframework.http.HttpHeaders</key-type>
+        <key-type copier="org.ehcache.impl.copy.IdentityCopier">java.lang.String</key-type>
         <value-type copier="org.ehcache.impl.copy.IdentityCopier">java.lang.Boolean</value-type>
         <expiry>
             <ttl unit="hours">1</ttl>

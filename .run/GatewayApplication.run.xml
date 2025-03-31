@@ -1,5 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="GatewayApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <option name="ACTIVE_PROFILES" value="debug" />
     <additionalParameters>
       <param>
         <option name="enabled" value="true" />
@@ -11,6 +12,7 @@
     <module name="api-layer.gateway-service.main" />
     <option name="SHORTEN_COMMAND_LINE" value="MANIFEST" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.gateway.GatewayApplication" />
+    <option name="VM_PARAMETERS" value="-Xms128m -Xmx128m" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="org.zowe.apiml.gateway.*" />

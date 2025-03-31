@@ -418,7 +418,7 @@ public class ZosmfService extends AbstractZosmfService {
      *
      * @return true if endpoint resolves, otherwise false
      */
-    @Cacheable(value = "zosmfJwtEndpoint")
+    @Cacheable(value = "zosmfJwtEndpoint", key = "'exist'")
     public boolean jwtEndpointExists(HttpHeaders headers) {
         String url = "";
         try {
