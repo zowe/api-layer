@@ -1,1 +1,17 @@
 spring.profiles.active: debug
+
+apiml:
+    gateway:
+        servicesToLimitRequestRate: discoverableclient
+        cookieNameForRateLimiter: apimlAuthenticationToken
+    security:
+        auth:
+            jwt:
+                customAuthHeader: customJwtHeader
+            passticket:
+                customUserHeader: customUserHeader
+                customAuthHeader: customPassticketHeader
+    server:
+        max-http-request-header-size: 16348
+        websocket:
+            requestBufferSize: 16348
