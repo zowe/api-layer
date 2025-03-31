@@ -42,6 +42,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @GeneralAuthenticationTest
@@ -309,23 +310,31 @@ class ApiCatalogAuthenticationTest {
     @Test
     @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication enabled.")
     void thenDoNotAuthenticate() {
-        given()
-        .when()
-            .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
-        .then()
-            .statusCode(is(SC_UNAUTHORIZED));
-
+        try {
+            given()
+            .when()
+                .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
+            .then()
+                .statusCode(is(SC_UNAUTHORIZED));
+        } catch (Exception e) {
+            fail("Failure to GET " + apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT, e);
+        }
     }
 
     @Test
     @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication provided.")
     void thenAuthenticateTheRequest() {
-        given()
-            .auth().basic(USERNAME, PASSWORD)
-        .when()
-            .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
-        .then()
-            .statusCode(is(SC_OK));
+        try {
+            given()
+                .auth().basic(USERNAME, PASSWORD)
+            .when()
+                .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
+            .then()
+                .statusCode(is(SC_OK));
+        } catch (Exception e) {
+            fail("Failure to GET " + apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT, e);
+        }
+
     }
 
 }
