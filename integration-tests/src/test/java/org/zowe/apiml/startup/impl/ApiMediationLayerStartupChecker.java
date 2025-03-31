@@ -67,7 +67,7 @@ public class ApiMediationLayerStartupChecker {
         try {
             final HttpResponse response = HttpClientUtils.client().execute(request);
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                log.warn("Unexpected HTTP status code: {} for URI: {}", response.getStatusLine().getStatusCode(), request.getURI().toString());
+                log.warn("Unexpected HTTP status code: {} for URI: {}. Message: {}", response.getStatusLine().getStatusCode(), request.getURI().toString(), response.getEntity());
                 return null;
             }
             final String jsonResponse = EntityUtils.toString(response.getEntity());
