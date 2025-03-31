@@ -305,7 +305,7 @@ class ApiCatalogAuthenticationTest {
                     .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_ACTUATOR_ENDPOINT)
                 .then()
                     .statusCode(HttpStatus.UNAUTHORIZED.value());
-            catch (Exception e) {
+            } catch (Exception e) {
                 fail("Failure to GET " + apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_ACTUATOR_ENDPOINT);
             }
 
