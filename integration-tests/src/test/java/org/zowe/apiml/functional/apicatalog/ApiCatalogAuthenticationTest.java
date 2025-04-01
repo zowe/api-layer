@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.functional.apicatalog;
 
+import groovy.util.logging.Slf4j;
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
 import io.restassured.response.Validatable;
@@ -26,6 +27,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -43,9 +45,11 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @GeneralAuthenticationTest
+@Slf4j
 class ApiCatalogAuthenticationTest {
 
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
@@ -248,6 +252,25 @@ class ApiCatalogAuthenticationTest {
                 @ParameterizedTest(name = "givenValidCertificate {index} {0} ")
                 @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTestWithCertificate")
                 void givenValidCertificate(String endpoint, Request request) {
+                    // Show eureka/apps at this stage?
+                    given()
+                        .config(SslContext.clientCertUser)
+                    .when()
+                        .get("https://apiml:10011/eureka/apps")
+                    .then()
+                        .log().all()
+                        .statusCode(200);
+
+                    String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
+
+                    given()
+                        .cookie(COOKIE_NAME, token, token)
+                    .when()
+                        .get("https://apiml:10010/apicatalog/api/v1/#/service/discoverableclient")
+                    .then()
+                        .log().all()
+                        .statusCode(200);
+
                     request.execute(
                             given()
                                 .config(SslContext.clientCertUser)
@@ -255,6 +278,7 @@ class ApiCatalogAuthenticationTest {
                             endpoint
                         )
                         .then()
+                        .log().all()
                         .statusCode(HttpStatus.OK.value());
                 }
 
