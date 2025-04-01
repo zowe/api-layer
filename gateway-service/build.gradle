@@ -22,11 +22,12 @@ apply from: "$projectDir/gradle/lite.gradle"
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
-def javaAgentPort = 6300
-def debugPort = 5130
+def applicationPort = '10010'
+def javaAgentPort = '6300'
+def debugPort = '5130'
 def componentName = "gateway-service"
 
-setJib(componentName, javaAgentPort, debugPort)
+setJib(componentName, javaAgentPort, debugPort, applicationPort)
 jib.container.mainClass = 'org.zowe.apiml.gateway.GatewayServiceApplication'
 
 ext['netty.version'] = libs.versions.netty.get()

@@ -22,11 +22,12 @@ apply from: "$projectDir/gradle/lite.gradle"
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
-def javaAgentPort = 6302
-def debugPort = 5121
+def applicationPort = '10011'
+def javaAgentPort = '6302'
+def debugPort = '5121'
 def componentName = "discovery-service"
 
-setJib(componentName, javaAgentPort, debugPort)
+setJib(componentName, javaAgentPort, debugPort, applicationPort)
 jib.container.args.add('--spring.profiles.active=https')
 
 
