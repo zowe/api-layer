@@ -41,7 +41,7 @@ dependencyResolutionManagement {
             version('ehCache', '3.10.8')
             version('eureka', '1.10.18')
             version('findBugs', '3.0.2')
-            version('githubClassgraph', '4.8.172')
+            version('githubClassgraph', '4.8.179')
             version('gradleGitProperties', '2.3.1') // Used in classpath dependencies
             version('gradleNode', '3.6.0') // Used in classpath dependencies
             version('gson', '2.11.0')
@@ -126,7 +126,7 @@ dependencyResolutionManagement {
                 prefer '1.6.15'
             }
             version('swagger3Core', '2.2.29')
-            version('swagger3Parser', '2.1.25')
+            version('swagger3Parser', '2.1.26')
             version('swaggerCore', '1.6.15')
             version('swaggerInflector', '2.0.12')
             version('swaggerJaxrs2', '2.2.29')
@@ -152,7 +152,7 @@ dependencyResolutionManagement {
             // version 3.x contains breaking changes
             version('gradleRelease', '2.8.1')
             version('gradleLicencer', '0.6.1')
-            version('gradleJibPlugin', '3.4.4')
+            version('gradleJibPlugin', '3.4.5')
             version('taskTree', '2.1.1')
             version('reactorBom', '2023.0')
             version('gradleTestLogger', '4.0.0')
