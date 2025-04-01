@@ -109,6 +109,7 @@ jobs:
                         integration-tests/build/reports/**
                         results/**
                         integration-tests/build/test-results/runContainerModulithTests/binary/**
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
 
             -   uses: ./.github/actions/teardown
 
