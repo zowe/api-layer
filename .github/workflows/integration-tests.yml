@@ -107,6 +107,7 @@ jobs:
                     path: |
                         integration-tests/build/reports/**
                         results/**
+                        integration-tests/build/test-results/runContainerModulithTests/binary/**
 
             -   uses: ./.github/actions/teardown
 

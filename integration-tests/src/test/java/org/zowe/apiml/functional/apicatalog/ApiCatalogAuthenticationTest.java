@@ -127,6 +127,7 @@ class ApiCatalogAuthenticationTest {
                         endpoint
                     )
                     .then()
+                    .log().all()
                     .statusCode(is(SC_OK));
             }
 
@@ -155,6 +156,7 @@ class ApiCatalogAuthenticationTest {
                         endpoint
                     )
                     .then()
+                    .log().all()
                     .statusCode(is(SC_OK));
             }
         }
