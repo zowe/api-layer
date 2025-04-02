@@ -97,7 +97,7 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
             }
 
             UsernamePasswordAuthenticationToken authentication
-                = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), new String(loginRequest.getPassword()));
+                = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest);
 
             Authentication auth = null;
 
