@@ -107,6 +107,13 @@ messages:
       reason: "There was an invalid path to either trust store or keystore"
       action: "Ensure that both provided paths are resolved to valid trust store and valid key store"
 
+    - key: org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.INTERNAL_SERVER_ERROR
+      number: ZWEAS504
+      type: ERROR
+      text: "Internal server error while generating PassTicket: %s"
+      reason: "Unable to generate PassTicket."
+      action: "Supply a valid user and application name, and check that corresponding permissions have been set up."
+
     # Various messages
     # 600-699
 
