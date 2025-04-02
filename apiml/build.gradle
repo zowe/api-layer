@@ -17,8 +17,6 @@ normalization {
     }
 }
 
-group = 'org.zowe.apiml'
-
 apply plugin: 'org.springframework.boot'
 apply from: "$projectDir/gradle/lite.gradle"
 apply plugin: 'com.google.cloud.tools.jib'
@@ -129,12 +127,4 @@ publishing {
             artifact bootJar
         }
     }
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = libs.versions.gradle.get()
-}
-
-test {
-    useJUnitPlatform()
 }
