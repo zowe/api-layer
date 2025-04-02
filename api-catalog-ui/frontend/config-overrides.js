@@ -40,15 +40,15 @@ module.exports = {
             '^#apg-lite$': '<rootDir>/node_modules/apg-lite/lib/parser.js',
             '^#swagger-ui$': '<rootDir>/node_modules/swagger-ui-react/swagger-ui.js',
             '^#buffer':
-                '<rootDir>/node_modules/@swagger-api/apidom-reference/cjs/util/polyfills/buffer/standard-import.cjs',
+                '<rootDir>/node_modules/@swagger-api/apidom-reference/src/util/polyfills/buffer/standard-import.cjs',
             '@swagger-api/apidom-reference/configuration/empty':
-                '<rootDir>/node_modules/@swagger-api/apidom-reference/cjs/configuration/empty.cjs',
+                '<rootDir>/node_modules/@swagger-api/apidom-reference/src/configuration/empty.cjs',
             '@swagger-api/apidom-reference/parse/parsers/binary':
-                '<rootDir>/node_modules/@swagger-api/apidom-reference/cjs/parse/parsers/binary/index-node.cjs',
+                '<rootDir>/node_modules/@swagger-api/apidom-reference/src/parse/parsers/binary/index-node.cjs',
             '@swagger-api/apidom-reference/resolve/strategies/openapi-3-1':
-                '<rootDir>/node_modules/@swagger-api/apidom-reference/cjs/resolve/strategies/openapi-3-1/index.cjs',
+                '<rootDir>/node_modules/@swagger-api/apidom-reference/src/resolve/strategies/openapi-3-1/index.cjs',
             '@swagger-api/apidom-reference/dereference/strategies/openapi-3-1':
-                '<rootDir>/node_modules/@swagger-api/apidom-reference/cjs/dereference/strategies/openapi-3-1/index.cjs',
+                '<rootDir>/node_modules/@swagger-api/apidom-reference/src/dereference/strategies/openapi-3-1/index.cjs',
             'cheerio/lib/utils': '<rootDir>/node_modules/cheerio',
         };
         config.setupFiles = ['./jest.polyfills.js'];
