@@ -15,19 +15,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.classic.methods.HttpPost;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -62,7 +60,7 @@ public class StaticAPIService {
                     final HttpEntity responseEntity = response.getEntity();
                     String responseBody = "";
                     if (responseEntity != null) {
-                        responseBody = new BufferedReader(new InputStreamReader(responseEntity.getContent())).lines().collect(Collectors.joining("\n"));
+                        responseBody = EntityUtils.toString(responseEntity);
                     }
                     return new StaticAPIResponse(response.getCode(), responseBody);
                 });
@@ -99,7 +97,9 @@ public class StaticAPIService {
 
         List<String> discoveryServiceUrls = new ArrayList<>();
         for (String location : discoveryServiceLocations) {
-            discoveryServiceUrls.add(location.replace("/eureka", "") + REFRESH_ENDPOINT);
+            location = location.replace("/eureka", "");
+            location = location.endsWith("/") ? location : location + "/";
+            discoveryServiceUrls.add(location + REFRESH_ENDPOINT);
         }
         return discoveryServiceUrls;
     }
