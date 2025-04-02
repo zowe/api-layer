@@ -1625,4 +1625,12 @@ jobs:
                     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: failure()
+                with:
+                    name: SonarResults-${{ env.JOB_ID }}
+                    path: |
+                        build/reports/problems/problems-report.html
+
             -   uses: ./.github/actions/teardown
