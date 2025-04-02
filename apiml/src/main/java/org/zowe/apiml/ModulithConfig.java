@@ -144,7 +144,6 @@ public class ModulithConfig {
 
     @EventListener
     public void onApplicationEvent(EurekaRegistryAvailableEvent event) {
-        log.error("EurekaRegistry available");
         ApimlInstanceRegistry registry = getRegistry();
         instances.entrySet()
             .stream()

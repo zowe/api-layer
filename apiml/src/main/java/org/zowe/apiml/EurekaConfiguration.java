@@ -193,24 +193,11 @@ public class EurekaConfiguration implements WebMvcConfigurer {
         return Jersey3TransportClientFactories.getInstance();
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Bean
     @ConditionalOnMissingBean(EurekaServerHttpClientFactory.class)
     public Jersey3EurekaServerHttpClientFactory jersey3EurekaServerHttpClientFactory() {
         return new Jersey3EurekaServerHttpClientFactory();
     }
-
-//    @Bean
-//    @ConditionalOnMissingBean(AbstractDiscoveryClientOptionalArgs.class)
-//    public Jersey3DiscoveryClientOptionalArgs jersey3DiscoveryClientOptionalArgs(
-//        @Autowired(required = false) TlsProperties tlsProperties) throws GeneralSecurityException, IOException {
-//        Jersey3DiscoveryClientOptionalArgs optionalArgs = new Jersey3DiscoveryClientOptionalArgs();
-//        if (tlsProperties != null && tlsProperties.isEnabled()) {
-//            SSLContextFactory factory = new SSLContextFactory(tlsProperties);
-//            optionalArgs.setSSLContext(factory.createSSLContext());
-//        }
-//        return optionalArgs;
-//    }
 
     @Bean
     public PeerAwareInstanceRegistry peerAwareInstanceRegistry(ServerCodecs serverCodecs,
