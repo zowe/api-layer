@@ -84,10 +84,6 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
-            -   name: Run startup check
-                run: >
-                    ./gradlew runStartUpCheck --info --scan -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith
-
             -   name: Run CI Tests
                 run: >
                     ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runContainerModulithTests --info

@@ -122,10 +122,6 @@ class ServicesInfoServiceTest {
     void whenListingAllServices_thenReturnList() {
         String clientServiceId2 = "testclient2";
 
-        // List<Application> applications = Arrays.asList(
-        //         new Application(CLIENT_SERVICE_ID, Collections.singletonList(createBasicTestInstance())),
-        //         new Application(clientServiceId2)
-        // );
         when(discoveryClient.getServices())
             .thenReturn(List.of(CLIENT_SERVICE_ID, clientServiceId2));
 
