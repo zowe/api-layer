@@ -80,7 +80,7 @@ public class GatewayIndexService {
         log.debug("Fetching registered gateway instance services: {}", apimlIdKey);
 
         if (EurekaMetadataDefinition.RegistrationType.of(registration.getMetadata()).isPrimary()) {
-            log.debug("Local instance of Gateway, makes a local call");
+            log.debug("Local instance of Gateway, perform a local call");
             return Mono.just(servicesInfoService.getServicesInfo(apimlIdKey));
         }
 
