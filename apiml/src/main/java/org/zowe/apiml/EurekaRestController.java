@@ -30,17 +30,38 @@ import com.netflix.appinfo.EurekaAccept;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.cluster.protocol.ReplicationList;
-import com.netflix.eureka.resources.*;
+import com.netflix.eureka.resources.ASGResource;
+import com.netflix.eureka.resources.ApplicationsResource;
+import com.netflix.eureka.resources.InstancesResource;
+import com.netflix.eureka.resources.PeerReplicationResource;
+import com.netflix.eureka.resources.SecureVIPResource;
+import com.netflix.eureka.resources.ServerInfoResource;
+import com.netflix.eureka.resources.VIPResource;
 import jakarta.annotation.Nullable;
-import jakarta.ws.rs.core.*;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.PathSegment;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
 import java.net.URI;
@@ -49,6 +70,7 @@ import java.util.List;
 import static org.apache.http.HttpHeaders.ACCEPT;
 import static org.apache.http.HttpHeaders.ACCEPT_ENCODING;
 import static org.zowe.apiml.EurekaConfiguration.JACKSON_JSON;
+import static reactor.core.publisher.Mono.just;
 
 @RestController
 @RequiredArgsConstructor
@@ -71,13 +93,13 @@ public class EurekaRestController {
         return new UriInfoAdapter(serverWebExchange.getRequest());
     }
 
-    private Mono<ResponseEntity<?>> convertResponse(Response response) {
-        return Mono.just(ResponseEntity
+    private ResponseEntity<?> convertResponse(Response response) {
+        return ResponseEntity
             .status(response.getStatus())
             .headers(headers -> response.getHeaders().entrySet().forEach(
                 newHeader -> headers.addAll(newHeader.getKey(), newHeader.getValue().stream().map(String::valueOf).toList()))
             )
-            .body(response.getEntity()));
+            .body(response.getEntity());
     }
 
     @GetMapping(value = {"/apps", "/apps/"}, produces = { "application/xml", "application/json" })
@@ -88,9 +110,9 @@ public class EurekaRestController {
         @Nullable @RequestHeader(EurekaAccept.HTTP_X_EUREKA_ACCEPT) String eurekaAccept,
         @Nullable @RequestParam("regions") String regionsStr
     ) {
-        return convertResponse(applicationsResource.getContainers(
+        return just(convertResponse(applicationsResource.getContainers(
             EUREKA_VERSION, acceptHeader, acceptEncoding, eurekaAccept, getUriInfo(serverWebExchange), regionsStr
-        ));
+        )));
     }
 
     @GetMapping("/apps/delta")
@@ -101,9 +123,9 @@ public class EurekaRestController {
         @Nullable @RequestHeader(EurekaAccept.HTTP_X_EUREKA_ACCEPT) String eurekaAccept,
         @Nullable @RequestParam("regions") String regionsStr
     ) {
-        return convertResponse(applicationsResource.getContainerDifferential(
+        return just(convertResponse(applicationsResource.getContainerDifferential(
             EUREKA_VERSION, acceptHeader, acceptEncoding, eurekaAccept, getUriInfo(serverWebExchange), regionsStr
-        ));
+        )));
     }
 
     @GetMapping("/apps/{appId}")
@@ -111,10 +133,10 @@ public class EurekaRestController {
         @Nullable @RequestHeader(ACCEPT) String acceptHeader,
         @Nullable @RequestHeader(EurekaAccept.HTTP_X_EUREKA_ACCEPT) String eurekaAccept,
 
-        @PathVariable("appId") String appId
+        @PathVariable String appId
     ) {
         var app = applicationsResource.getApplicationResource(EUREKA_VERSION, appId);
-        return convertResponse(app.getApplication(EUREKA_VERSION, acceptHeader, eurekaAccept));
+        return just(convertResponse(app.getApplication(EUREKA_VERSION, acceptHeader, eurekaAccept)));
     }
 
     @PostMapping("/apps/{appId}")
@@ -122,95 +144,101 @@ public class EurekaRestController {
         @Nullable @RequestHeader(PeerEurekaNode.HEADER_REPLICATION) String isReplication,
 
         @RequestBody String instanceInfoString,
-        @PathVariable("appId") String appId
+        @PathVariable String appId
     ) throws IOException {
         var instanceInfo = JACKSON_JSON.decode(instanceInfoString, InstanceInfo.class);
         var app = applicationsResource.getApplicationResource(EUREKA_VERSION, appId);
-        return convertResponse(app.addInstance(instanceInfo, isReplication));
+
+        return just(ResponseEntity.ok())
+            .publishOn(Schedulers.boundedElastic())
+            .map(bodyBuilder -> {
+                var response = app.addInstance(instanceInfo, isReplication);
+                return convertResponse(response);
+            });
     }
 
     @GetMapping("/apps/{appId}/{instanceId}")
     public Mono<ResponseEntity<?>> getInstanceInfo(
-        @PathVariable("appId") String appId,
-        @PathVariable("instanceId") String instanceId
+        @PathVariable String appId,
+        @PathVariable String instanceId
     ) {
         var app = applicationsResource.getApplicationResource(EUREKA_VERSION, appId);
         var instance = app.getInstanceInfo(instanceId);
-        return convertResponse(instance.getInstanceInfo());
+        return just(convertResponse(instance.getInstanceInfo()));
     }
 
     @PutMapping("/apps/{appId}/{instanceId}")
     public Mono<ResponseEntity<?>> renewLease(
         @Nullable @RequestHeader(PeerEurekaNode.HEADER_REPLICATION) String isReplication,
         @Nullable @RequestParam("overriddenstatus") String overriddenStatus,
-        @Nullable @RequestParam("status") String status,
-        @Nullable @RequestParam("lastDirtyTimestamp") String lastDirtyTimestamp,
+        @Nullable @RequestParam String status,
+        @Nullable @RequestParam String lastDirtyTimestamp,
 
-        @PathVariable("appId") String appId,
-        @PathVariable("instanceId") String instanceId
+        @PathVariable String appId,
+        @PathVariable String instanceId
     ) {
         var app = applicationsResource.getApplicationResource(EUREKA_VERSION, appId);
         var instance = app.getInstanceInfo(instanceId);
-        return convertResponse(instance.renewLease(isReplication, overriddenStatus, status, lastDirtyTimestamp));
+        return just(convertResponse(instance.renewLease(isReplication, overriddenStatus, status, lastDirtyTimestamp)));
     }
 
     @PutMapping("/apps/{appId}/{instanceId}/status")
     public Mono<ResponseEntity<?>> statusUpdate(
         @Nullable @RequestHeader(PeerEurekaNode.HEADER_REPLICATION) String isReplication,
         @Nullable @RequestParam("value") String newStatus,
-        @Nullable @RequestParam("lastDirtyTimestamp") String lastDirtyTimestamp,
+        @Nullable @RequestParam String lastDirtyTimestamp,
 
-        @PathVariable("appId") String appId,
-        @PathVariable("instanceId") String instanceId
+        @PathVariable String appId,
+        @PathVariable String instanceId
     ) {
         var app = applicationsResource.getApplicationResource(EUREKA_VERSION, appId);
         var instance = app.getInstanceInfo(instanceId);
-        return convertResponse(instance.statusUpdate(newStatus, isReplication, lastDirtyTimestamp));
+        return just(convertResponse(instance.statusUpdate(newStatus, isReplication, lastDirtyTimestamp)));
     }
 
     @DeleteMapping("/apps/{appId}/{instanceId}/status")
     public Mono<ResponseEntity<?>> deleteStatusUpdate(
         @Nullable @RequestHeader(PeerEurekaNode.HEADER_REPLICATION) String isReplication,
         @Nullable @RequestParam("value") String newStatusValue,
-        @Nullable @RequestParam("lastDirtyTimestamp") String lastDirtyTimestamp,
+        @Nullable @RequestParam String lastDirtyTimestamp,
 
-        @PathVariable("appId") String appId,
-        @PathVariable("instanceId") String instanceId
+        @PathVariable String appId,
+        @PathVariable String instanceId
     ) {
         var app = applicationsResource.getApplicationResource(EUREKA_VERSION, appId);
         var instance = app.getInstanceInfo(instanceId);
-        return convertResponse(instance.deleteStatusUpdate(isReplication, newStatusValue, lastDirtyTimestamp));
+        return just(convertResponse(instance.deleteStatusUpdate(isReplication, newStatusValue, lastDirtyTimestamp)));
     }
 
     @PutMapping("/apps/{appId}/{instanceId}/metadata")
     public Mono<ResponseEntity<?>> updateMetadata(
         ServerWebExchange serverWebExchange,
 
-        @PathVariable("appId") String appId,
-        @PathVariable("instanceId") String instanceId
+        @PathVariable String appId,
+        @PathVariable String instanceId
     ) {
         var app = applicationsResource.getApplicationResource(EUREKA_VERSION, appId);
         var instance = app.getInstanceInfo(instanceId);
-        return convertResponse(instance.updateMetadata(getUriInfo(serverWebExchange)));
+        return just(convertResponse(instance.updateMetadata(getUriInfo(serverWebExchange))));
     }
 
     @DeleteMapping("/apps/{appId}/{instanceId}")
     public Mono<ResponseEntity<?>> cancelLease(
         @Nullable @RequestHeader(PeerEurekaNode.HEADER_REPLICATION) String isReplication,
 
-        @PathVariable("appId") String appId,
-        @PathVariable("instanceId") String instanceId
+        @PathVariable String appId,
+        @PathVariable String instanceId
     ) {
         var app = applicationsResource.getApplicationResource(EUREKA_VERSION, appId);
         var instance = app.getInstanceInfo(instanceId);
-        return convertResponse(instance.cancelLease(isReplication));
+        return just(convertResponse(instance.cancelLease(isReplication)));
     }
 
     @GetMapping("/instances/{id}")
     public Mono<ResponseEntity<?>> getById(
-        @PathVariable("id") String id
+        @PathVariable String id
     ) {
-        return convertResponse(instancesResource.getById(EUREKA_VERSION, id));
+        return just(convertResponse(instancesResource.getById(EUREKA_VERSION, id)));
     }
 
     @GetMapping("/svips/{svipAddress}")
@@ -218,9 +246,9 @@ public class EurekaRestController {
         @Nullable @RequestHeader(ACCEPT) String acceptHeader,
         @Nullable @RequestHeader(EurekaAccept.HTTP_X_EUREKA_ACCEPT) String eurekaAccept,
 
-        @PathVariable("svipAddress") String svipAddress
+        @PathVariable String svipAddress
     ) {
-        return convertResponse(secureVIPResource.statusUpdate(EUREKA_VERSION, svipAddress, acceptHeader, eurekaAccept));
+        return just(convertResponse(secureVIPResource.statusUpdate(EUREKA_VERSION, svipAddress, acceptHeader, eurekaAccept)));
     }
 
     @GetMapping("/vips/{vipAddress}")
@@ -228,14 +256,14 @@ public class EurekaRestController {
         @Nullable @RequestHeader(ACCEPT) String acceptHeader,
         @Nullable @RequestHeader(EurekaAccept.HTTP_X_EUREKA_ACCEPT) String eurekaAccept,
 
-        @PathVariable("vipAddress") String vipAddress
+        @PathVariable String vipAddress
     ) {
-        return convertResponse(vipResource.statusUpdate(EUREKA_VERSION, vipAddress, acceptHeader, eurekaAccept));
+        return just(convertResponse(vipResource.statusUpdate(EUREKA_VERSION, vipAddress, acceptHeader, eurekaAccept)));
     }
 
     @GetMapping("/serverinfo/statusoverrides")
     public Mono<ResponseEntity<?>> getOverrides() throws Exception {
-        return convertResponse(serverInfoResource.getOverrides());
+        return just(convertResponse(serverInfoResource.getOverrides()));
     }
 
     @PutMapping("/asg/{asgName}/status")
@@ -243,9 +271,9 @@ public class EurekaRestController {
         @Nullable @RequestHeader(PeerEurekaNode.HEADER_REPLICATION) String isReplication,
         @Nullable @RequestParam("value") String newStatus,
 
-        @PathVariable("asgName") String asgName
+        @PathVariable String asgName
     ) {
-        return convertResponse(asgResource.statusUpdate(asgName, newStatus, isReplication));
+        return just(convertResponse(asgResource.statusUpdate(asgName, newStatus, isReplication)));
     }
 
     @PostMapping
@@ -253,7 +281,7 @@ public class EurekaRestController {
         @RequestBody String replicationListString
     ) throws IOException {
         var replicationList = JACKSON_JSON.decode(replicationListString, ReplicationList.class);
-        return convertResponse(peerReplicationResource.batchReplication(replicationList));
+        return just(convertResponse(peerReplicationResource.batchReplication(replicationList)));
     }
 
     @RequiredArgsConstructor

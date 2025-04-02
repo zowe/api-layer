@@ -46,10 +46,9 @@ public class StaticDefinitionsRefreshRestController {
 
     @PostMapping(produces = "application/json")
     public Mono<ResponseEntity<StaticRegistrationResult>> reload() {
-        return Mono.just("ignore")
+        return Mono.just(ResponseEntity.ok())
             .publishOn(Schedulers.boundedElastic())
-            .map(x -> registrationService.reloadServices())
-            .map(result -> ResponseEntity.ok().body(result));
+            .map(x ->  x.body(registrationService.reloadServices()));
 
     }
 
