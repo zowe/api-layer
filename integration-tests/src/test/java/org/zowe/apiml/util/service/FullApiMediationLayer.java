@@ -35,6 +35,7 @@ public class FullApiMediationLayer {
     private RunningService mockZosmfService;
     private RunningService discoverableClientService;
     private RunningService zaasService;
+    private RunningService apimlService;
 
     private ProcessBuilder nodeJsBuilder;
     private Process nodeJsSampleApp;
@@ -56,6 +57,7 @@ public class FullApiMediationLayer {
         prepareMockServices();
         prepareDiscovery();
         prepareZaas();
+        prepareApiml();
         if (!attlsEnabled) {
             prepareNodeJsSampleApp();
         }
@@ -94,6 +96,13 @@ public class FullApiMediationLayer {
 
     public void prepareZaas() {
         zaasService = new RunningService("zaas", "zaas-service/build/libs", null, null);
+    }
+
+    /**
+     * Modulith
+     */
+    public void prepareApiml() {
+        apimlService = new RunningService("apiml", "apiml/build/libs", null, null);
     }
 
     private void prepareMockServices() {
