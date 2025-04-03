@@ -66,9 +66,7 @@ public class RouteRefreshListener implements ApplicationListener<ApplicationEven
                 reset();
             }
         }
-        else if (event instanceof RefreshScopeRefreshedEvent || event instanceof InstanceRegisteredEvent) {
-            reset();
-        } else if (event instanceof EurekaInstanceRegisteredEvent) {
+        else if (event instanceof RefreshScopeRefreshedEvent || event instanceof InstanceRegisteredEvent || event instanceof EurekaInstanceRegisteredEvent) {
             reset();
         }
         else if (event instanceof ParentHeartbeatEvent) {

@@ -25,6 +25,10 @@ import java.io.IOException;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 
+/**
+ * In modulith, all requests are handled by the same filters, on a separate connector.
+ * This filter makes sure /eureka endpoints are not accesible from the external GW port.
+ */
 @Component
 public class HideEurekaFilter extends PreFluxFilter {
 

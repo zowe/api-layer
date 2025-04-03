@@ -19,6 +19,10 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+/**
+ * This filter is set to keep the Eureka homepage working in the same location as pre-modulith, since the main connector
+ * has a mapping already to the Gateway homepage
+ */
 @Component
 public class EurekaDashBoardRedirectFilter extends PreFluxFilter {
 

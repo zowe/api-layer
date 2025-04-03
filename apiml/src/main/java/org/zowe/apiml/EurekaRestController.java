@@ -81,13 +81,13 @@ public class EurekaRestController {
 
     private static final String EUREKA_VERSION = "v2";
 
-    private final ApplicationsResource applicationsResource = new ApplicationsResource();
-    private final VIPResource vipResource = new VIPResource();
-    private final ServerInfoResource serverInfoResource = new ServerInfoResource();
-    private final SecureVIPResource secureVIPResource = new SecureVIPResource();
-    private final InstancesResource instancesResource = new InstancesResource();
-    private final ASGResource asgResource = new ASGResource();
-    private final PeerReplicationResource peerReplicationResource = new PeerReplicationResource();
+    private final ApplicationsResource applicationsResource;
+    private final VIPResource vipResource;
+    private final ServerInfoResource serverInfoResource;
+    private final SecureVIPResource secureVIPResource;
+    private final InstancesResource instancesResource;
+    private final ASGResource asgResource;
+    private final PeerReplicationResource peerReplicationResource;
 
     private UriInfo getUriInfo(ServerWebExchange serverWebExchange) {
         return new UriInfoAdapter(serverWebExchange.getRequest());

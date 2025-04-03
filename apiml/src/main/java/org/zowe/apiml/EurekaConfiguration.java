@@ -44,8 +44,15 @@ import com.netflix.eureka.EurekaServerIdentity;
 import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.cluster.PeerEurekaNodes;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
+import com.netflix.eureka.resources.ASGResource;
+import com.netflix.eureka.resources.ApplicationsResource;
 import com.netflix.eureka.resources.DefaultServerCodecs;
+import com.netflix.eureka.resources.InstancesResource;
+import com.netflix.eureka.resources.PeerReplicationResource;
+import com.netflix.eureka.resources.SecureVIPResource;
 import com.netflix.eureka.resources.ServerCodecs;
+import com.netflix.eureka.resources.ServerInfoResource;
+import com.netflix.eureka.resources.VIPResource;
 import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
 import com.netflix.eureka.transport.Jersey3DynamicGZIPContentEncodingFilter;
 import com.netflix.eureka.transport.Jersey3EurekaServerHttpClientFactory;
@@ -157,7 +164,7 @@ public class EurekaConfiguration implements WebMvcConfigurer {
     public static final CloudJacksonJson JACKSON_JSON = new CloudJacksonJson();
 
     @Bean
-    public HasFeatures eurekaServerFeature() {
+    HasFeatures eurekaServerFeature() {
         return HasFeatures.namedFeature("Eureka Server", EurekaServerAutoConfiguration.class);
     }
 
@@ -167,7 +174,7 @@ public class EurekaConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    public ServerCodecs serverCodecs() {
+    ServerCodecs serverCodecs() {
         return new CloudServerCodecs(this.eurekaServerConfig);
     }
 
@@ -183,26 +190,61 @@ public class EurekaConfiguration implements WebMvcConfigurer {
 
     @Bean
     @ConditionalOnMissingBean
-    public ReplicationClientAdditionalFilters replicationClientAdditionalFilters() {
+    ReplicationClientAdditionalFilters replicationClientAdditionalFilters() {
         return new ReplicationClientAdditionalFilters(Collections.emptySet());
     }
 
     @Bean
     @ConditionalOnMissingBean(TransportClientFactories.class)
-    public Jersey3TransportClientFactories jersey3TransportClientFactories() {
+    Jersey3TransportClientFactories jersey3TransportClientFactories() {
         return Jersey3TransportClientFactories.getInstance();
     }
 
     @Bean
     @ConditionalOnMissingBean(EurekaServerHttpClientFactory.class)
-    public Jersey3EurekaServerHttpClientFactory jersey3EurekaServerHttpClientFactory() {
+    Jersey3EurekaServerHttpClientFactory jersey3EurekaServerHttpClientFactory() {
         return new Jersey3EurekaServerHttpClientFactory();
     }
 
     @Bean
-    public PeerAwareInstanceRegistry peerAwareInstanceRegistry(ServerCodecs serverCodecs,
-                                                               EurekaServerHttpClientFactory eurekaServerHttpClientFactory,
-                                                               EurekaInstanceConfigBean eurekaInstanceConfigBean) {
+    ApplicationsResource applicationsResource() {
+        return new ApplicationsResource();
+    }
+
+    @Bean
+    VIPResource vipResource() {
+        return new VIPResource();
+    }
+
+    @Bean
+    ServerInfoResource serverInfoResource() {
+        return new ServerInfoResource();
+    }
+
+    @Bean
+    SecureVIPResource secureVIPResource() {
+        return new SecureVIPResource();
+    }
+
+    @Bean
+    InstancesResource instancesResource() {
+        return new InstancesResource();
+    }
+
+    @Bean
+    ASGResource asgResource() {
+        return new ASGResource();
+    }
+
+    @Bean
+    PeerReplicationResource peerReplicationResource() {
+        return new PeerReplicationResource();
+    }
+
+    @Bean
+    PeerAwareInstanceRegistry peerAwareInstanceRegistry(ServerCodecs serverCodecs,
+                                                     EurekaServerHttpClientFactory eurekaServerHttpClientFactory,
+                                                     EurekaInstanceConfigBean eurekaInstanceConfigBean) {
         if (eurekaInstanceConfigBean.isAsyncClientInitialization()) {
             if (log.isDebugEnabled()) {
                 log.debug("Initializing client asynchronously...");
@@ -228,23 +270,23 @@ public class EurekaConfiguration implements WebMvcConfigurer {
 
     @Bean
     @ConditionalOnMissingBean
-    public PeerEurekaNodes peerEurekaNodes(PeerAwareInstanceRegistry registry, ServerCodecs serverCodecs,
-                                           ReplicationClientAdditionalFilters replicationClientAdditionalFilters) {
+    PeerEurekaNodes peerEurekaNodes(PeerAwareInstanceRegistry registry, ServerCodecs serverCodecs,
+                                 ReplicationClientAdditionalFilters replicationClientAdditionalFilters) {
         return new RefreshablePeerEurekaNodes(registry, this.eurekaServerConfig, this.eurekaClientConfig, serverCodecs,
             this.applicationInfoManager, replicationClientAdditionalFilters);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public EurekaServerContext eurekaServerContext(ServerCodecs serverCodecs, PeerAwareInstanceRegistry registry,
-                                                   PeerEurekaNodes peerEurekaNodes) {
+    EurekaServerContext eurekaServerContext(ServerCodecs serverCodecs, PeerAwareInstanceRegistry registry,
+                                         PeerEurekaNodes peerEurekaNodes) {
         return new DefaultEurekaServerContext(this.eurekaServerConfig, serverCodecs, registry, peerEurekaNodes,
             this.applicationInfoManager);
     }
 
     @Bean
-    public EurekaServerBootstrap eurekaServerBootstrap(PeerAwareInstanceRegistry registry,
-                                                       EurekaServerContext serverContext) {
+    EurekaServerBootstrap eurekaServerBootstrap(PeerAwareInstanceRegistry registry,
+                                             EurekaServerContext serverContext) {
         return new EurekaServerBootstrap(this.applicationInfoManager, this.eurekaClientConfig, this.eurekaServerConfig,
             registry, serverContext);
     }
@@ -255,7 +297,7 @@ public class EurekaConfiguration implements WebMvcConfigurer {
      * @return a jersey {@link FilterRegistrationBean}
      */
     @Bean
-    public FilterRegistrationBean<?> jerseyFilterRegistration(ResourceConfig eurekaJerseyApp) {
+    FilterRegistrationBean<?> jerseyFilterRegistration(ResourceConfig eurekaJerseyApp) {
         FilterRegistrationBean<Filter> bean = new FilterRegistrationBean<>();
         ServletContainer servletContainer = new ServletContainer(eurekaJerseyApp);
         bean.setFilter(servletContainer);
@@ -266,8 +308,8 @@ public class EurekaConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    public FilterRegistrationBean<?> eurekaVersionFilterRegistration(ServerProperties serverProperties,
-                                                                     Environment env) {
+    FilterRegistrationBean<?> eurekaVersionFilterRegistration(ServerProperties serverProperties,
+                                                           Environment env) {
         final String contextPath = serverProperties.getServlet().getContextPath();
         String regex = EurekaConstants.DEFAULT_PREFIX + STATIC_CONTENT_PATTERN;
         if (StringUtils.hasText(contextPath)) {
@@ -331,8 +373,8 @@ public class EurekaConfiguration implements WebMvcConfigurer {
      * @return created {@link Application} object
      */
     @Bean
-    public ResourceConfig jerseyApplication(Environment environment, ResourceLoader resourceLoader,
-                                            BeanFactory beanFactory) {
+    ResourceConfig jerseyApplication(Environment environment, ResourceLoader resourceLoader,
+                                  BeanFactory beanFactory) {
 
         ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false,
             environment);
@@ -386,7 +428,7 @@ public class EurekaConfiguration implements WebMvcConfigurer {
 
     @Bean
     @ConditionalOnBean(name = "httpTraceFilter")
-    public FilterRegistrationBean<?> traceFilterRegistration(@Qualifier("httpTraceFilter") Filter filter) {
+    FilterRegistrationBean<?> traceFilterRegistration(@Qualifier("httpTraceFilter") Filter filter) {
         FilterRegistrationBean<Filter> bean = new FilterRegistrationBean<>();
         bean.setFilter(filter);
         bean.setOrder(Ordered.LOWEST_PRECEDENCE - 10);
@@ -398,7 +440,7 @@ public class EurekaConfiguration implements WebMvcConfigurer {
 
         @Bean
         @ConditionalOnMissingBean
-        public EurekaServerConfig eurekaServerConfig(EurekaClientConfig clientConfig) {
+        EurekaServerConfig eurekaServerConfig(EurekaClientConfig clientConfig) {
             EurekaServerConfigBean server = new EurekaServerConfigBean();
             if (clientConfig.shouldRegisterWithEureka()) {
                 // Set a sensible default if we are supposed to replicate
