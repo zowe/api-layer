@@ -10,9 +10,12 @@
 
 package org.zowe.apiml;
 
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.eureka.cluster.protocol.ReplicationList;
 import com.netflix.eureka.resources.ASGResource;
 import com.netflix.eureka.resources.ApplicationResource;
 import com.netflix.eureka.resources.ApplicationsResource;
+import com.netflix.eureka.resources.InstanceResource;
 import com.netflix.eureka.resources.InstancesResource;
 import com.netflix.eureka.resources.PeerReplicationResource;
 import com.netflix.eureka.resources.SecureVIPResource;
@@ -36,6 +39,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.test.StepVerifier;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
@@ -150,68 +154,204 @@ public class EurekaRestControllerTest {
     }
 
     @Test
-    void addInstance() {
+    void addInstance() throws IOException {
+        var appResource = mock(ApplicationResource.class);
+        when(applicationsResource.getApplicationResource("v2", "anAppId"))
+            .thenReturn(appResource);
+        when(appResource.addInstance(any(InstanceInfo.class), eq("true")))
+            .thenReturn(response);
 
+        var instanceInfoJson = """
+            {
+                "instance": {
+                "hostName": "localhost",
+                "app": "TESTAPP",
+                "ipAddr": "127.0.0.1",
+                "vipAddress": "testapp",
+                "secureVipAddress": "testapp",
+                "status": "UP",
+                "port": {
+                    "$": 8080,
+                    "@enabled": "true"
+                },
+                "dataCenterInfo": {
+                    "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
+                    "name": "MyOwn"
+                }
+                }
+            }
+            """;
+
+        StepVerifier.create(controller.addInstance("true", instanceInfoJson, "anAppId"))
+            .expectNextMatches(entityMatcher)
+            .verifyComplete();
     }
 
     @Test
     void getInstanceInfo() {
+        var appResource = mock(ApplicationResource.class);
+        var instanceInfo = mock(InstanceResource.class);
+        when(applicationsResource.getApplicationResource("v2", "anAppId"))
+            .thenReturn(appResource);
+        when(appResource.getInstanceInfo("anInstanceId"))
+            .thenReturn(instanceInfo);
+        when(instanceInfo.getInstanceInfo())
+            .thenReturn(response);
 
+        StepVerifier.create(controller.getInstanceInfo("anAppId", "anInstanceId"))
+            .expectNextMatches(entityMatcher)
+            .verifyComplete();
     }
 
     @Test
     void renewLease() {
+        var appResource = mock(ApplicationResource.class);
+        var instanceInfo = mock(InstanceResource.class);
+        when(applicationsResource.getApplicationResource("v2", "anAppId"))
+            .thenReturn(appResource);
+        when(appResource.getInstanceInfo("anInstanceId"))
+            .thenReturn(instanceInfo);
+        when(instanceInfo.renewLease("true", "DOWN", "UP", "12:00:00"))
+            .thenReturn(response);
 
+        StepVerifier.create(controller.renewLease("true", "DOWN", "UP", "12:00:00", "anAppId", "anInstanceId"))
+            .expectNextMatches(entityMatcher)
+            .verifyComplete();
     }
 
     @Test
     void statusUpdate() {
+        var appResource = mock(ApplicationResource.class);
+        var instanceInfo = mock(InstanceResource.class);
+        when(applicationsResource.getApplicationResource("v2", "anAppId"))
+            .thenReturn(appResource);
+        when(appResource.getInstanceInfo("anInstanceId"))
+            .thenReturn(instanceInfo);
+        when(instanceInfo.statusUpdate("UP", "true", "12:00:00"))
+            .thenReturn(response);
 
+        StepVerifier.create(controller.statusUpdate("true", "UP", "12:00:00", "anAppId", "anInstanceId"))
+            .expectNextMatches(entityMatcher)
+            .verifyComplete();
     }
 
     @Test
     void deleteStatusUpdate() {
+        var appResource = mock(ApplicationResource.class);
+        var instanceInfo = mock(InstanceResource.class);
+        when(applicationsResource.getApplicationResource("v2", "anAppId"))
+            .thenReturn(appResource);
+        when(appResource.getInstanceInfo("anInstanceId"))
+            .thenReturn(instanceInfo);
+        when(instanceInfo.deleteStatusUpdate("true", "UP", "12:00:00"))
+            .thenReturn(response);
 
+        StepVerifier.create(controller.deleteStatusUpdate("true", "UP", "12:00:00", "anAppId", "anInstanceId"))
+            .expectNextMatches(entityMatcher)
+            .verifyComplete();
     }
 
     @Test
     void updateMetadata() {
+        var appResource = mock(ApplicationResource.class);
+        var instanceInfo = mock(InstanceResource.class);
+        when(applicationsResource.getApplicationResource("v2", "anAppId"))
+            .thenReturn(appResource);
+        when(appResource.getInstanceInfo("anInstanceId"))
+            .thenReturn(instanceInfo);
+        when(instanceInfo.updateMetadata(any(UriInfo.class)))
+            .thenReturn(response);
 
+        StepVerifier.create(controller.updateMetadata(serverWebExchange, "anAppId", "anInstanceId"))
+            .expectNextMatches(entityMatcher)
+            .verifyComplete();
     }
 
     @Test
     void cancelLease() {
+        var app = mock(ApplicationResource.class);
+        var instanceResource = mock(InstanceResource.class);
+        when(applicationsResource.getApplicationResource("v2", "appId"))
+            .thenReturn(app);
+        when(app.getInstanceInfo("instanceId"))
+            .thenReturn(instanceResource);
+        when(instanceResource.cancelLease("true"))
+            .thenReturn(response);
 
+        StepVerifier.create(controller.cancelLease("true", "appId", "instanceId"))
+            .expectNextMatches(entityMatcher)
+            .verifyComplete();
     }
 
     @Test
     void getById() {
+        when(instancesResource.getById("v2", "id"))
+            .thenReturn(response);
 
+        StepVerifier.create(controller.getById("id"))
+            .expectNextMatches(entityMatcher)
+            .verifyComplete();
     }
 
     @Test
     void secureVipStatusUpdate() {
+        when(secureVIPResource.statusUpdate("v2", "hostname", "application/json", "value"))
+            .thenReturn(response);
 
+        StepVerifier.create(controller.secureVipStatusUpdate("application/json", "value", "hostname"))
+            .expectNextMatches(entityMatcher)
+            .verifyComplete();
     }
 
     @Test
     void vipStatusUpdate() {
+        when(vipResource.statusUpdate("v2", "hostname", "application/json", "value"))
+            .thenReturn(response);
 
+        StepVerifier.create(controller.vipStatusUpdate("application/json", "value", "hostname"))
+            .expectNextMatches(entityMatcher)
+            .verifyComplete();
     }
 
     @Test
-    void getOverrides() {
+    void getOverrides() throws Exception {
+        when(serverInfoResource.getOverrides()).thenReturn(response);
 
+        StepVerifier.create(controller.getOverrides())
+            .expectNextMatches(entityMatcher)
+            .verifyComplete();
     }
 
     @Test
     void argStatusUpdate() {
+        when(asgResource.statusUpdate("name", "UP", "false"))
+            .thenReturn(response);
 
+        StepVerifier.create(controller.asgStatusUpdate("false", "UP", "name"))
+            .expectNextMatches(entityMatcher)
+            .verifyComplete();
     }
 
     @Test
-    void batchReplication() {
+    void batchReplication() throws IOException {
+        when(peerReplicationResource.batchReplication(any(ReplicationList.class)))
+            .thenReturn(response);
 
+        var replicationListJson = """
+            {
+              "replicationList": [
+                {
+                  "action": "Register",
+                  "appName": "TESTAPP",
+                  "id": "localhost:TESTAPP:8080"
+                }
+              ]
+            }
+            """;
+
+        StepVerifier.create(controller.batchReplication(replicationListJson))
+            .expectNextMatches(entityMatcher)
+            .verifyComplete();
     }
 
 }

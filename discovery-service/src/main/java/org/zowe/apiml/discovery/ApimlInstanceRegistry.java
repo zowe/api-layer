@@ -89,7 +89,6 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         init();
     }
 
-
     /**
      * Prepare method handlers to overridden methods to reimplement methods in InstanceRegistry, which contains a race
      * condition problem. Handlers are faster than reflection, close to bytecode.
