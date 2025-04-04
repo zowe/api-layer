@@ -263,7 +263,6 @@ public class ModulithConfig {
             var connector = new Connector();
 
             try {
-                // FIXME is it possible without reflection?
                 Method method = TomcatReactiveWebServerFactory.class.getDeclaredMethod("customizeConnector", Connector.class);
                 method.setAccessible(true);
                 method.invoke(factory, connector);
