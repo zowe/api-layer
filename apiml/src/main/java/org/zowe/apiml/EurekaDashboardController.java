@@ -26,11 +26,11 @@
 
 package org.zowe.apiml;
 
-import com.netflix.appinfo.ApplicationInfoManager;
+import com.google.common.annotations.VisibleForTesting;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.eureka.server.EurekaController;
-import org.springframework.cloud.netflix.eureka.server.EurekaProperties;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Primary;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
@@ -54,19 +54,24 @@ public class EurekaDashboardController {
 
     private final MessageSource messageSource;
 
+    private final TemplateProcessor templateProcessor;
+
     private final Template statusTemplate;
     private final Template lastnTemplate;
 
-    public EurekaDashboardController(
-        ApplicationInfoManager applicationInfoManager, EurekaProperties eurekaProperties,
-        FreeMarkerConfigurer freeMarkerConfigurer, MessageSource messageSource
-    ) throws IOException {
-        this.original = new EurekaController(applicationInfoManager, eurekaProperties);
-        this.messageSource = messageSource;
+    @Autowired
+    public EurekaDashboardController(EurekaController original, FreeMarkerConfigurer freeMarkerConfigurer, MessageSource messageSource) throws IOException {
+        this(original, freeMarkerConfigurer, messageSource, new TemplateProcessor());
+    }
 
+    @VisibleForTesting
+    EurekaDashboardController(EurekaController original, FreeMarkerConfigurer freeMarkerConfigurer, MessageSource messageSource, TemplateProcessor processor) throws IOException {
+        this.original = original;
+        this.messageSource = messageSource;
+        this.templateProcessor = processor;
         var configuration = freeMarkerConfigurer.getConfiguration();
-        statusTemplate = configuration.getTemplate("eureka/status.ftlh");
-        lastnTemplate = configuration.getTemplate("eureka/lastn.ftlh");
+        this.statusTemplate = configuration.getTemplate("eureka/status.ftlh");
+        this.lastnTemplate = configuration.getTemplate("eureka/lastn.ftlh");
     }
 
     @GetMapping
@@ -76,7 +81,7 @@ public class EurekaDashboardController {
     ) throws TemplateException, IOException {
         original.status(null, model);
         model.put("springMacroRequestContext", new RequestContext(serverWebExchange, model, messageSource));
-        return Mono.just(FreeMarkerTemplateUtils.processTemplateIntoString(statusTemplate, model));
+        return Mono.just(templateProcessor.process(statusTemplate, model));
     }
 
     @GetMapping("/lastn")
@@ -86,7 +91,15 @@ public class EurekaDashboardController {
     ) throws TemplateException, IOException {
         original.status(null, model);
         model.put("springMacroRequestContext", new RequestContext(serverWebExchange, model, messageSource));
-        return Mono.just(FreeMarkerTemplateUtils.processTemplateIntoString(lastnTemplate, model));
+        return Mono.just(templateProcessor.process(lastnTemplate, model));
+    }
+
+    static class TemplateProcessor {
+
+        String process(Template template, Map<String, Object> model) throws IOException, TemplateException {
+            return FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
+        }
+
     }
 
 }
