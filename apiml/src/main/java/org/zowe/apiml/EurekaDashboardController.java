@@ -26,7 +26,6 @@
 
 package org.zowe.apiml;
 
-import com.google.common.annotations.VisibleForTesting;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +63,6 @@ public class EurekaDashboardController {
         this(original, freeMarkerConfigurer, messageSource, new TemplateProcessor());
     }
 
-    @VisibleForTesting
     EurekaDashboardController(EurekaController original, FreeMarkerConfigurer freeMarkerConfigurer, MessageSource messageSource, TemplateProcessor processor) throws IOException {
         this.original = original;
         this.messageSource = messageSource;
