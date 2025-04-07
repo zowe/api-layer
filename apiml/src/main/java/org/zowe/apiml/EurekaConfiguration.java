@@ -435,11 +435,6 @@ public class EurekaConfiguration implements WebMvcConfigurer {
         return bean;
     }
 
-    @Bean
-    EurekaController originalController(ApplicationInfoManager applicationInfoManager, EurekaProperties eurekaProperties) {
-        return new EurekaController(applicationInfoManager, eurekaProperties);
-    }
-
     @Configuration(proxyBeanMethods = false)
     protected static class EurekaServerConfigBeanConfiguration {
 

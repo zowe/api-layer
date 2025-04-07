@@ -26,10 +26,12 @@
 
 package org.zowe.apiml;
 
+import com.netflix.appinfo.ApplicationInfoManager;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.eureka.server.EurekaController;
+import org.springframework.cloud.netflix.eureka.server.EurekaProperties;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Primary;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
@@ -59,11 +61,19 @@ public class EurekaDashboardController {
     private final Template lastnTemplate;
 
     @Autowired
-    public EurekaDashboardController(EurekaController original, FreeMarkerConfigurer freeMarkerConfigurer, MessageSource messageSource) throws IOException {
-        this(original, freeMarkerConfigurer, messageSource, new TemplateProcessor());
+    public EurekaDashboardController(
+        ApplicationInfoManager applicationInfoManager,
+        EurekaProperties eurekaProperties,
+        FreeMarkerConfigurer freeMarkerConfigurer,
+        MessageSource messageSource) throws IOException {
+        this(new EurekaController(applicationInfoManager, eurekaProperties), freeMarkerConfigurer, messageSource, new TemplateProcessor());
     }
 
-    EurekaDashboardController(EurekaController original, FreeMarkerConfigurer freeMarkerConfigurer, MessageSource messageSource, TemplateProcessor processor) throws IOException {
+    EurekaDashboardController(
+        EurekaController original,
+        FreeMarkerConfigurer freeMarkerConfigurer,
+        MessageSource messageSource,
+        TemplateProcessor processor) throws IOException {
         this.original = original;
         this.messageSource = messageSource;
         this.templateProcessor = processor;
