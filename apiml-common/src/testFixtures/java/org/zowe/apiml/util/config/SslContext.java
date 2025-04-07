@@ -74,6 +74,7 @@ public class SslContext {
                 .build();
             clientCertValid = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext, hostnameVerifier)));
 
+            log.debug("Loaded {}[apimtst]", providedConfigurer.getKeystoreLocalhostJks());
 
             SSLContext sslContext2 = SSLContextBuilder
                 .create()
@@ -83,11 +84,16 @@ public class SslContext {
                 .build();
             clientCertApiml = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext2, hostnameVerifier)));
 
+            log.debug("Loaded {}", providedConfigurer.getKeystore());
+
             SSLContext sslContext3 = SSLContextBuilder
                 .create()
                 .loadTrustMaterial(null, trustStrategy)
                 .build();
             tlsWithoutCert = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext3, hostnameVerifier)));
+
+            log.debug("Loaded truststore without certs");
+
             SSLContext sslContext4 = SSLContextBuilder
                 .create()
                 .loadKeyMaterial(ResourceUtils.getFile(providedConfigurer.getKeystoreLocalhostJks()),
@@ -97,6 +103,8 @@ public class SslContext {
                 .build();
             clientCertUnknownUser = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext4, hostnameVerifier)));
 
+            log.debug("Loaded {}[unknownuser]", providedConfigurer.getKeystoreLocalhostJks());
+
             SSLContext sslContext5 = SSLContextBuilder
                 .create()
                 .loadKeyMaterial(ResourceUtils.getFile(providedConfigurer.getKeystoreLocalhostJks()),
@@ -105,6 +113,8 @@ public class SslContext {
                 .loadTrustMaterial(null, trustStrategy)
                 .build();
             clientCertUser = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext5, hostnameVerifier)));
+
+            log.debug("Loaded {}[user]", providedConfigurer.getKeystoreLocalhostJks());
 
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
             String cert = "-----BEGIN CERTIFICATE-----\n" +
@@ -144,6 +154,8 @@ public class SslContext {
                 .build();
             selfSignedUntrusted = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext6, hostnameVerifier)));
 
+            log.debug("Loaded Self-signed certificate untrusted");
+
             SSLContext sslContext7 = SSLContextBuilder
                 .create()
                 .loadKeyMaterial(ResourceUtils.getFile(providedConfigurer.getKeystoreLocalhostJks()),
@@ -153,6 +165,8 @@ public class SslContext {
                 .build();
 
             apimlRootCert = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext7, hostnameVerifier)));
+
+            log.debug("Loaded API ML root");
 
             isInitialized.set(true);
         }
