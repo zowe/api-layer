@@ -29,6 +29,7 @@ public class AuthExceptionHandlerReactive {
 
     private final MessageService messageService;
     private final ObjectMapper objectMapper;
+
     public Mono<Void> handleTokenNotValid(ServerWebExchange exchange) {
         var response = exchange.getResponse();
         response.setStatusCode(HttpStatus.UNAUTHORIZED);
