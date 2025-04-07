@@ -27,12 +27,14 @@ import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.zaas.security.service.schema.source.JwtAuthSource;
+import org.zowe.apiml.zaas.security.service.schema.source.ParsedTokenAuthSource;
 
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
+import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
 
 @ExtendWith(MockitoExtension.class)
 class ZaasAuthenticationFilterTest {
@@ -112,6 +114,9 @@ class ZaasAuthenticationFilterTest {
         AuthSource authSource = new JwtAuthSource("token");
         request.setAttribute(AUTH_SOURCE_ATTR, authSource);
         when(authSourceService.isValid(authSource)).thenReturn(isValid);
+
+        AuthSource.Parsed parsedAuthSource = new ParsedTokenAuthSource(isValid ? "user" : null, null, null, null);
+        request.setAttribute(AUTH_SOURCE_PARSED_ATTR, parsedAuthSource);
     }
 
 }

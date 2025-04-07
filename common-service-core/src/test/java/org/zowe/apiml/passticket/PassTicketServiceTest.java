@@ -47,7 +47,7 @@ class PassTicketServiceTest {
     }
 
     @Test
-    void testInit() throws IRRPassTicketEvaluationException, IRRPassTicketGenerationException {
+    void testInit() throws PassTicketException {
         PassTicketService passTicketService = new PassTicketService();
         ReflectionTestUtils.setField(passTicketService, "irrPassTicket", new IRRPassTicket() {
             @Override

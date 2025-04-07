@@ -11,17 +11,15 @@
 package org.zowe.apiml.zaas.security.ticket;
 
 import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.passticket.*;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
-import org.zowe.apiml.passticket.PassTicketService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -58,14 +56,21 @@ public class SuccessfulTicketHandler implements AuthenticationSuccessHandler {
         try {
             response.setStatus(HttpStatus.OK.value());
             mapper.writeValue(response.getWriter(), getTicketResponse(request, authentication));
-        } catch (ApplicationNameNotFoundException e) {
+        } catch (ApplicationNameNotProvidedException e) {
             response.setStatus(HttpStatus.BAD_REQUEST.value());
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.invalidApplicationName").mapToView();
             mapper.writeValue(response.getWriter(), messageView);
-        } catch (IRRPassTicketGenerationException e) {
-            response.setStatus(e.getHttpStatus());
+        } catch (IRRPassTicketGenerationException | UsernameNotProvidedException e) {
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
-                e.getErrorCode().getMessage()).mapToView();
+                e.getMessage()).mapToView();
+
+            if (e instanceof IRRPassTicketGenerationException ex) {
+                response.setStatus(ex.getHttpStatus());
+                messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
+                    ex.getErrorCode().getMessage()).mapToView();
+            }
+
             mapper.writeValue(response.getWriter(), messageView);
             log.debug("The generation of the PassTicket failed. Please supply a valid user and application name, and check that corresponding permissions have been set up.");
         }
@@ -76,7 +81,7 @@ public class SuccessfulTicketHandler implements AuthenticationSuccessHandler {
         }
     }
 
-    private TicketResponse getTicketResponse(HttpServletRequest request, Authentication authentication) throws ApplicationNameNotFoundException, IRRPassTicketGenerationException {
+    private TicketResponse getTicketResponse(HttpServletRequest request, Authentication authentication) throws PassTicketException {
         TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
         String userId = tokenAuthentication.getPrincipal();
 
@@ -84,11 +89,7 @@ public class SuccessfulTicketHandler implements AuthenticationSuccessHandler {
         try {
             applicationName = mapper.readValue(request.getInputStream(), TicketRequest.class).getApplicationName();
         } catch (IOException e) {
-            throw new ApplicationNameNotFoundException("Ticket object has wrong format.");
-        }
-
-        if (StringUtils.isBlank(applicationName)) {
-            throw new ApplicationNameNotFoundException("ApplicationName not provided.");
+            throw new ApplicationNameNotProvidedException("Ticket object has wrong format.");
         }
 
         String ticket = passTicketService.generate(userId, applicationName);
