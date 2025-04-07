@@ -23,6 +23,7 @@ apiml:
       verifySslCertificatesOfServices: true
     x509:
       enabled: true
+    useDummyCNMapper: true
     saf:
       urls:
         authenticate: https://mock-services:10013/zss/saf/authenticate
