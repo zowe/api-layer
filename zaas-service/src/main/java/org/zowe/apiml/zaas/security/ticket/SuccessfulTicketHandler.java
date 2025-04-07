@@ -60,20 +60,19 @@ public class SuccessfulTicketHandler implements AuthenticationSuccessHandler {
             response.setStatus(HttpStatus.BAD_REQUEST.value());
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.invalidApplicationName").mapToView();
             mapper.writeValue(response.getWriter(), messageView);
-        } catch (IRRPassTicketGenerationException | UsernameNotProvidedException e) {
+        } catch (IRRPassTicketGenerationException e) {
+            response.setStatus(e.getHttpStatus());
+            ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
+                e.getErrorCode().getMessage()).mapToView();
+            mapper.writeValue(response.getWriter(), messageView);
+            log.debug("The generation of the PassTicket failed. Please supply a valid user and application name, and check that corresponding permissions have been set up.", e);
+        } catch (UsernameNotProvidedException e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
                 e.getMessage()).mapToView();
-
-            if (e instanceof IRRPassTicketGenerationException ex) {
-                response.setStatus(ex.getHttpStatus());
-                messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
-                    ex.getErrorCode().getMessage()).mapToView();
-            }
-
             mapper.writeValue(response.getWriter(), messageView);
-            log.debug("The generation of the PassTicket failed. Please supply a valid user and application name, and check that corresponding permissions have been set up.");
-        }
+            log.debug("The generation of the PassTicket failed.", e);
+    }
 
         response.getWriter().flush();
         if (!response.isCommitted()) {

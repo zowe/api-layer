@@ -39,14 +39,12 @@ public class ZaasAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             Optional<AuthSource> authSource = Optional.ofNullable((AuthSource) request.getAttribute(AUTH_SOURCE_ATTR));
-            if (authSource.isEmpty() ||
-                !authSourceService.isValid(authSource.get())) {
+            if (authSource.isEmpty() || !authSourceService.isValid(authSource.get())) {
                 throw new InsufficientAuthenticationException("Authentication failed.");
             }
 
             Optional<AuthSource.Parsed> authSourceParsed = Optional.ofNullable((AuthSource.Parsed) request.getAttribute(AUTH_SOURCE_PARSED_ATTR));
-            if (authSourceParsed.isEmpty() ||
-                !StringUtils.hasText(authSourceParsed.get().getUserId())) {
+            if (authSourceParsed.isEmpty() || !StringUtils.hasText(authSourceParsed.get().getUserId())) {
                 throw new InsufficientAuthenticationException("Authentication failed.");
             }
 

@@ -13,6 +13,6 @@ package org.zowe.apiml.passticket;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public abstract class PassTicketException extends Exception {
+public class PassTicketException extends Exception {
     public PassTicketException(String message) { super(message); }
 }

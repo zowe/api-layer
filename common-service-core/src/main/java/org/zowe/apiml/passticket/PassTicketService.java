@@ -63,13 +63,12 @@ public class PassTicketService {
         return stateInterface.isUsingBaseImplementation();
     }
 
-
     private void validateUserIdAndApplId(String userId, String applId) throws ApplicationNameNotProvidedException, UsernameNotProvidedException {
-        if (StringUtils.isBlank(userId) || StringUtils.isBlank(applId)) {
+        if (StringUtils.isBlank(applId)) {
            throw new ApplicationNameNotProvidedException();
         }
 
-        if (StringUtils.isBlank(userId) || StringUtils.isBlank(applId)) {
+        if (StringUtils.isBlank(userId)) {
             throw new UsernameNotProvidedException();
         }
     }
@@ -89,6 +88,8 @@ public class PassTicketService {
 
         @Override
         public void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
+            ObjectUtil.requireNotNull(userId, "Parameter userId is empty");
+            ObjectUtil.requireNotNull(applId, "Parameter applId is empty");
             ObjectUtil.requireNotNull(passTicket, "Parameter passTicket is empty");
 
             if (StringUtils.equalsIgnoreCase(UNKNOWN_APPLID, applId)) {

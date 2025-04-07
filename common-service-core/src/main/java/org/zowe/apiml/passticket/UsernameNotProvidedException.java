@@ -11,13 +11,10 @@
 package org.zowe.apiml.passticket;
 
 /**
- * Exception thrown when applicationName parameter was not provided
+ * Exception thrown when username parameter was not provided
  */
 public class UsernameNotProvidedException extends PassTicketException {
 
     public UsernameNotProvidedException() { super("Username not provided"); }
 
-    public UsernameNotProvidedException(String message) {
-        super(message);
-    }
 }

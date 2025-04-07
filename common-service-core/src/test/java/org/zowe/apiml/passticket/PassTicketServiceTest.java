@@ -90,6 +90,21 @@ class PassTicketServiceTest {
     }
 
     @Test
+    void testApplicationNotProvidedExceptionThrown() {
+        assertThrows(ApplicationNameNotProvidedException.class, () -> {
+            passTicketService.generate(TEST_USERID, "");
+        });
+    }
+
+    @Test
+    void testUsernameNotProvidedExceptionThrown() {
+        assertThrows(UsernameNotProvidedException.class, () -> {
+            passTicketService.generate(null, "applId");
+        });
+    }
+
+
+    @Test
     void testDefaultPassTicketImpl_EvaluatePassticket() {
         IRRPassTicketEvaluationException e = assertThrows(IRRPassTicketEvaluationException.class, () -> {
             dpti.evaluate(TEST_USERID, "applId", "passticket");

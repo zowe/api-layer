@@ -64,6 +64,7 @@ class ZaasAuthenticationFilterTest {
         @Test
         void givenValidAuth_whenFilter() throws ServletException, IOException {
             mockAuthSource(true);
+            mockAuthSourceParsed(true);
 
             underTest.doFilterInternal(request, response, filterChain);
 
@@ -85,6 +86,16 @@ class ZaasAuthenticationFilterTest {
         @Test
         void givenInvalidAuth_whenFilter() throws ServletException, IOException {
             mockAuthSource(false);
+
+            underTest.doFilterInternal(request, response, filterChain);
+
+            assertException(InsufficientAuthenticationException.class);
+        }
+
+        @Test
+        void givenInvalidAuthParsedUsername_whenFilter() throws ServletException, IOException {
+            mockAuthSource(true);
+            mockAuthSourceParsed(false);
 
             underTest.doFilterInternal(request, response, filterChain);
 
@@ -114,7 +125,9 @@ class ZaasAuthenticationFilterTest {
         AuthSource authSource = new JwtAuthSource("token");
         request.setAttribute(AUTH_SOURCE_ATTR, authSource);
         when(authSourceService.isValid(authSource)).thenReturn(isValid);
+    }
 
+    private void mockAuthSourceParsed(boolean isValid) {
         AuthSource.Parsed parsedAuthSource = new ParsedTokenAuthSource(isValid ? "user" : null, null, null, null);
         request.setAttribute(AUTH_SOURCE_PARSED_ATTR, parsedAuthSource);
     }

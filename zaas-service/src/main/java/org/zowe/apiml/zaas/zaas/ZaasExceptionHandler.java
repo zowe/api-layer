@@ -67,8 +67,7 @@ public class ZaasExceptionHandler {
     @ExceptionHandler(value = {UsernameNotProvidedException.class})
     public ResponseEntity<ApiMessageView> handleUsernameNotProvidedException(UsernameNotProvidedException ex) {
         log.error(ex.getMessage());
-        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
-            ex.getMessage()).mapToView();
+        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", ex.getMessage()).mapToView();
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .contentType(MediaType.APPLICATION_JSON)
