@@ -15,10 +15,10 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.eureka.DefaultEurekaServerConfig;
 import com.netflix.eureka.EurekaServerConfig;
+import com.netflix.eureka.lease.Lease;
 import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -35,7 +35,10 @@ import org.zowe.apiml.discovery.config.EurekaConfig;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.WrongMethodTypeException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -283,17 +287,21 @@ class ApimlInstanceRegistryTest {
     class WhenStaticallyRegistration {
 
         @Test
-        @Disabled
+        @SuppressWarnings("unchecked")
         void test() throws Throwable {
-            MethodHandle methodHandle = mock(MethodHandle.class);
-            @SuppressWarnings("unchecked")
             var currentStaticIds = (Set<String>) ReflectionTestUtils.getField(apimlInstanceRegistry, "staticRegistrationIds");
             assertTrue(currentStaticIds.isEmpty());
 
-            when(methodHandle.invokeWithArguments(any(), any(), any(), any())).thenReturn(true);
+            var registry = mock(ConcurrentHashMap.class);
+            ReflectionTestUtils.setField(apimlInstanceRegistry, "registry", registry);
+
+            Map<String, Lease<InstanceInfo>> leaseMap = new HashMap<>();
+            when(registry.get(anyString())).thenReturn(leaseMap);
+
             apimlInstanceRegistry.registerStatically(standardInstance, false);
 
             assertFalse(currentStaticIds.isEmpty());
+            assertFalse(leaseMap.isEmpty());
         }
 
     }
