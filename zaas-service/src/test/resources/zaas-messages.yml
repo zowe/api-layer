@@ -153,7 +153,8 @@ messages:
       type: ERROR
       text: "The generation of the PassTicket failed. Reason: %s"
       reason: "An error occurred in the SAF Auth Service. Review the reason in the error message."
-      action: "Supply a valid user and application name, and check that corresponding permissions have been set up."
+      action: >-
+        Supply a valid user and application name, and check that corresponding permissions have been set up.  See the <a href="https://docs.zowe.org/stable/user-guide/api-mediation/configuration-extender-passtickets/#configuring-zowe-to-use-passtickets" title="Enabling single sign on for extending services via PassTicket configuration">docs</a> for reference.
 
   # IDT messages (150 - 159)
     - key: org.zowe.apiml.security.idt.failed
