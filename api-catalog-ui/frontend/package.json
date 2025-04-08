@@ -153,7 +153,13 @@
         "lodash": "4.17.21",
         "semver": "7.7.1",
         "@babel/traverse": "7.27.0",
-        "axios": "1.8.4"
+        "axios": "1.8.4",
+        "swagger-ui-react": {
+            "react-syntax-highlighter": {
+                "refractor": "5.0.0"
+            },
+            "prismjs": "1.30.0"
+        }
     },
     "engines": {
         "npm": "=10.9.2",
