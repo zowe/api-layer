@@ -56,8 +56,8 @@ public class EurekaDashboardControllerTest {
         var conf = mock(Configuration.class);
         when(freeMarkerConfigurer.getConfiguration()).thenReturn(conf);
 
-        doReturn(statusTemplate).when(conf).getTemplate("eureka/status.ftlh");
-        doReturn(lastnTemplate).when(conf).getTemplate("eureka/lastn.ftlh");
+        doReturn(statusTemplate).when(conf).getTemplate("eureka/status.ftlh", null, null, null, true, true);
+        doReturn(lastnTemplate).when(conf).getTemplate("eureka/lastn.ftlh", null, null, null, true, true);
 
         controller = new EurekaDashboardController(originalController, freeMarkerConfigurer, messageSource, processor);
     }
