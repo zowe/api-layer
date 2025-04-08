@@ -23,7 +23,9 @@ import org.springframework.cloud.client.discovery.event.InstanceRegisteredEvent;
 import org.springframework.cloud.client.discovery.event.ParentHeartbeatEvent;
 import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.security.authentication.event.LogoutSuccessEvent;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -60,6 +62,13 @@ public class RouteRefreshListenerTest {
             routeRefreshListener.onApplicationEvent(new LogoutSuccessEvent(mock(Authentication.class)));
             verifyNoInteractions(heartbeatMonitor);
             verifyNoInteractions(publisher);
+        }
+
+        @Test
+        void whenContextRefreshed_thenReset() {
+            var ctx = mock(ApplicationContext.class);
+            doNothing().when(publisher).publishEvent(any());
+            routeRefreshListener.onApplicationEvent(new ContextRefreshedEvent(ctx));
         }
 
         @Test
