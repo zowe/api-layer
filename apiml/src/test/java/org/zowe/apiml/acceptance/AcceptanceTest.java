@@ -10,9 +10,13 @@
 
 package org.zowe.apiml.acceptance;
 
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.netflix.eureka.server.EurekaController;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.web.reactive.result.view.freemarker.FreeMarkerConfigurer;
 import org.zowe.apiml.ApimlApplication;
 
 import java.lang.annotation.ElementType;
@@ -22,9 +26,25 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@ComponentScan(basePackages = "org.zowe.apiml")
-@SpringBootTest(classes = ApimlApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"management.port=-1"})
+@ComponentScan(basePackages = "org.zowe.apiml", excludeFilters = {
+    @ComponentScan.Filter(
+        type = FilterType.REGEX,
+        pattern = ".*Application"
+    ),
+    @ComponentScan.Filter(
+        type = FilterType.ASSIGNABLE_TYPE,
+        classes = EurekaController.class
+    )})
+@SpringBootTest(classes = {
+        ApimlApplication.class,
+        FreeMarkerConfigurer.class
+    },
+    webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
+    properties = {
+        "server.port=40985" // Use specific port due to need to use of apiml.service.port to determine if it's gateway or DS
+    }
+)
+@AutoConfigureWebTestClient
 @DirtiesContext
 public @interface AcceptanceTest {
 

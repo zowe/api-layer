@@ -50,6 +50,7 @@ springBoot {
 }
 
 gitProperties {
+    dotGitDirectory = project.rootProject.layout.projectDirectory.dir(".git")
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }
 
@@ -67,8 +68,11 @@ dependencies {
     implementation libs.spring.boot.starter.security
 
     testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.mock.mvc
     testImplementation libs.modulith.test
     testImplementation libs.reactor.test
+    testImplementation libs.rest.assured
+    testImplementation libs.rest.assured.web.test.client
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

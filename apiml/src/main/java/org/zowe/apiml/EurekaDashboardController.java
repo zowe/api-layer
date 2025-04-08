@@ -78,8 +78,8 @@ public class EurekaDashboardController {
         this.messageSource = messageSource;
         this.templateProcessor = processor;
         var configuration = freeMarkerConfigurer.getConfiguration();
-        this.statusTemplate = configuration.getTemplate("eureka/status.ftlh");
-        this.lastnTemplate = configuration.getTemplate("eureka/lastn.ftlh");
+        this.statusTemplate = configuration.getTemplate("eureka/status.ftlh", null, null, null, true, true);
+        this.lastnTemplate = configuration.getTemplate("eureka/lastn.ftlh", null, null, null, true, true);
     }
 
     @GetMapping
