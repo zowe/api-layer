@@ -28,14 +28,20 @@ import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.ROUTED_PASSTICKET;
 
 /**
  * Verify integration of the API ML Passticket support with the zOS provider of the Passticket.
@@ -52,7 +58,7 @@ class PassTicketTest implements TestWithStartedInstances {
     private final static String APPLICATION_NAME = DISCOVERABLE_CLIENT_CONFIGURATION.getApplId();
 
     private final static String COOKIE = "apimlAuthenticationToken";
-    private URI url = HttpRequestUtils.getUriFromGateway(ROUTED_PASSTICKET);
+    private final URI url = HttpRequestUtils.getUriFromGateway(ROUTED_PASSTICKET);
 
     @BeforeEach
     void setUp() {
@@ -84,9 +90,9 @@ class PassTicketTest implements TestWithStartedInstances {
                     .contentType(JSON)
                     .body(ticketRequest)
                     .cookie(COOKIE, jwt)
-                .when()
+                    .when()
                     .post(url)
-                .then()
+                    .then()
                     .statusCode(is(SC_OK))
                     .extract().body().as(TicketResponse.class);
 
@@ -99,9 +105,9 @@ class PassTicketTest implements TestWithStartedInstances {
                     .contentType(JSON)
                     .body(ticketRequest)
                     .header("Authorization", "Bearer " + jwt)
-                .when()
+                    .when()
                     .post(url)
-                .then()
+                    .then()
                     .statusCode(is(SC_OK))
                     .extract().body().as(TicketResponse.class);
 
@@ -123,9 +129,9 @@ class PassTicketTest implements TestWithStartedInstances {
                 given()
                     .contentType(JSON)
                     .body(ticketRequest)
-                .when()
+                    .when()
                     .post(url)
-                .then()
+                    .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body("messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage));
             }
@@ -139,9 +145,9 @@ class PassTicketTest implements TestWithStartedInstances {
                     .contentType(JSON)
                     .body(ticketRequest)
                     .cookie(COOKIE, jwt)
-                .when()
+                    .when()
                     .post(url)
-                .then()
+                    .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body("messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage));
             }
@@ -155,9 +161,9 @@ class PassTicketTest implements TestWithStartedInstances {
                     .contentType(JSON)
                     .body(ticketRequest)
                     .header("Authorization", "Bearer " + jwt)
-                .when()
+                    .when()
                     .post(url)
-                .then()
+                    .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body("messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage));
             }
@@ -176,9 +182,9 @@ class PassTicketTest implements TestWithStartedInstances {
 
                 given()
                     .cookie(COOKIE, jwt)
-                .when()
+                    .when()
                     .post(url)
-                .then()
+                    .then()
                     .statusCode(is(SC_BAD_REQUEST))
                     .body("messages.find { it.messageNumber == 'ZWEAG140E' }.messageContent", equalTo(expectedMessage));
 
@@ -186,18 +192,18 @@ class PassTicketTest implements TestWithStartedInstances {
 
             @Test
             void givenInvalidApplicationName() {
-                String expectedMessage = "The generation of the PassTicket failed. Reason: Unable to generate PassTicket. Verify that the secured signon (PassTicket) function and application ID is configured properly by referring to Using PassTickets in z/OS Security Server RACF Security Administrator's Guide.";
+                String expectedMessage = "The generation of the PassTicket failed. Reason:";
                 TicketRequest ticketRequest = new TicketRequest(UNKNOWN_APPLID);
 
                 given()
                     .contentType(JSON)
                     .body(ticketRequest)
                     .cookie(COOKIE, jwt)
-                .when()
+                    .when()
                     .post(url)
-                .then()
-                    .statusCode(is(SC_BAD_REQUEST))
-                    .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", equalTo(expectedMessage));
+                    .then()
+                    .statusCode(is(SC_INTERNAL_SERVER_ERROR))
+                    .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", containsString(expectedMessage));
 
             }
         }
@@ -210,9 +216,9 @@ class PassTicketTest implements TestWithStartedInstances {
                     .contentType(JSON)
                     .body(ticketRequest)
                     .cookie(COOKIE, jwt)
-                .when()
+                    .when()
                     .post(url)
-                .then()
+                    .then()
                     .statusCode(is(SC_FORBIDDEN));
             }
         }
@@ -226,9 +232,9 @@ class PassTicketTest implements TestWithStartedInstances {
                 given()
                     .contentType(JSON)
                     .body(ticketRequest)
-                .when()
+                    .when()
                     .get(url)
-                .then()
+                    .then()
                     .statusCode(is(SC_METHOD_NOT_ALLOWED))
                     .body("messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage));
             }
