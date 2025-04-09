@@ -4,13 +4,13 @@ ext {
 }
 
 configurations {
-    zaasServiceJar
+    apimlServiceJar
     zip
 }
 def resourceDir = 'src/main/resources/'
 
 dependencies {
-    zaasServiceJar(project(path: ":apiml", configuration: "liteJarConfiguration"))
+    apimlServiceJar(project(path: ":apiml", configuration: "liteJarConfiguration"))
 }
 
 task packageApiml(type: Zip) {
@@ -18,12 +18,13 @@ task packageApiml(type: Zip) {
     includeEmptyDirs = true
 
     into('/') {
+        from "$resourceDir/zosmf-static-definition.yaml.template"
         from "$buildDir/convert/manifest.yaml"
-        from "../schemas/zaas-schema.json"
+        from "../schemas/apiml-schema.json"
     }
 
     into('bin/') {
-        from configurations.zaasServiceJar
+        from configurations.apimlServiceJar
         from "$resourceDir/bin/start.sh"
         from "$resourceDir/bin/validate.sh"
     }
