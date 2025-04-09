@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.client.configuration;
 
+import org.apache.catalina.connector.Connector;
+import org.apache.tomcat.util.buf.EncodedSolidusHandling;
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
@@ -23,13 +25,23 @@ import java.util.List;
  */
 @Configuration
 public class TomcatConfiguration {
+
     @Bean
     public ServletWebServerFactory servletContainer(List<TomcatConnectorCustomizer> connectorCustomizers) {
-        System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
-        System.setProperty("org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH", "true");
+        connectorCustomizers.add(new UrlTomcatCustomizer());
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         tomcat.setProtocol(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
         tomcat.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
         return tomcat;
+    }
+
+    static class UrlTomcatCustomizer implements TomcatConnectorCustomizer {
+
+        @Override
+        public void customize(Connector connector) {
+            connector.setAllowBackslash(true);
+            connector.setEncodedSolidusHandling(EncodedSolidusHandling.PASS_THROUGH.getValue());
+        }
+
     }
 }

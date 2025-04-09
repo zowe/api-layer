@@ -54,6 +54,7 @@ develop-eggs
 lib64
 __pycache__
 *.jar
+!scripts/*.jar
 *.war
 *.ear
 

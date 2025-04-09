@@ -45,6 +45,6 @@ public class ApimlWebSocketSession extends TomcatWebSocketSession {
         if (ex.getCause() instanceof AuthenticationException) {
             close(new CloseStatus(1003, "Invalid login credentials"));
         }
-        close(CloseStatus.SERVER_ERROR);
+        close(CloseStatus.create(CloseStatus.SERVER_ERROR.getCode(), ex.getMessage()));
     }
 }

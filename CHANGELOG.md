@@ -59,6 +59,7 @@ __Breaking changes in API ML__
 | z/OSMF in version V2R5 with APAR PH12143 applied                                                                              | If you are running a version of z/OS before 3.1, validate that the PH12143 APAR was applied to the z/OSMF installation used by Zowe. The Zowe YAML parameter components.gateway.apiml.security.auth.zosmf.jwtAutoconfiguration for the gateway component has changed. The value auto is no longer allowed. Choose either the default jwt or ltpa depending on if your z/OSMF is set up for JWT use as recommended. See example-zowe.yaml for new component values.
 | Configuration of keyrings now requires transformation from safkeyring://// to safkeyring://                                   | If your Zowe configuration contains safkeyring:////, change this part to safkeyring://.
 | Support access to z/OSMF only through /ibmzosmf route. V3 will not support access through the /zosmf route                    | If you use z/OSMF via {apimlUrl}/zosmf/{zosmfEndpoint} you need to move to {apimlUrl}/ibmzosmf/{zosmfEndpoint}.
+| Error code change for nonexistent services | Nonexistent service returns 404 with error code ZWEAO404E
 
 __New features and enhancements in API ML__
 

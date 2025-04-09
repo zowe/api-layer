@@ -138,6 +138,9 @@ apiml:
                 lb:
                     type: headerRequest
 
+        connectTimeout: 10
+        readTimeout: 10
+
 server:
     error:
         include-message: always
@@ -195,6 +198,13 @@ management:
     endpoint:
         shutdown:
             enabled: true
+
+---
+spring.config.activate.on-profile: debug
+
+logging:
+    level:
+        ROOT: DEBUG
 
 ---
 spring.config.activate.on-profile: dev

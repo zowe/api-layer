@@ -45,6 +45,7 @@ springBoot {
 }
 
 gitProperties {
+    dotGitDirectory = project.rootProject.layout.projectDirectory.dir(".git")
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }
 
