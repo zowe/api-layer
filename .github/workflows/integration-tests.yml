@@ -86,7 +86,7 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runContainerModulithTests --info
+                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runContainerModulithTests --debug
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -1069,6 +1069,10 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Run startup check
+                run: >
+                    ./gradlew runStartUpCheck --info --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
+
             -   name: Run Discovery Service Chaotic HA Tests
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
@@ -1081,7 +1085,7 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-            # Coverage results are not stored in this job as it would not provide much additional data
+
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
