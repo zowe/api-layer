@@ -11,6 +11,7 @@ gatewayServiceConfiguration:
     externalPort: 10010
     instances: 1
     servicesEndpoint: gateway/api/v1/services
+    bucketCapacity: 20
 centralGatewayServiceConfiguration:
     scheme: https
     host: localhost
