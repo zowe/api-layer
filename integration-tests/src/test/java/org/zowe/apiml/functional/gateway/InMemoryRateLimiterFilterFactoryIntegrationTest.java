@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.util.categories.RateLimitTest;
+import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import reactor.netty.http.client.HttpClient;
 
@@ -31,7 +32,7 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
 
     private static WebTestClient client;
 
-    final int bucketCapacity = 60;
+    final int bucketCapacity = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getBucketCapacity();
 
     @BeforeAll
     static void setUpTester() {
@@ -67,14 +68,15 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
     void testRateLimitingWhenExceeded() {
         IntStream.range(0, bucketCapacity).parallel().forEach(i -> client.get()
             .cookie("apimlAuthenticationToken", "validTokenValue")
-            .exchange());
+            .exchange().expectStatus().isOk());
+
 
         client.get()
             .cookie("apimlAuthenticationToken", "validTokenValue")
             .exchange()
             .expectStatus().isEqualTo(HttpStatus.TOO_MANY_REQUESTS)
             .expectBody()
-            .jsonPath("$.messages[0].messageReason").isEqualTo("Connections limit exceeded.");;
+            .jsonPath("$.messages[0].messageReason").isEqualTo("Connections limit exceeded.");
     }
 
     @Test
@@ -82,7 +84,7 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
         // the first user requires access
         IntStream.range(0, bucketCapacity).parallel().forEach(i -> client.get()
             .cookie("apimlAuthenticationToken", "theFirstUser")
-            .exchange());
+            .exchange().expectStatus().isOk());
         //access should be denied
         client.get()
             .cookie("apimlAuthenticationToken", "theFirstUser")
