@@ -66,6 +66,7 @@ public class SecurityConfiguration {
     public WebSecurityCustomizer webSecurityCustomizer() {
         StrictHttpFirewall firewall = new StrictHttpFirewall();
         firewall.setAllowUrlEncodedSlash(true);
+        firewall.setAllowUrlEncodedDoubleSlash(true);
         firewall.setAllowBackSlash(true);
         firewall.setAllowUrlEncodedPercent(true);
         firewall.setAllowUrlEncodedPeriod(true);

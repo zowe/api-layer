@@ -138,6 +138,9 @@ apiml:
                 lb:
                     type: headerRequest
 
+        connectTimeout: 10
+        readTimeout: 10
+
 server:
     error:
         include-message: always

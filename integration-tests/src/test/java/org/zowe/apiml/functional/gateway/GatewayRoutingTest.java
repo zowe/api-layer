@@ -12,10 +12,13 @@ package org.zowe.apiml.functional.gateway;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -23,6 +26,9 @@ import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_GREET;
@@ -111,12 +117,23 @@ class GatewayRoutingTest implements TestWithStartedInstances {
         given().get(new URI(scgUrl)).then().statusCode(404);
     }
 
-    @Test
-    void testRoutingWithSpecialCharacters() throws URISyntaxException {
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "/discoverableclient/api/v1/%5C%2F%25%2E%3B/greeting");
+    @ParameterizedTest
+    @MethodSource("namedUrlChars")
+    void testRoutingWithSpecialCharacters(String characters) throws URISyntaxException {
+        //
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(),
+            "/discoverableclient/api/v1/" + URLEncoder.encode(characters, StandardCharsets.UTF_8) + "/greeting");
         given()
             .urlEncodingEnabled(false)
             .get(new URI(scgUrl)).then().statusCode(200);
     }
 
+    static Stream<Arguments> namedUrlChars() {
+        return Stream.of(
+            Arguments.of(Named.of("Watchtower metrics", "\\/%.;")),
+            Arguments.of(Named.of("USS files", "/.$-_#@{A-Z0-9/+ *%")),
+            Arguments.of(Named.of("Data sets", "#@$-."))
+
+        );
+    }
 }

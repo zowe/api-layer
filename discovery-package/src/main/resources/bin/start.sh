@@ -103,8 +103,17 @@ else
   nonStrictVerifySslCertificatesOfServices=false
 fi
 
+ZOWE_CONSOLE_LOG_CHARSET=UTF-8
 if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
+
+    JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
+        | grep "major version" \
+        | cut -d " " -f5)
+
+    if [ $JAVA_VERSION -ge 65 ]; then # Java 21
+        ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
+    fi
 fi
 
 ATTLS_ENABLED="false"
@@ -249,6 +258,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     ${ADD_OPENS} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
+    -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
     -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \

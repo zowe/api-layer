@@ -47,7 +47,7 @@ class PassTicketServiceImpl implements PassTicketService {
         } catch (ZaasClientException e) {
             throw e;
         } catch (Exception e) {
-            throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, e);
+            throw new ZaasClientException(ZaasClientErrorCodes.INTERNAL_SERVER_ERROR, e);
         }
     }
 
@@ -77,7 +77,7 @@ class PassTicketServiceImpl implements PassTicketService {
             } else if (statusCode == 400) {
                 throw new ZaasClientException(ZaasClientErrorCodes.BAD_REQUEST, obtainedMessage);
             } else if (statusCode == 500) {
-                throw new ZaasClientException(ZaasClientErrorCodes.SERVICE_UNAVAILABLE, obtainedMessage);
+                throw new ZaasClientException(ZaasClientErrorCodes.INTERNAL_SERVER_ERROR, obtainedMessage);
             } else {
                 throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, obtainedMessage);
             }

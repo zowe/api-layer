@@ -23,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -631,6 +632,15 @@ public class NewSecurityConfiguration {
             http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
             http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
         }
+
+        /*
+         * Parent authentication manager is used as a fallback when no authentication provider is able to authenticate the request.
+         * Spring provides the default provider manager as the parent for fallback. This can lead to unexpected behavior as we never use
+         * spring defaults for authentication.
+         */
+        http.setSharedObject(AuthenticationManagerBuilder.class,
+            http.getSharedObject(AuthenticationManagerBuilder.class).parentAuthenticationManager(null));
+
         return http
                 .cors(withDefaults()).csrf(AbstractHttpConfigurer::disable)    // NOSONAR we are using SAMESITE cookie to mitigate CSRF
                 .headers(headers -> headers
