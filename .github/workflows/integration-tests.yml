@@ -86,7 +86,8 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runContainerModulithTests --debug
+                    ENV_CONFIG=docker-modulith ./gradlew runStartUpCheck :integration-tests:runContainerModulithTests --debug
+                    -Ddiscoverableclient.instances=1
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -900,7 +901,8 @@ jobs:
 
             -   name: Run HA Tests
                 run: >
-                    ./gradlew runDeterministicLbHaTests --info -Denvironment.config=-ha
+                    ./gradlew runStartUpCheck runDeterministicLbHaTests --info
+                    -Denvironment.config=-ha -Ddiscoverableclient.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
