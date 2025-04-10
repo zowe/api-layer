@@ -325,7 +325,7 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
-                    LOGBACKSERVICE: ZWEAGW2
+                    logbackService: ZWEAGW2
 
         steps:
             -   uses: actions/checkout@v4
@@ -908,7 +908,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
-                    LOGBACK_SERVICE: ZWEAGW2
+                    logbackService: ZWEAGW2
         steps:
             -   uses: actions/checkout@v4
                 with:
