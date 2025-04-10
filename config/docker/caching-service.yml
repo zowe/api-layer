@@ -5,6 +5,7 @@ apiml:
     banner: console
 
 server:
+    address: 0.0.0.0
     ssl:
         keyAlias: localhost
         keyStore: /docker/all-services.keystore.p12

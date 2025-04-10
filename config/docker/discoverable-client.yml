@@ -8,6 +8,7 @@ spring:
 # The `apiml` node contains API Mediation Layer specific configuration
 apiml:
     service:
+        address: 0.0.0.0
         # The `apiml.service` node contains information required by any APIML service
         serviceId: discoverableclient  # Service ID of this service
         hostname: discoverable-client  # Hostname that is advertised in Eureka. Default is valid only for localhost
