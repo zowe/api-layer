@@ -407,7 +407,7 @@ jobs:
             -   name: Run CI Tests
                 run: >
                     ./gradlew runStartUpCheck :integration-tests:runGatewayCentralRegistryTest --info
-                    -Denvironment.config=-docker -Ddiscoverableclient.instances=0
+                    -Denvironment.config=-docker -Dgateway.instances=2 -Ddiscoverableclient.instances=0
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Dump CGW jacoco data
