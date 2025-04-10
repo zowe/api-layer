@@ -168,6 +168,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_APIMLID: apiml2
+                    SPRING_PROFILES_ACTIVE: DEBUG
                     logbackService: ZWEAGW2
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
@@ -326,6 +327,7 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
                     logbackService: ZWEAGW2
+                    SPRING_PROFILES_ACTIVE: DEBUG
 
         steps:
             -   uses: actions/checkout@v4
@@ -733,6 +735,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAGW2
+                    SPRING_PROFILES_ACTIVE: DEBUG
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -812,6 +815,7 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     APIML_ROUTING_INSTANCEIDHEADER: true
                     logbackService: ZWEAGW2
+                    SPRING_PROFILES_ACTIVE: DEBUG
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -909,6 +913,7 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     logbackService: ZWEAGW2
+                    SPRING_PROFILES_ACTIVE: DEBUG
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -997,6 +1002,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAGW2
+                    SPRING_PROFILES_ACTIVE: DEBUG
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1071,6 +1077,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAGW2
+                    SPRING_PROFILES_ACTIVE: DEBUG
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1149,6 +1156,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAGW2
+                    SPRING_PROFILES_ACTIVE: DEBUG
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1227,6 +1235,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAGW2
+                    SPRING_PROFILES_ACTIVE: DEBUG
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1397,6 +1406,7 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
                     logbackService: ZWEAGW2
+                    SPRING_PROFILES_ACTIVE: DEBUG
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
