@@ -22,6 +22,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.Credentials;
+import org.zowe.apiml.util.config.DiscoverableClientConfiguration;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -40,7 +41,9 @@ import static org.awaitility.Awaitility.await;
  */
 @Slf4j
 public class ApiMediationLayerStartupChecker {
+
     private final GatewayServiceConfiguration gatewayConfiguration;
+    private final DiscoverableClientConfiguration discoverableClientConfiguration;
     private final Credentials credentials;
     private final List<Service> servicesToCheck = new ArrayList<>();
     private final String healthEndpoint = "/application/health";
@@ -48,6 +51,7 @@ public class ApiMediationLayerStartupChecker {
     public ApiMediationLayerStartupChecker() {
         gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         credentials = ConfigReader.environmentConfiguration().getCredentials();
+        discoverableClientConfiguration = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration();
 
         servicesToCheck.add(new Service("Gateway", "$.status"));
         servicesToCheck.add(new Service("ZAAS", "$.components.gateway.details.zaas"));
@@ -108,7 +112,12 @@ public class ApiMediationLayerStartupChecker {
 
             String allComponents = context.read("$.components.discoveryComposite.components.discoveryClient.details.services").toString();
             boolean isTestApplicationUp = allComponents.toLowerCase().contains("discoverableclient");
+            boolean needsTestApplication = discoverableClientConfiguration.getInstances() > 0;
+
             log.debug("Discoverable Client is {}", isTestApplicationUp);
+            log.debug("Needs Discoverable Client: {}", needsTestApplication);
+            isTestApplicationUp = !needsTestApplication || isTestApplicationUp;
+
 
             Integer amountOfActiveGateways = context.read("$.components.gateway.details.gatewayCount");
             boolean isValidAmountOfGatewaysUp = amountOfActiveGateways != null &&
