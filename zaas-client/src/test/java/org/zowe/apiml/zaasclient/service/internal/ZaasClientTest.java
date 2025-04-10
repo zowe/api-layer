@@ -45,6 +45,7 @@ class ZaasClientTest {
     private static final String VALID_USERNAME = "username";
     private static final char[] VALID_NEW_PASSWORD = "username".toCharArray();
     private static final String VALID_APPLICATION_ID = "APPLID";
+    private static final String INVALID_APPLICATION_ID = "XBADAPPL";
     private static final String VALID_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 
     private static final String[] SSL_SYSTEM_ENVIRONMENT_VALUES = {
@@ -174,6 +175,13 @@ class ZaasClientTest {
         when(passTickets.passTicket(anyString(), anyString())).thenThrow(new ZaasClientException(SERVICE_UNAVAILABLE));
 
         assertThrows(ZaasClientException.class, () -> underTest.passTicket(VALID_TOKEN, VALID_APPLICATION_ID));
+    }
+
+    @Test
+    void givenValidTokenInvalidApplId_whenPassTicketApiIsCalled_thenRaisedClientExceptionIsRethrown() throws Exception {
+        when(passTickets.passTicket(anyString(), anyString())).thenThrow(new ZaasClientException(INTERNAL_SERVER_ERROR));
+        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> underTest.passTicket(VALID_TOKEN, INVALID_APPLICATION_ID));
+        assertTrue(exception.getMessage().contains("'ZWEAS504E', message='Internal server error while generating PassTicket.'"));
     }
 
     @Test

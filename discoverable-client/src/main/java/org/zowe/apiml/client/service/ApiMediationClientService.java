@@ -67,6 +67,8 @@ public class ApiMediationClientService {
             .ssl(ssl)
             .preferIpAddress(false)
             .serviceIpAddress("0.0.0.0") //use hostname instead of IP address
+            .connectTimeout(dcConfig.getConnectTimeout())
+            .readTimeout(dcConfig.getReadTimeout())
             .build();
         apiMediationClient.register(apiConfig);
         return true; // indicates success, successful unless exception thrown. Used to assert success in unit tests.
