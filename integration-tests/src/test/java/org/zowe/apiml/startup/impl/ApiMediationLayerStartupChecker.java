@@ -112,10 +112,10 @@ public class ApiMediationLayerStartupChecker {
 
             Integer amountOfActiveGateways = context.read("$.components.gateway.details.gatewayCount");
             boolean isValidAmountOfGatewaysUp = amountOfActiveGateways != null &&
-                amountOfActiveGateways.equals(gatewayConfiguration.getInstances());
+                amountOfActiveGateways >= gatewayConfiguration.getInstances();
             log.debug("There are {} gateways", amountOfActiveGateways);
             if (!isValidAmountOfGatewaysUp) {
-                log.debug("Expecting {} gateways", gatewayConfiguration.getInstances());
+                log.debug("Expecting at least {} gateways", gatewayConfiguration.getInstances());
                 return false;
             }
             // Consider properly the case with multiple gateway services running on different ports.
