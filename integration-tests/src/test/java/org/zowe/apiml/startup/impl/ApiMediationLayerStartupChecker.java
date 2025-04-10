@@ -15,6 +15,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -73,7 +74,10 @@ public class ApiMediationLayerStartupChecker {
             final String jsonResponse = EntityUtils.toString(response.getEntity());
             log.debug("URI: {}, JsonResponse is {}", request.getURI().toString(), jsonResponse);
 
-            return JsonPath.parse(jsonResponse);
+            if (StringUtils.isNotEmpty(jsonResponse)) {
+                return JsonPath.parse(jsonResponse);
+            }
+            return null;
         } catch (IOException e) {
             log.warn("Check failed on getting the document: {}", e.getMessage());
             return null;
