@@ -205,7 +205,6 @@ public class ServiceDefinitionProcessor {
         return null;
     }
 
-    // Do I understand properly that the createInstances
     private List<InstanceInfo> createInstances(StaticRegistrationResult context, String ymlFileName, Service service, Map<String, CatalogUiTile> tiles) {
         try {
             if (service.getServiceId() == null) {
