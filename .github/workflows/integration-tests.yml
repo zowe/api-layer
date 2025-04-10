@@ -1318,7 +1318,7 @@ jobs:
 
             -   name: Dump DC jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address discoverable-client --port 6303 --destfile ./results/discoverable-client.exec
+                    java -jar ./scripts/jacococli.jar dump --address discoverable-client --port 6303 --destfile ./results/discoverable-client.exec || echo "Discoverable Client is not available to obtain JaCoCo report at the moment"
 
             -   name: Correct Permisions
                 run: |
