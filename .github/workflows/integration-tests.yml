@@ -1580,7 +1580,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [ CITests,CITestsModulith,CITestsWithInfinispan,CITestsZaas,GatewayProxy,GatewayServiceRouting ]
+        needs: [ CITests,CITestsModulith,CITestsWithInfinispan,CITestsZaas,GatewayProxy,GatewayServiceRouting,CITestsWebSocketChaoticHA ]
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
