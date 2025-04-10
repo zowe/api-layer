@@ -24,7 +24,7 @@ eureka:
 spring.config.activate.on-profile: https
 
 server:
-    address: ${apiml.service.hostname}
+    address: 0.0.0.0
     ssl:
         keyAlias: localhost
         keyPassword: password

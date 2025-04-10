@@ -26,6 +26,7 @@ import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,15 +38,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.EurekaRestController.UriInfoAdapter;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.function.Predicate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
@@ -352,6 +358,128 @@ public class EurekaRestControllerTest {
         StepVerifier.create(controller.batchReplication(replicationListJson))
             .expectNextMatches(entityMatcher)
             .verifyComplete();
+    }
+
+    @Nested
+    class UriInfoAdapterTest {
+
+        private UriInfoAdapter adapter;
+        private MockServerHttpRequest request;
+
+        @BeforeEach
+        void setUp() {
+            request = MockServerHttpRequest.get("https://localhost:10011/eureka").queryParam("param1", "value1").build();
+            this.adapter = new UriInfoAdapter(request);
+        }
+
+        @Test
+        void getPath() {
+            assertEquals("/eureka", adapter.getPath());
+        }
+
+        @Test
+        void getPathSegments() {
+            request = MockServerHttpRequest.get("https://localhost:10011/eureka/1/2").contextPath("/eureka").queryParam("param1", "value1").build();
+            this.adapter = new UriInfoAdapter(request);
+            var pathSegments = adapter.getPathSegments();
+            assertEquals(2, pathSegments.size());
+            assertTrue(pathSegments.get(0).getPath().equals("/"));
+            assertTrue(pathSegments.get(1).getPath().equals("eureka"));
+        }
+
+        @Test
+        void getPathSegments_withDecode() {
+            request = MockServerHttpRequest.get("https://localhost:10011/eureka/1/2").contextPath("/eureka").queryParam("param1", "value1").build();
+            this.adapter = new UriInfoAdapter(request);
+            var pathSegments = adapter.getPathSegments(true);
+            assertEquals(2, pathSegments.size());
+            assertTrue(pathSegments.get(0).getPath().equals("/"));
+            assertTrue(pathSegments.get(1).getPath().equals("eureka"));
+        }
+
+        @Test
+        void getRequestUri() {
+            assertEquals(request.getURI(), adapter.getRequestUri());
+        }
+
+        @Test
+        void getRequestUriBuilder() {
+            assertTrue(adapter.getRequestUriBuilder().build().equals(request.getURI()));
+        }
+
+        @Test
+        void getAbsolutePath() {
+            assertEquals(request.getURI(), adapter.getAbsolutePath());
+        }
+
+        @Test
+        void getAbsolutePathBuilder() {
+            assertTrue(adapter.getAbsolutePathBuilder().build().equals(request.getURI()));
+        }
+
+        @Test
+        void getBaseUri() {
+            assertEquals(URI.create("https://localhost:10011/eureka/?param1=value1"), adapter.getBaseUri());
+        }
+
+        @Test
+        void getBaseUriBuilder() {
+            assertEquals(URI.create("https://localhost:10011/eureka/?param1=value1"), adapter.getBaseUriBuilder().build());
+        }
+
+        @Test
+        void getPathParameters() {
+            assertTrue(adapter.getPathParameters().isEmpty());
+        }
+
+        @Test
+        void getPathParametersWithDecode() {
+            assertTrue(adapter.getPathParameters(true).isEmpty());
+            assertTrue(adapter.getPathParameters(false).isEmpty());
+        }
+
+        @Test
+        void getQueryParameters() {
+            var params = adapter.getQueryParameters();
+            assertEquals(1, params.size());
+            assertEquals(List.of("value1"), params.get("param1"));
+        }
+
+        @Test
+        void getQueryParametersWithDecode() {
+            var params = adapter.getQueryParameters(true);
+            assertEquals(1, params.size());
+            assertEquals(List.of("value1"), params.get("param1"));
+        }
+
+        @Test
+        void getMatchedURIs() {
+            assertTrue(adapter.getMatchedURIs().isEmpty());
+        }
+
+        @Test
+        void getMatchedURIsWithDecode() {
+            assertTrue(adapter.getMatchedURIs(false).isEmpty());
+            assertTrue(adapter.getMatchedURIs(true).isEmpty());
+        }
+
+        @Test
+        void getMatchedResources() {
+            assertTrue(adapter.getMatchedResources().isEmpty());
+        }
+
+        @Test
+        void resolveUri() {
+            var uri = URI.create("https://localhost:10011/eureka");
+            assertEquals(uri, adapter.resolve(uri));
+        }
+
+        @Test
+        void relativizeUri() {
+            var uri = URI.create("https://localhost:10011/eureka");
+            assertEquals(uri, adapter.relativize(uri));
+        }
+
     }
 
 }

@@ -285,7 +285,7 @@ public class EurekaRestController {
     }
 
     @RequiredArgsConstructor
-    private static class UriInfoAdapter implements UriInfo {
+    static class UriInfoAdapter implements UriInfo {
 
         private final ServerHttpRequest request;
 
@@ -399,6 +399,7 @@ public class EurekaRestController {
         public URI relativize(URI uri) {
             return uri;
         }
+
     }
 
 }
