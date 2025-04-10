@@ -35,7 +35,7 @@ jobs:
     CITestsModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:jammy
+        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -107,7 +107,7 @@ jobs:
     CITests:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:jammy
+        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -181,7 +181,7 @@ jobs:
     Oauth2Integration:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:jammy
+        container: ubuntu:latest
         timeout-minutes: 10
         services:
             gateway-service:
@@ -222,7 +222,7 @@ jobs:
     GatewayProxy:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:jammy
+        container: ubuntu:latest
         timeout-minutes: 10
 
         services:
@@ -293,7 +293,7 @@ jobs:
     GatewayServiceRouting:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:jammy
+        container: ubuntu:latest
         timeout-minutes: 10
 
         services:
@@ -341,7 +341,7 @@ jobs:
     GatewayCentralRegistry:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:jammy
+        container: ubuntu:latest
         timeout-minutes: 10
 
         services:
@@ -427,7 +427,7 @@ jobs:
     CITestsRegistration:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:jammy
+        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -476,7 +476,7 @@ jobs:
     CITestsZaas:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:jammy
+        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -555,7 +555,7 @@ jobs:
     CITestsZosmfWithoutJwt:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:jammy
+        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -749,7 +749,7 @@ jobs:
 
     CITestsHA:
         needs: PublishJibContainers
-        container: ubuntu:jammy
+        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -834,7 +834,7 @@ jobs:
 
     DeterministicHALoadBalancing:
         needs: PublishJibContainers
-        container: ubuntu:jammy
+        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -928,7 +928,7 @@ jobs:
 
     StickySessionHALoadBalancing:
         needs: PublishJibContainers
-        container: ubuntu:jammy
+        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -1024,7 +1024,7 @@ jobs:
 
     CITestsDiscoveryChaoticHA:
         needs: PublishJibContainers
-        container: ubuntu:jammy
+        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -1101,7 +1101,7 @@ jobs:
 
     CITestsGatewayChaoticHA:
         needs: PublishJibContainers
-        container: ubuntu:jammy
+        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -1174,7 +1174,7 @@ jobs:
 
     CITestsDiscoverableClientChaoticHA:
         needs: PublishJibContainers
-        container: ubuntu:jammy
+        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -1251,7 +1251,7 @@ jobs:
 
     CITestsWebSocketChaoticHA:
         needs: PublishJibContainers
-        container: ubuntu:jammy
+        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -1337,7 +1337,7 @@ jobs:
     CITestsWithInfinispan:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:jammy
+        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -1533,7 +1533,7 @@ jobs:
 
     CITestsServicePrefixReplacer:
         needs: PublishJibContainers
-        container: ubuntu:jammy
+        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
