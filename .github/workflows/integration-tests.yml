@@ -87,7 +87,7 @@ jobs:
             -   name: Run CI Tests
                 run: >
                     ENV_CONFIG=docker-modulith ./gradlew runStartUpCheck :integration-tests:runContainerModulithTests --debug
-                    -Ddiscoverableclient.instances=1
+                    -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -1076,14 +1076,10 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
-            -   name: Run startup check
-                run: >
-                    ./gradlew runStartUpCheck --info --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
-
             -   name: Run Discovery Service Chaotic HA Tests
                 run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
-                    --info -Denvironment.config=-ha
+                    ./gradlew runStartUpCheck :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
+                    --info -Denvironment.config=-ha -Ddiscoverableclient.instances=1
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
