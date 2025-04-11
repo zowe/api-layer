@@ -31,9 +31,9 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.gateway.GatewayServiceApplication;
+import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
-import org.zowe.apiml.gateway.acceptance.common.MockService;
 import org.zowe.apiml.gateway.filters.ForbidCharacterException;
 import org.zowe.apiml.gateway.filters.ForbidSlashException;
 import reactor.core.publisher.Mono;

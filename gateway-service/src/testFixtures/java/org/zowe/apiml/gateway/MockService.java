@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.acceptance.common;
+package org.zowe.apiml.gateway;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,10 +42,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * This class allows to mock any simply service to a functional test. It is fully integrated in
- * {@link AcceptanceTestWithMockServices}. In case you are using directly this implementation DO NOT FORGET to close
- * the service once it is released and in the similar way, without {@link AcceptanceTestWithMockServices} it is
+ * AcceptanceTestWithMockServices. In case you are using directly this implementation DO NOT FORGET to close
+ * the service once it is released and in the similar way, without AcceptanceTestWithMockServices it is
  * necessary to mock registry and routing. The easiest way is to use the method
- * {@link AcceptanceTestWithMockServices#mockService(String)}. It allows to you to use the same features and also
+ * @link AcceptanceTestWithMockServices#mockService(String). It allows to you to use the same features and also
  * takes care about clean up, mocking of service register, and updating routing rules.
  *
  * Example:

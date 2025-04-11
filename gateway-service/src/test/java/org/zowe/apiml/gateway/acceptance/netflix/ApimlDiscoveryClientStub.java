@@ -19,6 +19,7 @@ import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.cloud.netflix.eureka.http.RestClientDiscoveryClientOptionalArgs;
 import org.springframework.cloud.netflix.eureka.http.RestClientTransportClientFactories;
 import org.springframework.context.ApplicationEventPublisher;
+import org.zowe.apiml.gateway.ApplicationRegistry;
 
 import java.util.List;
 
