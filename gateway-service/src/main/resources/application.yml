@@ -172,13 +172,11 @@ logging:
     level:
         org.zowe.apiml: DEBUG
         org.springframework.cloud.gateway: DEBUG
-        org.springframework.cloud.netflix.eureka: DEBUG
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.springframework.security: DEBUG
         org.springframework.http.server.reactive: DEBUG
         org.springframework.web.reactive: DEBUG
         org.springframework.web.reactive.socket: DEBUG
-        org.springframework.boot.actuate.endpoint.web: DEBUG
         reactor.netty.http.client: DEBUG
         reactor.netty.http.client.HttpClient: DEBUG
         reactor.netty.http.client.HttpClientConnect: DEBUG
