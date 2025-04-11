@@ -23,6 +23,14 @@ subprojects {
     }
 }
 
+project(":apiml") {
+    sonar {
+        properties {
+            property "sonar.exclusions", "src/main/java/org/zowe/apiml/EurekaConfiguration.java" // Class brought from Eureka code
+        }
+    }
+}
+
 project(":api-catalog-ui") {
     sonar {
         properties {
