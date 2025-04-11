@@ -111,7 +111,7 @@ public class ModulithConfig {
             .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
             .setAppName(serviceId)
             .setHostName(hostname)
-            .setHomePageUrl(null, String.format("%s://%s:%d", scheme, hostname, port)) //TODO Will it break something else other than catalog?
+            .setHomePageUrl(null, String.format("%s://%s:%d", scheme, hostname, port))
             .setStatus(InstanceInfo.InstanceStatus.UP)
             .setIPAddr(ipAddress)
             .setPort(port)
