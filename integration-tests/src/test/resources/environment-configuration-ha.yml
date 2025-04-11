@@ -10,6 +10,7 @@ gatewayServiceConfiguration:
     externalPort: 10010
     instances: 2
     servicesEndpoint: gateway/api/v1/services
+    bucketCapacity: 20
 zaasConfiguration:
     scheme: https
     host: zaas-service
