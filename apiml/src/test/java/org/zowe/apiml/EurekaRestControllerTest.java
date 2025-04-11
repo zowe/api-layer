@@ -378,6 +378,12 @@ public class EurekaRestControllerTest {
         }
 
         @Test
+        void getPathWithDecode() {
+            assertEquals("/eureka", adapter.getPath(true));
+            assertEquals("/eureka", adapter.getPath(false));
+        }
+
+        @Test
         void getPathSegments() {
             request = MockServerHttpRequest.get("https://localhost:10011/eureka/1/2").contextPath("/eureka").queryParam("param1", "value1").build();
             this.adapter = new UriInfoAdapter(request);
@@ -385,6 +391,7 @@ public class EurekaRestControllerTest {
             assertEquals(2, pathSegments.size());
             assertTrue(pathSegments.get(0).getPath().equals("/"));
             assertTrue(pathSegments.get(1).getPath().equals("eureka"));
+
         }
 
         @Test
@@ -394,6 +401,7 @@ public class EurekaRestControllerTest {
             var pathSegments = adapter.getPathSegments(true);
             assertEquals(2, pathSegments.size());
             assertTrue(pathSegments.get(0).getPath().equals("/"));
+            assertTrue(pathSegments.get(0).getMatrixParameters().isEmpty());
             assertTrue(pathSegments.get(1).getPath().equals("eureka"));
         }
 

@@ -148,6 +148,21 @@ public class BasicAuthFilterTest {
                 verifyNoInteractions(basicAuthProvider);
             }
 
+            @Test
+            void givenAuthIsValidFormat_whenEmptyToken_thenUnauthorized() {
+                mockBasicAuth(VALID_BASIC_CREDENTIALS);
+
+                when(basicAuthProvider.getToken("Basic " + VALID_BASIC_CREDENTIALS))
+                    .thenReturn(Mono.just(""));
+
+                StepVerifier.create(basicAuthFilter.filter(serverWebExchange, chain))
+                    .expectComplete()
+                    .verify();
+
+                assertEquals(HttpStatusCode.valueOf(401), response.getStatusCode());
+                verifyNoInteractions(chain);
+            }
+
         }
 
         @Nested
