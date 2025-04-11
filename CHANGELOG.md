@@ -23,6 +23,10 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Add newPassword to the Swagger (#3999) ([2b60a62](https://github.com/zowe/api-layer/commit/2b60a62)), closes [#3999](https://github.com/zowe/api-layer/issues/3999)
 * Bugfix:  tls minimum setting (v3) (#3993) ([540658e](https://github.com/zowe/api-layer/commit/540658e)), closes [#3993](https://github.com/zowe/api-layer/issues/3993)
 * Bugfix:  update react router  (#3977) ([417356d](https://github.com/zowe/api-layer/commit/417356d)), closes [#3977](https://github.com/zowe/api-layer/issues/3977)
+* Bugfix:  replace default spring x509 authentication in zaas (#3971) ([6290b1f](https://github.com/zowe/api-layer/commit/6290b1f)), closes [#3971](https://github.com/zowe/api-layer/issues/3971)
+* Bugfix:  Use HA instance ID in path to infinispan storage location (v3) (#3960) ([3627cc9](https://github.com/zowe/api-layer/commit/3627cc9)), closes [#3960](https://github.com/zowe/api-layer/issues/3960)
+* Bugfix:  gradle release version to 3.1.5-SNAPSHOT (#3963) ([5f88027](https://github.com/zowe/api-layer/commit/5f88027)), closes [#3963](https://github.com/zowe/api-layer/issues/3963)
+* Bugfix:  Use writeble headers on first. Solve the conflict with RequestAttributesProvider (#3966) ([4751f53](https://github.com/zowe/api-layer/commit/4751f53)), closes [#3966](https://github.com/zowe/api-layer/issues/3966)
 
 ## `APIML 3.1.5 / Zowe 3.1.0 (2025-02-03)`
 
