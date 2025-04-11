@@ -2,12 +2,13 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `3.2.0 (2025-05-08)`
+## `3.2.0 (2025-04-11)`
 
 * Feature:  eureka client connection timeout (#4045) ([0e3c116](https://github.com/zowe/api-layer/commit/0e3c116)), closes [#4045](https://github.com/zowe/api-layer/issues/4045)
 * Feature:  v3 with java 21 (#4028) ([59ea8ee](https://github.com/zowe/api-layer/commit/59ea8ee)), closes [#4028](https://github.com/zowe/api-layer/issues/4028)
 
 
+* Bugfix:  jacoco in jib supports Java 21 (#4060) ([92ec601](https://github.com/zowe/api-layer/commit/92ec601)), closes [#4060](https://github.com/zowe/api-layer/issues/4060)
 * Bugfix:  change error code SERVICE_UNAVAILABLE to INTERNAL_SERVER_ERROR when ticket generation fails in  ([6ab6cc3](https://github.com/zowe/api-layer/commit/6ab6cc3)), closes [#4047](https://github.com/zowe/api-layer/issues/4047)
 * Bugfix:  allow double slash in url (#4030) ([6760eed](https://github.com/zowe/api-layer/commit/6760eed)), closes [#4030](https://github.com/zowe/api-layer/issues/4030)
 * Bugfix:  Fix choosing correct client certificate for outbound communication from the Gateway (#4033) ([e38d3e1](https://github.com/zowe/api-layer/commit/e38d3e1)), closes [#4033](https://github.com/zowe/api-layer/issues/4033)
@@ -22,8 +23,6 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Add newPassword to the Swagger (#3999) ([2b60a62](https://github.com/zowe/api-layer/commit/2b60a62)), closes [#3999](https://github.com/zowe/api-layer/issues/3999)
 * Bugfix:  tls minimum setting (v3) (#3993) ([540658e](https://github.com/zowe/api-layer/commit/540658e)), closes [#3993](https://github.com/zowe/api-layer/issues/3993)
 * Bugfix:  update react router  (#3977) ([417356d](https://github.com/zowe/api-layer/commit/417356d)), closes [#3977](https://github.com/zowe/api-layer/issues/3977)
-* Bugfix:  replace default spring x509 authentication in zaas (#3971) ([6290b1f](https://github.com/zowe/api-layer/commit/6290b1f)), closes [#3971](https://github.com/zowe/api-layer/issues/3971)
-* Bugfix:  Use HA instance ID in path to infinispan storage location (v3) (#3960) ([3627cc9](https://github.com/zowe/api-layer/commit/3627cc9)), closes [#3960](https://github.com/zowe/api-layer/issues/3960)
 
 ## `APIML 3.1.5 / Zowe 3.1.0 (2025-02-03)`
 
