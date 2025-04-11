@@ -20,6 +20,7 @@ import org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService;
 
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class ApplicationReadyListenerTest {
@@ -34,6 +35,7 @@ public class ApplicationReadyListenerTest {
         doNothing().when(registrationService).registerServices();
 
         listener.onApplicationEvent(mock(ApplicationReadyEvent.class));
+        verify(registrationService).registerServices();
     }
 
 }

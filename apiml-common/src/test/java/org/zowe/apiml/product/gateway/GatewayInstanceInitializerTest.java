@@ -11,13 +11,12 @@
 package org.zowe.apiml.product.gateway;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -25,10 +24,12 @@ import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.instance.lookup.InstanceLookupExecutor;
 
-import java.util.Collections;
+import java.util.List;
 
 import static java.time.Duration.ofMillis;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -41,27 +42,16 @@ class GatewayInstanceInitializerTest {
     private GatewayClient gatewayClient;
 
     @Autowired
-    private EurekaClient eurekaClient;
+    private DiscoveryClient discoveryClient;
 
     @Autowired
     private GatewayInstanceInitializer gatewayInstanceInitializer;
 
-    private Application application;
-
-    @BeforeEach
-    void setup() {
-        application = new Application(
-            SERVICE_ID,
-            Collections.singletonList(getStandardInstance(SERVICE_ID, "https://localhost:9090/"))
-        );
-    }
-
     @Test
     void testInit() {
         assertTimeout(ofMillis(2000), () -> {
-            when(
-                eurekaClient.getApplication(SERVICE_ID)
-            ).thenReturn(application);
+            when(discoveryClient.getServices()).thenReturn(List.of(SERVICE_ID));
+            when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(List.of(new EurekaServiceInstance(getStandardInstance(SERVICE_ID, "https://localhost:9090/"))));
 
             gatewayInstanceInitializer.init();
 
@@ -78,26 +68,26 @@ class GatewayInstanceInitializerTest {
     static class TestConfig {
 
         @Bean
-        public EurekaClient eurekaClient() {
-            return mock(EurekaClient.class);
+        DiscoveryClient discoveryClient() {
+            return mock(DiscoveryClient.class);
         }
 
         @Bean
-        public GatewayClient gatewayClient() {
+        GatewayClient gatewayClient() {
             return new GatewayClient(null);
         }
 
         @Bean
-        public InstanceLookupExecutor instanceLookupExecutor(EurekaClient eurekaClient) {
+        InstanceLookupExecutor instanceLookupExecutor(DiscoveryClient discoveryClient) {
             return new InstanceLookupExecutor(
-                eurekaClient
+                discoveryClient
             );
         }
 
         @Bean
-        public GatewayInstanceInitializer gatewayInstanceInitializer(ApplicationEventPublisher applicationEventPublisher, EurekaClient eurekaClient) {
+        GatewayInstanceInitializer gatewayInstanceInitializer(ApplicationEventPublisher applicationEventPublisher, DiscoveryClient discoveryClient) {
             return new GatewayInstanceInitializer(
-                instanceLookupExecutor(eurekaClient),
+                instanceLookupExecutor(discoveryClient),
                 applicationEventPublisher,
                 gatewayClient()
             );

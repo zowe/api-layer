@@ -11,27 +11,42 @@
 package org.zowe.apiml.product.instance.lookup;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.instance.InstanceInitializationException;
 import org.zowe.apiml.product.instance.InstanceNotFoundException;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static java.time.Duration.ofMillis;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.REGISTRATION_TYPE;
 
 class InstanceLookupExecutorTest {
@@ -42,8 +57,7 @@ class InstanceLookupExecutorTest {
 
         private static final String SERVICE_ID = CoreService.API_CATALOG.getServiceId();
 
-        @Mock
-        private EurekaClient eurekaClient;
+        @Mock private DiscoveryClient discoveryClient;
 
         private InstanceLookupExecutor instanceLookupExecutor;
         private List<InstanceInfo> instances;
@@ -79,7 +93,7 @@ class InstanceLookupExecutorTest {
 
         @BeforeEach
         void setUp() {
-            instanceLookupExecutor = new InstanceLookupExecutor(eurekaClient);
+            instanceLookupExecutor = new InstanceLookupExecutor(discoveryClient);
             instances = Collections.singletonList(
                 getInstance(SERVICE_ID));
             latch = new CountDownLatch(1);
@@ -108,8 +122,9 @@ class InstanceLookupExecutorTest {
         @Test
         void testRun_whenNoInstancesExistInDiscovery() {
             assertTimeout(ofMillis(2000), () -> {
-                when(eurekaClient.getApplication(SERVICE_ID))
-                    .thenReturn(new Application(SERVICE_ID, Collections.emptyList()));
+                when(discoveryClient.getServices()).thenReturn(List.of(SERVICE_ID));
+                when(discoveryClient.getInstances(SERVICE_ID))
+                    .thenReturn(List.of());
 
                 instanceLookupExecutor.run(
                     SERVICE_ID, null,
@@ -131,7 +146,8 @@ class InstanceLookupExecutorTest {
         @Test
         void testRun_whenUnexpectedExceptionHappened() {
             assertTimeout(ofMillis(2000), () -> {
-                when(eurekaClient.getApplication(SERVICE_ID))
+                when(discoveryClient.getServices()).thenReturn(List.of(SERVICE_ID));
+                when(discoveryClient.getInstances(SERVICE_ID))
                     .thenThrow(new InstanceInitializationException("Unexpected Exception"));
 
                 instanceLookupExecutor.run(
@@ -152,8 +168,9 @@ class InstanceLookupExecutorTest {
         @Test
         void testRun_whenInstanceExistInDiscovery() {
             assertTimeout(ofMillis(2000), () -> {
-                when(eurekaClient.getApplication(SERVICE_ID))
-                    .thenReturn(new Application(SERVICE_ID, instances));
+                when(discoveryClient.getServices()).thenReturn(List.of(SERVICE_ID));
+                when(discoveryClient.getInstances(SERVICE_ID))
+                    .thenReturn(instances.stream().map(EurekaServiceInstance::new).map(ServiceInstance.class::cast).toList());
 
                 instanceLookupExecutor.run(
                     SERVICE_ID,
@@ -176,13 +193,13 @@ class InstanceLookupExecutorTest {
     @Nested
     class MultiTenancy {
 
-        private final EurekaClient eurekaClient = mock(EurekaClient.class);
-        private final InstanceLookupExecutor instanceLookupExecutor = new InstanceLookupExecutor(eurekaClient);
+        private final DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
+        private final InstanceLookupExecutor instanceLookupExecutor = new InstanceLookupExecutor(discoveryClient);
 
+        @SuppressWarnings("unchecked")
         private final Consumer<InstanceInfo> successHandler = mock(Consumer.class);
+        @SuppressWarnings("unchecked")
         private final BiConsumer<Exception, Boolean> failureHandler = mock(BiConsumer.class);
-
-        private final Application application = new Application(CoreService.GATEWAY.getServiceId());
 
         InstanceInfo mockGateway(EurekaMetadataDefinition.RegistrationType registrationType) {
             Map<String, String> metadata = new HashMap<>();
@@ -194,17 +211,16 @@ class InstanceLookupExecutorTest {
                 .setInstanceId(CoreService.GATEWAY.getServiceId() + ":localhost:" + (1 + new Random().nextInt() % 65535))
                 .setMetadata(metadata)
                 .build();
-            application.addInstance(instanceInfo);
+
+            when(discoveryClient.getServices()).thenReturn(List.of(CoreService.GATEWAY.getServiceId()));
+            when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(
+                List.of(new EurekaServiceInstance(instanceInfo))
+            );
             return instanceInfo;
         }
 
         private void invokeRun() {
             instanceLookupExecutor.run(CoreService.GATEWAY.getServiceId(), successHandler, failureHandler);
-        }
-
-        @BeforeEach
-        void setUp() {
-            doReturn(application).when(eurekaClient).getApplication(CoreService.GATEWAY.getServiceId());
         }
 
         @Test
@@ -233,7 +249,10 @@ class InstanceLookupExecutorTest {
         @Test
         void givenMultipleInstances_whenRun_thenInvokeSuccessHandler() {
             var primary = mockGateway(EurekaMetadataDefinition.RegistrationType.PRIMARY);
-            mockGateway(EurekaMetadataDefinition.RegistrationType.ADDITIONAL);
+            var additional = mockGateway(EurekaMetadataDefinition.RegistrationType.ADDITIONAL);
+            when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(
+                List.of(new EurekaServiceInstance(primary), new EurekaServiceInstance(additional))
+            );
             invokeRun();
             verify(successHandler).accept(primary);
             verify(failureHandler, never()).accept(any(), anyBoolean());

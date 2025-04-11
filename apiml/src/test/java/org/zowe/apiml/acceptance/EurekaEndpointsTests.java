@@ -16,6 +16,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 
+import java.net.URI;
+
 import static io.restassured.RestAssured.given;
 
 @AcceptanceTest
@@ -24,7 +26,7 @@ public class EurekaEndpointsTests extends AcceptanceTestWithMockServices {
 
     private static final String USER_ID = "user";
     private static final String COOKIE_NAME = "apimlAuthenticationToken";
-    private static final String JWT = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiaWF0IjoxNjcxNDYxNjIzLCJleHAiOjE2NzE0OTA0MjMsImlzcyI6IkFQSU1MIiwianRpIjoiYmFlMTkyZTYtYTYxMi00MThhLWI2ZGMtN2I0NWI5NzM4ODI3IiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIifQ.Vt5UjJUlbmuzmmEIodAACtj_AOxlsWqkFrFyWh4_MQRRPCj_zMIwnzpqRN-NJvKtUg1zxOCzXv2ypYNsglrXc7cH9wU3leK1gjYxK7IJjn2SBEb0dUL5m7-h4tFq2zNhcGH2GOmTpE2gTQGSTvDIdja-TIj_lAvUtbkiorm1RqrNu2MGC0WfgOGiak3tj2tNJLv_Y1ZMxNjzyHgXBMuNPozQrd4Vtnew3x4yy85LrTYF7jJM3U-e3AD2yImftxwycQvbkjNb-lWadejTVH0MgHMr04wVdDd8Nq5q7yrZf7YPzhias8ehNbew5CHiKut9SseZ1sO2WwgfhpEfsN4okg";
+    private static final String JWT = "jwt";
 
     @Test
     void testEurekaHomePage() throws JsonProcessingException {
@@ -32,12 +34,14 @@ public class EurekaEndpointsTests extends AcceptanceTestWithMockServices {
 
         mockService("zaas").scope(MockService.Scope.TEST)
             .addEndpoint("/zaas/scheme/zosmf")
+            .responseCode(201)
             .bodyJson(response)
             .and().start();
 
         given()
         .when()
             .auth().preemptive().basic(USER_ID, "user")
+            .get(URI.create("https://localhost:10011"))
         .then()
             .statusCode(200);
     }

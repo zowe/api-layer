@@ -69,6 +69,7 @@ public class RouteRefreshListenerTest {
             var ctx = mock(ApplicationContext.class);
             doNothing().when(publisher).publishEvent(any());
             routeRefreshListener.onApplicationEvent(new ContextRefreshedEvent(ctx));
+            verify(publisher).publishEvent(any());
         }
 
         @Test
@@ -76,6 +77,7 @@ public class RouteRefreshListenerTest {
             when(heartbeatMonitor.update(any())).thenReturn(true);
             doNothing().when(publisher).publishEvent(any());
             routeRefreshListener.onApplicationEvent(new HeartbeatEvent(mock(Object.class), mock(Object.class)));
+            verify(publisher).publishEvent(any());
         }
 
         @Test
@@ -112,6 +114,7 @@ public class RouteRefreshListenerTest {
             when(heartbeatMonitor.update(any())).thenReturn(true);
             doNothing().when(publisher).publishEvent(any());
             routeRefreshListener.onApplicationEvent(new ParentHeartbeatEvent(mock(Object.class), mock(Object.class)));
+            verify(publisher).publishEvent(any());
         }
 
         @Test
