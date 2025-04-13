@@ -168,6 +168,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_APIMLID: apiml2
+                    logbackService: ZWEAGW2
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -324,6 +325,7 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
+                    logbackService: ZWEAGW2
 
         steps:
             -   uses: actions/checkout@v4
@@ -334,7 +336,8 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ./gradlew :integration-tests:runGatewayCentralRegistryTest --info -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck :integration-tests:runGatewayCentralRegistryTest --info
+                    -Denvironment.config=-docker -Dgateway.instances=2 -Ddiscoverableclient.instances=0
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Dump CGW jacoco data
@@ -458,11 +461,12 @@ jobs:
 
             -   name: Build with Gradle
                 run: >
-                    ./gradlew :integration-tests:runZaasTest --info -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck :integration-tests:runZaasTest --info -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
                     -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
                     -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }} -Doidc.test.alt_user=${{ secrets.OKTA_WINNIE_USER }}
                     -Doidc.test.alt_pass=${{ secrets.OKTA_WINNIE_PASS }} -DidpConfiguration.host=${{secrets.OKTA_HOST}}
+                    -Ddiscoverableclient.instances=1
 
             -   name: Dump DC jacoco data
                 run: >
@@ -730,6 +734,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+                    logbackService: ZWEAGW2
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -808,6 +813,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     APIML_ROUTING_INSTANCEIDHEADER: true
+                    logbackService: ZWEAGW2
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -828,7 +834,8 @@ jobs:
 
             -   name: Run HA Tests
                 run: >
-                    ./gradlew runDeterministicLbHaTests --info -Denvironment.config=-ha
+                    ./gradlew runStartUpCheck runDeterministicLbHaTests --info
+                    -Denvironment.config=-ha -Ddiscoverableclient.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -904,6 +911,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
+                    logbackService: ZWEAGW2
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -980,8 +988,12 @@ jobs:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: zaas-service
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: zaas-service-2
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -991,6 +1003,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+                    logbackService: ZWEAGW2
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1000,8 +1013,8 @@ jobs:
 
             -   name: Run Discovery Service Chaotic HA Tests
                 run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
-                    --info -Denvironment.config=-ha
+                    ./gradlew runStartUpCheck :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
+                    --info -Denvironment.config=-ha -Ddiscoverableclient.instances=1
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1010,7 +1023,7 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-            # Coverage results are not stored in this job as it would not provide much additional data
+
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
@@ -1064,6 +1077,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+                    logbackService: ZWEAGW2
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1141,6 +1155,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+                    logbackService: ZWEAGW2
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1218,6 +1233,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+                    logbackService: ZWEAGW2
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1239,7 +1255,7 @@ jobs:
 
             -   name: Dump DC jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address discoverable-client --port 6303 --destfile ./results/discoverable-client.exec
+                    java -jar ./scripts/jacococli.jar dump --address discoverable-client --port 6303 --destfile ./results/discoverable-client.exec || echo "Discoverable Client is not available to obtain JaCoCo report at the moment"
 
             -   name: Correct Permisions
                 run: |
@@ -1387,6 +1403,7 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
+                    logbackService: ZWEAGW2
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1502,7 +1519,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [ CITests,CITestsWithInfinispan,CITestsZaas,GatewayProxy,GatewayServiceRouting ]
+        needs: [ CITests,CITestsWithInfinispan,CITestsZaas,GatewayProxy,GatewayServiceRouting,CITestsWebSocketChaoticHA ]
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
@@ -1541,7 +1558,7 @@ jobs:
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,GatewayProxy/results,citestswebsocketchaoticha/results,GatewayServiceRouting/results,ContainerCITestsZaas/results"
+                    ./gradlew --scan coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,GatewayProxy/results,citestswebsocketchaoticha/results,GatewayServiceRouting/results,ContainerCITestsZaas/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1549,5 +1566,13 @@ jobs:
                     SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
                     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: failure()
+                with:
+                    name: SonarResults-${{ env.JOB_ID }}
+                    path: |
+                        build/reports/problems/problems-report.html
 
             -   uses: ./.github/actions/teardown
