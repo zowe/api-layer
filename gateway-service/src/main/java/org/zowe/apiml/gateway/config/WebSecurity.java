@@ -167,9 +167,8 @@ public class WebSecurity {
         }
         return http
             .headers(headers -> headers
-                .hsts(hsts -> hsts
-                    .maxAge(Duration.ofSeconds(31536000))
-                    .includeSubdomains(true))
+                .hsts(hsts -> hsts.disable())
+                .writer(new CustomHstsServerHttpHeadersWriter())
                 .frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(OAUTH_2_AUTHORIZATION, OAUTH_2_REDIRECT_URI))
@@ -322,9 +321,8 @@ public class WebSecurity {
         var gatewayExceptionHandler = applicationContext.getBean(GatewayExceptionHandler.class);
         return http
             .headers(headers -> headers
-                .hsts(hsts -> hsts
-                    .maxAge(Duration.ofSeconds(31536000))
-                    .includeSubdomains(true))
+                .hsts(hsts -> hsts.disable())
+                .writer(new CustomHstsServerHttpHeadersWriter())
                 .frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .x509(x509 -> x509
                 .principalExtractor(X509Util.x509PrincipalExtractor())
