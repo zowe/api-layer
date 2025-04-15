@@ -1,5 +1,3 @@
-# needs to be configured properly where yaml is parsed with pyyaml
-
 eureka:
   ssl: true
   host: localhost

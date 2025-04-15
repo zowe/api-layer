@@ -20,7 +20,7 @@ This is an example about how an API service implemented in Python can be registe
     test_env\Scripts\activate     # Windows      
     ```
    
-2. Install your package in editable mode:
+2. Install the Python enabler package in editable mode:
     ```shell
     pip install -e onboarding-enabler-python
     ```

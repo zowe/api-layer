@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "onboarding-enabler-python"
+name = "zowe-apiml-onboarding-enabler-python"
 version = "3.0.0"
 description = "Python enabler for Zowe API Mediation Layer"
 authors = [{name = "Zowe Project"}]

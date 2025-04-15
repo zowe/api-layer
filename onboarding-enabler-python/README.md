@@ -7,7 +7,7 @@ This is the onboarding Python enabler for [Zowe API Mediation Layer](https://git
 Install the package using pip:
 
 ```shell
-    pip install onboarding_enabler_python
+    pip install zowe-apiml-onboarding-enabler-python
 ```
 
 ### How to use

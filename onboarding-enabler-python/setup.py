@@ -17,7 +17,7 @@ with open("requirements.txt", "r") as requirements:
     required = requirements.read().splitlines()
 
 setup(
-    name="onboarding-enabler-python",
+    name="zowe-apiml-onboarding-enabler-python",
     version=__version__,
     packages=find_packages(where="src"),
     package_dir={"": "src"},
