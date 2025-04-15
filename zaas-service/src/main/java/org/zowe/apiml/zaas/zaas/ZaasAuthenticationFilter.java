@@ -44,7 +44,7 @@ public class ZaasAuthenticationFilter extends OncePerRequestFilter {
             }
 
             Optional<AuthSource.Parsed> authSourceParsed = Optional.ofNullable((AuthSource.Parsed) request.getAttribute(AUTH_SOURCE_PARSED_ATTR));
-            if (authSourceParsed.isEmpty() || !StringUtils.hasText(authSourceParsed.get().getUserId())) {
+            if (authSourceParsed.isEmpty() || StringUtils.isBlank(authSourceParsed.get().getUserId())) {
                 throw new InsufficientAuthenticationException("Authentication failed.");
             }
 
