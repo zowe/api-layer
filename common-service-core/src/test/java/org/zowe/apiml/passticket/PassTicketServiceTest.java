@@ -90,14 +90,28 @@ class PassTicketServiceTest {
     }
 
     @Test
-    void testApplicationNotProvidedExceptionThrown() {
+    void testEmptyApplicationNameProvidedExceptionThrown() {
         assertThrows(ApplicationNameNotProvidedException.class, () -> {
             passTicketService.generate(TEST_USERID, "");
         });
     }
 
     @Test
-    void testUsernameNotProvidedExceptionThrown() {
+    void testNullApplicationNameProvidedExceptionThrown() {
+        assertThrows(ApplicationNameNotProvidedException.class, () -> {
+            passTicketService.generate(TEST_USERID, null);
+        });
+    }
+
+    @Test
+    void testEmptyUsernameProvidedExceptionThrown() {
+        assertThrows(UsernameNotProvidedException.class, () -> {
+            passTicketService.generate(null, "applId");
+        });
+    }
+
+    @Test
+    void testNullUsernameProvidedExceptionThrown() {
         assertThrows(UsernameNotProvidedException.class, () -> {
             passTicketService.generate(null, "applId");
         });

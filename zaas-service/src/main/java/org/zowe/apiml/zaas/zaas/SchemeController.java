@@ -50,7 +50,7 @@ public class SchemeController {
     public ResponseEntity<TicketResponse> getPassTicket(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed)
         throws PassTicketException {
 
-        String ticket = passTicketService.generate(authSourceParsed.getUserId(), ticketRequest.getApplicationName());
+        var ticket = passTicketService.generate(authSourceParsed.getUserId(), ticketRequest.getApplicationName());
 
         return ResponseEntity
             .status(HttpStatus.OK)
@@ -74,7 +74,7 @@ public class SchemeController {
     @Operation(summary = "Provides zoweJwt for authenticated user.")
     public ResponseEntity<ZaasTokenResponse> getZoweJwt(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource) {
 
-        String token = authSourceService.getJWT(authSource);
+        var token = authSourceService.getJWT(authSource);
 
         return ResponseEntity
             .status(HttpStatus.OK)
@@ -104,7 +104,7 @@ public class SchemeController {
     public ResponseEntity<ZaasTokenResponse> getSafIdToken(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed)
         throws PassTicketException {
 
-        String safIdToken = tokenCreationService.createSafIdTokenWithoutCredentials(authSourceParsed.getUserId(), ticketRequest.getApplicationName());
+        var safIdToken = tokenCreationService.createSafIdTokenWithoutCredentials(authSourceParsed.getUserId(), ticketRequest.getApplicationName());
         return ResponseEntity
             .status(HttpStatus.OK)
             .body(ZaasTokenResponse.builder().headerName(ApimlConstants.SAF_TOKEN_HEADER).token(safIdToken).build());
