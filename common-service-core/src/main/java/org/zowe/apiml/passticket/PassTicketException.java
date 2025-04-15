@@ -8,14 +8,11 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas.security.ticket;
+package org.zowe.apiml.passticket;
 
-/**
- * Exception thrown when applicationName parameter was not provided
- */
-public class ApplicationNameNotFoundException extends Exception {
+import lombok.NoArgsConstructor;
 
-    public ApplicationNameNotFoundException(String message) {
-        super(message);
-    }
+@NoArgsConstructor
+public class PassTicketException extends Exception {
+    public PassTicketException(String message) { super(message); }
 }

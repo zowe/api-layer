@@ -12,13 +12,12 @@ package org.zowe.apiml.zaas.zaas;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.constants.ApimlConstants;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import org.zowe.apiml.passticket.PassTicketException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.ticket.TicketRequest;
@@ -28,7 +27,6 @@ import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
-import org.zowe.apiml.zaas.security.ticket.ApplicationNameNotFoundException;
 
 import javax.management.ServiceNotFoundException;
 
@@ -50,18 +48,13 @@ public class SchemeController {
     @PostMapping(path = "ticket", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides PassTicket for authenticated user.")
     public ResponseEntity<TicketResponse> getPassTicket(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed)
-        throws IRRPassTicketGenerationException, ApplicationNameNotFoundException {
+        throws PassTicketException {
 
-        final String applicationName = ticketRequest.getApplicationName();
-        if (StringUtils.isBlank(applicationName)) {
-            throw new ApplicationNameNotFoundException("ApplicationName not provided.");
-        }
-
-        String ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
+        var ticket = passTicketService.generate(authSourceParsed.getUserId(), ticketRequest.getApplicationName());
 
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(new TicketResponse("", authSourceParsed.getUserId(), applicationName, ticket));
+            .body(new TicketResponse("", authSourceParsed.getUserId(), ticketRequest.getApplicationName(), ticket));
     }
 
     @PostMapping(path = "zosmf", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -81,7 +74,7 @@ public class SchemeController {
     @Operation(summary = "Provides zoweJwt for authenticated user.")
     public ResponseEntity<ZaasTokenResponse> getZoweJwt(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource) {
 
-        String token = authSourceService.getJWT(authSource);
+        var token = authSourceService.getJWT(authSource);
 
         return ResponseEntity
             .status(HttpStatus.OK)
@@ -109,14 +102,9 @@ public class SchemeController {
     @PostMapping(path = "safIdt", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides SAF Identity Token for authenticated user.")
     public ResponseEntity<ZaasTokenResponse> getSafIdToken(@RequestBody TicketRequest ticketRequest, @RequestAttribute(AUTH_SOURCE_PARSED_ATTR) AuthSource.Parsed authSourceParsed)
-        throws IRRPassTicketGenerationException, ApplicationNameNotFoundException {
+        throws PassTicketException {
 
-        final String applicationName = ticketRequest.getApplicationName();
-        if (StringUtils.isBlank(applicationName)) {
-            throw new ApplicationNameNotFoundException("ApplicationName not provided.");
-        }
-
-        String safIdToken = tokenCreationService.createSafIdTokenWithoutCredentials(authSourceParsed.getUserId(), applicationName);
+        var safIdToken = tokenCreationService.createSafIdTokenWithoutCredentials(authSourceParsed.getUserId(), ticketRequest.getApplicationName());
         return ResponseEntity
             .status(HttpStatus.OK)
             .body(ZaasTokenResponse.builder().headerName(ApimlConstants.SAF_TOKEN_HEADER).token(safIdToken).build());

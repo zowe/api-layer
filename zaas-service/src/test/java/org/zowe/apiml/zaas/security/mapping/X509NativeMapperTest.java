@@ -18,6 +18,7 @@ import org.zowe.apiml.zaas.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.X509AuthSource;
 import org.zowe.commons.usermap.CertificateResponse;
 
+import javax.security.auth.x500.X500Principal;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
@@ -31,6 +32,7 @@ class X509NativeMapperTest {
     private static final byte[] CERT_BYTES = "certificate".getBytes();
     private static final String MF_ID = "mf_user";
     private X509Certificate x509Certificate;
+    private X500Principal x500Principal;
     private X509AuthSource authSource;
     private X509NativeMapper x509NativeMapper;
     private NativeMapperWrapper mockMapper;
@@ -38,7 +40,10 @@ class X509NativeMapperTest {
     @BeforeEach
     void setUp() throws CertificateEncodingException {
         x509Certificate = mock(X509Certificate.class);
+        x500Principal = mock(X500Principal.class);
         when(x509Certificate.getEncoded()).thenReturn(CERT_BYTES);
+        when(x509Certificate.getSubjectX500Principal()).thenReturn(x500Principal);
+        when(x500Principal.getName()).thenReturn("cn=testcert");
         authSource = new X509AuthSource(x509Certificate);
         mockMapper = mock(NativeMapperWrapper.class);
         x509NativeMapper = new X509NativeMapper(mockMapper);

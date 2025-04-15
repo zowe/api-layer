@@ -93,4 +93,16 @@ class SuccessfulTicketHandlerTest {
         assertTrue(httpServletResponse.getContentAsString().contains("ZWEAG141E"));
         assertTrue(httpServletResponse.isCommitted());
     }
+
+    @Test
+    void shouldFailWhenNoUsernameAvailable() throws JsonProcessingException, UnsupportedEncodingException {
+        httpServletRequest.setContent(mapper.writeValueAsBytes(new TicketRequest(APPLICATION_NAME)));
+
+        successfulTicketHandlerHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, new TokenAuthentication(TOKEN));
+
+        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), httpServletResponse.getStatus());
+        assertTrue(httpServletResponse.getContentAsString().contains("ZWEAG141E"));
+        assertTrue(httpServletResponse.isCommitted());
+    }
 }
