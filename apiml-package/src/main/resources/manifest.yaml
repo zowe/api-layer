@@ -9,10 +9,15 @@ title: API Mediation Layer
 description: API Mediation Layer
 license: EPL-2.0
 schemas:
-    configs: apiml-schema.json # TODO will it have its own component in v3?
+    configs: apiml-schema.json
 repository:
   type: git
   url: https://github.com/zowe/api-layer.git
+build:
+  branch: "{{build.branch}}"
+  number: "{{build.number}}"
+  commitHash: "{{build.commitHash}}"
+  timestamp: {{build.timestamp}}
 commands:
   start: bin/start.sh
   validate: bin/validate.sh
@@ -22,7 +27,9 @@ autoEncoding:
   - "."
 apimlServices:
   dynamic:
-    - serviceId: gateway
+    - serviceId: apiml
+  static:
+    - file: zosmf-static-definition.yaml.template
 configs:
   port: 7554
   debug: false
