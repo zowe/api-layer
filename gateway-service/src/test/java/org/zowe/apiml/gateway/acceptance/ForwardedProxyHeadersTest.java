@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.acceptance;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sun.net.httpserver.Headers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -39,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class ForwardedProxyHeadersTest extends AcceptanceTestWithMockServices {
 
     @BeforeEach
-    void setUp() throws JsonProcessingException {
+    void setUp() {
         var responseHeaders = new Headers();
         responseHeaders.add("Location", basePath + "/serviceid1/test2");
         mockService("serviceid1").scope(MockService.Scope.CLASS)

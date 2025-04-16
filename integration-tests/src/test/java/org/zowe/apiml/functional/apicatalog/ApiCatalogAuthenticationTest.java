@@ -203,7 +203,7 @@ class ApiCatalogAuthenticationTest {
 
             @ParameterizedTest(name = "givenInvalidBearerAuthentication {index} {0}")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
-            void givenInvalidBearerAuthentication(String endpoint, Request request) throws URISyntaxException {
+            void givenInvalidBearerAuthentication(String endpoint, Request request) {
                 String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";
 
                 request.execute(

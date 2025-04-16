@@ -34,7 +34,7 @@ public class InstanceLookupExecutor {
     private InstanceInfo findEurekaInstance(String serviceId) {
         var services = discoveryClient.getServices();
 
-        if (StringUtils.isEmpty(serviceId) || services.stream().noneMatch(id -> serviceId.equalsIgnoreCase(id))) {
+        if (StringUtils.isEmpty(serviceId) || services.stream().noneMatch(serviceId::equalsIgnoreCase)) {
             throw new InstanceNotFoundException("Service '" + serviceId + "' is not registered to Discovery Service");
         }
 

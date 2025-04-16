@@ -52,7 +52,7 @@ public class EurekaDashboardControllerTest {
     private EurekaDashboardController controller;
 
     @BeforeEach
-    void setUp() throws IOException, TemplateException {
+    void setUp() throws IOException {
         var conf = mock(Configuration.class);
         when(freeMarkerConfigurer.getConfiguration()).thenReturn(conf);
 

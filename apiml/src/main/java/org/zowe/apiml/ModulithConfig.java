@@ -294,9 +294,7 @@ public class ModulithConfig {
         }
 
         FilterChain createFilterChain(Filter filter, FilterChain filterChain) {
-            return (request, response) -> {
-                filter.doFilter(request, response, filterChain);
-            };
+            return (request, response) -> filter.doFilter(request, response, filterChain);
         }
 
         @Override
