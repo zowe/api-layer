@@ -7,212 +7,81 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+const createField = (question, tooltip = '', options = {}) => ({
+    value: options.value !== undefined ? options.value : '',
+    question,
+    tooltip,
+    ...(options.type ? { type: options.type } : {}),
+    ...(options.hide !== undefined ? { hide: options.hide } : {}),
+});
+
 export const pythonSpecificCategories = [
     {
         text: 'SSL for Python',
         content: {
-            certificate: {
-                value: '',
-                question: 'Certificate:',
-                tooltip: 'Example: ssl/localhost.keystore.cer',
-            },
-            keyStore: {
-                value: '',
-                question: 'The keystore file used to store the private key (keyring: set to SAF keyring location):',
-                tooltip: 'Example: ssl/localhost.keystore.key',
-            },
-            caFile: {
-                value: '',
-                question: 'Certificate Authority file:',
-                tooltip: 'Example: ssl/localhost.pem',
-            },
-            keyPassword: {
-                value: '',
-                question: 'The password associated with the private key:',
-                type: 'password',
-                tooltip: 'password',
-            },
+            certificate: createField('Certificate:', 'Example: ssl/localhost.keystore.cer'),
+            keyStore: createField(
+                'The keystore file used to store the private key (keyring: set to SAF keyring location):',
+                'Example: ssl/localhost.keystore.key'
+            ),
+            caFile: createField('Certificate Authority file:', 'Example: ssl/localhost.pem'),
+            keyPassword: createField(
+                'The password associated with the private key:',
+                'password',
+                { type: 'password' }
+            ),
         },
     },
     {
         text: 'Eureka',
         content: {
-            ssl: {
-                value: false,
-                question: 'Turn SSL on for Eureka',
-            },
-            host: {
-                value: '',
-                question: 'The host to be used:',
-                tooltip: 'Example: localhost',
-            },
-            ipAddress: {
-                value: '',
-                question: 'The IP address to be used:',
-                tooltip: 'Example: 127.0.0.1',
-            },
-            port: {
-                value: '',
-                question: 'The port to be used:',
-                tooltip: 'Example: 10011',
-            },
-            servicePath: {
-                value: '',
-                question: 'The service path:',
-                tooltip: 'Example: /eureka/apps/',
-            },
-            maxRetries: {
-                value: '',
-                question: 'The maximum number of retries:',
-                hide: true,
-                tooltip: 'Number of retries before failing. Example: 30',
-            },
-            requestRetryDelay: {
-                value: '',
-                question: 'The request retry delay:',
-                hide: true,
-                tooltip: 'Milliseconds to wait between retries. Example: 1000',
-            },
-            registryFetchInterval: {
-                value: '',
-                question: 'The interval for registry interval:',
-                hide: true,
-                tooltip:
-                    'How often does Eureka client pull the service list from Eureka server. The default is 30 seconds. Example: 5',
-            },
+            ssl: { value: false, question: 'Turn SSL on for Eureka' },
+            host: createField('The host to be used:', 'Example: localhost'),
+            ipAddress: createField('The IP address to be used:', 'Example: 127.0.0.1'),
+            port: createField('The port to be used:', 'Example: 10011'),
+            servicePath: createField('The service path:', 'Example: /eureka/apps/'),
+            maxRetries: createField('The maximum number of retries:', 'Number of retries before failing. Example: 30', { hide: true }),
+            requestRetryDelay: createField('The request retry delay:', 'Milliseconds to wait between retries. Example: 1000', { hide: true }),
+            registryFetchInterval: createField(
+                'The interval for registry interval:',
+                'How often does Eureka client pull the service list from Eureka server. The default is 30 seconds. Example: 5',
+                { hide: true }
+            ),
         },
     },
     {
         text: 'Instance',
         content: {
-            app: {
-                value: '',
-                question: 'App ID:',
-                tooltip: 'Example: pythonservice',
-            },
-            vipAddress: {
-                value: '',
-                question: 'Virtual IP address:',
-                tooltip: 'Example: pythonservice',
-            },
-            instanceId: {
-                value: '',
-                question: 'Instance ID:',
-                tooltip: 'Example: localhost:pythonservice:10018',
-            },
-            homePageUrl: {
-                value: '',
-                question: 'The URL of the home page:',
-                tooltip: 'Example: https://localhost:10018/',
-            },
-            statusPageUrl: {
-                value: '',
-                question: 'The status page:',
-                tooltip: 'Example: /application/info',
-            },
-            healthCheckUrl: {
-                value: '',
-                question: 'The health check page:',
-                tooltip: 'Example: /application/health',
-            },
-            hostname: {
-                value: '',
-                question: 'Host name:',
-                tooltip: 'Example: localhost',
-            },
-            ipAddr: {
-                value: '',
-                question: 'IP address:',
-                tooltip: 'Example: 127.0.0.1',
-            },
-            secureVipAddress: {
-                value: '',
-                question: 'Secure virtual IP address:',
-                tooltip: 'Example: pythonservice',
-            },
-            port: {
-                value: '',
-                question: 'Port:',
-                tooltip: 'Example: 10018',
-            },
-            nonSecurePortEnabled: {
-                value: false,
-                question: 'Enable?',
-            },
-            securePort: {
-                value: '',
-                question: 'Security port:',
-                tooltip: 'Example: 10018',
-            },
-            securePortEnabled: {
-                value: true,
-                question: 'Enable?',
-            },
+            app: createField('App ID:', 'Example: pythonservice'),
+            vipAddress: createField('Virtual IP address:', 'Example: pythonservice'),
+            instanceId: createField('Instance ID:', 'Example: localhost:pythonservice:10018'),
+            homePageUrl: createField('The URL of the home page:', 'Example: https://localhost:10018/'),
+            statusPageUrl: createField('The status page:', 'Example: /application/info'),
+            healthCheckUrl: createField('The health check page:', 'Example: /application/health'),
+            hostname: createField('Host name:', 'Example: localhost'),
+            ipAddr: createField('IP address:', 'Example: 127.0.0.1'),
+            secureVipAddress: createField('Secure virtual IP address:', 'Example: pythonservice'),
+            port: createField('Port:', 'Example: 10018'),
+            nonSecurePortEnabled: { value: false, question: 'Enable?' },
+            securePort: createField('Security port:', 'Example: 10018'),
+            securePortEnabled: { value: true, question: 'Enable?' },
         },
     },
     {
         text: 'Metadata',
         content: {
-            'apiml.catalog.tile.id': {
-                value: '',
-                question: 'Tile ID for the API ML catalog:',
-                tooltip: 'Example: pythonservice',
-            },
-            'apiml.catalog.tile.title': {
-                value: '',
-                question: 'Tile title for the API ML catalog:',
-                tooltip: 'Example: Zowe Sample python Service',
-            },
-            'apiml.catalog.tile.description': {
-                value: '',
-                question: 'Tile description for the API ML catalog:',
-                tooltip: 'Example: python Sample service running',
-            },
-            'apiml.catalog.tile.version': {
-                value: '',
-                question: 'Tile version for the API ML catalog:',
-                tooltip: 'Example: 1.0.0',
-            },
-            'apiml.routes.api_v1.gatewayUrl': {
-                value: '',
-                question: 'API gateway URL:',
-                tooltip: 'Example: api/v1',
-            },
-            'apiml.routes.api_v1.serviceUrl': {
-                value: '',
-                question: 'API service URL:',
-                tooltip: 'Example: /pythonservice',
-            },
-            'apiml.apiInfo.0.apiId': {
-                value: '',
-                question: 'A unique identifier to the API in the API ML:',
-                tooltip: 'Example: zowe.apiml.pythonservice',
-            },
-            'apiml.apiInfo.0.gatewayUrl': {
-                value: '',
-                question: 'The base path at the API Gateway where the API is available:',
-                tooltip: 'Example: api/v1',
-            },
-            'apiml.apiInfo.0.swaggerUrl': {
-                value: '',
-                question: 'The base path at the API Gateway where the API is available:',
-                tooltip: 'Example: https://localhost:10018/apidoc',
-            },
-            'apiml.service.title': {
-                value: '',
-                question: 'Service title:',
-                tooltip: 'Example: Zowe Sample python Service',
-            },
-            'apiml.service.description': {
-                value: '',
-                question: 'Service description:',
-                tooltip: 'Sample API services to demonstrate Python Onboarding Enabler',
-            },
-            'apiml.apiInfo.0.version': {
-                value: '',
-                question: 'The version:',
-                tooltip: 'Example: 1.0.1',
-            },
+            'apiml.catalog.tile.id': createField('Tile ID for the API ML catalog:', 'Example: pythonservice'),
+            'apiml.catalog.tile.title': createField('Tile title for the API ML catalog:', 'Example: Zowe Sample python Service'),
+            'apiml.catalog.tile.description': createField('Tile description for the API ML catalog:', 'Example: python Sample service running'),
+            'apiml.catalog.tile.version': createField('Tile version for the API ML catalog:', 'Example: 1.0.0'),
+            'apiml.routes.api_v1.gatewayUrl': createField('API gateway URL:', 'Example: api/v1'),
+            'apiml.routes.api_v1.serviceUrl': createField('API service URL:', 'Example: /pythonservice'),
+            'apiml.apiInfo.0.apiId': createField('A unique identifier to the API in the API ML:', 'Example: zowe.apiml.pythonservice'),
+            'apiml.apiInfo.0.gatewayUrl': createField('The base path at the API Gateway where the API is available:', 'Example: api/v1'),
+            'apiml.apiInfo.0.swaggerUrl': createField('The base path at the API Gateway where the API is available:', 'Example: https://localhost:10018/apidoc'),
+            'apiml.service.title': createField('Service title:', 'Example: Zowe Sample python Service'),
+            'apiml.service.description': createField('Service description:', 'Sample API services to demonstrate Python Onboarding Enabler'),
+            'apiml.apiInfo.0.version': createField('The version:', 'Example: 1.0.1'),
         },
     },
 ];
