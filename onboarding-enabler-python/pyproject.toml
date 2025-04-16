@@ -16,7 +16,7 @@ dependencies = [
 dynamic = ["version"]
 
 [tool.setuptools]
-packages = {find = {where = "src"}}
+packages = { find = { where = ["src"] } }
 
 [tool.setuptools_scm]
 fallback_version = "0.0.1"
