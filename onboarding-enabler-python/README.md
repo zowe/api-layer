@@ -41,7 +41,6 @@ Install the package using pip:
    **Example:**
 
     ```yaml
-    # needs to be configured properly where yaml is parsed with pyyaml
 
     eureka:
        ssl: true
