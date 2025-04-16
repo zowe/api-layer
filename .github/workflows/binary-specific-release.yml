@@ -133,6 +133,7 @@ jobs:
                 TWINE_USERNAME: __token__
                 TWINE_PASSWORD: ${{ secrets.PYPI_ROBOT_TOKEN }}
               with:
+                working-dir: onboarding-enabler-python
                 dry-run: ${{ inputs.dry-run }}
                 new-version: ${{ steps.update-version.outputs.version }}
 
