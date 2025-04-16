@@ -1,7 +1,7 @@
 module.exports = {
     branches: [
         {
-            name: "main",
+            name: "v3.x.x",
             level: "none",
             prerelease: true
         },
@@ -14,7 +14,7 @@ module.exports = {
         "@octorelease/changelog",
         "@octorelease/pypi",
         ["@octorelease/github", {
-            // publishRelease: true
+            checkPrLabels: true
         }],
         "@octorelease/git"
     ]
