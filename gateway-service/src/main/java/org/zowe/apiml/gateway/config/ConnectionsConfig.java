@@ -262,6 +262,10 @@ public class ConnectionsConfig {
                 builder.keyManager(keyManagerFactory);
             }
 
+            if (verifySslCertificatesOfServices && nonStrictVerifySslCertificatesOfServices) {
+                builder.endpointIdentificationAlgorithm(null);
+            }
+
             return builder.build();
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
