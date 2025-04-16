@@ -24,8 +24,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
-import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
-import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.passticket.*;
 import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -83,7 +82,7 @@ class SchemeControllerTest {
     private static final String SAFIDT = "saf_id_token";
 
     @BeforeEach
-    void setUp() throws IRRPassTicketGenerationException, JSONException {
+    void setUp() throws PassTicketException, JSONException {
         when(passTicketService.generate(anyString(), anyString())).thenReturn(PASSTICKET);
         SchemeController zaasController = new SchemeController(authSourceService, passTicketService, zosmfService, tokenCreationService);
         MessageService messageService = new YamlMessageService("/zaas-messages.yml");
@@ -139,6 +138,7 @@ class SchemeControllerTest {
         @Test
         void whenRequestPassticketAndNoApplNameProvided_thenBadRequest() throws Exception {
             ticketBody.put("applicationName", "");
+            when(passTicketService.generate(authParsedSource.getUserId(), "")).thenThrow(new ApplicationNameNotProvidedException());
 
             mockMvc.perform(post(PASSTICKET_URL)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -204,6 +204,23 @@ class SchemeControllerTest {
         }
 
         @Test
+        void whenRequestPassticketAndNoUsername_thenInternalServerError() throws Exception {
+            ticketBody.put("applicationName", APPLID);
+            when(passTicketService.generate(null, APPLID)).thenThrow(new UsernameNotProvidedException());
+
+            mockMvc.perform(post(PASSTICKET_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(ticketBody.toString())
+                    .requestAttr(AUTH_SOURCE_PARSED_ATTR, authParsedSource)
+                    .requestAttr(AUTH_SOURCE_PARSED_ATTR, new ParsedTokenAuthSource(null, new Date(111), new Date(222), AuthSource.Origin.ZOSMF)))
+                .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
+                .andExpect(jsonPath("$.messages", hasSize(1)))
+                .andExpect(jsonPath("$.messages[0].messageType").value("ERROR"))
+                .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAG141E"))
+                .andExpect(jsonPath("$.messages[0].messageContent", is("The generation of the PassTicket failed. Reason: Username not provided")));
+        }
+
+        @Test
         void whenRequestSafIdtAndApplNameProvided_thenResponseOk() throws Exception {
             when(tokenCreationService.createSafIdTokenWithoutCredentials(USER, APPLID)).thenReturn(SAFIDT);
             mockMvc.perform(post(SAFIDT_URL)
@@ -216,7 +233,7 @@ class SchemeControllerTest {
 
         @Test
         void whenRequestSafIdtAndNoApplNameProvided_thenBadRequest() throws Exception {
-            when(tokenCreationService.createSafIdTokenWithoutCredentials(USER, APPLID)).thenReturn(SAFIDT);
+            when(tokenCreationService.createSafIdTokenWithoutCredentials(USER, "")).thenThrow(new ApplicationNameNotProvidedException());
             ticketBody.put("applicationName", "");
 
             mockMvc.perform(post(SAFIDT_URL)

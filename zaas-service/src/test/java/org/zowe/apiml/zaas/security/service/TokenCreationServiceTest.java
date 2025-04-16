@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.zowe.apiml.passticket.PassTicketException;
 import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.zaas.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.zaas.security.service.saf.SafIdtException;
@@ -97,7 +98,7 @@ class TokenCreationServiceTest {
     }
 
     @Test
-    void givenZosmfIsAvailable_whenTokenIsRequested_thenTokenCreatedByZosmfIsReturned() throws IRRPassTicketGenerationException {
+    void givenZosmfIsAvailable_whenTokenIsRequested_thenTokenCreatedByZosmfIsReturned() throws PassTicketException {
         when(providers.isZosmfAvailable()).thenReturn(true);
         when(providers.isZosfmUsed()).thenReturn(true);
         when(passTicketService.generate(VALID_USER_ID, VALID_ZOSMF_APPLID)).thenReturn(PASSTICKET);
@@ -108,7 +109,7 @@ class TokenCreationServiceTest {
     }
 
     @Test
-    void givenZosmfIsAvailableButPassticketGenerationFails_whenTokenIsRequested_thenExceptionIsThrown() throws IRRPassTicketGenerationException {
+    void givenZosmfIsAvailableButPassticketGenerationFails_whenTokenIsRequested_thenExceptionIsThrown() throws PassTicketException {
         when(providers.isZosmfAvailable()).thenReturn(true);
         when(providers.isZosfmUsed()).thenReturn(true);
         when(passTicketService.generate(VALID_USER_ID, VALID_ZOSMF_APPLID)).thenThrow(new IRRPassTicketGenerationException(4, 4, 4));
@@ -128,7 +129,7 @@ class TokenCreationServiceTest {
     }
 
     @Test
-    void givenZosmfAvailable_whenCreatingZosmfToken_thenReturnEmptyResult() throws IRRPassTicketGenerationException {
+    void givenZosmfAvailable_whenCreatingZosmfToken_thenReturnEmptyResult() throws PassTicketException {
         when(providers.isZosfmUsed()).thenReturn(true);
         when(providers.isZosmfAvailable()).thenReturn(true);
         when(passTicketService.generate(VALID_USER_ID, VALID_ZOSMF_APPLID)).thenReturn(PASSTICKET);
@@ -147,7 +148,7 @@ class TokenCreationServiceTest {
     }
 
     @Test
-    void givenPassTicketGenerated_whenCreatingSafIdToken_thenTokenReturned() throws IRRPassTicketGenerationException {
+    void givenPassTicketGenerated_whenCreatingSafIdToken_thenTokenReturned() throws PassTicketException {
         when(passTicketService.generate(VALID_USER_ID, VALID_ZOSMF_APPLID)).thenReturn(PASSTICKET);
         when(safIdtProvider.generate(VALID_USER_ID, PASSTICKET.toCharArray(), VALID_ZOSMF_APPLID)).thenReturn(VALID_SAFIDT);
 
@@ -157,7 +158,7 @@ class TokenCreationServiceTest {
     }
 
     @Test
-    void givenPassTicketException_whenCreatingSafIdToken_thenExceptionThrown() throws IRRPassTicketGenerationException {
+    void givenPassTicketException_whenCreatingSafIdToken_thenExceptionThrown() throws PassTicketException {
         when(passTicketService.generate(VALID_USER_ID, VALID_ZOSMF_APPLID)).thenThrow(new IRRPassTicketGenerationException(8, 8, 8));
 
         Exception e = assertThrows(IRRPassTicketGenerationException.class, () -> {
@@ -168,7 +169,7 @@ class TokenCreationServiceTest {
     }
 
     @Test
-    void givenSafIdtException_whenCreatingSafIdToken_thenExceptionThrown() throws IRRPassTicketGenerationException {
+    void givenSafIdtException_whenCreatingSafIdToken_thenExceptionThrown() throws PassTicketException {
         when(passTicketService.generate(VALID_USER_ID, VALID_ZOSMF_APPLID)).thenReturn(PASSTICKET);
         when(safIdtProvider.generate(VALID_USER_ID, PASSTICKET.toCharArray(), VALID_ZOSMF_APPLID)).thenThrow(new SafIdtException("Test exception"));
 

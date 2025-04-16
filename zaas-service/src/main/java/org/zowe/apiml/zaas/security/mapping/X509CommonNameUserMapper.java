@@ -27,7 +27,7 @@ import java.security.cert.X509Certificate;
  */
 @Component("x509Mapper")
 @ConditionalOnExpression(
-    "T(org.apache.commons.lang3.StringUtils).isEmpty('${apiml.security.x509.externalMapperUrl:}') && '${apiml.security.useInternalMapper:false}' == 'false'"
+    "T(org.apache.commons.lang3.StringUtils).isEmpty('${apiml.security.x509.externalMapperUrl:}') && '${apiml.security.useInternalMapper:false}' == 'false' && '${apiml.security.useDummyCNMapper:false}' == 'false'"
 )
 public class X509CommonNameUserMapper implements AuthenticationMapper {
 
