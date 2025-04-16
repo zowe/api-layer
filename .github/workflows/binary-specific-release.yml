@@ -97,7 +97,7 @@ jobs:
               id: update-version
               shell: python
               run: |
-               import os
+               import os,sys
                sys.path.append("onboarding-enabler-python")
                from _version import __version__
                new_version = "${{ github.event.inputs.release_version }}"
