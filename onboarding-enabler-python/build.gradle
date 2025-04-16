@@ -1,20 +1,22 @@
-def venvPath = System.getProperty('os.name').toLowerCase().contains('windows') ? 'venv\\Scripts\\' : 'venv/bin/'
+def isWindows = System.getProperty('os.name').toLowerCase().contains('windows')
+def venvPath = isWindows ? 'venv\\Scripts\\' : 'venv/bin/'
 
 task createVenv(type: Exec) {
-    commandLine 'python', '-m', 'venv', 'venv'
+    commandLine 'python3', '-m', 'venv', 'venv'
 }
 
 task installDependencies(type: Exec) {
     dependsOn createVenv
-    commandLine "${venvPath}pip", 'install', '-r', 'requirements.txt'
+    commandLine "${venvPath}pip", 'install', '--upgrade', 'pip', 'setuptools', 'wheel', 'build'
+}
+
+task cleanPython(type: Delete) {
+    delete 'build', 'dist'
 }
 
 task buildPython(type: Exec) {
-    dependsOn installDependencies
-    commandLine 'rm', '-rf', 'build', 'dist'
+    dependsOn installDependencies, cleanPython
     commandLine "${venvPath}python", '-m', 'build'
-}
-
-jar {
-    enabled false
+    standardOutput = System.out
+    errorOutput = System.err
 }
