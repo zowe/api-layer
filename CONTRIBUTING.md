@@ -47,8 +47,8 @@ Get in touch using [Zowe Communication Channels](https://github.com/zowe/communi
 | onboarding-enabler-micronaut            | APIML SDK - Micronaut Enabler      |
 | onboarding-enabler-micronaut-sample-app | Sample Service - Micronaut Enabler |
 | onboarding-enabler-nodejs               | APIML SDK - Node.js Enabler        |
-| onboarding-enabler-python               | APIML SDK - Python Enabler         |
 | onboarding-enabler-nodejs-sample-app    | Sample Service - Node.js Enabler   |
+| onboarding-enabler-python               | APIML SDK - Python Enabler         |
 | onboarding-enabler-python-sample-app    | Sample Service - Python Enabler    |
 | onboarding-enabler-spring               | APIML SDK - Spring Enabler         |
 | onboarding-enabler-spring-sample-app    | Sample Service - Spring Enabler    |
