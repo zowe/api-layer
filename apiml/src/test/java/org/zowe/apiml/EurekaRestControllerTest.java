@@ -389,9 +389,8 @@ public class EurekaRestControllerTest {
             this.adapter = new UriInfoAdapter(request);
             var pathSegments = adapter.getPathSegments();
             assertEquals(2, pathSegments.size());
-            assertTrue(pathSegments.get(0).getPath().equals("/"));
-            assertTrue(pathSegments.get(1).getPath().equals("eureka"));
-
+            assertEquals("/", pathSegments.get(0).getPath());
+            assertEquals("eureka", pathSegments.get(1).getPath());
         }
 
         @Test
@@ -400,9 +399,9 @@ public class EurekaRestControllerTest {
             this.adapter = new UriInfoAdapter(request);
             var pathSegments = adapter.getPathSegments(true);
             assertEquals(2, pathSegments.size());
-            assertTrue(pathSegments.get(0).getPath().equals("/"));
+            assertEquals("/", pathSegments.get(0).getPath());
             assertTrue(pathSegments.get(0).getMatrixParameters().isEmpty());
-            assertTrue(pathSegments.get(1).getPath().equals("eureka"));
+            assertEquals("eureka", pathSegments.get(1).getPath());
         }
 
         @Test
@@ -412,7 +411,7 @@ public class EurekaRestControllerTest {
 
         @Test
         void getRequestUriBuilder() {
-            assertTrue(adapter.getRequestUriBuilder().build().equals(request.getURI()));
+            assertEquals(request.getURI(), adapter.getRequestUriBuilder().build());
         }
 
         @Test
@@ -422,7 +421,7 @@ public class EurekaRestControllerTest {
 
         @Test
         void getAbsolutePathBuilder() {
-            assertTrue(adapter.getAbsolutePathBuilder().build().equals(request.getURI()));
+            assertEquals(request.getURI(), adapter.getAbsolutePathBuilder().build());
         }
 
         @Test

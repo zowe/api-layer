@@ -37,11 +37,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.minBy;
-import static java.util.stream.Collectors.toList;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 import static org.zowe.apiml.services.ServiceInfoUtils.getBasePath;
@@ -64,7 +62,7 @@ public class ServicesInfoService {
         return discoveryClient.getServices()
             .stream()
             .map(this::getServiceInfo)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     public List<ServiceInfo> getServicesInfo(String apiId) {
@@ -131,7 +129,7 @@ public class ServicesInfoService {
                             .filter(EurekaServiceInstance.class::isInstance)
                             .map(EurekaServiceInstance.class::cast)
                             .map(EurekaServiceInstance::getInstanceInfo)
-                            .collect(toList())
+                            .toList()
                         )
                     )
                 .build();
@@ -150,7 +148,7 @@ public class ServicesInfoService {
         .filter(EurekaServiceInstance.class::isInstance)
         .map(EurekaServiceInstance.class::cast)
         .map(EurekaServiceInstance::getInstanceInfo)
-        .collect(toList());
+        .toList();
     }
 
     private List<ServiceInfo.ApiInfoExtended> getApiInfos(List<ServiceInstance> serviceInstances) {

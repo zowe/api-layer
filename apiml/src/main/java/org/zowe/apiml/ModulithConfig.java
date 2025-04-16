@@ -286,11 +286,11 @@ public class ModulithConfig {
             super(httpHandler);
             this.servlet = servlet;
 
-            FilterChain filterChain = servlet::service;
+            FilterChain chain = servlet::service;
             for (var filter : filters) {
-                filterChain = createFilterChain(filter, filterChain);
+                chain = createFilterChain(filter, chain);
             }
-            this.filterChain = filterChain;
+            this.filterChain = chain;
         }
 
         FilterChain createFilterChain(Filter filter, FilterChain filterChain) {
