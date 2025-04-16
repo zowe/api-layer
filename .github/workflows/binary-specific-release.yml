@@ -101,12 +101,12 @@ jobs:
                from _version import __version__
                new_version = "${{ github.event.inputs.release_version }}"
                if new_version:
-                with open("onboarding-enabler-python/_version.py", 'w') as f:
-                f.write("__version__ = \"" + new_version + "\"\n")
+                  with open("onboarding-enabler-python/_version.py", 'w') as f:
+                    f.write("__version__ = \"" + new_version + "\"\n")
                else:
-                new_version = __version__
-               with open(os.environ["GITHUB_OUTPUT"], 'a') as f:
-                print("version=" + ("-".join(new_version.rsplit(".", 1)) if new_version.count(".") > 2 else new_version), file=f)
+                  new_version = __version__
+                  with open(os.environ["GITHUB_OUTPUT"], 'a') as f:
+                    print("version=" + ("-".join(new_version.rsplit(".", 1)) if new_version.count(".") > 2 else new_version), file=f)
 
             - name: Update version (git)
               run: |
