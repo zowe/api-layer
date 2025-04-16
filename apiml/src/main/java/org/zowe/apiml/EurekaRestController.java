@@ -72,6 +72,7 @@ import static org.apache.http.HttpHeaders.ACCEPT_ENCODING;
 import static org.zowe.apiml.EurekaConfiguration.JACKSON_JSON;
 import static reactor.core.publisher.Mono.just;
 
+@SuppressWarnings("java:S1452") // Generic type wildcard needed due to legacy code usage
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = "/eureka", produces = { "application/xml", "application/json" })
