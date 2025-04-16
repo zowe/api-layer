@@ -98,6 +98,7 @@ jobs:
               shell: python
               run: |
                import os
+               sys.path.append("onboarding-enabler-python")
                from _version import __version__
                new_version = "${{ github.event.inputs.release_version }}"
                if new_version:
