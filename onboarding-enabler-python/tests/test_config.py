@@ -10,7 +10,7 @@
 import pytest
 import yaml
 from unittest.mock import patch, mock_open
-from src.onboarding_enabler_python.config import ConfigLoader
+from src.zowe_apiml_onboarding_enabler_python.config import ConfigLoader
 
 
 @pytest.fixture

@@ -14,7 +14,7 @@ from fastapi.responses import JSONResponse
 import ssl
 import yaml
 import uvicorn
-from onboarding_enabler_python.registration import PythonEnabler
+from zowe_apiml_onboarding_enabler_python.registration import PythonEnabler
 base_directory = os.path.dirname(os.path.abspath(__file__))
 config_file_path = os.path.join(base_directory, 'config/service-configuration.yml')
 

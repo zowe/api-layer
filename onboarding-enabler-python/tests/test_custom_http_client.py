@@ -12,7 +12,7 @@ import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
 import ssl
 import yaml
-from src.onboarding_enabler_python.custom_http_client import HttpResponse, HttpClient
+from src.zowe_apiml_onboarding_enabler_python.custom_http_client import HttpResponse, HttpClient
 
 mock_yaml_content = """
 eureka:
@@ -38,21 +38,21 @@ def mock_config_loader():
     def mock_init(self, *args, **kwargs):
         self.config = mocked_yaml
 
-    with patch("src.onboarding_enabler_python.custom_http_client.ConfigLoader.__init__", mock_init), \
-        patch("src.onboarding_enabler_python.custom_http_client.config_loader.config", mocked_yaml):
+    with patch("src.zowe_apiml_onboarding_enabler_python.custom_http_client.ConfigLoader.__init__", mock_init), \
+        patch("src.zowe_apiml_onboarding_enabler_python.custom_http_client.config_loader.config", mocked_yaml):
         yield
 
 @pytest.fixture
 def mock_ssl_context():
     mock_ssl = MagicMock(spec=ssl.SSLContext)
 
-    with patch("src.onboarding_enabler_python.custom_http_client.ssl.create_default_context", return_value=mock_ssl):
+    with patch("src.zowe_apiml_onboarding_enabler_python.custom_http_client.ssl.create_default_context", return_value=mock_ssl):
         yield mock_ssl
 
 
 @pytest.fixture
 def mock_aiohttp_session():
-    with patch("src.onboarding_enabler_python.custom_http_client.aiohttp.ClientSession") as mock_session_cls:
+    with patch("src.zowe_apiml_onboarding_enabler_python.custom_http_client.aiohttp.ClientSession") as mock_session_cls:
         mock_session = MagicMock()
         mock_response_context = MagicMock()
         mock_response = MagicMock()

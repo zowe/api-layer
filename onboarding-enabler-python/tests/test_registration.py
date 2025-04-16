@@ -9,12 +9,12 @@
 """
 
 import pytest
-from src.onboarding_enabler_python.registration import PythonEnabler
+from src.zowe_apiml_onboarding_enabler_python.registration import PythonEnabler
 
 @pytest.fixture
 def mock_config_loader(mocker):
     """Fixture to mock ConfigLoader globally for all tests."""
-    mock_loader = mocker.patch("src.onboarding_enabler_python.registration.ConfigLoader")
+    mock_loader = mocker.patch("src.zowe_apiml_onboarding_enabler_python.registration.ConfigLoader")
     mock_loader.return_value.config = {
         "eureka": {
             "ssl": False,

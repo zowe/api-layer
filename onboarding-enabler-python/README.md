@@ -18,7 +18,7 @@ Install the package using pip:
 
     ```python
         from fastapi import FastAPI
-        from onboarding_enabler_python.registration import PythonEnabler
+        from zowe_apiml_onboarding_enabler_python.registration import PythonEnabler
     
         app = FastAPI()
         enabler = PythonEnabler(config_file="service-configuration.yml")

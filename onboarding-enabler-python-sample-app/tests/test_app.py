@@ -18,7 +18,7 @@ mock_swagger_json = json.dumps({"swagger": "2.0", "info": {"version": "1.0.0"}})
 @pytest.fixture(scope="module")
 def mock_enabler():
     """Mock PythonEnabler"""
-    with patch("onboarding_enabler_python.registration.PythonEnabler") as mock_class:
+    with patch("zowe_apiml_onboarding_enabler_python.registration.PythonEnabler") as mock_class:
         instance = mock_class.return_value
         instance.register.return_value = None
         instance.unregister.return_value = None
