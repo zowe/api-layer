@@ -14,7 +14,7 @@ module.exports = {
         "@octorelease/changelog",
         "@octorelease/pypi",
         ["@octorelease/github", {
-            publishRelease: true
+            // publishRelease: true
         }],
         "@octorelease/git"
     ]
