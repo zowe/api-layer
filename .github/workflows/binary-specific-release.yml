@@ -72,7 +72,7 @@ jobs:
     release-python:
         runs-on: ubuntu-latest
         timeout-minutes: 40
-        needs: release
+#        needs: release
 
         steps:
             - name: Checkout Repository
