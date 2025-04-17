@@ -59,6 +59,21 @@ function logout() {
         });
 }
 
+function query() {
+    const requestOptions = {
+        method: 'GET',
+        credentials: 'include',
+        header: {
+            'Content-Type': '',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    };
+
+    return fetch(`${getBaseUrl()}/auth/query`, requestOptions)
+        .then(handleResponse)
+        .then((user) => user);
+}
+
 function login(credentials) {
     const allowOrigin = checkOrigin();
     const requestOptions = {
