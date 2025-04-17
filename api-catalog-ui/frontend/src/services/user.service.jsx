@@ -65,13 +65,19 @@ function query() {
         credentials: 'include',
         header: {
             'Content-Type': '',
-            'X-Requested-With': 'XMLHttpRequest'
+            'X-Requested-With': 'XMLHttpRequest',
+            'Access-Control-Allow-Credentials': 'true',
         }
     };
 
-    return fetch(`${getBaseUrl()}/auth/query`, requestOptions)
-        .then(handleResponse)
-        .then((user) => user);
+    return fetch(`/gateway/api/v1/auth/query`, requestOptions)
+        .then(async (response) => {
+            const data = await response.json();
+            return {
+                status: response.status, // ⬅️ get HTTP status here
+                ...data
+            };
+        });
 }
 
 function login(credentials) {
@@ -96,4 +102,5 @@ function login(credentials) {
 export const userService = {
     login,
     logout,
+    query,
 };

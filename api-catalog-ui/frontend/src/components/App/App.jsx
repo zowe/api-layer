@@ -17,15 +17,38 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import HeaderContainer from '../Header/HeaderContainer';
 import Spinner from '../Spinner/Spinner';
 import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from './AsyncModules';
+import { query } from '../../actions/user-actions';
+import {userService} from "../../services";
+import {useNavigate} from "react-router";
 
-function App() {
+function App(props) {
     const isLoading = true;
     const dashboardPath = '/dashboard';
-
+    const navigate = useNavigate();
+    console.log("I AM IN THE APP");
     useEffect(() => {
         window.process = { ...window.process };
     }, []);
 
+    const { authentication, success } = props;
+    console.log("Authentication object in App");
+    console.log(authentication);
+    if (!authentication.user) {
+        console.log('Authentication user missing, calling the query validation.');
+        userService.query().then(
+            (result) => {
+                console.log(result);
+                if (result.status === 200) {
+                    console.log('Query resulted in 200, dispatching success action');
+                    success(result.userId, false);
+                }
+            },
+            (error) => {
+                console.error("The query validation failed", error);
+
+                // navigate('/login');
+            });
+    }
     return (
         <div className="App">
             <BigShield>

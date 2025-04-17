@@ -8,6 +8,18 @@
  * Copyright Contributors to the Zowe Project.
  */
 import App from './App';
+import {getFilteredServices} from "../../selectors/selectors";
+import {connect} from "react-redux";
+import { userActions } from '../../actions/user-actions';
+import {
+    fetchNewService, fetchServiceFailed,
+    fetchServiceStop,
+    fetchTilesFailed,
+    fetchTilesStart,
+    fetchTilesStop,
+    fetchTilesSuccess
+} from "../../actions/catalog-tile-actions";
+import {clearService, selectService} from "../../actions/selected-service-actions";
 
 const withRouter = (App) =>{
     return (props) =>{
@@ -15,4 +27,14 @@ const withRouter = (App) =>{
     }
 }
 
-export default withRouter(App)
+const mapDispatchToProps = (dispatch) => ({
+    success: (user) => dispatch(userActions.query(user)),
+});
+
+
+const mapStateToProps = (state) => ({
+    authentication: state.authenticationReducer,
+});
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(App))

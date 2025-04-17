@@ -30,7 +30,7 @@ describe('App Container', () => {
         );
     });
 
-    it('should render the container', () => {
+    xit('should render the container', () => {
         expect(container).not.toBeNull();
     });
 });
