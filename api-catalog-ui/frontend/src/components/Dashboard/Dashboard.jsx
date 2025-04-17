@@ -46,10 +46,13 @@ function Dashboard({
                        fetchNewService
                    }) {
     const navigate = useNavigate();
+    if (authentication.authenticationFailed) {
+        navigate('/login');
+    }
     useEffect(() => {
         clearService();
         fetchTilesStart();
-        if (!authentication.user) {
+        if (!authentication) {
             navigate('/login');
         }
         return function cleanup () {
