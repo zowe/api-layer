@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import React, { useEffect, Suspense } from 'react';
+import React, { useEffect, Suspense, useRef } from 'react';
 import {Navigate, Route, Routes} from 'react-router';
 import { ToastContainer } from 'react-toastify';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
@@ -29,26 +29,22 @@ function App(props) {
     useEffect(() => {
         window.process = { ...window.process };
     }, []);
-
     const { authentication, success } = props;
-    console.log("Authentication object in App");
-    console.log(authentication);
-    if (!authentication.user) {
-        console.log('Authentication user missing, calling the query validation.');
-        userService.query().then(
-            (result) => {
-                console.log(result);
-                if (result.status === 200) {
-                    console.log('Query resulted in 200, dispatching success action');
-                    success(result.userId, false);
-                }
-            },
-            (error) => {
-                console.error("The query validation failed", error);
+    useEffect(() => {
+        const onFocus = () => {
+            if (!authentication.user) {
+                userService.query().then((result) => {
+                    if (result.status === 200) {
+                        success(result.userId, false);
+                    }
+                });
+            }
+        };
 
-                // navigate('/login');
-            });
-    }
+        window.addEventListener('focus', onFocus);
+        return () => window.removeEventListener('focus', onFocus);
+    }, [authentication.user, success]);
+
     return (
         <div className="App">
             <BigShield>
