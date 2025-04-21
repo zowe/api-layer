@@ -20,6 +20,7 @@ eureka:
         initialInstanceInfoReplicationIntervalSeconds: 1
         registryFetchIntervalSeconds: 1
 server:
+    address: 0.0.0.0
     ssl:
         keyAlias: localhost
         keyPassword: password

@@ -42,15 +42,17 @@ public class PassTicketService {
     }
 
     // IRRPassTicket is not thread-safe, must be synchronized
-    public synchronized void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
+    public synchronized void evaluate(String userId, String applId, String passTicket) throws PassTicketException {
+        validateUserIdAndApplId(userId, applId);
         irrPassTicket.evaluate(userId.toUpperCase(), applId.toUpperCase(), passTicket.toUpperCase());
     }
 
     // IRRPassTicket is not thread-safe, must be synchronized
-    public synchronized String generate(String userId, String applId) throws IRRPassTicketGenerationException {
+    public synchronized String generate(String userId, String applId) throws PassTicketException {
         try {
+            validateUserIdAndApplId(userId, applId);
             return irrPassTicket.generate(userId.toUpperCase(), applId.toUpperCase());
-        } catch (IRRPassTicketGenerationException | RuntimeException e) {
+        } catch (PassTicketException | RuntimeException e) {
             log.debug("Error during pass ticket generation, userId={}, applid={}, exception={}", userId, applId, e);
             throw e;
         }
@@ -59,6 +61,16 @@ public class PassTicketService {
     public boolean isUsingSafImplementation() {
         ClassOrDefaultProxyUtils.ClassOrDefaultProxyState stateInterface = (ClassOrDefaultProxyUtils.ClassOrDefaultProxyState) irrPassTicket;
         return stateInterface.isUsingBaseImplementation();
+    }
+
+    private void validateUserIdAndApplId(String userId, String applId) throws ApplicationNameNotProvidedException, UsernameNotProvidedException {
+        if (StringUtils.isBlank(applId)) {
+           throw new ApplicationNameNotProvidedException();
+        }
+
+        if (StringUtils.isBlank(userId)) {
+            throw new UsernameNotProvidedException();
+        }
     }
 
     public static class DefaultPassTicketImpl implements IRRPassTicket {

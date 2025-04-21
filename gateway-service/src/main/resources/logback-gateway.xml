@@ -26,10 +26,10 @@
     </appender>
 
     <appender name="FILE" class="org.zowe.apiml.product.logging.ApimlRollingFileAppender">
-        <file>${STORAGE_LOCATION}/${logbackServiceName}.log</file>
+        <file>${STORAGE_LOCATION}/${logbackService:-${logbackServiceName}}.log</file>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>${STORAGE_LOCATION}/${logbackServiceName}.%i.log</fileNamePattern>
+            <fileNamePattern>${STORAGE_LOCATION}/${logbackService:-${logbackServiceName}}.%i.log</fileNamePattern>
             <minIndex>${MIN_INDEX}</minIndex>
             <maxIndex>${MAX_INDEX}</maxIndex>
         </rollingPolicy>

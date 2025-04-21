@@ -47,7 +47,7 @@ class PassTicketServiceTest {
     }
 
     @Test
-    void testInit() throws IRRPassTicketEvaluationException, IRRPassTicketGenerationException {
+    void testInit() throws PassTicketException {
         PassTicketService passTicketService = new PassTicketService();
         ReflectionTestUtils.setField(passTicketService, "irrPassTicket", new IRRPassTicket() {
             @Override
@@ -88,6 +88,35 @@ class PassTicketServiceTest {
 
         assertEquals("success", irrPassTicket.generate(TEST_USERID, "applId"));
     }
+
+    @Test
+    void testEmptyApplicationNameProvidedExceptionThrown() {
+        assertThrows(ApplicationNameNotProvidedException.class, () -> {
+            passTicketService.generate(TEST_USERID, "");
+        });
+    }
+
+    @Test
+    void testNullApplicationNameProvidedExceptionThrown() {
+        assertThrows(ApplicationNameNotProvidedException.class, () -> {
+            passTicketService.generate(TEST_USERID, null);
+        });
+    }
+
+    @Test
+    void testEmptyUsernameProvidedExceptionThrown() {
+        assertThrows(UsernameNotProvidedException.class, () -> {
+            passTicketService.generate(null, "applId");
+        });
+    }
+
+    @Test
+    void testNullUsernameProvidedExceptionThrown() {
+        assertThrows(UsernameNotProvidedException.class, () -> {
+            passTicketService.generate(null, "applId");
+        });
+    }
+
 
     @Test
     void testDefaultPassTicketImpl_EvaluatePassticket() {
