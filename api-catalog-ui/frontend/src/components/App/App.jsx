@@ -36,6 +36,8 @@ function App(props) {
                 userService.query().then((result) => {
                     if (result.status === 200) {
                         success(result.userId, false);
+                    } else {
+                        navigate('/login');
                     }
                 });
             }
@@ -43,7 +45,7 @@ function App(props) {
 
         window.addEventListener('focus', onFocus);
         return () => window.removeEventListener('focus', onFocus);
-    }, [authentication.user, success]);
+    }, [authentication.user, success, navigate]);
 
     return (
         <div className="App">
