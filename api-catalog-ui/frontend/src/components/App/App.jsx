@@ -17,7 +17,6 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import HeaderContainer from '../Header/HeaderContainer';
 import Spinner from '../Spinner/Spinner';
 import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from './AsyncModules';
-import { query } from '../../actions/user-actions';
 import {userService} from "../../services";
 import {useNavigate} from "react-router";
 

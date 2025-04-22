@@ -56,7 +56,7 @@ function login(credentials) {
     };
 }
 
-function query(user) {
+export function query(user) {
     const success = { showUpdatePassSuccess: true };
     return { type: userConstants.USERS_LOGIN_SUCCESS, user, success };
 }
