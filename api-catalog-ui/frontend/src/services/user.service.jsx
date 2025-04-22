@@ -74,7 +74,7 @@ function query() {
         .then(async (response) => {
             const data = await response.json();
             return {
-                status: response.status, // ⬅️ get HTTP status here
+                status: response.status,
                 ...data
             };
         });
