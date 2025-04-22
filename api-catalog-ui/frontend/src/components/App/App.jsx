@@ -25,13 +25,12 @@ function App(props) {
     const isLoading = true;
     const dashboardPath = '/dashboard';
     const navigate = useNavigate();
-    console.log("I AM IN THE APP");
     useEffect(() => {
         window.process = { ...window.process };
     }, []);
     const { authentication, success } = props;
     useEffect(() => {
-        const onFocus = () => {
+        const checkAuth = () => {
             if (!authentication.user) {
                 userService.query().then((result) => {
                     if (result.status === 200) {
@@ -39,12 +38,21 @@ function App(props) {
                     } else {
                         navigate('/login');
                     }
+                }).catch(() => {
+                    navigate('/login');
                 });
             }
         };
 
-        window.addEventListener('focus', onFocus);
-        return () => window.removeEventListener('focus', onFocus);
+        // Run once on mount
+        checkAuth();
+
+        // Run again whenever the tab gains focus
+        window.addEventListener('focus', checkAuth);
+
+        return () => {
+            window.removeEventListener('focus', checkAuth);
+        };
     }, [authentication.user, success, navigate]);
 
     return (
