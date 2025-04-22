@@ -7,8 +7,8 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import React, { useEffect, Suspense, useRef } from 'react';
-import {Navigate, Route, Routes} from 'react-router';
+import React, { useEffect, Suspense } from 'react';
+import {Navigate, Route, Routes, useNavigate} from 'react-router';
 import { ToastContainer } from 'react-toastify';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ErrorContainer from '../Error/ErrorContainer';
@@ -18,7 +18,6 @@ import HeaderContainer from '../Header/HeaderContainer';
 import Spinner from '../Spinner/Spinner';
 import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from './AsyncModules';
 import {userService} from "../../services";
-import {useNavigate} from "react-router";
 
 function App(props) {
     const isLoading = true;
