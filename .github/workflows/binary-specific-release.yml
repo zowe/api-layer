@@ -116,6 +116,7 @@ jobs:
 
             - name: Build Python Package
               run: |
+                  export SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.release_version }}
                   ./gradlew onboarding-enabler-python:buildPython
 
             - name: Upload wheels
