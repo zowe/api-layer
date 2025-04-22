@@ -24,22 +24,26 @@ jest.mock('react-router', () => {
     };
 });
 describe('>>> App component tests', () => {
-    xit('should call render', () => {
+    it('should call render', () => {
         const history = { push: jest.fn() };
-        const { getByText } = render(<App history={history} />);
+        const success = { push: jest.fn() };
+        const authentication = { user: 'user' };
+        const { getByText } = render(<App history={history} success={success} authentication={authentication} />);
 
         expect(getByText(/Go to Dashboard/i)).toBeInTheDocument();
     });
 
-    xit('should call render when portal enabled', () => {
+    it('should call render when portal enabled', () => {
         process.env.REACT_APP_API_PORTAL = true;
         const history = { push: jest.fn() };
-        const { getByText } = render(<App history={history} />);
+        const success = { push: jest.fn() };
+        const authentication = { user: 'user' };
+        const { getByText } = render(<App history={history} success={success} authentication={authentication}/>);
 
         expect(getByText(/Go to Dashboard/i)).toBeInTheDocument();
     });
 
-    xit('should not show header on login route', () => {
+    it('should not show header on login route', () => {
         const wrapper = shallow(
             <MemoryRouter initialEntries={['/login']}>
                 <App />

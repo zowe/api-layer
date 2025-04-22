@@ -19,8 +19,11 @@ const mockStore = configureStore();
 describe('App Container', () => {
     let store;
     let container;
+    const authentication = { user: 'user' };
     beforeEach(() => {
-        store = mockStore({});
+        store = mockStore({
+            authenticationReducer: authentication
+        });
         container = render(
             <HashRouter>
                 <Provider store={store}>
@@ -30,7 +33,7 @@ describe('App Container', () => {
         );
     });
 
-    xit('should render the container', () => {
+    it('should render the container', () => {
         expect(container).not.toBeNull();
     });
 });
