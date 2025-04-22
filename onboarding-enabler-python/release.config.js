@@ -1,7 +1,7 @@
 module.exports = {
     branches: [
         {
-            name: "v3.x.x",
+            name: "reboot/innovation/python_enabler",
             level: "minor"
         },
         {
