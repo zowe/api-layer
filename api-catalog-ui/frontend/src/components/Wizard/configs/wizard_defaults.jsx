@@ -61,14 +61,7 @@ const sharedMetadata = {
     'apiml.apiInfo.0.gatewayUrl': { value: '${routes.gatewayUrl}', hide: true },
 };
 
-export const defaultNode = {
-    Eureka: { ...sharedEureka },
-    'API Info shorter': { ...sharedApiInfo },
-    Instance: { ...sharedInstanceBase },
-    Metadata: { ...sharedMetadata },
-};
-
-export const defaultPython = {
+export const defaultNonJava = {
     Eureka: { ...sharedEureka },
     'API Info shorter': { ...sharedApiInfo },
     Instance: {

@@ -7,7 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { defaultMicronaut, defaultNode, defaultPJE, defaultSpring, defaultPython } from './wizard_defaults';
+import {
+    defaultMicronaut,
+    defaultPJE,
+    defaultSpring,
+    defaultNonJava
+} from './wizard_defaults';
 
 /**
  * Define which categories each enabler needs. Properties indentation and multiple can be used here as well.(override)
@@ -120,13 +125,10 @@ export const enablerData = [
         categories: [
             { name: 'Eureka', indentation: 'eureka', nav: 'Basics' },
             { name: 'Instance', indentation: 'instance', nav: 'Instance' },
-            { name: 'Instance port', indentation: 'instance/port', nav: 'Instance ports' },
-            { name: 'Instance security port', indentation: 'instance/securePort', nav: 'Instance ports' },
-            { name: 'Data center info', indentation: 'instance/dataCenterInfo', nav: 'Instance info' },
             { name: 'Metadata', indentation: 'instance/metadata', nav: 'Instance metadata' },
-            { name: 'SSL for Node', indentation: 'ssl', nav: 'SSL' },
+            { name: 'SSL for Python', indentation: 'ssl', nav: 'SSL' },
         ],
-        defaults: defaultNode,
+        defaults: defaultNonJava,
     },
     {
         text: 'Python Enabler',
@@ -136,7 +138,7 @@ export const enablerData = [
             { name: 'Metadata', indentation: 'instance/metadata', nav: 'Instance metadata' },
             { name: 'SSL for Python', indentation: 'ssl', nav: 'SSL' },
         ],
-        defaults: defaultPython,
+        defaults: defaultNonJava,
     },
     {
         text: 'Static Onboarding',
