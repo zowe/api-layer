@@ -12,7 +12,7 @@ multidict==6.4.3
 packaging==24.2
 pluggy==1.5.0
 propcache==0.3.1
-py_eureka_client==0.11.10
+py_eureka_client==0.11.13
 pyproject_hooks==1.2.0
 pytest==8.3.5
 pytest-asyncio==0.26.0
