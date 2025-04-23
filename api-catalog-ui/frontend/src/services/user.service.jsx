@@ -64,7 +64,6 @@ function query() {
         method: 'GET',
         credentials: 'include',
         header: {
-            'Content-Type': '',
             'X-Requested-With': 'XMLHttpRequest',
             'Access-Control-Allow-Credentials': 'true',
         }

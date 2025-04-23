@@ -24,7 +24,6 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
         case userConstants.USERS_LOGIN_SUCCESS:
             sessionDefaultState.sessionOn = true;
             return {
-                // ...state,
                 error: null,
                 user: action.user,
                 showHeader: true,

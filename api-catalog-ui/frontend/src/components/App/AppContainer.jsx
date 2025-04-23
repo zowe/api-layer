@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import App from './App';
-import {connect} from "react-redux";
+import { connect } from "react-redux";
 import { userActions } from '../../actions/user-actions';
 
 const withRouter = (App) =>{

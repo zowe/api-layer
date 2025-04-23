@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import React, { useEffect, Suspense } from 'react';
-import {Navigate, Route, Routes, useNavigate} from 'react-router';
+import { Navigate, Route, Routes, useNavigate } from 'react-router';
 import { ToastContainer } from 'react-toastify';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ErrorContainer from '../Error/ErrorContainer';
@@ -17,7 +17,7 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import HeaderContainer from '../Header/HeaderContainer';
 import Spinner from '../Spinner/Spinner';
 import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from './AsyncModules';
-import {userService} from "../../services";
+import { userService } from "../../services";
 
 function App(props) {
     const isLoading = true;
@@ -48,7 +48,7 @@ function App(props) {
         // Run again whenever the tab gains focus
         window.addEventListener('focus', checkAuth);
 
-        return () => {
+        return () => { // Remove immediately to avoid loop
             window.removeEventListener('focus', checkAuth);
         };
     }, [authentication.user, success, navigate]);

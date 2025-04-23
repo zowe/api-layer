@@ -12,7 +12,9 @@ import {
     fetchTilesFailed,
     fetchTilesStart,
     fetchTilesStop,
-    fetchTilesSuccess, fetchNewService, fetchServiceStop,
+    fetchTilesSuccess,
+    fetchNewService,
+    fetchServiceStop,
 } from '../../actions/catalog-tile-actions';
 import {clearService, selectService} from '../../actions/selected-service-actions';
 import { createLoadingSelector } from '../../selectors/selectors';
