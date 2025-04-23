@@ -92,7 +92,10 @@ jobs:
                   python -m venv venv
                   source venv/bin/activate
                   python -m pip install --upgrade pip setuptools wheel twine build
-                  if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+                  if [ -f Pipfile.lock ]; then
+                    pip install pipenv
+                    pipenv install --deploy --ignore-pipfile
+                  fi
 
             - name: Build Python Package
               run: |
