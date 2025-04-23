@@ -68,6 +68,7 @@ describe('>>> Detailed Page component tests', () => {
 
     it('should start epic on mount', () => {
         const fetchNewService = jest.fn();
+        const fetchTilesStart = jest.fn();
 
         renderWithProviders(<BrowserRouter>
                     <Routes>
@@ -76,6 +77,7 @@ describe('>>> Detailed Page component tests', () => {
                             services={tile.services}
                             currentTileId="apicatalog"
                             fetchNewService={fetchNewService}
+                            fetchTilesStart={fetchTilesStart}
                             fetchServiceStop={jest.fn()}
                         />}/>
                     </Routes>
@@ -86,6 +88,7 @@ describe('>>> Detailed Page component tests', () => {
 
     it('should stop epic on unmount', () => {
         const fetchServiceStop = jest.fn();
+        const fetchTilesStart = jest.fn();
         const {unmount} = renderWithProviders(
             <BrowserRouter>
                 <Routes>
@@ -93,6 +96,7 @@ describe('>>> Detailed Page component tests', () => {
                         tiles={[tile]}
                         fetchNewService={jest.fn()}
                         fetchServiceStop={fetchServiceStop}
+                        fetchTilesStart={fetchTilesStart}
                     />}/>
                 </Routes>
             </BrowserRouter>
@@ -111,6 +115,7 @@ describe('>>> Detailed Page component tests', () => {
                         currentTileId="apicatalog"
                         fetchNewService={jest.fn()}
                         fetchServiceStop={jest.fn()}
+                        fetchTilesStart={jest.fn()}
                     />}/>
                 </Routes>
             </BrowserRouter>
