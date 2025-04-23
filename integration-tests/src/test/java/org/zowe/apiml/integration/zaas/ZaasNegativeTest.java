@@ -199,5 +199,22 @@ public class ZaasNegativeTest {
 
             assertEquals(CLIENT_USER, parseJwtStringUnsecure(token).getSubject());
         }
+
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
+        void givenTrustedClientCertificateNotMapped_thenReturn401(URI uri, RequestSpecification requestSpecification) throws Exception {
+            TlsConfiguration tlsCfg = ConfigReader.environmentConfiguration().getTlsConfiguration();
+            SslContextConfigurer sslContextConfigurer = new SslContextConfigurer(tlsCfg.getKeyStorePassword(), tlsCfg.getClientKeystore(), tlsCfg.getKeyStore());
+            SslContext.prepareSslAuthentication(sslContextConfigurer);
+
+            //@formatter:off
+            requestSpecification
+                .config(SslContext.clientCertUnknownUser)
+                .when()
+                .post(uri)
+                .then()
+                .statusCode(SC_UNAUTHORIZED);
+            //@formatter:on
+        }
     }
 }
