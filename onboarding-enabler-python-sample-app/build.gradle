@@ -6,7 +6,12 @@ task createVenv(type: Exec) {
 
 task installDependencies(type: Exec) {
     dependsOn createVenv
-    commandLine "${venvPath}pip", 'install', '-r', 'requirements.txt'
+    doFirst {
+        exec {
+            commandLine "${venvPath}pip", 'install', 'pipenv'
+        }
+    }
+    commandLine "${venvPath}pipenv", 'install', '--deploy', '--ignore-pipfile'
 }
 
 task runPython(type: Exec) {
