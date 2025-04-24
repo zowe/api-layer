@@ -22,14 +22,20 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.RequestPath;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.mock.http.server.reactive.MockServerHttpResponse;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.LinkedMultiValueMap;
@@ -41,13 +47,13 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class WebSecurityTest {
@@ -199,4 +205,76 @@ class WebSecurityTest {
         assertEquals("nonceValue", requestRef.get().getAttributes().get(OidcParameterNames.NONCE));
         assertEquals("stateValue", requestRef.get().getState());
     }
+
+    @Test
+    void oauth2WebFilterChain_whenClientConfigurationNotConfigured_shouldReturnNull() {
+        ServerHttpSecurity http = mock(ServerHttpSecurity.class);
+        ClientConfiguration mockClientConfig = mock(ClientConfiguration.class);
+        WebSecurity webSecurity = new WebSecurity(mockClientConfig, tokenProvider, basicAuthProvider, applicationContext);
+        when(mockClientConfig.isConfigured()).thenReturn(false);
+
+        SecurityWebFilterChain filterChain = webSecurity.oauth2WebFilterChain(http,
+            Optional.empty(), Optional.empty(), Optional.empty());
+
+        assertThat(filterChain).isNull();
+    }
+
+    @Test
+    void oauth2WebFilterChain_whenClientConfigurationConfigured_shouldConfigureSecurityChain() {
+        ServerHttpSecurity http = mock(ServerHttpSecurity.class);
+        ClientConfiguration mockClientConfig = mock(ClientConfiguration.class);
+        WebSecurity webSecurity = new WebSecurity(mockClientConfig, tokenProvider, basicAuthProvider, applicationContext);
+        when(mockClientConfig.isConfigured()).thenReturn(true);
+
+        ServerHttpSecurity.AuthorizeExchangeSpec authorizeExchangeSpec = mock(ServerHttpSecurity.AuthorizeExchangeSpec.class);
+        ServerHttpSecurity.AuthorizeExchangeSpec.Access access = mock(ServerHttpSecurity.AuthorizeExchangeSpec.Access.class);
+        ServerHttpSecurity.OAuth2LoginSpec oauth2LoginSpec = mock(ServerHttpSecurity.OAuth2LoginSpec.class);
+        ServerHttpSecurity.HeaderSpec headerSpec = mock(ServerHttpSecurity.HeaderSpec.class);
+
+        // Mocking the header chain
+        when(http.headers(any())).thenReturn(http);
+        when(http.securityContextRepository(any())).thenReturn(http);
+        when(http.securityMatcher(any())).thenReturn(http);
+
+        // Mocking authorizeExchange with Customizer
+        doAnswer(invocation -> {
+            Customizer<ServerHttpSecurity.AuthorizeExchangeSpec> customizer = invocation.getArgument(0);
+            customizer.customize(authorizeExchangeSpec);
+            return http;
+        }).when(http).authorizeExchange(any(Customizer.class));
+
+        when(authorizeExchangeSpec.anyExchange()).thenReturn(access);
+        when(access.authenticated()).thenReturn(authorizeExchangeSpec);
+        when(http.oauth2Login(any())).thenReturn(http);
+        when(http.oauth2Client(any())).thenReturn(http);
+        when(http.requestCache(any())).thenReturn(http);
+        when(http.build()).thenReturn(mock(SecurityWebFilterChain.class));
+
+        SecurityWebFilterChain filterChain = webSecurity.oauth2WebFilterChain(http,
+            Optional.empty(), Optional.empty(), Optional.empty());
+
+        assertThat(filterChain).isNotNull();
+        verify(http).headers(any());
+        verify(http).authorizeExchange(any(Customizer.class));
+        verify(http).build();
+    }
+
+    @Test
+    void gatewayReactiveOAuth2AuthorizedClientManager_whenDependenciesProvided_shouldCreateClientManager() {
+        ClientConfiguration mockClientConfig = mock(ClientConfiguration.class);
+        ReactiveClientRegistrationRepository clientRegistrationRepository = mock(ReactiveClientRegistrationRepository.class);
+        ReactiveOAuth2AuthorizedClientService authorizedClientService = mock(ReactiveOAuth2AuthorizedClientService.class);
+
+        WebSecurity webSecurity = new WebSecurity(mockClientConfig, tokenProvider, basicAuthProvider, applicationContext);
+        when(mockClientConfig.isConfigured()).thenReturn(true);
+
+        ReactiveOAuth2AuthorizedClientManager clientManager = webSecurity.gatewayReactiveOAuth2AuthorizedClientManager(
+                Optional.of(clientRegistrationRepository), Optional.of(authorizedClientService));
+
+        assertThat(clientManager).isNotNull();
+    }
+
+
+
+
 }
