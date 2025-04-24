@@ -273,8 +273,4 @@ class WebSecurityTest {
 
         assertThat(clientManager).isNotNull();
     }
-
-
-
-
 }
