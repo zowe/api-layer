@@ -108,7 +108,7 @@
 }
 
 .no-tiles-container {
-    margin-left: 2rem;
+    display: contents;
     text-align: left;
     overflow: hidden;
     width: 100%;

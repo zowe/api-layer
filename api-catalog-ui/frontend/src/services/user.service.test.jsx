@@ -35,4 +35,11 @@ describe('>>> User service tests', () => {
         await userService.logout();
         expect(fetch).toHaveBeenCalledTimes(1);
     });
+
+    it('should validate with query', async () => {
+        const result = {};
+        const fetch = mockFetch(result);
+        await userService.query();
+        expect(fetch).toHaveBeenCalledTimes(1);
+    });
 });

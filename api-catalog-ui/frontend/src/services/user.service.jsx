@@ -59,6 +59,26 @@ function logout() {
         });
 }
 
+function query() {
+    const requestOptions = {
+        method: 'GET',
+        credentials: 'include',
+        header: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Access-Control-Allow-Credentials': 'true',
+        }
+    };
+
+    return fetch(`/gateway/api/v1/auth/query`, requestOptions)
+        .then(async (response) => {
+            const data = await response.json();
+            return {
+                status: response.status,
+                ...data
+            };
+        });
+}
+
 function login(credentials) {
     const allowOrigin = checkOrigin();
     const requestOptions = {
@@ -81,4 +101,5 @@ function login(credentials) {
 export const userService = {
     login,
     logout,
+    query,
 };
