@@ -303,6 +303,19 @@ class WebSecurityTest {
     }
 
     @Test
+    void clientRegistrationRepository_whenClientConfigurationNotConfigured_shouldReturnNull() {
+        ClientConfiguration mockClientConfig = mock(ClientConfiguration.class);
+        WebSecurity webSecurity = new WebSecurity(mockClientConfig, tokenProvider, basicAuthProvider, applicationContext);
+
+        when(mockClientConfig.isConfigured()).thenReturn(false);
+
+        ReactiveClientRegistrationRepository result = webSecurity.clientRegistrationRepository();
+
+        assertThat(result).isNotNull();
+        assertThat(result.findByRegistrationId("nonExistingId")).isNull();
+    }
+
+    @Test
     void authorizationRequestResolver_whenClientConfigurationConfigured_shouldResolveRequests() {
         ClientConfiguration mockClientConfig = mock(ClientConfiguration.class);
         WebSecurity webSecurity = new WebSecurity(mockClientConfig, tokenProvider, basicAuthProvider, applicationContext);
