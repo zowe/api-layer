@@ -42,6 +42,8 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
+import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
@@ -236,12 +238,10 @@ class WebSecurityTest {
         ServerHttpSecurity.OAuth2LoginSpec oauth2LoginSpec = mock(ServerHttpSecurity.OAuth2LoginSpec.class);
         ServerHttpSecurity.HeaderSpec headerSpec = mock(ServerHttpSecurity.HeaderSpec.class);
 
-        // Mocking the header chain
         when(http.headers(any())).thenReturn(http);
         when(http.securityContextRepository(any())).thenReturn(http);
         when(http.securityMatcher(any())).thenReturn(http);
 
-        // Mocking authorizeExchange with Customizer
         doAnswer(invocation -> {
             Customizer<ServerHttpSecurity.AuthorizeExchangeSpec> customizer = invocation.getArgument(0);
             customizer.customize(authorizeExchangeSpec);
@@ -265,6 +265,87 @@ class WebSecurityTest {
     }
 
     @Test
+    void oauth2WebFilterChain_whenClientConfigurationConfigured_shouldConfigureSecurityChain2() {
+
+        ServerHttpSecurity http = mock(ServerHttpSecurity.class);
+        ClientConfiguration mockClientConfig = mock(ClientConfiguration.class);
+        WebSecurity webSecurity = new WebSecurity(mockClientConfig, tokenProvider, basicAuthProvider, applicationContext);
+
+        ReactiveOAuth2AuthorizedClientService clientService = mock(ReactiveOAuth2AuthorizedClientService.class);
+        WebSecurity.ApimlServerAuthorizationRequestRepository requestRepository = mock(WebSecurity.ApimlServerAuthorizationRequestRepository.class);
+        ServerOAuth2AuthorizationRequestResolver authResolver = mock(ServerOAuth2AuthorizationRequestResolver.class);
+
+        ServerHttpSecurity.AuthorizeExchangeSpec authorizeExchangeSpec = mock(ServerHttpSecurity.AuthorizeExchangeSpec.class);
+        ServerHttpSecurity.AuthorizeExchangeSpec.Access access = mock(ServerHttpSecurity.AuthorizeExchangeSpec.Access.class);
+        ServerHttpSecurity.OAuth2LoginSpec oauth2LoginSpec = mock(ServerHttpSecurity.OAuth2LoginSpec.class);
+        ServerHttpSecurity.OAuth2ClientSpec oauth2ClientSpec = mock(ServerHttpSecurity.OAuth2ClientSpec.class);
+        ServerHttpSecurity.RequestCacheSpec requestCacheSpec = mock(ServerHttpSecurity.RequestCacheSpec.class);
+
+        when(mockClientConfig.isConfigured()).thenReturn(true);
+
+        when(http.headers(any())).thenReturn(http);
+
+        when(http.securityContextRepository(any())).thenReturn(http);
+        when(http.securityMatcher(any())).thenReturn(http);
+
+        doAnswer(invocation -> {
+            Customizer<ServerHttpSecurity.AuthorizeExchangeSpec> customizer = invocation.getArgument(0);
+            customizer.customize(authorizeExchangeSpec);
+            return http;
+        }).when(http).authorizeExchange(any(Customizer.class));
+        when(authorizeExchangeSpec.anyExchange()).thenReturn(access);
+        when(access.authenticated()).thenReturn(authorizeExchangeSpec);
+
+        when(http.oauth2Login(any())).thenAnswer(invocation -> {
+            Customizer<ServerHttpSecurity.OAuth2LoginSpec> customizer = invocation.getArgument(0);
+            customizer.customize(oauth2LoginSpec);
+            return http;
+        });
+        when(oauth2LoginSpec.authenticationMatcher(any())).thenReturn(oauth2LoginSpec);
+        when(oauth2LoginSpec.authorizationRequestRepository(any())).thenReturn(oauth2LoginSpec);
+        when(oauth2LoginSpec.authorizationRequestResolver(any())).thenReturn(oauth2LoginSpec);
+        when(oauth2LoginSpec.authenticationSuccessHandler((ServerAuthenticationSuccessHandler) any())).thenReturn(oauth2LoginSpec);
+        when(oauth2LoginSpec.authenticationFailureHandler(any())).thenReturn(oauth2LoginSpec);
+
+        when(http.oauth2Client(any())).thenAnswer(invocation -> {
+            Customizer<ServerHttpSecurity.OAuth2ClientSpec> customizer = invocation.getArgument(0);
+            customizer.customize(oauth2ClientSpec);
+            return http;
+        });
+
+        when(http.requestCache(any())).thenAnswer(invocation -> {
+            Customizer<ServerHttpSecurity.RequestCacheSpec> customizer = invocation.getArgument(0);
+            customizer.customize(requestCacheSpec);
+            return http;
+        });
+
+        when(http.build()).thenReturn(mock(SecurityWebFilterChain.class));
+
+        SecurityWebFilterChain filterChain = webSecurity.oauth2WebFilterChain(http,
+            Optional.of(clientService),
+            Optional.of(requestRepository),
+            Optional.of(authResolver));
+
+        assertThat(filterChain).isNotNull();
+
+        verify(http).headers(any());
+        verify(http).securityContextRepository(any(NoOpServerSecurityContextRepository.class));
+        verify(http).securityMatcher(any());
+        verify(http).authorizeExchange(any());
+        verify(authorizeExchangeSpec).anyExchange();
+        verify(access).authenticated();
+        verify(http).oauth2Login(any());
+        verify(oauth2LoginSpec).authenticationMatcher(any());
+        verify(oauth2LoginSpec).authorizationRequestRepository(any());
+        verify(oauth2LoginSpec).authorizationRequestResolver(any());
+        verify(oauth2LoginSpec).authenticationSuccessHandler((ServerAuthenticationSuccessHandler) any());
+        verify(oauth2LoginSpec).authenticationFailureHandler(any());
+        verify(http).oauth2Client(any());
+        verify(http).requestCache(any());
+        verify(http).build();
+    }
+
+    @Test
     void gatewayReactiveOAuth2AuthorizedClientManager_whenDependenciesProvided_shouldCreateClientManager() {
         ClientConfiguration mockClientConfig = mock(ClientConfiguration.class);
         ReactiveClientRegistrationRepository clientRegistrationRepository = mock(ReactiveClientRegistrationRepository.class);
@@ -278,17 +359,6 @@ class WebSecurityTest {
 
         assertThat(clientManager).isNotNull();
     }
-    @Test
-    void authorizedClientService_whenClientConfigurationNotConfigured_shouldReturnNull () {
-        ClientConfiguration mockClientConfig = mock(ClientConfiguration.class);
-        WebSecurity webSecurity = new WebSecurity(mockClientConfig, tokenProvider, basicAuthProvider, applicationContext);
-
-        when(mockClientConfig.isConfigured()).thenReturn(false);
-
-        ReactiveOAuth2AuthorizedClientService result = webSecurity.authorizedClientService(Optional.empty());
-
-        assertThat(result).isNull();
-    }
 
     @Test
     void authorizationRequestResolver_whenClientConfigurationNotConfigured_shouldReturnNull() {
@@ -300,19 +370,6 @@ class WebSecurityTest {
         ServerOAuth2AuthorizationRequestResolver result = webSecurity.authorizationRequestResolver(Optional.empty());
 
         assertThat(result).isNull();
-    }
-
-    @Test
-    void clientRegistrationRepository_whenClientConfigurationNotConfigured_shouldReturnNull() {
-        ClientConfiguration mockClientConfig = mock(ClientConfiguration.class);
-        WebSecurity webSecurity = new WebSecurity(mockClientConfig, tokenProvider, basicAuthProvider, applicationContext);
-
-        when(mockClientConfig.isConfigured()).thenReturn(false);
-
-        ReactiveClientRegistrationRepository result = webSecurity.clientRegistrationRepository();
-
-        assertThat(result).isNotNull();
-        assertThat(result.findByRegistrationId("nonExistingId")).isNull();
     }
 
     @Test
@@ -340,6 +397,18 @@ class WebSecurityTest {
         ReactiveOAuth2AuthorizedClientService result = webSecurity.authorizedClientService(Optional.of(clientRegistrationRepository));
 
         assertThat(result).isInstanceOf(InMemoryReactiveOAuth2AuthorizedClientService.class);
+    }
+
+    @Test
+    void authorizedClientService_whenClientConfigurationNotConfigured_shouldReturnNull () {
+        ClientConfiguration mockClientConfig = mock(ClientConfiguration.class);
+        WebSecurity webSecurity = new WebSecurity(mockClientConfig, tokenProvider, basicAuthProvider, applicationContext);
+
+        when(mockClientConfig.isConfigured()).thenReturn(false);
+
+        ReactiveOAuth2AuthorizedClientService result = webSecurity.authorizedClientService(Optional.empty());
+
+        assertThat(result).isNull();
     }
 
     @Test
@@ -383,19 +452,16 @@ class WebSecurityTest {
         var resolver = mock(ServerOAuth2AuthorizationRequestResolver.class);
         var requestRepository = new WebSecurity(null, tokenProvider, basicAuthProvider, applicationContext).new ApimlServerAuthorizationRequestRepository(resolver);
 
-        // Mock the request and its components
         var request = mock(ServerHttpRequest.class);
         var headers = new HttpHeaders();
         when(request.getHeaders()).thenReturn(headers);
         when(request.getQueryParams()).thenReturn(new LinkedMultiValueMap<>());
 
-        // Mock the exchange and its components
         var exchange = mock(ServerWebExchange.class);
         when(exchange.getRequest()).thenReturn(request);
         var response = mock(ServerHttpResponse.class);
         when(exchange.getResponse()).thenReturn(response);
 
-        // Set up cookie capturing
         var cookies = new LinkedMultiValueMap<String, ResponseCookie>();
         doAnswer(invocation -> {
             var cookie = invocation.getArgument(0, ResponseCookie.class);

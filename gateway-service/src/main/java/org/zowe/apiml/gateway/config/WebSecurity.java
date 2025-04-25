@@ -166,7 +166,7 @@ public class WebSecurity {
         }
         return http
             .headers(headers -> headers
-                .hsts(hsts -> hsts.disable())
+                .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
                 .writer(new CustomHstsServerHttpHeadersWriter())
                 .frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
