@@ -15,6 +15,7 @@ import io.swagger.v3.parser.OpenAPIV3Parser;
 import jakarta.annotation.PostConstruct;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -23,7 +24,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 
-@Configuration
+@Configuration("zaasSwaggerConfig")
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class SwaggerConfig {
 
     private URI servletEndpointDocLocation;

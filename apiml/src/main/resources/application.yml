@@ -127,6 +127,15 @@ apiml:
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
+        saf:
+            provider: rest
+            urls:
+                authenticate: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/zss/saf/authenticate
+                verify: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/zss/saf/verify
+        auth:
+            provider: zosmf
+            zosmf:
+                serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
     health:
         protected: true
 server:

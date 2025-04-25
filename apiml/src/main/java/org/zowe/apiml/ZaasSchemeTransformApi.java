@@ -1,0 +1,206 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
+package org.zowe.apiml;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.gateway.filters.AbstractAuthSchemeFactory;
+import org.zowe.apiml.gateway.filters.ErrorHeaders;
+import org.zowe.apiml.gateway.filters.RequestCredentials;
+import org.zowe.apiml.gateway.filters.ZaasSchemeTransform;
+import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.ticket.TicketResponse;
+import org.zowe.apiml.zaas.ZaasTokenResponse;
+import org.zowe.apiml.zaas.security.service.TokenCreationService;
+import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
+import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
+import reactor.core.publisher.Mono;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Optional;
+
+import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+@ConditionalOnBean(name = "modulithConfig")
+public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
+
+    private static final ClientResponse.Headers EMPTY_HEADERS = new ErrorHeaders();
+
+    private final AuthSourceService authSourceService;
+    private final PassTicketService passTicketService;
+    private final ZosmfService zosmfService;
+    private final TokenCreationService tokenCreationService;
+
+    private <R> Mono<AbstractAuthSchemeFactory.AuthorizationResponse<R>> createErrorMessage(String errorMessage) {
+        var headers = new ErrorHeaders(errorMessage);
+        return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<R>(headers, null));
+    }
+
+    @Override
+    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<TicketResponse>> passticket(RequestCredentials requestCredentials) {
+        var applicationName = requestCredentials.getApplId();
+        if (StringUtils.isBlank(applicationName)) {
+            return createErrorMessage("ApplicationName not provided.");
+        }
+
+        try {
+            var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
+            Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
+            if (!authSource.isPresent()) {
+                return createErrorMessage("Insufficient authentication: No authentication source found in the request.");
+            }
+            var authSourceParsed = authSourceService.parse(authSource.get());
+
+            String ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
+            var response = new TicketResponse("", authSourceParsed.getUserId(), applicationName, ticket);
+            return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
+        } catch (Exception e) {
+            log.debug("Cannot generate ticket", e);
+            return createErrorMessage(e.getMessage());
+        }
+    }
+
+    @Override
+    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> safIdt(RequestCredentials requestCredentials) {
+        var applicationName = requestCredentials.getApplId();
+        if (StringUtils.isBlank(applicationName)) {
+            return createErrorMessage("ApplicationName not provided.");
+        }
+
+        try {
+            var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
+            Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
+            if (!authSource.isPresent()) {
+                return createErrorMessage("Insufficient authentication: No authentication source found in the request.");
+            }
+            var authSourceParsed = authSourceService.parse(authSource.get());
+
+            String safIdToken = tokenCreationService.createSafIdTokenWithoutCredentials(authSourceParsed.getUserId(), applicationName);
+            var response = ZaasTokenResponse.builder().headerName(ApimlConstants.SAF_TOKEN_HEADER).token(safIdToken).build();
+            return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
+        } catch (Exception e) {
+            log.debug("Cannot generate SAF IDT", e);
+            return createErrorMessage(e.getMessage());
+        }
+    }
+
+    @Override
+    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> zosmf(RequestCredentials requestCredentials) {
+        try {
+            var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
+            Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
+            if (!authSource.isPresent()) {
+                return createErrorMessage("Insufficient authentication: No authentication source found in the request.");
+            }
+            var authSourceParsed = authSourceService.parse(authSource.get());
+
+            var response = zosmfService.exchangeAuthenticationForZosmfToken(authSource.get().getRawSource().toString(), authSourceParsed);
+            return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
+        } catch (Exception e) {
+            log.debug("Cannot obtain z/OSMF token", e);
+            return createErrorMessage(e.getMessage());
+        }
+    }
+
+    @Override
+    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> zoweJwt(RequestCredentials requestCredentials) {
+        try {
+            var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
+            Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
+            if (!authSource.isPresent()) {
+                return createErrorMessage("Insufficient authentication: No authentication source found in the request.");
+            }
+
+            String token = authSourceService.getJWT(authSource.get());
+            var response = ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME).token(token).build();
+            return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
+        } catch (Exception e) {
+            log.debug("Cannot obtain Zowe JWT token", e);
+            return createErrorMessage(e.getMessage());
+        }
+    }
+
+    @RequiredArgsConstructor
+    private static class RequestCredentialsHttpServletRequestAdapter implements HttpServletRequest {
+
+        private final RequestCredentials requestCredentials;
+
+        @Delegate(excludes = Exclude.class)
+        private HttpServletRequest request;
+
+        @Override
+        public Cookie[] getCookies() {
+            return Optional.ofNullable(requestCredentials.getCookies())
+                .orElse(Collections.emptyMap())
+                .entrySet().stream()
+                .map(entry -> new Cookie(entry.getKey(), entry.getValue()))
+                .toArray(Cookie[]::new);
+        }
+
+        @Override
+        public String getHeader(String name) {
+            return Optional.ofNullable(requestCredentials.getHeaders())
+                .map(h -> h.get(StringUtils.lowerCase(name)))
+                .map(a -> a.length > 0 ? a[0] : null)
+                .orElse(null);
+        }
+
+        @Override
+        public Enumeration<String> getHeaders(String name) {
+            return Collections.enumeration(
+                Optional.ofNullable(requestCredentials.getHeaders())
+                    .map(h -> h.get(name))
+                    .map(Arrays::asList)
+                    .orElse(Collections.emptyList())
+            );
+        }
+
+        @Override
+        public Object getAttribute(String name) {
+            if ("client.auth.X509Certificate".equals(name)) {
+                return requestCredentials.getX509Certificate();
+            }
+            return null;
+        }
+
+        @Override
+        public String getRequestURI() {
+            return requestCredentials.getRequestURI();
+        }
+
+        interface Exclude {
+
+            Cookie[] getCookies();
+            String getHeader(String name);
+            Enumeration<String> getHeaders(String name);
+            Object getAttribute(String name);
+            String getRequestURI();
+
+        }
+
+
+    }
+
+}
