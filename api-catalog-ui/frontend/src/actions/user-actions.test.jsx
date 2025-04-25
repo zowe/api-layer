@@ -82,4 +82,11 @@ describe('>>> User actions tests', () => {
         await userActions.returnToLogin()(dispatch);
         expect(dispatch.mock.calls[0][0].type).toBe('USERS_LOGIN_INIT');
     });
+
+    it('should validate token', async () => {
+        const action = userActions.query('user');
+        console.log(action);
+        expect(action.type).toBe('USERS_LOGIN_SUCCESS');
+        expect(action.user).toBe('user');
+    });
 });

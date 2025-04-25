@@ -59,4 +59,35 @@ describe('>>> Dashboard test', () => {
         cy.get('#user-info-text').should('have.length', 1);
         cy.get('#logout-button').should('have.length', 1).should('contain', 'Log out');
     });
+
+    it('should keep session persistent by navigating to dashboard if valid token is provided', () => {
+        const requestBody = {
+            username: Cypress.env('username'),
+            password: Cypress.env('password')
+        };
+
+        cy.request({
+            method: 'POST',
+            url: `${Cypress.env('loginUrl')}`,
+            body: requestBody,
+        }).then((resp) => {
+            expect(resp.status).to.eq(204);
+            expect(resp.headers).to.have.property('set-cookie');
+
+            const rawCookie = resp.headers['set-cookie'].find(cookie => cookie.startsWith('apimlAuthenticationToken='));
+            expect(rawCookie).to.exist;
+
+            const cookieValue = rawCookie.split(';')[0].split('=')[1];
+
+            // Set the cookie in the Cypress browser
+            cy.setCookie('apimlAuthenticationToken', cookieValue);
+
+            cy.visit(`${Cypress.env('catalogHomePage')}/#/dashboard`);
+
+            cy.get('.header').should('exist');
+            cy.url().should('contain', '/dashboard');
+            cy.contains('The service is running').should('exist');
+        });
+    });
+
 });

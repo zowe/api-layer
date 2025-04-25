@@ -1,3 +1,12 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
 const path = require('path');
 
 // * Tile info
@@ -26,18 +35,24 @@ function isUserSuspended({ username, password }) {
 function validateExpiredCredentials({ username, password }) {
     return username === 'user' && password === 'exp';
 }
-function isNewPasswordInvalid({newPassword}) {
+function isNewPasswordInvalid({ newPassword }) {
     return newPassword === 'invalid';
 }
 
 function validatePasswordUpdate({ username, password, newPassword }) {
-    return username === 'user' && password === 'exp' && newPassword !== undefined && newPassword !== password && newPassword !== 'invalid';
+    return (
+        username === 'user' &&
+        password === 'exp' &&
+        newPassword !== undefined &&
+        newPassword !== password &&
+        newPassword !== 'invalid'
+    );
 }
 function returnTimeout({ username }) {
     return username === 'timeout';
 }
 
-const appRouter = app => {
+const appRouter = (app) => {
     // NOTE: The root route
     app.get('/', (req, res) => {
         res.sendFile(path.join(`${__dirname}/../assets/hello/hello.html`));
@@ -49,17 +64,16 @@ const appRouter = app => {
             res.status(500).send(timeout);
         } else if (validatePasswordUpdate(credentials)) {
             setTimeout(() => res.status(204).send(loginSuccess), 2000);
-        } else if (isNewPasswordInvalid(credentials)){
+        } else if (isNewPasswordInvalid(credentials)) {
             res.status(401).send(newPassNotValid);
         } else if (validateCredentials(credentials)) {
             console.log('LOGIN');
             setTimeout(() => res.status(204).send(loginSuccess), 2000);
-        } else if(validateExpiredCredentials(credentials)){
+        } else if (validateExpiredCredentials(credentials)) {
             res.status(401).send(passwordExpired);
-        } else if(isUserSuspended(credentials)){
+        } else if (isUserSuspended(credentials)) {
             res.status(401).send(userSuspended);
-        }
-        else {
+        } else {
             console.log(invalidCredentials);
             res.status(401).send(invalidCredentials);
         }
