@@ -135,7 +135,10 @@ public class WebSecurity {
             return null;
         }
         return http
-            .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
+            .headers(headers -> headers
+                .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
+                .writer(new CustomHstsServerHttpHeadersWriter())
+                .frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(OAUTH_2_AUTHORIZATION, OAUTH_2_REDIRECT_URI))
             .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
@@ -291,7 +294,10 @@ public class WebSecurity {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
-            .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
+            .headers(headers -> headers
+                .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
+                .writer(new CustomHstsServerHttpHeadersWriter())
+                .frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .x509(x509 ->
                 x509
                     .principalExtractor(new SubjectDnX509PrincipalExtractor())
