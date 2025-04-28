@@ -133,7 +133,7 @@ apiml:
                 authenticate: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/zss/saf/authenticate
                 verify: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/zss/saf/verify
         auth:
-            provider: zosmf
+            provider: dummy
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
     health:

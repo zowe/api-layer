@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.passticket.PassTicketException;
 import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.zaas.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.zaas.security.service.saf.SafIdtProvider;
@@ -78,7 +79,7 @@ public class TokenCreationService {
         return zosmfService.authenticate(new UsernamePasswordAuthenticationToken(user, passTicket)).getTokens();
     }
 
-    public String createSafIdTokenWithoutCredentials(String user, String applId) throws IRRPassTicketGenerationException {
+    public String createSafIdTokenWithoutCredentials(String user, String applId) throws PassTicketException {
         char[] passTicket = null;
         try {
             passTicket = passTicketService.generate(user, applId).toCharArray();
@@ -109,6 +110,8 @@ public class TokenCreationService {
             return passTicket;
         } catch (IRRPassTicketGenerationException e) {
             throw new AuthenticationTokenException("Generation of PassTicket failed", e);
+        } catch (PassTicketException e) {
+            throw new RuntimeException(e);
         }
 
     }
