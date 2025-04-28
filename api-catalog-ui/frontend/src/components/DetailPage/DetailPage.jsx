@@ -29,11 +29,15 @@ function DetailPage({
                         service,
                         fetchServiceStop,
                         serviceLoading,
-                        fetchServiceError
+                        fetchServiceError,
+                        fetchTilesStart,
                     }) {
     const [error, setError] = useState(null);
     const serviceId = useParams();
 
+    useEffect(() => {
+        fetchTilesStart();
+    }, []);
     useEffect(() => {
         if (!serviceId || !serviceId['*']) {
             console.error("No valid serviceId found:", serviceId);

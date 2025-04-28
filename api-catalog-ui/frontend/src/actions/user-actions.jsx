@@ -56,6 +56,11 @@ function login(credentials) {
     };
 }
 
+export function query(user) {
+    const success = { showUpdatePassSuccess: true };
+    return { type: userConstants.USERS_LOGIN_SUCCESS, user, success };
+}
+
 function logout() {
     function request() {
         return { type: userConstants.USERS_LOGOUT_REQUEST };
@@ -117,4 +122,5 @@ export const userActions = {
     returnToLogin,
     validateInput,
     closeAlert,
+    query,
 };
