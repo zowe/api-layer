@@ -15,7 +15,7 @@ import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';
 import {sortServices} from '../../selectors/selectors';
 
-function ServicesNavigationBar({services, searchCriteria, clear, filterText,fetchNewService}) {
+function ServicesNavigationBar({services, searchCriteria, clear, filterText, fetchNewService}) {
 
 
     useEffect(() => {

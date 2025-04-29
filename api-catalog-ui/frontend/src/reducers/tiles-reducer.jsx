@@ -35,7 +35,7 @@ const tilesReducer = (state = tilesReducerDefaultState, action = {}) => {
         case FETCH_TILES_SUCCESS:
             return {
                 ...state,
-                services: [...state.services],
+                services: state.services,
                 tiles: [...action.payload],
                 tilesLoading: false,
                 error: null,
@@ -56,6 +56,7 @@ const tilesReducer = (state = tilesReducerDefaultState, action = {}) => {
             };
         case FETCH_SERVICE_FAILED:
             return {
+                ...state,
                 id: '',
                 error: action.payload,
             };
