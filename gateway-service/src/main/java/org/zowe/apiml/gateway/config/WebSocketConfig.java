@@ -35,7 +35,7 @@ public class WebSocketConfig {
 
     @Bean
     @Primary
-    public WebSocketClient tomcatWebSocketClient(@Qualifier("secureSslContextWithoutKeystore") SSLContext secureSslContextWithoutKeystore) {
+    WebSocketClient tomcatWebSocketClient(@Qualifier("secureSslContextWithoutKeystore") SSLContext secureSslContextWithoutKeystore) {
         var wsContainer = new WsWebSocketContainer();
         wsContainer.setDefaultMaxTextMessageBufferSize(bufferSize);
         wsContainer.setDefaultMaxBinaryMessageBufferSize(bufferSize);
@@ -46,7 +46,7 @@ public class WebSocketConfig {
 
     @Bean
     @Primary
-    public RequestUpgradeStrategy requestUpgradeStrategy() {
+    RequestUpgradeStrategy requestUpgradeStrategy() {
         return new ApimlRequestUpgradeStrategy();
     }
 

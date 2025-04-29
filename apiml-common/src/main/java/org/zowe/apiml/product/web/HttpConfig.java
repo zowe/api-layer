@@ -154,7 +154,6 @@ public class HttpConfig {
             secureSslContextWithoutKeystore = factoryWithoutKeystore.getSslContext();
 
             publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
-
         } catch (HttpsConfigError e) {
             log.error("Invalid configuration of HTTPs: {}", e.getMessage());
             System.exit(1);
