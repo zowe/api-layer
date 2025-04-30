@@ -56,10 +56,11 @@ public class WebSocketConfig {
             httpClient = new HttpClient();
             httpClient.setSslContextFactory(sslContextFactory);
             httpClient.setRequestBufferSize(bufferSize);
-            wsClient = new WebSocketClient(httpClient);
-
             httpClient.setConnectTimeout(connectTimeout);
             httpClient.setIdleTimeout(idleTimeout);
+            httpClient.start();
+
+            wsClient = new WebSocketClient(httpClient);
             wsClient.setConnectTimeout(connectTimeout);
             wsClient.setStopTimeout(stopTimeout);
             wsClient.start();
