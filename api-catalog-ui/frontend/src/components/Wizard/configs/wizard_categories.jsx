@@ -20,12 +20,13 @@
 import { baseCategories } from './wizard_base_categories';
 import { springSpecificCategories } from './wizard_spring_categories';
 import { staticSpecificCategories } from './wizard_static_categories';
-import { nodeSpecificCategories } from './wizard_node_categories';
+import { nonJavaSpecificCategories } from './wizard_non_java_categories';
 import { micronautSpecificCategories } from './wizard_micronaut_categories';
+
 export const categoryData = [
     ...baseCategories,
     ...springSpecificCategories,
     ...staticSpecificCategories,
-    ...nodeSpecificCategories,
+    ...nonJavaSpecificCategories,
     ...micronautSpecificCategories,
 ];
