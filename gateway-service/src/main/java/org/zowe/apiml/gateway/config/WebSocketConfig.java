@@ -10,38 +10,81 @@
 
 package org.zowe.apiml.gateway.config;
 
-import org.apache.tomcat.websocket.WsWebSocketContainer;
+import jakarta.annotation.PreDestroy;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.web.reactive.socket.client.WebSocketClient;
+import org.springframework.web.reactive.socket.client.JettyWebSocketClient;
 import org.springframework.web.reactive.socket.server.RequestUpgradeStrategy;
 import org.zowe.apiml.gateway.websocket.ApimlRequestUpgradeStrategy;
-import org.zowe.apiml.gateway.websocket.ApimlWebSocketClient;
 
-import javax.net.ssl.SSLContext;
-
+@Slf4j
 @Configuration
 public class WebSocketConfig {
 
     @Value("${server.webSocket.requestBufferSize:8192}")
     private int bufferSize;
-    @Value("${server.webSocket.asyncWriteTimeout:60000}")
-    private long sendTimeout;
+    @Value("${server.webSocket.stopTimeout:30000}")
+    private long stopTimeout;
     @Value("${server.webSocket.maxIdleTimeout:3600000}")
     private long idleTimeout;
+    @Value("${server.webSocket.connectTimeout:45000}")
+    private long connectTimeout;
+    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
+    private boolean verifySslCertificatesOfServices;
+    @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
+    private boolean nonStrictVerifySslCertificatesOfServices;
+
+    private WebSocketClient wsClient;
+    private HttpClient httpClient;
 
     @Bean
     @Primary
-    WebSocketClient tomcatWebSocketClient(@Qualifier("secureSslContextWithoutKeystore") SSLContext secureSslContextWithoutKeystore) {
-        var wsContainer = new WsWebSocketContainer();
-        wsContainer.setDefaultMaxTextMessageBufferSize(bufferSize);
-        wsContainer.setDefaultMaxBinaryMessageBufferSize(bufferSize);
-        wsContainer.setAsyncSendTimeout(sendTimeout);
-        wsContainer.setDefaultMaxSessionIdleTimeout(idleTimeout);
-        return new ApimlWebSocketClient(wsContainer, secureSslContextWithoutKeystore);
+    public JettyWebSocketClient webSocketClient(
+        @Qualifier("jettyClientSslContextFactory")  SslContextFactory.Client sslContextFactory
+    ) {
+        try {
+            if (verifySslCertificatesOfServices && nonStrictVerifySslCertificatesOfServices) {
+                sslContextFactory.setEndpointIdentificationAlgorithm(null);
+            }
+            httpClient = new HttpClient();
+            httpClient.setSslContextFactory(sslContextFactory);
+            httpClient.setRequestBufferSize(bufferSize);
+            wsClient = new WebSocketClient(httpClient);
+
+            httpClient.setConnectTimeout(connectTimeout);
+            httpClient.setIdleTimeout(idleTimeout);
+            wsClient.setConnectTimeout(connectTimeout);
+            wsClient.setStopTimeout(stopTimeout);
+            wsClient.start();
+
+            log.info("Jetty WebSocketClient initialized successfully.");
+            return new JettyWebSocketClient(wsClient);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to initialize Jetty WebSocketClient", e);
+        }
+    }
+
+    @PreDestroy
+    public void shutdownJettyClients() {
+        try {
+            if (wsClient != null && wsClient.isRunning()) {
+                log.info("Stopping Jetty WebSocketClient...");
+                wsClient.stop();
+            }
+            if (httpClient != null && httpClient.isRunning()) {
+                log.info("Stopping Jetty HttpClient...");
+                httpClient.stop();
+            }
+        } catch (Exception e) {
+            log.warn("Error while shutting down Jetty clients", e);
+        }
     }
 
     @Bean

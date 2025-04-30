@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.product.web;
 
+import io.micrometer.common.util.StringUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
 import org.apache.hc.core5.http.config.Registry;
 import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.apache.hc.core5.util.Timeout;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -192,6 +194,32 @@ public class HttpConfig {
     @Bean
     public Set<String> publicKeyCertificatesBase64() {
         return publicKeyCertificatesBase64;
+    }
+
+    private void setTruststore(SslContextFactory sslContextFactory) {
+        if (StringUtils.isNotEmpty(trustStore)) {
+            sslContextFactory.setTrustStorePath(SecurityUtils.formatKeyringUrl(trustStore));
+            sslContextFactory.setTrustStoreType(trustStoreType);
+            sslContextFactory.setTrustStorePassword(trustStorePassword == null ? null : String.valueOf(trustStorePassword));
+        }
+    }
+
+    @Bean
+    public SslContextFactory.Client jettyClientSslContextFactory() {
+        SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
+        sslContextFactory.setProtocol(protocol);
+        sslContextFactory.setExcludeCipherSuites("^.*_(MD5|SHA|SHA1)$", "^TLS_RSA_.*$");
+        setTruststore(sslContextFactory);
+        log.debug("jettySslContextFactory: {}", sslContextFactory.dump());
+        sslContextFactory.setHostnameVerifier(secureHostnameVerifier());
+        if (nonStrictVerifySslCertificatesOfServices) {
+            sslContextFactory.setEndpointIdentificationAlgorithm(null);
+        }
+        if (!verifySslCertificatesOfServices) {
+            sslContextFactory.setTrustAll(true);
+        }
+
+        return sslContextFactory;
     }
 
     /**

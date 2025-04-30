@@ -87,6 +87,9 @@ dependencies {
     implementation libs.swagger2.parser
     implementation libs.swagger3.parser
     implementation libs.bundles.jaxb
+    implementation libs.jetty.util
+    implementation libs.jetty.client
+    implementation libs.jetty.websocket.client
 
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.spring.mock.mvc
