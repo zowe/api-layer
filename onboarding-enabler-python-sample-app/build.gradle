@@ -1,0 +1,24 @@
+def venvPath = System.getProperty('os.name').toLowerCase().contains('windows') ? 'venv\\Scripts\\' : 'venv/bin/'
+
+task createVenv(type: Exec) {
+    commandLine 'python', '-m', 'venv', 'venv'
+}
+
+task installDependencies(type: Exec) {
+    dependsOn createVenv
+    doFirst {
+        exec {
+            commandLine "${venvPath}pip", 'install', 'pipenv'
+        }
+    }
+    commandLine "${venvPath}pipenv", 'install', '--deploy', '--ignore-pipfile'
+}
+
+task runPython(type: Exec) {
+    dependsOn installDependencies
+    commandLine "${venvPath}python", 'src/app.py'
+}
+
+jar {
+    enabled false
+}

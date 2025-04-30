@@ -38,8 +38,10 @@ public class X509NativeMapper implements AuthenticationMapper {
             if (certificate != null) {
                 try {
                    CertificateResponse response = nativeMapper.getUserIDForCertificate(certificate.getEncoded());
-                   if (response.getRc() == 0 && StringUtils.isNotEmpty(response.getUserId())) {
-                       return response.getUserId();
+                   var userId = response.getUserId();
+                   log.debug("Certificate {} mapped to the user {}", certificate.getSubjectX500Principal().getName(), userId);
+                   if (response.getRc() == 0 && StringUtils.isNotEmpty(userId)) {
+                       return userId;
                    }
                 } catch (CertificateEncodingException e) {
                     log.error("Can`t get encoded data from certificate", e);

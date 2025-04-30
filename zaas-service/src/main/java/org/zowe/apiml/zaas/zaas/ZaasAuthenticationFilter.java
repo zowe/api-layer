@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
+import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
 
 @RequiredArgsConstructor
 public class ZaasAuthenticationFilter extends OncePerRequestFilter {
@@ -40,6 +42,12 @@ public class ZaasAuthenticationFilter extends OncePerRequestFilter {
             if (authSource.isEmpty() || !authSourceService.isValid(authSource.get())) {
                 throw new InsufficientAuthenticationException("Authentication failed.");
             }
+
+            Optional<AuthSource.Parsed> authSourceParsed = Optional.ofNullable((AuthSource.Parsed) request.getAttribute(AUTH_SOURCE_PARSED_ATTR));
+            if (authSourceParsed.isEmpty() || StringUtils.isBlank(authSourceParsed.get().getUserId())) {
+                throw new InsufficientAuthenticationException("Authentication failed.");
+            }
+
             filterChain.doFilter(request, response);
         } catch (RuntimeException e) {
             authExceptionHandler.handleException(request, response, e);

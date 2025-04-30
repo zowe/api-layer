@@ -17,8 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.passticket.IRRPassTicketEvaluationException;
-import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.passticket.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -47,7 +46,7 @@ public class PassTicketTestController {
     public void passticketTest(@RequestHeader("authorization") String authorization,
                                @RequestHeader(value = "X-Zowe-Auth-Failure", required = false) String zoweAuthFailure,
                                @RequestParam(value = "applId", defaultValue = "", required = false) String applId)
-        throws IRRPassTicketEvaluationException {
+        throws PassTicketException {
         if (authorization != null && authorization.toLowerCase().startsWith("basic")) {
             if (zoweAuthFailure != null) {
                 throw new IllegalArgumentException("Scheme transformation happened and error was set in X-Zowe-Auth-Failure header");

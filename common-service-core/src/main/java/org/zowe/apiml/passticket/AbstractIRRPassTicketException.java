@@ -19,7 +19,7 @@ import org.apache.hc.core5.http.HttpStatus;
  */
 @AllArgsConstructor
 @Getter
-public abstract class AbstractIRRPassTicketException extends Exception {
+public abstract class AbstractIRRPassTicketException extends PassTicketException {
 
     private static final long serialVersionUID = -6233392272992529775L;
 

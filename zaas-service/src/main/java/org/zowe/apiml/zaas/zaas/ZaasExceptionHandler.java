@@ -29,6 +29,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import org.zowe.apiml.passticket.UsernameNotProvidedException;
 import org.zowe.apiml.security.common.auth.saf.EndpointImproperlyConfigureException;
 import org.zowe.apiml.security.common.auth.saf.UnsupportedResourceClassException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
@@ -36,7 +37,7 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.security.service.saf.SafIdtAuthException;
 import org.zowe.apiml.zaas.security.service.saf.SafIdtException;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSchemeException;
-import org.zowe.apiml.zaas.security.ticket.ApplicationNameNotFoundException;
+import org.zowe.apiml.passticket.ApplicationNameNotProvidedException;
 
 import javax.management.ServiceNotFoundException;
 import javax.net.ssl.SSLException;
@@ -63,6 +64,16 @@ public class ZaasExceptionHandler {
             .body(messageView);
     }
 
+    @ExceptionHandler(value = {UsernameNotProvidedException.class})
+    public ResponseEntity<ApiMessageView> handleUsernameNotProvidedException(UsernameNotProvidedException ex) {
+        log.error(ex.getMessage());
+        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed", ex.getMessage()).mapToView();
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(messageView);
+    }
+
     @ExceptionHandler(value = {SafIdtException.class, SafIdtAuthException.class})
     public ResponseEntity<ApiMessageView> handleSafIdtExceptions(RuntimeException ex) {
         ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.idt.failed", ex.getMessage()).mapToView();
@@ -72,7 +83,7 @@ public class ZaasExceptionHandler {
             .body(messageView);
     }
 
-    @ExceptionHandler(value = {ApplicationNameNotFoundException.class, HttpMessageNotReadableException.class})
+    @ExceptionHandler(value = {ApplicationNameNotProvidedException.class, HttpMessageNotReadableException.class})
     public ResponseEntity<ApiMessageView> handleApplIdNotFoundException() {
         ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.invalidApplicationName").mapToView();
         return ResponseEntity
@@ -192,7 +203,7 @@ public class ZaasExceptionHandler {
     @ExceptionHandler({IllegalArgumentException.class, MissingServletRequestParameterException.class})
     public ResponseEntity<ApiMessageView> handleIllegalArguments(Exception exception) {
         log.debug("Client sent illegal arguments", exception);
-        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.common.badRequest").mapToView();
+        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.common.badRequest", exception.getMessage()).mapToView();
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .contentType(MediaType.APPLICATION_JSON)
