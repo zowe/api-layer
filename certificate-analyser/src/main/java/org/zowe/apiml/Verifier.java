@@ -12,5 +12,6 @@ package org.zowe.apiml;
 
 public interface Verifier {
 
-    void verify();
+    boolean verify();
+
 }

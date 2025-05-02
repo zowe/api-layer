@@ -41,6 +41,8 @@ public class ApimlConf implements Config {
     private boolean helpRequested = false;
     @Option(names = {"-c", "--clientcert"}, description = "Add client certificate to HTTPS request")
     private boolean clientCertAuth;
+    @Option(names = {"-d", "--hostnames"}, split = ",", description = "All hostnames that should match with the server certificate separated by comma")
+    private String[] requiredHostNames;
 
     public String getKeyStore() {
         return keyStore;
@@ -88,6 +90,10 @@ public class ApimlConf implements Config {
 
     private String defaultValue(String value, String defaultVal) {
         return value != null ? value : defaultVal;
+    }
+
+    public String[] getRequiredHostNames() {
+        return requiredHostNames;
     }
 }
 

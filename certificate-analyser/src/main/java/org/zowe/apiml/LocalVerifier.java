@@ -14,18 +14,25 @@ import java.security.KeyStoreException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @SuppressWarnings("squid:S106") //ignoring the System.out System.err warinings
 public class LocalVerifier implements Verifier {
 
-    private Stores stores;
+    private static final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss. SSSZ");
 
-    public LocalVerifier(Stores stores) {
+    private final Stores stores;
+    private final String[] requiredHostnames;
+
+    public LocalVerifier(Stores stores, String[] requiredHostnames) {
         this.stores = stores;
+        this.requiredHostnames = requiredHostnames;
     }
 
-    public void verify() {
+    public boolean verify() {
         System.out.println("=============");
         System.out.println("Verifying keystore: " + stores.getConf().getKeyStore() +
             "  against truststore: " + stores.getConf().getTrustStore());
@@ -43,9 +50,7 @@ public class LocalVerifier implements Verifier {
                         System.out.println("Trusted certificate is stored under alias: " + cert.getKey());
                         System.out.println("Certificate authority: " + trustedCA.getSubjectDN());
                         System.out.println("Details about valid certificate:");
-                        printDetails(alias);
-
-                        return;
+                        return verifyCertificate(alias);
                     }
                 } catch (Exception e) {
 //               this means that cert is not valid, intentionally ignore
@@ -57,17 +62,101 @@ public class LocalVerifier implements Verifier {
             System.err.println("Error loading secret from keystore" + e.getMessage());
         }
 
+        return false;
     }
 
-    void printDetails(String keyAlias) throws KeyStoreException {
-        Certificate[] certificate = stores.getKeyStore().getCertificateChain(keyAlias);
-        X509Certificate serverCert = (X509Certificate) certificate[0];
+    boolean verifyExpiration(X509Certificate serverCert) {
+        Date expiration = serverCert.getNotAfter();
+        boolean expired = expiration.before(new Date());
+
+        System.out.println("++++++++");
+        System.out.println("Expiration data: " + DATE_TIME_FORMAT.format(expiration));
+        if (expired) {
+            System.out.println("The certificate is expired");
+        }
+        System.out.println("++++++++");
+
+        return !expired;
+    }
+
+    boolean isMatching(String hostname, String cn, List<String> alternativeNames) {
+        if (cn.startsWith("*.")) {
+            int firstDot = hostname.indexOf('.');
+            if ((firstDot > 0) && cn.substring(1).equalsIgnoreCase(hostname.substring(firstDot))) {
+                return true;
+            }
+        }
+
+        return alternativeNames.stream().anyMatch(hostname::equalsIgnoreCase);
+    }
+
+    boolean verifyHostnames(X509Certificate serverCert) {
+        String commonName;
+        List<String> alternativeNames;
         try {
+            Pattern pattern = Pattern.compile("CN=(.*?)(?:,|$)");
+            Matcher matcher = pattern.matcher(serverCert.getSubjectX500Principal().getName());
+            commonName = matcher.find() ? matcher.group(1) : "";
+            alternativeNames = serverCert.getSubjectAlternativeNames().stream()
+                .flatMap(Collection::stream)
+                .map(String::valueOf)
+                .distinct()
+                .sorted()
+                .toList();
+        } catch (CertificateParsingException e) {
+            System.err.println(e.getMessage());
+            return false;
+        }
+
+        System.out.println("++++++++");
+        System.out.println("Possible hostname values:");
+        System.out.println("CN: " + commonName);
+        System.out.println("alternative names:");
+        alternativeNames.forEach(System.out::println);
+        System.out.println("++++++++");
+
+        List<String> notMatching = Arrays.stream(requiredHostnames)
+            .filter(requiredHostname -> !isMatching(requiredHostname, commonName, alternativeNames))
+            .distinct()
+            .sorted()
+            .toList();
+        if (notMatching.isEmpty()) {
+            System.out.println("All required hostnames are matched with the certificate");
+        } else {
+            System.out.println("Not matched hostnames with the certificate:");
+            notMatching.forEach(System.out::println);
+        }
+        System.out.println("++++++++");
+
+        return notMatching.isEmpty();
+    }
+
+    boolean verifyServer(X509Certificate serverCert) {
+        try {
+            boolean serverAuth = serverCert.getExtendedKeyUsage().contains("1.3.6.1.5.5.7.3.1");
+
             System.out.println("++++++++");
-            System.out.println("Possible hostname values:");
-            serverCert.getSubjectAlternativeNames().forEach(System.out::println);
+            if (serverAuth) {
+                System.out.println("Certificate can be used for web server.");
+            } else {
+                System.out.println("Certificate can't be used for web server. " +
+                    "Provide certificate with extended key usage: 1.3.6.1.5.5.7.3.1");
+            }
+            System.out.println("++++++++");
+
+            return serverAuth;
+        } catch (CertificateParsingException e) {
+            System.err.println(e.getMessage());
+        }
+
+        return false;
+    }
+
+    boolean verifyX509(X509Certificate serverCert) {
+        try {
             boolean clientAuth = serverCert.getExtendedKeyUsage().contains("1.3.6.1.5.5.7.3.2");
 
+            System.out.println("++++++++");
             if (clientAuth) {
                 System.out.println("Certificate can be used for client authentication.");
             } else {
@@ -76,9 +165,27 @@ public class LocalVerifier implements Verifier {
             }
             System.out.println("++++++++");
 
+            return clientAuth;
         } catch (CertificateParsingException e) {
             System.err.println(e.getMessage());
         }
 
+        return false;
     }
+
+    boolean verifyCertificate(String keyAlias) throws KeyStoreException {
+        Certificate[] certificate = stores.getKeyStore().getCertificateChain(keyAlias);
+        X509Certificate serverCert = (X509Certificate) certificate[0];
+
+        boolean expirationCheck = verifyExpiration(serverCert);
+        boolean hostNameCheck = true;
+        if (requiredHostnames != null) {
+            hostNameCheck = verifyHostnames(serverCert);
+        }
+        boolean serverCheck = verifyServer(serverCert);
+        boolean x509Check = verifyX509(serverCert);
+
+        return expirationCheck && hostNameCheck && serverCheck && x509Check;
+    }
+
 }

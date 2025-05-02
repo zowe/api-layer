@@ -15,10 +15,10 @@ import picocli.CommandLine;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("squid:S106") //ignoring the System.out System.err warinings
+@SuppressWarnings("squid:S106") //ignoring the System.out System.err warnings
 public class Analyser {
 
-    public static void main(String[] args) {
+    public static int mainWithExitCode(String[] args) {
         try {
             ApimlConf conf = new ApimlConf();
             CommandLine cmd = new CommandLine(conf);
@@ -26,7 +26,7 @@ public class Analyser {
             if (conf.isHelpRequested()) {
                 cmd.printVersionHelp(System.out);
                 CommandLine.usage(new ApimlConf(), System.out);
-                return;
+                return 8;
             }
 
             Stores stores = new Stores(conf);
@@ -51,15 +51,19 @@ public class Analyser {
                 verifiers.add(new LocalHandshake(sslContextFactory, client));
             }
             if (conf.getKeyStore() != null) {
-                verifiers.add(new LocalVerifier(stores));
+                verifiers.add(new LocalVerifier(stores, conf.getRequiredHostNames()));
             }
-            verifiers.forEach(Verifier::verify);
 
+            boolean valid = verifiers.stream().map(Verifier::verify).min(Boolean::compareTo).orElse(false);
+            return valid ? 0 : 4;
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
-
+        return 4;
     }
 
+    public static final void main(String[] args) {
+        System.exit(mainWithExitCode(args));
+    }
 
 }
