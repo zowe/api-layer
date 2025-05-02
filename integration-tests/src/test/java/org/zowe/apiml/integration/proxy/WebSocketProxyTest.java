@@ -14,7 +14,11 @@ import io.restassured.RestAssured;
 import jakarta.websocket.ContainerProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -40,7 +44,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_HEADER;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_UPPERCASE;
 
@@ -134,7 +140,6 @@ class WebSocketProxyTest implements TestWithStartedInstances {
         class Authentication {
 
             @Nested
-            @Disabled
             class WhenValid {
 
                 @Nested
@@ -168,8 +173,8 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                             response.wait(WAIT_TIMEOUT_MS);
                         }
 
-                        assertTrue(response.toString().contains("x-test:\"value\""), "Expected response to contain \"x-test\": \"value\". Response is: "+ response.toString());
-                        assertTrue(response.toString().contains(validToken), "Expected response to contain " + validToken + ". Response is: "+ response.toString());
+                        assertTrue(response.toString().contains("x-test:\"value\""), "Expected response to contain \"x-test\": \"value\". Response is: " + response.toString());
+                        assertTrue(response.toString().contains(validToken), "Expected response to contain " + validToken + ". Response is: " + response.toString());
                         session.sendMessage(new TextMessage("bye"));
                         session.close();
                     }
@@ -259,7 +264,6 @@ class WebSocketProxyTest implements TestWithStartedInstances {
     }
 
     @Nested
-    @Disabled
     class WhenClosingSession {
         @Test
         void getCorrectResponse() throws Exception {
@@ -276,7 +280,6 @@ class WebSocketProxyTest implements TestWithStartedInstances {
     }
 
     @Nested
-    @Disabled
     class WhenRequestIsNotForWebSocket {
 
         @BeforeEach
