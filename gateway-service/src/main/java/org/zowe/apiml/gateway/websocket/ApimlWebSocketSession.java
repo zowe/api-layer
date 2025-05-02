@@ -47,10 +47,12 @@ public class ApimlWebSocketSession extends TomcatWebSocketSession {
         // Jakarta implementation
         if (ex.getCause() instanceof AuthenticationException) {
             close(new CloseStatus(1003, "Invalid login credentials"));
+            return;
         }
         // Netty reactor implementation
-        if (ex.getCause() instanceof WebSocketClientHandshakeException e && e.getMessage().contains(String.valueOf(HttpStatus.UNAUTHORIZED.value()))) {
+        if (ex instanceof WebSocketClientHandshakeException e && e.getMessage().contains(String.valueOf(HttpStatus.UNAUTHORIZED.value()))) {
             close(new CloseStatus(1003, "Invalid login credentials"));
+            return;
         }
         close(CloseStatus.create(CloseStatus.SERVER_ERROR.getCode(), ex.getMessage()));
     }
