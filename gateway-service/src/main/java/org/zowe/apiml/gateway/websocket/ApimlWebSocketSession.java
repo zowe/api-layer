@@ -10,9 +10,11 @@
 
 package org.zowe.apiml.gateway.websocket;
 
+import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakeException;
 import jakarta.websocket.Session;
 import org.apache.tomcat.websocket.AuthenticationException;
 import org.springframework.core.io.buffer.DataBufferFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.socket.CloseStatus;
 import org.springframework.web.reactive.socket.HandshakeInfo;
 import org.springframework.web.reactive.socket.adapter.TomcatWebSocketSession;
@@ -42,7 +44,12 @@ public class ApimlWebSocketSession extends TomcatWebSocketSession {
         } else if (logger.isInfoEnabled()) {
             logger.info("WebSocket session completed with error: " + ex.getMessage());
         }
+        // Jakarta implementation
         if (ex.getCause() instanceof AuthenticationException) {
+            close(new CloseStatus(1003, "Invalid login credentials"));
+        }
+        // Netty reactor implementation
+        if (ex.getCause() instanceof WebSocketClientHandshakeException e && e.getMessage().contains(String.valueOf(HttpStatus.UNAUTHORIZED.value()))) {
             close(new CloseStatus(1003, "Invalid login credentials"));
         }
         close(CloseStatus.create(CloseStatus.SERVER_ERROR.getCode(), ex.getMessage()));
