@@ -32,8 +32,7 @@ public class WebSocketConfig {
         var spec = WebsocketClientSpec.builder()
             .handlePing(true);
 
-        var client = new ReactorNettyWebSocketClient(secureClient, () -> spec);
-        return client;
+        return new ReactorNettyWebSocketClient(secureClient, () -> spec);
     }
 
     @Bean
