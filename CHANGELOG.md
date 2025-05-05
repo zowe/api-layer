@@ -4,7 +4,6 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 ## `APIML 3.2.3 / Zowe 3.2.0 (2025-04-16)`
 
-* Feature:  Eureka client connection timeout (#4045) ([0e3c116](https://github.com/zowe/api-layer/commit/0e3c116)), closes [#4045](https://github.com/zowe/api-layer/issues/4045)
 * Feature:  v3 with Java 21 (#4028) ([59ea8ee](https://github.com/zowe/api-layer/commit/59ea8ee)), closes [#4028](https://github.com/zowe/api-layer/issues/4028)
 
 
