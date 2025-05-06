@@ -181,9 +181,9 @@ dependencyResolutionManagement {
             library('jetty_http', 'org.eclipse.jetty', 'jetty-http').versionRef('jettyWebSocketClient')
             library('jetty_io', 'org.eclipse.jetty', 'jetty-io').versionRef('jettyWebSocketClient')
             library('jetty_util', 'org.eclipse.jetty', 'jetty-util').versionRef('jettyWebSocketClient')
-            library('jetty_websocket_api', 'org.eclipse.jetty.websocket', 'websocket-api').versionRef('jettyWebSocketClient')
-            library('jetty_websocket_client', 'org.eclipse.jetty.websocket', 'websocket-client').versionRef('jettyWebSocketClient')
-            library('jetty_websocket_common', 'org.eclipse.jetty.websocket', 'websocket-common').versionRef('jettyWebSocketClient')
+            library('jetty_websocket_api', 'org.eclipse.jetty.websocket', 'jetty-websocket-jetty-api').versionRef('jettyWebSocketClient')
+            library('jetty_websocket_client', 'org.eclipse.jetty.websocket', 'jetty-websocket-jetty-client').versionRef('jettyWebSocketClient')
+            library('jetty_websocket_common', 'org.eclipse.jetty.websocket', 'jetty-websocket-jetty-common').versionRef('jettyWebSocketClient')
             library('jettison', 'org.codehaus.jettison', 'jettison').versionRef('jettison')
             library('joda_time', 'joda-time', 'joda-time').versionRef('jodaTime') // to define minimum version and avoid duplicity libraries in the classpath
             library('json_smart', 'net.minidev', 'json-smart').versionRef('jsonSmart')

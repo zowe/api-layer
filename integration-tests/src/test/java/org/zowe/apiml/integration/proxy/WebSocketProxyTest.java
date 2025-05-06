@@ -14,7 +14,9 @@ import io.restassured.RestAssured;
 import jakarta.websocket.ContainerProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHttpHeaders;
@@ -40,7 +42,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_HEADER;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_UPPERCASE;
 
@@ -51,27 +55,20 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
     private static final int WAIT_TIMEOUT_MS = 10000;
 
-    private static final WebSocketHttpHeaders VALID_AUTH_HEADERS = new WebSocketHttpHeaders();
-    private static final WebSocketHttpHeaders INVALID_AUTH_HEADERS = new WebSocketHttpHeaders();
     private static final String validToken = "apimlAuthenticationToken=tokenValue";
 
+    private static final String BASE64_CREDENTIALS = Base64.getEncoder().encodeToString("user:pass".getBytes());
+    private static final String INVALID_BASE64_CREDENTIALS = Base64.getEncoder().encodeToString("user:invalidPass".getBytes());
 
-    @BeforeAll
-    static void setup() {
-        String plainCred = "user:pass";
-        String base64cred = Base64.getEncoder().encodeToString(plainCred.getBytes());
-        VALID_AUTH_HEADERS.add("Authorization", "Basic " + base64cred);
+    private WebSocketHttpHeaders VALID_AUTH_HEADERS;
+    private WebSocketHttpHeaders INVALID_AUTH_HEADERS;
 
-        String invalidPlainCred = "user:invalidPass";
-        String invalidBase64cred = Base64.getEncoder().encodeToString(invalidPlainCred.getBytes());
-        INVALID_AUTH_HEADERS.add("Authorization", "Basic " + invalidBase64cred);
-
-    }
-
-    @AfterAll
-    static void teardown() {
-        VALID_AUTH_HEADERS.clear();
-        INVALID_AUTH_HEADERS.clear();
+    @BeforeEach
+    void setUp() {
+        VALID_AUTH_HEADERS = new WebSocketHttpHeaders();
+        VALID_AUTH_HEADERS.add("Authorization", "Basic " + BASE64_CREDENTIALS);
+        INVALID_AUTH_HEADERS = new WebSocketHttpHeaders();
+        INVALID_AUTH_HEADERS.add("Authorization", "Basic " + INVALID_BASE64_CREDENTIALS);
     }
 
     private TextWebSocketHandler appendResponseHandler(StringBuilder target, int countToNotify) {
@@ -129,10 +126,13 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
     @Nested
     class WhenRoutingSession {
+
         @Nested
         class Authentication {
+
             @Nested
             class WhenValid {
+
                 @Nested
                 class ReturnSuccess {
                     @Test
@@ -164,8 +164,8 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                             response.wait(WAIT_TIMEOUT_MS);
                         }
 
-                        assertTrue(response.toString().contains("x-test:\"value\""));
-                        assertTrue(response.toString().contains(validToken));
+                        assertTrue(response.toString().contains("x-test:\"value\""), "Expected response to contain \"x-test\": \"value\". Response is: " + response.toString());
+                        assertTrue(response.toString().contains(validToken), "Expected response to contain " + validToken + ". Response is: " + response.toString());
                         session.sendMessage(new TextMessage("bye"));
                         session.close();
                     }
@@ -198,7 +198,6 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
                     @Test
                     void whenUrlFormatIsNotCorrect() throws Exception {
-
                         var exception = assertThrows(ExecutionException.class, () -> appendingWebSocketSession(discoverableClientGatewayUrl("/ws/wrong"), VALID_AUTH_HEADERS, new StringBuilder(), 1));
 
                         assertEquals("jakarta.websocket.DeploymentException: The HTTP response from the server [404] did not permit the HTTP upgrade to WebSocket",
@@ -287,7 +286,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                 .and()
                 .statusCode(SC_OK);
         }
-    }
 
+    }
 
 }

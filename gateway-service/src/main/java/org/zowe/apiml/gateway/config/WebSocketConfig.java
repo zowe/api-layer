@@ -10,43 +10,35 @@
 
 package org.zowe.apiml.gateway.config;
 
-import org.apache.tomcat.websocket.WsWebSocketContainer;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient;
 import org.springframework.web.reactive.socket.client.WebSocketClient;
 import org.springframework.web.reactive.socket.server.RequestUpgradeStrategy;
 import org.zowe.apiml.gateway.websocket.ApimlRequestUpgradeStrategy;
-import org.zowe.apiml.gateway.websocket.ApimlWebSocketClient;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.http.client.WebsocketClientSpec;
 
-import javax.net.ssl.SSLContext;
-
+@Slf4j
 @Configuration
 public class WebSocketConfig {
 
-    @Value("${server.webSocket.requestBufferSize:8192}")
-    private int bufferSize;
-    @Value("${server.webSocket.asyncWriteTimeout:60000}")
-    private long sendTimeout;
-    @Value("${server.webSocket.maxIdleTimeout:3600000}")
-    private long idleTimeout;
-
     @Bean
     @Primary
-    public WebSocketClient tomcatWebSocketClient(@Qualifier("secureSslContextWithoutKeystore") SSLContext secureSslContextWithoutKeystore) {
-        var wsContainer = new WsWebSocketContainer();
-        wsContainer.setDefaultMaxTextMessageBufferSize(bufferSize);
-        wsContainer.setDefaultMaxBinaryMessageBufferSize(bufferSize);
-        wsContainer.setAsyncSendTimeout(sendTimeout);
-        wsContainer.setDefaultMaxSessionIdleTimeout(idleTimeout);
-        return new ApimlWebSocketClient(wsContainer, secureSslContextWithoutKeystore);
+    WebSocketClient webSocketClient(ConnectionsConfig connectionsConfig, HttpClient httpClient) {
+        var secureClient = connectionsConfig.getHttpClient(httpClient, false);
+        var spec = WebsocketClientSpec.builder()
+            .handlePing(true);
+
+        var client = new ReactorNettyWebSocketClient(secureClient, () -> spec);
+        return client;
     }
 
     @Bean
     @Primary
-    public RequestUpgradeStrategy requestUpgradeStrategy() {
+    RequestUpgradeStrategy requestUpgradeStrategy() {
         return new ApimlRequestUpgradeStrategy();
     }
 
