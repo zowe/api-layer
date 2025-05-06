@@ -30,6 +30,8 @@ import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.util.Optional;
 
+
+@SuppressWarnings("squid:S106")
 public class Main {
 
     private static final String API_URL = Optional.ofNullable(System.getenv("API_URL")).orElse("https://localhost:10010") + "/gateway/api/v1/auth/login"; // Replace with your API URL
