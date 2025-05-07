@@ -153,8 +153,9 @@ class ClientCertificateAuthenticationTest {
             Assertions.assertEquals(incorrectHost + "/gateway/api/v1/auth/login", clientCertificateAuthentication.getApiUrl());
 
             clientCertificateAuthentication.authenticate();
-            Assertions.assertTrue(outContent.toString().isEmpty());
-            Assertions.assertTrue(errContent.toString().startsWith("org.apache.http.conn.HttpHostConnectException: Connect to localhost:8080 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: connect"));
+            Assertions.assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
+            Assertions.assertTrue(errContent.toString().startsWith("org.apache.http.conn.HttpHostConnectException: Connect to localhost:8080 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: connect"),
+                "Error not as expected. Actual error is: \n" + errContent);
         }
 
         @Test
@@ -166,8 +167,9 @@ class ClientCertificateAuthenticationTest {
             Assertions.assertEquals(fileNotFound, clientCertificateAuthentication.getClientCertPath());
 
             clientCertificateAuthentication.authenticate();
-            Assertions.assertTrue(outContent.toString().isEmpty());
-            Assertions.assertTrue(errContent.toString().startsWith("java.io.FileNotFoundException: "));
+            Assertions.assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
+            Assertions.assertTrue(errContent.toString().startsWith("java.io.FileNotFoundException: "),
+                "Error not as expected. Actual error is: \n" + errContent);
         }
 
         @Test
@@ -179,8 +181,9 @@ class ClientCertificateAuthenticationTest {
             Assertions.assertEquals(incorrectPassword, clientCertificateAuthentication.getClientCertPassword());
 
             clientCertificateAuthentication.authenticate();
-            Assertions.assertTrue(outContent.toString().isEmpty());
-            Assertions.assertTrue(errContent.toString().startsWith("java.io.IOException: keystore password was incorrect"));
+            Assertions.assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
+            Assertions.assertTrue(errContent.toString().startsWith("java.io.IOException: keystore password was incorrect"),
+                "Error not as expected. Actual error is: \n" + errContent);
         }
 
         @Test
@@ -192,8 +195,9 @@ class ClientCertificateAuthenticationTest {
             Assertions.assertEquals(incorrectKeyAlias, clientCertificateAuthentication.getPrivateKeyAlias());
 
             clientCertificateAuthentication.authenticate();
-            Assertions.assertTrue(outContent.toString().isEmpty());
-            Assertions.assertTrue(errContent.toString().startsWith("java.security.KeyStoreException: Key protection algorithm not found: java.security.KeyStoreException: Unsupported Key type"));
+            Assertions.assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
+            Assertions.assertTrue(errContent.toString().startsWith("java.security.KeyStoreException: Key protection algorithm not found: java.security.KeyStoreException: Unsupported Key type"),
+                "Error not as expected. Actual error is: \n" + errContent);
         }
     }
 
@@ -217,10 +221,10 @@ class ClientCertificateAuthenticationTest {
         // In this case, since the certificate is not trusted, it should not reach the server
         clientCertificateAuthentication.authenticate();
 
-        Assertions.assertTrue(outContent.toString().isEmpty());
+        Assertions.assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
         // The error may differ because of how we have set up the testing httpServer so we are checking only that the request does not go through
         // and an error is printed in the console
-        Assertions.assertFalse(errContent.toString().isEmpty());
+        Assertions.assertFalse(errContent.toString().isEmpty(), "Should result in an error.");
     }
 
     static class TestHttpsConfigurator extends HttpsConfigurator {
