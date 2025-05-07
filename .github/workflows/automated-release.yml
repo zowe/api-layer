@@ -74,66 +74,10 @@ jobs:
                   BUILD_NUMBER: ${{ github.run_number }}
                   BRANCH_NAME: ${{ github.ref_name }}
 
-    release-python-enabler:
-        runs-on: ubuntu-latest
-        timeout-minutes: 40
-        needs: release
-
-        steps:
-            -   name: Checkout Repository
-                uses: actions/checkout@v4
-                with:
-                    fetch-depth: 0
-                    token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
-
-            -   name: Setup Python
-                uses: actions/setup-python@v5
-                with:
-                    python-version: "3.13"
-
-            -   name: Install Dependencies
-                run: |
-                    cd onboarding-enabler-python
-                    python -m venv venv
-                    source venv/bin/activate
-                    python -m pip install --upgrade pip setuptools wheel twine build
-                    if [ -f Pipfile.lock ]; then
-                        pip install pipenv
-                        pipenv install --deploy --ignore-pipfile
-                    fi
-
-            -   name: Build Python Package
-                run: |
-                    export SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.release_version }}
-                    ./gradlew onboarding-enabler-python:buildPython
-
-            -   name: Upload wheels
-                uses: actions/upload-artifact@v4
-                with:
-                    name: wheels
-                    path: onboarding-enabler-python/dist/
-
-            -   name: Install twine globally
-                run: python3 -m pip install --upgrade twine
-
-            -   uses: zowe-actions/octorelease@v1
-                env:
-                    GIT_COMMITTER_NAME: ${{ secrets.ZOWE_ROBOT_USER }}
-                    GIT_COMMITTER_EMAIL: ${{ secrets.ZOWE_ROBOT_EMAIL }}
-                    GIT_CREDENTIALS: x-access-token:${{ secrets.ZOWE_ROBOT_TOKEN }}
-                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                    TWINE_USERNAME: __token__
-                    TWINE_PASSWORD: ${{ secrets.PYPI_ROBOT_TOKEN }}
-                with:
-                    working-dir: onboarding-enabler-python
-                    dry-run: ${{ inputs.dry-run }}
-                    new-version: ${{ steps.update-version.outputs.version }}
-
-
     store-results:
         runs-on: ubuntu-latest
         if: failure()
-        needs: [ release, release-python-enabler ]
+        needs: [ release ]
 
         steps:
             -   name: Store test results
