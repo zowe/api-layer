@@ -10,90 +10,10 @@
 
 package org.zowe.apiml;
 
-import org.apache.http.Header;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
-import org.apache.http.ssl.SSLContextBuilder;
-
-import javax.net.ssl.SSLContext;
-import java.io.FileInputStream;
-import java.security.Key;
-import java.security.KeyStore;
-import java.security.cert.Certificate;
-import java.util.Optional;
-
-
-@SuppressWarnings("squid:S106")
 public class Main {
 
-    private static final String API_URL = Optional.ofNullable(System.getenv("API_URL")).orElse("https://localhost:10010") + "/gateway/api/v1/auth/login"; // Replace with your API URL
-    private static final String CLIENT_CERT_PATH = Optional.ofNullable(System.getenv("CLIENT_CERT_PATH")).orElse("../keystore/client_cert/client-certs.p12"); // Replace with your client cert path
-    private static final String CLIENT_CERT_PASSWORD = Optional.ofNullable(System.getenv("CLIENT_CERT_PASSWORD")).orElse("password"); // Replace with your cert password
-    private static final String CLIENT_CERT_ALIAS = Optional.ofNullable(System.getenv("CLIENT_CERT_ALIAS")).orElse("user"); // Replace with your signed client cert alias
-    private static final String PRIVATE_KEY_ALIAS = Optional.ofNullable(System.getenv("PRIVATE_KEY_ALIAS")).orElse("user"); // Replace with your private key alias
-
-
     public static void main(String[] args) {
-        try {
-
-            // Load the keystore containing the client certificate
-            KeyStore keyStore = KeyStore.getInstance("PKCS12");
-            try (FileInputStream keyStoreStream = new FileInputStream(CLIENT_CERT_PATH)) {
-                keyStore.load(keyStoreStream, CLIENT_CERT_PASSWORD.toCharArray());
-            }
-
-            Key key = keyStore.getKey(PRIVATE_KEY_ALIAS, CLIENT_CERT_PASSWORD.toCharArray()); // Load private key from original keystore
-            Certificate cert = keyStore.getCertificate(CLIENT_CERT_ALIAS); // Load signed certificate from original keystore
-
-            // Create new keystore
-            KeyStore newKeyStore = KeyStore.getInstance("PKCS12");
-            newKeyStore.load(null);
-            newKeyStore.setKeyEntry(PRIVATE_KEY_ALIAS, key, CLIENT_CERT_PASSWORD.toCharArray(), new Certificate[]{cert}); // Create an entry with private key + signed certificate
-
-            // Create SSL context with the client certificate
-            SSLContext sslContext = new SSLContextBuilder().loadTrustMaterial((chain, type) -> true)
-                .loadKeyMaterial(newKeyStore, CLIENT_CERT_PASSWORD.toCharArray()).build();
-            ConnectionSocketFactory connectionSocketFactory = new SSLConnectionSocketFactory(sslContext);
-
-            RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder.<ConnectionSocketFactory>create()
-                .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                .register("https", connectionSocketFactory);
-            Registry<ConnectionSocketFactory> socketFactoryRegistry = socketFactoryRegistryBuilder.build();
-
-            try (BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager(socketFactoryRegistry)) {
-
-                HttpClientBuilder clientBuilder = HttpClientBuilder.create().setConnectionManager(connectionManager);
-
-                try (CloseableHttpClient httpClient = clientBuilder.build()) {
-
-                    // Create a POST request
-                    HttpPost httpPost = new HttpPost(API_URL);
-
-                    // Execute the request
-                    CloseableHttpResponse response = httpClient.execute(httpPost);
-
-                    // Print the response status
-                    System.out.println("Response Code: " + response.getStatusLine().getStatusCode());
-
-                    // Print headers
-                    Header[] headers = response.getAllHeaders();
-                    for (Header header : headers) {
-                        System.out.println("Key : " + header.getName() + " ,Value : " + header.getValue());
-                    }
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        ClientCertificateAuthentication clientCertificateAuthentication = new ClientCertificateAuthentication();
+        clientCertificateAuthentication.authenticate();
     }
 }
-
