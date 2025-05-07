@@ -127,7 +127,7 @@ class ClientCertificateAuthenticationTest {
     class GivenCustomParameters {
 
         @Test
-        void WhenSettingCustomParameters_thenValidateSetValues() {
+        void whenSettingCustomParameters_thenValidateSetValues() {
             String[] customValues = {"https://testDomain:8888", "../keystore/certificate.p12", "testPassword", "testUser", "keyAlias"};
 
             lenient().when(clientCertificateAuthentication.getSystemVariable(API_URL)).thenReturn(customValues[0]);
