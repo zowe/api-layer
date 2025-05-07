@@ -154,7 +154,7 @@ class ClientCertificateAuthenticationTest {
 
             clientCertificateAuthentication.authenticate();
             Assertions.assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
-            Assertions.assertTrue(errContent.toString().startsWith("org.apache.http.conn.HttpHostConnectException: Connect to localhost:8080 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: connect"),
+            Assertions.assertTrue(errContent.toString().startsWith("org.apache.http.conn.HttpHostConnectException: Connect to localhost:8080 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused"),
                 "Error not as expected. Actual error is: \n" + errContent);
         }
 
