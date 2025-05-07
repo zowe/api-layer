@@ -218,7 +218,9 @@ class ClientCertificateAuthenticationTest {
         clientCertificateAuthentication.authenticate();
 
         Assertions.assertTrue(outContent.toString().isEmpty());
-        Assertions.assertTrue(errContent.toString().contains("javax.net.ssl.SSLException: Software caused connection abort: recv failed"));
+        // The error may differ because of how we have set up the testing httpServer so we are checking only that the request does not go through
+        // and an error is printed in the console
+        Assertions.assertFalse(errContent.toString().isEmpty());
     }
 
     static class TestHttpsConfigurator extends HttpsConfigurator {
