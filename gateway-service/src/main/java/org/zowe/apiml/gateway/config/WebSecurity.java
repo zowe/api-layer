@@ -328,11 +328,11 @@ public class WebSecurity {
             );
     }
 
-    @Bean
-    @Order(Ordered.LOWEST_PRECEDENCE)
-    public SecurityWebFilterChain defaultSecurityWebFilterChain(ServerHttpSecurity http) {
-        return defaultSecurityConfig(http).build();
-    }
+//    @Bean
+//    @Order(Ordered.LOWEST_PRECEDENCE)
+//    public SecurityWebFilterChain defaultSecurityWebFilterChain(ServerHttpSecurity http) {
+//        return defaultSecurityConfig(http).build();
+//    }
 
     @Bean
     @Order(1)
