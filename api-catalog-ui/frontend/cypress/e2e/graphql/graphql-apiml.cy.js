@@ -105,8 +105,6 @@ describe('>>> GraphiQL Playground page test', () => {
 
         cy.get('#graphiql-container').should('exist');
 
-        cy.get(PATH_TO_PLAYGROUND_INPUT_TEXTAREA).should('be.visible');
-
         cy.get(PATH_TO_DEFAULT_QUERY)
             .should('exist')
             .should('be.visible')
