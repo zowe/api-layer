@@ -30,6 +30,8 @@ createFile() {
         -e "s|{SENTINEL_SETTING}|${SENTINEL_SETTING}|g" \
         -e "s|{SENTINEL_PORT}|$3|g" \
         $1 > $2
+    # Redis creates a write lock on configuration files from docker
+    chmod 666 $2
 }
 
 genKeyPairCert() {

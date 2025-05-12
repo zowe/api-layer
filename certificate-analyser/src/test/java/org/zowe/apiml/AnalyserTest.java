@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AnalyserTest {
@@ -41,7 +42,7 @@ class AnalyserTest {
             "--keypasswd", "password",
             "--keyalias", "localhost",
             "-l"};
-        Analyser.main(args);
+        assertEquals(0, Analyser.mainWithExitCode(args));
         assertTrue(outputStream.toString().contains("Trusted certificate is stored under alias:"));
     }
 }
