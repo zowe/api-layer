@@ -26,6 +26,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -650,9 +651,16 @@ public class NewSecurityConfiguration {
         }
         return http
                 .cors(withDefaults()).csrf(csrf -> csrf.disable())    // NOSONAR we are using SAMESITE cookie to mitigate CSRF
-                .headers(headers -> headers.httpStrictTransportSecurity().and()
-                        .frameOptions().disable()).exceptionHandling(handling -> handling.authenticationEntryPoint(handlerInitializer.getBasicAuthUnauthorizedHandler())).sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling(handling -> handling.authenticationEntryPoint(handlerInitializer.getBasicAuthUnauthorizedHandler()));
+                .headers(headers -> headers
+                    .httpStrictTransportSecurity(HeadersConfigurer.HstsConfig::disable)
+                    .addHeaderWriter(new CustomHstsHeadersWriter())
+                    .frameOptions().disable())
+                .exceptionHandling(handling -> handling
+                    .authenticationEntryPoint(handlerInitializer.getBasicAuthUnauthorizedHandler()))
+                .sessionManagement(management -> management
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(handling -> handling
+                    .authenticationEntryPoint(handlerInitializer.getBasicAuthUnauthorizedHandler()));
     }
 
     private UserDetailsService x509UserDetailsService() {
