@@ -2,6 +2,31 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `APIML 3.2.3 / Zowe 3.2.0 (2025-04-16)`
+
+* Feature:  v3 with Java 21 (#4028) ([59ea8ee](https://github.com/zowe/api-layer/commit/59ea8ee)), closes [#4028](https://github.com/zowe/api-layer/issues/4028)
+
+
+* Bugfix:  Disable hostname verification with nonStrict (#4069) ([9046e99](https://github.com/zowe/api-layer/commit/9046e99)), closes [#4069](https://github.com/zowe/api-layer/issues/4069)
+* Bugfix:  Empty username does not cause NPE during PassTicket generation (#4054) ([588d030](https://github.com/zowe/api-layer/commit/588d030)), closes [#4054](https://github.com/zowe/api-layer/issues/4054)
+* Bugfix:  jacoco in jib supports Java 21 (#4060) ([92ec601](https://github.com/zowe/api-layer/commit/92ec601)), closes [#4060](https://github.com/zowe/api-layer/issues/4060)
+* Bugfix:  Change error code SERVICE_UNAVAILABLE to INTERNAL_SERVER_ERROR when PassTicket generation fails ([6ab6cc3](https://github.com/zowe/api-layer/commit/6ab6cc3)), closes [#4047](https://github.com/zowe/api-layer/issues/4047)
+* Bugfix:  Allow double slash in url (#4030) ([6760eed](https://github.com/zowe/api-layer/commit/6760eed)), closes [#4030](https://github.com/zowe/api-layer/issues/4030)
+* Bugfix:  Fix choosing correct client certificate for outbound communication from the Gateway (#4033) ([e38d3e1](https://github.com/zowe/api-layer/commit/e38d3e1)), closes [#4033](https://github.com/zowe/api-layer/issues/4033)
+* Bugfix:  PAT validation log messages (#4036) ([d0f5645](https://github.com/zowe/api-layer/commit/d0f5645)), closes [#4036](https://github.com/zowe/api-layer/issues/4036)
+* Bugfix:  File log appender for debug profile (#4020) ([d176bfd](https://github.com/zowe/api-layer/commit/d176bfd)), closes [#4020](https://github.com/zowe/api-layer/issues/4020)
+* Bugfix:  Improve WebSocket message (#4019) ([662b7b2](https://github.com/zowe/api-layer/commit/662b7b2)), closes [#4019](https://github.com/zowe/api-layer/issues/4019)
+* Bugfix:  Update ciphers list (#4025) ([1db03b2](https://github.com/zowe/api-layer/commit/1db03b2)), closes [#4025](https://github.com/zowe/api-layer/issues/4025)
+* Bugfix:  Allow special characters in url (#4008) ([1a9c4ad](https://github.com/zowe/api-layer/commit/1a9c4ad)), closes [#4008](https://github.com/zowe/api-layer/issues/4008)
+* Bugfix:  Add Authentication header for routed requests (#4000) ([a018591](https://github.com/zowe/api-layer/commit/a018591)), closes [#4000](https://github.com/zowe/api-layer/issues/4000)
+* Bugfix:  Support Authorization header in deterministic routing (#3998) ([b630e62](https://github.com/zowe/api-layer/commit/b630e62)), closes [#3998](https://github.com/zowe/api-layer/issues/3998)
+* Bugfix:  Workaround for API Catalog redirect behavior in desktop (#4007) ([ed86e0f](https://github.com/zowe/api-layer/commit/ed86e0f)), closes [#4007](https://github.com/zowe/api-layer/issues/4007)
+* Bugfix:  Add newPassword to the Swagger (#3999) ([2b60a62](https://github.com/zowe/api-layer/commit/2b60a62)), closes [#3999](https://github.com/zowe/api-layer/issues/3999)
+* Bugfix:  TLS minimum setting (#3993) ([540658e](https://github.com/zowe/api-layer/commit/540658e)), closes [#3993](https://github.com/zowe/api-layer/issues/3993)
+* Bugfix:  Update React Router  (#3977) ([417356d](https://github.com/zowe/api-layer/commit/417356d)), closes [#3977](https://github.com/zowe/api-layer/issues/3977)
+* Bugfix:  Replace default Spring x.509 Authentication in ZAAS (#3971) ([6290b1f](https://github.com/zowe/api-layer/commit/6290b1f)), closes [#3971](https://github.com/zowe/api-layer/issues/3971)
+* Bugfix:  Use HA instance ID in path to Infinispan storage location (v3) (#3960) ([3627cc9](https://github.com/zowe/api-layer/commit/3627cc9)), closes [#3960](https://github.com/zowe/api-layer/issues/3960)
+
 ## `APIML 3.1.5 / Zowe 3.1.0 (2025-02-03)`
 
 * Feature:  Override external URL for additional registration (#3935) ([d5dd912](https://github.com/zowe/api-layer/commit/d5dd912)), closes [#3935](https://github.com/zowe/api-layer/issues/3935)
