@@ -13,7 +13,7 @@ import ReportProblemIcon from '@material-ui/icons/ReportProblem';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import {useNavigate} from "react-router";
 
-function Tile({service,fetchNewService}) {
+function Tile({service, fetchNewService}) {
     const navigate = useNavigate();
     const getTileStatus = (service) => {
         const unknownIcon = <>
@@ -44,7 +44,6 @@ function Tile({service,fetchNewService}) {
     const handleClick = () => {
         const tileRoute = `/service/${service.serviceId}`;
         fetchNewService(service.serviceId);
-        // selectService(service, tile.id);
         navigate(tileRoute);
         localStorage.setItem('serviceId', service.serviceId);
     };

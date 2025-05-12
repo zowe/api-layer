@@ -57,7 +57,6 @@ public class HttpsFactory {
         this.apimlLog = ApimlLogger.of(HttpsFactory.class, YamlMessageServiceInstance.getInstance());
     }
 
-
     public CloseableHttpClient buildHttpClient(HttpClientConnectionManager connectionManager) {
         RequestConfig requestConfig = RequestConfig.custom()
             .setConnectionRequestTimeout(Timeout.ofMilliseconds(config.getRequestConnectionTimeout()))
@@ -195,7 +194,7 @@ public class HttpsFactory {
         try {
             loadTrustMaterial(sslContextBuilder);
             loadKeyMaterial(sslContextBuilder);
-            secureSslContext = sslContextBuilder.build();
+            this.secureSslContext = sslContextBuilder.build();
             validateSslConfig();
             return secureSslContext;
         } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException

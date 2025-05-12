@@ -57,6 +57,18 @@ project(":onboarding-enabler-nodejs-sample-app") {
     }
 }
 
+project(":onboarding-enabler-python") {
+    sonar {
+        skipProject = true
+    }
+}
+
+project(":onboarding-enabler-python-sample-app") {
+    sonar {
+        skipProject = true
+    }
+}
+
 project(":onboarding-enabler-micronaut-sample-app") {
     sonar {
         skipProject = true

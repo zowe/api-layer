@@ -196,7 +196,7 @@ public class ConnectionsConfig {
      * @return instance of NettyRoutingFilterApiml
      */
     @Bean
-    public NettyRoutingFilterApiml createNettyRoutingFilterApiml(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
+    NettyRoutingFilterApiml createNettyRoutingFilterApiml(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
         return new NettyRoutingFilterApiml(getHttpClient(httpClient, false), getHttpClient(httpClient, true), headersFiltersProvider, properties);
     }
 
@@ -217,7 +217,7 @@ public class ConnectionsConfig {
      * @return bean processor to replace NettyRoutingFilter by NettyRoutingFilterApiml
      */
     @Bean
-    public static BeanPostProcessor routingFilterHandler(ApplicationContext context) {
+    static BeanPostProcessor routingFilterHandler(ApplicationContext context) {
         return new BeanPostProcessor() {
             @Override
             public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -277,7 +277,7 @@ public class ConnectionsConfig {
     @Bean(destroyMethod = "shutdown")
     @RefreshScope
     @ConditionalOnMissingBean(EurekaClient.class)
-    public CloudEurekaClient primaryEurekaClient(ApplicationInfoManager manager, EurekaClientConfig config,
+    CloudEurekaClient primaryEurekaClient(ApplicationInfoManager manager, EurekaClientConfig config,
                                                  @Autowired(required = false) HealthCheckHandler healthCheckHandler) {
         ApplicationInfoManager appManager;
         if (AopUtils.isAopProxy(manager)) {
@@ -315,7 +315,7 @@ public class ConnectionsConfig {
 
     @Bean
     @DependsOn("discoveryClient")
-    public List<AdditionalRegistration> additionalRegistration() {
+    List<AdditionalRegistration> additionalRegistration() {
         List<AdditionalRegistration> additionalRegistrations = new AdditionalRegistrationParser().extractAdditionalRegistrations(System.getenv());
         log.debug("Parsed {} additional registration: {}", additionalRegistrations.size(), additionalRegistrations);
         return additionalRegistrations;
@@ -324,7 +324,7 @@ public class ConnectionsConfig {
     @Bean(destroyMethod = "shutdown")
     @Conditional(AdditionalRegistrationCondition.class)
     @RefreshScope
-    public AdditionalEurekaClientsHolder additionalEurekaClientsHolder(ApplicationInfoManager manager,
+    AdditionalEurekaClientsHolder additionalEurekaClientsHolder(ApplicationInfoManager manager,
                                                                        EurekaClientConfig config,
                                                                        List<AdditionalRegistration> additionalRegistrations,
                                                                        EurekaFactory eurekaFactory,
@@ -386,13 +386,13 @@ public class ConnectionsConfig {
     }
 
     @Bean
-    public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {
+    Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {
         return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
             .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()).timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofMillis(requestTimeout)).build()).build());
     }
 
     @Bean
-    public HttpClientFactory gatewayHttpClientFactory(
+    HttpClientFactory gatewayHttpClientFactory(
         HttpClientProperties properties,
         ServerProperties serverProperties, List<HttpClientCustomizer> customizers,
         HttpClientSslConfigurer sslConfigurer
@@ -410,26 +410,26 @@ public class ConnectionsConfig {
 
     @Bean
     @Primary
-    public WebClient webClient(HttpClient httpClient) {
+    WebClient webClient(HttpClient httpClient) {
         return WebClient.builder()
             .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, false)))
             .build();
     }
 
     @Bean
-    public WebClient webClientClientCert(HttpClient httpClient) {
+    WebClient webClientClientCert(HttpClient httpClient) {
         return WebClient.builder()
             .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, true)))
             .build();
     }
 
     @Bean
-    public CorsUtils corsUtils() {
+    CorsUtils corsUtils() {
         return new CorsUtils(corsEnabled, null);
     }
 
     @Bean
-    public WebFilter corsWebFilter(ServiceCorsUpdater serviceCorsUpdater) {
+    WebFilter corsWebFilter(ServiceCorsUpdater serviceCorsUpdater) {
         return new CorsWebFilter(serviceCorsUpdater.getUrlBasedCorsConfigurationSource());
     }
 

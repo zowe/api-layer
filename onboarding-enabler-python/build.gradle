@@ -1,0 +1,27 @@
+def isWindows = System.getProperty('os.name').toLowerCase().contains('windows')
+def venvPath = isWindows ? 'venv\\Scripts\\' : 'venv/bin/'
+
+task createVenv(type: Exec) {
+    commandLine 'python3', '-m', 'venv', 'venv'
+}
+
+task installDependencies(type: Exec) {
+    dependsOn createVenv
+    doFirst {
+        exec {
+            commandLine "${venvPath}pip", 'install', 'pipenv'
+        }
+    }
+    commandLine "${venvPath}pipenv", 'install', '--deploy', '--ignore-pipfile'
+}
+
+task cleanPython(type: Delete) {
+    delete 'build', 'dist'
+}
+
+task buildPython(type: Exec) {
+    dependsOn installDependencies, cleanPython
+    commandLine "${venvPath}python", '-m', 'build'
+    standardOutput = System.out
+    errorOutput = System.err
+}

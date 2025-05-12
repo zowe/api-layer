@@ -37,27 +37,41 @@ export const defaultSpring = {
     },
     SSL: { protocol: { value: 'TLSv1.2', hide: true } },
 };
-export const defaultNode = {
-    Eureka: {
-        maxRetries: { value: 30, hide: true },
-        requestRetryDelay: { value: 1000, hide: true },
-        registryFetchInterval: { value: 5, hide: true },
-    },
-    'API Info shorter': {
-        gatewayUrl: { value: '${routes.gatewayUrl}' },
-    },
-    Instance: {
-        app: { value: '${serviceId}', hide: true },
-        vipAddress: { value: '${serviceId}', hide: true },
-        homePageUrl: { value: '${homePageRelativeUrl}' },
-        secureVipAddress: { value: '${serviceId}', hide: true },
-    },
-    Metadata: {
-        'apiml.routes.api_v1.gatewayUrl': { value: '${routes.gatewayUrl}', hide: true },
-        'apiml.routes.api_v1.serviceUrl': { value: '${routes.serviceUrl}', hide: true },
-        'apiml.apiInfo.0.gatewayUrl': { value: '${routes.gatewayUrl}', hide: true },
-    },
+
+const sharedEureka = {
+    maxRetries: { value: 30, hide: true },
+    requestRetryDelay: { value: 1000, hide: true },
+    registryFetchInterval: { value: 5, hide: true },
 };
+
+const sharedApiInfo = {
+    gatewayUrl: { value: '${routes.gatewayUrl}' },
+};
+
+const sharedInstanceBase = {
+    app: { value: '${serviceId}', hide: true },
+    vipAddress: { value: '${serviceId}', hide: true },
+    homePageUrl: { value: '${homePageRelativeUrl}' },
+    secureVipAddress: { value: '${serviceId}', hide: true },
+};
+
+const sharedMetadata = {
+    'apiml.routes.api_v1.gatewayUrl': { value: '${routes.gatewayUrl}', hide: true },
+    'apiml.routes.api_v1.serviceUrl': { value: '${routes.serviceUrl}', hide: true },
+    'apiml.apiInfo.0.gatewayUrl': { value: '${routes.gatewayUrl}', hide: true },
+};
+
+export const defaultNonJava = {
+    Eureka: { ...sharedEureka },
+    'API Info shorter': { ...sharedApiInfo },
+    Instance: {
+        ...sharedInstanceBase,
+        healthCheckUrl: { value: '${healthCheckUrl}', hide: true },
+        statusPageUrl: { value: '${statusPageUrl}', hide: true },
+    },
+    Metadata: { ...sharedMetadata },
+};
+
 export const defaultMicronaut = {
     Micronaut: {
         name: { value: '${apiml.service.serviceId}' },
