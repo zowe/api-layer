@@ -30,6 +30,8 @@ createFile() {
         -e "s|{SENTINEL_SETTING}|${SENTINEL_SETTING}|g" \
         -e "s|{SENTINEL_PORT}|$3|g" \
         $1 > $2
+    # Redis creates a write lock on configuration files from docker
+    chmod 666 $2
 }
 
 genKeyPairCert() {
@@ -59,7 +61,7 @@ genKeyPairCert() {
       -keypass local_ca_password \
       -storepass local_ca_password \
       -storetype PKCS12 \
-      -ext "SAN=dns:localhost,ip:127.0.0.1,ip:::1,dns:gateway-service,dns:discovery-service,dns:caching-service,dns:mock-services,dns:redis-master,dns:redis-replica,dns:redis-sentinel-1,dns:redis-sentinel-2,dns:redis-sentinel-3" \
+      -ext "SAN=dns:localhost,ip:127.0.0.1,ip:::1,dns:gateway-service,dns:zaas-service,dns:discovery-service,dns:caching-service,dns:mock-services,dns:redis-master,dns:redis-replica,dns:redis-sentinel-1,dns:redis-sentinel-2,dns:redis-sentinel-3" \
       -ext "KeyUsage:critical=keyEncipherment,digitalSignature,nonRepudiation,dataEncipherment" \
       -ext "ExtendedKeyUsage=clientAuth,serverAuth" \
       -rfc \
