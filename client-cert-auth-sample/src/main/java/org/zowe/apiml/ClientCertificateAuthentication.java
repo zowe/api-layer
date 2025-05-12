@@ -30,7 +30,21 @@ import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.util.Optional;
 
-@SuppressWarnings("squid:S106")
+/**
+ * Java-based client that performs authentication to the gateway ("/gateway/api/v1/auth/login")
+ * using a client certificate.
+ *
+ * <p>
+ * User can specify via system variables:
+ * - API_URL: host url against which the request will be sent
+ * - CLIENT_CERT_PATH: path of the client certificate to validate
+ * - CLIENT_CERT_PASSWORD: client certificate password
+ * - CLIENT_CERT_ALIAS: client certificate alias
+ * - PRIVATE_KEY_ALIAS: private key alias
+ * <p>
+ * If not specified, the application will use the default values.
+ */
+@SuppressWarnings("squid:S106") // Ignore the System.out warnings
 public class ClientCertificateAuthentication {
 
     protected static final String API_URL = "API_URL"; // Replace with your API URL
