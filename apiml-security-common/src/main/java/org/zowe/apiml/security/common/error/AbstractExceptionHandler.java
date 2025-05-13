@@ -10,19 +10,13 @@
 
 package org.zowe.apiml.security.common.error;
 
-import org.zowe.apiml.message.api.ApiMessageView;
-import org.zowe.apiml.message.core.MessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletResponse;
-import reactor.core.publisher.Mono;
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.message.core.MessageService;
 
-import java.io.IOException;
 import java.util.function.BiConsumer;
 
 /**
@@ -56,7 +50,7 @@ public abstract class AbstractExceptionHandler {
      * @param status     Http response status
      * @param response   Update response with message and status
      */
-    protected void writeErrorResponse(String messageKey, HttpStatus status, String requestUri,  BiConsumer<ApiMessageView, HttpStatus> response)  {
+    protected void writeErrorResponse(String messageKey, HttpStatus status, String requestUri, BiConsumer<ApiMessageView, HttpStatus> response) {
         final ApiMessageView message = messageService.createMessage(messageKey, requestUri, status.getReasonPhrase()).mapToView();
         response.accept(message, status);
 
