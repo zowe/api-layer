@@ -41,9 +41,8 @@ public abstract class AbstractExceptionHandler {
     /**
      * Entry method that takes care of an exception passed to it
      *
-     * @param response   Http response
      * @param requestUri Http request URI
-     * @param addHeader
+     * @param addHeader  add response header
      * @param ex         Exception to be handled
      * @throws ServletException Fallback exception if exception cannot be handled
      */
@@ -55,9 +54,7 @@ public abstract class AbstractExceptionHandler {
      *
      * @param messageKey Message key
      * @param status     Http response status
-     * @param request    Http request
-     * @param response   Http response
-     * @throws ServletException throws when a message cannot be written to response
+     * @param response   Update response with message and status
      */
     protected void writeErrorResponse(String messageKey, HttpStatus status, String requestUri,  BiConsumer<ApiMessageView, HttpStatus> response)  {
         final ApiMessageView message = messageService.createMessage(messageKey, requestUri, status.getReasonPhrase()).mapToView();
