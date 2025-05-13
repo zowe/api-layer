@@ -25,6 +25,7 @@ import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.util.HttpUtils;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import reactor.core.publisher.Mono;
 
@@ -41,6 +42,7 @@ public class LoginController {
     private final AuthConfigurationProperties authConfigurationProperties;
     private final AuthenticationService authenticationService;
     private final PeerAwareInstanceRegistryImpl peerAwareInstanceRegistry;
+    private final HttpUtils httpUtils;
 
 
 
@@ -58,17 +60,8 @@ public class LoginController {
       return   ReactiveSecurityContextHolder.getContext().flatMap(con ->{
             var authentication = con.getAuthentication();
             String jwt = ((TokenAuthentication) authentication).getCredentials();
-
-            AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
-
             // Create the HttpOnly cookie containing the JWT
-            ResponseCookie jwtCookie = ResponseCookie.from(cp.getCookieName(), jwt)
-                .path(cp.getCookiePath())
-                .sameSite(cp.getCookieSameSite().getValue())
-                .maxAge(cp.getCookieMaxAge() != null ? cp.getCookieMaxAge() : -1)
-                .httpOnly(true)
-                .secure(cp.isCookieSecure())
-                .build();
+            ResponseCookie jwtCookie = httpUtils.createResponseCookie(jwt);
 
             // Add the cookie to the response headers
             exchange.getResponse().addCookie(jwtCookie);

@@ -13,6 +13,7 @@ package org.zowe.apiml;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -34,6 +35,7 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 
 import org.zowe.apiml.filter.*;
 import org.zowe.apiml.handler.SuccessQueryHandler;
+import org.zowe.apiml.handler.SuccessRefreshHandler;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import org.zowe.apiml.gateway.filters.security.AuthExceptionHandlerReactive;
@@ -64,6 +66,7 @@ public class WebSecurityConfig {
     private final Set<String> publicKeyCertificatesBase64; // Base64 encoded public keys of APIML certificates
     private final CertificateValidator certificateValidator; // Service for validating certificates
     private final SuccessQueryHandler successQueryHandler;
+    private final SuccessRefreshHandler successRefreshHandler;
     private final FailedAuthenticationWebHandler failedAuthenticationWebHandler;
     private final TokenAuthenticationProvider tokenAuthenticationProvider;
     @Value("${apiml.health.protected:true}")
@@ -222,7 +225,7 @@ public class WebSecurityConfig {
 
 
     @Bean
-    public SecurityWebFilterChain queryFilter(ServerHttpSecurity http, AuthenticationService authenticationService, LogoutHandler logoutHandler) {
+    public SecurityWebFilterChain queryFilter(ServerHttpSecurity http) {
         var man = new ProviderManager(tokenAuthenticationProvider);
         var reactiveTokenAuthProvider = new ReactiveAuthenticationManagerAdapter(man);
         return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
@@ -232,6 +235,22 @@ public class WebSecurityConfig {
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new QueryWebFilter(successQueryHandler,failedAuthenticationWebHandler, HttpMethod.GET, false, reactiveTokenAuthProvider),SecurityWebFiltersOrder.FIRST)
+             .build();
+
+    }
+
+    @ConditionalOnProperty(name = "apiml.security.allowTokenRefresh", havingValue = "true")
+    @Bean
+    public SecurityWebFilterChain refreshTokenFilter(ServerHttpSecurity http) {
+        var man = new ProviderManager(tokenAuthenticationProvider);
+        var reactiveTokenAuthProvider = new ReactiveAuthenticationManagerAdapter(man);
+        return x509SecurityConfig(http).csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .securityMatcher(new AndServerWebExchangeMatcher(
+                                    ServerWebExchangeMatchers.pathMatchers("gateway/api/v1/auth/refresh")
+                            ))
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .addFilterAfter(new QueryWebFilter(successRefreshHandler,failedAuthenticationWebHandler, HttpMethod.GET, false, reactiveTokenAuthProvider),SecurityWebFiltersOrder.FIRST)
              .build();
 
     }

@@ -12,6 +12,7 @@ package org.zowe.apiml.handler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.buffer.DefaultDataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
@@ -21,32 +22,36 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.util.HttpUtils;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
+import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
-public class SuccessQueryHandler implements ServerAuthenticationSuccessHandler {
+public class SuccessRefreshHandler implements ServerAuthenticationSuccessHandler {
 
     private final ObjectMapper mapper;
     private final AuthenticationService authenticationService;
+    private final HttpUtils httpUtils;
+    private final TokenCreationService tokenCreationService;
+    private final PeerAwareInstanceRegistryImpl peerAwareInstanceRegistry;
 
     @Override
     public Mono<Void> onAuthenticationSuccess(WebFilterExchange webFilterExchange, Authentication authentication) {
-        TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
-        String token = tokenAuthentication.getCredentials();
-        var bufferFactory = new DefaultDataBufferFactory();
+        ServerWebExchange exchange = webFilterExchange.getExchange();
+        if (authentication instanceof TokenAuthentication) {
+            TokenAuthentication tokenAuth = (TokenAuthentication) authentication;
+            var app = peerAwareInstanceRegistry.getApplications().getRegisteredApplications(CoreService.GATEWAY.getServiceId());
+            authenticationService.invalidateJwtTokenGateway(tokenAuth.getCredentials(), true, app);
+            String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(tokenAuth.getPrincipal());
+            exchange.getResponse().addCookie(httpUtils.createResponseCookie(jwtToken));
 
-        webFilterExchange.getExchange().getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        webFilterExchange.getExchange().getResponse().setStatusCode(HttpStatus.OK);
-        DefaultDataBuffer buffer;
-        try {
-            buffer = bufferFactory.wrap(mapper.writeValueAsBytes(authenticationService.parseJwtToken(token)));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            return webFilterExchange.getChain().filter(exchange);
         }
-        return webFilterExchange.getExchange().getResponse().writeWith(Mono.just(buffer));
-
+        return webFilterExchange.getChain().filter(exchange);
     }
 }
