@@ -274,7 +274,7 @@ public class ConnectionsConfig {
         }
     }
 
-    @Bean(destroyMethod = "shutdown")
+    @Bean(destroyMethod = "shutdown", name = "eurekaClient")
     @RefreshScope
     @ConditionalOnMissingBean(EurekaClient.class)
     CloudEurekaClient primaryEurekaClient(ApplicationInfoManager manager, EurekaClientConfig config,

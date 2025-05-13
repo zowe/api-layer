@@ -13,7 +13,6 @@ package org.zowe.apiml.discovery.metadata;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
-import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
+import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.discovery.EurekaInstanceRegisteredListener;
 import org.zowe.apiml.discovery.staticdef.ServiceDefinitionProcessor;
 import org.zowe.apiml.discovery.staticdef.StaticRegistrationResult;
@@ -33,10 +33,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
 
 @ExtendWith(MockitoExtension.class)
@@ -58,17 +62,18 @@ class MetadataDefaultsServiceTest {
     @Spy
     private ServiceDefinitionProcessorMock serviceDefinitionProcessor;
 
-    private PeerAwareInstanceRegistry mockRegistry;
+    private ApimlInstanceRegistry mockRegistry;
 
     @BeforeEach
     void setUp() {
-        mockRegistry = mock(PeerAwareInstanceRegistry.class);
+        mockRegistry = mock(ApimlInstanceRegistry.class);
         doAnswer(x -> {
             EurekaInstanceRegisteredEvent event = mock(EurekaInstanceRegisteredEvent.class);
             when(event.getInstanceInfo()).thenReturn(x.getArgument(0));
             eurekaInstanceRegisteredListener.listen(event);
             return mockRegistry;
-        }).when(mockRegistry).register(any(), anyBoolean());
+        }).when(mockRegistry).registerStatically(any(), anyBoolean());
+
         EurekaServerContext mockEurekaServerContext = mock(EurekaServerContext.class);
         when(mockEurekaServerContext.getRegistry()).thenReturn(mockRegistry);
         EurekaServerContextHolder.initialize(mockEurekaServerContext);
@@ -80,7 +85,7 @@ class MetadataDefaultsServiceTest {
 
         staticServicesRegistrationService.reloadServices();
         Map<String, InstanceInfo> map = staticServicesRegistrationService.getStaticInstances().stream()
-            .collect(Collectors.toMap(InstanceInfo::getId, Function.identity()));
+            .collect(toMap(InstanceInfo::getId, Function.identity()));
 
         assertEquals(
             "TSTAPPL4",

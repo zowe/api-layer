@@ -8,14 +8,13 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.acceptance.netflix;
+package org.zowe.apiml.gateway;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
-import org.zowe.apiml.gateway.acceptance.common.MockService;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.functional.apicatalog;
 
+import groovy.util.logging.Slf4j;
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
 import io.restassured.response.Validatable;
@@ -18,9 +19,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -42,10 +43,13 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 
 @GeneralAuthenticationTest
+@Slf4j
 class ApiCatalogAuthenticationTest {
+
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
 
@@ -89,12 +93,16 @@ class ApiCatalogAuthenticationTest {
 
     @BeforeAll
     static void setUp() throws Exception {
+        var catalogConfig = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration();
         RestAssured.useRelaxedHTTPSValidation();
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
 
         List<DiscoveryUtils.InstanceInfo> apiCatalogInstances = DiscoveryUtils.getInstances(CATALOG_SERVICE_ID);
         if (StringUtils.isEmpty(apiCatalogServiceUrl)) {
-            apiCatalogServiceUrl = apiCatalogInstances.stream().findFirst().map(i -> String.format("%s", i.getUrl()))
+            apiCatalogServiceUrl = apiCatalogInstances.stream()
+                .filter(catalogInstance -> catalogInstance.getPort() == catalogConfig.getPort())
+                .findFirst()
+                .map(i -> String.format("%s", i.getUrl()))
                 .orElseThrow(() -> new RuntimeException("Cannot determine API Catalog service from Discovery"));
         }
     }
@@ -110,6 +118,7 @@ class ApiCatalogAuthenticationTest {
     class WhenAccessingCatalog {
         @Nested
         class ReturnOk {
+
             @ParameterizedTest(name = "givenValidBasicAuthentication {index} {0} ")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
             void givenValidBasicAuthentication(String endpoint, Request request) {
@@ -120,6 +129,7 @@ class ApiCatalogAuthenticationTest {
                         endpoint
                     )
                     .then()
+                    .log().all()
                     .statusCode(is(SC_OK));
             }
 
@@ -148,6 +158,7 @@ class ApiCatalogAuthenticationTest {
                         endpoint
                     )
                     .then()
+                    .log().all()
                     .statusCode(is(SC_OK));
             }
         }
@@ -192,8 +203,8 @@ class ApiCatalogAuthenticationTest {
 
             @ParameterizedTest(name = "givenInvalidBearerAuthentication {index} {0}")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
-            void givenInvalidBearerAuthentication(String endpoint, Request request) throws URISyntaxException {
-                String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID_PATH + new URIBuilder().setPath(endpoint).build() + "'";
+            void givenInvalidBearerAuthentication(String endpoint, Request request) {
+                String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";
 
                 request.execute(
                         given()
@@ -203,14 +214,14 @@ class ApiCatalogAuthenticationTest {
                     )
                     .then()
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage)
                     ).statusCode(is(SC_UNAUTHORIZED));
             }
 
             @ParameterizedTest(name = "givenInvalidTokenInCookie {index} {0}")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
-            void givenInvalidTokenInCookie(String endpoint, Request request) throws URISyntaxException {
-                String expectedMessage = "Token is not valid for URL '" + CATALOG_SERVICE_ID_PATH + new URIBuilder().setPath(endpoint).build() + "'";
+            void givenInvalidTokenInCookie(String endpoint, Request request)  {
+                String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";
                 String invalidToken = "nonsense";
 
                 request.execute(
@@ -222,7 +233,7 @@ class ApiCatalogAuthenticationTest {
                     .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage)
                     );
             }
         }
@@ -246,6 +257,7 @@ class ApiCatalogAuthenticationTest {
                             endpoint
                         )
                         .then()
+                        .log().all()
                         .statusCode(HttpStatus.OK.value());
                 }
 
@@ -295,33 +307,49 @@ class ApiCatalogAuthenticationTest {
 
         @Test
         void givenOnlyValidCertificate_whenAccessNotCertificateAuthedRoute_thenReturnUnauthorized() {
-            given()
-                .config(SslContext.clientCertApiml)
+            try {
+                given()
+                    .config(SslContext.clientCertApiml)
                 .when()
-                .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_ACTUATOR_ENDPOINT)
+                    .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_ACTUATOR_ENDPOINT)
                 .then()
-                .statusCode(HttpStatus.UNAUTHORIZED.value());
+                    .statusCode(HttpStatus.UNAUTHORIZED.value());
+            } catch (Exception e) {
+                fail("Failure to GET " + apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_ACTUATOR_ENDPOINT);
+            }
+
+        }
+
+    }
+
+    @Test
+    @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication enabled.")
+    void thenDoNotAuthenticate() {
+        try {
+            given()
+            .when()
+                .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
+            .then()
+                .statusCode(is(SC_UNAUTHORIZED));
+        } catch (Exception e) {
+            fail("Failure to GET " + apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT, e);
         }
     }
-        @Test
-        @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication enabled.")
-        void thenDoNotAuthenticate() {
-            given()
-                .when()
-                .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
-                .then()
-                .statusCode(is(SC_UNAUTHORIZED));
 
-    }
-
-        @Test
-        @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication provided.")
-        void thenAuthenticateTheRequest() {
+    @Test
+    @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication provided.")
+    void thenAuthenticateTheRequest() {
+        try {
             given()
                 .auth().basic(USERNAME, PASSWORD)
-                .when()
+            .when()
                 .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
-                .then()
+            .then()
                 .statusCode(is(SC_OK));
+        } catch (Exception e) {
+            fail("Failure to GET " + apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT, e);
+        }
+
     }
+
 }

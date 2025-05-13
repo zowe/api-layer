@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -43,7 +44,8 @@ import java.util.Optional;
 import static org.zowe.apiml.product.constants.CoreService.ZAAS;
 
 @Slf4j
-@Configuration
+@Configuration("gatewaySwaggerConfig")
+@ConditionalOnMissingBean(name = "modulithConfig")
 @RequiredArgsConstructor
 @OpenAPIDefinition(
     security = @SecurityRequirement(name = "LoginBasicAuth"),

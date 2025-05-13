@@ -82,8 +82,7 @@
 # - ZWE_zowe_network_server_tls_attls
 # - ZWE_DISCOVERY_SERVICES_LIST
 
-if [ -n "${LAUNCH_COMPONENT}" ]
-then
+if [ -n "${LAUNCH_COMPONENT}" ]; then
     JAR_FILE="${LAUNCH_COMPONENT}/gateway-service-lite.jar"
 else
     JAR_FILE="$(pwd)/bin/gateway-service-lite.jar"
@@ -91,20 +90,17 @@ fi
 echo "jar file: "${JAR_FILE}
 # script assumes it's in the gateway component directory and common_lib needs to be relative path
 
-if [ -z "${CMMN_LB}" ]
-then
+if [ -z "${CMMN_LB}" ]; then
     COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
 else
-    COMMON_LIB=${CMMN_LB}
+    COMMON_LIB="${CMMN_LB}"
 fi
 
-if [ -z "${LIBRARY_PATH}" ]
-then
+if [ -z "${LIBRARY_PATH}" ]; then
     LIBRARY_PATH="../common-java-lib/bin/"
 fi
 
-if [ "${ZWE_configs_debug}" = "true" ]
-then
+if [ "${ZWE_configs_debug}" = "true" ]; then
     if [ -n "${ZWE_configs_spring_profiles_active}" ];
     then
         ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
@@ -131,10 +127,9 @@ else
 fi
 
 ZOWE_CONSOLE_LOG_CHARSET=UTF-8
-if [ "$(uname)" = "OS/390" ]
-then
-    QUICK_START=-Xquickstart
-    GATEWAY_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
+GATEWAY_LOADER_PATH=${COMMON_LIB}
+if [ "$(uname)" = "OS/390" ]; then
+    QUICK_START="-Xquickstart"
 
     JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
         | grep "major version" \
@@ -143,8 +138,6 @@ then
     if [ $JAVA_VERSION -ge 65 ]; then # Java 21
         ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
     fi
-else
-    GATEWAY_LOADER_PATH=${COMMON_LIB}
 fi
 
 # Check if the directory containing the ZAAS shared JARs was set and append it to the ZAAS loader path
@@ -189,16 +182,15 @@ fi
 
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/classic
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/j9vm
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
+LIBPATH="$LIBPATH":"${JAVA_HOME}/bin"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/bin/classic"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/bin/j9vm"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390x/classic"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390x/default"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390x/j9vm"
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
-if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]
-then
+if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]; then
     LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
 fi
 
@@ -294,75 +286,74 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
     ${ADD_OPENS} \
-    -Dibm.serversocket.recover=true \
-    -Dfile.encoding=UTF-8 \
-    -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
-    -Djava.io.tmpdir=${TMPDIR:-/tmp} \
-    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
-    -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
-    -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
-    -Dapiml.service.port=${ZWE_configs_port:-7554} \
-    -Dapiml.service.forwardClientCertEnabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
-    -Dapiml.security.x509.enabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
-    -Dapiml.security.x509.acceptForwardedCert=${ZWE_configs_apiml_security_x509_acceptForwardedCert:-false} \
-    -Dapiml.security.x509.certificatesUrls=${ZWE_configs_apiml_security_x509_certificatesUrls:-${ZWE_configs_apiml_security_x509_certificatesUrl:-}} \
-    -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
-    -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
-    -Dapiml.security.x509.registry.allowedUsers=${ZWE_configs_apiml_security_x509_registry_allowedUsers:-} \
-    -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
-    -Dapiml.connection.timeout=${ZWE_configs_apiml_connection_timeout:-60000} \
     -Dapiml.connection.idleConnectionTimeoutSeconds=${ZWE_configs_apiml_connection_idleConnectionTimeoutSeconds:-5} \
+    -Dapiml.connection.timeout=${ZWE_configs_apiml_connection_timeout:-60000} \
     -Dapiml.connection.timeToLive=${ZWE_configs_apiml_connection_timeToLive:-10000} \
-    -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.gateway.cachePeriodSec=${ZWE_configs_apiml_gateway_registry_cachePeriodSec:-120} \
+    -Dapiml.gateway.cookieNameForRateLimit=${cookieName:-apimlAuthenticationToken} \
+    -Dapiml.gateway.maxSimultaneousRequests=${ZWE_configs_gateway_registry_maxSimultaneousRequests:-20} \
+    -Dapiml.gateway.rateLimiterCapacity=${ZWE_configs_apiml_gateway_rateLimiterCapacity:-20} \
+    -Dapiml.gateway.rateLimiterRefillDuration=${ZWE_configs_apiml_gateway_rateLimiterRefillDuration:-1} \
+    -Dapiml.gateway.rateLimiterTokens=${ZWE_configs_apiml_gateway_rateLimiterTokens:-20} \
+    -Dapiml.gateway.refresh-interval-ms=${ZWE_configs_gateway_registry_refreshIntervalMs:-30000} \
+    -Dapiml.gateway.registry.enabled=${ZWE_configs_apiml_gateway_registry_enabled:-false} \
+    -Dapiml.gateway.registry.metadata-key-allow-list=${ZWE_configs_gateway_registry_metadataKeyAllowList:-} \
+    -Dapiml.gateway.servicesToLimitRequestRate=${ZWE_configs_apiml_gateway_servicesToLimitRequestRate:-} \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-true} \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices} \
-    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+    -Dapiml.httpclient.ssl.enabled-protocols=${client_enabled_protocols} \
+    -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
     -Dapiml.security.auth.jwt.customAuthHeader=${ZWE_configs_apiml_security_auth_jwt_customAuthHeader:-} \
-    -Dapiml.security.auth.passticket.customUserHeader=${ZWE_configs_apiml_security_auth_passticket_customUserHeader:-} \
     -Dapiml.security.auth.passticket.customAuthHeader=${ZWE_configs_apiml_security_auth_passticket_customAuthHeader:-} \
+    -Dapiml.security.auth.passticket.customUserHeader=${ZWE_configs_apiml_security_auth_passticket_customUserHeader:-} \
     -Dapiml.security.authorization.endpoint.enabled=${ZWE_configs_apiml_security_authorization_endpoint_enabled:-false} \
     -Dapiml.security.authorization.endpoint.url=${ZWE_configs_apiml_security_authorization_endpoint_url:-${ZWE_components_gateway_apiml_security_authorization_endpoint_url:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf-auth"}} \
     -Dapiml.security.authorization.provider=${ZWE_configs_apiml_security_authorization_provider:-"native"} \
+    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices} \
+    -Dapiml.security.x509.acceptForwardedCert=${ZWE_configs_apiml_security_x509_acceptForwardedCert:-false} \
+    -Dapiml.security.x509.certificatesUrls=${ZWE_configs_apiml_security_x509_certificatesUrls:-${ZWE_configs_apiml_security_x509_certificatesUrl:-}} \
+    -Dapiml.security.x509.enabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
+    -Dapiml.security.x509.registry.allowedUsers=${ZWE_configs_apiml_security_x509_registry_allowedUsers:-} \
+    -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
+    -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
+    -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
+    -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
+    -Dapiml.service.forwardClientCertEnabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
+    -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
+    -Dapiml.service.port=${ZWE_configs_port:-7554} \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
-    -Dapiml.gateway.cachePeriodSec=${ZWE_configs_apiml_gateway_registry_cachePeriodSec:-120} \
-    -Dapiml.gateway.registry.enabled=${ZWE_configs_apiml_gateway_registry_enabled:-false} \
-    -Dapiml.gateway.maxSimultaneousRequests=${ZWE_configs_gateway_registry_maxSimultaneousRequests:-20} \
-    -Dapiml.gateway.rateLimiterCapacity=${ZWE_configs_apiml_gateway_rateLimiterCapacity:-20} \
-    -Dapiml.gateway.rateLimiterTokens=${ZWE_configs_apiml_gateway_rateLimiterTokens:-20} \
-    -Dapiml.gateway.rateLimiterRefillDuration=${ZWE_configs_apiml_gateway_rateLimiterRefillDuration:-1} \
-    -Dapiml.gateway.servicesToLimitRequestRate=${ZWE_configs_apiml_gateway_servicesToLimitRequestRate:-} \
-    -Dapiml.gateway.cookieNameForRateLimit=${cookieName:-apimlAuthenticationToken} \
-    -Dapiml.gateway.registry.metadata-key-allow-list=${ZWE_configs_gateway_registry_metadataKeyAllowList:-} \
-    -Dapiml.gateway.refresh-interval-ms=${ZWE_configs_gateway_registry_refreshIntervalMs:-30000} \
-    -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \
     -Deureka.client.serviceUrl.defaultZone=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dserver.maxConnectionsPerRoute=${ZWE_configs_server_maxConnectionsPerRoute:-100} \
-    -Dserver.maxTotalConnections=${ZWE_configs_server_maxTotalConnections:-1000} \
-    -Dserver.webSocket.maxIdleTimeout=${ZWE_configs_server_webSocket_maxIdleTimeout:-3600000} \
-    -Dserver.webSocket.connectTimeout=${ZWE_configs_server_webSocket_connectTimeout:-45000} \
-    -Dserver.webSocket.asyncWriteTimeout=${ZWE_configs_server_webSocket_asyncWriteTimeout:-60000} \
-    -Dserver.webSocket.requestBufferSize=${ZWE_configs_server_webSocket_requestBufferSize:-8192} \
-    -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true} \
-    -Dserver.ssl.keyStore="${keystore_location}" \
-    -Dserver.ssl.keyStoreType="${keystore_type}" \
-    -Dserver.ssl.keyStorePassword="${keystore_pass}" \
-    -Dserver.ssl.keyAlias="${key_alias}" \
-    -Dserver.ssl.keyPassword="${key_pass}" \
-    -Dserver.ssl.trustStore="${truststore_location}" \
-    -Dserver.ssl.trustStoreType="${truststore_type}" \
-    -Dserver.ssl.trustStorePassword="${truststore_pass}" \
-    -Dserver.ssl.ciphers=${server_ciphers} \
-    -Dserver.ssl.protocol=${server_protocol} \
-    -Dserver.ssl.enabled-protocols=${server_enabled_protocols} \
-    -Dapiml.httpclient.ssl.enabled-protocols=${client_enabled_protocols} \
-    -Djdk.tls.client.cipherSuites=${client_ciphers} \
+    -Dfile.encoding=UTF-8 \
+    -Dibm.serversocket.recover=true \
+    -Djava.io.tmpdir=${TMPDIR:-/tmp} \
+    -Djava.library.path=${LIBPATH} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
+    -Djdk.tls.client.cipherSuites=${client_ciphers} \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
-    -Djava.library.path=${LIBPATH} \
-    -Dloader.path=${GATEWAY_LOADER_PATH} \
-    -jar ${JAR_FILE} &
+    -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
+    -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \
+    -Dserver.maxConnectionsPerRoute=${ZWE_configs_server_maxConnectionsPerRoute:-100} \
+    -Dserver.maxTotalConnections=${ZWE_configs_server_maxTotalConnections:-1000} \
+    -Dserver.ssl.ciphers=${server_ciphers} \
+    -Dserver.ssl.enabled-protocols=${server_enabled_protocols} \
+    -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true} \
+    -Dserver.ssl.keyAlias="${key_alias}" \
+    -Dserver.ssl.keyPassword="${key_pass}" \
+    -Dserver.ssl.keyStore="${keystore_location}" \
+    -Dserver.ssl.keyStorePassword="${keystore_pass}" \
+    -Dserver.ssl.keyStoreType="${keystore_type}" \
+    -Dserver.ssl.protocol=${server_protocol} \
+    -Dserver.ssl.trustStore="${truststore_location}" \
+    -Dserver.ssl.trustStorePassword="${truststore_pass}" \
+    -Dserver.ssl.trustStoreType="${truststore_type}" \
+    -Dserver.webSocket.asyncWriteTimeout=${ZWE_configs_server_webSocket_asyncWriteTimeout:-60000} \
+    -Dserver.webSocket.connectTimeout=${ZWE_configs_server_webSocket_connectTimeout:-45000} \
+    -Dserver.webSocket.maxIdleTimeout=${ZWE_configs_server_webSocket_maxIdleTimeout:-3600000} \
+    -Dserver.webSocket.requestBufferSize=${ZWE_configs_server_webSocket_requestBufferSize:-8192} \
+    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
+    -jar "${JAR_FILE}" &
 
 pid=$!
 echo "pid=${pid}"

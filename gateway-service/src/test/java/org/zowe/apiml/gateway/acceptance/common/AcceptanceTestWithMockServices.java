@@ -17,7 +17,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent;
 import org.springframework.context.ApplicationEventPublisher;
-import org.zowe.apiml.gateway.acceptance.netflix.ApplicationRegistry;
+import org.zowe.apiml.gateway.ApplicationRegistry;
+import org.zowe.apiml.gateway.MockService;
 
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

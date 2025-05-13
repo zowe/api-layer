@@ -10,15 +10,14 @@
 
 package org.zowe.apiml.security.client.config;
 
-import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.gateway.GatewayInstanceInitializer;
-import org.zowe.apiml.product.instance.lookup.InstanceLookupExecutor;
-import com.netflix.discovery.EurekaClient;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.gateway.GatewayInstanceInitializer;
+import org.zowe.apiml.product.instance.lookup.InstanceLookupExecutor;
 
 /**
  * General configuration of security client
@@ -28,14 +27,12 @@ import org.springframework.context.annotation.Configuration;
 public class SecurityServiceConfiguration {
 
     @Bean
-    public GatewayInstanceInitializer gatewayInstanceInitializer(
-        @Qualifier("eurekaClient") EurekaClient eurekaClient,
+    GatewayInstanceInitializer gatewayInstanceInitializer(
+        DiscoveryClient discoveryClient,
         ApplicationEventPublisher applicationEventPublisher,
         GatewayClient gatewayClient) {
-
-
         return new GatewayInstanceInitializer(
-            new InstanceLookupExecutor(eurekaClient),
+            new InstanceLookupExecutor(discoveryClient),
             applicationEventPublisher,
             gatewayClient);
     }

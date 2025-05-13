@@ -1,0 +1,33 @@
+spring.profiles.active: diag
+logging:
+    level:
+        org.springframework.web.socket.client.standard.AnnotatedEndpointConnectionManager: DEBUG
+        org.springframework.web.reactive.socket.client.StandardWebSocketClient: TRACE
+        org.apache.tomcat.websocket.WsWebSocketContainer: TRACE
+        # org.apache.tomcat: DEBUG
+        # org.apache.coyote: DEBUG
+
+server:
+    max-http-request-header-size: 16348
+    webSocket:
+        requestBufferSize: 16348
+
+        # org.springframework.cloud.gateway: TRACE
+        # org.springframework.http.server.reactive: TRACE
+        # org.springframework.web.reactive: TRACE
+        # org.springframework.boot.autoconfigure.web: TRACE
+        # reactor.netty: TRACE
+        # redisratelimiter: TRACE
+
+apiml:
+    gateway:
+        servicesToLimitRequestRate: discoverableclient
+        cookieNameForRateLimiter: apimlAuthenticationToken
+    security:
+        auth:
+            jwt:
+                customAuthHeader: customJwtHeader
+            passticket:
+                customUserHeader: customUserHeader
+                customAuthHeader: customPassticketHeader
+

@@ -21,11 +21,12 @@ apply plugin: 'org.springframework.boot'
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
-def javaAgentPort = 6305
-def debugPort = 5123
+def applicationPort = '10013'
+def javaAgentPort = '6305'
+def debugPort = '5123'
 def componentName = "mock-services"
 
-setJib(componentName, javaAgentPort, debugPort)
+setJib(componentName, javaAgentPort, debugPort, applicationPort)
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file

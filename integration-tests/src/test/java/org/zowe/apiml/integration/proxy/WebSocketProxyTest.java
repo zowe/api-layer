@@ -135,6 +135,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
                 @Nested
                 class ReturnSuccess {
+
                     @Test
                     void message() throws Exception {
                         final StringBuilder response = new StringBuilder();
@@ -173,6 +174,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
                 @Nested
                 class ReturnError {
+
                     @Test
                     void whenPathIsNotCorrect() throws Exception {
                         String path = "/discoverableclient/ws/v1/bad";
@@ -224,12 +226,12 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                             response.wait();
                         }
 
-
                         assertTrue(response.toString().contains("x-test-2"), "WebSocket response: " + response + ". Does not contain x-test-2");
                         session.close();
-
                     }
+
                 }
+
             }
 
             @Nested
@@ -256,6 +258,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
     @Nested
     class WhenClosingSession {
+
         @Test
         void getCorrectResponse() throws Exception {
             final StringBuilder response = new StringBuilder();

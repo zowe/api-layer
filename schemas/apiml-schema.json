@@ -1,0 +1,91 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "https://zowe.org/schema/apiml-config",
+    "allOf": [
+        { "$ref": "https://zowe.org/schemas/v2/server-base" },
+        {
+            "type": "object",
+            "properties": {
+                "components": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                        "apiml": {
+                            "allOf": [
+                                {"$ref":  "https://zowe.org/schemas/v2/server-base#zoweComponent"},
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "port": {
+                                            "$ref": "#/$defs/port",
+                                            "default": 7554
+                                        },
+                                        "debug": {
+                                            "type": "boolean",
+                                            "description": "Enable debug logs in API ML service"
+                                        },
+                                        "heap": {
+                                            "type": "object",
+                                            "description": "Configure JVM parameters for heap size",
+                                            "properties": {
+                                                "init": {
+                                                    "type": "integer",
+                                                    "description": "Initial heap size in MB."
+                                                },
+                                                "max": {
+                                                    "type": "integer",
+                                                    "description": "Maximum heap size in MB."
+                                                }
+                                            }
+                                        },
+                                        "server": {
+                                            "type": "object",
+                                            "description": "Configure API ML server properties.",
+                                            "properties": {
+                                                "ssl": {
+                                                    "type": "object",
+                                                    "description": "Network encryption for API ML service connections.",
+                                                    "properties": {
+                                                        "enabled": {
+                                                            "type": "boolean",
+                                                            "description": "Should API ML use encrypted communication?",
+                                                            "default": true
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "spring": {
+                                            "type": "object",
+                                            "description": "Application framework parameters",
+                                            "properties": {
+                                                "profiles": {
+                                                    "type": "object",
+                                                    "description": "Profiles that can hold multiple configuration parameters.",
+                                                    "properties": {
+                                                        "active": {
+                                                            "type": "string",
+                                                            "description": "List of the active configuration profiles."
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "$defs": {
+        "port": {
+            "type": "integer",
+            "description": "TCP network port",
+            "minimum": 1024,
+            "maximum": 65535
+        }
+    }
+}

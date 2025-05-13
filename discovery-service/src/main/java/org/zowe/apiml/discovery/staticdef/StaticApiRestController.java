@@ -11,7 +11,8 @@
 package org.zowe.apiml.discovery.staticdef;
 
 import com.netflix.appinfo.InstanceInfo;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,13 +22,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/discovery/api/v1/staticApi")
+@RequiredArgsConstructor
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class StaticApiRestController {
     private final StaticServicesRegistrationService registrationService;
-
-    @Autowired
-    public StaticApiRestController(StaticServicesRegistrationService registrationService) {
-        this.registrationService = registrationService;
-    }
 
     @GetMapping(produces = "application/json")
     public List<InstanceInfo> list() {

@@ -1,0 +1,66 @@
+logging:
+    level:
+        ROOT: DEBUG
+        org.zowe.apiml: DEBUG
+
+eureka:
+    dashboard:
+        path: /eureka
+    client:
+        fetchRegistry: false
+        registerWithEureka: false
+        instanceInfoReplicationIntervalSeconds: 1
+        region: default
+        serviceUrl:
+            defaultZone: ${apiml.discovery.allPeersUrls}
+        healthcheck:
+            enabled: true
+    server:
+        max-threads-for-peer-replication: 2
+        useReadOnlyResponseCache: false
+
+apiml:
+    catalog:
+        serviceId: apicatalog
+    discovery:
+        staticApiDefinitionsDirectories: config/local/api-defs
+        # Not used in HTTPS mode and not applicable for Zowe
+        # The `apiml.discovery` node contains discovery-service only configuration
+        userid: eureka  # Userid that Eureka server will use to check authentication of its clients (other services)
+        password: password  # Password that Eureka server will use to check authentication of its clients (other services)
+        allPeersUrls: http://${apiml.discovery.userid}:${apiml.discovery.password}@${apiml.service.hostname}:${apiml.service.port}/eureka/
+    service:
+        apimlId: apiml1
+        corsEnabled: true
+        allowEncodedSlashes: true
+        discoveryServiceUrls: https://localhost:10011/eureka/
+        forwardClientCertEnabled: false
+        hostname: localhost
+        id: ${spring.application.name}
+        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
+        port: 40985
+        scheme: https  # "https" or "http"
+        preferIpAddress: false
+        nonSecurePortEnabled: false
+        securePortEnabled: true
+        externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
+
+server:
+    port: ${apiml.service.port}
+    ssl:
+        clientAuth: want
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: ../keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: ../keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
+
+spring:
+    main:
+        allow-circular-references: true
+        banner-mode: ${apiml.banner:"console"}
+        web-application-type: reactive
+        allow-bean-definition-overriding: true

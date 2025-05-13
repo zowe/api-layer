@@ -101,8 +101,7 @@ class QueryTest implements TestWithStartedInstances {
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenInvalidTokenInBearerHeader(String queryUrl) {
                 String invalidToken = "1234";
-                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3)).replace("/gateway/", "/zaas/");
-                String expectedMessage = "Token is not valid for URL '" + queryPath + "'";
+                String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";
 
                 given()
                     .header("Authorization", "Bearer " + invalidToken)
@@ -112,7 +111,7 @@ class QueryTest implements TestWithStartedInstances {
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage)
                     );
             }
 
@@ -120,8 +119,7 @@ class QueryTest implements TestWithStartedInstances {
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenInvalidTokenInCookie(String queryUrl) {
                 String invalidToken = "1234";
-                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3)).replace("/gateway/", "/zaas/");
-                String expectedMessage = "Token is not valid for URL '" + queryPath + "'";
+                String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";
 
                 given()
                     .cookie(COOKIE, invalidToken)
@@ -130,7 +128,7 @@ class QueryTest implements TestWithStartedInstances {
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAG130E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage)
                     );
             }
 

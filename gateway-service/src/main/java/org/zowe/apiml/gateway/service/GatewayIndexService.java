@@ -24,6 +24,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.zowe.apiml.constants.EurekaMetadataDefinition;
+import org.zowe.apiml.gateway.services.ServicesInfoService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.services.ServiceInfo;
@@ -43,19 +45,25 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 @Slf4j
 @Service
 public class GatewayIndexService {
+
     private final ApimlLogger apimlLog = ApimlLogger.of(GatewayIndexService.class, YamlMessageServiceInstance.getInstance());
     private final Cache<String, ServiceInstance> apimlGatewayLookup;
     private final Cache<String, List<ServiceInfo>> apimlServicesCache;
     private final WebClient webClient;
 
+    private final ServicesInfoService servicesInfoService;
+
     public GatewayIndexService(
         @Qualifier("webClientClientCert") WebClient webClient,
-        @Value("${apiml.gateway.cachePeriodSec:120}") int cachePeriodSec
+        @Value("${apiml.gateway.cachePeriodSec:120}") int cachePeriodSec,
+        ServicesInfoService servicesInfoService
     ) {
         this.webClient = webClient;
 
         apimlGatewayLookup = CacheBuilder.newBuilder().expireAfterWrite(cachePeriodSec, SECONDS).build();
         apimlServicesCache = CacheBuilder.newBuilder().expireAfterWrite(cachePeriodSec, SECONDS).build();
+
+        this.servicesInfoService = servicesInfoService;
     }
 
     private WebClient buildWebClient(ServiceInstance registration) {
@@ -70,6 +78,12 @@ public class GatewayIndexService {
     public Mono<List<ServiceInfo>> indexGatewayServices(ServiceInstance registration) {
         String apimlIdKey = extractApimlId(registration).orElse(buildAlternativeApimlIdKey(registration));
         log.debug("Fetching registered gateway instance services: {}", apimlIdKey);
+
+        if (EurekaMetadataDefinition.RegistrationType.of(registration.getMetadata()).isPrimary()) {
+            log.debug("Local instance of Gateway, perform a local call");
+            return Mono.just(servicesInfoService.getServicesInfo(apimlIdKey));
+        }
+
         apimlGatewayLookup.put(apimlIdKey, registration);
         return fetchServices(apimlIdKey, registration)
             .doOnError(ex -> apimlLog.log("org.zowe.apiml.gateway.servicesRequestFailed", apimlIdKey, ex.getMessage()))

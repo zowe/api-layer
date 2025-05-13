@@ -61,6 +61,13 @@ messages:
       reason: "The JWT token is not valid."
       action: "Provide a valid token."
 
+    - key: org.zowe.apiml.common.unauthorized
+      number: ZWEAO402
+      type: ERROR
+      text: "The request has not been applied because it lacks valid authentication credentials."
+      reason: "The accessed resource requires authentication. The request is missing valid authentication credentials or the token expired."
+      action: "Review the product documentation for more details about acceptable authentication. Verify that your credentials are valid and contact security administrator to obtain valid credentials."
+
     - key: org.zowe.apiml.zaas.security.expiredToken
       number: ZWEAG103
       type: ERROR

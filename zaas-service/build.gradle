@@ -22,11 +22,12 @@ apply from: "$projectDir/gradle/lite.gradle"
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
-def javaAgentPort = 6301
-def debugPort = 5120
+def applicationPort = '10023'
+def javaAgentPort = '6301'
+def debugPort = '5120'
 def componentName = "zaas-service"
 
-setJib(componentName, javaAgentPort, debugPort)
+setJib(componentName, javaAgentPort, debugPort, applicationPort)
 jib.container.mainClass = 'org.zowe.apiml.zaas.ZaasApplication'
 
 ext['netty.version'] = libs.versions.netty.get()

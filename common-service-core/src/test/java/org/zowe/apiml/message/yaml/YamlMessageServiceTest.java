@@ -18,9 +18,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
 class YamlMessageServiceTest {
-
 
     @Test
     void testLoadMessages() {
@@ -32,12 +30,10 @@ class YamlMessageServiceTest {
         assertEquals("org.zowe.apiml.test.noArguments", message.getMessageTemplate().getKey(), "Keys are different");
     }
 
-
     @Test
     void testLoadMessages_whenFormatIsDifferentInYamlFile() {
         assertThrows(MessageLoadException.class, () -> new YamlMessageService("/test-wrong-format-messages.yml"));
     }
-
 
     @Test
     void testLoadMessages_whenYamlFileIsNotExist() {

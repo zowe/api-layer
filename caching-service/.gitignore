@@ -1,2 +1,5 @@
 # created by infinispan during build
 index
+*.lck
+*.1
+*.state

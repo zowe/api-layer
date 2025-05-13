@@ -2,6 +2,14 @@ name: "Validate APIML Healthy"
 description: "Validates APIML health using Gateway, Caching Service and Authentication Service health status"
 
 inputs:
+    gateway-host:
+        description: "Gateway hostname"
+        required: false
+        default: "localhost"
+    zaas-host:
+        description: "ZAAS hostname"
+        required: false
+        default: "localhost"
     caching-service:
         description: "Check Caching Service health"
         required: false
@@ -29,8 +37,8 @@ runs:
             valid="false"
             until [ $attemptCounter -gt $maxAttempts ]; do
               sleep 10
-              gwHealth=$(curl -k -s https://localhost:10010/application/health)
-              zaasHealth=$(curl -k -s https://localhost:10023/application/health)
+              gwHealth=$(curl -k -s https://${{ inputs.gateway-host }}:10010/application/health)
+              zaasHealth=$(curl -k -s https://${{ inputs.zaas-host }}:10023/application/health)
               echo "Polling for GW health: $attemptCounter"
               echo $gwHealth
 

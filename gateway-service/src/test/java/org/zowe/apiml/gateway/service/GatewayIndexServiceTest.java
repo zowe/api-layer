@@ -26,6 +26,7 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.zowe.apiml.gateway.services.ServicesInfoService;
 import org.zowe.apiml.services.ServiceInfo;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -42,32 +43,39 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.REGISTRATION_TYPE;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.RegistrationType.ADDITIONAL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.RegistrationType.PRIMARY;
 
 @ExtendWith(MockitoExtension.class)
 class GatewayIndexServiceTest {
 
-    private GatewayIndexService gatewayIndexService;
-    private final ParameterizedTypeReference<List<ServiceInfo>> serviceInfoType = new ParameterizedTypeReference<List<ServiceInfo>>() {
-    };
-    private ServiceInfo serviceInfoA, serviceInfoB;
-    private WebClient webClient;
     private final static String API_CATALOG_API_ID = "zowe.apiml.apicatalog";
     private final static String SERVICE_ID = "mockzosmf";
-    @Mock
-    private ClientResponse clientResponse;
-    @Mock
-    private ExchangeFunction exchangeFunction;
-    @Mock
-    private ServiceInstance eurekaInstance;
-    @Mock
-    private ExchangeFilterFunction exchangeFilterFunction;
+
+    private final ParameterizedTypeReference<List<ServiceInfo>> serviceInfoType = new ParameterizedTypeReference<List<ServiceInfo>>() { };
+
+    @Mock private ClientResponse clientResponse;
+    @Mock private ExchangeFunction exchangeFunction;
+    @Mock private ServiceInstance eurekaInstance;
+    @Mock private ExchangeFilterFunction exchangeFilterFunction;
+    @Mock private ServicesInfoService servicesInfoService;
+
+    private GatewayIndexService gatewayIndexService;
+    private ServiceInfo serviceInfoA, serviceInfoB;
+    private WebClient webClient;
 
     @BeforeEach
     void setUp() {
-        lenient().when(eurekaInstance.getMetadata()).thenReturn(Maps.of(APIML_ID, "testApimlIdA"));
+        lenient().when(eurekaInstance.getMetadata())
+            .thenReturn(Maps.of(
+                    APIML_ID, "testApimlIdA",
+                    REGISTRATION_TYPE, ADDITIONAL.getValue()
+                ));
         lenient().when(eurekaInstance.getInstanceId()).thenReturn("testInstanceIdA");
 
         serviceInfoA = new ServiceInfo();
@@ -81,7 +89,7 @@ class GatewayIndexServiceTest {
         serviceInfoB.getApiml().setApiInfo(Collections.singletonList(sysviewApiInfo));
 
         webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
-        gatewayIndexService = new GatewayIndexService(webClient, 60);
+        gatewayIndexService = new GatewayIndexService(webClient, 60, servicesInfoService);
     }
 
     @Nested
@@ -97,7 +105,6 @@ class GatewayIndexServiceTest {
 
         @Test
         void shouldCacheListOfTheServices() {
-
             StepVerifier.FirstStep<List<ServiceInfo>> servicesVerifier = StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance));
 
             servicesVerifier
@@ -111,6 +118,23 @@ class GatewayIndexServiceTest {
             assertThat(allServices).containsOnlyKeys("testApimlIdA");
             assertThat(allServices.get("testApimlIdA")).containsExactlyInAnyOrder(serviceInfoA, serviceInfoB);
             verifyNoMoreInteractions(exchangeFunction);
+        }
+
+        @Test
+        void shouldNotFetchIfLocal() {
+            when(eurekaInstance.getMetadata()).thenReturn(Maps.of(
+                APIML_ID, "testApimlIdA",
+                REGISTRATION_TYPE, PRIMARY.getValue()
+            ));
+            when(servicesInfoService.getServicesInfo("testApimlIdA"))
+                .thenReturn(asList(serviceInfoA, serviceInfoB));
+
+            StepVerifier.FirstStep<List<ServiceInfo>> servicesVerifier = StepVerifier.create(gatewayIndexService.indexGatewayServices(eurekaInstance));
+            servicesVerifier
+                .expectNext(asList(serviceInfoA, serviceInfoB))
+                .verifyComplete();
+
+            verifyNoInteractions(webClient);
         }
 
         @Test

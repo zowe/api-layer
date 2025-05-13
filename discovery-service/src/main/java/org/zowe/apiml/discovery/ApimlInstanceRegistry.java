@@ -14,6 +14,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.eureka.EurekaServerConfig;
+import com.netflix.eureka.lease.Lease;
 import com.netflix.eureka.registry.AbstractInstanceRegistry;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import com.netflix.eureka.resources.ServerCodecs;
@@ -29,8 +30,15 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.WrongMethodTypeException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 /**
@@ -58,6 +66,9 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     private final ApplicationContext appCntx;
     private final EurekaConfig.Tuple tuple;
 
+    private ConcurrentHashMap<String, Map<String, Lease<InstanceInfo>>> registry;
+    private Set<String> staticRegistrationIds = Collections.synchronizedSet(new HashSet<>());
+
     public ApimlInstanceRegistry(
         EurekaServerConfig serverConfig,
         EurekaClientConfig clientConfig,
@@ -77,7 +88,6 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         this.tuple = tuple;
         init();
     }
-
 
     /**
      * Prepare method handlers to overridden methods to reimplement methods in InstanceRegistry, which contains a race
@@ -135,7 +145,10 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
                     MethodType.methodType(void.class, InstanceInfo.class, int.class, boolean.class),
                     AbstractInstanceRegistry.class
                 );
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+            Field registryField = AbstractInstanceRegistry.class.getDeclaredField("registry");
+            registryField.setAccessible(true);
+            this.registry = (ConcurrentHashMap<String, Map<String, Lease<InstanceInfo>>>) registryField.get(this);
+        } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new IllegalArgumentException(EXCEPTION_MESSAGE, e);
         }
     }
@@ -150,6 +163,38 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         } catch (Throwable t) {
             throw new IllegalArgumentException(EXCEPTION_MESSAGE, t);
         }
+    }
+
+    public void registerStatically(InstanceInfo instanceInfo, boolean isReplication) {
+        // the maximum lease duration time (Eureka bug: overflow of int during conversion to ms)
+        int leaseDuration = Integer.MAX_VALUE / 1000;
+
+        // temporary register (do not increase count of service to avoid threshold)
+        synchronized (lock) {
+            int backup = expectedNumberOfClientsSendingRenews;
+            try {
+                register(instanceInfo, leaseDuration, isReplication);
+            } finally {
+                expectedNumberOfClientsSendingRenews = backup;
+            }
+        }
+
+        // register lease plan to never expired
+        Map<String, Lease<InstanceInfo>> leaseMap = registry.get(instanceInfo.getAppName());
+        leaseMap.put(instanceInfo.getInstanceId(), new Lease<>(instanceInfo, leaseDuration) {
+            @Override
+            public boolean isExpired() {
+                return false;
+            }
+
+            @Override
+            public boolean isExpired(long additionalLeaseMs) {
+                return false;
+            }
+        });
+
+        // remember instanceId to avoid from threashold
+        staticRegistrationIds.add(instanceInfo.getInstanceId());
     }
 
     @Override
@@ -183,18 +228,40 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     }
 
     @Override
+    public long getNumOfRenewsInLastMin() {
+        // to simulate APIML, it is not sending a heartbeat anymore
+        return super.getNumOfRenewsInLastMin() + 2;
+    }
+
+    @Override
+    public boolean isRegisterable(InstanceInfo instanceInfo) {
+        if (staticRegistrationIds.contains(instanceInfo.getInstanceId())) {
+            return false;
+        }
+        return super.isRegisterable(instanceInfo);
+    }
+
+    @Override
     public boolean cancel(String appName, String serverId, boolean isReplication) {
-        try {
-            String[] updatedValues = replaceValues(appName, serverId);
-            final boolean out = (boolean) cancelMethodHandle.invokeWithArguments(this, updatedValues[0], updatedValues[1], isReplication);
-            handleCancellationMethod.invokeWithArguments(this, updatedValues[0], updatedValues[1], isReplication);
-            return out;
-        } catch (ClassCastException | WrongMethodTypeException e) {
-            throw new IllegalArgumentException(EXCEPTION_MESSAGE, e);
-        } catch (RuntimeException re) {
-            throw re;
-        } catch (Throwable t) {
-            throw new IllegalArgumentException(EXCEPTION_MESSAGE, t);
+        synchronized (lock) {
+            int backup = expectedNumberOfClientsSendingRenews;
+            try {
+                String[] updatedValues = replaceValues(appName, serverId);
+                final boolean out = (boolean) cancelMethodHandle.invokeWithArguments(this, updatedValues[0], updatedValues[1], isReplication);
+                handleCancellationMethod.invokeWithArguments(this, updatedValues[0], updatedValues[1], isReplication);
+                return out;
+            } catch (ClassCastException | WrongMethodTypeException e) {
+                throw new IllegalArgumentException(EXCEPTION_MESSAGE, e);
+            } catch (RuntimeException re) {
+                throw re;
+            } catch (Throwable t) {
+                throw new IllegalArgumentException(EXCEPTION_MESSAGE, t);
+            } finally {
+                if (staticRegistrationIds.removeAll(Optional.ofNullable(registry.get(appName)).orElse(Collections.emptyMap()).keySet())) {
+                    // do not change count of instances if it was registered statically
+                    expectedNumberOfClientsSendingRenews = backup;
+                }
+            }
         }
     }
 

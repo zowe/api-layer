@@ -8,7 +8,7 @@ caching:
         infinispan:
             persistence:
                 dataLocation: data_replica
-            initialHosts: localhost[7098]
+            initialHosts: localhost[7600]
 apiml:
     service:
         port: 10022

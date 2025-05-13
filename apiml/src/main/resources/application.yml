@@ -1,0 +1,245 @@
+eureka:
+    dashboard:
+        path: /eureka
+    client:
+        fetchRegistry: false
+        registerWithEureka: false
+        instanceInfoReplicationIntervalSeconds: 1
+        region: default
+        serviceUrl:
+            defaultZone: ${apiml.discovery.allPeersUrls}
+        healthcheck:
+            enabled: true
+    server:
+        max-threads-for-peer-replication: 2
+        useReadOnlyResponseCache: false
+spring:
+    cloud:
+        gateway:
+            route-refresh-listener.enabled: false
+            x-forwarded:
+                prefix-append: false
+                prefix-enabled: true
+            filter:
+                secure-headers:
+                    disable: content-security-policy,permitted-cross-domain-policies,download-options
+                    referrer-policy: strict-origin-when-cross-origin
+                    frame-options: sameorigin
+    application:
+        name: gateway
+    security:
+        oauth2:
+            client:
+                registration:
+                    okta:
+                        redirectUri: "{baseUrl}/gateway/{action}/oauth2/code/{registrationId}"
+    main:
+        allow-circular-references: true
+        banner-mode: ${apiml.banner:"console"}
+        web-application-type: reactive
+        allow-bean-definition-overriding: true
+
+springdoc:
+    api-docs:
+        path: /gateway/api-docs
+    writer-with-order-by-keys: true
+    pathsToMatch: /gateway/api/v1/**
+apiml:
+    catalog:
+        serviceId: apicatalog
+    discovery:
+        staticApiDefinitionsDirectories: config/local/api-defs
+        # Not used in HTTPS mode and not applicable for Zowe
+        # The `apiml.discovery` node contains discovery-service only configuration
+        userid: eureka  # Userid that Eureka server will use to check authentication of its clients (other services)
+        password: password  # Password that Eureka server will use to check authentication of its clients (other services)
+        allPeersUrls: http://${apiml.discovery.userid}:${apiml.discovery.password}@${apiml.service.hostname}:${apiml.service.port}/eureka/
+
+    gateway:
+        eureka:
+            instance:
+                instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
+                hostname: ${apiml.service.hostname}
+                #ports are computed in code
+                homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/
+                healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+                healthCheckUrlPath: /application/health
+                port: ${apiml.service.port}
+                securePort: ${apiml.service.port}
+                nonSecurePortEnabled: ${apiml.service.nonSecurePortEnabled}
+                securePortEnabled: ${apiml.service.securePortEnabled}
+                statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info
+                statusPageUrlPath: /application/info
+                metadata-map:
+                    apiml:
+                        registrationType: primary
+                        apiBasePath: /gateway/api/v1
+                        catalog:
+                            tile:
+                                id: apimediationlayer
+                                title:  API Mediation Layer API
+                                description: The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.
+                                version: 1.0.0
+                        routes:
+                            api_v1:
+                                gatewayUrl: /
+                                serviceUrl: /
+                        apiInfo:
+                            - apiId: zowe.apiml.gateway
+                              version: 1.0.0
+                              gatewayUrl: api/v1
+                              swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/gateway/api-docs
+                              documentationUrl: https://zowe.github.io/docs-site/
+                        service:
+                            title: API Gateway
+                            description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
+                            supportClientCertForwarding: true
+                            apimlId: ${apiml.service.apimlId:${apiml.service.hostname}_${apiml.service.port}}
+                            externalUrl: ${apiml.service.externalUrl:${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}}
+                        authentication:
+                            sso: true
+        registry:
+            enabled: false
+            metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
+    connection:
+        timeout: 60000
+        idleConnectionTimeoutSeconds: 5
+        timeToLive: 10000
+    routing:
+        instanceIdHeader: false
+        ignoredServices: discovery,zaas # to disable routing to the Discovery and ZAAS service
+    service:
+        apimlId: apiml1
+        corsEnabled: true
+        allowEncodedSlashes: true
+        discoveryServiceUrls: https://localhost:10011/eureka/
+        forwardClientCertEnabled: false
+        hostname: localhost
+        id: ${spring.application.name}
+        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
+        port: 10010
+        scheme: https  # "https" or "http"
+        preferIpAddress: false
+        nonSecurePortEnabled: false
+        securePortEnabled: true
+        externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
+    security:
+        headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
+        ssl:
+            nonStrictVerifySslCertificatesOfServices: false
+    health:
+        protected: true
+server:
+    http2:
+        enabled: false
+    port: ${apiml.service.port}
+    ssl:
+        clientAuth: want
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
+
+
+logbackServiceName: ZWEAGW1
+
+logging:
+    config: classpath:logback-gateway.xml
+    level:
+        ROOT: INFO
+        # New Config
+        com.netflix: WARN
+        com.netflix.config: ERROR
+        com.netflix.discovery: ERROR
+        com.netflix.discovery.DiscoveryClient: OFF
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.sun.jersey.server.impl.application.WebApplicationImpl: WARN
+        io.netty.resolver.dns: WARN
+        io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
+        javax.net.ssl: ERROR
+        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.eclipse.jetty: WARN
+        org.ehcache: WARN
+        org.springframework: WARN
+        org.springframework.beans: WARN
+        org.springframework.boot.autoconfigure.web: WARN
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.springframework.cloud.gateway: INFO
+        org.springframework.cloud.gateway.filter: WARN
+        org.springframework.cloud.gateway.route: WARN
+        org.springframework.context.support: WARN
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
+        org.springframework.http.server.reactive: INFO
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        org.springframework.security.web: INFO
+        org.springframework.web.reactive: INFO
+        org.zowe.apiml: INFO
+        reactor.netty: DEBUG
+        reactor.netty.http.client: INFO
+        reactor.netty.http.client.HttpClientConnect: OFF
+        org.springframework.security: TRACE
+
+management:
+    endpoint:
+        gateway:
+            enabled: false
+        health:
+            showDetails: always
+        shutdown:
+            enabled: true
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: health,info,gateway,shutdown
+---
+spring.config.activate.on-profile: debug
+
+logging:
+    level:
+        com.netflix: INFO # Update to DEBUG
+        com.netflix.discovery.shared.transport.decorator: DEBUG
+        com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
+        javax.net.ssl: ERROR
+        org.apache: INFO
+        org.apache.http: DEBUG
+        org.apache.tomcat.util.net: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
+        org.ehcache: INFO
+        org.springframework: INFO
+        # org.springframework.cloud.gateway: TRACE
+        # org.springframework.cloud.gateway.filter: TRACE
+        # org.springframework.cloud.gateway.route: TRACE
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
+        org.springframework.security: TRACE
+        org.springframework.security.web: TRACE
+        # org.springframework.web.reactive: DEBUG
+        # org.springframework.web.reactive.socket: DEBUG
+        org.zowe.apiml: DEBUG
+        reactor.netty.http.client: DEBUG
+        reactor.netty.http.client.HttpClient: DEBUG
+        reactor.netty.http.client.HttpClientConnect: DEBUG
+
+---
+spring.config.activate.on-profile: attls
+
+server:
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+    service:
+        scheme: http
+apiml:
+    service:
+        corsEnabled: true
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false

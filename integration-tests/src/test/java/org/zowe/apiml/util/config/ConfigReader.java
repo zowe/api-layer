@@ -61,7 +61,7 @@ public class ConfigReader {
                         log.warn("Can't read service configuration from resource file, using default: http://localhost:10010", e);
                         Credentials credentials = new Credentials("user", "user");
                         GatewayServiceConfiguration gatewayServiceConfiguration
-                            = new GatewayServiceConfiguration("https", "localhost", null, 10010, 10017, 1, "10010", ROUTED_SERVICE, 20);
+                            = new GatewayServiceConfiguration("https", "localhost", null, 10010, 10010, 1, "10010", ROUTED_SERVICE, 20);
                         CentralGatewayServiceConfiguration centralGatewayServiceConfiguration = new CentralGatewayServiceConfiguration("https", "localhost", 10010);
                         ZaasConfiguration zaasConfiguration = new ZaasConfiguration("https", "localhost", 10023, 1);
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost","localhost", 10011,10021, 1);

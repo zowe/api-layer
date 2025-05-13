@@ -14,6 +14,9 @@ dependencyResolutionManagement {
             version('springFramework', '6.2.6')
             version('springRetry', '2.0.11')
 
+            version('modulith', '1.3.2')
+            version('jmolecules', '2023.2.1')
+
             version('glassfishHk2', '3.1.1')
             version('zosUtils', '2.0.6')
             version('aws', '1.12.783')
@@ -106,6 +109,12 @@ dependencyResolutionManagement {
             version('xstream', '1.4.21')
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
+
+            library('modulith', 'org.springframework.modulith', 'spring-modulith-bom').versionRef('modulith')
+            library('modulith_core', 'org.springframework.modulith', 'spring-modulith-starter-core').versionRef('modulith')
+            library('modulith_test', 'org.springframework.modulith', 'spring-modulith-starter-test').versionRef('modulith')
+            library('jmolecules', 'org.jmolecules', 'jmolecules-bom').versionRef('jmolecules')
+
             library('spring_boot_configuration_processor', 'org.springframework.boot', 'spring-boot-configuration-processor').versionRef('springBoot')
             library('spring_boot_dependencies', 'org.springframework.boot', 'spring-boot-dependencies').versionRef('springBoot')
             library('spring_boot_starter', 'org.springframework.boot', 'spring-boot-starter').versionRef('springBoot')
@@ -267,7 +276,7 @@ dependencyResolutionManagement {
 
             bundle('infinispan', [ 'infinispan_spring_boot3_starter_embedded', 'infinispan_lock', 'infinispan_jboss_marshalling' ])
             bundle('jaxb', ['jaxbApi', 'jaxbImpl'])
-
+            bundle('modulith', ['modulith', 'modulith_core', 'jmolecules'])
         }
 
     }

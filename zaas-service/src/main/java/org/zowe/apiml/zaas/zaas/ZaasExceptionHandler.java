@@ -112,7 +112,7 @@ public class ZaasExceptionHandler {
 
     @ExceptionHandler(value = {TokenNotValidException.class, AuthSchemeException.class})
     public ResponseEntity<ApiMessageView> handleTokenNotValidException() {
-        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.zaas.security.invalidToken").mapToView();
+        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.common.unauthorized").mapToView();
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
             .contentType(MediaType.APPLICATION_JSON)

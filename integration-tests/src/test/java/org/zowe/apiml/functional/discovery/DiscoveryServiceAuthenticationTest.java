@@ -73,7 +73,7 @@ class DiscoveryServiceAuthenticationTest {
 
             @Test
             void thenReturnUnauthorized() {
-                String expectedMessage = "Token is not valid for URL '" + ACTUATOR_ENDPOINT + "'";
+                String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";
                 given()
                     .header("Authorization", "Bearer invalidToken")
                     .when()
@@ -81,7 +81,7 @@ class DiscoveryServiceAuthenticationTest {
                     .then()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAS130E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage)
                     );
             }
 

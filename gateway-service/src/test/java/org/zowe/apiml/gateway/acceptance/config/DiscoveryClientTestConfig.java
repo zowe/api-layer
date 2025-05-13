@@ -30,8 +30,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.web.client.RestClient;
-import org.zowe.apiml.gateway.acceptance.netflix.ApimlDiscoveryClientStub;
-import org.zowe.apiml.gateway.acceptance.netflix.ApplicationRegistry;
+import org.zowe.apiml.gateway.ApimlDiscoveryClientStub;
+import org.zowe.apiml.gateway.ApplicationRegistry;
 import reactor.core.publisher.Flux;
 
 /**
@@ -102,6 +102,5 @@ public class DiscoveryClientTestConfig {
         });
         return discoveryClient;
     }
-
 
 }

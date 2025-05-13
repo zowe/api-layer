@@ -12,3 +12,4 @@ runs:
                 java -jar ./scripts/jacococli.jar dump --retry 1 --address caching-service --port 6306 --destfile ./results/caching-service.exec || echo "Caching service is not available to obtain JaCoCo report at the moment"
                 java -jar ./scripts/jacococli.jar dump --retry 1 --address discovery-service --port 6302 --destfile ./results/discovery-service.exec || echo "Discovery service is not available to obtain JaCoCo report at the moment"
                 java -jar ./scripts/jacococli.jar dump --retry 1 --address api-catalog-services --port 6304 --destfile ./results/api-catalog-services.exec || echo "API Catalog is not available to obtain JaCoCo report at the moment"
+                java -jar ./scripts/jacococli.jar dump --retry 1 --address apiml --port 6310 --destfile ./results/apiml.exec || echo "API ML (Modulith) is not available to obtain JaCoCo report at the moment"

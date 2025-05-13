@@ -32,6 +32,78 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
+    CITestsModulith:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 15
+
+        services:
+            apiml:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
+                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
+                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka
+                    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
+                    SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
+                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_HOSTNAME: api-catalog-services
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+            zaas-service:
+                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://apiml:10010/gateway/certificates
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Run CI Tests
+                run: >
+                    ENV_CONFIG=docker-modulith ./gradlew runStartUpCheck :integration-tests:runContainerModulithTests --info
+                    -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ContainerCITestsModulith-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        results/**
+                        integration-tests/build/test-results/runContainerModulithTests/binary/**
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+
+            -   uses: ./.github/actions/teardown
+
     CITests:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
@@ -1519,7 +1591,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [ CITests,CITestsWithInfinispan,CITestsZaas,GatewayProxy,GatewayServiceRouting,CITestsWebSocketChaoticHA ]
+        needs: [ CITests,CITestsModulith,CITestsWithInfinispan,CITestsZaas,GatewayProxy,GatewayServiceRouting,CITestsWebSocketChaoticHA ]
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
@@ -1535,6 +1607,10 @@ jobs:
                 with:
                     name: ContainerCITests-${{ env.JOB_ID }}
                     path: containercitests
+            -   uses: actions/download-artifact@v4
+                with:
+                    name: ContainerCITestsModulith-${{ env.JOB_ID }}
+                    path: containercitestsmodulith
             -   uses: actions/download-artifact@v4
                 with:
                     name: CITestsWithInfinispan-${{ env.JOB_ID }}
@@ -1558,7 +1634,7 @@ jobs:
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --scan coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,GatewayProxy/results,citestswebsocketchaoticha/results,GatewayServiceRouting/results,ContainerCITestsZaas/results"
+                    ./gradlew --scan coverage sonar -Dresults="containercitests/results,containercitestsmodulith/results,citestswithinfinispan/results,GatewayProxy/results,citestswebsocketchaoticha/results,GatewayServiceRouting/results,ContainerCITestsZaas/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}

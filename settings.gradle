@@ -19,6 +19,8 @@ apply from: './gradle/versions.gradle'
 
 include 'platform'
 
+include 'apiml'
+include 'apiml-package'
 include 'discovery-service'
 include 'discovery-package'
 include 'apiml-utility'

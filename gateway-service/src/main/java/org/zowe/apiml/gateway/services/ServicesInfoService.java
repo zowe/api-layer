@@ -12,11 +12,12 @@ package org.zowe.apiml.gateway.services;
 
 import com.fasterxml.jackson.core.Version;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.util.ObjectUtils;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
@@ -30,13 +31,21 @@ import org.zowe.apiml.product.routing.transform.URLTransformationException;
 import org.zowe.apiml.services.ServiceInfo;
 import org.zowe.apiml.services.ServiceInfoUtils;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.minBy;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
-import static org.zowe.apiml.services.ServiceInfoUtils.*;
+import static org.zowe.apiml.services.ServiceInfoUtils.getBasePath;
+import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
+import static org.zowe.apiml.services.ServiceInfoUtils.getMajorVersion;
+import static org.zowe.apiml.services.ServiceInfoUtils.getVersion;
 
 @RequiredArgsConstructor
 public class ServicesInfoService {
@@ -44,18 +53,16 @@ public class ServicesInfoService {
     public static final String VERSION_HEADER = "Content-Version";
     public static final String CURRENT_VERSION = "1";
 
-    private final EurekaClient eurekaClient;
+    private final DiscoveryClient discoveryClient;
     private final EurekaMetadataParser eurekaMetadataParser;
     private final GatewayClient gatewayClient;
     private final TransformService transformService;
 
     public List<ServiceInfo> getServicesInfo() {
-        List<ServiceInfo> servicesInfo = new LinkedList<>();
-        for (Application application : eurekaClient.getApplications().getRegisteredApplications()) {
-            servicesInfo.add(getServiceInfo(application));
-        }
-
-        return servicesInfo;
+        return discoveryClient.getServices()
+            .stream()
+            .map(this::getServiceInfo)
+            .toList();
     }
 
     public List<ServiceInfo> getServicesInfo(String apiId) {
@@ -73,16 +80,14 @@ public class ServicesInfoService {
     }
 
     public ServiceInfo getServiceInfo(String serviceId) {
-        Application application = eurekaClient.getApplication(serviceId);
-
-        if (application == null) {
-            return ServiceInfo.builder()
+        var knownServices = discoveryClient.getServices();
+        if (knownServices.stream().anyMatch(id -> id.equalsIgnoreCase(serviceId))) {
+            return getServiceInfo(serviceId, discoveryClient.getInstances(serviceId));
+        }
+        return ServiceInfo.builder()
                     .serviceId(serviceId)
                     .status(InstanceInfo.InstanceStatus.UNKNOWN)
                     .build();
-        }
-
-        return getServiceInfo(application);
     }
 
     private String getBaseUrl(ApiInfo apiInfo, InstanceInfo instanceInfo) {
@@ -98,10 +103,16 @@ public class ServicesInfoService {
             .toList();
     }
 
-    private ServiceInfo getServiceInfo(Application application) {
-        String serviceId = application.getName().toLowerCase();
-        List<InstanceInfo> appInstances = getPrimaryInstances(application);
-        if (ObjectUtils.isEmpty(appInstances)) {
+    static List<ServiceInstance> getPrimaryInstances(List<ServiceInstance> serviceInstances) {
+        return serviceInstances.stream()
+            .filter(serviceInstance -> EurekaMetadataDefinition.RegistrationType.of(serviceInstance.getMetadata()).isPrimary())
+            .toList();
+    }
+
+    private ServiceInfo getServiceInfo(String serviceId, List<ServiceInstance> serviceInstances) {
+        serviceId = serviceInstances.stream().findFirst().map(ServiceInstance::getServiceId).map(String::toLowerCase).orElse(serviceId);
+        var primaryInstances = getPrimaryInstances(serviceInstances);
+        if (primaryInstances.isEmpty()) {
             return ServiceInfo.builder()
                     .serviceId(serviceId)
                     .status(InstanceInfo.InstanceStatus.DOWN)
@@ -110,22 +121,39 @@ public class ServicesInfoService {
 
         return ServiceInfo.builder()
                 .serviceId(serviceId)
-                .status(getStatus(appInstances))
-                .apiml(getApiml(appInstances))
-                .instances(getInstances(appInstances))
+                .status(getStatus(primaryInstances))
+                .apiml(getApiml(primaryInstances))
+                .instances(
+                    getInstances(
+                        primaryInstances.stream()
+                            .filter(EurekaServiceInstance.class::isInstance)
+                            .map(EurekaServiceInstance.class::cast)
+                            .map(EurekaServiceInstance::getInstanceInfo)
+                            .toList()
+                        )
+                    )
                 .build();
     }
 
-    private ServiceInfo.Apiml getApiml(List<InstanceInfo> appInstances) {
+    private ServiceInfo.Apiml getApiml(List<ServiceInstance> serviceInstances) {
         return ServiceInfo.Apiml.builder()
-                .apiInfo(getApiInfos(appInstances))
-                .service(getService(appInstances))
-                .authentication(getAuthentication(appInstances))
+                .apiInfo(getApiInfos(serviceInstances))
+                .service(getService(serviceInstances))
+                .authentication(getAuthentication(serviceInstances))
                 .build();
     }
 
-    private List<ServiceInfo.ApiInfoExtended> getApiInfos(List<InstanceInfo> appInstances) {
+    private List<InstanceInfo> extractInstanceInfo(List<ServiceInstance> serviceInstances) {
+        return serviceInstances.stream()
+        .filter(EurekaServiceInstance.class::isInstance)
+        .map(EurekaServiceInstance.class::cast)
+        .map(EurekaServiceInstance::getInstanceInfo)
+        .toList();
+    }
+
+    private List<ServiceInfo.ApiInfoExtended> getApiInfos(List<ServiceInstance> serviceInstances) {
         List<ServiceInfo.ApiInfoExtended> completeList = new ArrayList<>();
+        var appInstances = extractInstanceInfo(serviceInstances);
 
         for (InstanceInfo instanceInfo : appInstances) {
             List<ApiInfo> apiInfoList = eurekaMetadataParser.parseApiInfo(instanceInfo.getMetadata());
@@ -160,9 +188,9 @@ public class ServicesInfoService {
                 .toList();
     }
 
-    private ServiceInfo.Service getService(List<InstanceInfo> appInstances) {
-        InstanceInfo instanceInfo = getInstanceWithHighestVersion(appInstances);
-        RoutedServices routes = eurekaMetadataParser.parseRoutes(getInstanceWithHighestVersion(appInstances).getMetadata());
+    private ServiceInfo.Service getService(List<ServiceInstance> serviceInstances) {
+        InstanceInfo instanceInfo = getInstanceWithHighestVersion(serviceInstances);
+        RoutedServices routes = eurekaMetadataParser.parseRoutes(getInstanceWithHighestVersion(serviceInstances).getMetadata());
 
         return ServiceInfo.Service.builder()
                 .title(instanceInfo.getMetadata().get(SERVICE_TITLE))
@@ -171,7 +199,8 @@ public class ServicesInfoService {
                 .build();
     }
 
-    private List<Authentication> getAuthentication(List<InstanceInfo> appInstances) {
+    private List<Authentication> getAuthentication(List<ServiceInstance> serviceInstances) {
+        var appInstances = extractInstanceInfo(serviceInstances);
         return appInstances.stream()
                 .map(instanceInfo -> {
                     Authentication authentication = eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata());
@@ -197,15 +226,20 @@ public class ServicesInfoService {
         }
     }
 
-    private InstanceInfo.InstanceStatus getStatus(List<InstanceInfo> instances) {
-        if (instances.stream().anyMatch(instance -> instance.getStatus().equals(InstanceInfo.InstanceStatus.UP))) {
+    private InstanceInfo.InstanceStatus getStatus(List<ServiceInstance> instances) {
+        if (instances.stream()
+            .filter(EurekaServiceInstance.class::isInstance)
+            .map(EurekaServiceInstance.class::cast)
+            .anyMatch(instance ->  instance.getInstanceInfo().getStatus().equals(InstanceInfo.InstanceStatus.UP))) {
             return InstanceInfo.InstanceStatus.UP;
-        } else {
-            return InstanceInfo.InstanceStatus.DOWN;
+        } else if (instances.isEmpty()) {
+            return InstanceInfo.InstanceStatus.UNKNOWN;
         }
+        return InstanceInfo.InstanceStatus.DOWN;
     }
 
-    private InstanceInfo getInstanceWithHighestVersion(List<InstanceInfo> appInstances) {
+    private InstanceInfo getInstanceWithHighestVersion(List<ServiceInstance> serviceInstances) {
+        var appInstances = extractInstanceInfo(serviceInstances);
         InstanceInfo instanceInfo = appInstances.get(0);
         Version highestVersion = Version.unknownVersion();
 

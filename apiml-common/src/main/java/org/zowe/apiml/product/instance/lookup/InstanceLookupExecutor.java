@@ -11,10 +11,11 @@
 package org.zowe.apiml.product.instance.lookup;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.product.instance.InstanceNotFoundException;
 
@@ -28,15 +29,20 @@ import java.util.function.Consumer;
 @RequiredArgsConstructor
 public class InstanceLookupExecutor {
 
-    private final EurekaClient eurekaClient;
+    private final DiscoveryClient discoveryClient;
 
     private InstanceInfo findEurekaInstance(String serviceId) {
-        Application application = eurekaClient.getApplication(serviceId);
-        if (application == null) {
+        var services = discoveryClient.getServices();
+
+        if (StringUtils.isEmpty(serviceId) || services.stream().noneMatch(serviceId::equalsIgnoreCase)) {
             throw new InstanceNotFoundException("Service '" + serviceId + "' is not registered to Discovery Service");
         }
 
-        return application.getInstances().stream()
+        var instances = discoveryClient.getInstances(serviceId);
+        return instances.stream()
+            .filter(EurekaServiceInstance.class::isInstance)
+            .map(EurekaServiceInstance.class::cast)
+            .map(EurekaServiceInstance::getInstanceInfo)
             .filter(ii -> EurekaMetadataDefinition.RegistrationType.of(ii.getMetadata()).isPrimary())
             .findFirst()
             .orElseThrow(() -> new InstanceNotFoundException("'" + serviceId + "' has no running instances registered to Discovery Service"));
@@ -64,7 +70,7 @@ public class InstanceLookupExecutor {
             handleFailureConsumer.accept(e, false);
         } catch (Exception e) {
             handleFailureConsumer.accept(e, true);
-            log.debug("Unexpected exception while retrieving '{}' service from Eureka", serviceId);
+            log.debug("Unexpected exception while retrieving '{}' service from Eureka", serviceId, e);
         }
 
     }
