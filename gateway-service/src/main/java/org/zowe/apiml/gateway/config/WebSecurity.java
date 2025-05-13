@@ -166,7 +166,10 @@ public class WebSecurity {
             return null;
         }
         return http
-            .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
+            .headers(headers -> headers
+                .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
+                .writer(new CustomHstsServerHttpHeadersWriter())
+                .frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(OAUTH_2_AUTHORIZATION, OAUTH_2_REDIRECT_URI))
             .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
@@ -317,7 +320,10 @@ public class WebSecurity {
     public ServerHttpSecurity defaultSecurityConfig(ServerHttpSecurity http) {
         var gatewayExceptionHandler = applicationContext.getBean(GatewayExceptionHandler.class);
         return http
-            .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
+            .headers(headers -> headers
+                .hsts(hsts -> hsts.disable())
+                .writer(new CustomHstsServerHttpHeadersWriter())
+                .frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .x509(x509 -> x509
                 .principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager())

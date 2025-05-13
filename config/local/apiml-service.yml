@@ -24,8 +24,6 @@ apiml:
         servicesToLimitRequestRate: discoverableclient
         cookieNameForRateLimiter: apimlAuthenticationToken
     security:
-        x509:
-            enabled: true
         auth:
             jwt:
                 customAuthHeader: customJwtHeader

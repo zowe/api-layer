@@ -25,7 +25,8 @@ public class RemoteHandshake implements Verifier {
         this.httpClient = httpClient;
     }
 
-    public void verify() {
+    @Override
+    public boolean verify() {
         String serviceAddress = sslContextFactory.getStores().getConf().getRemoteUrl();
         String trustStore = sslContextFactory.getStores().getConf().getTrustStore();
 
@@ -35,6 +36,7 @@ public class RemoteHandshake implements Verifier {
             httpClient.executeCall(url);
             System.out.println("Handshake was successful. Service \"" + serviceAddress + "\" is trusted by truststore \"" + trustStore
                 + "\".");
+            return true;
         } catch (MalformedURLException e) {
             System.out.println("Incorrect url \"" + serviceAddress + "\". Error message: " + e.getMessage());
         } catch (SSLHandshakeException e) {
@@ -43,7 +45,7 @@ public class RemoteHandshake implements Verifier {
         } catch (Exception e) {
             System.out.println("Failed when calling url: \"" + serviceAddress + "\" Error message: " + e.getMessage());
         }
+        return false;
     }
-
 
 }
