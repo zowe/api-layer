@@ -28,6 +28,7 @@ import org.zowe.apiml.security.common.error.InvalidCertificateException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import reactor.core.publisher.Mono;
 
 import java.security.cert.X509Certificate;
@@ -50,12 +51,12 @@ public class QueryWebFilter implements WebFilter {
 
         HttpMethod httpMethod,
         boolean protectedByCertificate,
-        ReactiveAuthenticationManager authenticationManager) {
+        ReactiveAuthenticationManager authenticationService) {
         this.successHandler = Objects.requireNonNull(successHandler, "successHandler cannot be null");
         this.failureHandler = Objects.requireNonNull(failureHandler, "failureHandler cannot be null");
         this.httpMethod = Objects.requireNonNull(httpMethod, "httpMethod cannot be null");
         this.protectedByCertificate = protectedByCertificate;
-        this.authenticationManager = Objects.requireNonNull(authenticationManager, "authenticationManager cannot be null");
+        this.authenticationManager = authenticationService;
     }
 
     @Override

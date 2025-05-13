@@ -127,6 +127,16 @@ apiml:
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
+        auth:
+            provider: zosmf
+            zosmf:
+                serviceId:
+                jwtAutoconfiguration: jwt
+        saf:
+            provider: rest
+            urls:
+                authenticate: https://localhost:10013/zss/saf/authenticate
+                verify: https://localhost:10013/zss/saf/verify
     health:
         protected: true
 server:

@@ -18,20 +18,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.ReactiveAuthenticationManagerAdapter;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.security.web.server.authentication.logout.HttpStatusReturningServerLogoutSuccessHandler;
-import org.springframework.security.web.server.authentication.logout.SecurityContextServerLogoutHandler;
-import org.springframework.security.web.server.authentication.logout.ServerLogoutHandler;
-import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
@@ -39,9 +33,7 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 
 import org.zowe.apiml.filter.*;
-import org.zowe.apiml.handler.FailureQueryHandler;
-import org.zowe.apiml.handler.LocalTokenProvider;
-import org.zowe.apiml.handler.SuccessfulQueryHandler;
+import org.zowe.apiml.handler.SuccessQueryHandler;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import org.zowe.apiml.gateway.filters.security.AuthExceptionHandlerReactive;
@@ -52,8 +44,8 @@ import org.zowe.apiml.gateway.service.TokenProvider;
 import org.zowe.apiml.gateway.x509.X509Util;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.zaas.security.login.x509.X509AuthenticationProvider;
+import org.zowe.apiml.zaas.security.query.TokenAuthenticationProvider;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Set;
@@ -71,9 +63,9 @@ public class WebSecurityConfig {
     private final TokenProvider tokenProvider;
     private final Set<String> publicKeyCertificatesBase64; // Base64 encoded public keys of APIML certificates
     private final CertificateValidator certificateValidator; // Service for validating certificates
-    private final SuccessfulQueryHandler successfulQueryHandler;
-    private final FailureQueryHandler failureQueryHandler;
-
+    private final SuccessQueryHandler successQueryHandler;
+    private final FailedAuthenticationWebHandler failedAuthenticationWebHandler;
+    private final TokenAuthenticationProvider tokenAuthenticationProvider;
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
 
@@ -231,24 +223,15 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityWebFilterChain queryFilter(ServerHttpSecurity http, AuthenticationService authenticationService, LogoutHandler logoutHandler) {
-        var man = new ProviderManager();
-        var reactiveX509provider = new ReactiveAuthenticationManager() {
-
-            @Override
-            public Mono<Authentication> authenticate(Authentication authentication) {
-
-                return null;
-            }
-        };
+        var man = new ProviderManager(tokenAuthenticationProvider);
+        var reactiveTokenAuthProvider = new ReactiveAuthenticationManagerAdapter(man);
         return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
             .securityMatcher(new AndServerWebExchangeMatcher(
                                     ServerWebExchangeMatchers.pathMatchers("gateway/api/v1/auth/query")
                             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
-
-            .logout((c) -> c.logoutUrl("/gateway/api/v1/auth/logout").logoutHandler(logoutHandler).logoutSuccessHandler(new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-            .addFilterAfter(new QueryWebFilter(successfulQueryHandler,failureQueryHandler, HttpMethod.GET, false, reactiveX509provider),SecurityWebFiltersOrder.FIRST)
+            .addFilterAfter(new QueryWebFilter(successQueryHandler,failedAuthenticationWebHandler, HttpMethod.GET, false, reactiveTokenAuthProvider),SecurityWebFiltersOrder.FIRST)
              .build();
 
     }

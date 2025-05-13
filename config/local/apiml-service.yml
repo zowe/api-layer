@@ -24,10 +24,28 @@ apiml:
         servicesToLimitRequestRate: discoverableclient
         cookieNameForRateLimiter: apimlAuthenticationToken
     security:
+        allowTokenRefresh: true
+        webfinger:
+            fileLocation: config/local/webfinger.yml
+        personalAccessToken:
+            enabled: true
+        oidc:
+            enabled: false
+            clientId:
+            clientSecret:
+            registry: zowe.okta.com
+            identityMapperUrl: https://localhost:10010/zss/api/v1/certificate/dn
+            identityMapperUser: APIMTST
+            jwks:
+                uri:
         auth:
             jwt:
                 customAuthHeader: customJwtHeader
             passticket:
                 customUserHeader: customUserHeader
                 customAuthHeader: customPassticketHeader
+            provider: zosmf
+            zosmf:
+                serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
+
 
