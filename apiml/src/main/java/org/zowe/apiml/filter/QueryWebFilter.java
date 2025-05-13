@@ -38,7 +38,6 @@ import java.util.Objects;
  */
 public class QueryWebFilter implements WebFilter {
 
-    private final String authEndpointPath; // The path this filter should match, e.g., "/query"
     private final ServerAuthenticationSuccessHandler successHandler;
     private final ServerAuthenticationFailureHandler failureHandler;
     private final HttpMethod httpMethod;
@@ -46,14 +45,12 @@ public class QueryWebFilter implements WebFilter {
     private final ReactiveAuthenticationManager authenticationManager;
 
     public QueryWebFilter(
-        String authEndpointPath, // Expecting a path like "/query"
         ServerAuthenticationSuccessHandler successHandler,
         ServerAuthenticationFailureHandler failureHandler,
 
         HttpMethod httpMethod,
         boolean protectedByCertificate,
         ReactiveAuthenticationManager authenticationManager) {
-        this.authEndpointPath = Objects.requireNonNull(authEndpointPath, "authEndpointPath cannot be null");
         this.successHandler = Objects.requireNonNull(successHandler, "successHandler cannot be null");
         this.failureHandler = Objects.requireNonNull(failureHandler, "failureHandler cannot be null");
         this.httpMethod = Objects.requireNonNull(httpMethod, "httpMethod cannot be null");
@@ -64,9 +61,7 @@ public class QueryWebFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         // Check if the request path matches the configured endpoint path
-        if (!exchange.getRequest().getPath().value().equals(this.authEndpointPath)) {
-            return chain.filter(exchange); // Not for this filter, pass through
-        }
+
 
         // Check HTTP Method
         if (!exchange.getRequest().getMethod().equals(this.httpMethod)) {
@@ -130,47 +125,3 @@ public class QueryWebFilter implements WebFilter {
                 });
     }
 }
-
-/*
- * Assumptions and Placeholders:
- * 1.  ReactiveAuthenticationService:
- * You will need a service like this with a method:
- * public interface ReactiveAuthenticationService {
- * Mono<String> getJwtTokenFromServerHttpRequest(ServerHttpRequest request);
- * }
- * This service would contain the logic to extract the JWT token string from the
- * Authorization header of the ServerHttpRequest.
- *
- * 2.  ServerAuthenticationSuccessHandler and ServerAuthenticationFailureHandler:
- * These are standard Spring Security interfaces for reactive environments.
- * Example (very basic failure handler that sets 401):
- * public class SimpleServerAuthenticationFailureHandler implements ServerAuthenticationFailureHandler {
- * @Override
- * public Mono<Void> onAuthenticationFailure(WebFilterExchange webFilterExchange, AuthenticationException exception) {
- * ServerWebExchange exchange = webFilterExchange.getExchange();
- * exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
- * // Optionally write to the response body with error details
- * // DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(exception.getMessage().getBytes(StandardCharsets.UTF_8));
- * // return exchange.getResponse().writeWith(Mono.just(buffer));
- * return exchange.getResponse().setComplete();
- * }
- * }
- * A success handler might just proceed with the chain if no special action is needed,
- * or it could modify the response (e.g., adding headers). Spring Security's default
- * for some authentication mechanisms is often a `WebFilterChainServerAuthenticationSuccessHandler`
- * which simply continues the chain.
- *
- * 3.  ReactiveAuthenticationManager:
- * This is a Spring Security interface. You would provide an implementation that knows
- * how to validate the `TokenAuthentication` object.
- *
- * 4.  Error Handling:
- * The `onErrorResume` blocks for specific exceptions like `AuthMethodNotSupportedException`
- * assume they should be treated as authentication failures. You might want more specific
- * HTTP status codes for these (e.g., 405 for method not supported).
- * A more robust failure handler can map different exception types to different responses.
- *
- * 5.  Dependencies:
- * Ensure you have `spring-boot-starter-webflux` and `spring-boot-starter-security` (or equivalent
- * reactive security dependencies) in your project.
- */
