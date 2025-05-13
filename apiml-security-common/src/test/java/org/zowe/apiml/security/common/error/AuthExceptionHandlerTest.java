@@ -27,6 +27,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
@@ -36,9 +37,11 @@ import org.zowe.apiml.security.common.token.*;
 import jakarta.servlet.ServletException;
 
 import java.io.IOException;
+import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(SpringExtension.class)
@@ -53,7 +56,8 @@ class AuthExceptionHandlerTest {
     private AuthExceptionHandler authExceptionHandler;
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
-
+    private BiConsumer<ApiMessageView, HttpStatus> function = mock(BiConsumer.class);
+    private BiConsumer<String, String> addHeader = mock(BiConsumer.class);
 
     @BeforeEach
     void setup() {
@@ -67,8 +71,7 @@ class AuthExceptionHandlerTest {
     @Test
     void testAuthenticationFailure_whenExceptionIsInsufficientAuthenticationException() throws IOException, ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(), function, addHeader,
             new InsufficientAuthenticationException("ERROR"));
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
@@ -81,8 +84,8 @@ class AuthExceptionHandlerTest {
     @Test
     void testAuthenticationFailure_whenExceptionIsBadCredentialsException() throws IOException, ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(),
+            function, addHeader,
             new BadCredentialsException("ERROR"));
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
@@ -95,8 +98,8 @@ class AuthExceptionHandlerTest {
     @Test
     void testAuthenticationFailure_whenExceptionIsAuthenticationCredentialsNotFoundException() throws IOException, ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(),
+            function, addHeader,
             new AuthenticationCredentialsNotFoundException("ERROR"));
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), httpServletResponse.getStatus());
@@ -109,7 +112,8 @@ class AuthExceptionHandlerTest {
     @Test
     void testAuthenticationFailure_whenExceptionIsAuthMethodNotSupportedException() throws IOException, ServletException {
         AuthMethodNotSupportedException authMethodNotSupportedException = new AuthMethodNotSupportedException("ERROR");
-        authExceptionHandler.handleException(httpServletRequest, httpServletResponse, authMethodNotSupportedException);
+        authExceptionHandler.handleException(httpServletRequest.getRequestURI(),
+            function, addHeader, authMethodNotSupportedException);
 
         assertEquals(HttpStatus.METHOD_NOT_ALLOWED.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
@@ -121,8 +125,8 @@ class AuthExceptionHandlerTest {
     @Test
     void testAuthenticationFailure_whenExceptionIsTokenNotValidException() throws IOException, ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(),
+            function, addHeader,
             new TokenNotValidException("ERROR"));
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
@@ -135,8 +139,8 @@ class AuthExceptionHandlerTest {
     @Test
     void testAuthenticationFailure_whenExceptionIsNoMainframeIdException() throws IOException, ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(),
+            function, addHeader,
             new NoMainframeIdentityException("ERROR"));
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
@@ -149,8 +153,8 @@ class AuthExceptionHandlerTest {
     @Test
     void testAuthenticationFailure_whenExceptionIsTokenNotProvidedException() throws IOException, ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(),
+            function, addHeader,
             new TokenNotProvidedException("ERROR"));
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
@@ -163,8 +167,8 @@ class AuthExceptionHandlerTest {
     @Test
     void testAuthenticationFailure_whenExceptionIsTokenFormatNotValidException() throws IOException, ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(),
+            function, addHeader,
             new TokenFormatNotValidException("ERROR"));
 
         assertEquals(HttpStatus.BAD_REQUEST.value(), httpServletResponse.getStatus());
@@ -178,7 +182,8 @@ class AuthExceptionHandlerTest {
     @Test
     void testAuthenticationFailure_whenExceptionIsAuthenticationException() throws IOException, ServletException {
         AuthenticationServiceException serviceException = new AuthenticationServiceException("ERROR");
-        authExceptionHandler.handleException(httpServletRequest, httpServletResponse, serviceException);
+        authExceptionHandler.handleException(httpServletRequest.getRequestURI(),
+            function, addHeader, serviceException);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), httpServletResponse.getStatus());
         assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
@@ -189,22 +194,24 @@ class AuthExceptionHandlerTest {
 
     @Test
     void testInvalidCertificateException() throws ServletException {
-        authExceptionHandler.handleException(httpServletRequest, httpServletResponse, new InvalidCertificateException("method"));
+        authExceptionHandler.handleException(httpServletRequest.getRequestURI(),
+            function, addHeader, new InvalidCertificateException("method"));
         assertEquals(HttpStatus.FORBIDDEN.value(), httpServletResponse.getStatus());
     }
 
     @Test
     void testZosAuthenticationExceptionException() throws ServletException {
         PlatformReturned platformReturned = PlatformReturned.builder().success(false).errno(PlatformPwdErrno.EACCES.errno).build();
-        authExceptionHandler.handleException(httpServletRequest, httpServletResponse, new ZosAuthenticationException(platformReturned));
+        authExceptionHandler.handleException(httpServletRequest.getRequestURI(),
+            function, addHeader, new ZosAuthenticationException(platformReturned));
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
     }
 
     @Test
     void testTokenNotInResponseException() throws IOException, ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(),
+            function, addHeader,
             new InvalidTokenTypeException("ERROR"));
 
         assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
@@ -218,8 +225,8 @@ class AuthExceptionHandlerTest {
     void testAuthenticationFailure_whenOccurUnexpectedException() throws ServletException {
         assertThrows(ServletException.class, () -> {
             authExceptionHandler.handleException(
-                httpServletRequest,
-                httpServletResponse,
+                httpServletRequest.getRequestURI(),
+                function, addHeader,
                 new RuntimeException("unexpectedException"));
         });
     }
@@ -227,8 +234,8 @@ class AuthExceptionHandlerTest {
     @Test
     void testAuthServiceUnavailable() throws ServletException, IOException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(),
+            function, addHeader,
             new ServiceNotAccessibleException("URI"));
 
         assertEquals(HttpStatus.SERVICE_UNAVAILABLE.value(), httpServletResponse.getStatus());

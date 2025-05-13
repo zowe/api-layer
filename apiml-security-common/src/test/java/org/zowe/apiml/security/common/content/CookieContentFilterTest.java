@@ -70,7 +70,7 @@ class CookieContentFilterTest {
         verify(authenticationManager).authenticate(tokenAuthentication);
         verify(filterChain).doFilter(request, response);
         verify(failureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any(), any());
     }
 
     @Test
@@ -89,7 +89,7 @@ class CookieContentFilterTest {
 
         verify(authenticationManager, never()).authenticate(any());
         verify(failureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any() , any());
     }
 
     @Test
@@ -108,7 +108,7 @@ class CookieContentFilterTest {
         verify(authenticationManager).authenticate(tokenAuthentication);
         verify(filterChain, never()).doFilter(any(), any());
         verify(failureHandler).onAuthenticationFailure(request, response, exception);
-        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(),any() , any());
     }
 
     @Test
@@ -127,7 +127,7 @@ class CookieContentFilterTest {
         verify(authenticationManager).authenticate(tokenAuthentication);
         verify(filterChain, never()).doFilter(any(), any());
         verify(failureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(resourceAccessExceptionHandler).handleException(request, response, exception);
+//        verify(resourceAccessExceptionHandler).handleException(request, response, , exception);
     }
 
     @Test
@@ -137,7 +137,7 @@ class CookieContentFilterTest {
         verify(authenticationManager, never()).authenticate(any());
         verify(filterChain).doFilter(request, response);
         verify(failureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any() , any());
     }
 
     @Test

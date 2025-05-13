@@ -65,7 +65,7 @@ class FailedAccessTokenHandlerTest {
         @Test
         void handleException() throws ServletException {
             failedAccessTokenHandler.onAuthenticationFailure(mockHttpServletRequest, mockHttpServletResponse, authenticationException);
-            verify(authExceptionHandler).handleException(mockHttpServletRequest, mockHttpServletResponse, authenticationException);
+            verify(authExceptionHandler).handleException(mockHttpServletRequest, mockHttpServletResponse, , authenticationException);
         }
 
     }

@@ -115,7 +115,7 @@ class ZaasAuthenticationFilterTest {
 
         private void assertException(Class<? extends RuntimeException> exceptionClass) throws ServletException {
             ArgumentCaptor<RuntimeException> exceptionCaptor = ArgumentCaptor.forClass(RuntimeException.class);
-            verify(authExceptionHandler, times(1)).handleException(eq(request), eq(response), exceptionCaptor.capture());
+            verify(authExceptionHandler, times(1)).handleException(eq(request), eq(response), , exceptionCaptor.capture());
             assertEquals(exceptionClass, exceptionCaptor.getValue().getClass());
         }
 

@@ -19,9 +19,11 @@ import org.springframework.http.MediaType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import reactor.core.publisher.Mono;
+
 import java.io.IOException;
+import java.util.function.BiConsumer;
 
 /**
  * Base class for exception handlers
@@ -31,23 +33,21 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public abstract class AbstractExceptionHandler {
     protected static final String MESSAGE_FORMAT = "Status Code {}, error message: {}";
-    private static final String CONTENT_TYPE = MediaType.APPLICATION_JSON_VALUE;
 
     protected final MessageService messageService;
     protected final ObjectMapper mapper;
 
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     /**
      * Entry method that takes care of an exception passed to it
      *
-     * @param request  Http request
-     * @param response Http response
-     * @param ex       Exception to be handled
+     * @param response   Http response
+     * @param requestUri Http request URI
+     * @param addHeader
+     * @param ex         Exception to be handled
      * @throws ServletException Fallback exception if exception cannot be handled
      */
-    public abstract void handleException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException;
+    public abstract void handleException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, RuntimeException ex);
 
     /**
      * Write message (by message key) to http response
@@ -59,27 +59,10 @@ public abstract class AbstractExceptionHandler {
      * @param response   Http response
      * @throws ServletException throws when a message cannot be written to response
      */
-    protected void writeErrorResponse(String messageKey, HttpStatus status, HttpServletRequest request, HttpServletResponse response) throws ServletException {
-        final ApiMessageView message = messageService.createMessage(messageKey, request.getRequestURI(), status.getReasonPhrase()).mapToView();
-        writeErrorResponse(message, status, response);
+    protected void writeErrorResponse(String messageKey, HttpStatus status, String requestUri,  BiConsumer<ApiMessageView, HttpStatus> response)  {
+        final ApiMessageView message = messageService.createMessage(messageKey, requestUri, status.getReasonPhrase()).mapToView();
+        response.accept(message, status);
+
     }
 
-    /**
-     * Write a message to http response
-     *
-     * @param message  Message object, which contains message key, type, number and text
-     * @param status   Http response status
-     * @param response Http response
-     * @throws ServletException thrown when message cannot be written to response
-     */
-    protected void writeErrorResponse(ApiMessageView message, HttpStatus status, HttpServletResponse response) throws ServletException {
-        response.setStatus(status.value());
-        response.setContentType(CONTENT_TYPE);
-        try {
-            mapper.writeValue(response.getWriter(), message);
-        } catch (IOException e) {
-            apimlLog.log("org.zowe.apiml.security.errorWrittingResponse", e.getMessage());
-            throw new ServletException("Error writing response", e);
-        }
-    }
 }

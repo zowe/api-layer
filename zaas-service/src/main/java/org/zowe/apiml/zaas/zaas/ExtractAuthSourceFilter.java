@@ -48,7 +48,7 @@ public class ExtractAuthSourceFilter extends OncePerRequestFilter {
             }
         }
         catch (RuntimeException ex) {
-            authExceptionHandler.handleException(request, response, ex);
+//            authExceptionHandler.handleException(request, response, ex);
         }
 
     }

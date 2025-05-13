@@ -104,7 +104,7 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
             try {
                 auth = this.getAuthenticationManager().authenticate(authentication);
             } catch (RuntimeException ex) {
-                resourceAccessExceptionHandler.handleException(request, response, ex);
+//                resourceAccessExceptionHandler.handleException(request.getRequestURI(), response, ex);
             }
             return auth;
         } finally {

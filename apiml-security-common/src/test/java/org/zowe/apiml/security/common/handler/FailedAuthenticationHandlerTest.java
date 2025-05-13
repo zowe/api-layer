@@ -38,9 +38,8 @@ class FailedAuthenticationHandlerTest {
 
         verify(authExceptionHandler).handleException(
             httpServletRequest,
-            httpServletResponse,
-            badCredentialsException
-        );
+            httpServletResponse, ,
+                badCredentialsException);
     }
 
 }

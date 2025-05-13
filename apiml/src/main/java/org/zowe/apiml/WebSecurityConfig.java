@@ -26,7 +26,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
+import org.springframework.security.web.server.authentication.logout.HttpStatusReturningServerLogoutSuccessHandler;
+import org.springframework.security.web.server.authentication.logout.SecurityContextServerLogoutHandler;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutHandler;
+import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
@@ -35,6 +38,7 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 
 import org.zowe.apiml.filter.BasicLoginFilter;
 import org.zowe.apiml.filter.CategorizeCertsWebFilter;
+import org.zowe.apiml.filter.LogoutHandler;
 import org.zowe.apiml.filter.X509AuthFilter;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
@@ -201,16 +205,16 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public SecurityWebFilterChain loginFilter(ServerHttpSecurity http, ObjectMapper mapper) {
+    public SecurityWebFilterChain loginFilter(ServerHttpSecurity http, ObjectMapper mapper, LogoutHandler logoutHandler) {
         var man = new ProviderManager(x509AuthenticationProvider);
         var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
         return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
             .securityMatcher(new AndServerWebExchangeMatcher(
-                                    ServerWebExchangeMatchers.pathMatchers("gateway/api/v1/auth/login")
+                                    ServerWebExchangeMatchers.pathMatchers("gateway/api/v1/auth/login","gateway/api/v1/auth/logout")
                             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
 
-            .logout((c) -> c.logoutUrl("/gateway/api/v1/auth/logout").logoutHandler(logoutHandler()))
+            .logout((c) -> c.logoutUrl("/gateway/api/v1/auth/logout").logoutHandler(logoutHandler).logoutSuccessHandler(new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64,certificateValidator),SecurityWebFiltersOrder.FIRST)
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider,mapper), SecurityWebFiltersOrder.AUTHENTICATION)
@@ -219,15 +223,6 @@ public class WebSecurityConfig {
 
     }
 
-    ServerLogoutHandler logoutHandler() {
-        return new ServerLogoutHandler() {
-            @Override
-            public Mono<Void> logout(WebFilterExchange exchange, Authentication authentication) {
-                return Mono.empty();
-            }
-
-        };
-    }
 
 
 }

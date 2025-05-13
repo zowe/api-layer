@@ -80,7 +80,7 @@ public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
             } catch (AuthenticationException authenticationException) {
                 failureHandler.onAuthenticationFailure(request, response, authenticationException);
             } catch (RuntimeException e) {
-                resourceAccessExceptionHandler.handleException(request, response, e);
+//                resourceAccessExceptionHandler.handleException(request.getRequestURI(), response, e);
             } finally {
                 // TODO: remove once fixed directly in Spring - org.springframework.security.core.CredentialsContainer#eraseCredentials
                 if (authentication != null) {

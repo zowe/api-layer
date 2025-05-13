@@ -18,6 +18,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -29,6 +31,7 @@ import org.zowe.apiml.zaas.security.service.schema.source.ParsedTokenAuthSource;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -43,7 +46,7 @@ class ExtractAuthSourceFilterTest {
 
     @BeforeEach
     void setUp() {
-        request = mock(HttpServletRequest.class);
+        request = new MockHttpServletRequest();
         response = mock(HttpServletResponse.class);
         filterChain = mock(FilterChain.class);
         authSourceService = mock(AuthSourceService.class);
@@ -91,8 +94,10 @@ class ExtractAuthSourceFilterTest {
             @Test
             void thenExceptionHandlerIsCalled() throws ServletException, IOException {
                 ExtractAuthSourceFilter filter = new ExtractAuthSourceFilter(authSourceService, authExceptionHandler);
+                var addHeader = (BiConsumer<String,String>) (name, value) -> request.hea(name, value);
+                var function = mock(BiConsumer.class);
                 filter.doFilterInternal(request, response, filterChain);
-                verify(authExceptionHandler, times(1)).handleException(request, response, tokenNotValidException);
+                verify(authExceptionHandler, times(1)).handleException(request.getRequestURI(), function, addHeader, tokenNotValidException);
             }
         }
     }
@@ -109,8 +114,10 @@ class ExtractAuthSourceFilterTest {
         void thenExceptionIsHandled() throws ServletException, IOException {
             ExtractAuthSourceFilter filter = new ExtractAuthSourceFilter(authSourceService, authExceptionHandler);
             filter.doFilterInternal(request, response, filterChain);
+            var addHeader = (BiConsumer<String,String>) (name, value) -> request.see(name, value);
+            var function = mock(BiConsumer.class);
             ArgumentCaptor<RuntimeException> exceptionCaptor = ArgumentCaptor.forClass(RuntimeException.class);
-            verify(authExceptionHandler, times(1)).handleException(eq(request), eq(response), exceptionCaptor.capture());
+            verify(authExceptionHandler, times(1)).handleException(eq(request.getRequestURI()), eq(function), eq(addHeader) , exceptionCaptor.capture());
             assertNotNull(exceptionCaptor.getValue());
             assertTrue(exceptionCaptor.getValue() instanceof InsufficientAuthenticationException);
             assertEquals("No authentication source found in the request.", exceptionCaptor.getValue().getMessage());

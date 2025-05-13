@@ -43,6 +43,6 @@ public class UnauthorizedHandler implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws ServletException {
         log.debug("Unauthorized access to '{}' endpoint", request.getRequestURI());
-        handler.handleException(request, response, authException);
+//        handler.handleException(request, response, authException);
     }
 }

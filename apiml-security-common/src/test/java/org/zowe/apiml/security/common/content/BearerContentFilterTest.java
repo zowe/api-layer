@@ -28,6 +28,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -67,7 +68,7 @@ class BearerContentFilterTest {
                 verify(authenticationManager).authenticate(tokenAuthentication);
                 verify(filterChain).doFilter(request, response);
                 verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-                verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+                verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any() , any());
             }
         }
 
@@ -79,7 +80,9 @@ class BearerContentFilterTest {
                 RuntimeException exception = new RuntimeException("No Gateway");
 
                 TokenAuthentication tokenAuthentication = new TokenAuthentication(token, TokenAuthentication.Type.JWT);
-                request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
+
+                var addHeader = (BiConsumer<String,String>) (name, value) -> request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
+                var function = mock(BiConsumer.class);
                 when(authenticationManager.authenticate(tokenAuthentication)).thenThrow(exception);
 
                 bearerContentFilter.doFilter(request, response, filterChain);
@@ -87,7 +90,7 @@ class BearerContentFilterTest {
                 verify(authenticationManager).authenticate(tokenAuthentication);
                 verify(filterChain, never()).doFilter(any(), any());
                 verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-                verify(resourceAccessExceptionHandler).handleException(request, response, exception);
+                verify(resourceAccessExceptionHandler).handleException(request.getRequestURI(), function, addHeader, exception);
             }
         }
     }
@@ -109,7 +112,7 @@ class BearerContentFilterTest {
 
             verify(authenticationManager, never()).authenticate(any());
             verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-            verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+            verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any() , any());
         }
     }
 
@@ -131,7 +134,7 @@ class BearerContentFilterTest {
                 verify(authenticationManager).authenticate(tokenAuthentication);
                 verify(filterChain, never()).doFilter(any(), any());
                 verify(authenticationFailureHandler).onAuthenticationFailure(request, response, exception);
-                verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+                verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any() , any());
             }
         }
     }
@@ -145,7 +148,7 @@ class BearerContentFilterTest {
             verify(authenticationManager, never()).authenticate(any());
             verify(filterChain).doFilter(request, response);
             verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-            verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+            verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any() , any());
         }
 
         @Test

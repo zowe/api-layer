@@ -155,12 +155,17 @@ public class AuthenticationService {
     @CacheEvict(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken")
     @Cacheable(value = CACHE_INVALIDATED_JWT_TOKENS, key = "#jwtToken", condition = "#jwtToken != null")
     public Boolean invalidateJwtToken(String jwtToken, boolean distribute) {
+        var app = eurekaClient.getApplication(CoreService.ZAAS.getServiceId());
+       return invalidate(jwtToken, distribute, app);
+    }
+
+    public Boolean invalidate(String jwtToken, boolean distribute, Application app) {
         /*
          * until ehCache is not distributed, send to other instances invalidation request
          */
         boolean isInvalidatedOnAnotherInstance = false;
         if (distribute) {
-            isInvalidatedOnAnotherInstance = invalidateTokenOnAnotherInstance(jwtToken);
+            isInvalidatedOnAnotherInstance = invalidateTokenOnAnotherInstance(jwtToken, app);
             if (!isInvalidatedOnAnotherInstance) {
                 return Boolean.FALSE;
             }
@@ -190,8 +195,26 @@ public class AuthenticationService {
         return Boolean.TRUE;
     }
 
-    private boolean invalidateTokenOnAnotherInstance(String jwtToken) {
-        final Application application = eurekaClient.getApplication(CoreService.ZAAS.getServiceId());
+    /**
+     * Method will invalidate jwtToken. It could be called from two reasons:
+     * - on logout phase (distribute = true)
+     * - from another ZAAS instance to notify about change (distribute = false)
+     *
+     * @param jwtToken   token to invalidate
+     * @param distribute distribute invalidation to another instances?
+     * @return state of invalidate (true - token was invalidated)
+     */
+    @CacheEvict(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken")
+    @Cacheable(value = CACHE_INVALIDATED_JWT_TOKENS, key = "#jwtToken", condition = "#jwtToken != null")
+    public Boolean invalidateJwtTokenGateway(String jwtToken, boolean distribute, Application app) {
+        /*
+         * until ehCache is not distributed, send to other instances invalidation request
+         */
+        return invalidate(jwtToken, distribute, app);
+    }
+
+    private boolean invalidateTokenOnAnotherInstance(String jwtToken, Application application) {
+
         // wrong state, ZAAS have to exists (at least this current instance), return false like unsuccessful
         if (application == null) {
             return Boolean.FALSE;

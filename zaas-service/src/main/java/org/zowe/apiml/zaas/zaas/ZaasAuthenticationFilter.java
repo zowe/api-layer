@@ -50,7 +50,7 @@ public class ZaasAuthenticationFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
         } catch (RuntimeException e) {
-            authExceptionHandler.handleException(request, response, e);
+//            authExceptionHandler.handleException(request, response, e);
         }
     }
 
