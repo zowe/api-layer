@@ -66,6 +66,7 @@ dependencyResolutionManagement {
             version('jsonSmart', '2.5.2')
             version('junitJupiter', '5.12.2')
             version('junitPlatform', '1.12.2')
+            version('jxpath', '1.4.0')
             version('lettuce', '6.6.0.RELEASE')
             // force version in build.gradle file - compatibility with Slf4j
             version('log4j', '2.24.3')
@@ -204,6 +205,7 @@ dependencyResolutionManagement {
             library('junit_platform_launcher', 'org.junit.platform', 'junit-platform-launcher').versionRef('junitPlatform')
             library('junit_platform_commons', 'org.junit.platform', 'junit-platform-commons').versionRef('junitPlatform')
             library('junit_platform_engine', 'org.junit.platform', 'junit-platform-engine').versionRef('junitPlatform')
+            library('jxpath', 'commons-jxpath', 'commons-jxpath').versionRef('jxpath')
             library('lettuce', 'io.lettuce', 'lettuce-core').versionRef('lettuce')
             library('log4j_api', 'org.apache.logging.log4j', 'log4j-api').versionRef('log4j')
             library('log4j_to_slf4j', 'org.apache.logging.log4j', 'log4j-to-slf4j').versionRef('log4j')
