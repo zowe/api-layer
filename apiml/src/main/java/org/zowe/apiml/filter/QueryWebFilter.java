@@ -11,13 +11,12 @@
 package org.zowe.apiml.filter;
 
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.ReactiveAuthenticationManager; // Assuming usage of reactive authentication manager
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.web.server.WebFilterExchange; // For passing to Spring Security reactive handlers
+import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.web.server.ServerWebExchange;
@@ -28,10 +27,9 @@ import org.zowe.apiml.security.common.error.InvalidCertificateException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
+import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 import reactor.core.publisher.Mono;
 
-import java.security.cert.X509Certificate;
 import java.util.Objects;
 
 /**
@@ -91,17 +89,7 @@ public class QueryWebFilter implements WebFilter {
                 // but rather, a new empty context or context without authentication is used.
                 return this.failureHandler.onAuthenticationFailure(
                     new WebFilterExchange(exchange, chain), failed);
-            })
-            // Handle specific non-AuthenticationException errors if they are thrown before authentication attempt
-            .onErrorResume(AuthMethodNotSupportedException.class, ex ->
-                this.failureHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), new AuthenticationException(ex.getMessage(), ex) {})
-            )
-            .onErrorResume(InvalidCertificateException.class, ex ->
-                this.failureHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), new AuthenticationException(ex.getMessage(), ex) {})
-            )
-            .onErrorResume(TokenNotProvidedException.class, ex ->
-                this.failureHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), new AuthenticationException(ex.getMessage(), ex) {})
-            );
+            });
     }
 
     private Mono<Authentication> attemptAuthentication(ServerWebExchange exchange, WebFilterChain chain) {
@@ -110,7 +98,7 @@ public class QueryWebFilter implements WebFilter {
         if (protectedByCertificate) {
             certificateCheckMono = ReactiveSecurityContextHolder.getContext()
                 .map(SecurityContext::getAuthentication)
-                .filter(auth -> auth != null && auth.isAuthenticated() && auth.getCredentials() instanceof X509Certificate)
+                .filter(auth -> auth != null && auth.isAuthenticated() && auth instanceof X509AuthenticationToken)
                 .switchIfEmpty(Mono.error(new InvalidCertificateException("Invalid or missing certificate authentication.")))
                 .then(); // We only care that it passed, not the auth object itself for this step.
         }

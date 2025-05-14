@@ -10,14 +10,8 @@
 
 package org.zowe.apiml.handler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.buffer.DefaultDataBuffer;
-import org.springframework.core.io.buffer.DefaultDataBufferFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
@@ -34,7 +28,6 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 public class SuccessRefreshHandler implements ServerAuthenticationSuccessHandler {
 
-    private final ObjectMapper mapper;
     private final AuthenticationService authenticationService;
     private final HttpUtils httpUtils;
     private final TokenCreationService tokenCreationService;

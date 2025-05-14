@@ -32,22 +32,21 @@ import org.springframework.security.web.server.util.matcher.NegatedServerWebExch
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher.MatchResult;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
-
 import org.zowe.apiml.filter.*;
-import org.zowe.apiml.handler.SuccessQueryHandler;
-import org.zowe.apiml.handler.SuccessRefreshHandler;
-import org.zowe.apiml.security.common.verify.CertificateValidator;
-import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import org.zowe.apiml.gateway.filters.security.AuthExceptionHandlerReactive;
 import org.zowe.apiml.gateway.filters.security.BasicAuthFilter;
 import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
 import org.zowe.apiml.gateway.service.TokenProvider;
 import org.zowe.apiml.gateway.x509.X509Util;
+import org.zowe.apiml.handler.SuccessQueryHandler;
+import org.zowe.apiml.handler.SuccessRefreshHandler;
+import org.zowe.apiml.handler.SuccessTicketHandler;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.verify.CertificateValidator;
+import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import org.zowe.apiml.zaas.security.login.x509.X509AuthenticationProvider;
 import org.zowe.apiml.zaas.security.query.TokenAuthenticationProvider;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
 
 import java.util.List;
 import java.util.Set;
@@ -67,6 +66,7 @@ public class WebSecurityConfig {
     private final CertificateValidator certificateValidator; // Service for validating certificates
     private final SuccessQueryHandler successQueryHandler;
     private final SuccessRefreshHandler successRefreshHandler;
+    private final SuccessTicketHandler successTicketHandler;
     private final FailedAuthenticationWebHandler failedAuthenticationWebHandler;
     private final TokenAuthenticationProvider tokenAuthenticationProvider;
     @Value("${apiml.health.protected:true}")
@@ -244,13 +244,29 @@ public class WebSecurityConfig {
     public SecurityWebFilterChain refreshTokenFilter(ServerHttpSecurity http) {
         var man = new ProviderManager(tokenAuthenticationProvider);
         var reactiveTokenAuthProvider = new ReactiveAuthenticationManagerAdapter(man);
-        return x509SecurityConfig(http).csrf(ServerHttpSecurity.CsrfSpec::disable)
+        return x509SecurityConfig(http)
             .securityMatcher(new AndServerWebExchangeMatcher(
                                     ServerWebExchangeMatchers.pathMatchers("gateway/api/v1/auth/refresh")
                             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-            .addFilterAfter(new QueryWebFilter(successRefreshHandler,failedAuthenticationWebHandler, HttpMethod.GET, false, reactiveTokenAuthProvider),SecurityWebFiltersOrder.FIRST)
+            .addFilterAfter(new QueryWebFilter(successRefreshHandler,failedAuthenticationWebHandler, HttpMethod.GET, true, reactiveTokenAuthProvider),SecurityWebFiltersOrder.AUTHENTICATION)
+             .build();
+
+    }
+
+
+    @Bean
+    public SecurityWebFilterChain ticketFilter(ServerHttpSecurity http) {
+        var man = new ProviderManager(tokenAuthenticationProvider);
+        var reactiveTokenAuthProvider = new ReactiveAuthenticationManagerAdapter(man);
+        return x509SecurityConfig(http)
+            .securityMatcher(new AndServerWebExchangeMatcher(
+                                    ServerWebExchangeMatchers.pathMatchers("gateway/api/v1/auth/ticket")
+                            ))
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .addFilterAfter(new QueryWebFilter(successTicketHandler,failedAuthenticationWebHandler, HttpMethod.POST, true, reactiveTokenAuthProvider),SecurityWebFiltersOrder.AUTHENTICATION)
              .build();
 
     }

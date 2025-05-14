@@ -56,6 +56,7 @@ public class FailedAuthenticationWebHandler implements ServerAuthenticationFailu
                     apimlLog.log("org.zowe.apiml.security.errorWritingResponse", e.getMessage());
                 }
             }
+            buffer.set(bufferFactory.wrap(new byte[0]));
         };
         var addHeader = (BiConsumer<String, String>)(name, value) -> {
             exchange.getResponse().getHeaders().add(name, value);
