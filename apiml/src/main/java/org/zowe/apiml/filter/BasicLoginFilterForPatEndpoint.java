@@ -17,7 +17,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.security.web.server.WebFilterExchange;
+import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
+import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
@@ -32,15 +34,22 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @Slf4j
-public class BasicLoginFilter implements WebFilter {
+public class BasicLoginFilterForPatEndpoint implements WebFilter {
 
     private final ObjectMapper mapper;
-    ReactiveAuthenticationManagerAdapter authenticationManager;
+    private final ReactiveAuthenticationManagerAdapter authenticationManager;
+    private final ServerAuthenticationSuccessHandler successHandler;
+    private final ServerAuthenticationFailureHandler failureHandler;
 
-    public BasicLoginFilter(CompoundAuthProvider compoundAuthProvider, ObjectMapper mapper) {
+    public BasicLoginFilterForPatEndpoint(CompoundAuthProvider compoundAuthProvider,
+                                          ObjectMapper mapper,
+                                          ServerAuthenticationSuccessHandler successHandler,
+                                          ServerAuthenticationFailureHandler failureHandler) {
         var authManager = new ProviderManager(compoundAuthProvider);
         this.authenticationManager = new ReactiveAuthenticationManagerAdapter(authManager);
         this.mapper = mapper;
+        this.successHandler = successHandler;
+        this.failureHandler = failureHandler;
     }
 
     @Override
@@ -50,22 +59,23 @@ public class BasicLoginFilter implements WebFilter {
             .switchIfEmpty(Mono.defer(() ->
                 getCredentialsFromBody(exchange).map(this::getToken)
             ))
-            .switchIfEmpty(chain.filter(exchange).then(Mono.empty()))
             .flatMap(token ->
                 authenticationManager.authenticate(token)
-                    .flatMap(authentication -> {
-                        SecurityContextImpl securityContext = new SecurityContextImpl();
-                        securityContext.setAuthentication(authentication);
-                        return chain.filter(exchange)
-                            .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext)));
-                    })
+                    .flatMap(authentication ->
+                        successHandler.onAuthenticationSuccess(
+                            new WebFilterExchange(exchange, chain),
+                            authentication
+                        ).contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication))
+                    )
                     .onErrorResume(AuthenticationException.class, ex -> {
-                        log.debug("Authentication failed: {}", ex.getMessage());
-                        //todo map to the ZWEAG120E message (invalid credentials)
-                        exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
-                        return exchange.getResponse().setComplete();
+                        log.debug("Authentication failed for PAT endpoint: {}", ex.getMessage());
+                        return failureHandler.onAuthenticationFailure(
+                            new WebFilterExchange(exchange, chain),
+                            ex
+                        );
                     })
-            );
+            )
+            .switchIfEmpty(chain.filter(exchange));
     }
 
     AbstractAuthenticationToken getToken(LoginRequest credentials) {
@@ -77,28 +87,23 @@ public class BasicLoginFilter implements WebFilter {
             .map(header ->
                 LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(header)).get())
             .onErrorResume(e -> {
-                log.debug("Failed to decode Basic Auth header: {}", e.getMessage());
-                return Mono.empty(); // Return empty if decoding fails
+                log.debug("Failed to decode Basic Auth header (PAT endpoint): {}", e.getMessage());
+                return Mono.empty();
             });
     }
 
     private Mono<LoginRequest> getCredentialsFromBody(ServerWebExchange exchange) {
-        // method available could return 0 even there are some data, depends on the implementation
         return exchange.getRequest().getBody().flatMap(buffer -> {
-                try {
-                    byte[] bytes = new byte[buffer.readableByteCount()];
-                    buffer.read(bytes);
-                    DataBufferUtils.release(buffer);
-                    String bodyString = new String(bytes, StandardCharsets.UTF_8);
-                    return Mono.just(mapper.readValue(bodyString, LoginRequest.class));
-                } catch (IOException e) {
-                    log.debug("Authentication problem: login object has wrong format");
-                    return Flux.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format."));
-                }
+            try {
+                byte[] bytes = new byte[buffer.readableByteCount()];
+                buffer.read(bytes);
+                DataBufferUtils.release(buffer);
+                String bodyString = new String(bytes, StandardCharsets.UTF_8);
+                return Mono.just(mapper.readValue(bodyString, LoginRequest.class));
+            } catch (IOException e) {
+                log.debug("Invalid login body (PAT endpoint)");
+                return Flux.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format."));
             }
-        ).next();
-
+        }).next();
     }
-
 }
-

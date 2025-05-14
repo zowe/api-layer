@@ -48,7 +48,7 @@ public class FailedAuthenticationWebHandler implements ServerAuthenticationFailu
         AtomicReference<DefaultDataBuffer> buffer = new AtomicReference<>();
         BiConsumer<ApiMessageView, HttpStatus> consumer = (message, status) -> {
             exchange.getResponse().setStatusCode(status);
-            if(message != null) {
+            if (message != null) {
                 exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
                 try {
                     buffer.set(bufferFactory.wrap(mapper.writeValueAsBytes(message)));

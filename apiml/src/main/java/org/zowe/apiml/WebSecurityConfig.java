@@ -39,9 +39,7 @@ import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
 import org.zowe.apiml.gateway.service.TokenProvider;
 import org.zowe.apiml.gateway.x509.X509Util;
-import org.zowe.apiml.handler.SuccessQueryHandler;
-import org.zowe.apiml.handler.SuccessRefreshHandler;
-import org.zowe.apiml.handler.SuccessTicketHandler;
+import org.zowe.apiml.handler.*;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
@@ -69,6 +67,8 @@ public class WebSecurityConfig {
     private final SuccessTicketHandler successTicketHandler;
     private final FailedAuthenticationWebHandler failedAuthenticationWebHandler;
     private final TokenAuthenticationProvider tokenAuthenticationProvider;
+    private final SuccessfulPersonalAccessTokenHandler successfulAccessTokenHandler;
+
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
 
@@ -210,14 +210,14 @@ public class WebSecurityConfig {
         var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
         return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
             .securityMatcher(new AndServerWebExchangeMatcher(
-                                    ServerWebExchangeMatchers.pathMatchers("gateway/api/v1/auth/login","gateway/api/v1/auth/logout")
+                                    ServerWebExchangeMatchers.pathMatchers("gateway/api/v1/auth/login", "gateway/api/v1/auth/logout")
                             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
 
             .logout((c) -> c.logoutUrl("/gateway/api/v1/auth/logout").logoutHandler(logoutHandler).logoutSuccessHandler(new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-            .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64,certificateValidator),SecurityWebFiltersOrder.FIRST)
-            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider,mapper), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator),SecurityWebFiltersOrder.FIRST)
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
 
@@ -234,9 +234,24 @@ public class WebSecurityConfig {
                             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-            .addFilterAfter(new QueryWebFilter(successQueryHandler,failedAuthenticationWebHandler, HttpMethod.GET, false, reactiveTokenAuthProvider),SecurityWebFiltersOrder.FIRST)
+            .addFilterAfter(new QueryWebFilter(successQueryHandler, failedAuthenticationWebHandler, HttpMethod.GET, false, reactiveTokenAuthProvider), SecurityWebFiltersOrder.FIRST)
              .build();
 
+    }
+
+    @Bean
+    public SecurityWebFilterChain accessTokenFilter(ServerHttpSecurity http,
+                                                    ObjectMapper mapper) {
+        // TODO return ZWEAT606E in case of no scopes/validity passed.
+        return http
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/gateway/api/v1/auth/access-token/generate"))
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
+            .addFilterAfter(new StoreAccessTokenInfoWebFilter(failedAuthenticationWebHandler, mapper), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new BasicLoginFilterForPatEndpoint(compoundAuthProvider, mapper, successfulAccessTokenHandler, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
+            .build();
     }
 
     @ConditionalOnProperty(name = "apiml.security.allowTokenRefresh", havingValue = "true")

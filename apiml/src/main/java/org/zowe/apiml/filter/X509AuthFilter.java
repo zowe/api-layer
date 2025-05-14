@@ -17,7 +17,6 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
-import org.zowe.apiml.zaas.security.login.x509.X509AuthenticationProvider;
 import reactor.core.publisher.Mono;
 
 import java.security.cert.X509Certificate;
@@ -32,7 +31,7 @@ public class X509AuthFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
 
         X509Certificate[] certs = exchange.getAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
-        if(certs == null || certs.length == 0) {
+        if (certs == null || certs.length == 0) {
             return chain.filter(exchange);
         }
 
