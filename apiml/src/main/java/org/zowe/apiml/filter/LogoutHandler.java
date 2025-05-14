@@ -41,14 +41,8 @@ public class LogoutHandler implements ServerLogoutHandler {
 
     private final AuthenticationService authenticationService;
     private final FailedAuthenticationWebHandler failure;
-    private static final String CONTENT_TYPE = MediaType.APPLICATION_JSON_VALUE;
-    private final CloudEurekaClient eurekaClient;
-    private final ReactiveDiscoveryClient discoveryClient;
     private final PeerAwareInstanceRegistryImpl peerAwareInstanceRegistry;
 
-    private final ObjectMapper mapper;
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
     @Override
     public Mono<Void> logout(WebFilterExchange exchange, Authentication authentication) {
         return getTokenFromRequest(exchange.getExchange()).flatMap(token -> invalidateJwtToken(token, exchange));
@@ -61,6 +55,7 @@ public class LogoutHandler implements ServerLogoutHandler {
 
     public static Mono<String> getCookieValue(ServerWebExchange exchange, String cookieName) {
         return Mono.justOrEmpty(exchange)
+            .filter(ex -> ex.getRequest().getCookies().getFirst(cookieName) != null)
             .map(ex -> ex.getRequest().getCookies().getFirst(cookieName))
             .map(HttpCookie::getValue);
     }
@@ -88,6 +83,7 @@ public class LogoutHandler implements ServerLogoutHandler {
 
     public static Mono<String> getBearerTokenFromHeaderReactive(ServerWebExchange exchange) {
         return Mono.justOrEmpty(exchange)
+            .filter(ex -> ex.getRequest().getHeaders().getFirst(BEARER_AUTHENTICATION_PREFIX) != null)
             .map(ex -> ex.getRequest().getHeaders().getFirst(BEARER_AUTHENTICATION_PREFIX))
             .filter(authHeader -> authHeader != null && authHeader.regionMatches(true, 0, BEARER_AUTHENTICATION_PREFIX, 0, BEARER_AUTHENTICATION_PREFIX.length()))
             .map(authHeader -> authHeader.substring(BEARER_AUTHENTICATION_PREFIX.length()))

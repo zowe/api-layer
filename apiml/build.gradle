@@ -67,6 +67,7 @@ dependencies {
     implementation libs.spring.cloud.starter.gateway
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.security
+    implementation libs.nimbus.jose.jwt
 
     testImplementation(testFixtures(project(":gateway-service")))
     testImplementation libs.spring.boot.starter.test

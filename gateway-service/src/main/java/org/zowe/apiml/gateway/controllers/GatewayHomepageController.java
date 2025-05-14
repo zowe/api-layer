@@ -38,6 +38,7 @@ public class GatewayHomepageController {
     private static final String WARNING_ICON_NAME = "warning";
     private static final String UI_V1_ROUTE = "%s.ui-v1.%s";
     private static final String ZAAS_SERVICEID = CoreService.ZAAS.getServiceId();
+    private static final String GATEWAY_SERVICEID = CoreService.GATEWAY.getServiceId(); // TODO configurable or new controller
 
     private final DiscoveryClient discoveryClient;
 
@@ -155,7 +156,7 @@ public class GatewayHomepageController {
     }
 
     private int authorizationServiceCount() {
-        List<ServiceInstance> zaasServiceInstances = discoveryClient.getInstances(ZAAS_SERVICEID);
+        List<ServiceInstance> zaasServiceInstances = discoveryClient.getInstances(GATEWAY_SERVICEID);
         if (zaasServiceInstances != null) {
             return zaasServiceInstances.size();
         }

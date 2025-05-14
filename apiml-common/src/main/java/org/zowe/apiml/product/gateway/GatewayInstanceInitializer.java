@@ -31,7 +31,7 @@ import java.net.URI;
  * Its meant to be created as a bean, as it is for example by SecurityServiceConfiguration in security-service-client-spring
  */
 @Slf4j
-@RequiredArgsConstructor
+@RequiredArgsConstructor // TODO remove this once modulith is complete and fix for microservice setup
 public class GatewayInstanceInitializer {
 
     private final InstanceLookupExecutor instanceLookupExecutor;
