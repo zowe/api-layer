@@ -127,9 +127,10 @@ public class AuthEndpointConfig {
     public RouterFunction<ServerResponse> routes() {
 //        return route(path("/gateway/api/v1/auth/login"), resendTo("/api/v1/auth/login"))
 //          return route(path("/gateway/api/v1/auth/logout"), resendTo("/api/v1/auth/logout"))
-           return route(path("/gateway/api/v1/auth/query"), resendTo("/api/v1/auth/query"))
-            .andRoute(path("/gateway/api/v1/auth/refresh"), resendTo("/api/v1/auth/refresh"))
-            .andRoute(path("/gateway/api/v1/auth/ticket"), resendTo("/api/v1/auth/ticket"))
+
+//           return route(path("/gateway/api/v1/auth/query"), resendTo("/api/v1/auth/query"))
+//            .andRoute(path("/gateway/api/v1/auth/refresh"), resendTo("/api/v1/auth/refresh"))
+            return route(path("/gateway/api/v1/auth/ticket"), resendTo("/api/v1/auth/ticket"))
             .andRoute(path("/gateway/api/v1/auth/access-token/revoke"), resendTo("/api/v1/auth/access-token/revoke"))
             .andRoute(path("/gateway/api/v1/auth/access-token/validate"), resendTo("/api/v1/auth/access-token/validate"))
             .andRoute(path("/gateway/api/v1/auth/access-token/generate"), resendTo("/api/v1/auth/access-token/generate"))

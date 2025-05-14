@@ -49,8 +49,7 @@ public class SuccessRefreshHandler implements ServerAuthenticationSuccessHandler
             authenticationService.invalidateJwtTokenGateway(tokenAuth.getCredentials(), true, app);
             String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(tokenAuth.getPrincipal());
             exchange.getResponse().addCookie(httpUtils.createResponseCookie(jwtToken));
-
-            return webFilterExchange.getChain().filter(exchange);
+            return Mono.empty();
         }
         return webFilterExchange.getChain().filter(exchange);
     }
