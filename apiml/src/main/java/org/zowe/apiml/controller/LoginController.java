@@ -10,6 +10,9 @@
 
 package org.zowe.apiml.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
@@ -31,10 +34,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
@@ -77,7 +82,7 @@ public class LoginController {
     private static final String TOKEN_KEY = "token";
     @Nullable
     private final OIDCProvider oidcProvider;
-
+    private static final ObjectWriter writer = new ObjectMapper().writer();
 
 
     /**
@@ -134,6 +139,21 @@ public class LoginController {
         }
     }
 
+    /**
+     * Invalidates a specific personal access token. Requires the token to be provided in the request body.
+     * Request body:
+     * {
+     *   "token": "your_access_token"
+     * }
+     * Responses:
+     * - 204 No Content – Token successfully invalidated
+     * - 400 Bad Request – Token missing or empty
+     * - 401 Unauthorized – Token already invalidated
+     * - 503 Service Unavailable – Invalidation failed
+     *
+     * @param bodyMono Mono containing a map with the token to invalidate
+     * @return Mono with the appropriate HTTP response
+     */
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE)
     @Operation(
         summary = "Invalidate personal access token.",
@@ -177,6 +197,22 @@ public class LoginController {
             });
     }
 
+    /**
+     * Invalidates all PATs for the currently authenticated user. Uses the authenticated principal from the security context.
+     * Timestamp in the body is optional. If not provided, the current time is used.
+     * <p>
+     * Request body (optional):
+     * {
+     *   "timestamp": 1710000000000
+     * }
+     * <p>
+     * Responses:
+     * - 204 No Content – Tokens successfully invalidated
+     * - 401 Unauthorized – No authentication present
+     *
+     * @param rulesRequestModel Optional model containing the timestamp
+     * @return Mono with the appropriate HTTP response
+     */
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE)
     @ResponseBody
     @Operation(summary = "Invalidate multiple personal access tokens.",
@@ -216,6 +252,63 @@ public class LoginController {
                 return Mono.just(ResponseEntity.noContent().build());
             })
             .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));
+    }
+
+    //todo fix: if no body is passed at all, it currently returns
+    // The service has encountered a situation it doesn't know how to handle. Please contact support for further assistance. More details are available in the log under the provided message instance ID.
+    /**
+     * Admin-only: Invalidates all PATs for a specific user ID. Requires SAF authorization and a valid userId in the request body.
+     * <p>
+     * Request body:
+     * {
+     *   "userId": "target_user",
+     *   "timestamp": 1710000000000
+     * }
+     * <p>
+     * Responses:
+     * - 204 No Content – Tokens successfully invalidated
+     * - 400 Bad Request – Missing userId
+     *
+     * @param requestModel Model containing the userId and optional timestamp
+     * @return Mono with the appropriate HTTP response
+     * @throws JsonProcessingException if the input cannot be parsed
+     */
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/user")
+    @ResponseBody
+    @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
+    @Operation(summary = "Invalidate personal access tokens by user ID.",
+        tags = {"Access token"},
+        operationId = "accessTokensInvalidateAdminDELETE",
+        description = "Use the `/access-token/revoke/token/user` API to invalidate multiple personal access tokens issued for a user ID.\n\n**Request:**\n\nThe revoke user ID request requires the user credentials in one of the following formats:\n\n* Basic authentication\n* Client certificate \n\n**Response:**\n\nThe response is no content.",
+        security = {
+            @SecurityRequirement(name = "Bearer"),
+            @SecurityRequirement(name = "CookieAuth"),
+            @SecurityRequirement(name = "LoginBasicAuth"),
+            @SecurityRequirement(name = "ClientCert")
+        },
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                schemaProperties = {
+                    @SchemaProperty(name = "user", schema = @Schema(type = "string")),
+                    @SchemaProperty(name = "timestamp", schema = @Schema(type = "number"))
+                }
+            ),
+            description = "Specifies the user ID and time until which the tokens will remain invalid."
+        )
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Successfully revoked")
+    })
+    public Mono<ResponseEntity<String>> revokeAccessTokensForUser(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
+        long timeStamp = requestModel.getTimestamp();
+        String userId = requestModel.getUserId();
+        if (userId == null) {
+            return badRequestForPATInvalidation();
+        }
+        log.debug("revokeAccessTokensForUser: userId={}", userId);
+        tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
+
+        return Mono.just(ResponseEntity.noContent().build());
     }
 
     /**
@@ -367,5 +460,9 @@ public class LoginController {
         private long timestamp;
     }
 
+    private Mono<ResponseEntity<String>> badRequestForPATInvalidation() throws JsonProcessingException {
+        final ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.query.invalidRevokeRequestBody").mapToView();
+        return Mono.just(new ResponseEntity<>(writer.writeValueAsString(message), HttpStatus.BAD_REQUEST));
+    }
 
 }
