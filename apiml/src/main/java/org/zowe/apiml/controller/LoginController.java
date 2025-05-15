@@ -14,6 +14,13 @@ import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.SchemaProperty;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.io.pem.PemObject;
@@ -28,7 +35,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -46,6 +53,7 @@ import java.util.*;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.zowe.apiml.zaas.controllers.AuthController.ACCESS_TOKEN_REVOKE;
 import static org.zowe.apiml.zaas.controllers.AuthController.INVALIDATE_PATH;
 
 @RestController
@@ -64,6 +72,8 @@ public class LoginController {
     private final AuthenticationService authenticationService;
     private final PeerAwareInstanceRegistryImpl peerAwareInstanceRegistry;
     private final HttpUtils httpUtils;
+    private final AccessTokenProvider tokenProvider;
+    private static final String TOKEN_KEY = "token";
     @Nullable
     private final OIDCProvider oidcProvider;
 
@@ -80,7 +90,7 @@ public class LoginController {
      */
     @PostMapping("/login")
     public Mono<ResponseEntity<Void>> login(ServerWebExchange exchange) {
-      return   ReactiveSecurityContextHolder.getContext().flatMap(con ->{
+      return ReactiveSecurityContextHolder.getContext().flatMap(con -> {
             var authentication = con.getAuthentication();
             String jwt = ((TokenAuthentication) authentication).getCredentials();
             // Create the HttpOnly cookie containing the JWT
@@ -96,18 +106,18 @@ public class LoginController {
     }
 
     @DeleteMapping(path = INVALIDATE_PATH)
-//    @Operation(summary = "Logout JWT token.",
-//        tags = {"Security"},
-//        operationId = "invalidateJwtToken",
-//        description = "Use the `/auth/invalidate` API to invalidate token on specific instance of Gateway.",
-//        security = {
-//            @SecurityRequirement(name = "ClientCert")
-//        })
-//    @ApiResponses(value = {
-//        @ApiResponse(responseCode = "200", description = "Successfully invalidated"),
-//        @ApiResponse(responseCode = "400", description = "Invalid token"),
-//        @ApiResponse(responseCode = "503", description = "Authentication service is not available")
-//    })
+    @Operation(summary = "Logout JWT token.",
+        tags = {"Security"},
+        operationId = "invalidateJwtToken",
+        description = "Use the `/auth/invalidate` API to invalidate token on specific instance of Gateway.",
+        security = {
+            @SecurityRequirement(name = "ClientCert")
+        })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully invalidated"),
+        @ApiResponse(responseCode = "400", description = "Invalid token"),
+        @ApiResponse(responseCode = "503", description = "Authentication service is not available")
+    })
     public Mono<ResponseEntity<Void>> invalidateJwtToken(ServerWebExchange exchange) {
         final String endpoint = "/auth/invalidate/";
         final String uri = exchange.getRequest().getURI().getPath();
@@ -123,6 +133,49 @@ public class LoginController {
         }
     }
 
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE)
+    @Operation(
+        summary = "Invalidate personal access token.",
+        tags = {"Access token"},
+        operationId = "accessTokenInvalidateDELETE",
+        description = "Use the `/access-token/revoke` API to invalidate a specific personal access token. \n\n**Response:**\n\nThe response is no content.",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                schemaProperties = {
+                    @SchemaProperty(name = TOKEN_KEY, schema = @Schema(type = "string"))
+                }
+            ),
+            description = "Specifies the personal access token."
+        )
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Successfully revoked"),
+        @ApiResponse(responseCode = "400", description = "Missing or invalid token"),
+        @ApiResponse(responseCode = "401", description = "Invalid token"),
+        @ApiResponse(responseCode = "503", description = "Token invalidation failed")
+    })
+    public Mono<ResponseEntity<Object>> revokeAccessToken(@RequestBody Mono<Map<String, String>> bodyMono) {
+        System.out.println(bodyMono);
+        return bodyMono
+            .map(body -> body.get("token"))
+            .flatMap(token -> {
+                if (token == null || token.trim().isEmpty()) {
+                    return Mono.just(ResponseEntity.badRequest().build());
+                }
+
+                if (tokenProvider.isInvalidated(token)) {
+                    return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+                }
+
+                return Mono.fromCallable(() -> {
+                    tokenProvider.invalidateToken(token);
+                    return ResponseEntity.noContent().build();
+                }).onErrorResume(IOException.class, e -> {
+                    log.error("Token invalidation failed", e);
+                    return Mono.just(ResponseEntity.status(SC_SERVICE_UNAVAILABLE).build());
+                });
+            });
+    }
 
 
     /**
@@ -133,19 +186,19 @@ public class LoginController {
      */
     @GetMapping(path = ALL_PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-//    @Operation(summary = "Returns all public keys to verify JWT tokens validity",
-//        tags = {"Security"},
-//        operationId = "GetAllPublicKeysUsingGET",
-//        description = "This endpoint returns all possible JWKs, which can verify sign outside the Gateway. It can contain public keys of Zowe and z/OSMF."
-//    )
-//    @ApiResponses(value = {
-//        @ApiResponse(responseCode = "200", description = "OK",
-//            content = @Content(
-//                mediaType = MediaType.APPLICATION_JSON_VALUE,
-//                schema = @Schema(implementation = JWKSet.class)
-//            )
-//        )
-//    })
+    @Operation(summary = "Returns all public keys to verify JWT tokens validity",
+        tags = {"Security"},
+        operationId = "GetAllPublicKeysUsingGET",
+        description = "This endpoint returns all possible JWKs, which can verify sign outside the Gateway. It can contain public keys of Zowe and z/OSMF."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = JWKSet.class)
+            )
+        )
+    })
     public Mono<Map<String, Object>> getAllPublicKeys() {
         return Mono.fromSupplier(() ->{
             List<JWK> keys;
@@ -174,19 +227,19 @@ public class LoginController {
      */
     @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-//    @Operation(summary = "Returns public keys to verify JWT tokens, which can be generated now",
-//        tags = {"Security"},
-//        operationId = "GetCurrentPublicKeysUsingGET",
-//        description = "This endpoint returns all possible JWKs, which can verify signature outside the Gateway for this moment. It filters JWK by current settings of Zowe and z/OSMF."
-//    )
-//    @ApiResponses(value = {
-//        @ApiResponse(responseCode = "200", description = "OK",
-//            content = @Content(
-//                mediaType = MediaType.APPLICATION_JSON_VALUE,
-//                schema = @Schema(implementation = JWKSet.class)
-//            )
-//        )
-//    })
+    @Operation(summary = "Returns public keys to verify JWT tokens, which can be generated now",
+        tags = {"Security"},
+        operationId = "GetCurrentPublicKeysUsingGET",
+        description = "This endpoint returns all possible JWKs, which can verify signature outside the Gateway for this moment. It filters JWK by current settings of Zowe and z/OSMF."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = JWKSet.class)
+            )
+        )
+    })
     public Mono<Map<String, Object>> getCurrentPublicKeys() {
         return Mono.fromSupplier(() ->{
             final List<JWK> keys = getCurrentKey();
@@ -204,19 +257,19 @@ public class LoginController {
      */
     @GetMapping(path = PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-//    @Operation(summary = "Get the public key of certificate that is used by the Gateway to sign tokens",
-//        tags = {"Security"},
-//        operationId = "getCurrentPublicKeys",
-//        description = "This endpoint returns JWK of currently used key, which can verify sign outside the Gateway for this moment. It filters JWK by current settings of Zowe and z/OSMF."
-//    )
-//    @ApiResponses(value = {
-//        @ApiResponse(responseCode = "200", description = "OK",
-//            content = @Content(
-//                mediaType = MediaType.APPLICATION_JSON_VALUE,
-//                schema = @Schema(type = "string", description = "Certificate in the PEM format")
-//            )
-//        )
-//    })
+    @Operation(summary = "Get the public key of certificate that is used by the Gateway to sign tokens",
+        tags = {"Security"},
+        operationId = "getCurrentPublicKeys",
+        description = "This endpoint returns JWK of currently used key, which can verify sign outside the Gateway for this moment. It filters JWK by current settings of Zowe and z/OSMF."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK",
+            content = @Content(
+                mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(type = "string", description = "Certificate in the PEM format")
+            )
+        )
+    })
     public Mono<ResponseEntity<Object>> getPublicKeyUsedForSigning() {
        return Mono.fromSupplier(() -> {
             List<JWK> publicKeys = getCurrentKey();

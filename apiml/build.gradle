@@ -68,6 +68,7 @@ dependencies {
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.security
     implementation libs.nimbus.jose.jwt
+    implementation libs.spring.doc.webflux.ui
 
     testImplementation(testFixtures(project(":gateway-service")))
     testImplementation libs.spring.boot.starter.test

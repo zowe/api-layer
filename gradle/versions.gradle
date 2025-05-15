@@ -224,6 +224,7 @@ dependencyResolutionManagement {
             library('spring_test', 'org.springframework', 'spring-test').versionRef('springFramework')
             library('spring_doc', 'org.springdoc', 'springdoc-openapi-starter-webmvc-ui').versionRef('springDoc')
             library('spring_doc_webflux', 'org.springdoc', 'springdoc-openapi-starter-webflux-api').versionRef('springDoc')
+            library('spring_doc_webflux_ui', 'org.springdoc', 'springdoc-openapi-starter-webflux-ui').versionRef('springDoc')
             library('spring_mock_mvc', 'io.rest-assured', 'spring-mock-mvc').versionRef('restAssured')
             library('swagger2_parser', 'io.swagger', 'swagger-parser').versionRef('swagger2Parser')
             library('swagger3_parser', 'io.swagger.parser.v3', 'swagger-parser-v3').versionRef('swagger3Parser')
