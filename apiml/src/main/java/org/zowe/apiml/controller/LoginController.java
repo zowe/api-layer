@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.media.SchemaProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.io.pem.PemObject;
@@ -31,6 +32,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.message.core.MessageService;
@@ -53,8 +55,7 @@ import java.util.*;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.zowe.apiml.zaas.controllers.AuthController.ACCESS_TOKEN_REVOKE;
-import static org.zowe.apiml.zaas.controllers.AuthController.INVALIDATE_PATH;
+import static org.zowe.apiml.zaas.controllers.AuthController.*;
 
 @RestController
 @RequestMapping("/gateway/api/v1/auth")
@@ -101,7 +102,7 @@ public class LoginController {
             log.debug("JWT Cookie set for user: {}", authentication.getName());
 
             // Return an OK response
-            return Mono.just(ResponseEntity.ok().<Void>build());
+            return Mono.just(ResponseEntity.ok().build());
         });
     }
 
@@ -155,7 +156,6 @@ public class LoginController {
         @ApiResponse(responseCode = "503", description = "Token invalidation failed")
     })
     public Mono<ResponseEntity<Object>> revokeAccessToken(@RequestBody Mono<Map<String, String>> bodyMono) {
-        System.out.println(bodyMono);
         return bodyMono
             .map(body -> body.get("token"))
             .flatMap(token -> {
@@ -177,6 +177,46 @@ public class LoginController {
             });
     }
 
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE)
+    @ResponseBody
+    @Operation(summary = "Invalidate multiple personal access tokens.",
+        tags = {"Access token"},
+        operationId = "accessTokensInvalidateDELETE",
+        description = "Use the `/access-token/revoke/token` API to invalidate multiple personal access tokens issued for your user ID. \n\n**Request:**\n\nThe revoke request requires the user credentials in one of the following formats:\n  * Cookie named `apimlAuthenticationToken`.\n * Bearer authentication \n*Header example:* Authorization: Bearer *token* \n* Client certificate \n\n**Response:**\n\nThe response is no content.",
+        security = {
+            @SecurityRequirement(name = "Bearer"),
+            @SecurityRequirement(name = "CookieAuth"),
+            @SecurityRequirement(name = "ClientCert")
+        },
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                schemaProperties = {
+                    @SchemaProperty(name = "timestamp", schema = @Schema(type = "number"))
+                }
+            ),
+            description = "Specifies the time until which the tokens will remain invalid."
+        )
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Successfully revoked")
+    })
+    public Mono<ResponseEntity<Object>> revokeAllUserAccessTokens(@RequestBody(required = false) RulesRequestModel rulesRequestModel) {
+        return ReactiveSecurityContextHolder.getContext()
+            .map(SecurityContext::getAuthentication)
+            .flatMap(authentication -> {
+                String userId = authentication.getPrincipal().toString();
+                log.debug("revokeAllUserAccessTokens: userId={}", userId);
+
+                long timeStamp = 0;
+                if (rulesRequestModel != null) {
+                    timeStamp = rulesRequestModel.getTimestamp();
+                }
+
+                tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
+                return Mono.just(ResponseEntity.noContent().build());
+            })
+            .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));
+    }
 
     /**
      * Return all public keys involved at the moment in the ZAAS as well as in zOSMF. Keys used for verification of
@@ -320,6 +360,12 @@ public class LoginController {
         return currentKey.getKeys();
     }
 
+    @Data
+    public static class RulesRequestModel {
+        private String serviceId;
+        private String userId;
+        private long timestamp;
+    }
 
 
 }

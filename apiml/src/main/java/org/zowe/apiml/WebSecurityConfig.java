@@ -254,6 +254,23 @@ public class WebSecurityConfig {
             .build();
     }
 
+    @Bean
+    public SecurityWebFilterChain revokeTokenFilterChain(ServerHttpSecurity http,
+                                                         ObjectMapper mapper,
+                                                         AuthConfigurationProperties authConfigurationProperties,
+                                                         AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+
+        return x509SecurityConfig(http)
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/gateway/api/v1/auth/access-token/revoke/tokens/**"))
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper), SecurityWebFiltersOrder.AUTHENTICATION)
+//            .addFilterAfter(new TokenAuthFilter(tokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
+//            .addFilterAfter(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION)
+            .build();
+    }
+
     @ConditionalOnProperty(name = "apiml.security.allowTokenRefresh", havingValue = "true")
     @Bean
     public SecurityWebFilterChain refreshTokenFilter(ServerHttpSecurity http) {
