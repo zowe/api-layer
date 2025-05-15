@@ -20,6 +20,8 @@ server:
         # redisratelimiter: TRACE
 
 apiml:
+    health:
+        protected: true
     gateway:
         servicesToLimitRequestRate: discoverableclient
         cookieNameForRateLimiter: apimlAuthenticationToken
