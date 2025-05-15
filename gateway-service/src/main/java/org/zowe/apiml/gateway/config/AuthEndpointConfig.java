@@ -136,7 +136,7 @@ public class AuthEndpointConfig {
         return route(path("/gateway/api/v1/auth/access-token/validate"), resendTo("/api/v1/auth/access-token/validate"))
 //            .andRoute(path("/gateway/api/v1/auth/access-token/revoke/tokens/user"), resendTo("/api/v1/auth/access-token/revoke/tokens/user"))
 //            .andRoute(path("/gateway/api/v1/auth/access-token/revoke/tokens"), resendTo("/api/v1/auth/access-token/revoke/tokens"))
-            .andRoute(path("/gateway/api/v1/auth/access-token/revoke/tokens/scope"), resendTo("/api/v1/auth/access-token/revoke/tokens/scope"))
+//            .andRoute(path("/gateway/api/v1/auth/access-token/revoke/tokens/scope"), resendTo("/api/v1/auth/access-token/revoke/tokens/scope"))
             .andRoute(path("/gateway/api/v1/auth/access-token/evict"), resendTo("/api/v1/auth/access-token/evict"))
 //            .andRoute(path("/gateway/api/v1/auth/keys/public"), resendTo("/api/v1/auth/keys/public"))
 //            .andRoute(path("/gateway/api/v1/auth/keys/public/all"), resendTo("/api/v1/auth/keys/public/all"))

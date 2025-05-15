@@ -314,6 +314,61 @@ public class LoginController {
     }
 
     /**
+     * Admin-only: Invalidates all personal access tokens for a specific service ID (scope).
+     * Requires SAF permission for SERVICES:READ and a valid serviceId in the request body.
+     * <p>
+     * Request body:
+     * {
+     *   "serviceId": "target_service",
+     *   "timestamp": 1710000000000 // optional
+     * }
+     * <p>
+     * Responses:
+     * - 204 No Content – Tokens successfully invalidated
+     * - 400 Bad Request – Missing serviceId
+     *
+     * @param requestModel Model containing the serviceId and optional timestamp
+     * @return Mono with the appropriate HTTP response
+     * @throws JsonProcessingException if input parsing fails
+     */
+    @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/scope")
+    @ResponseBody
+    @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
+    @Operation(summary = "Invalidate multiple personal access tokens by service ID.",
+        tags = {"Access token"},
+        operationId = "accessTokensInvalidateAdminScopeDELETE",
+        description = "Use the `/access-token/revoke/token/scope` API to invalidate multiple personal access tokens issued for service ID.\n\n**Request:**\n\nThe revoke scope request requires the user credentials in one of the following formats:\n\n* Basic authentication\n* Client certificate  \n\n**Response:**\n\nThe response is no content.",
+        security = {
+            @SecurityRequirement(name = "Bearer"),
+            @SecurityRequirement(name = "CookieAuth"),
+            @SecurityRequirement(name = "LoginBasicAuth"),
+            @SecurityRequirement(name = "ClientCert")
+        },
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                schemaProperties = {
+                    @SchemaProperty(name = "serviceId", schema = @Schema(type = "string")),
+                    @SchemaProperty(name = "timestamp", schema = @Schema(type = "number"))
+                }
+            ),
+            description = "Specifies the service ID and time until which the tokens will remain invalid."
+        )
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Successfully revoked")
+    })
+    public Mono<ResponseEntity<String>> revokeAccessTokensForScope(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
+        long timeStamp = requestModel.getTimestamp();
+        String serviceId = requestModel.getServiceId();
+        if (serviceId == null) {
+            return badRequestForPATInvalidation();
+        }
+        tokenProvider.invalidateAllTokensForService(serviceId, timeStamp);
+
+        return Mono.just(ResponseEntity.noContent().build());
+    }
+
+    /**
      * Return all public keys involved at the moment in the ZAAS as well as in zOSMF. Keys used for verification of
      * tokens
      *
