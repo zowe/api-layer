@@ -10,6 +10,9 @@
 
 package org.zowe.apiml.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
@@ -33,6 +36,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
@@ -40,10 +44,13 @@ import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.HttpUtils;
+import org.zowe.apiml.zaas.controllers.AuthController;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderJWK;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.zaas.security.webfinger.WebFingerProvider;
+import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -53,8 +60,7 @@ import java.util.*;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.zowe.apiml.zaas.controllers.AuthController.ACCESS_TOKEN_REVOKE;
-import static org.zowe.apiml.zaas.controllers.AuthController.INVALIDATE_PATH;
+import static org.zowe.apiml.zaas.controllers.AuthController.*;
 
 @RestController
 @RequestMapping("/gateway/api/v1/auth")
@@ -62,9 +68,7 @@ import static org.zowe.apiml.zaas.controllers.AuthController.INVALIDATE_PATH;
 @RequiredArgsConstructor
 public class LoginController {
 
-    public static final String PUBLIC_KEYS_PATH = "/keys/public";  // NOSONAR
-    public static final String ALL_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/all";
-    public static final String CURRENT_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/current";
+
 
     private final JwtSecurity jwtSecurity;
     private final ZosmfService zosmfService;
@@ -73,9 +77,11 @@ public class LoginController {
     private final PeerAwareInstanceRegistryImpl peerAwareInstanceRegistry;
     private final HttpUtils httpUtils;
     private final AccessTokenProvider tokenProvider;
+    private final WebFingerProvider webFingerProvider;
     private static final String TOKEN_KEY = "token";
     @Nullable
     private final OIDCProvider oidcProvider;
+    private static final ObjectWriter writer = new ObjectMapper().writer();
 
 
 
@@ -318,6 +324,78 @@ public class LoginController {
                 return Collections.emptyList();
         }
         return currentKey.getKeys();
+    }
+
+
+    @PostMapping(path = OIDC_TOKEN_VALIDATE)
+    @Operation(summary = "Validate OIDC token",
+        tags = {"OIDC"},
+        operationId = "validateOIDCToken",
+        description = "Use the `/oidc-token/validate` API to validate token against configured OIDC provider. " +
+            "The Gateway can verify token locally or remotely depends on API Mediation Layer configuration.",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                schema = @Schema(implementation = AuthController.ValidateRequestModel.class)
+            ),
+            description = "Specifies the OIDC token for validation without scopes (serviceId will be ignored)."
+        )
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Valid token"),
+        @ApiResponse(responseCode = "401", description = "Invalid token or OIDC provider is not defined")
+    })
+    public Mono<ResponseEntity<Void>> validateOIDCToken(@RequestBody AuthController.ValidateRequestModel validateRequestModel) {
+        return Mono.fromSupplier(()->{
+            log.debug("Validating OIDC token using provider {}", oidcProvider);
+            String token = validateRequestModel.getToken();
+            if (oidcProvider != null && oidcProvider.isValid(token)) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        });
+    }
+
+    /**
+     * Proof of concept of WebFinger provider for OIDC clients.
+     *
+     * @return List of link's relation type and the target URI for provided clientID
+     */
+    @GetMapping(path = OIDC_WEBFINGER_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    @Operation(summary = "List of link's relation type and the target URI for provided clientID",
+        tags = {"OIDC"},
+        operationId = "getWebFinger",
+        description = "[EXPERIMENTAL] The endpoint can be used to obtain links to authenticate against OIDC provider based on clientID provided in the request. " +
+            "The links are defined in the configuration of the API Mediation Layer.",
+        security = {
+            @SecurityRequirement(name = "Bearer"),
+            @SecurityRequirement(name = "CookieAuth"),
+            @SecurityRequirement(name = "LoginBasicAuth")
+        })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "OK"),
+        @ApiResponse(responseCode = "404", description = "WebFinger is disabled"),
+    })
+    public Mono<ResponseEntity<Object>> getWebFinger(@RequestParam(name = "resource") String clientId) {
+        return Mono.fromSupplier(() -> {
+            if (webFingerProvider.isEnabled()) {
+                try {
+                    WebFingerResponse response = webFingerProvider.getWebFingerConfig(clientId);
+                    return ResponseEntity.ok(response);
+                } catch (IOException e) {
+                    log.debug("Error while reading webfinger configuration from source.", e);
+                    final ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.oidc.invalidWebfingerConfiguration").mapToView();
+                    try {
+                        return ResponseEntity.internalServerError().body(writer.writeValueAsString(message));
+                    } catch (JsonProcessingException ex) {
+                        return ResponseEntity.internalServerError().build();
+                    }
+                }
+
+            }
+            return ResponseEntity.notFound().build();
+        });
+
     }
 
 
