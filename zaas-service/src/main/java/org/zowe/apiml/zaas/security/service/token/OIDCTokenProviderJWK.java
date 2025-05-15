@@ -16,6 +16,8 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyType;
 import com.nimbusds.jose.jwk.KeyUse;
+import com.nimbusds.jose.util.DefaultResourceRetriever;
+import com.nimbusds.jose.util.Resource;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.UnsupportedKeyException;
 import jakarta.annotation.PostConstruct;
@@ -23,6 +25,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -32,6 +35,7 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.URL;
 import java.security.Key;
@@ -51,6 +55,9 @@ import java.util.stream.Collectors;
 public class OIDCTokenProviderJWK implements OIDCProvider {
 
     private final LocatorAdapterKid keyLocator = new LocatorAdapterKid();
+
+    @Autowired
+    private SSLContext secureSslContextWithoutKeystore;
 
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
@@ -90,7 +97,10 @@ public class OIDCTokenProviderJWK implements OIDCProvider {
         try {
             publicKeys.clear();
             jwkSet = null;
-            jwkSet = JWKSet.load(new URL(jwksUri));
+            DefaultResourceRetriever resourceRetriever = new DefaultResourceRetriever(
+                0, 0, 0, true, secureSslContextWithoutKeystore.getSocketFactory());
+            Resource resource = resourceRetriever.retrieveResource(new URL(jwksUri));
+            jwkSet = JWKSet.parse(resource.getContent());
             publicKeys.putAll(processKeys(jwkSet));
         } catch (IOException | ParseException | IllegalStateException e) {
             log.error("Error processing response from URI {} message: {}", jwksUri, e.getMessage());

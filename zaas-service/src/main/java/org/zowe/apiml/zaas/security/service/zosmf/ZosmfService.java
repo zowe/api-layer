@@ -14,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.util.DefaultResourceRetriever;
+import com.nimbusds.jose.util.Resource;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +23,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
@@ -50,6 +53,7 @@ import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 
 import javax.management.ServiceNotFoundException;
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -72,6 +76,8 @@ public class ZosmfService extends AbstractZosmfService {
     private static final String JWT_ENDPOINT_ERROR_MSGID = "org.zowe.apiml.security.auth.zosmf.jwtEndpointError";
     private static final String CACHE_INVALIDATED_JWT_TOKENS = "invalidatedJwtTokens";
 
+    @Autowired
+    private SSLContext secureSslContextWithoutKeystore;
     /**
      * Enumeration of supported security tokens
      */
@@ -555,7 +561,10 @@ public class ZosmfService extends AbstractZosmfService {
         final String url = getURI(getZosmfServiceId(), authConfigurationProperties.getZosmf().getJwtEndpoint());
 
         try {
-            return JWKSet.load(new URL(url));
+            DefaultResourceRetriever resourceRetriever = new DefaultResourceRetriever(
+                0, 0, 0, true, secureSslContextWithoutKeystore.getSocketFactory());
+            Resource resource = resourceRetriever.retrieveResource(new URL(url));
+            return JWKSet.parse(resource.getContent());
         } catch (ParseException pe) {
             log.debug("Invalid format of public keys from z/OSMF", pe);
         } catch (HttpClientErrorException.NotFound nf) {
