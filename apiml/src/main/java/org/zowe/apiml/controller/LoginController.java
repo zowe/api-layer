@@ -142,6 +142,51 @@ public class LoginController {
     }
 
     /**
+     * Validates whether a personal access token is currently valid and authorized for the specified service ID.
+     * The request must contain a valid token and the associated service ID. If the token is valid and has not been
+     * invalidated, a 204 No Content response is returned. Otherwise, a 401 Unauthorized response is returned.
+     * <p>
+     * Request body example:
+     * {
+     *   "token": "pat-token",
+     *   "serviceId": "target-service"
+     * }
+     * <p>
+     * Responses:
+     * - 204 No Content – Token is valid and active
+     * - 401 Unauthorized – Token is invalid or revoked
+     *
+     * @param validateRequestModel Object containing the token and target service ID
+     * @return Mono with HTTP response indicating token validity
+     */
+    @PostMapping(path = ACCESS_TOKEN_VALIDATE)
+    @ResponseBody
+    @Operation(summary = "Validate personal access token.",
+        tags = {"Access token"},
+        operationId = "accessTokenValidatePOST",
+        description = "Use the `/access-token/validate` API to verify that personal access token is valid. \n\n**Response:**\n\nThe response is a plain text body.",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                schema = @Schema(implementation = ValidateRequestModel.class)
+            ),
+            description = "Specifies the personal access token and service ID for validation."
+        )
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Valid token"),
+        @ApiResponse(responseCode = "401", description = "Invalid token")
+    })
+    public Mono<ResponseEntity<Object>> validateAccessToken(@RequestBody ValidateRequestModel validateRequestModel) {
+        String token = validateRequestModel.getToken();
+        String serviceId = validateRequestModel.getServiceId();
+        if (tokenProvider.isValidForScopes(token, serviceId) &&
+            !tokenProvider.isInvalidated(token)) {
+            return Mono.just(ResponseEntity.noContent().build());
+        }
+        return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+    }
+
+    /**
      * Invalidates a specific personal access token. Requires the token to be provided in the request body.
      * Request body:
      * {
