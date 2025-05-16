@@ -29,6 +29,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.security.web.server.authentication.logout.HttpStatusReturningServerLogoutSuccessHandler;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
+import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher.MatchResult;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
@@ -86,6 +87,8 @@ public class WebSecurityConfig {
 
     private final ServerWebExchangeMatcher discoveryPortMatcher = exchange -> exchange.getRequest().getURI().getPort() == internalDiscoveryPort ? MatchResult.match() : MatchResult.notMatch();
     private final ServerWebExchangeMatcher isInUnauthenticatedPaths = ServerWebExchangeMatchers.pathMatchers(UNAUTHENTICATED_PATTERNS.toArray(new String[]{}));
+    private final ServerWebExchangeMatcher notInUnauthenticatedPaths = new NegatedServerWebExchangeMatcher(isInUnauthenticatedPaths); //TODO find better solution
+
 
     @Bean
     public SecurityWebFilterChain errorFilterChain(ServerHttpSecurity http) {
@@ -104,6 +107,7 @@ public class WebSecurityConfig {
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
                 ServerWebExchangeMatchers.pathMatchers("/eureka/**"),
+                notInUnauthenticatedPaths,
                 exchange -> exchange.getRequest().getURI().getPath().startsWith("/eureka/") ? MatchResult.match() : MatchResult.notMatch() // Prevents matching /eureka (mapping for homepage in modulith)
             ))
             .authorizeExchange(authorizeExchangeSpec ->
@@ -132,6 +136,7 @@ public class WebSecurityConfig {
         http
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
+                notInUnauthenticatedPaths,
                 ServerWebExchangeMatchers.pathMatchers("/discovery/**")
             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
@@ -167,7 +172,7 @@ public class WebSecurityConfig {
             .authorizeExchange(exchange -> {
                 exchange
                     .pathMatchers(
-         "/eureka/css/**",
+                    "/eureka/css/**",
                         "/eureka/js/**",
                         "/eureka/fonts/**",
                         "/eureka/images/**",
@@ -193,7 +198,8 @@ public class WebSecurityConfig {
                                                             AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         return http
             .securityMatcher(new AndServerWebExchangeMatcher(
-                discoveryPortMatcher
+                discoveryPortMatcher,
+                notInUnauthenticatedPaths
             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
