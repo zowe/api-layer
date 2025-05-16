@@ -34,12 +34,14 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.zowe.apiml.filter.*;
 import org.zowe.apiml.gateway.filters.security.AuthExceptionHandlerReactive;
-import org.zowe.apiml.gateway.filters.security.BasicAuthFilter;
 import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
 import org.zowe.apiml.gateway.service.TokenProvider;
 import org.zowe.apiml.gateway.x509.X509Util;
-import org.zowe.apiml.handler.*;
+import org.zowe.apiml.handler.SuccessQueryHandler;
+import org.zowe.apiml.handler.SuccessRefreshHandler;
+import org.zowe.apiml.handler.SuccessTicketHandler;
+import org.zowe.apiml.handler.SuccessfulPersonalAccessTokenHandler;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
@@ -130,7 +132,9 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public SecurityWebFilterChain basicAuthOrTokenOrCertFilterChain(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+    public SecurityWebFilterChain basicAuthOrTokenOrCertFilterChain(ServerHttpSecurity http,
+                                                                    ObjectMapper mapper,
+                                                                    AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         http
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
@@ -140,7 +144,7 @@ public class WebSecurityConfig {
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new TokenAuthFilter(tokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
-            .addFilterAfter(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION);
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper), SecurityWebFiltersOrder.AUTHENTICATION);
 
         if (verifySslCertificatesOfServices) {
             return x509SecurityConfig(http).build();
@@ -191,7 +195,9 @@ public class WebSecurityConfig {
     * Filter chain for protecting endpoints with MF credentials (basic or token)
     */
     @Bean
-    public SecurityWebFilterChain discoveryBasicAuthOrToken(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+    public SecurityWebFilterChain discoveryBasicAuthOrToken(ServerHttpSecurity http,
+                                                            ObjectMapper mapper,
+                                                            AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         return http
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
@@ -199,8 +205,8 @@ public class WebSecurityConfig {
             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-            .addFilterAfter(new TokenAuthFilter(tokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
-            .addFilterAfter(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION)
+//            .addFilterAfter(new TokenAuthFilter(tokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION) // waiting for the new one not relying on zaas
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }
 
