@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.ReactiveAuthenticationManagerAdapter;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
@@ -28,7 +29,6 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.security.web.server.authentication.logout.HttpStatusReturningServerLogoutSuccessHandler;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
-import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher.MatchResult;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
@@ -48,6 +48,7 @@ import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import org.zowe.apiml.zaas.security.login.x509.X509AuthenticationProvider;
 import org.zowe.apiml.zaas.security.query.TokenAuthenticationProvider;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -212,9 +213,11 @@ public class WebSecurityConfig {
         var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
         return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
             .securityMatcher(new AndServerWebExchangeMatcher(
-                                    ServerWebExchangeMatchers.pathMatchers("gateway/api/v1/auth/login", "gateway/api/v1/auth/logout")
+                                   ServerWebExchangeMatchers.pathMatchers( HttpMethod.POST,"gateway/api/v1/auth/login", "gateway/api/v1/auth/logout")
                             ))
-            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .authorizeExchange(exchange ->
+                exchange.anyExchange().authenticated()
+            )
 
             .logout((c) -> c.logoutUrl("/gateway/api/v1/auth/logout").logoutHandler(logoutHandler).logoutSuccessHandler(new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
@@ -225,7 +228,9 @@ public class WebSecurityConfig {
 
     }
 
-
+    private boolean isNotAllowed(ServerHttpRequest request, String path) {
+        return request.getPath().value().equals(path) && !HttpMethod.POST.equals(request.getMethod());
+    }
     @Bean
     public SecurityWebFilterChain queryFilter(ServerHttpSecurity http) {
         var man = new ProviderManager(tokenAuthenticationProvider);

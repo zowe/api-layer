@@ -13,6 +13,7 @@ package org.zowe.apiml.zaas.zaas;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -46,6 +47,7 @@ import javax.net.ssl.SSLException;
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RequiredArgsConstructor
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class ZaasExceptionHandler {
 
     private static final String WWW_AUTHENTICATE = "WWW-Authenticate";
