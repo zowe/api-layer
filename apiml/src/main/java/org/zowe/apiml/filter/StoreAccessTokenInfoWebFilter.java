@@ -34,6 +34,9 @@ import static org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter.T
 
 @Slf4j
 @RequiredArgsConstructor
+/**
+ * This filter will store the personal access information from the body as request attribute
+ */
 public class StoreAccessTokenInfoWebFilter implements WebFilter {
 
     private final ServerAuthenticationFailureHandler failureHandler;

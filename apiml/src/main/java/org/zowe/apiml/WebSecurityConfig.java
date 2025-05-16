@@ -54,7 +54,6 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
-    private final BasicAuthProvider basicAuthProvider;
     private final CompoundAuthProvider compoundAuthProvider;
     private final X509AuthenticationProvider x509AuthenticationProvider;
     private final LocalTokenProvider localTokenProvider;
@@ -249,7 +248,7 @@ public class WebSecurityConfig {
     /**
      * Secures endpoints:
      *   - /auth/access-token/generate
-     *
+     * <p>
      * Requires authentication by a client certificate or basic authentication, supports credentials in header and body.
      * The request is fulfilled by the filter chain only, there is no controller to handle it.
      * Order of custom filters:
@@ -263,7 +262,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityWebFilterChain accessTokenFilter(ServerHttpSecurity http,
                                                     ObjectMapper mapper) {
-        // TODO return ZWEAT606E in case of no scopes/validity passed and check for ShouldBeAlreadyAuthenticatedFilter
+        // todo check for ShouldBeAlreadyAuthenticatedFilter
         var man = new ProviderManager(x509AuthenticationProvider);
         var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
         return http
@@ -282,7 +281,7 @@ public class WebSecurityConfig {
      * Secures endpoints:
      *  - /auth/access-token/revoke/tokens/**
      *  - /auth/access-token/evict
-     *
+     * <p>
      * Requires authentication by a client certificate forwarded form Gateway or basic authentication, supports only credentials in header.
      * Order of custom filters:
      *  - CategorizeCertsWebFilter - checks for forwarded client certificate and put it into a custom request attribute
