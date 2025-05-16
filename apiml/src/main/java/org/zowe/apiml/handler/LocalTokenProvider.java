@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.handler;
 
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.gateway.service.TokenProvider;
@@ -17,6 +18,7 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import reactor.core.publisher.Mono;
 
+@Component
 public class LocalTokenProvider extends TokenProvider {
     private final AuthenticationService authenticationService;
 
@@ -29,7 +31,7 @@ public class LocalTokenProvider extends TokenProvider {
     public Mono<QueryResponse> validateToken(String token) {
        return Mono.fromCallable(() -> {
            var tokenAuthentication = authenticationService.validateJwtToken(token);
-           return new QueryResponse(null,tokenAuthentication.getPrincipal(),null,null,null,null,null);
+           return new QueryResponse(null, tokenAuthentication.getPrincipal(),null,null,null,null,null);
        });
     }
 }
