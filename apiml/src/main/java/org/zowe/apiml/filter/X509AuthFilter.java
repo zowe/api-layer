@@ -11,11 +11,15 @@
 package org.zowe.apiml.filter;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.ProviderNotFoundException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 import reactor.core.publisher.Mono;
 
@@ -31,14 +35,17 @@ public class X509AuthFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
 
         X509Certificate[] certs = exchange.getAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
-        if (certs == null || certs.length == 0) {
-            return chain.filter(exchange);
-        }
-
-        return x509AuthenticationProvider.authenticate(new X509AuthenticationToken(certs)).flatMap(authentication -> {
-           return chain.filter(exchange)
-                .contextWrite(context -> ReactiveSecurityContextHolder.withAuthentication(authentication));
+        return ReactiveSecurityContextHolder.getContext().defaultIfEmpty(new SecurityContextImpl(new TokenAuthentication(null))).flatMap(ctx -> {
+           if(ctx.getAuthentication().isAuthenticated() || certs == null || certs.length == 0){
+               return chain.filter(exchange);
+           }
+            return x509AuthenticationProvider.authenticate(new X509AuthenticationToken(certs)).flatMap(authentication -> {
+                if(!authentication.isAuthenticated()){
+                    return chain.filter(exchange);
+                }
+                return chain.filter(exchange)
+                    .contextWrite(context -> ReactiveSecurityContextHolder.withAuthentication(authentication));
+            }).onErrorResume(AuthenticationException.class, (ex) -> chain.filter(exchange));
         });
-
     }
 }

@@ -21,11 +21,15 @@ server:
 
 apiml:
     health:
-        protected: true
+        protected: false
     gateway:
         servicesToLimitRequestRate: discoverableclient
         cookieNameForRateLimiter: apimlAuthenticationToken
     security:
+        x509:
+            enabled: true
+            acceptForwardedCert: true
+            certificatesUrl: https://localhost:10010/gateway/certificates
         allowTokenRefresh: true
         webfinger:
             fileLocation: config/local/webfinger.yml
