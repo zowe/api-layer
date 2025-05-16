@@ -11,7 +11,6 @@
 package org.zowe.apiml.filter;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.ProviderNotFoundException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -19,7 +18,6 @@ import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 import reactor.core.publisher.Mono;
 

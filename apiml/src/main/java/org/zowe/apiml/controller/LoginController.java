@@ -70,9 +70,6 @@ import static org.zowe.apiml.zaas.controllers.AuthController.*;
 @Slf4j
 @RequiredArgsConstructor
 public class LoginController {
-
-
-
     private final JwtSecurity jwtSecurity;
     private final ZosmfService zosmfService;
     private final MessageService messageService;

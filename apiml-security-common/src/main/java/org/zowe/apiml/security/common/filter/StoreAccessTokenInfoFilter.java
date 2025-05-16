@@ -12,21 +12,21 @@ package org.zowe.apiml.security.common.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.filter.OncePerRequestFilter;
-import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
-import org.zowe.apiml.security.common.error.AccessTokenBodyNotValidException;
-import org.zowe.apiml.security.common.error.AuthExceptionHandler;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.zowe.apiml.security.common.error.AuthExceptionHandler;
+import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
+
 import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+//todo fix me for non-modulith
 /**
  * This filter will store the personal access information from the body as request attribute
  */

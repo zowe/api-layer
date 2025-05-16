@@ -16,13 +16,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.handler.SuccessfulPersonalAccessTokenHandler;
+import org.zowe.apiml.security.common.error.AccessTokenBodyNotValidException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -54,7 +54,10 @@ public class StoreAccessTokenInfoWebFilter implements WebFilter {
 
                     Set<String> scopes = accessTokenRequest.getScopes();
                     if (scopes == null || scopes.isEmpty()) {
-                        return Mono.error(new IllegalArgumentException("Missing scopes"));
+                        return failureHandler.onAuthenticationFailure(
+                            new WebFilterExchange(exchange, chain),
+                            new AccessTokenBodyNotValidException("org.zowe.apiml.security.token.accessTokenBodyMissingScopes")
+                        );
                     }
 
                     accessTokenRequest.setScopes(scopes.stream().map(String::toLowerCase).collect(Collectors.toSet()));
@@ -73,7 +76,7 @@ public class StoreAccessTokenInfoWebFilter implements WebFilter {
                     log.error("Failed to parse access token request body", e);
                     return failureHandler.onAuthenticationFailure(
                         new WebFilterExchange(exchange, chain),
-                        new AuthenticationCredentialsNotFoundException("Invalid access token body", e)
+                        new AccessTokenBodyNotValidException("org.zowe.apiml.security.query.invalidAccessTokenBody")
                     );
                 }
             });

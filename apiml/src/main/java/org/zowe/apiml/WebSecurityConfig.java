@@ -44,7 +44,6 @@ import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import org.zowe.apiml.zaas.security.login.x509.X509AuthenticationProvider;
 import org.zowe.apiml.zaas.security.query.TokenAuthenticationProvider;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -247,10 +246,26 @@ public class WebSecurityConfig {
 
     }
 
+    /**
+     * Secures endpoints:
+     *   - /auth/access-token/generate
+     *
+     * Requires authentication by a client certificate or basic authentication, supports credentials in header and body.
+     * The request is fulfilled by the filter chain only, there is no controller to handle it.
+     * Order of custom filters:
+     *   - CategorizeCertsWebFilter - checks for forwarded client certificate and put it into a custom request attribute
+     *   - StoreAccessTokenInfoWebFilter - extracts access token filter from request to a custom attribute
+     *   - BasicLoginFilterForPatEndpoint - attempts to log in a user using basic authentication credentials, generates access token and stops the chain on success, reply with the token
+     *   - X509AuthFilter - attempts to log in a user using forwarded client certificate, generates access token and stops the chain on success, reply with the token
+     *   - ShouldBeAlreadyAuthenticatedFilter - stops filter chain if none of the authentications was successful
+     *
+     */
     @Bean
     public SecurityWebFilterChain accessTokenFilter(ServerHttpSecurity http,
                                                     ObjectMapper mapper) {
-        // TODO return ZWEAT606E in case of no scopes/validity passed.
+        // TODO return ZWEAT606E in case of no scopes/validity passed and check for ShouldBeAlreadyAuthenticatedFilter
+        var man = new ProviderManager(x509AuthenticationProvider);
+        var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
         return http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/gateway/api/v1/auth/access-token/generate"))
@@ -259,23 +274,37 @@ public class WebSecurityConfig {
             .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
             .addFilterAfter(new StoreAccessTokenInfoWebFilter(failedAuthenticationWebHandler, mapper), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new BasicLoginFilterForPatEndpoint(compoundAuthProvider, mapper, successfulAccessTokenHandler, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }
 
+    /**
+     * Secures endpoints:
+     *  - /auth/access-token/revoke/tokens/**
+     *  - /auth/access-token/evict
+     *
+     * Requires authentication by a client certificate forwarded form Gateway or basic authentication, supports only credentials in header.
+     * Order of custom filters:
+     *  - CategorizeCertsWebFilter - checks for forwarded client certificate and put it into a custom request attribute
+     *  - X509AuthFilter - attempts to log in using a user using forwarded client certificate, replaces pre-authentication in security context by the authentication result
+     *  - BasicLoginFilter - attempts to log in a user using credentials from basic authentication header
+     */
     @Bean
     public SecurityWebFilterChain revokeTokenFilterChain(ServerHttpSecurity http,
                                                          ObjectMapper mapper,
                                                          AuthConfigurationProperties authConfigurationProperties,
                                                          AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+        var man = new ProviderManager(x509AuthenticationProvider);
+        var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
 
         return x509SecurityConfig(http)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/gateway/api/v1/auth/access-token/revoke/tokens/**"))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
+            .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
 //            .addFilterAfter(new TokenAuthenticationFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
-//            .addFilterAfter(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }
 
