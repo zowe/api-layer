@@ -18,6 +18,7 @@ import org.springframework.security.authentication.*;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
+import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
@@ -35,12 +36,14 @@ import java.util.Optional;
 public class BasicLoginFilter implements WebFilter {
 
     private final ObjectMapper mapper;
-    ReactiveAuthenticationManagerAdapter authenticationManager;
+    private final ReactiveAuthenticationManagerAdapter authenticationManager;
+    private final FailedAuthenticationWebHandler failedAuthenticationWebHandler;
 
-    public BasicLoginFilter(CompoundAuthProvider compoundAuthProvider, ObjectMapper mapper) {
+    public BasicLoginFilter(CompoundAuthProvider compoundAuthProvider, ObjectMapper mapper, FailedAuthenticationWebHandler failedAuthenticationWebHandler) {
         var authManager = new ProviderManager(compoundAuthProvider);
         this.authenticationManager = new ReactiveAuthenticationManagerAdapter(authManager);
         this.mapper = mapper;
+        this.failedAuthenticationWebHandler = failedAuthenticationWebHandler;
     }
 
     @Override
@@ -59,13 +62,9 @@ public class BasicLoginFilter implements WebFilter {
                         return chain.filter(exchange)
                             .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext)));
                     })
-                    .onErrorResume(AuthenticationException.class, ex -> {
-                        log.debug("Authentication failed: {}", ex.getMessage());
-                        //todo map to the ZWEAG120E message (invalid credentials)
-                        exchange.getResponse().setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
-                        return exchange.getResponse().setComplete();
-                    })
-            );
+                    .onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), ex))
+            ).onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), ex)
+        );
     }
 
     AbstractAuthenticationToken getToken(LoginRequest credentials) {
@@ -90,7 +89,12 @@ public class BasicLoginFilter implements WebFilter {
                     buffer.read(bytes);
                     DataBufferUtils.release(buffer);
                     String bodyString = new String(bytes, StandardCharsets.UTF_8);
-                    return Mono.just(mapper.readValue(bodyString, LoginRequest.class));
+                    var loginRequest = mapper.readValue(bodyString, LoginRequest.class);
+                    if(loginRequest.getUsername() != null && loginRequest.getPassword() != null) {
+
+                        return Mono.just(loginRequest);
+                    }
+                    return  Flux.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format."));
                 } catch (IOException e) {
                     log.debug("Authentication problem: login object has wrong format");
                     return Flux.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format."));

@@ -137,7 +137,7 @@ public class WebSecurityConfig {
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new TokenAuthenticationFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION) // waiting for the new one not relying on zaas
-            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper), SecurityWebFiltersOrder.AUTHENTICATION);
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION);
 
         if (verifySslCertificatesOfServices) {
             return x509SecurityConfig(http).build();
@@ -198,7 +198,7 @@ public class WebSecurityConfig {
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new TokenAuthenticationFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION) // waiting for the new one not relying on zaas
-            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }
 
@@ -217,7 +217,7 @@ public class WebSecurityConfig {
             .logout((c) -> c.logoutUrl("/gateway/api/v1/auth/logout").logoutHandler(logoutHandler).logoutSuccessHandler(new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator),SecurityWebFiltersOrder.FIRST)
-            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
 
@@ -267,7 +267,7 @@ public class WebSecurityConfig {
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
-            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
 //            .addFilterAfter(new TokenAuthenticationFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
 //            .addFilterAfter(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
