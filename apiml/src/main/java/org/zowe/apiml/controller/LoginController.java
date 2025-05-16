@@ -109,7 +109,7 @@ public class LoginController {
             log.debug("JWT Cookie set for user: {}", authentication.getName());
 
             // Return an OK response
-            return Mono.just(ResponseEntity.ok().build());
+            return Mono.just(ResponseEntity.noContent().build());
         });
     }
 

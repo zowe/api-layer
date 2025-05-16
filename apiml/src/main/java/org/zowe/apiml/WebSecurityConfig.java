@@ -80,7 +80,7 @@ public class WebSecurityConfig {
     @Value("${apiml.internal-discovery.port:10011}")
     private int internalDiscoveryPort;
 
-    private static final List<String> UNAUTHENTICATED_PATTERNS = List.of("/application/",
+    private static final List<String> UNAUTHENTICATED_PATTERNS = List.of("/application/**",
     "/eureka/css/**",
     "/eureka/js/**",
     "/eureka/fonts/**",
@@ -90,7 +90,6 @@ public class WebSecurityConfig {
 
     private final ServerWebExchangeMatcher discoveryPortMatcher = exchange -> exchange.getRequest().getURI().getPort() == internalDiscoveryPort ? MatchResult.match() : MatchResult.notMatch();
     private final ServerWebExchangeMatcher isInUnauthenticatedPaths = ServerWebExchangeMatchers.pathMatchers(UNAUTHENTICATED_PATTERNS.toArray(new String[]{}));
-    private final ServerWebExchangeMatcher notInUnauthenticatedPaths = new NegatedServerWebExchangeMatcher(isInUnauthenticatedPaths);
 
     @Bean
     public SecurityWebFilterChain errorFilterChain(ServerHttpSecurity http) {
@@ -109,8 +108,7 @@ public class WebSecurityConfig {
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
                 ServerWebExchangeMatchers.pathMatchers("/eureka/**"),
-                exchange -> exchange.getRequest().getURI().getPath().startsWith("/eureka/") ? MatchResult.match() : MatchResult.notMatch(), // Prevents matching /eureka (mapping for homepage in modulith)
-                notInUnauthenticatedPaths
+                exchange -> exchange.getRequest().getURI().getPath().startsWith("/eureka/") ? MatchResult.match() : MatchResult.notMatch() // Prevents matching /eureka (mapping for homepage in modulith)
             ))
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec
@@ -138,8 +136,7 @@ public class WebSecurityConfig {
         http
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
-                ServerWebExchangeMatchers.pathMatchers("/discovery/**"),
-                notInUnauthenticatedPaths
+                ServerWebExchangeMatchers.pathMatchers("/discovery/**")
             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
@@ -164,7 +161,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain allowedEndpoints(ServerHttpSecurity http) {
         http
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
@@ -200,8 +197,7 @@ public class WebSecurityConfig {
                                                             AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         return http
             .securityMatcher(new AndServerWebExchangeMatcher(
-                discoveryPortMatcher,
-                notInUnauthenticatedPaths
+                discoveryPortMatcher
             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)

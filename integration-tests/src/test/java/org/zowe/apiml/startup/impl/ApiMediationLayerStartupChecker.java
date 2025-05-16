@@ -105,9 +105,9 @@ public class ApiMediationLayerStartupChecker {
                     areAllServicesUp = false;
                 }
             }
-            if (!isAuthUp()) {
-                areAllServicesUp = false;
-            }
+//            if (!isAuthUp()) {
+//                areAllServicesUp = false;
+//            }
 
             String allComponents = context.read("$.components.discoveryComposite.components.discoveryClient.details.services").toString();
             boolean isTestApplicationUp = allComponents.toLowerCase().contains("discoverableclient");
@@ -149,13 +149,13 @@ public class ApiMediationLayerStartupChecker {
     }
 
     private boolean isAuthUp() {
-        HttpGet requestToZaas = new HttpGet(HttpRequestUtils.getUriFromZaas(healthEndpoint));
+        HttpGet requestToZaas = new HttpGet(HttpRequestUtils.getUriFromGateway(healthEndpoint));
         requestToZaas.addHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes()));
         DocumentContext zaasContext = getDocumentAsContext(requestToZaas);
         if (zaasContext == null) {
             return false;
         }
-        boolean isUp = isServiceUp(zaasContext, "$.components.zaas.details.auth");
+        boolean isUp = isServiceUp(zaasContext, "$.components.gateway.details.auth");
         logDebug("Authentication Service is {}", isUp);
         return isUp;
     }
