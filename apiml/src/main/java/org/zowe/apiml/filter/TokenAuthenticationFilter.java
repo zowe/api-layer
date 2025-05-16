@@ -31,7 +31,6 @@ import java.util.Optional;
 
 import static org.zowe.apiml.security.common.token.TokenAuthentication.createAuthenticated;
 
-//todo add error handing: i.e. currently accessing eureka landpage with invalid bearer token returns 500 instead of 401)
 @RequiredArgsConstructor
 public class TokenAuthenticationFilter implements WebFilter {
     public static final String HEADER_PREFIX = "Bearer ";
