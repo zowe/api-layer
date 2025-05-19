@@ -127,9 +127,9 @@ dependencyResolutionManagement {
                 prefer '1.6.15'
             }
             version('swagger3Core', '2.2.32')
-            version('swagger3Parser', '2.1.27')
+            version('swagger3Parser', '2.1.28')
             version('swaggerCore', '1.6.16')
-            version('swaggerInflector', '2.0.12')
+            version('swaggerInflector', '2.0.13')
             version('swaggerJaxrs2', '2.2.32')
             version('thymeleaf', '3.1.3.RELEASE')
             version('tomcat', '9.0.105')
