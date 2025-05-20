@@ -18,6 +18,7 @@ const withRouter = (App) =>{
 }
 
 const mapDispatchToProps = (dispatch) => ({
+    forceLogout: () => dispatch(userActions.forceLogout()),
     success: (user) => dispatch(userActions.query(user)),
 });
 

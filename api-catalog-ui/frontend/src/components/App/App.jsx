@@ -26,7 +26,7 @@ function App(props) {
     useEffect(() => {
         window.process = { ...window.process };
     }, []);
-    const { authentication, success } = props;
+    const { authentication, success, forceLogout } = props;
     useEffect(() => {
         const checkAuth = () => {
             if (!authentication.user) {
@@ -48,8 +48,27 @@ function App(props) {
         // Run again whenever the tab gains focus
         window.addEventListener('focus', checkAuth);
 
+        const authChannel = new BroadcastChannel('auth_channel');
+        authChannel.onmessage = (event) => {
+            if (event.data === 'logout') {
+                console.log('[BroadcastChannel] logout received');
+                forceLogout();
+                navigate('/login');
+            }
+
+            if (event.data === 'login') {
+                console.log('[BroadcastChannel] login received');
+                userService.query().then((result) => {
+                    if (result.status === 200) {
+                        success(result.userId, false);
+                    }
+                });
+            }
+        };
+
         return () => { // Remove immediately to avoid loop
             window.removeEventListener('focus', checkAuth);
+            authChannel.close();
         };
     }, [authentication.user, success, navigate]);
 

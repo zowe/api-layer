@@ -56,6 +56,13 @@ function login(credentials) {
     };
 }
 
+export function forceLogout() {
+    return (dispatch) => {
+        console.log('[forceLogout] Dispatching USERS_LOGOUT_SUCCESS');
+        dispatch({ type: userConstants.USERS_LOGOUT_SUCCESS });
+    };
+}
+
 export function query(user) {
     const success = { showUpdatePassSuccess: true };
     return { type: userConstants.USERS_LOGIN_SUCCESS, user, success };

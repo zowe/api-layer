@@ -90,8 +90,7 @@ public class BasicLoginFilter implements WebFilter {
                     DataBufferUtils.release(buffer);
                     String bodyString = new String(bytes, StandardCharsets.UTF_8);
                     var loginRequest = mapper.readValue(bodyString, LoginRequest.class);
-                    if(loginRequest.getUsername() != null && loginRequest.getPassword() != null) {
-
+                    if (loginRequest.getUsername() != null && loginRequest.getPassword() != null) {
                         return Mono.just(loginRequest);
                     }
                     return  Flux.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format."));

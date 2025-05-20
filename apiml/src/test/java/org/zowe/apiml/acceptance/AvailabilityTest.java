@@ -50,7 +50,7 @@ public class AvailabilityTest extends AcceptanceTestWithBasePath {
 
     @Profile("test")
     @TestConfiguration
-    public class TestConfig {
+    public static class TestConfig {
 
         @Bean
         LocaleContextResolver localeContextResolver() {
