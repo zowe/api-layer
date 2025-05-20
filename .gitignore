@@ -29,7 +29,6 @@ api-catalog-ui/src/main/resources/static
 
 # Python
 *.py[cod]
-Pipfile.lock
 .pytest_cache
 venv
 
