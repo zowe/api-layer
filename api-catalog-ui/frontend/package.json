@@ -75,8 +75,8 @@
         "includeFailureMsg": true
     },
     "devDependencies": {
-        "@babel/core": "7.24.5",
-        "@babel/eslint-parser": "7.24.5",
+        "@babel/core": "7.26.10",
+        "@babel/eslint-parser": "7.26.10",
         "@babel/plugin-proposal-private-property-in-object": "7.21.11",
         "@babel/preset-env": "7.24.5",
         "@babel/preset-react": "7.24.7",
@@ -141,13 +141,18 @@
         "lodash": "4.17.21",
         "micromatch": "4.0.8",
         "semver": "7.6.3",
-        "@babel/traverse": "7.24.7",
-        "dompurify": "3.1.7",
+        "@babel/traverse": "7.26.10",
+        "dompurify": "3.2.4",
         "serve-static": "1.16.2",
         "body-parser": "1.20.3",
         "axios": "1.8.4",
         "path-to-regexp": "1.9.0",
-        "cookie": "0.7.2"
+        "cookie": "0.7.2",
+        "tar-fs": "2.1.2",
+        "prismjs": "1.30.0",
+        "@babel/helpers": "7.26.10",
+        "@babel/runtime": "7.26.10",
+        "@babel/runtime-corejs3": "7.26.10"
     },
     "engines": {
         "npm": "=9.3.1",
