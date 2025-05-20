@@ -16,8 +16,8 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Feature:  Support client AT-TLS setting (#3825) ([999d062](https://github.com/zowe/api-layer/commit/999d062)), closes [#3825](https://github.com/zowe/api-layer/pull/3825)
 
 * Bugfix:  Backwards compatible default ciphers list (#4023) ([d6563e4](https://github.com/zowe/api-layer/commit/d6563e43ed507d33c7b4fdb987202db01b0c5ba5)), (#4026) ([38a3e54](https://github.com/zowe/api-layer/commit/38a3e548e92050d15722900d095dd09dfd3be28e))), closes [#4023](https://github.com/zowe/api-layer/pull/4023), [#4026](https://github.com/zowe/api-layer/pull/4026)
-* Bugfix:  do not fail when missing permissions to create SMF record (#4037) ([4093dd9](https://github.com/zowe/api-layer/commit/4093dd9)), closes [#4037](https://github.com/zowe/api-layer/issues/4037)
-* Bugfix:  non-strict hostname verification in Jetty client for WebSockets (#4038) ([3b96e91](https://github.com/zowe/api-layer/commit/3b96e91)), closes [#4038](https://github.com/zowe/api-layer/issues/4038)
+* Bugfix:  Do not fail when missing permissions to create SMF record (#4037) ([4093dd9](https://github.com/zowe/api-layer/commit/4093dd9)), closes [#4037](https://github.com/zowe/api-layer/issues/4037)
+* Bugfix:  Non-strict hostname verification in Jetty client for WebSockets (#4038) ([3b96e91](https://github.com/zowe/api-layer/commit/3b96e91)), closes [#4038](https://github.com/zowe/api-layer/issues/4038)
 * Bugfix:  Fix login filter check causing 400 Invalid credentials (#4014) ([84cac88](https://github.com/zowe/api-layer/commit/84cac88)), closes [#4014](https://github.com/zowe/api-layer/issues/4014)
 * Bugfix:  Add missing OIDC documentation to OpenAPI (#4013) ([d60d23d](https://github.com/zowe/api-layer/commit/d60d23d)), closes [#4013](https://github.com/zowe/api-layer/issues/4013)
 * Bugfix:  Add newPassword to Open API Documentation of the login endpoint (#4002) ([5c9c827](https://github.com/zowe/api-layer/commit/5c9c827)), closes [#4002](https://github.com/zowe/api-layer/issues/4002)
