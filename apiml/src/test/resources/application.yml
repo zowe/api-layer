@@ -44,6 +44,15 @@ apiml:
         nonSecurePortEnabled: false
         securePortEnabled: true
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
+    security:
+        auth:
+            provider: zosmf
+            zosmf:
+                serviceId: zosmf
+        saf:
+            urls:
+                authenticate: https://mock-services:10013/zss/saf/authenticate
+                verify: https://localhost:10013/zss/saf/verify
 
 server:
     port: ${apiml.service.port}

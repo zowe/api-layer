@@ -343,7 +343,7 @@ public class LoginController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Successfully revoked")
     })
-    public Mono<ResponseEntity<String>> revokeAccessTokensForUser(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
+    public Mono<ResponseEntity<String>> revokeAccessTokensForUser(@RequestBody RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String userId = requestModel.getUserId();
         if (userId == null) {
@@ -432,7 +432,7 @@ public class LoginController {
         )
     })
     public Mono<Map<String, Object>> getAllPublicKeys() {
-        return Mono.fromSupplier(() ->{
+        return Mono.fromSupplier(() -> {
             List<JWK> keys;
             if (jwtSecurity.actualJwtProducer() == JwtSecurity.JwtProducer.ZOSMF) {
                 keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
@@ -473,7 +473,7 @@ public class LoginController {
         )
     })
     public Mono<Map<String, Object>> getCurrentPublicKeys() {
-        return Mono.fromSupplier(() ->{
+        return Mono.fromSupplier(() -> {
             final List<JWK> keys = getCurrentKey();
             return new JWKSet(keys).toJSONObject(true);
         });
@@ -563,6 +563,7 @@ public class LoginController {
         final ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.query.invalidRevokeRequestBody").mapToView();
         return Mono.just(new ResponseEntity<>(writer.writeValueAsString(message), HttpStatus.BAD_REQUEST));
     }
+
     @PostMapping(path = OIDC_TOKEN_VALIDATE)
     @Operation(summary = "Validate OIDC token",
         tags = {"OIDC"},
@@ -581,7 +582,7 @@ public class LoginController {
         @ApiResponse(responseCode = "401", description = "Invalid token or OIDC provider is not defined")
     })
     public Mono<ResponseEntity<Void>> validateOIDCToken(@RequestBody AuthController.ValidateRequestModel validateRequestModel) {
-        return Mono.fromSupplier(()->{
+        return Mono.fromSupplier(() -> {
             log.debug("Validating OIDC token using provider {}", oidcProvider);
             String token = validateRequestModel.getToken();
             if (oidcProvider != null && oidcProvider.isValid(token)) {

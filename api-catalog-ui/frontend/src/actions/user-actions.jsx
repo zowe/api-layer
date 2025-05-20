@@ -84,6 +84,9 @@ function logout() {
         userService.logout().then(
             () => {
                 dispatch(success());
+                const channel = new BroadcastChannel('auth_channel');
+                channel.postMessage('logout');
+                channel.close();
             },
             (error) => {
                 dispatch(failure(error));
@@ -130,4 +133,5 @@ export const userActions = {
     validateInput,
     closeAlert,
     query,
+    forceLogout,
 };

@@ -35,7 +35,6 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.zowe.apiml.filter.*;
 import org.zowe.apiml.gateway.filters.security.AuthExceptionHandlerReactive;
-import org.zowe.apiml.gateway.service.BasicAuthProvider;
 import org.zowe.apiml.gateway.x509.X509Util;
 import org.zowe.apiml.handler.*;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
