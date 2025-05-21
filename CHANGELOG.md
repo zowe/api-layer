@@ -4,12 +4,12 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 ## `APIML 2.18.13 / Zowe 2.18.2 (2025-06-09)`
 
-* Feature:  Add java sample app to authenticate client certificate (#4009) ([0808c65](https://github.com/zowe/api-layer/commit/0808c65)), closes [#4009](https://github.com/zowe/api-layer/issues/4009)
-* Feature:  Eureka client connection timeout (#4046) ([6a1f73e](https://github.com/zowe/api-layer/commit/6a1f73e)), closes [#4046](https://github.com/zowe/api-layer/issues/4046)
-* Feature:  Support Java 21 (#4027) ([6a554ba](https://github.com/zowe/api-layer/commit/6a554ba)), closes [#4027](https://github.com/zowe/api-layer/issues/4027)
+* Feature:  Add Java sample app to authenticate client certificate. (#4009) ([0808c65](https://github.com/zowe/api-layer/commit/0808c65)), closes [#4009](https://github.com/zowe/api-layer/issues/4009)
+* Feature:  Users can now configure the connect and read timeout for Eureka HTTP client. (#4046) ([6a1f73e](https://github.com/zowe/api-layer/commit/6a1f73e)), closes [#4046](https://github.com/zowe/api-layer/issues/4046)
+* Feature:  Support Java 21. (#4027) ([6a554ba](https://github.com/zowe/api-layer/commit/6a554ba)), closes [#4027](https://github.com/zowe/api-layer/issues/4027)
 
-* Bugfix:  Adding HSTS header when AT-TLS enabled V2 (#4071) ([9fdf3e6](https://github.com/zowe/api-layer/commit/9fdf3e6)), closes [#4071](https://github.com/zowe/api-layer/issues/4071)
-* Bugfix:  Change error code SERVICE_UNAVAILABLE to INTERNAL_SERVER_ERROR when ticket generation fails (#4043 ([f7f78dd](https://github.com/zowe/api-layer/commit/f7f78dd)), closes [#4043](https://github.com/zowe/api-layer/issues/4043)
+* Bugfix:  Adding HSTS header when AT-TLS enabled V2. (#4071) ([9fdf3e6](https://github.com/zowe/api-layer/commit/9fdf3e6)), closes [#4071](https://github.com/zowe/api-layer/issues/4071)
+* Bugfix:  Change error code SERVICE_UNAVAILABLE to INTERNAL_SERVER_ERROR when ticket generation fails. (#4043 ([f7f78dd](https://github.com/zowe/api-layer/commit/f7f78dd)), closes [#4043](https://github.com/zowe/api-layer/issues/4043)
 
 ## `APIML 2.18.10 / Zowe 2.18.1 (2025-03-27)`
 
