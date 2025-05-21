@@ -18,8 +18,6 @@ import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
 
-import jakarta.servlet.ServletException;
-
 import java.util.function.BiConsumer;
 
 /**
@@ -37,11 +35,10 @@ public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
     /**
      * Entry method that takes care of an exception passed to it
      *
-     * @param request   Http request URI
-     * @param response  Http response
-     * @param addHeader
-     * @param ex        Exception to be handled
-     * @throws ServletException Fallback exception if exception cannot be handled
+     * @param requestUri Http request URI
+     * @param addHeader  add response header
+     * @param ex         Exception to be handled
+     * @throws RuntimeException Fallback exception if exception cannot be handled
      */
     @Override
     public void handleException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, RuntimeException ex) {

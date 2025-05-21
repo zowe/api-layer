@@ -25,13 +25,12 @@ public class HttpUtils {
         AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
 
         // Create the HttpOnly cookie containing the JWT
-        ResponseCookie jwtCookie = ResponseCookie.from(cp.getCookieName(), jwt)
+        return ResponseCookie.from(cp.getCookieName(), jwt)
             .path(cp.getCookiePath())
             .sameSite(cp.getCookieSameSite().getValue())
             .maxAge(cp.getCookieMaxAge() != null ? cp.getCookieMaxAge() : -1)
             .httpOnly(true)
             .secure(cp.isCookieSecure())
             .build();
-        return jwtCookie;
     }
 }

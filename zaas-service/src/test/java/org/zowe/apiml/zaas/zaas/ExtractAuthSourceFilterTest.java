@@ -18,9 +18,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
+import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
@@ -46,7 +46,7 @@ class ExtractAuthSourceFilterTest {
 
     @BeforeEach
     void setUp() {
-        request = new MockHttpServletRequest();
+        request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
         filterChain = mock(FilterChain.class);
         authSourceService = mock(AuthSourceService.class);
@@ -93,11 +93,23 @@ class ExtractAuthSourceFilterTest {
 
             @Test
             void thenExceptionHandlerIsCalled() throws ServletException, IOException {
+                TokenNotValidException tokenNotValidException = new TokenNotValidException("Token is not valid");
+                when(authSourceService.getAuthSourceFromRequest(request)).thenThrow(tokenNotValidException);
+                when(request.getRequestURI()).thenReturn(null);
+
                 ExtractAuthSourceFilter filter = new ExtractAuthSourceFilter(authSourceService, authExceptionHandler);
-                var addHeader = (BiConsumer<String,String>) (name, value) -> request.hea(name, value);
-                var function = mock(BiConsumer.class);
+
                 filter.doFilterInternal(request, response, filterChain);
-                verify(authExceptionHandler, times(1)).handleException(request.getRequestURI(), function, addHeader, tokenNotValidException);
+
+                ArgumentCaptor<RuntimeException> exceptionCaptor = ArgumentCaptor.forClass(RuntimeException.class);
+                verify(authExceptionHandler).handleException(
+                    any(),                   // URI
+                    any(),                   // BiConsumer<ApiMessageView, HttpStatus>
+                    any(),                   // BiConsumer<String, String>
+                    exceptionCaptor.capture()
+                );
+
+                assertEquals(tokenNotValidException, exceptionCaptor.getValue());
             }
         }
     }
@@ -112,15 +124,33 @@ class ExtractAuthSourceFilterTest {
 
         @Test
         void thenExceptionIsHandled() throws ServletException, IOException {
+            var authSourceService = mock(AuthSourceService.class);
+            var authExceptionHandler = mock(AuthExceptionHandler.class);
+            var request = mock(HttpServletRequest.class);
+            var response = mock(HttpServletResponse.class);
+            var filterChain = mock(FilterChain.class);
+
+            when(request.getRequestURI()).thenReturn("/some-uri");
+            when(authSourceService.getAuthSourceFromRequest(request)).thenReturn(Optional.empty());
+
             ExtractAuthSourceFilter filter = new ExtractAuthSourceFilter(authSourceService, authExceptionHandler);
+
             filter.doFilterInternal(request, response, filterChain);
-            var addHeader = (BiConsumer<String,String>) (name, value) -> request.see(name, value);
-            var function = mock(BiConsumer.class);
+
+            ArgumentCaptor<String> uriCaptor = ArgumentCaptor.forClass(String.class);
+            ArgumentCaptor<BiConsumer<ApiMessageView, HttpStatus>> consumerCaptor = ArgumentCaptor.forClass(BiConsumer.class);
+            ArgumentCaptor<BiConsumer<String, String>> headerCaptor = ArgumentCaptor.forClass(BiConsumer.class);
             ArgumentCaptor<RuntimeException> exceptionCaptor = ArgumentCaptor.forClass(RuntimeException.class);
-            verify(authExceptionHandler, times(1)).handleException(eq(request.getRequestURI()), eq(function), eq(addHeader) , exceptionCaptor.capture());
-            assertNotNull(exceptionCaptor.getValue());
-            assertTrue(exceptionCaptor.getValue() instanceof InsufficientAuthenticationException);
-            assertEquals("No authentication source found in the request.", exceptionCaptor.getValue().getMessage());
+
+            verify(authExceptionHandler).handleException(
+                uriCaptor.capture(),
+                consumerCaptor.capture(),
+                headerCaptor.capture(),
+                exceptionCaptor.capture()
+            );
+
+            assertEquals("/some-uri", uriCaptor.getValue());
+            assertInstanceOf(InsufficientAuthenticationException.class, exceptionCaptor.getValue());
         }
     }
 }

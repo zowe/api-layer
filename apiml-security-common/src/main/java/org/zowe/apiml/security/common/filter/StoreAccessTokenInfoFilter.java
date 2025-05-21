@@ -19,11 +19,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.common.error.AccessTokenBodyNotValidException;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
+import org.zowe.apiml.security.common.handler.ServletErrorUtils;
 import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 //todo fix me for non-modulith
@@ -35,27 +40,30 @@ public class StoreAccessTokenInfoFilter extends OncePerRequestFilter {
     public static final String TOKEN_REQUEST = "tokenRequest";
     private static final ObjectReader mapper = new ObjectMapper().reader();
     private final AuthExceptionHandler authExceptionHandler;
-
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException {
+        var consumer = ServletErrorUtils.createApiErrorWriter(response, apimlLog);
+        var addHeader = (BiConsumer<String, String>) response::addHeader;
         try {
             ServletInputStream inputStream = request.getInputStream();
             if (inputStream.available() != 0) {
                 SuccessfulAccessTokenHandler.AccessTokenRequest accessTokenRequest = mapper.readValue(inputStream, SuccessfulAccessTokenHandler.AccessTokenRequest.class);
                 Set<String> scopes = accessTokenRequest.getScopes();
                 if (scopes == null || scopes.isEmpty()) {
-//                    authExceptionHandler.handleException(request, response,  new AccessTokenBodyNotValidException("org.zowe.apiml.security.token.accessTokenBodyMissingScopes"));
+                    authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, new AccessTokenBodyNotValidException("org.zowe.apiml.security.token.accessTokenBodyMissingScopes"));
                     return;
                 }
                 accessTokenRequest.setScopes(scopes.stream().map(String::toLowerCase).collect(Collectors.toSet()));
                 request.setAttribute(TOKEN_REQUEST, accessTokenRequest);
                 filterChain.doFilter(request, response);
             } else {
-//                authExceptionHandler.handleException(request, response,  new AccessTokenBodyNotValidException("org.zowe.apiml.security.token.accessTokenBodyMissingScopes"));
+                authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, new AccessTokenBodyNotValidException("org.zowe.apiml.security.token.accessTokenBodyMissingScopes"));
             }
 
         } catch (IOException e) {
-//            authExceptionHandler.handleException(request, response, new AccessTokenBodyNotValidException("org.zowe.apiml.security.query.invalidAccessTokenBody"));
+            authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, new AccessTokenBodyNotValidException("org.zowe.apiml.security.query.invalidAccessTokenBody"));
         }
     }
 }

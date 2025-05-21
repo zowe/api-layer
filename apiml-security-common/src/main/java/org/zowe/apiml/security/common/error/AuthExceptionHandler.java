@@ -11,7 +11,6 @@
 package org.zowe.apiml.security.common.error;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -22,12 +21,7 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
-import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
-import org.zowe.apiml.security.common.token.TokenNotProvidedException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.*;
 
 import java.util.function.BiConsumer;
 
@@ -48,11 +42,10 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     /**
      * Entry method that takes care about the exception passed to it
      *
-     * @param response   Http response
      * @param requestUri Http request URI
-     * @param addHeader
-     * @param ex         Exception to be handled
-     * @throws ServletException Fallback exception if exception cannot be handled
+     * @param function message function
+     * @param addHeader header
+     * @param ex Exception to be handled
      */
     @Override
     public void handleException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, RuntimeException ex) {

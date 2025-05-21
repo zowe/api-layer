@@ -29,8 +29,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
+import org.zowe.apiml.security.common.handler.ServletErrorUtils;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -38,6 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 /**
  * Filter to process authentication requests with the username and password in JSON format.
@@ -47,6 +51,8 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
     private final AuthenticationFailureHandler failureHandler;
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
     private final ObjectMapper mapper;
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     public LoginFilter(
         String authEndpoint,
@@ -104,7 +110,9 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
             try {
                 auth = this.getAuthenticationManager().authenticate(authentication);
             } catch (RuntimeException ex) {
-//                resourceAccessExceptionHandler.handleException(request.getRequestURI(), response, ex);
+                var consumer = ServletErrorUtils.createApiErrorWriter(response, apimlLog);
+                var addHeader = (BiConsumer<String, String>) response::addHeader;
+                resourceAccessExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, ex);
             }
             return auth;
         } finally {
