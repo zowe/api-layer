@@ -18,6 +18,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.product.version.BuildInfoDetails;
 
@@ -48,7 +49,7 @@ class GatewayHomepageControllerTest {
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
         gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, buildInfo, API_CATALOG_ID);
+            discoveryClient, buildInfo, API_CATALOG_ID, CoreService.ZAAS.getServiceId());
     }
 
     @Test
@@ -72,7 +73,7 @@ class GatewayHomepageControllerTest {
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
         GatewayHomepageController gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, buildInfo, API_CATALOG_ID);
+            discoveryClient, buildInfo, API_CATALOG_ID, CoreService.ZAAS.getServiceId());
 
         Model model = new ConcurrentModel();
         gatewayHomepageController.home(model);
@@ -99,7 +100,7 @@ class GatewayHomepageControllerTest {
 
     @Test
     void givenApiCatalogueIsEmpty_whenHomePageIsCalled_thenThereIsNoMessageAroundTheCatalog() {
-        GatewayHomepageController underTest = new GatewayHomepageController(discoveryClient, buildInfo, null);
+        GatewayHomepageController underTest = new GatewayHomepageController(discoveryClient, buildInfo, null, CoreService.GATEWAY.getServiceId());
         Model model = new ConcurrentModel();
         underTest.home(model);
 

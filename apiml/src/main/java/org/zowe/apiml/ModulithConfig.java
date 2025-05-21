@@ -87,6 +87,11 @@ public class ModulithConfig {
     @Value("${apiml.service.port:10010}")
     private int port;
 
+    @Bean
+    public String authServiceId() {
+        return CoreService.GATEWAY.getServiceId();
+    }
+
     private InstanceInfo getInstanceInfo(String serviceId) {
         var leaseInfo = LeaseInfo.Builder.newBuilder()
             .setDurationInSecs(Integer.MAX_VALUE)

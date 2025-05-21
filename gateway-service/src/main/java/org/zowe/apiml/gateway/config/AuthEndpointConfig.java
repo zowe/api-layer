@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.config;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
 import org.springframework.cloud.client.loadbalancer.reactive.ReactorLoadBalancerExchangeFilterFunction;
@@ -124,26 +125,26 @@ public class AuthEndpointConfig {
     }
 
     @Bean
+    @ConditionalOnMissingBean(name = "modulithConfig")
     public RouterFunction<ServerResponse> routes() {
-//        return route(path("/gateway/api/v1/auth/login"), resendTo("/api/v1/auth/login"))
-//          return route(path("/gateway/api/v1/auth/logout"), resendTo("/api/v1/auth/logout"))
-
-//           return route(path("/gateway/api/v1/auth/query"), resendTo("/api/v1/auth/query"))
-//            .andRoute(path("/gateway/api/v1/auth/refresh"), resendTo("/api/v1/auth/refresh"))
-//            return route(path("/gateway/api/v1/auth/ticket"), resendTo("/api/v1/auth/ticket"))
-//           return route(path("/gateway/api/v1/auth/access-token/revoke"), resendTo("/api/v1/auth/access-token/revoke"))
-//            .andRoute(path("/gateway/api/v1/auth/access-token/generate"), resendTo("/api/v1/auth/access-token/generate"))
-//        return route(path("/gateway/api/v1/auth/access-token/validate"), resendTo("/api/v1/auth/access-token/validate"))
-//            .andRoute(path("/gateway/api/v1/auth/access-token/revoke/tokens/user"), resendTo("/api/v1/auth/access-token/revoke/tokens/user"))
-//            .andRoute(path("/gateway/api/v1/auth/access-token/revoke/tokens"), resendTo("/api/v1/auth/access-token/revoke/tokens"))
-//            .andRoute(path("/gateway/api/v1/auth/access-token/revoke/tokens/scope"), resendTo("/api/v1/auth/access-token/revoke/tokens/scope"))
-//            .andRoute(path("/gateway/api/v1/auth/access-token/evict"), resendTo("/api/v1/auth/access-token/evict"))
-//            .andRoute(path("/gateway/api/v1/auth/keys/public"), resendTo("/api/v1/auth/keys/public"))
-//            .andRoute(path("/gateway/api/v1/auth/keys/public/all"), resendTo("/api/v1/auth/keys/public/all"))
-//            .andRoute(path("/gateway/api/v1/auth/keys/public/current"), resendTo("/api/v1/auth/keys/public/current"))
-//            .andRoute(path("/gateway/api/v1/auth/oidc-token/validate"), resendTo("/api/v1/auth/oidc-token/validate"))
-//            .andRoute(path("/gateway/api/v1/auth/oidc/webfinger"), resendTo("/api/v1/auth/oidc/webfinger"))
-        return route(path("/gateway/auth/check"), resendTo("/auth/check"));
+        return route(path("/gateway/api/v1/auth/login"), resendTo("/api/v1/auth/login"))
+            .andRoute(path("/gateway/api/v1/auth/logout"), resendTo("/api/v1/auth/logout"))
+            .andRoute(path("/gateway/api/v1/auth/query"), resendTo("/api/v1/auth/query"))
+            .andRoute(path("/gateway/api/v1/auth/refresh"), resendTo("/api/v1/auth/refresh"))
+            .andRoute(path("/gateway/api/v1/auth/ticket"), resendTo("/api/v1/auth/ticket"))
+            .andRoute(path("/gateway/api/v1/auth/access-token/revoke"), resendTo("/api/v1/auth/access-token/revoke"))
+            .andRoute(path("/gateway/api/v1/auth/access-token/validate"), resendTo("/api/v1/auth/access-token/validate"))
+            .andRoute(path("/gateway/api/v1/auth/access-token/generate"), resendTo("/api/v1/auth/access-token/generate"))
+            .andRoute(path("/gateway/api/v1/auth/access-token/revoke/tokens/user"), resendTo("/api/v1/auth/access-token/revoke/tokens/user"))
+            .andRoute(path("/gateway/api/v1/auth/access-token/revoke/tokens"), resendTo("/api/v1/auth/access-token/revoke/tokens"))
+            .andRoute(path("/gateway/api/v1/auth/access-token/revoke/tokens/scope"), resendTo("/api/v1/auth/access-token/revoke/tokens/scope"))
+            .andRoute(path("/gateway/api/v1/auth/access-token/evict"), resendTo("/api/v1/auth/access-token/evict"))
+            .andRoute(path("/gateway/api/v1/auth/keys/public"), resendTo("/api/v1/auth/keys/public"))
+            .andRoute(path("/gateway/api/v1/auth/keys/public/all"), resendTo("/api/v1/auth/keys/public/all"))
+            .andRoute(path("/gateway/api/v1/auth/keys/public/current"), resendTo("/api/v1/auth/keys/public/current"))
+            .andRoute(path("/gateway/api/v1/auth/oidc-token/validate"), resendTo("/api/v1/auth/oidc-token/validate"))
+            .andRoute(path("/gateway/api/v1/auth/oidc/webfinger"), resendTo("/api/v1/auth/oidc/webfinger"))
+            .andRoute(path("/gateway/auth/check"), resendTo("/auth/check"));
     }
 
 }
