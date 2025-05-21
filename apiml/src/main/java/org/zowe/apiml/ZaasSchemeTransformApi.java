@@ -40,6 +40,31 @@ import java.util.Optional;
 
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
+/**
+ * {@code ZaasSchemeTransformApi} is the internal implementation of {@link ZaasSchemeTransform}
+ * <p>
+ * Unlike {@code ZaasSchemeTransformRest}, which makes HTTP requests to the ZAAS service,
+ * this implementation directly invokes service layer components within the same application context.
+ * </p>
+ *
+ * <p>
+ * This class provides support for authentication schemes like:
+ * <ul>
+ *     <li>PassTicket generation</li>
+ *     <li>SAF Identity Token generation</li>
+ *     <li>z/OSMF token exchange</li>
+ *     <li>Zowe JWT generation</li>
+ * </ul>
+ * </p>
+ *
+ * <p>
+ * This bean is only active when {@code modulithConfig} is present in the Spring context.
+ * </p>
+ *
+ * @see ZaasSchemeTransform
+ * @see org.zowe.apiml.gateway.filters.ZaasSchemeTransformRest
+ */
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -191,13 +216,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         }
 
         interface Exclude {
-
-            Cookie[] getCookies();
-            String getHeader(String name);
             Enumeration<String> getHeaders(String name);
-            Object getAttribute(String name);
-            String getRequestURI();
-
         }
 
 
