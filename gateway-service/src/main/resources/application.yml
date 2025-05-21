@@ -160,6 +160,9 @@ management:
           showDetails: always
       shutdown:
           enabled: true
+    health:
+        diskspace:
+            enabled: false
     endpoints:
         web:
             base-path: /application
