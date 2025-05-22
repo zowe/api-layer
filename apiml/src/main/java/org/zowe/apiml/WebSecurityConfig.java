@@ -338,8 +338,24 @@ public class WebSecurityConfig {
 
     }
 
+    @Bean
+    public SecurityWebFilterChain safResourceCheckFilter(ServerHttpSecurity http, ObjectMapper mapper) {
+        var man = new ProviderManager(x509AuthenticationProvider);
+        var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
 
+        return x509SecurityConfig(http)
+            .securityMatcher(new AndServerWebExchangeMatcher(
+                ServerWebExchangeMatchers.pathMatchers("gateway/auth/check")
+            ))
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
 
+            .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
+            .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION)
+            .build();
+
+    }
 }
 
 

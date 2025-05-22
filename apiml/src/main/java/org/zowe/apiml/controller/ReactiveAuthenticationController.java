@@ -69,7 +69,7 @@ import static org.zowe.apiml.zaas.controllers.AuthController.*;
 @RequestMapping("/gateway/api/v1/auth")
 @Slf4j
 @RequiredArgsConstructor
-public class LoginController {
+public class ReactiveAuthenticationController {
     private final JwtSecurity jwtSecurity;
     private final ZosmfService zosmfService;
     private final MessageService messageService;
