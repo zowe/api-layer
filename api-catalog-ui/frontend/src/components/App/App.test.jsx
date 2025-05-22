@@ -45,6 +45,21 @@ async function assertMethod(mockSuccess) {
 }
 
 describe('>>> App component tests', () => {
+
+    beforeAll(() => {
+        global.BroadcastChannel = class {
+            constructor() {
+                this.onmessage = null;
+            }
+            postMessage(msg) {
+                if (this.onmessage) {
+                    this.onmessage({ data: msg });
+                }
+            }
+            close() {}
+        };
+    });
+
     it('should call render', () => {
         const history = { push: jest.fn() };
         const success = { push: jest.fn() };

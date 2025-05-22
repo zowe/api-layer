@@ -26,7 +26,7 @@ function App(props) {
     useEffect(() => {
         window.process = { ...window.process };
     }, []);
-    const { authentication, success, forceLogout } = props;
+    const { authentication, success, logout } = props;
     useEffect(() => {
         const checkAuth = () => {
             if (!authentication.user) {
@@ -52,7 +52,7 @@ function App(props) {
         authChannel.onmessage = (event) => {
             if (event.data === 'logout') {
                 console.log('[BroadcastChannel] logout received');
-                forceLogout();
+                logout();
                 navigate('/login');
             }
 
