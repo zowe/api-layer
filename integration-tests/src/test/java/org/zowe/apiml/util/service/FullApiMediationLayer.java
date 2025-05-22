@@ -43,6 +43,7 @@ public class FullApiMediationLayer {
     private boolean firstCheck = true;
     private final Map<String, String> env;
     private static final boolean attlsEnabled = "true".equals(System.getProperty("environment.attls"));
+    private static final boolean isModulithEnabled = "true".equals(System.getProperty("ENV_MODULITH"));
 
     private static final FullApiMediationLayer instance = new FullApiMediationLayer();
 
@@ -56,7 +57,9 @@ public class FullApiMediationLayer {
         prepareGateway();
         prepareMockServices();
         prepareDiscovery();
-        prepareZaas();
+        if (!isModulithEnabled) {
+            prepareZaas();
+        }
         prepareApiml();
         if (!attlsEnabled) {
             prepareNodeJsSampleApp();

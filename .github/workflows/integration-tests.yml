@@ -86,7 +86,7 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ENV_CONFIG=docker-modulith ./gradlew runStartUpCheck :integration-tests:runContainerModulithTests --info
+                    ENV_CONFIG=docker-modulith ENV_MODULITH=true ./gradlew runStartUpCheck :integration-tests:runContainerModulithTests --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
