@@ -7,6 +7,28 @@ apiml:
         staticApiDefinitionsDirectories: /api-defs;/docker/api-defs
         allPeersUrls: https://apiml:10011/eureka
     security:
+        allowTokenRefresh: true
+        personalAccessToken:
+            enabled: true
+        oidc:
+            enabled: true
+            clientId:
+            clientSecret:
+            registry:
+            identityMapperUrl:
+            identityMapperUser:
+            jwks:
+                uri:
+        auth:
+            zosmf:
+                serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
+        x509:
+            enabled: true
+        useDummyCNMapper: true
+        saf:
+            urls:
+                authenticate: https://mock-services:10013/zss/saf/authenticate
+                verify: https://mock-services:10013/zss/saf/verify
         ssl:
             verifySslCertificatesOfServices: true
     banner: console
