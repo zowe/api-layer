@@ -31,6 +31,7 @@ public class ConfigReader {
 
     private static final String PASSWORD = "password";
     private static String configurationFile;
+    private static final boolean isModulithEnabled = "true".equals(System.getProperty("environment.modulith"));
 
     static {
         configurationFile = "environment-configuration" + System.getProperty("environment.config", "") + ".yml";
@@ -125,10 +126,11 @@ public class ConfigReader {
                         }
                     );
 
-                    configuration.getZaasConfiguration().setScheme(System.getProperty("zaas.scheme", configuration.getZaasConfiguration().getScheme()));
-                    configuration.getZaasConfiguration().setHost(System.getProperty("zaas.host", configuration.getZaasConfiguration().getHost()));
-                    configuration.getZaasConfiguration().setPort(parseInt(System.getProperty("zaas.port", String.valueOf(configuration.getZaasConfiguration().getPort()))));
-
+                    if (!isModulithEnabled) {
+                        configuration.getZaasConfiguration().setScheme(System.getProperty("zaas.scheme", configuration.getZaasConfiguration().getScheme()));
+                        configuration.getZaasConfiguration().setHost(System.getProperty("zaas.host", configuration.getZaasConfiguration().getHost()));
+                        configuration.getZaasConfiguration().setPort(parseInt(System.getProperty("zaas.port", String.valueOf(configuration.getZaasConfiguration().getPort()))));
+                    }
                     configuration.getDiscoveryServiceConfiguration().setScheme(System.getProperty("discovery.scheme", configuration.getDiscoveryServiceConfiguration().getScheme()));
                     configuration.getDiscoveryServiceConfiguration().setUser(System.getProperty("discovery.user", configuration.getDiscoveryServiceConfiguration().getUser()));
                     configuration.getDiscoveryServiceConfiguration().setPassword(System.getProperty("discovery.password", configuration.getDiscoveryServiceConfiguration().getPassword()));

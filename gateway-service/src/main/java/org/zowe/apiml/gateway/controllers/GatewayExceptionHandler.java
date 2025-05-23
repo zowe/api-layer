@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.security.access.AccessDeniedException;
@@ -49,14 +48,7 @@ import reactor.core.publisher.Mono;
 
 import javax.net.ssl.SSLException;
 
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_FORBIDDEN;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.apache.http.HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE;
+import static org.apache.http.HttpStatus.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
@@ -189,7 +181,7 @@ public class GatewayExceptionHandler {
     public Mono<ResponseEntity<ErrorInfo>> handleDeserialization(ServerWebInputException ex) {
         Throwable rootCause = getRootCause(ex);
         return Mono.just(ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
+            .status(SC_BAD_REQUEST)
             .body(new ErrorInfo("Failed to deserialize the request body", rootCause.getMessage())));
     }
 
