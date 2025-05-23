@@ -155,7 +155,7 @@ public class JwtSecurity {
             } else if (providers.isZosmfAvailableAndOnline()) {
                 return JwtProducer.ZOSMF;
             } else {
-                return JwtProducer.ZOSMF; // TODO remove autoconfiguration of zOSMF JWT
+                return JwtProducer.UNKNOWN;
             }
         }
     }

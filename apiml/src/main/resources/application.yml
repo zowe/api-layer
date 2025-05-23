@@ -127,11 +127,35 @@ apiml:
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
+        filterChainConfiguration: new
+        allowTokenRefresh: false
+        jwtInitializerTimeout: 5
+        personalAccessToken:
+            enabled: false
+        useInternalMapper: false
         auth:
             provider: zosmf
             zosmf:
-                serviceId:
+                serviceId: ibmzosmf
                 jwtAutoconfiguration: jwt
+        oidc:
+            enabled: false
+            clientId:
+            clientSecret:
+            registry:
+            identityMapperUrl:
+            identityMapperUser:
+            jwks:
+                uri:
+            userInfo:
+                uri:
+            validationType: JWK
+            provider: zosmf
+        x509:
+            enabled: false
+            acceptForwardedCert: true
+            certificatesUrl:
+            externalMapperUrl:
         saf:
             provider: rest
             urls:
