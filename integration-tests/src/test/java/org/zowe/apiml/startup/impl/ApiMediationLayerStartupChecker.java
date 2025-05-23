@@ -47,6 +47,7 @@ public class ApiMediationLayerStartupChecker {
     private final Credentials credentials;
     private final List<Service> servicesToCheck = new ArrayList<>();
     private final String healthEndpoint = "/application/health";
+    private static final boolean isModulithEnabled = "true".equals(System.getProperty("environment.modulith"));
 
     public ApiMediationLayerStartupChecker() {
         gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
@@ -54,6 +55,9 @@ public class ApiMediationLayerStartupChecker {
         discoverableClientConfiguration = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration();
 
         servicesToCheck.add(new Service("Gateway", "$.status"));
+        if (!isModulithEnabled) {
+            servicesToCheck.add(new Service("ZAAS", "$.components.gateway.details.zaas"));
+        }
         servicesToCheck.add(new Service("Api Catalog", "$.components.gateway.details.apicatalog"));
         servicesToCheck.add(new Service("Discovery Service", "$.components.gateway.details.discovery"));
     }
@@ -105,9 +109,9 @@ public class ApiMediationLayerStartupChecker {
                     areAllServicesUp = false;
                 }
             }
-//            if (!isAuthUp()) {
-//                areAllServicesUp = false;
-//            }
+            if (!isModulithEnabled && !isAuthUp()) {
+                areAllServicesUp = false;
+            }
 
             String allComponents = context.read("$.components.discoveryComposite.components.discoveryClient.details.services").toString();
             boolean isTestApplicationUp = allComponents.toLowerCase().contains("discoverableclient");
@@ -149,13 +153,23 @@ public class ApiMediationLayerStartupChecker {
     }
 
     private boolean isAuthUp() {
-        HttpGet requestToZaas = new HttpGet(HttpRequestUtils.getUriFromGateway(healthEndpoint));
+        HttpGet requestToZaas;
+        if (!isModulithEnabled) {
+            requestToZaas = new HttpGet(HttpRequestUtils.getUriFromZaas(healthEndpoint));
+        } else {
+            requestToZaas = new HttpGet(HttpRequestUtils.getUriFromGateway(healthEndpoint));
+        }
         requestToZaas.addHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes()));
         DocumentContext zaasContext = getDocumentAsContext(requestToZaas);
         if (zaasContext == null) {
             return false;
         }
-        boolean isUp = isServiceUp(zaasContext, "$.components.gateway.details.auth");
+        boolean isUp;
+        if (!isModulithEnabled) {
+            isUp = isServiceUp(zaasContext, "$.components.zaas.details.auth");
+        } else {
+            isUp = isServiceUp(zaasContext, "$.components.gateway.details.auth");
+        }
         logDebug("Authentication Service is {}", isUp);
         return isUp;
     }
