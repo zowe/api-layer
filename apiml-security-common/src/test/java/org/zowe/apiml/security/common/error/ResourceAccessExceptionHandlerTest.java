@@ -10,26 +10,15 @@
 
 package org.zowe.apiml.security.common.error;
 
-import org.zowe.apiml.message.core.Message;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.web.client.HttpServerErrorException;
-
-import jakarta.servlet.ServletException;
-import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceAccessExceptionHandlerTest {
