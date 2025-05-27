@@ -11,6 +11,7 @@
 package org.zowe.apiml.security.common.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -28,12 +29,9 @@ import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
-import jakarta.servlet.ServletException;
-
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(SpringExtension.class)
 class UnauthorizedHandlerTest {
@@ -60,7 +58,9 @@ class UnauthorizedHandlerTest {
         Message message = messageService.createMessage(
             ErrorType.TOKEN_EXPIRED.getErrorMessageKey(),
             httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+
+        assertEquals("application/json", httpServletResponse.getContentType());
+        assertEquals(new ObjectMapper().writeValueAsString(message.mapToView()), httpServletResponse.getContentAsString());
     }
 
 
