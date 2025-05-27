@@ -11,6 +11,7 @@
 package org.zowe.apiml.security.common.login;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,15 +36,21 @@ import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
-import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.hc.core5.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LoginFilterTest {
@@ -214,11 +221,15 @@ class LoginFilterTest {
     }
 
     private void testFailWithResourceAccessError(RuntimeException exception, ErrorType errorType) throws IOException, ServletException {
-        ObjectMapper objectMapper = mock(ObjectMapper.class);
+        ObjectMapper objectMapper = new ObjectMapper();
         MessageService messageService = new YamlMessageService("/security-service-messages.yml");
         ResourceAccessExceptionHandler resourceAccessExceptionHandler = new ResourceAccessExceptionHandler(messageService, objectMapper);
-        loginFilter = new LoginFilter("TEST_ENDPOINT", authenticationSuccessHandler,
-            authenticationFailureHandler, objectMapper, authenticationManager,
+        loginFilter = new LoginFilter(
+            "TEST_ENDPOINT",
+            authenticationSuccessHandler,
+            authenticationFailureHandler,
+            objectMapper,
+            authenticationManager,
             resourceAccessExceptionHandler);
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,PASSWORD));
@@ -229,10 +240,18 @@ class LoginFilterTest {
         httpServletRequest.addHeader(HttpHeaders.AUTHORIZATION, VALID_AUTH_HEADER);
         httpServletResponse = new MockHttpServletResponse();
 
-        loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        assertEquals(SC_OK, httpServletResponse.getStatus());
+        assertNull(httpServletResponse.getContentType());
+        assertEquals("", httpServletResponse.getContentAsString());
 
+        var auth = loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+
+        assertNull(auth);
         Message message = messageService.createMessage(errorType.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+
+        assertEquals(SC_SERVICE_UNAVAILABLE, httpServletResponse.getStatus());
+        assertEquals("application/json", httpServletResponse.getContentType());
+        assertEquals(objectMapper.writeValueAsString(message.mapToView()), httpServletResponse.getContentAsString());
     }
 
 }

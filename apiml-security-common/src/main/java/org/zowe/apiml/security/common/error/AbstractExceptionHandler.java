@@ -53,7 +53,6 @@ public abstract class AbstractExceptionHandler {
     protected void writeErrorResponse(String messageKey, HttpStatus status, String requestUri, BiConsumer<ApiMessageView, HttpStatus> response) {
         final ApiMessageView message = messageService.createMessage(messageKey, requestUri, status.getReasonPhrase()).mapToView();
         response.accept(message, status);
-
     }
 
 }

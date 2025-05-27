@@ -96,7 +96,7 @@ public class ComponentsConfiguration {
     }
 
     @Bean
-    DefaultResourceRetriever defaultResourceRetriever(SSLContext secureSslContextWithoutKeystore) {
+    DefaultResourceRetriever defaultResourceRetriever(@Qualifier("secureSslContextWithoutKeystore") SSLContext secureSslContextWithoutKeystore) {
         return new DefaultResourceRetriever(
                     0, 0, 0, true, secureSslContextWithoutKeystore.getSocketFactory());
     }

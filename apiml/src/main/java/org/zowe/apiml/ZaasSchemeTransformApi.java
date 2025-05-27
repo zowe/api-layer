@@ -10,8 +10,10 @@
 
 package org.zowe.apiml;
 
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpUpgradeHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,7 @@ import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -215,10 +218,14 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             return requestCredentials.getRequestURI();
         }
 
+        @Override
+        public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException, ServletException {
+            return request.upgrade(handlerClass);
+        }
+
         interface Exclude {
             Enumeration<String> getHeaders(String name);
         }
-
 
     }
 

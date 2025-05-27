@@ -56,9 +56,7 @@ public class BasicLoginFilterForPatEndpoint implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         return extractBasicAuth(exchange)
             .map(this::getToken)
-            .switchIfEmpty(Mono.defer(() ->
-                getCredentialsFromBody(exchange).map(this::getToken)
-            ))
+            .switchIfEmpty(getTokenFromBody(exchange))
             .flatMap(token ->
                 authenticationManager.authenticate(token)
                     .flatMap(authentication ->
@@ -76,6 +74,12 @@ public class BasicLoginFilterForPatEndpoint implements WebFilter {
                     })
             )
             .switchIfEmpty(chain.filter(exchange));
+    }
+
+    private Mono<? extends AbstractAuthenticationToken> getTokenFromBody(ServerWebExchange exchange) {
+        return Mono.defer(() ->
+                getCredentialsFromBody(exchange).map(this::getToken)
+        );
     }
 
     AbstractAuthenticationToken getToken(LoginRequest credentials) {

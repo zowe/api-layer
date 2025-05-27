@@ -38,6 +38,7 @@ import java.util.function.BiConsumer;
  */
 @RequiredArgsConstructor
 public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
+
     private final AuthenticationManager authenticationManager;
     private final AuthenticationFailureHandler failureHandler;
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;

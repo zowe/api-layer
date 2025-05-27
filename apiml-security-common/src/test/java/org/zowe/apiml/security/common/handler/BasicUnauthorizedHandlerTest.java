@@ -69,9 +69,12 @@ class BasicUnauthorizedHandlerTest {
 
     @TestConfiguration
     static class ContextConfiguration {
+
         @Bean
-        public MessageService messageService() {
+        MessageService messageService() {
             return new YamlMessageService("/security-service-messages.yml");
         }
+
     }
+
 }

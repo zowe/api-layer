@@ -36,6 +36,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class BearerContentFilterTest {
+
     private BearerContentFilter bearerContentFilter;
     private final MockHttpServletRequest request = new MockHttpServletRequest();
     private final MockHttpServletResponse response = new MockHttpServletResponse();
@@ -57,6 +58,7 @@ class BearerContentFilterTest {
     class GivenValidBearerHeader {
         @Nested
         class WhenAuthenticate {
+
             @Test
             void thenSuccess() throws ServletException, IOException {
                 String token = "token";
@@ -70,10 +72,12 @@ class BearerContentFilterTest {
                 verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
                 verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any() , any());
             }
+
         }
 
         @Nested
         class whenAuthenticateWithNoGateway {
+
             @Test
             void thenAuthenticationFails() throws ServletException, IOException {
                 String token = "token";
@@ -92,11 +96,14 @@ class BearerContentFilterTest {
                 verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
                 verify(resourceAccessExceptionHandler).handleException(request.getRequestURI(), function, addHeader, exception);
             }
+
         }
+
     }
 
     @Nested
     class WhenGatewayEndpoint {
+
         @Test
         void thenSkipFilter() throws ServletException, IOException {
             String[] endpoints = {"/gateway"};
@@ -114,12 +121,14 @@ class BearerContentFilterTest {
             verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
             verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any() , any());
         }
+
     }
 
     @Nested
     class GivenInValidToken {
         @Nested
         class WhenAuthenticate {
+
             @Test
             void thenAuthenticationFails() throws ServletException, IOException {
                 String token = "token";
@@ -136,11 +145,14 @@ class BearerContentFilterTest {
                 verify(authenticationFailureHandler).onAuthenticationFailure(request, response, exception);
                 verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any() , any());
             }
+
         }
+
     }
 
     @Nested
     class WhenNoBearerHeader {
+
         @Test
         void thenNotFilter() throws ServletException, IOException {
             bearerContentFilter.doFilter(request, response, filterChain);
@@ -157,10 +169,12 @@ class BearerContentFilterTest {
 
             assertEquals(Optional.empty(), content);
         }
+
     }
 
     @Nested
     class WhenBearerHeader {
+
         @Test
         void thenExtractContent() {
             request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
@@ -171,5 +185,7 @@ class BearerContentFilterTest {
             assertTrue(content.isPresent());
             assertEquals(actualToken, content.get());
         }
+
     }
+
 }
