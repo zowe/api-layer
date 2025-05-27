@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -39,8 +40,6 @@ import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.hc.core5.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -240,7 +239,7 @@ class LoginFilterTest {
         httpServletRequest.addHeader(HttpHeaders.AUTHORIZATION, VALID_AUTH_HEADER);
         httpServletResponse = new MockHttpServletResponse();
 
-        assertEquals(SC_OK, httpServletResponse.getStatus());
+        assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
         assertNull(httpServletResponse.getContentType());
         assertEquals("", httpServletResponse.getContentAsString());
 
@@ -249,7 +248,7 @@ class LoginFilterTest {
         assertNull(auth);
         Message message = messageService.createMessage(errorType.getErrorMessageKey(), httpServletRequest.getRequestURI());
 
-        assertEquals(SC_SERVICE_UNAVAILABLE, httpServletResponse.getStatus());
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE.value(), httpServletResponse.getStatus());
         assertEquals("application/json", httpServletResponse.getContentType());
         assertEquals(objectMapper.writeValueAsString(message.mapToView()), httpServletResponse.getContentAsString());
     }
