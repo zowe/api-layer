@@ -43,7 +43,7 @@ public class InstanceLookupExecutor {
             .filter(EurekaServiceInstance.class::isInstance)
             .map(EurekaServiceInstance.class::cast)
             .map(EurekaServiceInstance::getInstanceInfo)
-            .filter(ii -> EurekaMetadataDefinition.RegistrationType.of(ii.getMetadata()).isPrimary())
+            .filter(instanceInfo -> EurekaMetadataDefinition.RegistrationType.of(instanceInfo.getMetadata()).isPrimary())
             .findFirst()
             .orElseThrow(() -> new InstanceNotFoundException("'" + serviceId + "' has no running instances registered to Discovery Service"));
     }
