@@ -5,8 +5,8 @@ dependencyResolutionManagement {
             version('projectNode', '20.14.0')
             version('projectNpm', '10.7.0')
 
-            version('springBoot', '3.5.0')
-            version('springBootGraphQl', '3.5.0')
+            version('springBoot', '3.4.6')
+            version('springBootGraphQl', '3.4.5')
             version('springCloudNetflix', '4.2.1')
             version('springCloudCommons', '4.2.1')
             version('springCloudCB', '3.2.1')
