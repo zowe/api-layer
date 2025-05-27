@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.security.common.content;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -24,27 +26,31 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class BearerContentFilterTest {
 
     private BearerContentFilter bearerContentFilter;
-    private final MockHttpServletRequest request = new MockHttpServletRequest();
-    private final MockHttpServletResponse response = new MockHttpServletResponse();
     private final FilterChain filterChain = mock(FilterChain.class);
     private final AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
     private final AuthenticationFailureHandler authenticationFailureHandler = mock(AuthenticationFailureHandler.class);
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler = mock(ResourceAccessExceptionHandler.class);
     private final static String BEARER_AUTH = "Bearer token";
+
+    private MockHttpServletRequest request;
+    private MockHttpServletResponse response;
 
     @BeforeEach
     void setUp() {
@@ -52,6 +58,9 @@ class BearerContentFilterTest {
             authenticationManager,
             authenticationFailureHandler,
             resourceAccessExceptionHandler);
+
+        request = new MockHttpServletRequest();
+        response = new MockHttpServletResponse();
     }
 
     @Nested
@@ -85,16 +94,16 @@ class BearerContentFilterTest {
 
                 TokenAuthentication tokenAuthentication = new TokenAuthentication(token, TokenAuthentication.Type.JWT);
 
-                var addHeader = (BiConsumer<String,String>) (name, value) -> request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
-                var function = mock(BiConsumer.class);
+                request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
                 when(authenticationManager.authenticate(tokenAuthentication)).thenThrow(exception);
 
                 bearerContentFilter.doFilter(request, response, filterChain);
 
-                verify(authenticationManager).authenticate(tokenAuthentication);
+                var auth = verify(authenticationManager).authenticate(tokenAuthentication);
+                assertNull(auth);
                 verify(filterChain, never()).doFilter(any(), any());
                 verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-                verify(resourceAccessExceptionHandler).handleException(request.getRequestURI(), function, addHeader, exception);
+                verify(resourceAccessExceptionHandler).handleException(eq(request.getRequestURI()), any(), any(), argThat(e -> e.getMessage().equals("No Gateway")));
             }
 
         }
