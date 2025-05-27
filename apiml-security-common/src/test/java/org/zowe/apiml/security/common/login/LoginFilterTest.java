@@ -45,9 +45,9 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-
 @ExtendWith(MockitoExtension.class)
 class LoginFilterTest {
+
     private static final String VALID_JSON = "{\"username\": \"user\", \"password\": \"pwd\"}";
     private static final String JSON_WITH_NEW_PW = "{\"username\": \"user\", \"password\": \"pwd\", \"newPassword\": \"newPwd\"}";
     private static final String EMPTY_JSON = "{\"username\": \"\", \"password\": \"\"}";

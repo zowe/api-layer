@@ -35,10 +35,13 @@ import java.util.function.BiConsumer;
 @RequiredArgsConstructor
 @Component
 public class FailedAuthenticationWebHandler implements ServerAuthenticationFailureHandler {
+
     private final ObjectMapper mapper;
     private final AuthExceptionHandler handler;
+
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
+
     @Override
     public Mono<Void> onAuthenticationFailure(WebFilterExchange webFilterExchange, AuthenticationException exception) {
         var exchange = webFilterExchange.getExchange();
@@ -66,4 +69,5 @@ public class FailedAuthenticationWebHandler implements ServerAuthenticationFailu
         return exchange.getResponse().writeWith(Mono.just(buffer.get()));
 
     }
+
 }

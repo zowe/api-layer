@@ -52,7 +52,7 @@ public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
     }
 
     //500
-    private void handleGatewayNotAvailable(String requestUri,BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex)  {
+    private void handleGatewayNotAvailable(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex)  {
         log.debug(MESSAGE_FORMAT, HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage());
         writeErrorResponse(ErrorType.GATEWAY_NOT_AVAILABLE.getErrorMessageKey(), HttpStatus.SERVICE_UNAVAILABLE, requestUri, function);
     }
