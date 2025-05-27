@@ -18,7 +18,12 @@ import com.nimbusds.jose.jwk.KeyType;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.util.DefaultResourceRetriever;
 import com.nimbusds.jose.util.Resource;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Clock;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.LocatorAdapter;
+import io.jsonwebtoken.ProtectedHeader;
 import io.jsonwebtoken.security.UnsupportedKeyException;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
@@ -35,7 +40,6 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 
-import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.URL;
 import java.security.Key;
@@ -57,7 +61,7 @@ public class OIDCTokenProviderJWK implements OIDCProvider {
     private final LocatorAdapterKid keyLocator = new LocatorAdapterKid();
 
     @Autowired
-    private SSLContext secureSslContextWithoutKeystore;
+    private DefaultResourceRetriever resourceRetriever;
 
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
@@ -97,8 +101,6 @@ public class OIDCTokenProviderJWK implements OIDCProvider {
         try {
             publicKeys.clear();
             jwkSet = null;
-            DefaultResourceRetriever resourceRetriever = new DefaultResourceRetriever(
-                0, 0, 0, true, secureSslContextWithoutKeystore.getSocketFactory());
             Resource resource = resourceRetriever.retrieveResource(new URL(jwksUri));
             jwkSet = JWKSet.parse(resource.getContent());
             publicKeys.putAll(processKeys(jwkSet));
