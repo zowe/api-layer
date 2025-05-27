@@ -31,7 +31,12 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -53,7 +58,7 @@ import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 
 import javax.management.ServiceNotFoundException;
-import javax.net.ssl.SSLContext;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -77,7 +82,7 @@ public class ZosmfService extends AbstractZosmfService {
     private static final String CACHE_INVALIDATED_JWT_TOKENS = "invalidatedJwtTokens";
 
     @Autowired
-    private SSLContext secureSslContextWithoutKeystore;
+    private DefaultResourceRetriever resourceRetriever;
     /**
      * Enumeration of supported security tokens
      */
@@ -561,8 +566,6 @@ public class ZosmfService extends AbstractZosmfService {
         final String url = getURI(getZosmfServiceId(), authConfigurationProperties.getZosmf().getJwtEndpoint());
 
         try {
-            DefaultResourceRetriever resourceRetriever = new DefaultResourceRetriever(
-                0, 0, 0, true, secureSslContextWithoutKeystore.getSocketFactory());
             Resource resource = resourceRetriever.retrieveResource(new URL(url));
             return JWKSet.parse(resource.getContent());
         } catch (ParseException pe) {

@@ -91,7 +91,7 @@ class DiscoveryServiceAuthenticationTest {
         @Test
         @TestsNotMeantForZowe("Automation needs unprotected health endpoint")
         @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication enabled.")
-        void giveNoCredentials_thenUnauthorized() {
+        void givenNoCredentials_thenUnauthorized() {
             given()
                 .when()
                 .get(DiscoveryUtils.getDiscoveryUrl() + DISCOVERY_HEALTH_ENDPOINT)
