@@ -190,14 +190,14 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
 
     /**
      * This method remove a necessary subset of credentials in case of authentication fail. If ZAAS cannot generate a
-     * new credentials (ie. because of basic authentication, expired token, etc.) the Gateway should provide the original
+     * new credentials (i.e. because of basic authentication, expired token, etc.) the Gateway should provide the original
      * credentials passed by a user. But there are headers that could be removed to avoid misusing (see forwarding
-     * certificate - user cannot provide a public certificate to take foreign privilleges).
+     * certificate - user cannot provide a public certificate to take foreign privileges).
      * It also set the header to describe an authentication error.
      *
      * @param exchange     exchange of the user request resent to a service
      * @param errorMessage message to be set in the X-Zowe-Auth-Failure header
-     * @returnmutated request
+     * @return mutated request
      */
     protected ServerHttpRequest cleanHeadersOnAuthFail(ServerWebExchange exchange, String errorMessage) {
         return exchange.getRequest().mutate().headers(headers -> {
