@@ -74,7 +74,7 @@ public class WebSecurityConfig {
     @Value("${apiml.internal-discovery.port:10011}")
     private int internalDiscoveryPort;
 
-    private static final List<String> UNAUTHENTICATED_PATTERNS = List.of("/application/**",
+    private static final List<String> UNAUTHENTICATED_PATTERNS = List.of("/application/",
     "/eureka/css/**",
     "/eureka/js/**",
     "/eureka/fonts/**",
