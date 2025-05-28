@@ -156,7 +156,7 @@ public class AuthenticationService {
     @Cacheable(value = CACHE_INVALIDATED_JWT_TOKENS, key = "#jwtToken", condition = "#jwtToken != null")
     public Boolean invalidateJwtToken(String jwtToken, boolean distribute) {
         var app = eurekaClient.getApplication(CoreService.ZAAS.getServiceId());
-       return invalidate(jwtToken, distribute, app);
+        return invalidate(jwtToken, distribute, app);
     }
 
     public Boolean invalidate(String jwtToken, boolean distribute, Application app) {

@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Configuration;
 public class MessageServiceConfiguration {
 
     @Bean
-    public MessageService messageService() {
+    MessageService messageService() {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/utility-log-messages.yml");
         messageService.loadMessages("/common-log-messages.yml");

@@ -157,7 +157,7 @@ public class WebSecurity {
      */
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SecurityWebFilterChain oauth2WebFilterChain(
+    SecurityWebFilterChain oauth2WebFilterChain(
         ServerHttpSecurity http,
         Optional<ReactiveOAuth2AuthorizedClientService> reactiveOAuth2AuthorizedClientService,
         Optional<ApimlServerAuthorizationRequestRepository> requestRepository,
@@ -235,7 +235,7 @@ public class WebSecurity {
     }
 
     @Bean
-    public ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(
+    ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(
         Optional<InMemoryReactiveClientRegistrationRepository> inMemoryReactiveClientRegistrationRepository
     ) {
         if (!clientConfiguration.isConfigured()) {
@@ -249,7 +249,7 @@ public class WebSecurity {
     }
 
     @Bean
-    public ApimlServerAuthorizationRequestRepository requestRepository(Optional<ServerOAuth2AuthorizationRequestResolver> authorizationRequestResolver) {
+    ApimlServerAuthorizationRequestRepository requestRepository(Optional<ServerOAuth2AuthorizationRequestResolver> authorizationRequestResolver) {
         if (!clientConfiguration.isConfigured()) {
             return null;
         }
@@ -260,7 +260,7 @@ public class WebSecurity {
     }
 
     @Bean
-    public ReactiveClientRegistrationRepository clientRegistrationRepository() {
+    ReactiveClientRegistrationRepository clientRegistrationRepository() {
         if (!clientConfiguration.isConfigured()) {
             return registrationId -> null;
         }
@@ -268,7 +268,7 @@ public class WebSecurity {
     }
 
     @Bean
-    public ServerOAuth2AuthorizedClientRepository serverOAuth2AuthorizedClientRepository(
+    ServerOAuth2AuthorizedClientRepository serverOAuth2AuthorizedClientRepository(
         Optional<ReactiveOAuth2AuthorizedClientService> clientService
     ) {
         if (!clientConfiguration.isConfigured()) {
@@ -281,7 +281,7 @@ public class WebSecurity {
 
     @Bean
     @ConditionalOnBean(ReactiveClientRegistrationRepository.class)
-    public ReactiveOAuth2AuthorizedClientManager gatewayReactiveOAuth2AuthorizedClientManager(
+    ReactiveOAuth2AuthorizedClientManager gatewayReactiveOAuth2AuthorizedClientManager(
         Optional<ReactiveClientRegistrationRepository> clientRegistrationRepository,
         Optional<ReactiveOAuth2AuthorizedClientService> authorizedClientService
     ) {
@@ -337,14 +337,14 @@ public class WebSecurity {
 
     @Bean
     @Order(Ordered.LOWEST_PRECEDENCE)
-    public SecurityWebFilterChain defaultSecurityWebFilterChain(ServerHttpSecurity http) {
+    SecurityWebFilterChain defaultSecurityWebFilterChain(ServerHttpSecurity http) {
         return defaultSecurityConfig(http).build();
     }
 
     @Bean
     @Order(1)
     @ConditionalOnMissingBean(name = "modulithConfig")
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+    SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         return defaultSecurityConfig(http)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
                 REGISTRY_PATH,
@@ -501,7 +501,7 @@ public class WebSecurity {
     }
 
     @Bean
-    public StrictServerWebExchangeFirewall httpFirewall() {
+    StrictServerWebExchangeFirewall httpFirewall() {
         StrictServerWebExchangeFirewall firewall = new StrictServerWebExchangeFirewall();
         if (isStrictUrlValidationEnabled) {
             return firewall;

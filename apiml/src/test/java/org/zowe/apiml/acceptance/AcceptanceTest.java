@@ -16,6 +16,7 @@ import org.springframework.cloud.netflix.eureka.server.EurekaController;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.result.view.freemarker.FreeMarkerConfigurer;
 import org.zowe.apiml.ApimlApplication;
 
@@ -37,13 +38,15 @@ import java.lang.annotation.Target;
     )})
 @SpringBootTest(classes = {
         ApimlApplication.class,
-        FreeMarkerConfigurer.class
+        FreeMarkerConfigurer.class,
+        TestConfig.class
     },
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
     properties = {
         "server.port=40985" // Use specific port due to need to use of apiml.service.port to determine if it's gateway or DS
     }
 )
+@ActiveProfiles("ApimlModulithAcceptanceTest")
 @AutoConfigureWebTestClient
 @DirtiesContext
 public @interface AcceptanceTest {

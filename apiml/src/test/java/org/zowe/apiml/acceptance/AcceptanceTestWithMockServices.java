@@ -15,6 +15,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.zowe.apiml.gateway.ApplicationRegistry;
@@ -28,6 +29,7 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
     private ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
+    @Qualifier("applicationRegistry")
     protected ApplicationRegistry applicationRegistry;
 
     @BeforeEach

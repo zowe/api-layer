@@ -10,33 +10,45 @@
 
 package org.zowe.apiml.acceptance;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sun.net.httpserver.Headers;
+import freemarker.template.TemplateException;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.zowe.apiml.EurekaDashboardController;
 import org.zowe.apiml.gateway.MockService;
-import org.zowe.apiml.zaas.ZaasTokenResponse;
+import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @AcceptanceTest
-@ActiveProfiles("EurekaEndpointsTests")
 public class EurekaEndpointsTests extends AcceptanceTestWithMockServices {
 
     private static final String USER_ID = "user";
-    private static final String COOKIE_NAME = "apimlAuthenticationToken";
-    private static final String JWT = "jwt";
+
+    @MockitoBean
+    EurekaDashboardController eurekaDashboardController;
 
     @Test
-    void testEurekaHomePage() throws JsonProcessingException {
-        var response = ZaasTokenResponse.builder().cookieName(COOKIE_NAME).token(JWT).build();
+    void testEurekaHomePage() throws TemplateException, IOException {
+        var headers = new Headers();
+        headers.add("Set-Cookie", "jwtToken=jwt");
+        headers.add("Set-Cookie", "LtpaToken2=ltpatoken");
 
-        mockService("zaas").scope(MockService.Scope.TEST)
-            .addEndpoint("/zaas/scheme/zosmf")
-            .responseCode(201)
-            .bodyJson(response)
-            .and().start();
+        when(eurekaDashboardController.status(any(), any())).thenReturn(Mono.just("status page"));
+
+        mockService("zosmf").scope(MockService.Scope.TEST)
+            .addEndpoint("/zosmf/info")
+                .responseCode(200)
+                .contentType("application/json")
+                .headers(headers)
+                .bodyJson("{\"zosmf_version\":\"29\",\"zosmf_saf_realm\":\"SAFRealm\",\"zosmf_full_version\":\"29.0\"}")
+        .and()
+            .start();
 
         given()
         .when()

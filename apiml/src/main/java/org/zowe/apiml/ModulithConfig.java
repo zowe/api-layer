@@ -88,7 +88,7 @@ public class ModulithConfig {
     private int port;
 
     @Bean
-    public String authServiceId() {
+    String authServiceId() {
         return CoreService.GATEWAY.getServiceId();
     }
 
@@ -156,7 +156,7 @@ public class ModulithConfig {
     }
 
     @Bean
-    public ReactiveDiscoveryClient registryReactiveDiscoveryClient(DiscoveryClient registryDiscoveryClient) {
+    ReactiveDiscoveryClient registryReactiveDiscoveryClient(DiscoveryClient registryDiscoveryClient) {
         return new ReactiveDiscoveryClient() {
             @Override
             public String description() {
@@ -176,12 +176,12 @@ public class ModulithConfig {
     }
 
     @Bean
-    public RouteRefreshListener routeRefreshListener(ApplicationEventPublisher publisher) {
+    RouteRefreshListener routeRefreshListener(ApplicationEventPublisher publisher) {
         return new RouteRefreshListener(publisher);
     }
 
     @Bean
-    public DiscoveryClient registryDiscoveryClient() {
+    DiscoveryClient registryDiscoveryClient() {
         return new DiscoveryClient() {
             @Override
             public String description() {
@@ -219,7 +219,7 @@ public class ModulithConfig {
     }
 
     @Bean
-    public MessageService messageService() {
+    MessageService messageService() {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/utility-log-messages.yml");
         messageService.loadMessages("/common-log-messages.yml");
@@ -234,7 +234,7 @@ public class ModulithConfig {
 
     @Bean
     @Primary
-    public TomcatReactiveWebServerFactory tomcatReactiveWebServerWithFiltersFactory(
+    TomcatReactiveWebServerFactory tomcatReactiveWebServerWithFiltersFactory(
         HttpHandler httpHandler,
         List<PreFluxFilter> preFluxFilters,
         List<ServletContextAware> servletContextAwareListeners
@@ -262,7 +262,7 @@ public class ModulithConfig {
      * @return
      */
     @Bean
-    public WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> internalPortCustomizer(
+    WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> internalPortCustomizer(
         @Value("${apiml.internal-discovery.port:10011}") int internalDiscoveryPort
     ) {
         return factory -> {
