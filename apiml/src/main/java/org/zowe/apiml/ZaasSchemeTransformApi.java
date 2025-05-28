@@ -83,7 +83,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
 
     private <R> Mono<AbstractAuthSchemeFactory.AuthorizationResponse<R>> createErrorMessage(String errorMessage) {
         var headers = new ErrorHeaders(errorMessage);
-        return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<R>(headers, null));
+        return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(headers, null));
     }
 
     @Override
@@ -96,7 +96,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         try {
             var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
-            if (!authSource.isPresent()) {
+            if (authSource.isEmpty()) {
                 return createErrorMessage("Insufficient authentication: No authentication source found in the request.");
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
@@ -120,7 +120,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         try {
             var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
-            if (!authSource.isPresent()) {
+            if (authSource.isEmpty()) {
                 return createErrorMessage("Insufficient authentication: No authentication source found in the request.");
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
@@ -139,7 +139,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         try {
             var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
-            if (!authSource.isPresent()) {
+            if (authSource.isEmpty()) {
                 return createErrorMessage("Insufficient authentication: No authentication source found in the request.");
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
@@ -157,7 +157,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         try {
             var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
-            if (!authSource.isPresent()) {
+            if (authSource.isEmpty()) {
                 return createErrorMessage("Insufficient authentication: No authentication source found in the request.");
             }
 

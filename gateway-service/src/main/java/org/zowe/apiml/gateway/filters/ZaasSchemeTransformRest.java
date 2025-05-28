@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
@@ -53,6 +54,7 @@ public class ZaasSchemeTransformRest implements ZaasSchemeTransform {
     private final RobinRoundIterator<ServiceInstance> robinRound = new RobinRoundIterator<>();
 
     private final ReactiveDiscoveryClient discoveryClient;
+    @Qualifier("webClientClientCert")
     private final WebClient webClient;
 
     //.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -97,7 +99,7 @@ public class ZaasSchemeTransformRest implements ZaasSchemeTransform {
             .flatMap(zaasInstances -> {
                 Iterator<ServiceInstance> i = robinRound.getIterator(zaasInstances);
                 if (!i.hasNext()) {
-                    throw new ServiceNotAccessibleException(SERVICE_IS_UNAVAILABLE_MESSAGE);
+                    return Mono.error(new ServiceNotAccessibleException(SERVICE_IS_UNAVAILABLE_MESSAGE));
                 }
 
                 return requestWithHa(responseClass, i, requestBuilder,  new AtomicReference<>(Optional.empty()))
@@ -109,9 +111,9 @@ public class ZaasSchemeTransformRest implements ZaasSchemeTransform {
         var requestBuild = webClient.post().uri(uri);
 
         Optional.ofNullable(requestCredentials.getHeaders()).orElse(Collections.emptyMap())
-            .entrySet().forEach(entry -> requestBuild.header(entry.getKey(), entry.getValue()));
+            .forEach(requestBuild::header);
         Optional.ofNullable(requestCredentials.getCookies()).orElse(Collections.emptyMap())
-            .entrySet().forEach(entry -> requestBuild.cookie(entry.getKey(), entry.getValue()));
+            .forEach(requestBuild::cookie);
 
         if (StringUtils.isNotEmpty(requestCredentials.getX509Certificate())) {
             requestBuild.header(CLIENT_CERT_HEADER, requestCredentials.getX509Certificate());
