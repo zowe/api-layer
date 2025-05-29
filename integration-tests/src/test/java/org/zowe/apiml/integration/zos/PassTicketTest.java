@@ -234,7 +234,7 @@ class PassTicketTest implements TestWithStartedInstances {
 
             @Test
             void givenInvalidHttpMethod() {
-                String expectedMessage = "Authentication method 'GET' is not supported for URL '" + ZAAS_PASSTICKET_PATH + "'";
+                String expectedMessage = "The request method has been disabled and cannot be used for the requested resource.";
 
                 given()
                     .contentType(JSON)
@@ -243,7 +243,7 @@ class PassTicketTest implements TestWithStartedInstances {
                     .get(url)
                 .then()
                     .statusCode(is(SC_METHOD_NOT_ALLOWED))
-                    .body("messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage));
+                    .body("messages.find { it.messageNumber == 'ZWEAO405E' }.messageContent", equalTo(expectedMessage));
             }
         }
     }

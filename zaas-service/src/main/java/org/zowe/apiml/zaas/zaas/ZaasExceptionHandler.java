@@ -154,7 +154,7 @@ public class ZaasExceptionHandler {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiMessageView> handleMethodNotAllowedException(HttpServletRequest request, HttpRequestMethodNotSupportedException notAllowedMethodException) {
         log.debug("MethodNotAllowedException exception", notAllowedMethodException);
-        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.invalidMethod", request.getMethod(), request.getRequestURI()).mapToView();
+        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.common.methodNotAllowed", request.getMethod(), request.getRequestURI()).mapToView();
         return ResponseEntity
             .status(HttpStatus.METHOD_NOT_ALLOWED)
             .contentType(MediaType.APPLICATION_JSON)

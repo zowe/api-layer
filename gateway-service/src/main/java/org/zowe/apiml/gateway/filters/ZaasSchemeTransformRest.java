@@ -57,8 +57,6 @@ public class ZaasSchemeTransformRest implements ZaasSchemeTransform {
     @Qualifier("webClientClientCert")
     private final WebClient webClient;
 
-    //.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-
     private <R> Mono<AbstractAuthSchemeFactory.AuthorizationResponse<R>> requestWithHa(
         Class<R> responseClass,
         Iterator<ServiceInstance> serviceInstanceIterator,

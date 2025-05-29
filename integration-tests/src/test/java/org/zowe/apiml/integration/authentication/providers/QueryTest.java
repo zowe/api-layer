@@ -175,8 +175,7 @@ class QueryTest implements TestWithStartedInstances {
             @ParameterizedTest(name = "givenValidCredentials {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenValidToken(String queryUrl) {
-                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3)).replace("/gateway/", "/zaas/");
-                String expectedMessage = "Authentication method 'POST' is not supported for URL '" + queryPath + "'";
+                String expectedMessage = "The request method has been disabled and cannot be used for the requested resource.";
 
                 given()
                     .header("Authorization", "Bearer " + validToken)
@@ -184,7 +183,7 @@ class QueryTest implements TestWithStartedInstances {
                     .post(queryUrl)
                 .then()
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == 'ZWEAO405E' }.messageContent", equalTo(expectedMessage)
                     );
             }
         }
