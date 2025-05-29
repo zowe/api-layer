@@ -95,7 +95,7 @@ public class WebSecurityConfig {
 
     private final ServerWebExchangeMatcher discoveryPortMatcher = exchange -> exchange.getRequest().getURI().getPort() == internalDiscoveryPort ? MatchResult.match() : MatchResult.notMatch();
     private final ServerWebExchangeMatcher isInUnauthenticatedPaths = ServerWebExchangeMatchers.pathMatchers(UNAUTHENTICATED_PATTERNS.toArray(new String[]{}));
-    private final ServerWebExchangeMatcher notInUnauthenticatedPaths = new NegatedServerWebExchangeMatcher(isInUnauthenticatedPaths); //TODO find better solution
+    private final ServerWebExchangeMatcher notInUnauthenticatedPaths = new NegatedServerWebExchangeMatcher(isInUnauthenticatedPaths);
 
 
     @Bean
@@ -170,7 +170,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    SecurityWebFilterChain allowedEndpoints(ServerHttpSecurity http) {
+    SecurityWebFilterChain discoveryAllowedEndpoints(ServerHttpSecurity http) {
         http
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
@@ -194,6 +194,27 @@ public class WebSecurityConfig {
                 }
                 exchange.anyExchange().authenticated();
             });
+        return http.build();
+    }
+
+    @Bean
+    SecurityWebFilterChain gatewayAllowedEndpoints(ServerHttpSecurity http,  ObjectMapper mapper,
+                                                   AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+        http
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/application/health"))
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .authorizeExchange(exchange -> {
+                if (!isHealthEndpointProtected) {
+                    exchange.pathMatchers("/application/health").permitAll();
+                } else {
+                    exchange.anyExchange().authenticated();
+                }
+            })
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable);
+        if (isHealthEndpointProtected) {
+            http.addFilterAfter(new TokenAuthenticationFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION) // waiting for the new one not relying on zaas
+                .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION);
+        }
         return http.build();
     }
 
