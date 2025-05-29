@@ -29,7 +29,8 @@ public class EnvironmentConfiguration {
     private ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
     private ApiCatalogServiceConfiguration apiCatalogStandaloneConfiguration;
     private CachingServiceConfiguration cachingServiceConfiguration;
-    private CloudGatewayConfiguration cloudGatewayConfiguration;
+    // Cloud gateway tests are excluded from z/OS tests, leading to config load failure when the props are undefined
+    private CloudGatewayConfiguration cloudGatewayConfiguration = new CloudGatewayConfiguration();
     private TlsConfiguration tlsConfiguration;
     private ZosmfServiceConfiguration zosmfServiceConfiguration;
     private AuxiliaryUserList auxiliaryUserList;
