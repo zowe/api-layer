@@ -53,7 +53,7 @@ class StoreAccessTokenInfoFilterTest {
     private static final String INVALID_JSON2 = "{\"valissdity\": 90, \"scopes\": [\"service\"]}";
     private final MessageService messageService = new YamlMessageService("/security-service-messages.yml");
 
-    private final AuthExceptionHandler authExceptionHandler = new AuthExceptionHandler(messageService, new ObjectMapper());
+    private final AuthExceptionHandler authExceptionHandler = new AuthExceptionHandler(messageService, new ObjectMapper(), false);
 
     @BeforeEach
     public void setUp() {

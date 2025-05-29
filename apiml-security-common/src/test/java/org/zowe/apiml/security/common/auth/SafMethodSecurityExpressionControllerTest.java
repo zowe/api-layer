@@ -136,7 +136,7 @@ class SafMethodSecurityExpressionControllerTest {
 
         @Bean
         public AuthExceptionHandler authExceptionHandler() {
-            return new AuthExceptionHandler(messageService(), objectMapper());
+            return new AuthExceptionHandler(messageService(), objectMapper(), false);
         }
 
         @Bean

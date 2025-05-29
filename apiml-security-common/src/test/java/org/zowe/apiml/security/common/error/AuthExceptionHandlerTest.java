@@ -65,7 +65,7 @@ class AuthExceptionHandlerTest {
 
     @BeforeEach
     void setup() {
-        authExceptionHandler = new AuthExceptionHandler(messageService, objectMapper);
+        authExceptionHandler = new AuthExceptionHandler(messageService, objectMapper, false);
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setRequestURI("URI");
 

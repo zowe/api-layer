@@ -47,7 +47,7 @@ class BasicUnauthorizedHandlerTest {
     @Test
     void testCommence() throws IOException, ServletException {
         BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler = new BasicAuthUnauthorizedHandler(
-            new AuthExceptionHandler(messageService, objectMapper));
+            new AuthExceptionHandler(messageService, objectMapper, false));
 
         MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setRequestURI("URI");
