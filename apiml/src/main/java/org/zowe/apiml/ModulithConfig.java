@@ -92,6 +92,11 @@ public class ModulithConfig {
         return CoreService.GATEWAY.getServiceId();
     }
 
+    @Bean
+    public Boolean isModulith() {
+        return true;
+    }
+
     private InstanceInfo getInstanceInfo(String serviceId) {
         var leaseInfo = LeaseInfo.Builder.newBuilder()
             .setDurationInSecs(Integer.MAX_VALUE)
@@ -150,9 +155,7 @@ public class ModulithConfig {
     @EventListener
     public void onApplicationEvent(EurekaRegistryAvailableEvent event) {
         ApimlInstanceRegistry registry = getRegistry();
-        instances.entrySet()
-            .stream()
-            .forEach(entry -> registry.registerStatically(instances.get(entry.getKey()), CoreService.GATEWAY.getServiceId().equals(entry.getKey())));
+        instances.forEach((key, value) -> registry.registerStatically(instances.get(key), CoreService.GATEWAY.getServiceId().equals(key)));
     }
 
     @Bean

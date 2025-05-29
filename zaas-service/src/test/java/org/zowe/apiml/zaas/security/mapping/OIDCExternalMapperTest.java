@@ -25,17 +25,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.util.HttpClientMockHelper;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.OIDCAuthSource;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -169,12 +168,16 @@ class OIDCExternalMapperTest {
 
         @BeforeEach
         void setup() throws ReflectiveOperationException {
-            setFinalStaticField(ExternalMapper.class, "objectMapper", mockedMapper);
+            Field field = ExternalMapper.class.getDeclaredField("objectMapper");
+            field.setAccessible(true);
+            field.set(null, mockedMapper);
         }
 
         @AfterEach
         void teardown() throws ReflectiveOperationException {
-            setFinalStaticField(ExternalMapper.class, "objectMapper", new ObjectMapper());
+            Field field = ExternalMapper.class.getDeclaredField("objectMapper");
+            field.setAccessible(true);
+            field.set(null, new ObjectMapper());
         }
 
         @Test
@@ -184,14 +187,6 @@ class OIDCExternalMapperTest {
             assertNull(userId);
             verify(httpClient, times(0)).execute(any());
         }
-    }
-    private static void setFinalStaticField(Class<?> clazz, String fieldName, Object value)
-        throws ReflectiveOperationException {
-
-        Field field = clazz.getDeclaredField(fieldName);
-        MODIFIERS.set(field, field.getModifiers() & ~Modifier.FINAL);
-        field.setAccessible(true);
-        field.set(null, value);
     }
 
 }

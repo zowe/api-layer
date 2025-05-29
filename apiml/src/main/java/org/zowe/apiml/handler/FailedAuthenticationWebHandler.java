@@ -11,6 +11,7 @@
 package org.zowe.apiml.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DefaultDataBuffer;
@@ -65,7 +66,12 @@ public class FailedAuthenticationWebHandler implements ServerAuthenticationFailu
         var addHeader = (BiConsumer<String, String>)(name, value) -> {
             exchange.getResponse().getHeaders().add(name, value);
         };
-        handler.handleException(requestUri, consumer, addHeader, exception);
+        try {
+            handler.handleException(requestUri, consumer, addHeader, exception);
+        } catch (ServletException e) {
+            // This should never happen in modulith mode, but handler declares ServletException in its signature
+            throw new RuntimeException(e);
+        }
         return exchange.getResponse().writeWith(Mono.just(buffer.get()));
 
     }

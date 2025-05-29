@@ -11,7 +11,10 @@
 package org.zowe.apiml.security.common.error;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -32,11 +35,15 @@ import java.util.function.BiConsumer;
 @Component
 public class AuthExceptionHandler extends AbstractExceptionHandler {
 
+    private final boolean isModulith;
+
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public AuthExceptionHandler(
         MessageService messageService,
-        ObjectMapper objectMapper) {
+        ObjectMapper objectMapper,
+        @Autowired(required = false) @Qualifier("isModulith") Boolean isModulith) {
         super(messageService, objectMapper);
+        this.isModulith = Boolean.TRUE.equals(isModulith);
     }
 
     /**
@@ -48,7 +55,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
      * @param ex Exception to be handled
      */
     @Override
-    public void handleException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, RuntimeException ex) {
+    public void handleException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, RuntimeException ex) throws ServletException {
         if (ex instanceof InsufficientAuthenticationException) {
             handleAuthenticationRequired(requestUri, function, addHeader, ex);
         } else if (ex instanceof BadCredentialsException) {
@@ -79,6 +86,11 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             handleAuthenticationException(requestUri, function, ex);
         } else if (ex instanceof ServiceNotAccessibleException) {
             handleServiceNotAccessibleException(requestUri, function, ex);
+        } else {
+            if (!isModulith) {
+                throw new ServletException(ex);
+            }
+            handleAuthenticationException(requestUri, function, ex);
         }
     }
 
