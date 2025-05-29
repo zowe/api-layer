@@ -18,7 +18,7 @@ dependencyResolutionManagement {
             version('jmolecules', '2023.3.1')
 
             version('glassfishHk2', '3.1.1')
-            version('zosUtils', '2.0.6')
+            version('zosUtils', '2.0.7-SNAPSHOT')
             version('aws', '1.12.783')
             version('awaitility', '4.3.0')
             version('bouncyCastle', '1.80')
