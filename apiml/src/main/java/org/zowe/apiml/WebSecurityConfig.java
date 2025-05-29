@@ -212,7 +212,7 @@ public class WebSecurityConfig {
             })
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable);
         if (isHealthEndpointProtected) {
-            http.addFilterAfter(new TokenAuthenticationFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION) // waiting for the new one not relying on zaas
+            http.addFilterAfter(new TokenAuthenticationFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION);
         }
         return http.build();
