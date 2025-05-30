@@ -14,6 +14,7 @@ import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -50,6 +51,7 @@ import static org.zowe.apiml.util.requests.Endpoints.ZOSMF_REQUEST;
 import static org.zowe.apiml.util.requests.Endpoints.ZOWE_JWT_REQUEST;
 
 @ZaasTest
+@Tag("CloudGatewayProxyTest")
 public class CloudGatewayAuthTest implements TestWithStartedInstances {
 
     private static final CloudGatewayConfiguration CLOUD_GATEWAY_CONFIGURATION = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
