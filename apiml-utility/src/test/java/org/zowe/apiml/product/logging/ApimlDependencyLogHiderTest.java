@@ -13,7 +13,6 @@ package org.zowe.apiml.product.logging;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.core.spi.FilterReply;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
@@ -27,23 +26,6 @@ class ApimlDependencyLogHiderTest {
     private final Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("org.zowe.apiml.logger");
     private ApimlDependencyLogHider apimlDependencyLogHider = new ApimlDependencyLogHider();
 
-    @BeforeEach
-    void setUp() {
-        System.getProperties().setProperty("spring.profiles.include", "");
-    }
-
-    @Test
-    void testDecide_whenApplicationRunningInDebugMode() {
-        System.getProperties().setProperty("spring.profiles.include", "debug");
-        ApimlDependencyLogHider apimlDependencyLogHider = new ApimlDependencyLogHider();
-
-        FilterReply actualFilterReply = apimlDependencyLogHider.decide(null, logger, null,
-            "Message text", null, null);
-
-        assertEquals(FilterReply.NEUTRAL, actualFilterReply, "Log levels are not same");
-    }
-
-
     @Test
     void testDecide_whenLoggerLevelIsLowThanInfo() {
         logger.setLevel(Level.DEBUG);
@@ -53,7 +35,6 @@ class ApimlDependencyLogHiderTest {
 
         assertEquals(FilterReply.NEUTRAL, actualFilterReply, "Log levels are not same");
     }
-
 
     @Test
     void testDecide_whenIgnoredMessagesArePresent() {
@@ -86,7 +67,7 @@ class ApimlDependencyLogHiderTest {
         FilterReply actualFilterReply = apimlDependencyLogHider.decide(null, logger, null,
             format, null, filterException);
 
-        FilterReply expectedFilterReply =  FilterReply.DENY;
+        FilterReply expectedFilterReply = FilterReply.DENY;
         assertEquals(expectedFilterReply, actualFilterReply, "Log levels are not same");
     }
 

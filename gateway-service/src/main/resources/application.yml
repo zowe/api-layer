@@ -132,7 +132,6 @@ server:
 logbackServiceName: ZWEAGW1
 
 logging:
-    config: classpath:logback-gateway.xml
     level:
         ROOT: INFO
         com.netflix: WARN
