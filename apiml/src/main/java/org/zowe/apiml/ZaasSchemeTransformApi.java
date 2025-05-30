@@ -35,11 +35,11 @@ import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import reactor.core.publisher.Mono;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.Optional;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.*;
 
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
@@ -208,7 +208,18 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         @Override
         public Object getAttribute(String name) {
             if ("client.auth.X509Certificate".equals(name)) {
-                return requestCredentials.getX509Certificate();
+                try {
+                    String certBase64 = requestCredentials.getX509Certificate();
+                    if (StringUtils.isBlank(certBase64)) return null;
+
+                    byte[] certBytes = Base64.getDecoder().decode(certBase64);
+                    CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                    X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(certBytes));
+                    return new X509Certificate[] { cert };
+                } catch (Exception e) {
+                    log.debug("Invalid certificate format in RequestCredentials", e);
+                    return null;
+                }
             }
             return null;
         }
