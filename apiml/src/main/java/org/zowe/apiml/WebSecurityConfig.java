@@ -99,7 +99,7 @@ public class WebSecurityConfig {
 
 
     @Bean
-    public SecurityWebFilterChain errorFilterChain(ServerHttpSecurity http) {
+    SecurityWebFilterChain errorFilterChain(ServerHttpSecurity http) {
         return http
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/error"))
             .authorizeExchange(exchanges -> exchanges.anyExchange().permitAll())
@@ -110,7 +110,7 @@ public class WebSecurityConfig {
     * Filter chain for protecting endpoints with client certificate
     */
     @Bean
-    public SecurityWebFilterChain clientCertificateFilterChain(ServerHttpSecurity http) {
+    SecurityWebFilterChain clientCertificateFilterChain(ServerHttpSecurity http) {
         http
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,

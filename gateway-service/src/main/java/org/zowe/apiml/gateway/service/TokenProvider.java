@@ -47,7 +47,9 @@ public class TokenProvider extends AbstractAuthProviderFilter<QueryResponse> {
     }
 
     public Mono<QueryResponse> validateToken(String token) {
-        return getZaasInstances().flatMap(instances ->
+        return getZaasInstances()
+            .collectList()
+            .flatMap(instances ->
             invoke(
                 instances,
                 instance -> createRequest(instance, token)
