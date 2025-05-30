@@ -13,6 +13,7 @@ package org.zowe.apiml.filter;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpCookie;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.server.WebFilterExchange;
@@ -75,11 +76,9 @@ public class LogoutHandler implements ServerLogoutHandler {
     }
 
     public static Mono<String> getBearerTokenFromHeaderReactive(ServerWebExchange exchange) {
-        return Mono.justOrEmpty(exchange)
-            .filter(ex -> ex.getRequest().getHeaders().getFirst(BEARER_AUTHENTICATION_PREFIX) != null)
-            .map(ex -> ex.getRequest().getHeaders().getFirst(BEARER_AUTHENTICATION_PREFIX))
-            .filter(authHeader -> authHeader != null && authHeader.regionMatches(true, 0, BEARER_AUTHENTICATION_PREFIX, 0, BEARER_AUTHENTICATION_PREFIX.length()))
-            .map(authHeader -> authHeader.substring(BEARER_AUTHENTICATION_PREFIX.length()))
+        return Mono.justOrEmpty(exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
+            .filter(authHeader -> authHeader.toLowerCase().startsWith((BEARER_AUTHENTICATION_PREFIX + " ").toLowerCase()))
+            .map(authHeader -> authHeader.substring((BEARER_AUTHENTICATION_PREFIX + " ").length()).trim())
             .filter(token -> !token.isBlank());
     }
 
