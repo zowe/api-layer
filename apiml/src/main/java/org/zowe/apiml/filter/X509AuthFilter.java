@@ -25,10 +25,23 @@ import java.security.cert.X509Certificate;
 
 import static org.zowe.apiml.filter.CategorizeCertsWebFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE;
 
+/**
+ * A reactive WebFilter that performs X.509 client certificate authentication.
+ * <p>
+ * It checks if a client certificate is present in the exchange attributes (injected upstream),
+ * and attempts to authenticate using the provided {@link ReactiveAuthenticationManager}.
+ * <p>
+ * If the current context is already authenticated or no certificate is provided,
+ * the request proceeds without authentication.
+ * <p>
+ * If authentication is successful, the resulting {@link org.springframework.security.core.Authentication}
+ * is propagated via {@link ReactiveSecurityContextHolder}.
+ */
 @RequiredArgsConstructor
 public class X509AuthFilter implements WebFilter {
 
     private final ReactiveAuthenticationManager x509AuthenticationProvider;
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
 

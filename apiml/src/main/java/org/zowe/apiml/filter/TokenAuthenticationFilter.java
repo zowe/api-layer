@@ -31,12 +31,24 @@ import java.util.Optional;
 
 import static org.zowe.apiml.security.common.token.TokenAuthentication.createAuthenticated;
 
+/**
+ * A reactive WebFilter that authenticates requests based on JWT tokens.
+ * <p>
+ * It attempts to resolve a token from the Authorization header (Bearer) or from a configured cookie.
+ * If a token is found and validated successfully using {@link LocalTokenProvider}, the authentication
+ * context is established and propagated using {@link ReactiveSecurityContextHolder}.
+ * <p>
+ * If token validation fails or the user ID is missing, a custom {@link AuthExceptionHandlerReactive}
+ * is invoked to handle the authentication error.
+ */
 @RequiredArgsConstructor
 public class TokenAuthenticationFilter implements WebFilter {
+
     public static final String HEADER_PREFIX = "Bearer ";
     private final LocalTokenProvider tokenProvider;
     private final AuthConfigurationProperties authConfigurationProperties;
     private final AuthExceptionHandlerReactive authExceptionHandlerReactive;
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         var token = resolveToken(exchange.getRequest()).filter(StringUtils::isNotBlank);

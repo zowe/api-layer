@@ -33,6 +33,29 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+/**
+ * Reactive WebFilter that handles basic login authentication using either:
+ * <ul>
+ *   <li>HTTP Basic Authorization header, or</li>
+ *   <li>JSON body containing a {@link LoginRequest} with username and password.</li>
+ * </ul>
+ *
+ * <p>Authentication flow:</p>
+ * <ol>
+ *   <li>Attempts to extract credentials from the Authorization header.</li>
+ *   <li>If not found, attempts to extract credentials from the request body.</li>
+ *   <li>If credentials are found, tries to authenticate using the reactive authentication manager.</li>
+ *   <li>On success, stores the {@link org.springframework.security.core.Authentication} in the reactive security context.</li>
+ *   <li>On failure, delegates to the provided {@link FailedAuthenticationWebHandler}.</li>
+ *   <li>If no credentials are present, simply delegates to the next filter in the chain.</li>
+ * </ol>
+ *
+ * <p>This filter is intended to be used on /login endpoints.</p>
+ *
+ * @see LoginRequest
+ * @see CompoundAuthProvider
+ * @see FailedAuthenticationWebHandler
+ */
 @Slf4j
 public class BasicLoginFilter implements WebFilter {
 

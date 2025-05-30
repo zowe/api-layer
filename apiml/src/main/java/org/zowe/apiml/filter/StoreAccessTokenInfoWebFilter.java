@@ -32,11 +32,20 @@ import java.util.stream.Collectors;
 
 import static org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter.TOKEN_REQUEST;
 
+/**
+ * A reactive WebFilter that parses and stores access token request details from the request body.
+ * <p>
+ * This filter reads the request body expecting a {@link SuccessfulPersonalAccessTokenHandler.AccessTokenRequest}
+ * JSON payload. It extracts and normalizes the scopes, storing the full object in the exchange attributes
+ * under the key {@code TOKEN_REQUEST} for downstream filters to use.
+ * <p>
+ * If the payload is invalid or missing required fields (like scopes), the provided
+ * {@link ServerAuthenticationFailureHandler} is triggered to handle the error response.
+ * <p>
+ * The original body is reconstructed and passed downstream using {@link ServerHttpRequestDecorator}.
+ */
 @Slf4j
 @RequiredArgsConstructor
-/**
- * This filter will store the personal access information from the body as request attribute
- */
 public class StoreAccessTokenInfoWebFilter implements WebFilter {
 
     private final ServerAuthenticationFailureHandler failureHandler;
