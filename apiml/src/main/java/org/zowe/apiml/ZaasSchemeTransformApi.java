@@ -26,6 +26,7 @@ import org.zowe.apiml.gateway.filters.AbstractAuthSchemeFactory;
 import org.zowe.apiml.gateway.filters.ErrorHeaders;
 import org.zowe.apiml.gateway.filters.RequestCredentials;
 import org.zowe.apiml.gateway.filters.ZaasSchemeTransform;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.ticket.TicketResponse;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
@@ -80,9 +81,18 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
     private final PassTicketService passTicketService;
     private final ZosmfService zosmfService;
     private final TokenCreationService tokenCreationService;
+    private final MessageService messageService;
+
 
     private <R> Mono<AbstractAuthSchemeFactory.AuthorizationResponse<R>> createErrorMessage(String errorMessage) {
         var headers = new ErrorHeaders(errorMessage);
+        return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(headers, null));
+    }
+
+    private <R> Mono<AbstractAuthSchemeFactory.AuthorizationResponse<R>> createErrorMessage() {
+        String messageKey = "org.zowe.apiml.common.unauthorized";
+        String logMessage = messageService.createMessage(messageKey).mapToLogMessage();
+        var headers = new ErrorHeaders(logMessage);
         return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(headers, null));
     }
 
@@ -166,7 +176,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot obtain Zowe JWT token", e);
-            return createErrorMessage(e.getMessage());
+            return createErrorMessage();
         }
     }
 
