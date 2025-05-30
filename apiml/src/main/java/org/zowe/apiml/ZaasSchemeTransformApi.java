@@ -209,7 +209,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         public Object getAttribute(String name) {
             if ("client.auth.X509Certificate".equals(name)) {
                 try {
-                    String certBase64 = requestCredentials.getX509Certificate();
+                    var certBase64 = requestCredentials.getX509Certificate();
                     if (StringUtils.isBlank(certBase64)) return null;
 
                     byte[] certBytes = Base64.getDecoder().decode(certBase64);

@@ -33,5 +33,7 @@ public class LocalTokenProvider extends TokenProvider {
            var tokenAuthentication = authenticationService.validateJwtToken(token);
            return new QueryResponse(null, tokenAuthentication.getPrincipal(),null,null,null,null,null);
        }).onErrorResume(e -> Mono.just(new QueryResponse()));
+
     }
+
 }
