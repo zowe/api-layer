@@ -219,6 +219,43 @@ public class WebSecurityConfig {
     }
 
     /**
+     * Security filter chain that protects all endpoints under the path "/application/**",
+     * except for "/application/health" - which is handled separately based on the configuration - and "/application/info".
+     * <p>
+     * This chain requires that all incoming requests to the matched paths are authenticated,
+     * either via Basic Authentication or Bearer JWT token.
+     * <p>
+     * The chain disables relies on custom filters to handle authentication:
+     * <ul>
+     *     <li>{@link TokenAuthenticationFilter} - Validates JWT tokens</li>
+     *     <li>{@link BasicLoginFilter} - Validates Basic Authentication credentials</li>
+     * </ul>
+     *
+     * @param http HTTP security configuration
+     * @param mapper object mapper used by authentication filters
+     * @param authConfigurationProperties authentication configuration properties
+     * @param authExceptionHandlerReactive custom handler for authentication failures
+     * @return the configured {@link SecurityWebFilterChain} for protecting "/application/**" paths
+     */
+    @Bean
+    SecurityWebFilterChain applicationEndpointsProtected(ServerHttpSecurity http,
+                                                         ObjectMapper mapper,
+                                                         AuthConfigurationProperties authConfigurationProperties,
+                                                         AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+        return http
+            .securityMatcher(new AndServerWebExchangeMatcher(
+                ServerWebExchangeMatchers.pathMatchers("/application/**"),
+                new NegatedServerWebExchangeMatcher(ServerWebExchangeMatchers.pathMatchers("/application/health", "/application/info"))
+            ))
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .addFilterAfter(new TokenAuthenticationFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
+            .build();
+    }
+
+    /**
     * Filter chain for protecting endpoints with MF credentials (basic or token)
     */
     @Bean
