@@ -89,8 +89,15 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(headers, null));
     }
 
-    private <R> Mono<AbstractAuthSchemeFactory.AuthorizationResponse<R>> createErrorMessage() {
+    private <R> Mono<AbstractAuthSchemeFactory.AuthorizationResponse<R>> createInvalidAuthenticationErrorMessage() {
         String messageKey = "org.zowe.apiml.common.unauthorized";
+        String logMessage = messageService.createMessage(messageKey).mapToLogMessage();
+        var headers = new ErrorHeaders(logMessage);
+        return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(headers, null));
+    }
+
+    private <R> Mono<AbstractAuthSchemeFactory.AuthorizationResponse<R>> createMissingAuthenticationErrorMessage() {
+        String messageKey = "org.zowe.apiml.zaas.security.schema.missingAuthentication";
         String logMessage = messageService.createMessage(messageKey).mapToLogMessage();
         var headers = new ErrorHeaders(logMessage);
         return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(headers, null));
@@ -107,7 +114,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
             if (authSource.isEmpty()) {
-                return createErrorMessage("Insufficient authentication: No authentication source found in the request.");
+                return createMissingAuthenticationErrorMessage();
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
@@ -131,7 +138,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
             if (authSource.isEmpty()) {
-                return createErrorMessage("Insufficient authentication: No authentication source found in the request.");
+                return createMissingAuthenticationErrorMessage();
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
@@ -150,7 +157,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
             if (authSource.isEmpty()) {
-                return createErrorMessage("Insufficient authentication: No authentication source found in the request.");
+                return createMissingAuthenticationErrorMessage();
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
@@ -168,7 +175,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
             if (authSource.isEmpty()) {
-                return createErrorMessage("Insufficient authentication: No authentication source found in the request.");
+                return createMissingAuthenticationErrorMessage();
             }
 
             String token = authSourceService.getJWT(authSource.get());
@@ -176,7 +183,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot obtain Zowe JWT token", e);
-            return createErrorMessage();
+            return createInvalidAuthenticationErrorMessage();
         }
     }
 
