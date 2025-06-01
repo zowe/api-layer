@@ -54,9 +54,11 @@ class PassTicketTest implements TestWithStartedInstances {
     private final static String APPLICATION_NAME = DISCOVERABLE_CLIENT_CONFIGURATION.getApplId();
 
     private final static String ZAAS_PASSTICKET_PATH = "/zaas/api/v1/auth/ticket";
+    private final static String GATEWAY_PASSTICKET_PATH = "/gateway/api/v1/auth/ticket";
 
     private final static String COOKIE = "apimlAuthenticationToken";
     private URI url = HttpRequestUtils.getUriFromGateway(ROUTED_PASSTICKET);
+    private static final boolean isModulithEnabled = "true".equals(System.getProperty("environment.modulith"));
 
     @BeforeEach
     void setUp() {
@@ -122,7 +124,12 @@ class PassTicketTest implements TestWithStartedInstances {
 
             @Test
             void givenNoToken() {
-                String expectedMessage = "No authorization token provided for URL '" + ZAAS_PASSTICKET_PATH + "'";
+                String expectedMessage;
+                if (!isModulithEnabled) {
+                    expectedMessage = "No authorization token provided for URL '" + ZAAS_PASSTICKET_PATH + "'";
+                } else {
+                    expectedMessage = "No authorization token provided for URL '" + GATEWAY_PASSTICKET_PATH + "'";
+                }
 
                 given()
                     .contentType(JSON)
