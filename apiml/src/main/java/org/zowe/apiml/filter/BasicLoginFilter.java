@@ -72,6 +72,10 @@ public class BasicLoginFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (authHeader != null && authHeader.toLowerCase().startsWith("bearer ")) {
+            return chain.filter(exchange); // skip the current filter if Bearer token is present
+        }
         return extractBasicAuth(exchange)
             .map(this::getToken)
             .switchIfEmpty(getTokenFromBody(exchange))
