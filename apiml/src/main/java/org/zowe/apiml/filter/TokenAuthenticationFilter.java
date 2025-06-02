@@ -78,4 +78,5 @@ public class TokenAuthenticationFilter implements WebFilter {
             .findFirst()
             .map(HttpCookie::getValue);
     }
+
 }

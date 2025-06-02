@@ -75,6 +75,7 @@ public class BasicAuthProvider extends AbstractAuthProviderFilter<ClientResponse
                 .findFirst()
                 .map(HttpCookie::getValue).orElse("")
             );
+
     }
 
 }

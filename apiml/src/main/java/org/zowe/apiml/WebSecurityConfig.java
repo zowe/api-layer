@@ -48,6 +48,7 @@ import org.zowe.apiml.handler.SuccessQueryHandler;
 import org.zowe.apiml.handler.SuccessRefreshHandler;
 import org.zowe.apiml.handler.SuccessTicketHandler;
 import org.zowe.apiml.handler.SuccessfulPersonalAccessTokenHandler;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
@@ -57,12 +58,22 @@ import org.zowe.apiml.zaas.security.query.TokenAuthenticationProvider;
 import java.util.List;
 import java.util.Set;
 
+import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_FULL_URL;
+import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_SHORT_URL;
+
 
 @Configuration
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 @RequiredArgsConstructor
 public class WebSecurityConfig {
+
+    private static final String CONTEXT_PATH = "/" + CoreService.GATEWAY.getServiceId();
+    private static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry";
+    private static final String CONFORMANCE_SHORT_URL = CONTEXT_PATH + "/conformance/**";
+    private static final String CONFORMANCE_LONG_URL = CONTEXT_PATH + "/api/v1" + "/conformance/**";
+    private static final String VALIDATE_SHORT_URL = "gateway/validate";
+    private static final String VALIDATE_LONG_URL = "gateway/api/v1/validate";
 
     private final CompoundAuthProvider compoundAuthProvider;
     private final X509AuthenticationProvider x509AuthenticationProvider;
@@ -81,6 +92,9 @@ public class WebSecurityConfig {
 
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
+
+    @Value("${apiml.service.port}")
+    private int gatewayPort;
 
     @Value("${apiml.internal-discovery.port:10011}")
     private int internalDiscoveryPort;
@@ -110,7 +124,7 @@ public class WebSecurityConfig {
     * Filter chain for protecting endpoints with client certificate
     */
     @Bean
-    SecurityWebFilterChain clientCertificateFilterChain(ServerHttpSecurity http) {
+    SecurityWebFilterChain discoveryServiceClientCertificateFilterChain(ServerHttpSecurity http) {
         http
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
@@ -139,8 +153,8 @@ public class WebSecurityConfig {
 
     @Bean
     SecurityWebFilterChain basicAuthOrTokenOrCertFilterChain(ServerHttpSecurity http,
-                                                                    ObjectMapper mapper,
-                                                                    AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+                                                             ObjectMapper mapper,
+                                                             AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         http
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
@@ -158,15 +172,25 @@ public class WebSecurityConfig {
         return http.build();
     }
 
-    public ServerHttpSecurity x509SecurityConfig(ServerHttpSecurity http) {
-        return http
+    private ServerHttpSecurity x509SecurityConfig(ServerHttpSecurity http, boolean defaultExceptionHandler) {
+        http
             .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .x509(x509 -> x509
                 .principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
             )
-            .csrf(ServerHttpSecurity.CsrfSpec::disable)
-            .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.FORBIDDEN)));
+            .csrf(ServerHttpSecurity.CsrfSpec::disable);
+
+        if (defaultExceptionHandler) {
+            return http.exceptionHandling(exceptionHandlingSpec -> {
+                exceptionHandlingSpec.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.FORBIDDEN));
+            });
+        }
+        return http;
+    }
+
+    private ServerHttpSecurity x509SecurityConfig(ServerHttpSecurity http) {
+        return x509SecurityConfig(http, true);
     }
 
     @Bean
@@ -397,8 +421,8 @@ public class WebSecurityConfig {
                             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-            .addFilterAfter(new QueryWebFilter(successTicketHandler,failedAuthenticationWebHandler, HttpMethod.POST, true, reactiveTokenAuthProvider),SecurityWebFiltersOrder.AUTHENTICATION)
-             .build();
+            .addFilterAfter(new QueryWebFilter(successTicketHandler, failedAuthenticationWebHandler, HttpMethod.POST, true, reactiveTokenAuthProvider),SecurityWebFiltersOrder.AUTHENTICATION)
+            .build();
     }
 
     @Bean
@@ -414,6 +438,32 @@ public class WebSecurityConfig {
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
             .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION)
+            .build();
+    }
+
+    @Bean
+    SecurityWebFilterChain gatewayAuthenticatedEndpoints(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive, ObjectMapper mapper) {
+        return x509SecurityConfig(http, false)
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
+                REGISTRY_PATH,
+                REGISTRY_PATH + "/**",
+                SERVICES_SHORT_URL,
+                SERVICES_SHORT_URL + "/**",
+                SERVICES_FULL_URL,
+                SERVICES_FULL_URL + "/**",
+                CONFORMANCE_SHORT_URL,
+                CONFORMANCE_LONG_URL,
+                VALIDATE_SHORT_URL,
+                VALIDATE_LONG_URL
+            ))
+            .authorizeExchange(authorizeExchangeSpec ->
+                authorizeExchangeSpec
+                    .anyExchange().authenticated()
+            )
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
+            .addFilterAfter(new TokenAuthenticationFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }
 
