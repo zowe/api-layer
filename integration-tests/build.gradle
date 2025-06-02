@@ -206,6 +206,7 @@ task runAllIntegrationTestsForZoweNonHaTestingOnZos(type: Test) {
             'ApiCatalogStandaloneTest',
             'SAFProviderTest',
             'CloudGatewayProxyTest',
+            'CloudGatewayAuthTest',
             'SafIdTokenTest'
         )
     }
@@ -247,6 +248,7 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
             'ApiCatalogStandaloneTest',
             'SAFProviderTest',
             'CloudGatewayProxyTest',
+            'CloudGatewayAuthTest',
             'SafIdTokenTest',
             'ChaoticHATest',
             'GraphQLTest'
