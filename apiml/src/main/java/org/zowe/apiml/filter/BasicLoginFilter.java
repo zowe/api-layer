@@ -101,12 +101,18 @@ public class BasicLoginFilter implements WebFilter {
 
     private Mono<LoginRequest> extractBasicAuth(ServerWebExchange exchange) {
         return Mono.justOrEmpty(exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
-            .map(header ->
-                LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(header)).get())
-            .onErrorResume(e -> {
-                log.debug("Failed to decode Basic Auth header: {}", e.getMessage());
-                return Mono.empty(); // Return empty if decoding fails
-            });
+            .flatMap(header -> Mono.defer(() -> {
+                try {
+                    return LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(header))
+                        .filter(creds -> creds.getUsername() != null && !creds.getUsername().isBlank()
+                            && creds.getPassword() != null && creds.getPassword().length > 0)
+                        .map(Mono::just)
+                        .orElseGet(() -> Mono.error(new AuthenticationCredentialsNotFoundException("Username or password not provided.")));
+                } catch (Exception e) {
+                    log.debug("Failed to decode Basic Auth header: {}", e.getMessage());
+                    return Mono.error(new AuthenticationCredentialsNotFoundException("Invalid basic authentication header", e));
+                }
+            }));
     }
 
     private Mono<LoginRequest> getCredentialsFromBody(ServerWebExchange exchange) {
