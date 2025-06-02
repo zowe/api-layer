@@ -51,7 +51,7 @@ import static org.zowe.apiml.util.requests.Endpoints.ZOSMF_REQUEST;
 import static org.zowe.apiml.util.requests.Endpoints.ZOWE_JWT_REQUEST;
 
 @ZaasTest
-@Tag("CloudGatewayProxyTest")
+@Tag("CloudGatewayAuthTest")
 public class CloudGatewayAuthTest implements TestWithStartedInstances {
 
     private static final CloudGatewayConfiguration CLOUD_GATEWAY_CONFIGURATION = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
