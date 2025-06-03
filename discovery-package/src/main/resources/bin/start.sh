@@ -233,6 +233,11 @@ elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
     truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
 fi
 
+LOGBACK=""
+if [ -n "${ZWE_configs_logging_config}" ]; then
+    LOGBACK="-Dlogging.config=${ZWE_configs_logging_config}"
+fi
+
 if [ "${ATTLS_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
   keystore_type=
   keystore_pass=
@@ -252,6 +257,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
     ${ADD_OPENS} \
+    ${LOGBACK} \
     -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.discovery.password=password \
     -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer} \

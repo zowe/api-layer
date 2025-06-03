@@ -170,6 +170,11 @@ fi
 
 echo "Setting loader path: "${APIML_LOADER_PATH}
 
+LOGBACK=""
+if [ -n "${ZWE_configs_logging_config}" ]; then
+    LOGBACK="-Dlogging.config=${ZWE_configs_logging_config}"
+fi
+
 ATTLS_ENABLED="false"
 ATTLS_CLIENT_ENABLED="false"
 
@@ -308,6 +313,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
     ${ADD_OPENS} \
+    ${LOGBACK} \
     -Dapiml.connection.idleConnectionTimeoutSeconds=${ZWE_configs_apiml_connection_idleConnectionTimeoutSeconds:-${ZWE_components_gateway_apiml_connection_idleConnectionTimeoutSeconds:-5}} \
     -Dapiml.connection.timeout=${ZWE_configs_apiml_connection_timeout:-${ZWE_components_gateway_apiml_connection_timeout:-60000}} \
     -Dapiml.connection.timeToLive=${ZWE_configs_apiml_connection_timeToLive:-${ZWE_components_gateway_apiml_connection_timeToLive:-10000}} \

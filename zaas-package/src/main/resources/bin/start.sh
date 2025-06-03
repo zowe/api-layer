@@ -161,6 +161,11 @@ fi
 
 echo "Setting loader path: "${ZAAS_LOADER_PATH}
 
+LOGBACK=""
+if [ -n "${ZWE_configs_logging_config}" ]; then
+    LOGBACK="-Dlogging.config=${ZWE_configs_logging_config}"
+fi
+
 ATTLS_ENABLED="false"
 ATTLS_CLIENT_ENABLED="false"
 
@@ -306,6 +311,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} ${JAVA_BIN_DIR}java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     ${QUICK_START} \
     ${ADD_OPENS} \
+    ${LOGBACK} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
