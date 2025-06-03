@@ -13,24 +13,21 @@ package org.zowe.apiml.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
+import org.zowe.apiml.controller.ReactiveAuthenticationController.AccessTokenRequest;
 import org.zowe.apiml.security.common.error.AccessTokenBodyNotValidException;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 import static org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter.TOKEN_REQUEST;
-import static org.zowe.apiml.controller.ReactiveAuthenticationController.AccessTokenRequest;
 
 /**
  * A reactive WebFilter that parses and stores access token request details from the request body.
@@ -74,20 +71,7 @@ public class StoreAccessTokenInfoWebFilter implements WebFilter {
                     accessTokenRequest.setScopes(scopes.stream().map(String::toLowerCase).collect(Collectors.toSet()));
                     exchange.getAttributes().put(TOKEN_REQUEST, accessTokenRequest);
 
-                    HttpHeaders writeableHeaders = HttpHeaders.writableHttpHeaders(exchange.getRequest().getHeaders());
-                    ServerHttpRequestDecorator decorated = new ServerHttpRequestDecorator(exchange.getRequest()) {
-                        @Override
-                        public Flux<DataBuffer> getBody() {
-                            return Flux.just(exchange.getResponse().bufferFactory().wrap(bytes));
-                        }
-
-                        @Override
-                        public HttpHeaders getHeaders() {
-                            return writeableHeaders;
-                        }
-                    };
-
-                    return chain.filter(exchange.mutate().request(decorated).build());
+                    return chain.filter(exchange);
 
                 } catch (Exception e) {
                     log.error("Failed to parse access token request body", e);
