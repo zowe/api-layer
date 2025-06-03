@@ -30,6 +30,7 @@ public class PassTicketService {
 
     private final IRRPassTicket irrPassTicket;
 
+    @SuppressWarnings("unchecked")
     public PassTicketService() {
         this.irrPassTicket = ClassOrDefaultProxyUtils.createProxy(IRRPassTicket.class,
             "com.ibm.eserver.zos.racf.IRRPassTicket", DefaultPassTicketImpl::new,

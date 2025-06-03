@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -25,6 +26,7 @@ import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.filters.AbstractAuthSchemeFactory;
 import org.zowe.apiml.gateway.filters.ErrorHeaders;
 import org.zowe.apiml.gateway.filters.RequestCredentials;
+import org.zowe.apiml.gateway.filters.ZaasInternalErrorException;
 import org.zowe.apiml.gateway.filters.ZaasSchemeTransform;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.PassTicketService;
@@ -83,6 +85,8 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
     private final TokenCreationService tokenCreationService;
     private final MessageService messageService;
 
+    @Value("${apiml.service.apimlId:apiml}")
+    private String currentApimlId;
 
     private <R> Mono<AbstractAuthSchemeFactory.AuthorizationResponse<R>> createErrorMessage(String errorMessage) {
         var headers = new ErrorHeaders(errorMessage);
@@ -118,12 +122,12 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
-            String ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
+            var ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
             var response = new TicketResponse("", authSourceParsed.getUserId(), applicationName, ticket);
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot generate ticket", e);
-            return createErrorMessage(e.getMessage());
+            return Mono.error(new ZaasInternalErrorException(currentApimlId, e.getMessage()));
         }
     }
 

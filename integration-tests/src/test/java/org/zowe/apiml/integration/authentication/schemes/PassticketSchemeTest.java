@@ -95,6 +95,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
 
     @Nested
     class GivenGatewayUrlTests {
+
         @Test
         @Tag("GatewayServiceRouting")
         void givenValidJWT_thenTranslateToPassticket() {
@@ -120,12 +121,14 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                 .body("headers.x-zowe-auth-failure", startsWith("ZWEAG160E"))
                 .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG160E"));
         }
+
     }
 
     @Nested
     class WhenUsingPassticketAuthenticationScheme {
         @Nested
         class ResultContainsPassticketAndNoJwt {
+
             @ParameterizedTest(name = "givenJwtInBearerHeader with header {2}")
             @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#accessTokens")
             @InfinispanStorageTest
@@ -213,12 +216,13 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                 .then()
                     .statusCode(is(status));
                 //@formatter:on
-
             }
+
         }
 
         @Nested
         class VerifyPassTicketIsOk {
+
             @ParameterizedTest
             @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#accessTokens")
             @InfinispanStorageTest
@@ -230,6 +234,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                 .then()
                     .statusCode(is(SC_OK));
             }
+
         }
 
         @Nested
@@ -307,4 +312,5 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             .body("cookies", not(hasKey(COOKIE_NAME)))
             .statusCode(200);
     }
+
 }
