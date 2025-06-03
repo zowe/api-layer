@@ -80,7 +80,7 @@ class ZaasExceptionHandlerTest {
             .post(url)
         .then()
             .statusCode(401)
-            .body("messages[0].messageKey", is("org.zowe.apiml.security.login.invalidCredentials"));
+            .body("messages[0].messageKey", is("org.zowe.apiml.security.login.invalidInput"));
     }
 
     @ParameterizedTest

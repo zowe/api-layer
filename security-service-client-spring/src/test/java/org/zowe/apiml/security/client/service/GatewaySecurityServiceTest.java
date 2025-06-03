@@ -177,12 +177,12 @@ class GatewaySecurityServiceTest {
                 void givenGatewayUnauthorized_thenThrowException() {
                     HttpClientMockHelper.mockResponse(response, HttpStatus.SC_UNAUTHORIZED, "message");
                     Exception exception = assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD, null));
-                    assertEquals("Invalid Credentials", exception.getMessage());
+                    assertEquals("Authorization header is missing, or request body is missing or invalid.", exception.getMessage());
                 }
 
                 @Test
                 void givenValidMessageKey_thenHandleErrorTypeForThatMessageKey() {
-                    String errorMessage = MESSAGE_KEY_STRING + "org.zowe.apiml.security.login.invalidCredentials\"";
+                    String errorMessage = MESSAGE_KEY_STRING + "org.zowe.apiml.security.login.invalidInput\"";
                     HttpClientMockHelper.mockResponse(response, HttpStatus.SC_UNAUTHORIZED, errorMessage);
                     assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD, null));
                     verify(responseHandler).handleErrorType(response, ErrorType.BAD_CREDENTIALS, LOG_PARAMETER_STRING, uri);

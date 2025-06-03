@@ -15,7 +15,7 @@ package org.zowe.apiml.security.common.error;
  * binding error keys and default error messages
  */
 public enum ErrorType {
-    BAD_CREDENTIALS("org.zowe.apiml.security.login.invalidCredentials", "Invalid Credentials", "Provide a valid username and password."),
+    BAD_CREDENTIALS("org.zowe.apiml.security.login.invalidInput", "Authorization header is missing, or request body is missing or invalid.", "Provide valid authentication."),
     TOKEN_NOT_VALID("org.zowe.apiml.common.unauthorized", "The request has not been applied because it lacks valid authentication credentials.", "The accessed resource requires authentication. The request is missing valid authentication credentials or the token expired."),
     BAD_ACCESS_TOKEN_BODY("org.zowe.apiml.security.query.invalidAccessTokenBody", "Personal Access Token body in the request is not valid.", "Use a valid body in the request. Format of a message: {validity: int , scopes: [string]}."),
     ACCESS_TOKEN_BODY_MISSING_SCOPES("org.zowe.apiml.security.query.accessTokenBodyMissingScopes", "Body in the HTTP request for Personal Access Token does not contain scopes.", "Provide a list of services for which this token will be valid."),

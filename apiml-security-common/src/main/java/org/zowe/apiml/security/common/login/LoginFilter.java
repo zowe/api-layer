@@ -178,31 +178,36 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
         try {
             credentials = Base64.getDecoder().decode(base64Credentials);
             int index = ArrayUtils.indexOf(credentials, (byte) ':');
-            if (index > 0) {
-                byte[] password = null;
-                char[] passwordChars;
-                try {
-                    password = Arrays.copyOfRange(credentials, index + 1, credentials.length);
-                    passwordChars = new char[password.length];
-                    for (int i = 0; i < password.length; i++) {
-                        passwordChars[i] = (char) password[i];
-                    }
-                    return new LoginRequest(
-                        new String(Arrays.copyOfRange(credentials, 0, index), StandardCharsets.UTF_8),
-                        passwordChars
-                    );
-                } finally {
+            if (index < 0) {
+                throw new BadCredentialsException("Invalid basic authentication header");
+            }
+            byte[] password = null;
+            char[] passwordChars;
+            try {
+                String username = new String(Arrays.copyOfRange(credentials, 0, index), StandardCharsets.UTF_8);
+                password = Arrays.copyOfRange(credentials, index + 1, credentials.length);
+                passwordChars = new char[password.length];
+                for (int i = 0; i < password.length; i++) {
+                    passwordChars[i] = (char) password[i];
+                }
+
+                if (StringUtils.isBlank(username) || passwordChars.length == 0) {
+                    throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
+                }
+
+                return new LoginRequest(username, passwordChars);
+            } finally {
                     if (password != null) {
                         Arrays.fill(password, (byte) 0);
                     }
                 }
-            }
+        } catch (IllegalArgumentException e) {
+            throw new BadCredentialsException("Invalid base64 encoding.", e);
         } finally {
             if (credentials != null) {
                 Arrays.fill(credentials, (byte) 0);
             }
         }
-        throw new BadCredentialsException("Invalid basic authentication header");
     }
 
     /**
