@@ -142,7 +142,7 @@ then
     QUICK_START=-Xquickstart
     ZAAS_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
 
-    JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
+    JAVA_VERSION=$(${JAVA_HOME}/bin/javap -J-Xms4m -J-Xmx16m -verbose java.lang.String \
         | grep "major version" \
         | cut -d " " -f5)
 

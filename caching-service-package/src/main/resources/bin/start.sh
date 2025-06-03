@@ -92,7 +92,7 @@ if [ "$(uname)" = "OS/390" ]
 then
     QUICK_START=-Xquickstart
 
-    JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
+    JAVA_VERSION=$(${JAVA_HOME}/bin/javap -J-Xms4m -J-Xmx16m -verbose java.lang.String \
         | grep "major version" \
         | cut -d " " -f5)
 
