@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
  */
 public class LogMessageTracker {
     private final ListAppender<ILoggingEvent> logAppender = new ListAppender<>();
+    private final Logger log;
 
     /**
      * @param loggedClass Class that generates the logs to be searched.
@@ -41,9 +42,16 @@ public class LogMessageTracker {
      */
     public LogMessageTracker(String loggerName) {
         logAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
-        Logger log = (Logger) LoggerFactory.getLogger(loggerName);
+        log = (Logger) LoggerFactory.getLogger(loggerName);
         log.setLevel(Level.ALL);
         log.addAppender(logAppender);
+    }
+
+    /**
+     * @return logger that generates the logs
+     */
+    public Logger getLogger() {
+        return log;
     }
 
     /**
