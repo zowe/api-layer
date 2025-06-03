@@ -44,7 +44,6 @@ public class X509AuthFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-
         X509Certificate[] certs = exchange.getAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
         return ReactiveSecurityContextHolder.getContext().defaultIfEmpty(new SecurityContextImpl(new X509AuthenticationToken(null))).flatMap(ctx -> {
            if (ctx.getAuthentication().isAuthenticated() || certs == null || certs.length == 0) {
@@ -58,5 +57,7 @@ public class X509AuthFilter implements WebFilter {
                     .contextWrite(context -> ReactiveSecurityContextHolder.withAuthentication(authentication));
             }).onErrorResume(AuthenticationException.class, (ex) -> chain.filter(exchange));
         });
+
     }
+
 }

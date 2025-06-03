@@ -38,10 +38,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class StoreAccessTokenInfoFilter extends OncePerRequestFilter {
     public static final String TOKEN_REQUEST = "tokenRequest";
+
     private static final ObjectReader mapper = new ObjectMapper().reader();
+
     private final AuthExceptionHandler authExceptionHandler;
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException {
         var consumer = ServletErrorUtils.createApiErrorWriter(response, apimlLog);
@@ -65,5 +68,7 @@ public class StoreAccessTokenInfoFilter extends OncePerRequestFilter {
         } catch (IOException e) {
             authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, new AccessTokenBodyNotValidException("org.zowe.apiml.security.query.invalidAccessTokenBody"));
         }
+
     }
+
 }

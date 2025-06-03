@@ -24,30 +24,41 @@ import io.swagger.v3.oas.annotations.media.SchemaProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.HttpUtils;
 import org.zowe.apiml.zaas.controllers.AuthController;
+import org.zowe.apiml.zaas.controllers.AuthController.ValidateRequestModel;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderJWK;
@@ -59,17 +70,35 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.PublicKey;
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.zowe.apiml.zaas.controllers.AuthController.*;
+import static org.zowe.apiml.zaas.controllers.AuthController.ACCESS_TOKEN_REVOKE;
+import static org.zowe.apiml.zaas.controllers.AuthController.ACCESS_TOKEN_REVOKE_MULTIPLE;
+import static org.zowe.apiml.zaas.controllers.AuthController.ACCESS_TOKEN_VALIDATE;
+import static org.zowe.apiml.zaas.controllers.AuthController.ALL_PUBLIC_KEYS_PATH;
+import static org.zowe.apiml.zaas.controllers.AuthController.CURRENT_PUBLIC_KEYS_PATH;
+import static org.zowe.apiml.zaas.controllers.AuthController.INVALIDATE_PATH;
+import static org.zowe.apiml.zaas.controllers.AuthController.OIDC_TOKEN_VALIDATE;
+import static org.zowe.apiml.zaas.controllers.AuthController.OIDC_WEBFINGER_PATH;
+import static org.zowe.apiml.zaas.controllers.AuthController.PUBLIC_KEYS_PATH;
+import static org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter.TOKEN_REQUEST;
 
 @RestController
 @RequestMapping("/gateway/api/v1/auth")
 @Slf4j
 @RequiredArgsConstructor
 public class ReactiveAuthenticationController {
+
+    private static final String TOKEN_KEY = "token";
+    private static final ObjectWriter WRITER = new ObjectMapper().writer();
+
     private final JwtSecurity jwtSecurity;
     private final ZosmfService zosmfService;
     private final MessageService messageService;
@@ -78,11 +107,9 @@ public class ReactiveAuthenticationController {
     private final HttpUtils httpUtils;
     private final AccessTokenProvider tokenProvider;
     private final WebFingerProvider webFingerProvider;
-    private static final String TOKEN_KEY = "token";
+    private final RauditxService rauditxService;
     @Nullable
     private final OIDCProvider oidcProvider;
-    private static final ObjectWriter writer = new ObjectMapper().writer();
-
 
     /**
      * Endpoint to authenticate a user based on credentials from EITHER:
@@ -95,11 +122,11 @@ public class ReactiveAuthenticationController {
      */
     @PostMapping("/login")
     public Mono<ResponseEntity<Void>> login(ServerWebExchange exchange) {
-      return ReactiveSecurityContextHolder.getContext().flatMap(con -> {
-            var authentication = con.getAuthentication();
-            String jwt = ((TokenAuthentication) authentication).getCredentials();
+      return ReactiveSecurityContextHolder.getContext().flatMap(securityContext -> {
+            var authentication = securityContext.getAuthentication();
+            var jwt = ((TokenAuthentication) authentication).getCredentials();
             // Create the HttpOnly cookie containing the JWT
-            ResponseCookie jwtCookie = httpUtils.createResponseCookie(jwt);
+            var jwtCookie = httpUtils.createResponseCookie(jwt);
 
             // Add the cookie to the response headers
             exchange.getResponse().addCookie(jwtCookie);
@@ -107,6 +134,41 @@ public class ReactiveAuthenticationController {
 
             // Return an OK response
             return Mono.just(ResponseEntity.noContent().build());
+        });
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AccessTokenRequest {
+        private int validity;
+        private Set<String> scopes;
+    }
+
+    @PostMapping("/access-token/generate")
+    public Mono<ResponseEntity<String>> generatePat(@RequestAttribute(TOKEN_REQUEST) AccessTokenRequest accessTokenRequest) {
+        return ReactiveSecurityContextHolder.getContext().flatMap(securityContext -> {
+            var authentication = securityContext.getAuthentication();
+            var userId = ((TokenAuthentication) authentication).getName();
+
+            log.debug("Generating access token for user {}", userId);
+
+            RauditxService.RauditxBuilder rauditBuilder = rauditxService.builder()
+                .userId(userId)
+                .messageSegment("An attempt to generate PAT")
+                .alwaysLogSuccesses()
+                .alwaysLogFailures();
+
+            String pat;
+            try {
+                pat = tokenProvider.getToken(userId, accessTokenRequest.getValidity(), accessTokenRequest.getScopes());
+                rauditBuilder.success();
+            } catch (RuntimeException e) {
+                rauditBuilder.failure();
+                rauditBuilder.issue();
+                throw e;
+            }
+            return Mono.just(ResponseEntity.ok(pat));
         });
     }
 
@@ -124,14 +186,14 @@ public class ReactiveAuthenticationController {
         @ApiResponse(responseCode = "503", description = "Authentication service is not available")
     })
     public Mono<ResponseEntity<Void>> invalidateJwtToken(ServerWebExchange exchange) {
-        final String endpoint = "/auth/invalidate/";
-        final String uri = exchange.getRequest().getURI().getPath();
-        final int index = uri.indexOf(endpoint);
+        var endpoint = "/auth/invalidate/";
+        var uri = exchange.getRequest().getURI().getPath();
+        var index = uri.indexOf(endpoint);
 
-        final String jwtToken = uri.substring(index + endpoint.length());
+        var jwtToken = uri.substring(index + endpoint.length());
         try {
             var app = peerAwareInstanceRegistry.getApplications().getRegisteredApplications(CoreService.GATEWAY.getServiceId());
-            final boolean invalidated = authenticationService.invalidateJwtTokenGateway(jwtToken, false, app);
+            var invalidated = authenticationService.invalidateJwtTokenGateway(jwtToken, false, app);
             return Mono.just(ResponseEntity.status(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE).build());
         } catch (TokenNotValidException e) {
             return Mono.just(ResponseEntity.status(SC_SERVICE_UNAVAILABLE).build());
@@ -561,7 +623,7 @@ public class ReactiveAuthenticationController {
 
     private Mono<ResponseEntity<String>> badRequestForPATInvalidation() throws JsonProcessingException {
         final ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.query.invalidRevokeRequestBody").mapToView();
-        return Mono.just(new ResponseEntity<>(writer.writeValueAsString(message), HttpStatus.BAD_REQUEST));
+        return Mono.just(new ResponseEntity<>(WRITER.writeValueAsString(message), HttpStatus.BAD_REQUEST));
     }
 
     @PostMapping(path = OIDC_TOKEN_VALIDATE)
@@ -623,7 +685,7 @@ public class ReactiveAuthenticationController {
                     log.debug("Error while reading webfinger configuration from source.", e);
                     final ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.oidc.invalidWebfingerConfiguration").mapToView();
                     try {
-                        return ResponseEntity.internalServerError().body(writer.writeValueAsString(message));
+                        return ResponseEntity.internalServerError().body(WRITER.writeValueAsString(message));
                     } catch (JsonProcessingException ex) {
                         return ResponseEntity.internalServerError().build();
                     }
@@ -634,7 +696,5 @@ public class ReactiveAuthenticationController {
         });
 
     }
-
-
 
 }

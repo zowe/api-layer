@@ -77,13 +77,13 @@ public class BasicLoginFilter implements WebFilter {
             return chain.filter(exchange); // skip the current filter if Bearer token is present
         }
         return extractBasicAuth(exchange)
-            .map(this::getToken)
-            .switchIfEmpty(getTokenFromBody(exchange))
+            .map(this::useCredentials)
+            .switchIfEmpty(getCredentialsFromBody(exchange))
             .switchIfEmpty(chain.filter(exchange).then(Mono.empty()))
-            .flatMap(token ->
-                authenticationManager.authenticate(token)
+            .flatMap(credentials ->
+                authenticationManager.authenticate(credentials)
                     .flatMap(authentication -> {
-                        SecurityContextImpl securityContext = new SecurityContextImpl();
+                        var securityContext = new SecurityContextImpl();
                         securityContext.setAuthentication(authentication);
                         return chain.filter(exchange)
                             .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext)));
@@ -93,14 +93,8 @@ public class BasicLoginFilter implements WebFilter {
         );
     }
 
-    AbstractAuthenticationToken getToken(LoginRequest credentials) {
+    AbstractAuthenticationToken useCredentials(LoginRequest credentials) {
         return new UsernamePasswordAuthenticationToken(credentials.getUsername(), credentials.getPassword());
-    }
-
-    private Mono<? extends AbstractAuthenticationToken> getTokenFromBody(ServerWebExchange exchange) {
-        return Mono.defer(() ->
-                getCredentialsFromBody(exchange).map(this::getToken)
-        );
     }
 
     private Mono<LoginRequest> extractBasicAuth(ServerWebExchange exchange) {
@@ -119,7 +113,7 @@ public class BasicLoginFilter implements WebFilter {
             }));
     }
 
-    private Mono<LoginRequest> getCredentialsFromBody(ServerWebExchange exchange) {
+    private Mono<AbstractAuthenticationToken> getCredentialsFromBody(ServerWebExchange exchange) {
         // method available could return 0 even there are some data, depends on the implementation
         return exchange.getRequest().getBody().flatMap(buffer -> {
                 try {
@@ -137,7 +131,7 @@ public class BasicLoginFilter implements WebFilter {
                     return Flux.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format."));
                 }
             }
-        ).next();
+        ).next().map(this::useCredentials);
 
     }
 

@@ -33,7 +33,6 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher.MatchResult;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.zowe.apiml.filter.BasicLoginFilter;
-import org.zowe.apiml.filter.BasicLoginFilterForPatEndpoint;
 import org.zowe.apiml.filter.CategorizeCertsWebFilter;
 import org.zowe.apiml.filter.LogoutHandler;
 import org.zowe.apiml.filter.QueryWebFilter;
@@ -47,7 +46,6 @@ import org.zowe.apiml.handler.LocalTokenProvider;
 import org.zowe.apiml.handler.SuccessQueryHandler;
 import org.zowe.apiml.handler.SuccessRefreshHandler;
 import org.zowe.apiml.handler.SuccessTicketHandler;
-import org.zowe.apiml.handler.SuccessfulPersonalAccessTokenHandler;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
@@ -60,7 +58,6 @@ import java.util.Set;
 
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_FULL_URL;
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_SHORT_URL;
-
 
 @Configuration
 @EnableWebFluxSecurity
@@ -85,7 +82,6 @@ public class WebSecurityConfig {
     private final SuccessTicketHandler successTicketHandler;
     private final FailedAuthenticationWebHandler failedAuthenticationWebHandler;
     private final TokenAuthenticationProvider tokenAuthenticationProvider;
-    private final SuccessfulPersonalAccessTokenHandler successfulAccessTokenHandler;
 
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
@@ -304,13 +300,16 @@ public class WebSecurityConfig {
         var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
         return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
             .securityMatcher(new AndServerWebExchangeMatcher(
-                                   ServerWebExchangeMatchers.pathMatchers( HttpMethod.POST,"gateway/api/v1/auth/login", "gateway/api/v1/auth/logout")
-                            ))
+                ServerWebExchangeMatchers.pathMatchers( HttpMethod.POST,"gateway/api/v1/auth/login", "gateway/api/v1/auth/logout")
+            ))
             .authorizeExchange(exchange ->
                 exchange.anyExchange().authenticated()
             )
 
-            .logout((c) -> c.logoutUrl("/gateway/api/v1/auth/logout").logoutHandler(logoutHandler).logoutSuccessHandler(new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
+            .logout((c) -> c
+                .logoutUrl("/gateway/api/v1/auth/logout")
+                .logoutHandler(logoutHandler)
+                .logoutSuccessHandler(new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator),SecurityWebFiltersOrder.FIRST)
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
@@ -342,7 +341,6 @@ public class WebSecurityConfig {
      * Order of custom filters:
      *   - CategorizeCertsWebFilter - checks for forwarded client certificate and put it into a custom request attribute
      *   - StoreAccessTokenInfoWebFilter - extracts access token filter from request to a custom attribute
-     *   - BasicLoginFilterForPatEndpoint - attempts to log in a user using basic authentication credentials, generates access token and stops the chain on success, reply with the token
      *   - X509AuthFilter - attempts to log in a user using forwarded client certificate, generates access token and stops the chain on success, reply with the token
      *   - ShouldBeAlreadyAuthenticatedFilter - stops filter chain if none of the authentications was successful
      *
@@ -350,17 +348,16 @@ public class WebSecurityConfig {
     @Bean
     SecurityWebFilterChain accessTokenFilter(ServerHttpSecurity http,
                                                     ObjectMapper mapper) {
-        // todo check for ShouldBeAlreadyAuthenticatedFilter
         var man = new ProviderManager(x509AuthenticationProvider);
         var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
         return http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
-            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/gateway/api/v1/auth/access-token/generate"))
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, "/gateway/api/v1/auth/access-token/generate"))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
             .addFilterAfter(new StoreAccessTokenInfoWebFilter(failedAuthenticationWebHandler, mapper), SecurityWebFiltersOrder.AUTHENTICATION)
-            .addFilterAfter(new BasicLoginFilterForPatEndpoint(compoundAuthProvider, mapper, successfulAccessTokenHandler, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, mapper, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }

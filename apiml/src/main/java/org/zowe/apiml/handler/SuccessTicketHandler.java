@@ -12,7 +12,6 @@ package org.zowe.apiml.handler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -35,9 +34,6 @@ import org.zowe.apiml.passticket.UsernameNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
-import org.zowe.apiml.util.HttpUtils;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
-import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -47,10 +43,6 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class SuccessTicketHandler implements ServerAuthenticationSuccessHandler {
 
-    private final AuthenticationService authenticationService;
-    private final HttpUtils httpUtils;
-    private final TokenCreationService tokenCreationService;
-    private final PeerAwareInstanceRegistryImpl peerAwareInstanceRegistry;
     private final ObjectMapper mapper;
     private final PassTicketService passTicketService;
     private final MessageService messageService;
@@ -120,7 +112,6 @@ public class SuccessTicketHandler implements ServerAuthenticationSuccessHandler 
             } catch (IOException e) {
                 throw new IncorrectRequestBodyException("ApplicationName not provided");
             }
-
 
             String ticket;
             try {
