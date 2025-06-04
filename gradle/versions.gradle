@@ -11,7 +11,7 @@ dependencyResolutionManagement {
             version('springCloudVersion3', '3.1.9')
             version('springCloudNetflix', '3.1.8')
             version('springCloudCB', '2.1.8')
-            version('springCloudGateway', '3.1.9')
+            version('springCloudGateway', '3.1.10')
             version('springSecurity') {
                 strictly '[5.8.16,6.0.0['
                 prefer '5.8.16'
@@ -27,7 +27,7 @@ dependencyResolutionManagement {
             version('zosUtils', '2.0.6')
             version('archaius', '0.7.12')
             version('awaitility', '4.2.2')
-            version('awsJavaSdk', '1.12.783')
+            version('awsJavaSdk', '1.12.785')
             version('bouncyCastle', '1.78.1')
             // forced version in root gradle.build file. Version 3.x requieres Java 11
             version('caffeine', '2.9.3')
