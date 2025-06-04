@@ -204,7 +204,11 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             return Optional.ofNullable(requestCredentials.getCookies())
                 .orElse(Collections.emptyMap())
                 .entrySet().stream()
-                .map(entry -> new Cookie(entry.getKey(), entry.getValue()))
+                .map(entry -> {
+                    var cookie = new Cookie(entry.getKey(), entry.getValue());
+                    cookie.setSecure(true);
+                    return cookie;
+                })
                 .toArray(Cookie[]::new);
         }
 
