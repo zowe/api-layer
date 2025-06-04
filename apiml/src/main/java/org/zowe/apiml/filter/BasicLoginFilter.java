@@ -114,8 +114,13 @@ public class BasicLoginFilter implements WebFilter {
     }
 
     private Mono<AbstractAuthenticationToken> getCredentialsFromBody(ServerWebExchange exchange) {
+        String path = exchange.getRequest().getPath().value();
+        if (!path.contains("/auth/login")) {
+            return Mono.empty();
+        }
         // method available could return 0 even there are some data, depends on the implementation
-        return exchange.getRequest().getBody().flatMap(buffer -> {
+        return exchange.getRequest().getBody()
+            .flatMap(buffer -> {
                 try {
                     byte[] bytes = new byte[buffer.readableByteCount()];
                     buffer.read(bytes);
