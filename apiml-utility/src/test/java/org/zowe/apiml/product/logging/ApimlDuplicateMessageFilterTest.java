@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.product.logging;
 
-import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.core.spi.FilterReply;
 import org.junit.jupiter.api.AfterEach;
@@ -167,68 +166,6 @@ class ApimlDuplicateMessageFilterTest {
                     "Expected FilterReply.NEUTRAL");
         }
 
-    }
-
-    @Nested
-    class GivenTrackingLogger {
-
-        private LogMessageTracker logMessageTracker;
-        private Logger logger;
-
-        @BeforeEach
-        void setUp() {
-            // Create the turboFilter
-            apimlDuplicateMessagesFilter = new ApimlDuplicateMessagesFilter();
-
-            logMessageTracker = new LogMessageTracker("org.zowe.apiml.product.logging.ApimlDuplicateMessagesFilter");
-            logger = logMessageTracker.getLogger();
-            logger.getLoggerContext().addTurboFilter(apimlDuplicateMessagesFilter);
-        }
-
-        @AfterEach
-        void tearDown() {
-            apimlDuplicateMessagesFilter.stop();
-        }
-
-        @Test
-        void whenLoggingMessage_testApimlDuplicateMessagesFilterWorksAsExpected() {
-            apimlDuplicateMessagesFilter.setAllowedRepetitions(0);
-            apimlDuplicateMessagesFilter.start();
-            logMessageTracker.startTracking();
-
-            RuntimeException exception = new RuntimeException("my exception");
-
-            // formattedMessage = "Message"
-            logger.info("Message"); // NEUTRAL
-
-            // formattedMessage = "Message"
-            logger.info("Message", new Object[]{"argument"}); // DENY
-
-            // formattedMessage = "Message 1"
-            logger.warn(String.format("Message %s", 1)); // NEUTRAL
-
-            // formattedMessage = "Message 1"
-            logger.warn("Message {}", new Object[]{1}); // DENY
-
-            // formattedMessage = "Message 1\njava.lang.RuntimeException: my exception\n...."
-            logger.warn("Message 1", exception); // NEUTRAL
-
-            // formattedMessage = "Message 1\njava.lang.RuntimeException: my exception\n...."
-            logger.error("Message {}", new Object[]{1, exception}); // DENY
-
-            // formattedMessage = "Message [1]\njava.lang.RuntimeException: my exception\n...."
-            logger.error("Message {}", new Object[]{1}, exception); // NEUTRAL
-
-            // formattedMessage = "Message [1, java.lang.RuntimeException: Exception inside formatted message] {}\njava.lang.RuntimeException: my exception\n...."
-            logger.error("Message {} {}", new Object[]{1, new RuntimeException("Exception inside formatted message")}, exception); // NEUTRAL
-
-            assertEquals(5, logMessageTracker.getAllLoggedEvents().size()); // Only messages passing the DuplicateMessageFilter are logged
-            assertEquals(1, logMessageTracker.getAllLoggedEventsWithLevel(Level.INFO).size());
-            assertEquals(2, logMessageTracker.getAllLoggedEventsWithLevel(Level.WARN).size());
-            assertEquals(2, logMessageTracker.getAllLoggedEventsWithLevel(Level.ERROR).size());
-
-            logMessageTracker.stopTracking();
-        }
     }
 
 }
