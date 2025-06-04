@@ -72,7 +72,6 @@ public class StoreAccessTokenInfoWebFilter implements WebFilter {
                     exchange.getAttributes().put(TOKEN_REQUEST, accessTokenRequest);
 
                     return chain.filter(exchange);
-
                 } catch (Exception e) {
                     log.error("Failed to parse access token request body", e);
                     return failureHandler.onAuthenticationFailure(

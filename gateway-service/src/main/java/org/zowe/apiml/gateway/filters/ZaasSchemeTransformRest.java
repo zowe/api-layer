@@ -83,7 +83,7 @@ public class ZaasSchemeTransformRest implements ZaasSchemeTransform {
         return requestCreator.apply(zaasInstance)
             .exchangeToMono(clientResp -> switch (clientResp.statusCode().value()) {
                 case SC_UNAUTHORIZED -> Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(clientResp.headers(), null));
-                case SC_OK -> clientResp.bodyToMono(responseClass).map(b -> new AbstractAuthSchemeFactory.AuthorizationResponse<>(clientResp.headers(), b));
+                case SC_OK -> clientResp.bodyToMono(responseClass).map(zaasResponseBody -> new AbstractAuthSchemeFactory.AuthorizationResponse<>(clientResp.headers(), zaasResponseBody));
                 case SC_INTERNAL_SERVER_ERROR -> callNext.apply(new ZaasInternalErrorException(zaasInstance, "An internal exception occurred in ZAAS service. Check its configuration of instance " + zaasInstance.getInstanceId() + "."));
                 default -> callNext.apply(new ServiceNotAccessibleException(SERVICE_IS_UNAVAILABLE_MESSAGE));
             })
@@ -135,7 +135,7 @@ public class ZaasSchemeTransformRest implements ZaasSchemeTransform {
     @Override
     public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<TicketResponse>> passticket(RequestCredentials requestCredentials) {
         try {
-            String jsonBody = WRITER.writeValueAsString(new TicketRequest(requestCredentials.getApplId()));
+            var jsonBody = WRITER.writeValueAsString(new TicketRequest(requestCredentials.getApplId()));
             return call(
                 TicketResponse.class,
                 instance -> createRequest(

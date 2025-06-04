@@ -95,7 +95,9 @@ public class WebSecurityConfig {
     @Value("${apiml.internal-discovery.port:10011}")
     private int internalDiscoveryPort;
 
-    private static final List<String> UNAUTHENTICATED_PATTERNS = List.of("/application/",
+    private static final List<String> UNAUTHENTICATED_PATTERNS = List.of(
+    "/application/",
+    "/application/version",
     "/eureka/css/**",
     "/eureka/js/**",
     "/eureka/fonts/**",
@@ -265,7 +267,7 @@ public class WebSecurityConfig {
         return http
             .securityMatcher(new AndServerWebExchangeMatcher(
                 ServerWebExchangeMatchers.pathMatchers("/application/**"),
-                new NegatedServerWebExchangeMatcher(ServerWebExchangeMatchers.pathMatchers("/application/health", "/application/info"))
+                new NegatedServerWebExchangeMatcher(ServerWebExchangeMatchers.pathMatchers("/application/health", "/application/info", "/application/version"))
             ))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())

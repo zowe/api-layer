@@ -52,8 +52,7 @@ public class TokenAuthenticationFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         var token = resolveToken(exchange.getRequest()).filter(StringUtils::isNotBlank);
-        return token.map(jwt -> tokenProvider
-            .validateToken(jwt)
+        return token.map(jwt -> tokenProvider.validateToken(jwt)
             .flatMap(resp -> {
                 if (StringUtils.isNotBlank(resp.getUserId())) {
                     Authentication authentication = createAuthenticated(resp.getUserId(), jwt, TokenAuthentication.Type.JWT);
@@ -67,12 +66,12 @@ public class TokenAuthenticationFilter implements WebFilter {
     }
 
     private Optional<String> resolveToken(ServerHttpRequest request) {
-        String bearerToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        var bearerToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (StringUtils.startsWith(bearerToken, HEADER_PREFIX)) {
             return Optional.of(bearerToken.substring(HEADER_PREFIX.length()));
         }
 
-        String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
+        var cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
         return CookieUtil.readCookies(request.getHeaders())
             .filter(httpCookie -> StringUtils.equals(cookieName, httpCookie.getName()))
             .findFirst()
