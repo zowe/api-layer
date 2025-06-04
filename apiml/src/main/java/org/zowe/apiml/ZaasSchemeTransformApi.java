@@ -207,6 +207,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
                 .map(entry -> {
                     var cookie = new Cookie(entry.getKey(), entry.getValue());
                     cookie.setSecure(true);
+                    cookie.setHttpOnly(true);
                     return cookie;
                 })
                 .toArray(Cookie[]::new);
