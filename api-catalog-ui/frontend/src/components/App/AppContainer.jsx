@@ -11,17 +11,10 @@ import App from './App';
 import { connect } from "react-redux";
 import { userActions } from '../../actions/user-actions';
 
-const withRouter = (App) =>{
-    return (props) =>{
-        return <App {...props}/>
-    }
-}
-
 const mapDispatchToProps = (dispatch) => ({
     success: (user) => dispatch(userActions.query(user)),
     logout: () => dispatch(userActions.forceLogout()),
 });
-
 
 const mapStateToProps = (state) => ({
     authentication: state.authenticationReducer,
