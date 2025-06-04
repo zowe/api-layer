@@ -10,7 +10,9 @@
 
 package org.zowe.apiml.controller;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -18,7 +20,6 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,8 +44,8 @@ public class ReactiveSafResourceAccessController {
     @PostMapping(path = CONTEXT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<?>> hasSafAccess(@RequestBody CheckRequestModel request) {
         return ReactiveSecurityContextHolder.getContext()
-            .map(SecurityContext::getAuthentication)
-            .filter(auth -> auth != null && auth.getPrincipal() != null)
+            .flatMap(ctx -> Mono.justOrEmpty(ctx.getAuthentication()))
+            .filter(auth -> auth.getPrincipal() != null)
             .flatMap(authentication -> {
                 if (safResourceAccessVerifying.hasSafResourceAccess(
                     authentication,
@@ -69,6 +70,8 @@ public class ReactiveSafResourceAccessController {
             .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatusCode.valueOf(401)).build()));
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Data
     static class CheckRequestModel {
         private String resourceClass;
