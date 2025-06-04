@@ -166,4 +166,27 @@ describe('>>> App component tests', () => {
         });
     });
 
+    it('handles BroadcastChannel login message but does NOT call success if status !== 200', async () => {
+        const mockLogout = jest.fn();
+        const mockSuccess = jest.fn();
+        userService.query.mockResolvedValue({ status: 403 });
+
+        await act(async () => {
+            render(
+                <MemoryRouter initialEntries={['/dashboard']}>
+                    <App authentication={{ user: 'user' }} success={mockSuccess} logout={mockLogout} />
+                </MemoryRouter>
+            );
+        });
+
+        await act(async () => {
+            broadcastInstance.onmessage({ data: 'login' });
+        });
+
+        await waitFor(() => {
+            expect(userService.query).toHaveBeenCalled();
+            expect(mockSuccess).not.toHaveBeenCalled();
+        });
+    });
+
 });
