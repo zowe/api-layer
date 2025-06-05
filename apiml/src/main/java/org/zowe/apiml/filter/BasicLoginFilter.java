@@ -100,7 +100,7 @@ public class BasicLoginFilter implements WebFilter {
 
     private Mono<LoginRequest> extractBasicAuth(ServerWebExchange exchange) {
         var authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if(authHeader == null) return Mono.empty();
+        if (authHeader == null) return Mono.empty();
         try {
             var optHeader = LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(authHeader));
             return optHeader
