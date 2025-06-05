@@ -170,6 +170,9 @@ public class WebSecurityConfig {
         return http.build();
     }
 
+    /**
+     * Set up the default x509 authentication mode. It verifies only trusted certificates such as server certs, without mapping
+     */
     private ServerHttpSecurity x509SecurityConfig(ServerHttpSecurity http, boolean defaultExceptionHandler) {
         http
             .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))

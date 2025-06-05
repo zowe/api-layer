@@ -60,6 +60,7 @@ public class X509AuthFilter implements WebFilter {
                     })
                     .onErrorResume(AuthenticationException.class, (ex) -> chain.filter(exchange));
             });
+
     }
 
 }
