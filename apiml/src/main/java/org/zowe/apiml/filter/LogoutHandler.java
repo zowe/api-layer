@@ -28,6 +28,7 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import reactor.core.publisher.Mono;
 
 import static org.zowe.apiml.constants.ApimlConstants.BEARER_AUTHENTICATION_PREFIX;
+import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 @RequiredArgsConstructor
 @Component
@@ -43,14 +44,14 @@ public class LogoutHandler implements ServerLogoutHandler {
     }
 
     public static Mono<String> getTokenFromRequest(ServerWebExchange exchange) {
-        return getCookieValue(exchange, "apimlAuthenticationToken")
-            .switchIfEmpty(Mono.<String>defer(() -> getBearerTokenFromHeaderReactive(exchange)));
+        return getCookieValue(exchange, COOKIE_AUTH_NAME)
+            .switchIfEmpty(Mono.defer(() -> getBearerTokenFromHeaderReactive(exchange)));
     }
 
     public static Mono<String> getCookieValue(ServerWebExchange exchange, String cookieName) {
         return Mono.justOrEmpty(exchange)
             .filter(ex -> ex.getRequest().getCookies().getFirst(cookieName) != null)
-            .map(ex -> ex.getRequest().getCookies().getFirst(cookieName))
+            .mapNotNull(ex -> ex.getRequest().getCookies().getFirst(cookieName))
             .map(HttpCookie::getValue);
     }
 
