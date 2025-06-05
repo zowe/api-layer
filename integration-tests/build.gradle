@@ -368,7 +368,8 @@ task runContainerTests(type: Test) {
             'GatewayProxyTest',
             'GatewayServiceRouting',
             'GatewayCentralRegistry',
-            'ZaasTest'
+            'ZaasTest',
+            'SAFAuthResourceCheckTest'
         )
     }
 }

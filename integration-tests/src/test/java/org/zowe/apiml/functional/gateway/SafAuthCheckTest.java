@@ -19,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.SecurityUtils;
+import org.zowe.apiml.util.categories.SAFAuthResourceCheckTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
@@ -30,6 +31,7 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.requests.Endpoints.SAF_AUTH_CHECK;
 
+@SAFAuthResourceCheckTest
 public class SafAuthCheckTest {
 
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
