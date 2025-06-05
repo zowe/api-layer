@@ -218,7 +218,7 @@ class BasicLoginFilterTest {
         ObjectMapper realMapper = new ObjectMapper();
         basicLoginFilter = new BasicLoginFilter(mockCompoundAuthProvider, realMapper, mockFailedAuthenticationWebHandler);
 
-        MockServerHttpRequest request = MockServerHttpRequest.post("/login")
+        MockServerHttpRequest request = MockServerHttpRequest.post("/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .body(realMapper.writeValueAsString(loginRequestPojo));
         ServerWebExchange exchange = createExchange(request);
@@ -251,7 +251,7 @@ class BasicLoginFilterTest {
         ObjectMapper realMapper = new ObjectMapper();
         basicLoginFilter = new BasicLoginFilter(mockCompoundAuthProvider, realMapper, mockFailedAuthenticationWebHandler);
 
-        MockServerHttpRequest request = MockServerHttpRequest.post("/login")
+        MockServerHttpRequest request = MockServerHttpRequest.post("/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .body(realMapper.writeValueAsString(loginRequestPojo));
         ServerWebExchange exchange = createExchange(request);
@@ -275,7 +275,7 @@ class BasicLoginFilterTest {
     @Test
     void withInvalidJsonBody_shouldDelegateToFailureHandler() throws IOException {
         String malformedJsonBody = "{\"username\":\"testUser\", password:\"testPassword\""; // Malformed
-        MockServerHttpRequest request = MockServerHttpRequest.post("/login")
+        MockServerHttpRequest request = MockServerHttpRequest.post("/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .body(malformedJsonBody);
         ServerWebExchange exchange = createExchange(request);
@@ -292,7 +292,9 @@ class BasicLoginFilterTest {
         when(mockFilterChain.filter(exchange)).thenReturn(Mono.empty());
         StepVerifier.create(basicLoginFilter.filter(exchange, mockFilterChain))
             .verifyComplete();
+//        RequestPath path = exchange.getRequest().getPath("/");
 
+//        when(exchange.getRequest().getPath()).thenReturn(new DefaultRequestPath )
         ArgumentCaptor<AuthenticationCredentialsNotFoundException> exCaptor = ArgumentCaptor.forClass(AuthenticationCredentialsNotFoundException.class);
         verify(mockFailedAuthenticationWebHandler).onAuthenticationFailure(any(WebFilterExchange.class), exCaptor.capture());
         assertEquals("Login object has wrong format.", exCaptor.getValue().getMessage());
@@ -304,7 +306,7 @@ class BasicLoginFilterTest {
         ObjectMapper realMapper = new ObjectMapper();
         basicLoginFilter = new BasicLoginFilter(mockCompoundAuthProvider, realMapper, mockFailedAuthenticationWebHandler);
 
-        MockServerHttpRequest request = MockServerHttpRequest.post("/login")
+        MockServerHttpRequest request = MockServerHttpRequest.post("/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
             .body(realMapper.writeValueAsString(incompleteLoginRequest));
         ServerWebExchange exchange = createExchange(request);
@@ -321,6 +323,28 @@ class BasicLoginFilterTest {
         ArgumentCaptor<AuthenticationCredentialsNotFoundException> exCaptor = ArgumentCaptor.forClass(AuthenticationCredentialsNotFoundException.class);
         verify(mockFailedAuthenticationWebHandler).onAuthenticationFailure(any(WebFilterExchange.class), exCaptor.capture());
         assertEquals("Login object has wrong format.", exCaptor.getValue().getMessage());
+    }
+
+    @Test
+    void whenPathIsNotAuthLogin_shouldSkipBodyParsing() throws JsonProcessingException {
+        LoginRequest loginRequestPojo = new LoginRequest("user", "pass".toCharArray());
+        ObjectMapper realMapper = new ObjectMapper();
+
+        MockServerHttpRequest request = MockServerHttpRequest.post("/some/other/path")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(realMapper.writeValueAsString(loginRequestPojo));
+        ServerWebExchange exchange = createExchange(request);
+
+        staticLoginFilterMock.when(() -> LoginFilter.getCredentialFromAuthorizationHeader(any(HttpServletRequest.class)))
+            .thenReturn(Optional.empty());
+
+        when(mockFilterChain.filter(exchange)).thenReturn(Mono.empty());
+
+        StepVerifier.create(basicLoginFilter.filter(exchange, mockFilterChain))
+            .verifyComplete();
+
+        verify(mockCompoundAuthProvider, never()).authenticate(any());
+        verify(mockFilterChain).filter(exchange);
     }
 
 }
