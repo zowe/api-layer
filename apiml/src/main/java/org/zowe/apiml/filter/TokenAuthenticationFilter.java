@@ -67,7 +67,7 @@ public class TokenAuthenticationFilter implements WebFilter {
 
     private Optional<String> resolveToken(ServerHttpRequest request) {
         var bearerToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (StringUtils.startsWith(bearerToken, HEADER_PREFIX)) {
+        if (bearerToken != null && StringUtils.startsWith(bearerToken, HEADER_PREFIX)) {
             return Optional.of(bearerToken.substring(HEADER_PREFIX.length()));
         }
 

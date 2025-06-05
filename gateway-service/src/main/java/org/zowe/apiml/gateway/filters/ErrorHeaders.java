@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.filters;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.ClientResponse;
+import org.zowe.apiml.constants.ApimlConstants;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,9 +28,7 @@ public class ErrorHeaders implements ClientResponse.Headers {
     }
 
     public ErrorHeaders(String message) {
-        // FIXME: access to the ApimlConstants
-        // httpHeaders.add(ApimlConstants.AUTH_FAIL_HEADER, message);
-        httpHeaders.add("X-Zowe-Auth-Failure", message);
+         httpHeaders.add(ApimlConstants.AUTH_FAIL_HEADER, message);
     }
 
     @Override

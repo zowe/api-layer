@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpStatus;
@@ -72,8 +73,12 @@ public class FailedAuthenticationWebHandler implements ServerAuthenticationFailu
             // This should never happen in modulith mode, but handler declares ServletException in its signature
             throw new RuntimeException(e);
         }
-        return exchange.getResponse().writeWith(Mono.just(buffer.get()));
-
+        DataBuffer dataBuffer = buffer.get();
+        if (dataBuffer != null) {
+            return exchange.getResponse().writeWith(Mono.just(dataBuffer));
+        } else {
+            return exchange.getResponse().setComplete(); // avoids NPE
+        }
     }
 
 }

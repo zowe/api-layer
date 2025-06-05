@@ -50,6 +50,7 @@ import static org.zowe.apiml.gateway.x509.ForwardClientCertFilterFactory.CLIENT_
  */
 @Slf4j
 @Configuration
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class AuthEndpointConfig {
 
     private String[] HEADERS_TO_RESEND = {

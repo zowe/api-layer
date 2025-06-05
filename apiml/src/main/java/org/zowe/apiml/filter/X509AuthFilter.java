@@ -45,18 +45,21 @@ public class X509AuthFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         X509Certificate[] certs = exchange.getAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
-        return ReactiveSecurityContextHolder.getContext().defaultIfEmpty(new SecurityContextImpl(new X509AuthenticationToken(null))).flatMap(ctx -> {
-           if (ctx.getAuthentication().isAuthenticated() || certs == null || certs.length == 0) {
-               return chain.filter(exchange);
-           }
-            return x509AuthenticationProvider.authenticate(new X509AuthenticationToken(certs)).flatMap(authentication -> {
-                if (!authentication.isAuthenticated()) {
+        return ReactiveSecurityContextHolder.getContext().defaultIfEmpty(new SecurityContextImpl(new X509AuthenticationToken(null)))
+            .flatMap(ctx -> {
+                if ((ctx.getAuthentication().isAuthenticated() && ctx.getAuthentication().getPrincipal() != null) || certs == null || certs.length == 0) {
                     return chain.filter(exchange);
                 }
-                return chain.filter(exchange)
-                    .contextWrite(context -> ReactiveSecurityContextHolder.withAuthentication(authentication));
-            }).onErrorResume(AuthenticationException.class, (ex) -> chain.filter(exchange));
-        });
+                return x509AuthenticationProvider.authenticate(new X509AuthenticationToken(certs))
+                    .flatMap(authentication -> {
+                        if (!authentication.isAuthenticated()) {
+                            return chain.filter(exchange);
+                        }
+                        return chain.filter(exchange)
+                            .contextWrite(context -> ReactiveSecurityContextHolder.withAuthentication(authentication));
+                    })
+                    .onErrorResume(AuthenticationException.class, (ex) -> chain.filter(exchange));
+            });
 
     }
 

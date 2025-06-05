@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
@@ -74,6 +75,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -121,22 +123,24 @@ public class ReactiveAuthenticationController {
      * @return A Mono<ResponseEntity<Void>> indicating success or failure.
      */
     @PostMapping("/login")
-    public Mono<ResponseEntity<Void>> login(ServerWebExchange exchange) {
-      return ReactiveSecurityContextHolder.getContext().flatMap(securityContext -> {
-            var authentication = securityContext.getAuthentication();
-            var jwt = ((TokenAuthentication) authentication).getCredentials();
-            // Create the HttpOnly cookie containing the JWT
-            var jwtCookie = httpUtils.createResponseCookie(jwt);
+    public Mono<ResponseEntity<Object>> login(ServerWebExchange exchange) {
+        return ReactiveSecurityContextHolder.getContext()
+            .map(securityContext -> securityContext.getAuthentication())
+            .filter(Objects::nonNull)
+            .map(authentication -> {
+                var jwt = ((TokenAuthentication) authentication).getCredentials();
+                // Create the HttpOnly cookie containing the JWT
+                var jwtCookie = httpUtils.createResponseCookie(jwt);
 
-            // Add the cookie to the response headers
-            exchange.getResponse().addCookie(jwtCookie);
-            log.debug("JWT Cookie set for user: {}", authentication.getName());
+                // Add the cookie to the response headers
+                exchange.getResponse().addCookie(jwtCookie);
+                log.debug("JWT Cookie set for user: {}", authentication.getName());
 
-            // Return an OK response
-            return Mono.just(ResponseEntity.noContent().build());
-        });
+                // Return an OK response
+                return ResponseEntity.noContent().build();
+            })
+            .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatusCode.valueOf(401)).build()));
     }
-
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
@@ -147,29 +151,32 @@ public class ReactiveAuthenticationController {
 
     @PostMapping("/access-token/generate")
     public Mono<ResponseEntity<String>> generatePat(@RequestAttribute(TOKEN_REQUEST) AccessTokenRequest accessTokenRequest) {
-        return ReactiveSecurityContextHolder.getContext().flatMap(securityContext -> {
-            var authentication = securityContext.getAuthentication();
-            var userId = ((TokenAuthentication) authentication).getName();
+        return ReactiveSecurityContextHolder.getContext()
+            .map(securityContext -> securityContext.getAuthentication())
+            .filter(Objects::nonNull)
+            .map(authentication -> {
+                var userId = ((TokenAuthentication) authentication).getName();
 
-            log.debug("Generating access token for user {}", userId);
+                log.debug("Generating access token for user {}", userId);
 
-            RauditxService.RauditxBuilder rauditBuilder = rauditxService.builder()
-                .userId(userId)
-                .messageSegment("An attempt to generate PAT")
-                .alwaysLogSuccesses()
-                .alwaysLogFailures();
+                RauditxService.RauditxBuilder rauditBuilder = rauditxService.builder()
+                    .userId(userId)
+                    .messageSegment("An attempt to generate PAT")
+                    .alwaysLogSuccesses()
+                    .alwaysLogFailures();
 
-            String pat;
-            try {
-                pat = tokenProvider.getToken(userId, accessTokenRequest.getValidity(), accessTokenRequest.getScopes());
-                rauditBuilder.success();
-            } catch (RuntimeException e) {
-                rauditBuilder.failure();
-                rauditBuilder.issue();
-                throw e;
-            }
-            return Mono.just(ResponseEntity.ok(pat));
-        });
+                String pat;
+                try {
+                    pat = tokenProvider.getToken(userId, accessTokenRequest.getValidity(), accessTokenRequest.getScopes());
+                    rauditBuilder.success();
+                } catch (RuntimeException e) {
+                    rauditBuilder.failure();
+                    rauditBuilder.issue();
+                    throw e;
+                }
+                return ResponseEntity.ok(pat);
+            })
+            .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatusCode.valueOf(401)).build()));
     }
 
     @DeleteMapping(path = INVALIDATE_PATH)
@@ -236,8 +243,8 @@ public class ReactiveAuthenticationController {
         @ApiResponse(responseCode = "401", description = "Invalid token")
     })
     public Mono<ResponseEntity<Object>> validateAccessToken(@RequestBody ValidateRequestModel validateRequestModel) {
-        String token = validateRequestModel.getToken();
-        String serviceId = validateRequestModel.getServiceId();
+        var token = validateRequestModel.getToken();
+        var serviceId = validateRequestModel.getServiceId();
         if (tokenProvider.isValidForScopes(token, serviceId) &&
             !tokenProvider.isInvalidated(token)) {
             return Mono.just(ResponseEntity.noContent().build());
@@ -345,8 +352,9 @@ public class ReactiveAuthenticationController {
     public Mono<ResponseEntity<Object>> revokeAllUserAccessTokens(@RequestBody(required = false) RulesRequestModel rulesRequestModel) {
         return ReactiveSecurityContextHolder.getContext()
             .map(SecurityContext::getAuthentication)
+            .filter(Objects::nonNull)
             .flatMap(authentication -> {
-                String userId = authentication.getPrincipal().toString();
+                var userId = authentication.getPrincipal().toString();
                 log.debug("revokeAllUserAccessTokens: userId={}", userId);
 
                 long timeStamp = 0;
@@ -646,7 +654,7 @@ public class ReactiveAuthenticationController {
     public Mono<ResponseEntity<Void>> validateOIDCToken(@RequestBody AuthController.ValidateRequestModel validateRequestModel) {
         return Mono.fromSupplier(() -> {
             log.debug("Validating OIDC token using provider {}", oidcProvider);
-            String token = validateRequestModel.getToken();
+            var token = validateRequestModel.getToken();
             if (oidcProvider != null && oidcProvider.isValid(token)) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }

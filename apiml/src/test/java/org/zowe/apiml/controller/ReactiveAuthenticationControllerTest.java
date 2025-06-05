@@ -122,7 +122,7 @@ class ReactiveAuthenticationControllerTest {
         try (MockedStatic<ReactiveSecurityContextHolder> mockedContextHolder = Mockito.mockStatic(ReactiveSecurityContextHolder.class)) {
             mockedContextHolder.when(ReactiveSecurityContextHolder::getContext).thenReturn(Mono.just(securityContext));
 
-            Mono<ResponseEntity<Void>> result = controller.login(exchange);
+            Mono<ResponseEntity<Object>> result = controller.login(exchange);
 
             StepVerifier.create(result)
                 .expectNextMatches(responseEntity -> {

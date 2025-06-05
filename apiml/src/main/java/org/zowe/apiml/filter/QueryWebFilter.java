@@ -46,7 +46,6 @@ public class QueryWebFilter implements WebFilter {
     public QueryWebFilter(
         ServerAuthenticationSuccessHandler successHandler,
         ServerAuthenticationFailureHandler failureHandler,
-
         HttpMethod httpMethod,
         boolean protectedByCertificate,
         ReactiveAuthenticationManager authenticationService) {
@@ -66,17 +65,15 @@ public class QueryWebFilter implements WebFilter {
                 new WebFilterExchange(exchange, chain), ex);
         }
 
-        return attemptAuthentication(exchange)
-            .flatMap(authResult -> this.successHandler.onAuthenticationSuccess(
-                    new WebFilterExchange(exchange, chain), authResult)
-                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authResult))
+        return attemptAuthentication(exchange, chain)
+            .flatMap(authResult -> this.successHandler.onAuthenticationSuccess(new WebFilterExchange(exchange, chain), authResult)
+                    .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authResult))
             )
-            .onErrorResume(AuthenticationException.class, failed -> this.failureHandler.onAuthenticationFailure(
-                new WebFilterExchange(exchange, chain), failed)
-            );
+            .onErrorResume(AuthenticationException.class, failed ->
+                this.failureHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), failed));
     }
 
-    private Mono<Authentication> attemptAuthentication(ServerWebExchange exchange) {
+    private Mono<Authentication> attemptAuthentication(ServerWebExchange exchange, WebFilterChain chain) {
         Mono<Void> certificateCheckMono = Mono.empty();
 
         if (protectedByCertificate) {
@@ -89,12 +86,14 @@ public class QueryWebFilter implements WebFilter {
 
         return certificateCheckMono
             .then(LogoutHandler.getTokenFromRequest(exchange))
-            .switchIfEmpty(Mono.error(new TokenNotProvidedException("Authorization token not provided.")))
-            .flatMap(tokenValue -> {
-                Authentication tokenAuthRequest = new TokenAuthentication(tokenValue, TokenAuthentication.Type.JWT);
-                return this.authenticationManager.authenticate(tokenAuthRequest)
-                    .filter(Authentication::isAuthenticated)
-                    .switchIfEmpty(Mono.error(new TokenNotValidException("JWT Token is not authenticated")));
-            });
+                .switchIfEmpty(Mono.error(new TokenNotProvidedException("Authorization token not provided.")))
+                .flatMap(tokenValue -> {
+                    var tokenAuthRequest = new TokenAuthentication(tokenValue, TokenAuthentication.Type.JWT);
+                    return this.authenticationManager.authenticate(tokenAuthRequest)
+                        .filter(Authentication::isAuthenticated)
+                        .switchIfEmpty(Mono.error(new TokenNotValidException("JWT Token is not authenticated")));
+                });
+
     }
+
 }
