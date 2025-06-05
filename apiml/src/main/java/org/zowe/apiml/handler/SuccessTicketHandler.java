@@ -97,10 +97,7 @@ public class SuccessTicketHandler implements ServerAuthenticationSuccessHandler 
     private Mono<TicketResponse> getTicketResponse(ServerHttpRequest request, Authentication authentication) {
         TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
         String userId = tokenAuthentication.getPrincipal();
-        return request.getBody().collectList().map(bufferList -> {
-//            if(bufferList.isEmpty()) {
-//                return new TicketResponse();
-//            }
+        return request.getBody().collectList().handle((bufferList, sink) -> {
             var bufferFactory = new DefaultDataBufferFactory();
             int totalSize = bufferList.stream().mapToInt(DataBuffer::readableByteCount).sum();
             DataBuffer mergedBuffer = bufferFactory.allocateBuffer(totalSize);
@@ -109,18 +106,24 @@ public class SuccessTicketHandler implements ServerAuthenticationSuccessHandler 
             String applicationName;
             try {
                 applicationName = mapper.readValue(mergedBuffer.asInputStream(), TicketRequest.class).getApplicationName();
+                if (applicationName == null) {
+                    sink.error(new IncorrectRequestBodyException("ApplicationName not provided"));
+                    return;
+                }
             } catch (IOException e) {
-                throw new IncorrectRequestBodyException("ApplicationName not provided");
+                sink.error(new IncorrectRequestBodyException("ApplicationName not provided"));
+                return;
             }
 
             String ticket;
             try {
                 ticket = passTicketService.generate(userId, applicationName);
             } catch (PassTicketException e) {
-                throw new PassException(e);
+                sink.error(new PassException(e));
+                return;
             }
 
-            return new TicketResponse(tokenAuthentication.getCredentials(), userId, applicationName, ticket);
+            sink.next(new TicketResponse(tokenAuthentication.getCredentials(), userId, applicationName, ticket));
         });
     }
 }
