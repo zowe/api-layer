@@ -59,40 +59,24 @@ public class QueryWebFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        // Check if the request path matches the configured endpoint path
-
-
-        // Check HTTP Method
         if (!exchange.getRequest().getMethod().equals(this.httpMethod)) {
             AuthMethodNotSupportedException ex = new AuthMethodNotSupportedException(
                 exchange.getRequest().getMethod().name());
-            // It's generally better to delegate to the failureHandler if it can handle this,
-            // or set a specific response. For simplicity here, we'll use the failure handler.
             return this.failureHandler.onAuthenticationFailure(
                 new WebFilterExchange(exchange, chain), ex);
         }
 
-        return attemptAuthentication(exchange, chain)
-            .flatMap(authResult -> {
-                // Authentication successful
-                // The successHandler will typically commit the response or proceed with the chain
-                // after setting the authentication in the context.
-                return this.successHandler.onAuthenticationSuccess(
-                        new WebFilterExchange(exchange, chain), authResult)
-                    // After success handler, ensure authentication is in the reactive context for downstream
-                    .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authResult));
-            })
-            .onErrorResume(AuthenticationException.class, failed -> {
-                // Authentication failed
-                // Clear context is handled by ReactiveSecurityContextHolder if needed, or by the failure handler.
-                // For reactive, context isn't typically "cleared" in the same way as thread-local,
-                // but rather, a new empty context or context without authentication is used.
-                return this.failureHandler.onAuthenticationFailure(
-                    new WebFilterExchange(exchange, chain), failed);
-            });
+        return attemptAuthentication(exchange)
+            .flatMap(authResult -> this.successHandler.onAuthenticationSuccess(
+                    new WebFilterExchange(exchange, chain), authResult)
+                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authResult))
+            )
+            .onErrorResume(AuthenticationException.class, failed -> this.failureHandler.onAuthenticationFailure(
+                new WebFilterExchange(exchange, chain), failed)
+            );
     }
 
-    private Mono<Authentication> attemptAuthentication(ServerWebExchange exchange, WebFilterChain chain) {
+    private Mono<Authentication> attemptAuthentication(ServerWebExchange exchange) {
         Mono<Void> certificateCheckMono = Mono.empty();
 
         if (protectedByCertificate) {
@@ -100,17 +84,17 @@ public class QueryWebFilter implements WebFilter {
                 .map(SecurityContext::getAuthentication)
                 .filter(auth -> auth != null && auth.isAuthenticated() && auth instanceof X509AuthenticationToken)
                 .switchIfEmpty(Mono.error(new InvalidCertificateException("Invalid or missing certificate authentication.")))
-                .then(); // We only care that it passed, not the auth object itself for this step.
+                .then();
         }
 
         return certificateCheckMono
-            .then(LogoutHandler.getTokenFromRequest(exchange)) // Reactive method
-                .switchIfEmpty(Mono.error(new TokenNotProvidedException("Authorization token not provided.")))
-                .flatMap(tokenValue -> {
-                    Authentication tokenAuthRequest = new TokenAuthentication(tokenValue, TokenAuthentication.Type.JWT);
-                    return this.authenticationManager.authenticate(tokenAuthRequest)
-                        .filter(Authentication::isAuthenticated)
-                        .switchIfEmpty(Mono.error(new TokenNotValidException("JWT Token is not authenticated")));
-                });
+            .then(LogoutHandler.getTokenFromRequest(exchange))
+            .switchIfEmpty(Mono.error(new TokenNotProvidedException("Authorization token not provided.")))
+            .flatMap(tokenValue -> {
+                Authentication tokenAuthRequest = new TokenAuthentication(tokenValue, TokenAuthentication.Type.JWT);
+                return this.authenticationManager.authenticate(tokenAuthRequest)
+                    .filter(Authentication::isAuthenticated)
+                    .switchIfEmpty(Mono.error(new TokenNotValidException("JWT Token is not authenticated")));
+            });
     }
 }

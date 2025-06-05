@@ -74,47 +74,52 @@ public class BasicLoginFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader != null && authHeader.toLowerCase().startsWith("bearer ")) {
-            return chain.filter(exchange); // skip the current filter if Bearer token is present
+            return chain.filter(exchange);
         }
         return extractBasicAuth(exchange)
-            .map(this::useCredentials)
             .switchIfEmpty(getCredentialsFromBody(exchange))
+            .map(this::useCredentials)
             .switchIfEmpty(chain.filter(exchange).then(Mono.empty()))
             .flatMap(credentials ->
                 authenticationManager.authenticate(credentials)
                     .flatMap(authentication -> {
                         var securityContext = new SecurityContextImpl();
                         securityContext.setAuthentication(authentication);
+                        var contextView = ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext));
                         return chain.filter(exchange)
-                            .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext)));
+                            .contextWrite(contextView);
                     })
                     .onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), ex))
             ).onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), ex)
         );
     }
 
-    AbstractAuthenticationToken useCredentials(LoginRequest credentials) {
+    private AbstractAuthenticationToken useCredentials(LoginRequest credentials) {
         return new UsernamePasswordAuthenticationToken(credentials.getUsername(), credentials.getPassword());
     }
 
     private Mono<LoginRequest> extractBasicAuth(ServerWebExchange exchange) {
-        return Mono.justOrEmpty(exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
-            .flatMap(header -> Mono.defer(() -> {
-                try {
-                    return LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(header))
-                        .filter(creds -> creds.getUsername() != null && !creds.getUsername().isBlank()
-                            && creds.getPassword() != null && creds.getPassword().length > 0)
-                        .map(Mono::just)
-                        .orElseGet(() -> Mono.error(new AuthenticationCredentialsNotFoundException("Username or password not provided.")));
-                } catch (Exception e) {
-                    log.debug("Failed to decode Basic Auth header: {}", e.getMessage());
-                    return Mono.error(new AuthenticationCredentialsNotFoundException("Invalid basic authentication header", e));
-                }
-            }));
+        var authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if(authHeader == null) return Mono.empty();
+        try {
+            var optHeader = LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(authHeader));
+            return optHeader
+                .filter(this::credentialsAvailable)
+                .map(Mono::just)
+                .orElseGet(() -> Mono.error(new AuthenticationCredentialsNotFoundException("Username or password not provided.")));
+        } catch (Exception e) {
+            log.debug("Failed to decode Basic Auth header: {}", e.getMessage());
+            return Mono.error(new AuthenticationCredentialsNotFoundException("Invalid basic authentication header", e));
+        }
+
     }
 
-    private Mono<AbstractAuthenticationToken> getCredentialsFromBody(ServerWebExchange exchange) {
-        // method available could return 0 even there are some data, depends on the implementation
+    private boolean credentialsAvailable(LoginRequest credentials) {
+        return credentials.getUsername() != null && !credentials.getUsername().isBlank()
+            && credentials.getPassword() != null && credentials.getPassword().length > 0;
+    }
+
+    private Mono<LoginRequest> getCredentialsFromBody(ServerWebExchange exchange) {
         return exchange.getRequest().getBody().flatMap(buffer -> {
                 try {
                     byte[] bytes = new byte[buffer.readableByteCount()];
@@ -131,8 +136,7 @@ public class BasicLoginFilter implements WebFilter {
                     return Flux.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format."));
                 }
             }
-        ).next().map(this::useCredentials);
-
+        ).next();
     }
 
 }
