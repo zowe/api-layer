@@ -11,9 +11,11 @@
 package org.zowe.apiml;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.filters.RequestCredentials;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.passticket.PassTicketException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.ticket.TicketResponse;
@@ -23,6 +25,7 @@ import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
+import javax.management.ServiceNotFoundException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -34,6 +37,7 @@ class ZaasSchemeTransformApiTest {
     private AuthSourceService authSourceService;
     private PassTicketService passTicketService;
     private ZaasSchemeTransformApi transformApi;
+    private final MessageService messageService = new YamlMessageService("/apiml-log-messages.yml");
 
     @BeforeEach
     void setUp() {
@@ -41,7 +45,6 @@ class ZaasSchemeTransformApiTest {
         passTicketService = mock(PassTicketService.class);
         ZosmfService zosmfService = mock(ZosmfService.class);
         TokenCreationService tokenCreationService = mock(TokenCreationService.class);
-        MessageService messageService = mock(MessageService.class);
 
         transformApi = new ZaasSchemeTransformApi(
             authSourceService,
@@ -52,58 +55,198 @@ class ZaasSchemeTransformApiTest {
         );
     }
 
-    @Test
-    void testPassticket_returnsExpectedTicket() throws PassTicketException {
-        RequestCredentials credentials = mockCredentials();
+    @Nested
+    class GivenPassticket {
+        @Test
+        void thenReturnsExpectedTicket() throws PassTicketException {
+            RequestCredentials credentials = mockCredentials();
 
-        AuthSource authSource = mock(AuthSource.class);
-        AuthSource.Parsed parsed = mock(AuthSource.Parsed.class);
-        when(parsed.getUserId()).thenReturn("USER1");
+            AuthSource authSource = mock(AuthSource.class);
+            AuthSource.Parsed parsed = mock(AuthSource.Parsed.class);
+            when(parsed.getUserId()).thenReturn("USER1");
 
 
-        when(parsed.getUserId()).thenReturn("USER1");
-        when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
-        when(authSourceService.parse(authSource)).thenReturn(parsed);
+            when(parsed.getUserId()).thenReturn("USER1");
+            when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
+            when(authSourceService.parse(authSource)).thenReturn(parsed);
 
-        when(passTicketService.generate("USER1", "app1")).thenReturn("ticket123");
-        when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
-        when(authSourceService.parse(authSource)).thenReturn(parsed);
-        when(passTicketService.generate("USER1", "app1")).thenReturn("ticket123");
+            when(passTicketService.generate("USER1", "app1")).thenReturn("ticket123");
+            when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
+            when(authSourceService.parse(authSource)).thenReturn(parsed);
+            when(passTicketService.generate("USER1", "app1")).thenReturn("ticket123");
 
-        var result = transformApi.passticket(credentials).block();
+            var result = transformApi.passticket(credentials).block();
 
-        assertNotNull(result);
-        TicketResponse response = result.getBody();
-        assertNotNull(response);
-        assertEquals("USER1", response.getUserId());
-        assertEquals("ticket123", response.getTicket());
-        assertEquals("app1", response.getApplicationName());
+            assertNotNull(result);
+            TicketResponse response = result.getBody();
+            assertNotNull(response);
+            assertEquals("USER1", response.getUserId());
+            assertEquals("ticket123", response.getTicket());
+            assertEquals("app1", response.getApplicationName());
+        }
+
+        @Test
+        void whenAuthSourceMissing_returnsMissingAuthError() {
+            RequestCredentials credentials = mockCredentials();
+            when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.empty());
+
+            var result = transformApi.passticket(credentials).block();
+
+            assertNotNull(result);
+            assertNull(result.getBody());
+            assertTrue(result.getHeaders().header("x-zowe-error").isEmpty());
+        }
+
     }
 
-    @Test
-    void testSafIdt_missingAppId_returnsError() {
-        RequestCredentials credentials = mockCredentials();
+    @Nested
+    class GivenSafIdt {
+        @Test
+        void whenMissingAppId_returnsError() {
+            RequestCredentials credentials = mockCredentials();
 
-        var result = transformApi.safIdt(credentials).block();
+            var result = transformApi.safIdt(credentials).block();
 
-        assertNotNull(result);
-        assertNull(result.getBody());
+            assertNotNull(result);
+            assertNull(result.getBody());
+        }
+
+        @Test
+        void whenValidAuthSource_returnsToken() throws PassTicketException {
+            RequestCredentials credentials = mockCredentials();
+
+            var authSource = mock(AuthSource.class);
+            var parsed = mock(AuthSource.Parsed.class);
+            when(parsed.getUserId()).thenReturn("USER1");
+
+            when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
+            when(authSourceService.parse(authSource)).thenReturn(parsed);
+
+            var tokenCreationService = mock(TokenCreationService.class);
+            when(tokenCreationService.createSafIdTokenWithoutCredentials("USER1", "app1"))
+                .thenReturn("saf-idt");
+
+            transformApi = new ZaasSchemeTransformApi(
+                authSourceService,
+                passTicketService,
+                mock(ZosmfService.class),
+                tokenCreationService,
+                messageService
+            );
+
+            var result = transformApi.safIdt(credentials).block();
+
+            assertNotNull(result);
+            assertEquals("saf-idt", result.getBody().getToken());
+        }
     }
 
-    @Test
-    void testZoweJwt_returnsJwt() {
-        RequestCredentials credentials = mockCredentials();
+    @Nested
+    class GivenZoweJwt {
+        @Test
+        void thenReturnsJwt() {
+            RequestCredentials credentials = mockCredentials();
 
-        var authSource = mock(AuthSource.class);
-        when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
-        when(authSourceService.getJWT(authSource)).thenReturn("jwt-token");
+            var authSource = mock(AuthSource.class);
+            when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
+            when(authSourceService.getJWT(authSource)).thenReturn("jwt-token");
 
-        var result = transformApi.zoweJwt(credentials).block();
+            var result = transformApi.zoweJwt(credentials).block();
 
-        assertNotNull(result);
-        ZaasTokenResponse response = result.getBody();
-        assertNotNull(response);
-        assertEquals("jwt-token", response.getToken());
+            assertNotNull(result);
+            ZaasTokenResponse response = result.getBody();
+            assertNotNull(response);
+            assertEquals("jwt-token", response.getToken());
+        }
+
+        @Test
+        void whenMissingAuthSource_returnsError() {
+            RequestCredentials credentials = mockCredentials();
+
+            when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.empty());
+
+            var result = transformApi.zoweJwt(credentials).block();
+
+            assertNotNull(result);
+            assertNull(result.getBody());
+        }
+    }
+
+
+    @Nested
+    class GivenZosmf {
+        @Test
+        void whenValidAuthSource_returnsTokenResponse() throws ServiceNotFoundException {
+            RequestCredentials credentials = mockCredentials();
+
+            var authSource = mock(AuthSource.class);
+            var parsed = mock(AuthSource.Parsed.class);
+
+            when(authSource.getRawSource()).thenReturn("raw".toCharArray());
+            when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
+            when(authSourceService.parse(authSource)).thenReturn(parsed);
+
+            ZaasTokenResponse mockResponse = ZaasTokenResponse.builder().token("zosmf-token").build();
+
+            ZosmfService zosmfService = mock(ZosmfService.class);
+            when(zosmfService.exchangeAuthenticationForZosmfToken(anyString(), eq(parsed)))
+                .thenReturn(mockResponse);
+
+            transformApi = new ZaasSchemeTransformApi(
+                authSourceService,
+                passTicketService,
+                zosmfService,
+                mock(TokenCreationService.class),
+                messageService
+            );
+
+            var result = transformApi.zosmf(credentials).block();
+
+            assertNotNull(result);
+            assertEquals("zosmf-token", result.getBody().getToken());
+        }
+
+        @Test
+        void whenAuthSourceMissing_returnsMissingAuthError() {
+            RequestCredentials credentials = mockCredentials();
+
+            when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.empty());
+
+            var result = transformApi.zosmf(credentials).block();
+
+            assertNotNull(result);
+            assertNull(result.getBody());
+        }
+
+        @Test
+        void testZosmf_serviceThrowsException_returnsError() throws ServiceNotFoundException {
+            RequestCredentials credentials = mockCredentials();
+
+            var authSource = mock(AuthSource.class);
+            var parsed = mock(AuthSource.Parsed.class);
+            when(authSource.getRawSource()).thenReturn("raw".toCharArray());
+
+            when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
+            when(authSourceService.parse(authSource)).thenReturn(parsed);
+
+            ZosmfService zosmfService = mock(ZosmfService.class);
+            when(zosmfService.exchangeAuthenticationForZosmfToken(any(), any()))
+                .thenThrow(new RuntimeException("Simulated failure"));
+
+            transformApi = new ZaasSchemeTransformApi(
+                authSourceService,
+                passTicketService,
+                zosmfService,
+                mock(TokenCreationService.class),
+                messageService
+            );
+
+            var result = transformApi.zosmf(credentials).block();
+
+            assertNotNull(result);
+            assertNull(result.getBody());
+        }
+
     }
 
     private RequestCredentials mockCredentials() {
