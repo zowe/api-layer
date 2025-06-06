@@ -17,7 +17,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -82,16 +81,12 @@ public class BasicLoginFilter implements WebFilter {
             .switchIfEmpty(chain.filter(exchange).then(Mono.empty()))
             .flatMap(credentials ->
                 authenticationManager.authenticate(credentials)
-                    .flatMap(authentication -> {
-                        var securityContext = new SecurityContextImpl();
-                        securityContext.setAuthentication(authentication);
-                        var contextView = ReactiveSecurityContextHolder.withSecurityContext(Mono.just(securityContext));
-                        return chain.filter(exchange)
-                            .contextWrite(contextView);
-                    })
+                    .flatMap(authentication -> chain.filter(exchange)
+                        .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication))
+                    )
                     .onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), ex))
             ).onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), ex)
-        );
+            );
     }
 
     private AbstractAuthenticationToken useCredentials(LoginRequest credentials) {
@@ -134,7 +129,7 @@ public class BasicLoginFilter implements WebFilter {
                     if (loginRequest.getUsername() != null && loginRequest.getPassword() != null) {
                         return Mono.just(loginRequest);
                     }
-                    return  Flux.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format."));
+                    return Flux.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format."));
                 } catch (IOException e) {
                     log.debug("Authentication problem: login object has wrong format");
                     return Flux.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format."));
