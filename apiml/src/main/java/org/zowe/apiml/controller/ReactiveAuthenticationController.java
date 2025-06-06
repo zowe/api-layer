@@ -39,15 +39,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
@@ -59,7 +51,6 @@ import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.HttpUtils;
 import org.zowe.apiml.zaas.controllers.AuthController;
-import org.zowe.apiml.zaas.controllers.AuthController.ValidateRequestModel;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderJWK;
@@ -71,26 +62,12 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.PublicKey;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.zowe.apiml.zaas.controllers.AuthController.ACCESS_TOKEN_REVOKE;
-import static org.zowe.apiml.zaas.controllers.AuthController.ACCESS_TOKEN_REVOKE_MULTIPLE;
-import static org.zowe.apiml.zaas.controllers.AuthController.ACCESS_TOKEN_VALIDATE;
-import static org.zowe.apiml.zaas.controllers.AuthController.ALL_PUBLIC_KEYS_PATH;
-import static org.zowe.apiml.zaas.controllers.AuthController.CURRENT_PUBLIC_KEYS_PATH;
-import static org.zowe.apiml.zaas.controllers.AuthController.INVALIDATE_PATH;
-import static org.zowe.apiml.zaas.controllers.AuthController.OIDC_TOKEN_VALIDATE;
-import static org.zowe.apiml.zaas.controllers.AuthController.OIDC_WEBFINGER_PATH;
-import static org.zowe.apiml.zaas.controllers.AuthController.PUBLIC_KEYS_PATH;
 import static org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter.TOKEN_REQUEST;
+import static org.zowe.apiml.zaas.controllers.AuthController.*;
 
 @RestController
 @RequestMapping("/gateway/api/v1/auth")
@@ -226,7 +203,6 @@ public class ReactiveAuthenticationController {
      * @return Mono with HTTP response indicating token validity
      */
     @PostMapping(path = ACCESS_TOKEN_VALIDATE)
-    @ResponseBody
     @Operation(summary = "Validate personal access token.",
         tags = {"Access token"},
         operationId = "accessTokenValidatePOST",
@@ -327,7 +303,6 @@ public class ReactiveAuthenticationController {
      * @return Mono with the appropriate HTTP response
      */
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE)
-    @ResponseBody
     @Operation(summary = "Invalidate multiple personal access tokens.",
         tags = {"Access token"},
         operationId = "accessTokensInvalidateDELETE",
@@ -388,7 +363,6 @@ public class ReactiveAuthenticationController {
      * @throws JsonProcessingException if the input cannot be parsed
      */
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/user")
-    @ResponseBody
     @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
     @Operation(summary = "Invalidate personal access tokens by user ID.",
         tags = {"Access token"},
@@ -444,7 +418,6 @@ public class ReactiveAuthenticationController {
      * @throws JsonProcessingException if input parsing fails
      */
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/scope")
-    @ResponseBody
     @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
     @Operation(summary = "Invalidate multiple personal access tokens by service ID.",
         tags = {"Access token"},
@@ -487,7 +460,6 @@ public class ReactiveAuthenticationController {
      * @return Map of keys composed of zOSMF and ZAAS ones
      */
     @GetMapping(path = ALL_PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @Operation(summary = "Returns all public keys to verify JWT tokens validity",
         tags = {"Security"},
         operationId = "GetAllPublicKeysUsingGET",
@@ -528,7 +500,6 @@ public class ReactiveAuthenticationController {
      * @return The key actually used to verify the JWT tokens.
      */
     @GetMapping(path = CURRENT_PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @Operation(summary = "Returns public keys to verify JWT tokens, which can be generated now",
         tags = {"Security"},
         operationId = "GetCurrentPublicKeysUsingGET",
@@ -558,7 +529,6 @@ public class ReactiveAuthenticationController {
      * @return The key actually used to verify the JWT tokens.
      */
     @GetMapping(path = PUBLIC_KEYS_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @Operation(summary = "Get the public key of certificate that is used by the Gateway to sign tokens",
         tags = {"Security"},
         operationId = "getCurrentPublicKeys",
@@ -668,7 +638,6 @@ public class ReactiveAuthenticationController {
      * @return List of link's relation type and the target URI for provided clientID
      */
     @GetMapping(path = OIDC_WEBFINGER_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseBody
     @Operation(summary = "List of link's relation type and the target URI for provided clientID",
         tags = {"OIDC"},
         operationId = "getWebFinger",

@@ -68,11 +68,6 @@ public class QueryWebFilterTest {
     @Nested
     class GivenFilter {
 
-        @BeforeEach
-        void setUp() {
-
-        }
-
         @Nested
         class GivenQuery {
 
