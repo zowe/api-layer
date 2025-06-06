@@ -44,8 +44,7 @@ class PassTicketServiceImpl implements PassTicketService {
 
     @Override
     public String passTicket(String jwtToken, String applicationId) throws ZaasClientException, ZaasConfigurationException {
-        try {
-            CloseableHttpClient closeableHttpsClient = httpClientProvider.getHttpClient();
+        try (CloseableHttpClient closeableHttpsClient = httpClientProvider.getHttpClient()) {
             ZaasClientTicketRequest zaasClientTicketRequest = new ZaasClientTicketRequest();
             ObjectMapper mapper = new ObjectMapper();
             zaasClientTicketRequest.setApplicationName(applicationId);
@@ -55,8 +54,9 @@ class PassTicketServiceImpl implements PassTicketService {
             httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
             httpPost.setHeader(SM.COOKIE, passConfigProperties.getTokenPrefix() + "=" + jwtToken);
 
-            CloseableHttpResponse response = closeableHttpsClient.execute(httpPost);
-            return extractPassTicket(response);
+            try (CloseableHttpResponse response = closeableHttpsClient.execute(httpPost)) {
+                return extractPassTicket(response);
+            }
         } catch (ZaasConfigurationException e) {
             throw e;
         } catch (Exception e) {
