@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.filter;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +30,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyStore;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.*;
 
@@ -58,26 +60,26 @@ class CategorizeCertsWebFilterTest {
 
     private CategorizeCertsWebFilter filter;
 
-    private X509Certificate gatewayCert;
-    private X509Certificate clientCert;
-    private X509Certificate headerCert;
-    private Set<String> gatewayPublicKeys;
+    private static X509Certificate gatewayCert;
+    private static X509Certificate clientCert;
+    private static X509Certificate headerCert;
 
-    @BeforeEach
-    void setUp() throws Exception {
-        // Generate certificates for our tests
+    @BeforeAll
+    static void init() throws Exception {
         gatewayCert = loadCertificateFromKeystore("localhost", "localhost/localhost.keystore.p12");
         clientCert = loadCertificateFromKeystore("apimtst", "client_cert/client-certs.p12");
         headerCert = loadCertificateFromKeystore("user", "client_cert/client-certs.p12");
 
-        // Prepare the set of known gateway public keys
-        gatewayPublicKeys = new HashSet<>();
+    }
+
+    @BeforeEach
+    void setUp() {
+
+        Set<String> gatewayPublicKeys = new HashSet<>();
         gatewayPublicKeys.add(CategorizeCertsWebFilter.base64EncodePublicKey(gatewayCert));
 
-        // Instantiate the class under test
         filter = new CategorizeCertsWebFilter(gatewayPublicKeys, mockCertificateValidator);
 
-        // Common mock setups
         when(mockExchange.getRequest()).thenReturn(mockRequest);
         when(mockExchange.mutate()).thenReturn(mockExchangeBuilder);
         when(mockExchangeBuilder.request(any(ServerHttpRequest.class))).thenReturn(mockExchangeBuilder);
@@ -86,22 +88,19 @@ class CategorizeCertsWebFilterTest {
         when(mockRequestBuilder.headers(any())).thenReturn(mockRequestBuilder);
         when(mockRequestBuilder.build()).thenReturn(mockRequest);
         when(mockRequestBuilder.headers(any())).thenReturn(mockRequestBuilder);
-        when(mockRequestBuilder.build()).thenReturn(mockRequest); // Mutated request is the same mock
+        when(mockRequestBuilder.build()).thenReturn(mockRequest);
 
     }
 
 
     @Test
     void filter_whenNoTlsCerts_doesNothingAndContinuesChain() {
-        // ARRANGE
-        // Simulate no SSL info
+
         when(mockRequest.getSslInfo()).thenReturn(null);
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
-        // ACT
         Mono<Void> result = filter.filter(mockExchange, mockFilterChain);
 
-        // ASSERT
         StepVerifier.create(result).verifyComplete();
         verify(mockExchange, never()).getAttributes();
         verify(mockFilterChain).filter(any(ServerWebExchange.class));
@@ -109,7 +108,6 @@ class CategorizeCertsWebFilterTest {
 
     @Test
     void filter_standardPath_withClientCertOnly() {
-        // ARRANGE
         Map<String, Object> attributes = new HashMap<>();
         X509Certificate[] certChain = {clientCert};
 
@@ -138,7 +136,6 @@ class CategorizeCertsWebFilterTest {
 
     @Test
     void filter_standardPath_withGatewayCertOnly() {
-        // ARRANGE
         Map<String, Object> attributes = new HashMap<>();
         X509Certificate[] certChain = {gatewayCert};
 
@@ -148,13 +145,10 @@ class CategorizeCertsWebFilterTest {
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
         when(mockRequest.getHeaders()).thenReturn(mockHeaders);
         when(mockHeaders.getFirst(CLIENT_CERT_HEADER)).thenReturn("");
-        // Simulate forwarding is disabled
         when(mockCertificateValidator.isForwardingEnabled()).thenReturn(false);
 
-        // ACT
         StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
 
-        // ASSERT
         X509Certificate[] clientAuthCerts = (X509Certificate[]) attributes.get(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
         X509Certificate[] gatewayCerts = (X509Certificate[]) attributes.get(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
 
@@ -167,11 +161,10 @@ class CategorizeCertsWebFilterTest {
     }
 
     @Test
-    void filter_forwardingPath_usesHeaderCertForClientAuth() {
-        // ARRANGE
+    void filter_forwardingPath_usesHeaderCertForClientAuth() throws CertificateEncodingException {
         Map<String, Object> attributes = new HashMap<>();
         X509Certificate[] tlsChain = {clientCert, gatewayCert}; // Mixed chain
-        String headerCertBase64 = Base64.getEncoder().encodeToString(getCertEncoded(headerCert));
+        String headerCertBase64 = Base64.getEncoder().encodeToString(headerCert.getEncoded());
 
         when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
         when(mockSslInfo.getPeerCertificates()).thenReturn(tlsChain);
@@ -180,33 +173,26 @@ class CategorizeCertsWebFilterTest {
         when(mockExchange.getAttributes()).thenReturn(attributes);
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
-        // Simulate forwarding path is active
         when(mockCertificateValidator.isForwardingEnabled()).thenReturn(true);
         when(mockCertificateValidator.hasGatewayChain(tlsChain)).thenReturn(true);
 
-        // ACT
         StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
 
-        // ASSERT
         X509Certificate[] clientAuthCerts = (X509Certificate[]) attributes.get(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
         X509Certificate[] gatewayCerts = (X509Certificate[]) attributes.get(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
 
-        // Client auth cert should be the one from the header
         assertNotNull(clientAuthCerts);
         assertEquals(1, clientAuthCerts.length);
         assertEquals(headerCert.getSubjectX500Principal(), clientAuthCerts[0].getSubjectX500Principal());
 
-        // The other attribute should contain the full, original TLS chain
         assertNotNull(gatewayCerts);
         assertArrayEquals(tlsChain, gatewayCerts);
 
-        // Verify validator was called to update keys
         verify(mockCertificateValidator).updateAPIMLPublicKeyCertificates(tlsChain);
     }
 
     @Test
     void filter_alwaysRemovesClientCertHeader() {
-        // ARRANGE
         X509Certificate[] certChain = {clientCert};
         when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
         when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
@@ -214,7 +200,6 @@ class CategorizeCertsWebFilterTest {
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
         when(mockRequest.getHeaders()).thenReturn(mockHeaders);
         when(mockHeaders.getFirst(CLIENT_CERT_HEADER)).thenReturn("");
-
 
         StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
 
@@ -224,31 +209,13 @@ class CategorizeCertsWebFilterTest {
         verify(mockRequestBuilder).headers(any());
     }
 
-    private byte[] getCertEncoded(X509Certificate cert) {
-        try {
-            return cert.getEncoded();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Loads an X509Certificate from the test-keystore.p12 file in test resources.
-     *
-     * @param alias The alias of the certificate to load (e.g., "localhost", "client").
-     * @return The loaded X509Certificate.
-     */
-    private X509Certificate loadCertificateFromKeystore(String alias, String location) throws Exception {
-        // Get the keystore file from the classpath (src/test/resources)
+    private static X509Certificate loadCertificateFromKeystore(String alias, String location) throws Exception {
         var rootDir = System.getProperty("user.dir");
         var keystorePath = Paths.get(rootDir, "../keystore", location);
         try (InputStream is = Files.newInputStream(keystorePath)) {
 
-            // Load the keystore
             KeyStore keystore = KeyStore.getInstance("PKCS12");
             keystore.load(is, "password".toCharArray());
-
-            // Get the certificate by its alias
             return (X509Certificate) keystore.getCertificate(alias);
         }
     }

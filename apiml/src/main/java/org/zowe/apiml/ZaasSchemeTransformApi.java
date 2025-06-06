@@ -45,6 +45,7 @@ import java.security.cert.X509Certificate;
 import java.util.*;
 
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
+import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE;
 
 /**
  * {@code ZaasSchemeTransformApi} is the internal implementation of {@link ZaasSchemeTransform}
@@ -233,7 +234,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
 
         @Override
         public Object getAttribute(String name) {
-            if ("client.auth.X509Certificate".equals(name)) {
+            if (ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE.equals(name)) {
                 try {
                     var certBase64 = requestCredentials.getX509Certificate();
                     if (StringUtils.isBlank(certBase64)) return null;

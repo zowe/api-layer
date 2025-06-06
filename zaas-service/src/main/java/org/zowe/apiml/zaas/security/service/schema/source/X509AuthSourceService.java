@@ -28,6 +28,8 @@ import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Optional;
 
+import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE;
+
 /**
  * Basic implementation of AuthSourceService interface which uses client certificate as an authentication source.
  * This implementation relies on concrete implementation of {@link AuthenticationMapper} for validation and parsing of
@@ -54,8 +56,8 @@ public class X509AuthSourceService implements AuthSourceService {
      */
     @Override
     public Optional<AuthSource> getAuthSourceFromRequest(HttpServletRequest request) {
-        logger.log(MessageType.DEBUG, "Getting X509 client certificate from custom attribute 'client.auth.X509Certificate'.");
-        X509Certificate clientCert = getCertificateFromRequest(request, "client.auth.X509Certificate");
+        logger.log(MessageType.DEBUG, "Getting X509 client certificate from custom attribute '" + ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE + "'.");
+        X509Certificate clientCert = getCertificateFromRequest(request, ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
         clientCert = isValid(clientCert) ? clientCert : null;
         logger.log(MessageType.DEBUG, String.format("X509 client certificate %s in request.", clientCert == null ? "not found" : "found"));
         return clientCert == null ? Optional.empty() : Optional.of(new X509AuthSource(clientCert));
