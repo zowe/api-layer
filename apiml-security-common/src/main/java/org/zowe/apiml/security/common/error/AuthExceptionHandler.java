@@ -55,7 +55,24 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
      * @param ex Exception to be handled
      */
     @Override
-    public void handleException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, RuntimeException ex) throws ServletException {
+    public void handleException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function,
+                                BiConsumer<String, String> addHeader, RuntimeException ex) throws ServletException {
+
+        if (handleKnownException(ex, requestUri, function, addHeader)) {
+            return;
+        }
+
+        if (!isModulith) {
+            throw new ServletException(ex);
+        }
+
+        handleAuthenticationException(requestUri, function, ex);
+    }
+
+    private boolean handleKnownException(RuntimeException ex, String requestUri,
+                                         BiConsumer<ApiMessageView, HttpStatus> function,
+                                         BiConsumer<String, String> addHeader) {
+
         if (ex instanceof InsufficientAuthenticationException) {
             handleAuthenticationRequired(requestUri, function, addHeader, ex);
         } else if (ex instanceof BadCredentialsException) {
@@ -87,12 +104,11 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         } else if (ex instanceof ServiceNotAccessibleException) {
             handleServiceNotAccessibleException(requestUri, function, ex);
         } else {
-            if (!isModulith) {
-                throw new ServletException(ex);
-            }
-            handleAuthenticationException(requestUri, function, ex);
+            return false;
         }
+        return true;
     }
+
 
     private void handleZosAuthenticationException(BiConsumer<ApiMessageView, HttpStatus> function, ZosAuthenticationException ex) {
         final ApiMessageView message = messageService.createMessage(ex.getPlatformError().errorMessage, ex.getMessage()).mapToView();

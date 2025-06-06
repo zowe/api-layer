@@ -80,8 +80,8 @@ class SuccessRefreshHandlerTest {
         StepVerifier.create(result).verifyComplete();
 
         verify(authenticationService).invalidateJwtTokenGateway(eq(credentials), eq(true), isNull());
-        verify(tokenCreationService).createJwtTokenWithoutCredentials(eq(principal));
-        verify(httpUtils).createResponseCookie(eq(jwtToken));
+        verify(tokenCreationService).createJwtTokenWithoutCredentials(principal);
+        verify(httpUtils).createResponseCookie(jwtToken);
         assertEquals("jwt", Objects.requireNonNull(response.getCookies().getFirst("apimlAuthenticationToken")).getValue());
 
     }
