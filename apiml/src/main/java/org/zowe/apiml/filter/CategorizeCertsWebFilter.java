@@ -20,8 +20,9 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
-import org.zowe.apiml.security.common.verify.CertificateValidator; // Assuming this dependency is available
-
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.common.verify.CertificateValidator;
 import reactor.core.publisher.Mono;
 
 import java.io.ByteArrayInputStream;
@@ -44,10 +45,12 @@ import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.*;
 @Slf4j
 public class CategorizeCertsWebFilter implements WebFilter, Ordered {
 
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Getter
-    private final Set<String> publicKeyCertificatesBase64; // Base64 encoded public keys of APIML certificates
-    private final CertificateValidator certificateValidator; // Service for validating certificates
+    private final Set<String> publicKeyCertificatesBase64;
+    private final CertificateValidator certificateValidator;
 
     @Setter
     private Predicate<X509Certificate> certificateForClientAuth = cert ->
@@ -84,7 +87,6 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                 certificateValidator.hasGatewayChain(certsFromTls) &&
                 clientCertFromHeader.isPresent()) {
 
-                // This call might update a shared state within CertificateValidator or rely on it.
                 certificateValidator.updateAPIMLPublicKeyCertificates(certsFromTls);
 
                 X509Certificate[] clientAuthCerts = selectCerts(
@@ -112,6 +114,8 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
         }
     }
 
+
+
     /**
      * Extracts and decodes an X.509 certificate from the CLIENT_CERT_HEADER.
      *
@@ -128,19 +132,13 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                     new ByteArrayInputStream(Base64.getDecoder().decode(certFromHeader))
                 );
                 if (certificate instanceof X509Certificate x509certificate) {
-                    log.debug("Successfully parsed X.509 certificate from header {}.", CLIENT_CERT_HEADER);
+                    log.debug("Successfully parsed X.509 certificate from header {}.", certFromHeader);
                     return Optional.of(x509certificate);
                 } else {
-                    log.warn("Certificate parsed from header {} is not an X.509 certificate.", CLIENT_CERT_HEADER);
+                    log.warn("Certificate parsed from header {} is not an X.509 certificate.", certFromHeader);
                 }
             } catch (CertificateException | IllegalArgumentException e) {
-                // Logged as error to match original ApimlLogger behavior for "errorParsingCertificate"
-                log.error("Error parsing X.509 certificate from header '{}'. Remote host: {}. Message: {}. Certificate data: '{}'",
-                    CLIENT_CERT_HEADER,
-                    request.getRemoteAddress() != null ? request.getRemoteAddress().getAddress().getHostAddress() : "N/A",
-                    e.getMessage(),
-                    certFromHeader.substring(0, Math.min(certFromHeader.length(), 100)) + "...", // Log a snippet
-                    e);
+                apimlLog.log("org.zowe.apiml.security.common.filter.errorParsingCertificate", request.getRemoteAddress() != null ? request.getRemoteAddress().getAddress().getHostAddress() : "N/A", e.getMessage(), certFromHeader);
             }
         }
         return Optional.empty();
@@ -157,7 +155,6 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
             .headers(httpHeaders -> httpHeaders.remove(CLIENT_CERT_HEADER))
             .build();
     }
-
 
     /**
      * Encodes the public key of an X.509 certificate to a Base64 string.
@@ -177,7 +174,7 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
      */
     @Override
     public int getOrder() {
-        return Ordered.HIGHEST_PRECEDENCE + 100; // Example order
+        return Ordered.HIGHEST_PRECEDENCE;
     }
 }
 
