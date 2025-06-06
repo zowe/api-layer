@@ -42,10 +42,10 @@ import java.util.function.Predicate;
 @Slf4j
 public class CategorizeCertsFilter extends OncePerRequestFilter {
 
-    private static final String ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE = "client.auth.X509Certificate";
-    private static final String ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE = "jakarta.servlet.request.X509Certificate";
-    private static final String LOG_FORMAT_FILTERING_CERTIFICATES = "Filtering certificates: {} -> {}";
-    private static final String CLIENT_CERT_HEADER = "Client-Cert";
+    public static final String ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE = "client.auth.X509Certificate";
+    public static final String ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE = "jakarta.servlet.request.X509Certificate";
+    public static final String LOG_FORMAT_FILTERING_CERTIFICATES = "Filtering certificates: {} -> {}";
+    public static final String CLIENT_CERT_HEADER = "Client-Cert";
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -66,7 +66,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      * @param request Request to filter certificates
      */
     private void categorizeCerts(ServletRequest request) {
-        X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
+        X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
         if (certs != null && certs.length > 0 && certs[0] != null) {
             Optional<Certificate> clientCert = getClientCertFromHeader((HttpServletRequest) request);
             if (certificateValidator.isForwardingEnabled() && certificateValidator.hasGatewayChain(certs) && clientCert.isPresent()) {
@@ -74,13 +74,13 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
                 // add the client certificate to the certs array
                 String subjectDN = ((X509Certificate) clientCert.get()).getSubjectX500Principal().getName();
                 log.debug("Found client certificate in header, adding it to the request. Subject DN: {}", subjectDN);
-                request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(new X509Certificate[]{(X509Certificate) clientCert.get()}, certificateForClientAuth));
+                request.setAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(new X509Certificate[]{(X509Certificate) clientCert.get()}, certificateForClientAuth));
             } else {
-                request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth));
-                request.setAttribute(ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, apimlCertificate));
+                request.setAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth));
+                request.setAttribute(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, apimlCertificate));
             }
 
-            log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, request.getAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE));
+            log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, request.getAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE));
         }
     }
 
@@ -142,8 +142,19 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
         filterChain.doFilter(mutate(request), response);
     }
 
-    private X509Certificate[] selectCerts(X509Certificate[] certs, Predicate<X509Certificate> test) {
-        if (test.test(certs[0])) {
+    /**
+     * Selects certificates from an array based on a predicate.
+     * IMPORTANT: This method replicates the original filter's logic. If the first certificate
+     * in the array matches the predicate, the entire original array is returned.
+     * Otherwise, an empty array is returned. This does not filter individual certificates
+     * from the array beyond the first one if the input array contains multiple certificates.
+     *
+     * @param certs The array of X.509 certificates.
+     * @param test  The predicate to test the certificates against.
+     * @return An array of X.509 certificates.
+     */
+    public static X509Certificate[] selectCerts(X509Certificate[] certs, Predicate<X509Certificate> test) {
+        if (certs != null && certs.length > 0 && certs[0] != null && test.test(certs[0])) {
             return certs;
         }
         return new X509Certificate[0];

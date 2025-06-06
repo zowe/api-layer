@@ -23,7 +23,7 @@ import reactor.core.publisher.Mono;
 
 import java.security.cert.X509Certificate;
 
-import static org.zowe.apiml.filter.CategorizeCertsWebFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE;
+import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE;
 
 /**
  * A reactive WebFilter that performs X.509 client certificate authentication.
