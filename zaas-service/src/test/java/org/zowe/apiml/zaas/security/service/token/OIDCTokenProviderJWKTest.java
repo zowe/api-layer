@@ -11,7 +11,6 @@
 package org.zowe.apiml.zaas.security.service.token;
 
 import com.google.common.io.Resources;
-import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.util.DefaultResourceRetriever;
 import com.nimbusds.jose.util.Resource;
 import io.jsonwebtoken.impl.DefaultClock;
@@ -34,16 +33,10 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OIDCTokenProviderJWKTest {
@@ -111,13 +104,13 @@ class OIDCTokenProviderJWKTest {
     class GivenTokenForValidation {
 
         @Test
-        void whenValidTokenExpired_thenReturnInvalid() throws IOException, ParseException {
+        void whenValidTokenExpired_thenReturnInvalid() {
             // initPublicKeys();
             assertFalse(oidcTokenProviderJwk.isValid(EXPIRED_TOKEN));
         }
 
         @Test
-        void whenValidToken_thenReturnValid() throws IOException, ParseException {
+        void whenValidToken_thenReturnValid() {
             ReflectionTestUtils.setField(oidcTokenProviderJwk, "clock", new FixedClock(new Date(Instant.ofEpochSecond(1697060773 + 1000L).toEpochMilli())));
             assertTrue(oidcTokenProviderJwk.isValid(EXPIRED_TOKEN));
         }
@@ -169,38 +162,42 @@ class OIDCTokenProviderJWKTest {
 
         @Test
         void shouldHandleNullPointer_whenJWKKeyNull() throws IOException {
-            var json = "{\n" + //
-                    "    \"keys\": [\n" + //
-                    "        {\n" + //
-                    "            \"kty\": RSA,\n" + //
-                    "            \"alg\": \"RS256\",\n" + //
-                    "            \"kid\": \"Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4\",\n" + //
-                    "            \"use\": null,\n" + //
-                    "            \"e\": \"AQAB\",\n" + //
-                    "            \"n\": \"v6wT5k7uLto_VPTV8fW9_wRqWHuqnZbyEYAwNYRdffe9WowwnzUAr0Z93-4xDvCRuVfTfvCe9orEWdjZMaYlDq_Dj5BhLAqmBAF299Kv1GymOioLRDvoVWy0aVHYXXNaqJCPsaWIDiCly-_kJBbnda_rmB28a_878TNxom0mDQ20TI5SgdebqqMBOdHEqIYH1ER9euybekeqJX24EqE9YW4Yug5BOkZ9KcUkiEsH_NPyRlozihj18Qab181PRyKHE6M40W7w67XcRq2llTy-z9RrQupcyvLD7L62KN0ey8luKWnVg4uIOldpyBYyiRX2WPM-2K00RVC0e4jQKs34Gw\"\n" + //
-                    "        },\n" + //
-                    "    ]\n" + //
-                    "}";
+            var json = """
+        {
+            "keys": [
+                {
+                    "kty": RSA,
+                    "alg": "RS256",
+                    "kid": "Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4",
+                    "use": null,
+                    "e": "AQAB",
+                    "n": "v6wT5k7uLto_VPTV8fW9_wRqWHuqnZbyEYAwNYRdffe9WowwnzUAr0Z93-4xDvCRuVfTfvCe9orEWdjZMaYlDq_Dj5BhLAqmBAF299Kv1GymOioLRDvoVWy0aVHYXXNaqJCPsaWIDiCly-_kJBbnda_rmB28a_878TNxom0mDQ20TI5SgdebqqMBOdHEqIYH1ER9euybekeqJX24EqE9YW4Yug5BOkZ9KcUkiEsH_NPyRlozihj18Qab181PRyKHE6M40W7w67XcRq2llTy-z9RrQupcyvLD7L62KN0ey8luKWnVg4uIOldpyBYyiRX2WPM-2K00RVC0e4jQKs34Gw"
+                }
+            ]
+        }
+        """;
 
             when(resourceRetriever.retrieveResource(any())).thenReturn(new Resource(json, null));
-
             assertDoesNotThrow(() -> oidcTokenProviderJwk.fetchJWKSet());
         }
+
 
         @Test
         void shouldHandleNullPointer_whenJWKTypeNull() throws IOException {
-            var json = "{\n" + //
-                    "    \"keys\": [\n" + //
-                    "        {\n" + //
-                    "            \"kty\": null,\n" + //
-                    "            \"alg\": \"RS256\",\n" + //
-                    "            \"kid\": \"Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4\",\n" + //
-                    "            \"use\": \"sig\",\n" + //
-                    "            \"e\": \"AQAB\",\n" + //
-                    "            \"n\": \"v6wT5k7uLto_VPTV8fW9_wRqWHuqnZbyEYAwNYRdffe9WowwnzUAr0Z93-4xDvCRuVfTfvCe9orEWdjZMaYlDq_Dj5BhLAqmBAF299Kv1GymOioLRDvoVWy0aVHYXXNaqJCPsaWIDiCly-_kJBbnda_rmB28a_878TNxom0mDQ20TI5SgdebqqMBOdHEqIYH1ER9euybekeqJX24EqE9YW4Yug5BOkZ9KcUkiEsH_NPyRlozihj18Qab181PRyKHE6M40W7w67XcRq2llTy-z9RrQupcyvLD7L62KN0ey8luKWnVg4uIOldpyBYyiRX2WPM-2K00RVC0e4jQKs34Gw\"\n" + //
-                    "        },\n" + //
-                    "    ]\n" + //
-                    "}";
+            var json = """
+        {
+            "keys": [
+                {
+                    "kty": null,
+                    "alg": "RS256",
+                    "kid": "Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4",
+                    "use": "sig",
+                    "e": "AQAB",
+                    "n": "v6wT5k7uLto_VPTV8fW9_wRqWHuqnZbyEYAwNYRdffe9WowwnzUAr0Z93-4xDvCRuVfTfvCe9orEWdjZMaYlDq_Dj5BhLAqmBAF299Kv1GymOioLRDvoVWy0aVHYXXNaqJCPsaWIDiCly-_kJBbnda_rmB28a_878TNxom0mDQ20TI5SgdebqqMBOdHEqIYH1ER9euybekeqJX24EqE9YW4Yug5BOkZ9KcUkiEsH_NPyRlozihj18Qab181PRyKHE6M40W7w67XcRq2llTy-z9RrQupcyvLD7L62KN0ey8luKWnVg4uIOldpyBYyiRX2WPM-2K00RVC0e4jQKs34Gw"
+                }
+            ]
+        }
+        """;
 
             when(resourceRetriever.retrieveResource(any())).thenReturn(new Resource(json, null));
 
@@ -208,22 +205,25 @@ class OIDCTokenProviderJWKTest {
         }
 
         @Test
-        void throwsCorrectException() throws JOSEException, IOException {
-            var json = "{\n" + //
-                    "    \"keys\": [\n" + //
-                    "        {\n" + //
-                    "            \"kty\": RSA,\n" + //
-                    "            \"kid\": \"123\",\n" + //
-                    "            \"use\": \"sig\",\n" + //
-                    "            \"e\": \"AQAB\",\n" + //
-                    "            \"n\": \"v6wT5k7uLto_VPTV8fW9_wRqWHuqnZbyEYAwNYRdffe9WowwnzUAr0Z93-4xDvCRuVfTfvCe9orEWdjZMaYlDq_Dj5BhLAqmBAF299Kv1GymOioLRDvoVWy0aVHYXXNaqJCPsaWIDiCly-_kJBbnda_rmB28a_878TNxom0mDQ20TI5SgdebqqMBOdHEqIYH1ER9euybekeqJX24EqE9YW4Yug5BOkZ9KcUkiEsH_NPyRlozihj18Qab181PRyKHE6M40W7w67XcRq2llTy-z9RrQupcyvLD7L62KN0ey8luKWnVg4uIOldpyBYyiRX2WPM-2K00RVC0e4jQKs34Gw\"\n" + //
-                    "        },\n" + //
-                    "    ]\n" + //
-                    "}";
+        void throwsCorrectException() throws IOException {
+            var json = """
+        {
+            "keys": [
+                {
+                    "kty": RSA,
+                    "kid": "123",
+                    "use": "sig",
+                    "e": "AQAB",
+                    "n": "v6wT5k7uLto_VPTV8fW9_wRqWHuqnZbyEYAwNYRdffe9WowwnzUAr0Z93-4xDvCRuVfTfvCe9orEWdjZMaYlDq_Dj5BhLAqmBAF299Kv1GymOioLRDvoVWy0aVHYXXNaqJCPsaWIDiCly-_kJBbnda_rmB28a_878TNxom0mDQ20TI5SgdebqqMBOdHEqIYH1ER9euybekeqJX24EqE9YW4Yug5BOkZ9KcUkiEsH_NPyRlozihj18Qab181PRyKHE6M40W7w67XcRq2llTy-z9RrQupcyvLD7L62KN0ey8luKWnVg4uIOldpyBYyiRX2WPM-2K00RVC0e4jQKs34Gw"
+                }
+            ]
+        }
+        """;
 
             when(resourceRetriever.retrieveResource(any())).thenReturn(new Resource(json, null));
 
             assertDoesNotThrow(() -> oidcTokenProviderJwk.fetchJWKSet());
         }
+
     }
 }

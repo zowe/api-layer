@@ -40,7 +40,7 @@ public class StoreAccessTokenInfoWebFilterTest {
     @Mock private ServerAuthenticationFailureHandler failureHandler;
     @Mock private WebFilterChain chain;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
     private StoreAccessTokenInfoWebFilter filter;
 
     private MockServerWebExchange exchange;
@@ -62,10 +62,12 @@ public class StoreAccessTokenInfoWebFilterTest {
             @BeforeEach
             void setUp() {
                 request = MockServerHttpRequest.post("/access-token/generate")
-                    .body("{\n" + //
-                        "    \"validity\": 50,\n" + //
-                        "    \"scopes\": [\"gateway\", \"discovery\"]\n" + //
-                        "}");
+                    .body("""
+                        {
+                            "validity": 50,
+                            "scopes": ["gateway", "discovery"]
+                        }
+                        """);
                 exchange = MockServerWebExchange.builder(request).build();
             }
 
@@ -111,9 +113,11 @@ public class StoreAccessTokenInfoWebFilterTest {
             @Test
             void whenMissingScopes_thenCallFailureHandler() {
                 request = MockServerHttpRequest.post("/access-token/generate")
-                    .body("{\n" + //
-                        "    \"validity\": 50\n" + //
-                        "}");
+                    .body("""
+                        {
+                            "validity": 50
+                        }
+                        """);
                 exchange = MockServerWebExchange.builder(request).build();
 
                 when(failureHandler.onAuthenticationFailure(
