@@ -291,9 +291,7 @@ class BasicLoginFilterTest {
         when(mockFilterChain.filter(exchange)).thenReturn(Mono.empty());
         StepVerifier.create(basicLoginFilter.filter(exchange, mockFilterChain))
             .verifyComplete();
-//        RequestPath path = exchange.getRequest().getPath("/");
 
-//        when(exchange.getRequest().getPath()).thenReturn(new DefaultRequestPath )
         ArgumentCaptor<AuthenticationCredentialsNotFoundException> exCaptor = ArgumentCaptor.forClass(AuthenticationCredentialsNotFoundException.class);
         verify(mockFailedAuthenticationWebHandler).onAuthenticationFailure(any(WebFilterExchange.class), exCaptor.capture());
         assertEquals("Login object has wrong format.", exCaptor.getValue().getMessage());

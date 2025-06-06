@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.AuthenticationException;
@@ -26,7 +27,10 @@ import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.*;
 
+import java.util.Map;
 import java.util.function.BiConsumer;
+
+import static java.util.Map.entry;
 
 /**
  * Exception handler deals with exceptions (methods listed below) that are thrown during the authentication process
@@ -46,6 +50,60 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         this.isModulith = Boolean.TRUE.equals(isModulith);
     }
 
+    private static class HandlerContext {
+        String requestUri;
+        BiConsumer<ApiMessageView, HttpStatus> function;
+        BiConsumer<String, String> addHeader;
+
+        HandlerContext(String requestUri,
+                       BiConsumer<ApiMessageView, HttpStatus> function,
+                       BiConsumer<String, String> addHeader) {
+            this.requestUri = requestUri;
+            this.function = function;
+            this.addHeader = addHeader;
+        }
+    }
+
+    @FunctionalInterface
+    private interface ExceptionHandler {
+        void handle(RuntimeException ex, HandlerContext ctx);
+    }
+
+    private final Map<Class<? extends RuntimeException>, ExceptionHandler> exceptionHandlers = Map.ofEntries(
+        entry(InsufficientAuthenticationException.class,
+            (ex, ctx) -> handleAuthenticationRequired(ctx.requestUri, ctx.function, ctx.addHeader, ex)),
+        entry(BadCredentialsException.class,
+            (ex, ctx) -> handleBadCredentials(ctx.requestUri, ctx.function, ex)),
+        entry(AuthenticationCredentialsNotFoundException.class,
+            (ex, ctx) -> handleAuthenticationCredentialsNotFound(ctx.requestUri, ctx.function, ex)),
+        entry(AuthMethodNotSupportedException.class,
+            (ex, ctx) -> handleAuthMethodNotSupported(ctx.requestUri, ctx.function, ex)),
+        entry(TokenNotValidException.class,
+            (ex, ctx) -> handleTokenNotValid(ctx.requestUri, ctx.function, ctx.addHeader, ex)),
+        entry(NoMainframeIdentityException.class,
+            (ex, ctx) -> handleNoMainframeIdentity(ctx.requestUri, ctx.function, ctx.addHeader, (NoMainframeIdentityException) ex)),
+        entry(TokenNotProvidedException.class,
+            (ex, ctx) -> handleTokenNotProvided(ctx.requestUri, ctx.function, ex)),
+        entry(TokenExpireException.class,
+            (ex, ctx) -> handleTokenExpire(ctx.requestUri, ctx.function, ex)),
+        entry(TokenFormatNotValidException.class,
+            (ex, ctx) -> handleTokenFormatException(ctx.requestUri, ctx.function, ex)),
+        entry(AccessTokenBodyNotValidException.class,
+            (ex, ctx) -> handleInvalidAccessTokenBodyException(ctx.requestUri, ctx.function, ex)),
+        entry(InvalidCertificateException.class,
+            (ex, ctx) -> handleInvalidCertificate(ctx.function, ex)),
+        entry(ZosAuthenticationException.class,
+            (ex, ctx) -> handleZosAuthenticationException(ctx.function, (ZosAuthenticationException) ex)),
+        entry(InvalidTokenTypeException.class,
+            (ex, ctx) -> handleInvalidTokenTypeException(ctx.requestUri, ctx.function, ex)),
+        entry(AuthenticationServiceException.class,
+            (ex, ctx) -> handleAuthenticationException(ctx.requestUri, ctx.function, ex)),
+        entry(AuthenticationException.class,
+            (ex, ctx) -> handleAuthenticationException(ctx.requestUri, ctx.function, ex)),
+        entry(ServiceNotAccessibleException.class,
+            (ex, ctx) -> handleServiceNotAccessibleException(ctx.requestUri, ctx.function, ex))
+    );
+
     /**
      * Entry method that takes care about the exception passed to it
      *
@@ -55,10 +113,16 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
      * @param ex Exception to be handled
      */
     @Override
-    public void handleException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function,
-                                BiConsumer<String, String> addHeader, RuntimeException ex) throws ServletException {
+    public void handleException(String requestUri,
+                                BiConsumer<ApiMessageView, HttpStatus> function,
+                                BiConsumer<String, String> addHeader,
+                                RuntimeException ex) throws ServletException {
 
-        if (handleKnownException(ex, requestUri, function, addHeader)) {
+        HandlerContext ctx = new HandlerContext(requestUri, function, addHeader);
+        ExceptionHandler handler = exceptionHandlers.get(ex.getClass());
+
+        if (handler != null) {
+            handler.handle(ex, ctx);
             return;
         }
 
@@ -68,47 +132,6 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
 
         handleAuthenticationException(requestUri, function, ex);
     }
-
-    private boolean handleKnownException(RuntimeException ex, String requestUri,
-                                         BiConsumer<ApiMessageView, HttpStatus> function,
-                                         BiConsumer<String, String> addHeader) {
-
-        if (ex instanceof InsufficientAuthenticationException) {
-            handleAuthenticationRequired(requestUri, function, addHeader, ex);
-        } else if (ex instanceof BadCredentialsException) {
-            handleBadCredentials(requestUri, function, ex);
-        } else if (ex instanceof AuthenticationCredentialsNotFoundException) {
-            handleAuthenticationCredentialsNotFound(requestUri, function, ex);
-        } else if (ex instanceof AuthMethodNotSupportedException) {
-            handleAuthMethodNotSupported(requestUri, function, ex);
-        } else if (ex instanceof TokenNotValidException) {
-            handleTokenNotValid(requestUri, function, addHeader, ex);
-        } else if (ex instanceof NoMainframeIdentityException nmie) {
-            handleNoMainframeIdentity(requestUri, function, addHeader, nmie);
-        } else if (ex instanceof TokenNotProvidedException) {
-            handleTokenNotProvided(requestUri, function, ex);
-        } else if (ex instanceof TokenExpireException) {
-            handleTokenExpire(requestUri, function, ex);
-        } else if (ex instanceof TokenFormatNotValidException) {
-            handleTokenFormatException(requestUri, function, ex);
-        } else if (ex instanceof AccessTokenBodyNotValidException) {
-            handleInvalidAccessTokenBodyException(requestUri, function, ex);
-        } else if (ex instanceof InvalidCertificateException) {
-            handleInvalidCertificate(function, ex);
-        } else if (ex instanceof ZosAuthenticationException) {
-            handleZosAuthenticationException(function, (ZosAuthenticationException) ex);
-        } else if (ex instanceof InvalidTokenTypeException) {
-            handleInvalidTokenTypeException(requestUri, function, ex);
-        } else if (ex instanceof AuthenticationException) {
-            handleAuthenticationException(requestUri, function, ex);
-        } else if (ex instanceof ServiceNotAccessibleException) {
-            handleServiceNotAccessibleException(requestUri, function, ex);
-        } else {
-            return false;
-        }
-        return true;
-    }
-
 
     private void handleZosAuthenticationException(BiConsumer<ApiMessageView, HttpStatus> function, ZosAuthenticationException ex) {
         final ApiMessageView message = messageService.createMessage(ex.getPlatformError().errorMessage, ex.getMessage()).mapToView();
