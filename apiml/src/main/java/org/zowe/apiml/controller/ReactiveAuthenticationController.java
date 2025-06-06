@@ -125,7 +125,7 @@ public class ReactiveAuthenticationController {
     @PostMapping("/login")
     public Mono<ResponseEntity<Object>> login(ServerWebExchange exchange) {
         return ReactiveSecurityContextHolder.getContext()
-            .map(securityContext -> securityContext.getAuthentication())
+            .map(SecurityContext::getAuthentication)
             .filter(Objects::nonNull)
             .map(authentication -> {
                 var jwt = ((TokenAuthentication) authentication).getCredentials();
@@ -152,10 +152,10 @@ public class ReactiveAuthenticationController {
     @PostMapping("/access-token/generate")
     public Mono<ResponseEntity<String>> generatePat(@RequestAttribute(TOKEN_REQUEST) AccessTokenRequest accessTokenRequest) {
         return ReactiveSecurityContextHolder.getContext()
-            .map(securityContext -> securityContext.getAuthentication())
+            .map(SecurityContext::getAuthentication)
             .filter(Objects::nonNull)
             .map(authentication -> {
-                var userId = ((TokenAuthentication) authentication).getName();
+                var userId = authentication.getName();
 
                 log.debug("Generating access token for user {}", userId);
 
@@ -290,7 +290,7 @@ public class ReactiveAuthenticationController {
     })
     public Mono<ResponseEntity<Object>> revokeAccessToken(@RequestBody Mono<Map<String, String>> bodyMono) {
         return bodyMono
-            .map(body -> body.get("token"))
+            .map(body -> body.get(TOKEN_KEY))
             .flatMap(token -> {
                 if (token == null || token.trim().isEmpty()) {
                     return Mono.just(ResponseEntity.badRequest().build());

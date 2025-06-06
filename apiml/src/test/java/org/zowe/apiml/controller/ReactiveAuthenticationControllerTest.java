@@ -650,7 +650,10 @@ class ReactiveAuthenticationControllerTest {
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
         when(jwtSecurity.getPublicKeyInSet()).thenReturn(keySet);
         var mockApiMessage = mock(Message.class);
-        when(messageService.createMessage(eq("org.zowe.apiml.zaas.keys.wrongAmount"), eq(2))).thenReturn(mockApiMessage);
+        when(messageService.createMessage(
+            "org.zowe.apiml.zaas.keys.wrongAmount",
+            2
+        )).thenReturn(mockApiMessage);
         ApiMessage expectedApiMessage = new ApiMessage("org.zowe.apiml.zaas.keys.wrongAmount", MessageType.ERROR, "ZWEAG715E", "cnt", null, null);
 
         lenient().when(mockApiMessage.mapToApiMessage()).thenReturn(expectedApiMessage);

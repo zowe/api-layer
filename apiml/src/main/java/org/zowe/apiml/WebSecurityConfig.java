@@ -71,6 +71,8 @@ public class WebSecurityConfig {
     private static final String CONFORMANCE_LONG_URL = CONTEXT_PATH + "/api/v1" + "/conformance/**";
     private static final String VALIDATE_SHORT_URL = "gateway/validate";
     private static final String VALIDATE_LONG_URL = "gateway/api/v1/validate";
+    public static final String APPLICATION_HEALTH = "/application/health";
+    public static final String APPLICATION_INFO = "/application/info";
 
     private final CompoundAuthProvider compoundAuthProvider;
     private final X509AuthenticationProvider x509AuthenticationProvider;
@@ -102,7 +104,7 @@ public class WebSecurityConfig {
     "/eureka/js/**",
     "/eureka/fonts/**",
     "/eureka/images/**",
-    "/application/info",
+    APPLICATION_INFO,
     "/favicon.ico");
 
     private final ServerWebExchangeMatcher discoveryPortMatcher = exchange -> exchange.getRequest().getURI().getPort() == internalDiscoveryPort ? MatchResult.match() : MatchResult.notMatch();
@@ -209,13 +211,13 @@ public class WebSecurityConfig {
                         "/eureka/js/**",
                         "/eureka/fonts/**",
                         "/eureka/images/**",
-                        "/application/info",
+                        APPLICATION_INFO,
                         "/favicon.ico"
                     )
                     .permitAll();
 
                 if (!isHealthEndpointProtected) {
-                    exchange.pathMatchers("/application/health").permitAll();
+                    exchange.pathMatchers(APPLICATION_HEALTH).permitAll();
                 }
                 exchange.anyExchange().authenticated();
             });
@@ -226,11 +228,11 @@ public class WebSecurityConfig {
     SecurityWebFilterChain gatewayAllowedEndpoints(ServerHttpSecurity http,  ObjectMapper mapper,
                                                    AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         http
-            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/application/health"))
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(APPLICATION_HEALTH))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchange -> {
                 if (!isHealthEndpointProtected) {
-                    exchange.pathMatchers("/application/health").permitAll();
+                    exchange.pathMatchers(APPLICATION_HEALTH).permitAll();
                 } else {
                     exchange.anyExchange().authenticated();
                 }
@@ -270,7 +272,7 @@ public class WebSecurityConfig {
         return http
             .securityMatcher(new AndServerWebExchangeMatcher(
                 ServerWebExchangeMatchers.pathMatchers("/application/**"),
-                new NegatedServerWebExchangeMatcher(ServerWebExchangeMatchers.pathMatchers("/application/health", "/application/info", "/application/version"))
+                new NegatedServerWebExchangeMatcher(ServerWebExchangeMatchers.pathMatchers(APPLICATION_HEALTH, APPLICATION_INFO, "/application/version"))
             ))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())

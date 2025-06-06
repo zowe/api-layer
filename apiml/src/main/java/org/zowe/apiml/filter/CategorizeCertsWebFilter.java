@@ -127,9 +127,9 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                 Certificate certificate = cf.generateCertificate(
                     new ByteArrayInputStream(Base64.getDecoder().decode(certFromHeader))
                 );
-                if (certificate instanceof X509Certificate) {
+                if (certificate instanceof X509Certificate x509certificate) {
                     log.debug("Successfully parsed X.509 certificate from header {}.", CLIENT_CERT_HEADER);
-                    return Optional.of((X509Certificate) certificate);
+                    return Optional.of(x509certificate);
                 } else {
                     log.warn("Certificate parsed from header {} is not an X.509 certificate.", CLIENT_CERT_HEADER);
                 }
