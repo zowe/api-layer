@@ -135,7 +135,7 @@ class IncorrectRequestBodyException extends RuntimeException {
 }
 
 class PassException extends RuntimeException {
-    PassTicketException e;
+    final PassTicketException e;
 
     public PassException(PassTicketException e) {
         this.e = e;

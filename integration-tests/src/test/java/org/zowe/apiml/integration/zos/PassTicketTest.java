@@ -46,17 +46,17 @@ import static org.zowe.apiml.util.requests.Endpoints.ROUTED_PASSTICKET;
 @GeneralAuthenticationTest
 class PassTicketTest implements TestWithStartedInstances {
 
-    private final static EnvironmentConfiguration ENVIRONMENT_CONFIGURATION = ConfigReader.environmentConfiguration();
-    private final static DiscoverableClientConfiguration DISCOVERABLE_CLIENT_CONFIGURATION =
+    private static final EnvironmentConfiguration ENVIRONMENT_CONFIGURATION = ConfigReader.environmentConfiguration();
+    private static final DiscoverableClientConfiguration DISCOVERABLE_CLIENT_CONFIGURATION =
         ENVIRONMENT_CONFIGURATION.getDiscoverableClientConfiguration();
 
-    private final static String USERNAME = ENVIRONMENT_CONFIGURATION.getCredentials().getUser();
-    private final static String APPLICATION_NAME = DISCOVERABLE_CLIENT_CONFIGURATION.getApplId();
+    private static final String USERNAME = ENVIRONMENT_CONFIGURATION.getCredentials().getUser();
+    private static final String APPLICATION_NAME = DISCOVERABLE_CLIENT_CONFIGURATION.getApplId();
 
-    private final static String ZAAS_PASSTICKET_PATH = "/zaas/api/v1/auth/ticket";
-    private final static String GATEWAY_PASSTICKET_PATH = "/gateway/api/v1/auth/ticket";
+    private static final String ZAAS_PASSTICKET_PATH = "/zaas/api/v1/auth/ticket";
+    private static final String GATEWAY_PASSTICKET_PATH = "/gateway/api/v1/auth/ticket";
 
-    private final static String COOKIE = "apimlAuthenticationToken";
+    private static final String COOKIE = "apimlAuthenticationToken";
     private URI url = HttpRequestUtils.getUriFromGateway(ROUTED_PASSTICKET);
     private static final boolean ISMODULITHENABLED = "true".equals(System.getProperty("environment.modulith"));
 

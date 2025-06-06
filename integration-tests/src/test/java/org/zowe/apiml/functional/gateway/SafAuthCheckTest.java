@@ -34,8 +34,8 @@ import static org.zowe.apiml.util.requests.Endpoints.SAF_AUTH_CHECK;
 @SAFAuthResourceCheckTest
 public class SafAuthCheckTest {
 
-    private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    private static final String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
+    private static final String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
 
     @BeforeAll
     static void setupSsl() throws Exception {
