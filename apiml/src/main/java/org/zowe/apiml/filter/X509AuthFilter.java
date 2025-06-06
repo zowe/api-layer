@@ -58,7 +58,7 @@ public class X509AuthFilter implements WebFilter {
                         return chain.filter(exchange)
                             .contextWrite(context -> ReactiveSecurityContextHolder.withAuthentication(authentication));
                     })
-                    .onErrorResume(AuthenticationException.class, (ex) -> chain.filter(exchange));
+                    .onErrorResume(AuthenticationException.class, ex -> chain.filter(exchange));
             });
 
     }

@@ -65,7 +65,7 @@ public class QueryWebFilter implements WebFilter {
                 new WebFilterExchange(exchange, chain), ex);
         }
 
-        return attemptAuthentication(exchange, chain)
+        return attemptAuthentication(exchange)
             .flatMap(authResult -> this.successHandler.onAuthenticationSuccess(new WebFilterExchange(exchange, chain), authResult)
                     .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authResult))
             )
@@ -73,7 +73,7 @@ public class QueryWebFilter implements WebFilter {
                 this.failureHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), failed));
     }
 
-    private Mono<Authentication> attemptAuthentication(ServerWebExchange exchange, WebFilterChain chain) {
+    private Mono<Authentication> attemptAuthentication(ServerWebExchange exchange) {
         Mono<Void> certificateCheckMono = Mono.empty();
 
         if (protectedByCertificate) {

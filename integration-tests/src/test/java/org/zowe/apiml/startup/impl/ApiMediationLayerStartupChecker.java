@@ -47,7 +47,7 @@ public class ApiMediationLayerStartupChecker {
     private final Credentials credentials;
     private final List<Service> servicesToCheck = new ArrayList<>();
     private final String healthEndpoint = "/application/health";
-    private static final boolean isModulithEnabled = "true".equals(System.getProperty("environment.modulith"));
+    private static final boolean ISMODULITHENABLED = "true".equals(System.getProperty("environment.modulith"));
 
     public ApiMediationLayerStartupChecker() {
         gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
@@ -55,7 +55,7 @@ public class ApiMediationLayerStartupChecker {
         discoverableClientConfiguration = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration();
 
         servicesToCheck.add(new Service("Gateway", "$.status"));
-        if (!isModulithEnabled) {
+        if (!ISMODULITHENABLED) {
             servicesToCheck.add(new Service("ZAAS", "$.components.gateway.details.zaas"));
         }
         servicesToCheck.add(new Service("Api Catalog", "$.components.gateway.details.apicatalog"));
@@ -109,7 +109,7 @@ public class ApiMediationLayerStartupChecker {
                     areAllServicesUp = false;
                 }
             }
-            if (!isModulithEnabled && !isAuthUp()) {
+            if (!ISMODULITHENABLED && !isAuthUp()) {
                 areAllServicesUp = false;
             }
 
@@ -154,7 +154,7 @@ public class ApiMediationLayerStartupChecker {
 
     private boolean isAuthUp() {
         HttpGet requestToZaas;
-        if (!isModulithEnabled) {
+        if (!ISMODULITHENABLED) {
             requestToZaas = new HttpGet(HttpRequestUtils.getUriFromZaas(healthEndpoint));
         } else {
             requestToZaas = new HttpGet(HttpRequestUtils.getUriFromGateway(healthEndpoint));
@@ -165,7 +165,7 @@ public class ApiMediationLayerStartupChecker {
             return false;
         }
         boolean isUp;
-        if (!isModulithEnabled) {
+        if (!ISMODULITHENABLED) {
             isUp = isServiceUp(zaasContext, "$.components.zaas.details.auth");
         } else {
             isUp = isServiceUp(zaasContext, "$.components.gateway.details.auth");

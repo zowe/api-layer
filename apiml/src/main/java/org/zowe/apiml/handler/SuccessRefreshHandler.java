@@ -36,11 +36,10 @@ public class SuccessRefreshHandler implements ServerAuthenticationSuccessHandler
     @Override
     public Mono<Void> onAuthenticationSuccess(WebFilterExchange webFilterExchange, Authentication authentication) {
         ServerWebExchange exchange = webFilterExchange.getExchange();
-        if (authentication instanceof TokenAuthentication) {
-            TokenAuthentication tokenAuth = (TokenAuthentication) authentication;
+        if (authentication instanceof TokenAuthentication tokenAuthentication) {
             var app = peerAwareInstanceRegistry.getApplications().getRegisteredApplications(CoreService.GATEWAY.getServiceId());
-            authenticationService.invalidateJwtTokenGateway(tokenAuth.getCredentials(), true, app);
-            String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(tokenAuth.getPrincipal());
+            authenticationService.invalidateJwtTokenGateway(tokenAuthentication.getCredentials(), true, app);
+            String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(tokenAuthentication.getPrincipal());
             exchange.getResponse().addCookie(httpUtils.createResponseCookie(jwtToken));
             return Mono.empty();
         }

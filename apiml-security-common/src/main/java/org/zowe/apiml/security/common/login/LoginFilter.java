@@ -91,7 +91,7 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
 
     }
 
-    public Authentication doAuth(HttpServletRequest request, HttpServletResponse response, LoginRequest loginRequest) throws ServletException {
+    public Authentication doAuth(HttpServletRequest request, HttpServletResponse response, LoginRequest loginRequest) {
 
         if (loginRequest == null) {
             return null;

@@ -64,9 +64,7 @@ public class FailedAuthenticationWebHandler implements ServerAuthenticationFailu
                 buffer.set(bufferFactory.wrap(new byte[0]));
             }
         };
-        var addHeader = (BiConsumer<String, String>)(name, value) -> {
-            exchange.getResponse().getHeaders().add(name, value);
-        };
+        var addHeader = (BiConsumer<String, String>)(name, value) -> exchange.getResponse().getHeaders().add(name, value);
         try {
             handler.handleException(requestUri, consumer, addHeader, exception);
         } catch (ServletException e) {

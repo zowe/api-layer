@@ -45,8 +45,7 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -207,7 +206,7 @@ class BasicLoginFilterTest {
         ArgumentCaptor<AuthenticationCredentialsNotFoundException> exceptionCaptor = ArgumentCaptor.forClass(AuthenticationCredentialsNotFoundException.class);
         verify(mockFailedAuthenticationWebHandler).onAuthenticationFailure(any(WebFilterExchange.class), exceptionCaptor.capture());
         assertEquals(expectedException.getMessage(), exceptionCaptor.getValue().getMessage());
-        assertTrue(exceptionCaptor.getValue().getCause() instanceof IllegalArgumentException);
+        assertInstanceOf(IllegalArgumentException.class, exceptionCaptor.getValue().getCause());
     }
 
 
