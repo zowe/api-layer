@@ -28,6 +28,10 @@ server:
         trustStore: ../keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
+        # Custom properties for tests only
+        clientKeyStore: ../keystore/client_cert/client-certs.p12
+        clientCN: apimtst # case-sensitive
+        clientKeyStorePassword: password
 
 spring:
     main:

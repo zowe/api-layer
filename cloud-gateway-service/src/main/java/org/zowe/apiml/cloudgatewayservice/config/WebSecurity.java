@@ -16,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.gateway.filter.headers.XForwardedHeadersFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,10 +27,8 @@ import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -53,9 +52,11 @@ import org.springframework.security.web.server.context.NoOpServerSecurityContext
 import org.springframework.security.web.server.savedrequest.CookieServerRequestCache;
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
+import org.springframework.web.reactive.socket.server.upgrade.TomcatRequestUpgradeStrategy;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.zowe.apiml.cloudgatewayservice.config.oidc.ClientConfiguration;
+import org.zowe.apiml.cloudgatewayservice.filters.X509awareXForwardedHeadersFilter;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.SecurityUtils;
@@ -444,73 +445,13 @@ public class WebSecurity {
         };
     }
 
-    /**
-     * This bean overrides the original implementation to simplify configuration.
-     *
-     * The aim of the bean is to check if content of X-Forwarded-* headers contains only trusted data. To define trusted
-     * proxies is possible to use config property `apiml.security.forwardHeader.trusted-proxies` that is equivalent of
-     * the Spring's origin one `spring.cloud.gateway.mvc.trusted-proxies`. The benefit of this bean is that it is not
-     * necessary to validate headers if the request is signed by trusted Gateway certificate. It solves for example
-     * the case when multiple APIML Gateways routes each other. The context cannot be compromised, so when the request
-     * is signed by trusted certificate the content of header is considered as valid, and it is not necessary to verify
-     * host against the list. Otherwise, if request is not signed, host should be validated against configuration.
-     *
-     * The implementation supports empty configuration value. The empty value means when the request is signed the
-     * content is accepted otherwise it is rejected.
-     *
-     * The code is base on multiple instances of {@link XForwardedHeadersFilter}. Initiated class without arguments
-     * accept the headers, the second with an argument verify the content against the regex pattern (see the
-     * configuration).
-     *
-     * signed \ defined pattern | empty list of trusted proxies | a trusted proxy is defined
-     * -------------------------+-------------------------------+---------------------------
-     * no / untrusted signature |             reject            |   check against the list
-     * -------------------------+-------------------------------+---------------------------
-     * trusted signature        |             accept            |           accept
-     *
-     * @param httpsConfig certificate configuration
-     * @param trustedProxies configuration value of pattern on how validate proxy
-     * @return filter to update X-Forwarded-* headers
-     */
     @Bean
     @Primary
+    @ConditionalOnProperty(name = "spring.cloud.gateway.x-forwarded.enabled", matchIfMissing = true)
     public XForwardedHeadersFilter xForwardedHeadersFilter(
         HttpsConfig httpsConfig,
-        @Value("${apiml.security.forwardHeader.trusted-proxies:#{null}}") String trustedProxies
-    ) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
-        final Set<String> certificateChainBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
-        final Predicate<String> isTrusted;
-        if (trustedProxies == null) {
-            isTrusted = host -> false;
-        } else {
-            Pattern pattern = Pattern.compile(trustedProxies);
-            isTrusted = host -> pattern.matcher(host).matches();
-        }
-
-        return new XForwardedHeadersFilter() {
-            @Override
-            public HttpHeaders filter(HttpHeaders input, ServerWebExchange exchange) {
-                boolean trustedSourceByX509 = Optional.ofNullable(exchange.getRequest().getSslInfo())
-                    .map(SslInfo::getPeerCertificates)
-                    .filter(certs -> certs.length > 0)
-                    .map(certs -> Arrays.stream(certs)
-                        .map(SecurityUtils::base64EncodePublicKey)
-                        .allMatch(certificateChainBase64::contains)
-                    )
-                    .orElse(false);
-
-                if (!trustedSourceByX509) {
-                    ServerHttpRequest request = exchange.getRequest();
-                    if (request.getRemoteAddress() != null
-                        && !isTrusted.test(request.getRemoteAddress().getHostString())) {
-                        log.trace("Remote address not trusted. pattern %s remote address %s", trustedProxies, request.getRemoteAddress());
-                        return input;
-                    }
-                }
-
-                return super.filter(input, exchange);
-            }
-        };
+        @Value("${apiml.security.forwardHeader.trusted-proxies:#{null}}") String trustedProxies) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+        return new X509awareXForwardedHeadersFilter(httpsConfig, trustedProxies);
     }
 
 }
