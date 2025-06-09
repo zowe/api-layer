@@ -183,7 +183,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
                 return createMissingAuthenticationErrorMessage();
             }
 
-            String token = authSourceService.getJWT(authSource.get());
+            var token = authSourceService.getJWT(authSource.get());
             var response = ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME).token(token).build();
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {

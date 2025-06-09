@@ -65,9 +65,9 @@ public class SafAuthCheckTest {
                 .config(SslContext.clientCertUser)
                 .contentType(ContentType.JSON)
                 .body(request)
-                .when()
+            .when()
                 .post(HttpRequestUtils.getUriFromGateway(SAF_AUTH_CHECK))
-                .then()
+            .then()
                 .statusCode(SC_NO_CONTENT);
         }
     }
@@ -82,9 +82,9 @@ public class SafAuthCheckTest {
                 .contentType(ContentType.JSON)
                 .body(request)
                 .header("Authorization", "Bearer " + token)
-                .when()
+            .when()
                 .post(HttpRequestUtils.getUriFromGateway(SAF_AUTH_CHECK))
-                .then()
+            .then()
                 .statusCode(is(SC_NO_CONTENT));
         }
     }
@@ -98,9 +98,9 @@ public class SafAuthCheckTest {
                 .contentType(ContentType.JSON)
                 .body(request)
                 .header("Authorization", "Bearer invalidToken")
-                .when()
+            .when()
                 .post(HttpRequestUtils.getUriFromGateway(SAF_AUTH_CHECK))
-                .then()
+            .then()
                 .statusCode(is(SC_UNAUTHORIZED));
         }
     }

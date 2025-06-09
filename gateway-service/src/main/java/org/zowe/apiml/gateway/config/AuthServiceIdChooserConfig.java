@@ -20,7 +20,7 @@ import org.zowe.apiml.product.constants.CoreService;
 public class AuthServiceIdChooserConfig {
 
     @Bean
-    public String authServiceId() {
+    String authServiceId() {
         return CoreService.ZAAS.getServiceId();
     }
 }

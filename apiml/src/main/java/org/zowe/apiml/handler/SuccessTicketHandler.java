@@ -96,7 +96,7 @@ public class SuccessTicketHandler implements ServerAuthenticationSuccessHandler 
 
     private Mono<TicketResponse> getTicketResponse(ServerHttpRequest request, Authentication authentication) {
         TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
-        String userId = tokenAuthentication.getPrincipal();
+        var userId = tokenAuthentication.getPrincipal();
         return request.getBody().collectList().handle((bufferList, sink) -> {
             var bufferFactory = new DefaultDataBufferFactory();
             int totalSize = bufferList.stream().mapToInt(DataBuffer::readableByteCount).sum();
