@@ -11,6 +11,7 @@ import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.SecurityUtils;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -52,8 +53,10 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
     final String trustedProxies;
 
     /*
+     *
      * @param httpsConfig gateway certificate configuration
      * @param trustedProxies configuration value of a pattern on how validate proxy
+     *
      */
     public X509awareXForwardedHeadersFilter(HttpsConfig httpsConfig, String trustedProxiesPattern) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         certificateChainBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
@@ -81,8 +84,12 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
             ServerHttpRequest request = exchange.getRequest();
             if (request.getRemoteAddress() != null
                 && !isTrusted.test(request.getRemoteAddress().getHostString())) {
+                //Remove the address if it is not trusted so it cannot be used to build the forward headers
+                ServerWebExchange sanitizedExchange = exchange.mutate().request(
+                    request.mutate().remoteAddress(new InetSocketAddress("sanitized-untrusted-proxy",0)).build()
+                ).build();
                 log.trace("Remote address not trusted. Trusted proxies pattern: {}, remote address: {}", trustedProxies, request.getRemoteAddress());
-                return super.filter(removeXForwardHttpHeaders(input), exchange);
+                return super.filter(removeXForwardHttpHeaders(input), sanitizedExchange);
             }
         }
         return super.filter(input, exchange);

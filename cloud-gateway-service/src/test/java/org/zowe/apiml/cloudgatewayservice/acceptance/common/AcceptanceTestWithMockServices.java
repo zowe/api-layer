@@ -10,18 +10,58 @@
 
 package org.zowe.apiml.cloudgatewayservice.acceptance.common;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.TestInstance;
+import io.restassured.config.RestAssuredConfig;
+import io.restassured.config.SSLConfig;
+import lombok.SneakyThrows;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.X509HostnameVerifier;
+import org.apache.http.ssl.PrivateKeyDetails;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.TrustStrategy;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.cloudgatewayservice.acceptance.netflix.ApplicationRegistry;
+
+import javax.net.ssl.SSLContext;
+import java.net.Socket;
+import java.security.cert.X509Certificate;
+import java.util.Map;
 
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
+
+    public RestAssuredConfig apimlCert;
+    public RestAssuredConfig clientCert;
+
+    @Value("${test.proxyUrl}")
+    public String proxyUrl;
+
+
+    @Value("${server.ssl.keyStore}")
+    private String apimlKeyStorePath;
+
+    @Value("${server.ssl.keyStorePassword}")
+    private char[] apimlKeyStorePassword;
+
+    @Value("${server.ssl.keyPassword:}")
+    private char[] apimlKeyPassword;
+
+    @Value("${server.ssl.clientKeyStore:}")
+    private String clientKeyStorePath;
+
+    @Value("${server.ssl.clientKeyStorePassword}")
+    private char[] clientKeyStorePassword;
+
+    @Value("${server.ssl.keyPassword}")
+    private char[] clientKeyPassword;
+
+    @Value("${server.ssl.clientCN}")
+    private String clientCN;
 
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
@@ -37,6 +77,27 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
     @AfterEach
     void checkAssertionErrorsOnMockServices() {
         MockService.checkAssertionErrors();
+    }
+
+    @BeforeAll
+    @SneakyThrows
+    void init() {
+        TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
+        X509HostnameVerifier hostnameVerifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
+
+        SSLContext apimlSSLContext = SSLContextBuilder.create()
+            .loadKeyMaterial(ResourceUtils.getFile(apimlKeyStorePath), apimlKeyStorePassword, apimlKeyPassword)
+            .loadTrustMaterial(null, trustStrategy).build();
+        apimlCert = RestAssuredConfig.newConfig()
+            .sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(apimlSSLContext, hostnameVerifier)));
+
+        SSLContext sslContext = SSLContextBuilder.create()
+            .loadKeyMaterial(ResourceUtils.getFile(clientKeyStorePath), clientKeyStorePassword, clientKeyPassword,
+                (Map<String, PrivateKeyDetails> aliases, Socket socket) -> clientCN)
+            .loadTrustMaterial(null, trustStrategy).build();
+        clientCert = RestAssuredConfig.newConfig()
+            .sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext, hostnameVerifier)));
+
     }
 
     protected void updateRoutingRules() {

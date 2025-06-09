@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.filters.pre;
 
 import com.netflix.zuul.context.RequestContext;
+import com.netflix.zuul.http.HttpServletRequestWrapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +44,9 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 @Primary
 @ConditionalOnMissingBean(PreDecorationFilter.class)
 public class ApimlPreDecorationFilter extends PreDecorationFilter {
+
+    // Generic all-in-one Forwarded header not handled by the default filter
+    public static final String FORWARDED_HEADER = "Forwarded";
 
     private static final Log log = LogFactory.getLog(ApimlPreDecorationFilter.class);
 
@@ -108,6 +112,16 @@ public class ApimlPreDecorationFilter extends PreDecorationFilter {
         if (!isProxyTrusted) {
             // when the request is not from a trusted proxy remove the headers
             ctx.addZuulRequestHeader(X_FORWARDED_FOR_HEADER, null);
+            ctx.addZuulRequestHeader(X_FORWARDED_HOST_HEADER, null);
+            ctx.addZuulRequestHeader(X_FORWARDED_PORT_HEADER, null);
+            ctx.addZuulRequestHeader(X_FORWARDED_PROTO_HEADER, null);
+            ctx.addZuulRequestHeader(X_FORWARDED_PREFIX_HEADER, null);
+            ctx.addZuulRequestHeader(FORWARDED_HEADER, null);
+
+            ctx.setRequest(
+                ctx.getRequest()
+            );
+            //TODO remove all headers and sanitize remote address from the proxy
         }
 
         // decorate the request with original code (see disable feature via addProxyHeaders)
@@ -131,7 +145,11 @@ public class ApimlPreDecorationFilter extends PreDecorationFilter {
         return filterResponse;
     }
 
-    // copy of the original accessible code
+    /*
+    ------------------------
+    A copy of the parent's private code follows
+    -----------------------
+     */
 
     private boolean insecurePath(String path) {
         if (StringUtils.isEmpty(path)) {
@@ -247,6 +265,22 @@ public class ApimlPreDecorationFilter extends PreDecorationFilter {
         }
         if (prefix != null) {
             ctx.addZuulRequestHeader(X_FORWARDED_PREFIX_HEADER, prefix);
+        }
+    }
+
+    class SanitizedHttpServletRequest extends HttpServletRequestWrapper {
+        public SanitizedHttpServletRequest(HttpServletRequest request) {
+            super(request);
+        }
+
+        @Override
+        public String getRemoteAddr() {
+            return null;
+        }
+
+        @Override
+        public String getRemoteHost() {
+            return null;
         }
     }
 

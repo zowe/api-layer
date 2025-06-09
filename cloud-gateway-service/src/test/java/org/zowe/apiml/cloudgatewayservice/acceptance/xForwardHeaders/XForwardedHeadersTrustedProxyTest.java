@@ -27,17 +27,34 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @AcceptanceTest
 @TestPropertySource(properties = {
-    "apiml.security.forwardHeader.trusted-proxies=.*"
-}
-)
-class XForwardedHeadersTrustedProxyTest extends XForwardedHeadersProxyTestBase {
+    "apiml.security.forwardHeader.trusted-proxies=${test.trustedProxiesPattern}"
+})
+class XForwardedHeadersTrustedProxyTest extends AcceptanceTestWithMockServices {
+
+    @BeforeEach
+    void initMockService() throws IOException {
+        mockService("trusted-proxies")
+            .scope(MockService.Scope.CLASS)
+            .addEndpoint("/trusted-proxies/xForwardedHeadersCreated")
+            .assertion(he -> assertTrue(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_FOR_HEADER).contains(proxyUrl)))
+            .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_HOST_HEADER)))
+            .responseCode(SC_OK)
+            .and()
+            .addEndpoint("/trusted-proxies/xForwardedHeadersForwarded")
+            .assertion(he -> assertTrue(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_PREFIX_HEADER).contains("/test")))
+            .assertion(he -> assertTrue(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_FOR_HEADER).contains(proxyUrl)))
+            .responseCode(SC_OK)
+            .and()
+            .start();
+    }
+
 
     @Test
     void whenNoXForwardHeadersInRequest_ThenXForwardHeadersCreated() {
         given()
             .log().all()
             .when()
-            .get(basePath + "/serviceid1/api/v1/xForwardedHeadersCreated")
+            .get(basePath + "/trusted-proxies/api/v1/xForwardedHeadersCreated")
             .then()
             .statusCode(is(SC_OK));
     }
@@ -49,7 +66,7 @@ class XForwardedHeadersTrustedProxyTest extends XForwardedHeadersProxyTestBase {
             .header("X-forwarded-For", "1.1.1.1")
             .header("X-forwarded-prefix", "/test")
             .when()
-            .get(basePath + "/serviceid1/api/v1/xForwardedHeadersForwarded")
+            .get(basePath + "/trusted-proxies/api/v1/xForwardedHeadersForwarded")
             .then()
             .statusCode(is(SC_OK));
     }
@@ -63,7 +80,7 @@ class XForwardedHeadersTrustedProxyTest extends XForwardedHeadersProxyTestBase {
             .header("x-forwarded-For", "1.1.1.1")
             .header("X-forwarded-Prefix", "/test")
             .when()
-            .get(basePath + "/serviceid1/api/v1/xForwardedHeadersForwarded")
+            .get(basePath + "/trusted-proxies/api/v1/xForwardedHeadersForwarded")
             .then()
             .statusCode(is(SC_OK));
     }
@@ -78,7 +95,7 @@ class XForwardedHeadersTrustedProxyTest extends XForwardedHeadersProxyTestBase {
             .header("X-forwarded-prefix", "/test")
             .header("forwarded", "for=1.1.1.1;prefix=/test")
             .when()
-            .get(basePath + "/serviceid1/api/v1/xForwardedHeadersForwarded")
+            .get(basePath + "/trusted-proxies/api/v1/xForwardedHeadersForwarded")
             .then()
             .statusCode(is(SC_OK));
 

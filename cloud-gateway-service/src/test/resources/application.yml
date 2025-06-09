@@ -33,6 +33,11 @@ server:
         clientCN: apimtst # case-sensitive
         clientKeyStorePassword: password
 
+#For testing forwarded headers with (un)trusted proxies
+test:
+    proxyUrl: 6.6.6.6
+    trustedProxiesPattern: 6\.6\.6\.6
+
 spring:
     main:
         allow-bean-definition-overriding: true
