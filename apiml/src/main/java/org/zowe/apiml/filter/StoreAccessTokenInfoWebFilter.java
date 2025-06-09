@@ -55,10 +55,9 @@ public class StoreAccessTokenInfoWebFilter implements WebFilter {
                 byte[] bytes = new byte[dataBuffer.readableByteCount()];
                 dataBuffer.read(bytes);
                 DataBufferUtils.release(dataBuffer);
-                String body = new String(bytes, StandardCharsets.UTF_8);
 
                 try {
-                    var accessTokenRequest = mapper.readValue(body, AccessTokenRequest.class);
+                    var accessTokenRequest = mapper.readValue(bytes, AccessTokenRequest.class);
 
                     var scopes = accessTokenRequest.getScopes();
                     if (scopes == null || scopes.isEmpty()) {
