@@ -60,7 +60,7 @@ public class RestResponseHandler {
             case 400:
                 throw new AuthenticationCredentialsNotFoundException(ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getDefaultMessage());
             case 405:
-                throw new AuthMethodNotSupportedException(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getDefaultMessage());
+                throw new AuthMethodNotSupportedException(ErrorType.METHOD_NOT_ALLOWED.getDefaultMessage());
             case 500:
             case 503:
                 throw new ServiceNotAccessibleException(ErrorType.SERVICE_UNAVAILABLE.getDefaultMessage());

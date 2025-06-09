@@ -115,7 +115,7 @@ public class BasicLoginFilter implements WebFilter {
     }
 
     private Mono<LoginRequest> getCredentialsFromBody(ServerWebExchange exchange) {
-        String path = exchange.getRequest().getPath().value();
+        var path = exchange.getRequest().getPath().value();
         if (!path.contains("/auth/login")) {
             return Mono.empty();
         }
