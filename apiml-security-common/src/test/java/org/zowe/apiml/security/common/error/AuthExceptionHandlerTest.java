@@ -104,7 +104,7 @@ class AuthExceptionHandlerTest {
         authExceptionHandler.handleException(httpServletRequest.getRequestURI(),
             function, addHeader, authMethodNotSupportedException);
 
-        Message message = messageService.createMessage(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getErrorMessageKey(), authMethodNotSupportedException.getMessage(), httpServletRequest.getRequestURI());
+        Message message = messageService.createMessage(ErrorType.METHOD_NOT_ALLOWED.getErrorMessageKey(), authMethodNotSupportedException.getMessage(), httpServletRequest.getRequestURI());
 
         verify(function).accept(message.mapToView(), HttpStatus.METHOD_NOT_ALLOWED);
     }

@@ -51,13 +51,11 @@ function App(props) {
         const authChannel = new BroadcastChannel('auth_channel');
         authChannel.onmessage = (event) => {
             if (event.data === 'logout') {
-                console.log('[BroadcastChannel] logout received');
                 logout();
                 navigate('/login');
             }
 
             if (event.data === 'login') {
-                console.log('[BroadcastChannel] login received');
                 userService.query().then((result) => {
                     if (result.status === 200) {
                         success(result.userId, false);

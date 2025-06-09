@@ -32,16 +32,13 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/gateway/auth")
 @RequiredArgsConstructor
-@SuppressWarnings("squid:S1075") // CONTEXT_PATH doesn't need to be parametrized
 @Slf4j
 public class ReactiveSafResourceAccessController {
-
-    public static final String CONTEXT_PATH = "/check";
 
     private final SafResourceAccessVerifying safResourceAccessVerifying;
     private final MessageService messageService;
 
-    @PostMapping(path = CONTEXT_PATH, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/check", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<?>> hasSafAccess(@RequestBody CheckRequestModel request) {
         return ReactiveSecurityContextHolder.getContext()
             .flatMap(ctx -> Mono.justOrEmpty(ctx.getAuthentication()))
