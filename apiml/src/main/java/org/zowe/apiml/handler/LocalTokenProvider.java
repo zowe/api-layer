@@ -29,10 +29,10 @@ public class LocalTokenProvider extends TokenProvider {
 
     @Override
     public Mono<QueryResponse> validateToken(String token) {
-       return Mono.fromCallable(() -> {
-           var tokenAuthentication = authenticationService.validateJwtToken(token);
-           return new QueryResponse(null, tokenAuthentication.getPrincipal(),null,null,null,null,null);
-       }).onErrorResume(e -> Mono.just(new QueryResponse()));
+        return Mono.fromCallable(() -> {
+            authenticationService.validateJwtToken(token);
+            return authenticationService.parseJwtToken(token);
+        }).onErrorResume(e -> Mono.just(new QueryResponse()));
 
     }
 

@@ -24,7 +24,7 @@ import org.zowe.apiml.controller.ReactiveAuthenticationController.AccessTokenReq
 import org.zowe.apiml.security.common.error.AccessTokenBodyNotValidException;
 import reactor.core.publisher.Mono;
 
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.util.stream.Collectors;
 
 import static org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter.TOKEN_REQUEST;
@@ -55,10 +55,9 @@ public class StoreAccessTokenInfoWebFilter implements WebFilter {
                 byte[] bytes = new byte[dataBuffer.readableByteCount()];
                 dataBuffer.read(bytes);
                 DataBufferUtils.release(dataBuffer);
-                String body = new String(bytes, StandardCharsets.UTF_8);
 
                 try {
-                    var accessTokenRequest = mapper.readValue(body, AccessTokenRequest.class);
+                    var accessTokenRequest = mapper.readValue(bytes, AccessTokenRequest.class);
 
                     var scopes = accessTokenRequest.getScopes();
                     if (scopes == null || scopes.isEmpty()) {
@@ -72,8 +71,8 @@ public class StoreAccessTokenInfoWebFilter implements WebFilter {
                     exchange.getAttributes().put(TOKEN_REQUEST, accessTokenRequest);
 
                     return chain.filter(exchange);
-                } catch (Exception e) {
-                    log.error("Failed to parse access token request body", e);
+                } catch (IOException e) {
+                    log.debug("Failed to parse access token request body", e);
                     return failureHandler.onAuthenticationFailure(
                         new WebFilterExchange(exchange, chain),
                         new AccessTokenBodyNotValidException("org.zowe.apiml.security.query.invalidAccessTokenBody")

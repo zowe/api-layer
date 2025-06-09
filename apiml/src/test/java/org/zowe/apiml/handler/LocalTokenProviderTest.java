@@ -40,9 +40,9 @@ class LocalTokenProviderTest {
     void validateToken_validToken_returnsPrincipal() {
         String token = "valid-token";
         TokenAuthentication mockAuth = mock(TokenAuthentication.class);
-        when(mockAuth.getPrincipal()).thenReturn("user123");
 
         when(authenticationService.validateJwtToken(token)).thenReturn(mockAuth);
+        when(authenticationService.parseJwtToken(token)).thenReturn(new QueryResponse(null, "user123", null, null, null, null, null));
 
         Mono<QueryResponse> result = tokenProvider.validateToken(token);
 

@@ -13,8 +13,8 @@ package org.zowe.apiml;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.gateway.filters.ErrorHeaders;
 import org.zowe.apiml.gateway.filters.RequestCredentials;
-import org.zowe.apiml.gateway.filters.ZaasInternalErrorException;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.passticket.PassTicketException;
@@ -33,6 +33,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
 
 class ZaasSchemeTransformApiTest {
 
@@ -100,7 +101,7 @@ class ZaasSchemeTransformApiTest {
         }
 
         @Test
-        void whenTicketGenerationFails_returnsError() throws PassTicketException {
+        void whenTicketGenerationFails_writeErrorHeader() throws PassTicketException {
             RequestCredentials credentials = mockCredentials();
             AuthSource authSource = mock(AuthSource.class);
             AuthSource.Parsed parsed = mock(AuthSource.Parsed.class);
@@ -109,10 +110,14 @@ class ZaasSchemeTransformApiTest {
             when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
             when(authSourceService.parse(authSource)).thenReturn(parsed);
             when(passTicketService.generate("USER1", "app1")).thenThrow(new RuntimeException("boom"));
-
+            var headers = new ErrorHeaders("message");
             StepVerifier.create(transformApi.passticket(credentials))
-                .expectError(ZaasInternalErrorException.class)
-                .verify();
+                .expectNextMatches(resp -> {
+                    assertEquals("boom", resp.getHeaders().header(AUTH_FAIL_HEADER).get(0));
+                    return true;
+                })
+
+                .verifyComplete();
         }
 
         @Test

@@ -159,7 +159,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     private void handleAuthMethodNotSupported(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
         final HttpStatus status = HttpStatus.METHOD_NOT_ALLOWED;
         log.debug(MESSAGE_FORMAT, status.value(), ex.getMessage());
-        final ApiMessageView message = messageService.createMessage(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getErrorMessageKey(), ex.getMessage(), requestUri).mapToView();
+        final ApiMessageView message = messageService.createMessage(ErrorType.METHOD_NOT_ALLOWED.getErrorMessageKey(), ex.getMessage(), requestUri).mapToView();
         function.accept(message, status);
     }
 

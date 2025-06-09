@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-//todo fix me for non-modulith
 /**
  * This filter will store the personal access information from the body as request attribute
  */

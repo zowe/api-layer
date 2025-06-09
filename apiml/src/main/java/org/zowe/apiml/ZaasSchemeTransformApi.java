@@ -26,7 +26,6 @@ import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.filters.AbstractAuthSchemeFactory;
 import org.zowe.apiml.gateway.filters.ErrorHeaders;
 import org.zowe.apiml.gateway.filters.RequestCredentials;
-import org.zowe.apiml.gateway.filters.ZaasInternalErrorException;
 import org.zowe.apiml.gateway.filters.ZaasSchemeTransform;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.PassTicketService;
@@ -127,8 +126,8 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             var response = new TicketResponse("", authSourceParsed.getUserId(), applicationName, ticket);
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
-            log.debug("Cannot generate ticket", e);
-            return Mono.error(new ZaasInternalErrorException(currentApimlId, e.getMessage()));
+            log.debug("Token has expired", e);
+            return createErrorMessage(e.getMessage());
         }
     }
 
@@ -242,7 +241,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
                     byte[] certBytes = Base64.getDecoder().decode(certBase64);
                     CertificateFactory cf = CertificateFactory.getInstance("X.509");
                     X509Certificate cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(certBytes));
-                    return new X509Certificate[] { cert };
+                    return new X509Certificate[]{cert};
                 } catch (Exception e) {
                     log.debug("Invalid certificate format in RequestCredentials", e);
                     return null;
