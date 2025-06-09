@@ -33,9 +33,12 @@ public class ApimlDuplicateMessagesFilter extends DuplicateMessageFilter {
 
     @Override
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
-        String formattedMessage = getLogMessage(format, params, t);
-        // Sent the entire formatted message to the parent to ensure exact duplicates are filtered out
-        return super.decide(marker, logger, level, getMessageHash(formattedMessage), params, t);
+        if (level.isGreaterOrEqual(logger.getEffectiveLevel())) {
+            String formattedMessage = getLogMessage(format, params, t);
+            // Sent the entire formatted message to the parent to ensure exact duplicates are filtered out
+            return super.decide(marker, logger, level, getMessageHash(formattedMessage), params, t);
+        }
+        return FilterReply.DENY;
     }
 
     private String getMessageHash(String message) {
