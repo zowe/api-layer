@@ -66,7 +66,8 @@ class ZaasJwtService implements TokenService {
 
     @Override
     public String login(String userId, char[] password, char[] newPassword) throws ZaasClientException {
-        try (CloseableHttpClient client = httpClientProvider.getHttpClient()) {
+        try {
+            CloseableHttpClient client = httpClientProvider.getHttpClient();
             HttpPost httpPost = new HttpPost(loginEndpoint);
             String json = objectMapper.writeValueAsString(new Credentials(userId, password, newPassword));
             StringEntity entity = new StringEntity(json);
@@ -87,7 +88,8 @@ class ZaasJwtService implements TokenService {
 
     @Override
     public String login(String authorizationHeader) throws ZaasClientException {
-        try (CloseableHttpClient client = httpClientProvider.getHttpClient()) {
+        try {
+            CloseableHttpClient client = httpClientProvider.getHttpClient();
             HttpPost httpPost = new HttpPost(loginEndpoint);
             httpPost.setHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
             try (CloseableHttpResponse response = client.execute(httpPost)) {
@@ -103,7 +105,8 @@ class ZaasJwtService implements TokenService {
         if (jwtToken == null || jwtToken.isEmpty()) {
             throw new ZaasClientException(ZaasClientErrorCodes.TOKEN_NOT_PROVIDED, "No token provided");
         }
-        try (CloseableHttpClient client = httpClientProvider.getHttpClient()) {
+        try {
+            CloseableHttpClient client = httpClientProvider.getHttpClient();
             HttpGet httpGet = new HttpGet(queryEndpoint);
             httpGet.addHeader(SM.COOKIE, zassConfigProperties.getTokenPrefix() + "=" + jwtToken);
             try (CloseableHttpResponse response = client.execute(httpGet)) {
@@ -122,7 +125,8 @@ class ZaasJwtService implements TokenService {
 
     @Override
     public void logout(String jwtToken) throws ZaasClientException {
-        try (CloseableHttpClient client = httpClientProvider.getHttpClient()) {
+        try {
+            CloseableHttpClient client = httpClientProvider.getHttpClient();
             clearZaasClientCookies();
             HttpPost httpPost = new HttpPost(logoutEndpoint);
             if (jwtToken.startsWith(BEARER_AUTHENTICATION_PREFIX)) {

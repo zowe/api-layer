@@ -55,6 +55,8 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
 
     private final CookieStore cookieStore = new BasicCookieStore();
 
+    private CloseableHttpClient httpsClient;
+
     public ZaasHttpsClientProvider(ConfigProperties configProperties) throws ZaasConfigurationException {
         if (configProperties.getTrustStorePath() == null) {
             throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.TRUST_STORE_NOT_PROVIDED);
@@ -87,7 +89,10 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
 
     @Override
     public synchronized CloseableHttpClient getHttpClient() throws ZaasConfigurationException {
-        return sharedHttpClientConfiguration(getSSLContext()).build();
+        if (httpsClient == null) {
+            httpsClient = sharedHttpClientConfiguration(getSSLContext()).build();
+        }
+        return httpsClient;
     }
 
     private void initializeTrustManagerFactory(String trustStorePath, String trustStoreType, char[] trustStorePassword)
