@@ -560,13 +560,15 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
          * @return true, if it is a network timeout, false otherwise.
          */
         private static boolean isNetworkConnectException(Throwable e) {
-            do {
-                if (e instanceof IOException && !(e instanceof SSLException)) {
-                    return true;
-                }
-                e = e.getCause();
-            } while (e != null);
-            return false;
+            if (e instanceof IOException && !(e instanceof SSLException)) {
+                return true;
+            }
+
+            var cause = e.getCause();
+            if ((cause == null) || (cause == e)) {
+                return false;
+            }
+            return isNetworkConnectException(cause);
         }
 
         /**
@@ -576,17 +578,21 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
          * @return true, if it may be a socket read time out exception.
          */
         private static boolean maybeReadTimeOut(Throwable e) {
-            do {
-                if (e instanceof IOException) {
-                    String message = e.getMessage().toLowerCase();
-                    Matcher matcher = READ_TIME_OUT_PATTERN.matcher(message);
+            if (e instanceof IOException) {
+                String message = e.getMessage();
+                if (message != null) {
+                    Matcher matcher = READ_TIME_OUT_PATTERN.matcher(message.toLowerCase());
                     if (matcher.find()) {
                         return true;
                     }
                 }
-                e = e.getCause();
-            } while (e != null);
-            return false;
+            }
+
+            var cause = e.getCause();
+            if ((cause == null) || (cause == e)) {
+                return false;
+            }
+            return maybeReadTimeOut(cause);
         }
 
 
