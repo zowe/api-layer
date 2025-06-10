@@ -36,7 +36,7 @@ public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
      * Entry method that takes care of an exception passed to it
      *
      * @param requestUri Http request URI
-     * @param addHeader  add response header
+     * @param addHeader Consumer to add response headers. This implementation does not use it
      * @param ex         Exception to be handled
      * @throws RuntimeException Fallback exception if exception cannot be handled
      */
