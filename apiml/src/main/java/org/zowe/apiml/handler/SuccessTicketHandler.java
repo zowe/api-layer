@@ -106,7 +106,7 @@ public class SuccessTicketHandler implements ServerAuthenticationSuccessHandler 
             String applicationName;
             try {
                 applicationName = mapper.readValue(mergedBuffer.asInputStream(), TicketRequest.class).getApplicationName();
-                if (applicationName == null) {
+                if (applicationName == null || applicationName.trim().isEmpty()) {
                     sink.error(new IncorrectRequestBodyException("ApplicationName not provided"));
                     return;
                 }
