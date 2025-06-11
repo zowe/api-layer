@@ -15,11 +15,13 @@ import com.netflix.zuul.http.HttpServletRequestWrapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.cloud.netflix.zuul.filters.ProxyRequestHelper;
 import org.springframework.cloud.netflix.zuul.filters.RouteLocator;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.pre.PreDecorationFilter;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
@@ -36,8 +38,10 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 
 @Component
 @Primary
-//TODO: check with PJ
-//@ConditionalOnMissingBean(PreDecorationFilter.class)
+//Initialize only if there is a bean to supersede
+@ConditionalOnBean(PreDecorationFilter.class)
+//Cors configuration must be initialized first to correctly populate ZuulProperties
+@DependsOn("corsConfigurationSource")
 public class ApimlPreDecorationFilter extends PreDecorationFilter {
 
     // Generic all-in-one Forwarded header not handled by the default filter
