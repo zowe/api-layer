@@ -173,6 +173,23 @@ public class LocalVerifier implements Verifier {
         return false;
     }
 
+    boolean verifyJwt(X509Certificate serverCert) {
+        boolean supportedAlgorithm = serverCert.getSigAlgOID().contains("1.2.840.113549.1.1.11");
+
+        System.out.println("++++++++");
+        if (supportedAlgorithm) {
+            System.out.println("Certificate can be used for generating JWT token.");
+        } else {
+            System.out.println("Certificate can't be used for generating JWT token. " +
+                "Provide certificate with supported algorithm: " +
+                "RSASSA-PKCS1-v1_5 using SHA-256 signature algorithm as defined by RFC 7518, Section 3.3." +
+                " This algorithm requires a 2048-bit key");
+        }
+        System.out.println("++++++++");
+
+        return supportedAlgorithm;
+    }
+
     boolean verifyCertificate(String keyAlias) throws KeyStoreException {
         Certificate[] certificate = stores.getKeyStore().getCertificateChain(keyAlias);
         X509Certificate serverCert = (X509Certificate) certificate[0];
@@ -184,8 +201,9 @@ public class LocalVerifier implements Verifier {
         }
         boolean serverCheck = verifyServer(serverCert);
         boolean x509Check = verifyX509(serverCert);
+        boolean verifyJwt = verifyJwt(serverCert);
 
-        return expirationCheck && hostNameCheck && serverCheck && x509Check;
+        return expirationCheck && hostNameCheck && serverCheck && x509Check && verifyJwt;
     }
 
 }
