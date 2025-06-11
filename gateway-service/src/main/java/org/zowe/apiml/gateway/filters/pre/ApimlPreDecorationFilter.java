@@ -15,26 +15,20 @@ import com.netflix.zuul.http.HttpServletRequestWrapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.cloud.netflix.zuul.filters.ProxyRequestHelper;
-import org.springframework.cloud.netflix.zuul.filters.Route;
 import org.springframework.cloud.netflix.zuul.filters.RouteLocator;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
-import org.springframework.cloud.netflix.zuul.filters.pre.InsecureRequestPathException;
 import org.springframework.cloud.netflix.zuul.filters.pre.PreDecorationFilter;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.util.UrlPathHelper;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -42,7 +36,8 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 
 @Component
 @Primary
-@ConditionalOnMissingBean(PreDecorationFilter.class)
+//TODO: check with PJ
+//@ConditionalOnMissingBean(PreDecorationFilter.class)
 public class ApimlPreDecorationFilter extends PreDecorationFilter {
 
     // Generic all-in-one Forwarded header not handled by the default filter
@@ -55,13 +50,9 @@ public class ApimlPreDecorationFilter extends PreDecorationFilter {
     @Value("${apiml.security.forwardHeader.trusted-proxies:#{null}}")
     private String trustedProxies;
 
-    private final RouteLocator routeLocator;
-    private final UrlPathHelper urlPathHelper = new UrlPathHelper();
     private final CertificateValidator certificateValidator;
 
     private Predicate<String> isHostTrusted = host -> false;
-
-    private final boolean addProxyHeaders;
 
     public ApimlPreDecorationFilter(
         RouteLocator routeLocator, ProxyRequestHelper proxyRequestHelper,
@@ -69,17 +60,7 @@ public class ApimlPreDecorationFilter extends PreDecorationFilter {
         CertificateValidator certificateValidator
     ) {
         super(routeLocator, server.getServlet().getContextPath(), zuulProperties, proxyRequestHelper);
-        this.routeLocator = routeLocator;
         this.certificateValidator = certificateValidator;
-
-        this.urlPathHelper.setRemoveSemicolonContent(zuulProperties.isRemoveSemicolonContent());
-        this.urlPathHelper.setUrlDecode(zuulProperties.isDecodeUrl());
-
-        // keep original configuration
-        this.addProxyHeaders = zuulProperties.isAddProxyHeaders();
-
-        // to disable original source code
-        zuulProperties.setAddProxyHeaders(false);
     }
 
     @PostConstruct
@@ -100,188 +81,61 @@ public class ApimlPreDecorationFilter extends PreDecorationFilter {
     @Override
     public Object run() {
         RequestContext ctx = RequestContext.getCurrentContext();
-        final String requestURI = this.urlPathHelper
-            .getPathWithinApplication(ctx.getRequest());
-        if (insecurePath(requestURI)) {
-            throw new InsecureRequestPathException(requestURI);
-        }
-        Route route = this.routeLocator.getMatchingRoute(requestURI);
-
         boolean isProxyTrusted = isTrusted(ctx);
 
         if (!isProxyTrusted) {
-            // when the request is not from a trusted proxy remove the headers
-            ctx.addZuulRequestHeader(X_FORWARDED_FOR_HEADER, null);
-            ctx.addZuulRequestHeader(X_FORWARDED_HOST_HEADER, null);
-            ctx.addZuulRequestHeader(X_FORWARDED_PORT_HEADER, null);
-            ctx.addZuulRequestHeader(X_FORWARDED_PROTO_HEADER, null);
-            ctx.addZuulRequestHeader(X_FORWARDED_PREFIX_HEADER, null);
-            ctx.addZuulRequestHeader(FORWARDED_HEADER, null);
-
+            // when the request is not from a trusted proxy, remove the headers and untrusted remote address
             ctx.setRequest(
-                ctx.getRequest()
-            );
-            //TODO remove all headers and sanitize remote address from the proxy
-        }
+                new HttpServletRequestWrapper(ctx.getRequest()) {
+                    @Override
+                    public String getRemoteAddr() { return null; }
 
-        // decorate the request with original code (see disable feature via addProxyHeaders)
-        Object filterResponse = super.run();
-
-        if (addProxyHeaders && isProxyTrusted) {
-            // if the proxy is trusted call the same code as in the original source (skipped one)
-            addProxyHeaders(ctx, route);
-            String xforwardedfor = ctx.getRequest()
-                .getHeader(X_FORWARDED_FOR_HEADER);
-            String remoteAddr = ctx.getRequest().getRemoteAddr();
-            if (xforwardedfor == null) {
-                xforwardedfor = remoteAddr;
-            }
-            else if (!xforwardedfor.contains(remoteAddr)) { // Prevent duplicates
-                xforwardedfor += ", " + remoteAddr;
-            }
-            ctx.addZuulRequestHeader(X_FORWARDED_FOR_HEADER, xforwardedfor);
-        }
-
-        return filterResponse;
-    }
-
-    /*
-    ------------------------
-    A copy of the parent's private code follows
-    -----------------------
-     */
-
-    private boolean insecurePath(String path) {
-        if (StringUtils.isEmpty(path)) {
-            return false;
-        }
-        if (path.contains("%")) {
-            try {
-                path = URLDecoder.decode(path, "UTF-8");
-            }
-            catch (UnsupportedEncodingException ignored) {
-                // Should never happen...
-            }
-        }
-        if (isInsecurePath(path)) {
-            return true;
-        }
-        return isInsecurePath(urlPathHelper.removeSemicolonContent(path));
-    }
-
-    private boolean isInsecurePath(String path) {
-        if (path.contains(":/")) {
-            String relativePath = (path.charAt(0) == '/' ? path.substring(1) : path);
-            if (ResourceUtils.isUrl(relativePath) || relativePath.startsWith("url:")) {
-                if (log.isWarnEnabled()) {
-                    log.warn(
-                        "Path represents URL or has \"url:\" prefix: [" + path + "]");
-                }
-                return true;
-            }
-        }
-        if (path.contains("../")) {
-            if (log.isWarnEnabled()) {
-                log.warn("Path contains \"../\"");
-            }
-            return true;
-        }
-        if (path.contains("..\\")) {
-            if (log.isWarnEnabled()) {
-                log.warn("Path contains \"..\\\"");
-            }
-            return true;
-        }
-        return false;
-    }
-
-    private void addProxyHeaders(RequestContext ctx, Route route) {
-        HttpServletRequest request = ctx.getRequest();
-        String host = toHostHeader(request);
-        String port = String.valueOf(request.getServerPort());
-        String proto = request.getScheme();
-        if (hasHeader(request, X_FORWARDED_HOST_HEADER)) {
-            host = request.getHeader(X_FORWARDED_HOST_HEADER) + "," + host;
-        }
-        if (!hasHeader(request, X_FORWARDED_PORT_HEADER)) {
-            if (hasHeader(request, X_FORWARDED_PROTO_HEADER)) {
-                StringBuilder builder = new StringBuilder();
-                for (String previous : StringUtils.commaDelimitedListToStringArray(
-                    request.getHeader(X_FORWARDED_PROTO_HEADER))) {
-                    if (builder.length() > 0) {
-                        builder.append(",");
+                    @Override
+                    public long getDateHeader(String name) {
+                        if (isXForwardedHeader(name)) {
+                            return -1;
+                        } else return super.getDateHeader(name);
                     }
-                    builder.append(
-                        HTTPS_SCHEME.equals(previous) ? HTTPS_PORT : HTTP_PORT);
+
+                    @Override
+                    public String getHeader(String name) {
+                        if (isXForwardedHeader(name)) {
+                            return null;
+                        } else return super.getHeader(name);
+                    }
+
+                    @Override
+                    public Enumeration<String> getHeaders(String name) {
+                        if (isXForwardedHeader(name)) {
+                            return Collections.emptyEnumeration();
+                        } else return super.getHeaders(name);
+                    }
+
+                    @Override
+                    public Enumeration<String> getHeaderNames() {
+                        List<String> namesList = Collections.list(super.getHeaderNames());
+                        namesList.removeIf(this::isXForwardedHeader);
+                        return Collections.enumeration(namesList);
+                    }
+
+                    @Override
+                    public int getIntHeader(String name) {
+                        if (isXForwardedHeader(name)) {
+                            return -1;
+                        } else return super.getIntHeader(name);
+                    }
+
+                    private boolean isXForwardedHeader(String header) {
+                        return header.equalsIgnoreCase(X_FORWARDED_FOR_HEADER) ||
+                            header.equalsIgnoreCase(X_FORWARDED_HOST_HEADER) ||
+                            header.equalsIgnoreCase(X_FORWARDED_PORT_HEADER) ||
+                            header.equalsIgnoreCase(X_FORWARDED_PROTO_HEADER) ||
+                            header.equalsIgnoreCase(X_FORWARDED_PREFIX_HEADER) ||
+                            header.equalsIgnoreCase(FORWARDED_HEADER);
+                    }
                 }
-                builder.append(",").append(port);
-                port = builder.toString();
-            }
+            );
         }
-        else {
-            port = request.getHeader(X_FORWARDED_PORT_HEADER) + "," + port;
-        }
-        if (hasHeader(request, X_FORWARDED_PROTO_HEADER)) {
-            proto = request.getHeader(X_FORWARDED_PROTO_HEADER) + "," + proto;
-        }
-        ctx.addZuulRequestHeader(X_FORWARDED_HOST_HEADER, host);
-        ctx.addZuulRequestHeader(X_FORWARDED_PORT_HEADER, port);
-        ctx.addZuulRequestHeader(X_FORWARDED_PROTO_HEADER, proto);
-        addProxyPrefix(ctx, route);
+        return super.run();
     }
-
-    private String toHostHeader(HttpServletRequest request) {
-        int port = request.getServerPort();
-        if ((port == HTTP_PORT && HTTP_SCHEME.equals(request.getScheme()))
-            || (port == HTTPS_PORT && HTTPS_SCHEME.equals(request.getScheme()))) {
-            return request.getServerName();
-        }
-        else {
-            return request.getServerName() + ":" + port;
-        }
-    }
-
-    private boolean hasHeader(HttpServletRequest request, String name) {
-        return StringUtils.hasLength(request.getHeader(name));
-    }
-
-    private void addProxyPrefix(RequestContext ctx, Route route) {
-        String forwardedPrefix = ctx.getRequest().getHeader(X_FORWARDED_PREFIX_HEADER);
-        String contextPath = ctx.getRequest().getContextPath();
-        String prefix = StringUtils.hasLength(forwardedPrefix) ? forwardedPrefix
-            : (StringUtils.hasLength(contextPath) ? contextPath : null);
-        if (StringUtils.hasText(route.getPrefix())) {
-            StringBuilder newPrefixBuilder = new StringBuilder();
-            if (prefix != null) {
-                if (prefix.endsWith("/") && route.getPrefix().startsWith("/")) {
-                    newPrefixBuilder.append(prefix, 0, prefix.length() - 1);
-                }
-                else {
-                    newPrefixBuilder.append(prefix);
-                }
-            }
-            newPrefixBuilder.append(route.getPrefix());
-            prefix = newPrefixBuilder.toString();
-        }
-        if (prefix != null) {
-            ctx.addZuulRequestHeader(X_FORWARDED_PREFIX_HEADER, prefix);
-        }
-    }
-
-    class SanitizedHttpServletRequest extends HttpServletRequestWrapper {
-        public SanitizedHttpServletRequest(HttpServletRequest request) {
-            super(request);
-        }
-
-        @Override
-        public String getRemoteAddr() {
-            return null;
-        }
-
-        @Override
-        public String getRemoteHost() {
-            return null;
-        }
-    }
-
 }

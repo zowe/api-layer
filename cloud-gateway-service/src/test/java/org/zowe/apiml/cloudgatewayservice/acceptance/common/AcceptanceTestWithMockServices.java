@@ -38,9 +38,8 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
     public RestAssuredConfig apimlCert;
     public RestAssuredConfig clientCert;
 
-    @Value("${test.proxyUrl}")
-    public String proxyUrl;
-
+    @Value("${test.proxyAddress}")
+    public String proxyAddress;
 
     @Value("${server.ssl.keyStore}")
     private String apimlKeyStorePath;

@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.cloudgatewayservice.acceptance.xForwardHeaders;
 
-import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
@@ -44,11 +43,12 @@ class XForwardedHeadersProxyTest extends AcceptanceTestWithMockServices {
             .and()
             .addEndpoint("/untrusted-proxies/xForwardedHeadersForwarded")
             .assertion(he -> assertTrue(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_PREFIX_HEADER).contains("/test")))
-            .assertion(he -> assertTrue(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_FOR_HEADER).contains(proxyUrl)))
+            .assertion(he -> assertTrue(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_FOR_HEADER).contains(proxyAddress)))
             .responseCode(SC_OK)
             .and()
             .addEndpoint("/untrusted-proxies/noXForwardedHeadersForwarded")
-            // All request headers are stripped and the untrusted proxy is not present in X-forwarded-for
+            // All request headers are stripped, and the untrusted proxy is not present in X-forwarded-for
+            // Note: X_FORWARDED_PREFIX_HEADER is processed differently than in the zuul gateway
             .assertion(he -> assertNull(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_PREFIX_HEADER)))
             .assertion(he -> assertNull(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_FOR_HEADER)))
             .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_HOST_HEADER)))

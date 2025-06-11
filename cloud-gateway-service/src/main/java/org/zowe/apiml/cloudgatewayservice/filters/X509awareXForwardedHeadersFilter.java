@@ -1,3 +1,13 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
 package org.zowe.apiml.cloudgatewayservice.filters;
 
 import lombok.extern.slf4j.Slf4j;
@@ -5,6 +15,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.cloud.gateway.filter.headers.XForwardedHeadersFilter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.security.HttpsConfig;
@@ -84,9 +95,12 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
             ServerHttpRequest request = exchange.getRequest();
             if (request.getRemoteAddress() != null
                 && !isTrusted.test(request.getRemoteAddress().getHostString())) {
-                //Remove the address if it is not trusted so it cannot be used to build the forward headers
+                //Mask the address if it is not trusted so it cannot be used to build the forward headers
                 ServerWebExchange sanitizedExchange = exchange.mutate().request(
-                    request.mutate().remoteAddress(new InetSocketAddress("sanitized-untrusted-proxy",0)).build()
+                            new ServerHttpRequestDecorator(request) {
+                                @Override
+                                public InetSocketAddress getRemoteAddress() { return null; }
+                    }
                 ).build();
                 log.trace("Remote address not trusted. Trusted proxies pattern: {}, remote address: {}", trustedProxies, request.getRemoteAddress());
                 return super.filter(removeXForwardHttpHeaders(input), sanitizedExchange);
@@ -113,4 +127,5 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
             header.equalsIgnoreCase(X_FORWARDED_PREFIX_HEADER) ||
             header.equalsIgnoreCase(FORWARDED_HEADER);
     }
+
 }

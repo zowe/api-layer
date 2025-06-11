@@ -52,14 +52,12 @@ import org.springframework.security.web.server.context.NoOpServerSecurityContext
 import org.springframework.security.web.server.savedrequest.CookieServerRequestCache;
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
-import org.springframework.web.reactive.socket.server.upgrade.TomcatRequestUpgradeStrategy;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.zowe.apiml.cloudgatewayservice.config.oidc.ClientConfiguration;
 import org.zowe.apiml.cloudgatewayservice.filters.X509awareXForwardedHeadersFilter;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.SecurityUtils;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;

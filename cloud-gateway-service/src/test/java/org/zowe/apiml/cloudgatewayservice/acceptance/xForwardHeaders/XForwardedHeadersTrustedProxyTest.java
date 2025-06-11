@@ -36,13 +36,13 @@ class XForwardedHeadersTrustedProxyTest extends AcceptanceTestWithMockServices {
         mockService("trusted-proxies")
             .scope(MockService.Scope.CLASS)
             .addEndpoint("/trusted-proxies/xForwardedHeadersCreated")
-            .assertion(he -> assertTrue(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_FOR_HEADER).contains(proxyUrl)))
+            .assertion(he -> assertEquals(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_FOR_HEADER), proxyAddress))
             .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_HOST_HEADER)))
             .responseCode(SC_OK)
             .and()
             .addEndpoint("/trusted-proxies/xForwardedHeadersForwarded")
             .assertion(he -> assertTrue(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_PREFIX_HEADER).contains("/test")))
-            .assertion(he -> assertTrue(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_FOR_HEADER).contains(proxyUrl)))
+            .assertion(he -> assertTrue(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_FOR_HEADER).contains(proxyAddress)))
             .responseCode(SC_OK)
             .and()
             .start();
@@ -60,7 +60,7 @@ class XForwardedHeadersTrustedProxyTest extends AcceptanceTestWithMockServices {
     }
 
     @Test
-    void whenXForwardHeadersInRequest_ThenXForwardedHeadersNotModified() {
+    void whenXForwardHeadersInRequest_ThenXForwardedHeadersForwarded() {
         given()
             .log().all()
             .header("X-forwarded-For", "1.1.1.1")
@@ -72,7 +72,7 @@ class XForwardedHeadersTrustedProxyTest extends AcceptanceTestWithMockServices {
     }
 
     @Test
-    void whenXForwardHeadersInRequestFromGW_ThenXForwardedHeadersNotModified() {
+    void whenXForwardHeadersInRequestFromGW_ThenXForwardedHeadersForwarded() {
 
         given()
             .config(apimlCert)
@@ -86,19 +86,17 @@ class XForwardedHeadersTrustedProxyTest extends AcceptanceTestWithMockServices {
     }
 
     @Test
-    void whenXForwardHeadersInRequestWithClientCert_ThenXForwardedHeadersNotModified() {
+    void whenXForwardHeadersInRequestWithClientCert_ThenXForwardedHeadersForwarded() {
 
         given()
             .config(clientCert)
             .log().all()
             .header("x-Forwarded-for", "1.1.1.1")
             .header("X-forwarded-prefix", "/test")
-            .header("forwarded", "for=1.1.1.1;prefix=/test")
             .when()
             .get(basePath + "/trusted-proxies/api/v1/xForwardedHeadersForwarded")
             .then()
             .statusCode(is(SC_OK));
-
     }
 }
 
