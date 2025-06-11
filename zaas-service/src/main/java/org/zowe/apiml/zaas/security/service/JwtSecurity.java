@@ -243,6 +243,7 @@ public class JwtSecurity {
                 new RSAKey.Builder(rsaPublicKey).build().toPublicJWK()
             );
         }
+        log.debug("Unsupported type of public key: {}", jwtPublicKey == null ? null : jwtPublicKey.getClass());
 
         return Optional.empty();
     }
