@@ -155,7 +155,7 @@ public class ModulithConfig {
     @Scheduled(fixedRate = 20_000) // TODO: probably not needed to auto init zosmf, consider removing the logic
     public void publishPeriodicEvent() {
         var jwtSec = applicationContext.getBean(JwtSecurity.class);
-        if(!jwtSec.getZosmfListener().isZosmfReady()) {
+        if (!jwtSec.getZosmfListener().isZosmfReady()) {
             jwtSec.getZosmfListener().getZosmfRegisteredListener().onEvent(new CacheRefreshedEvent());
         }
     }
