@@ -20,11 +20,10 @@ import org.slf4j.Marker;
  * This filter's purpose is to hide or show the info level messages (and below log levels like debug etc.)
  * There are info level messages that are meant for debug mode only (originally @Slf4j)
  * There are info level messages that are meant to be displayed (like service startup messages)
- *
+ * <p>
  * Because ApimlLogger is using Slf4j in the background, there is conflict of interest.
  * Solution is that ApimlLogger is enhancing its logs with Marker instances and this filter is providing
  * adequate filtering.
- *
  */
 public class LogLevelInfoFilter extends TurboFilter {
 
@@ -32,11 +31,8 @@ public class LogLevelInfoFilter extends TurboFilter {
 
     @Override
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
-
-        if (isLevelInfoOrLower(level)
-            && isInternalLogger(logger)
-            && ( marker == null || !marker.getName().equals(APIML_MARKER))
-        ) {
+        if (isLevelInfoOrLower(level) && isInternalLogger(logger) &&
+            (marker == null || !marker.getName().equals(APIML_MARKER))) {
             return FilterReply.DENY;
         }
         return FilterReply.NEUTRAL;
@@ -47,7 +43,6 @@ public class LogLevelInfoFilter extends TurboFilter {
     }
 
     private boolean isInternalLogger(Logger logger) {
-        String loggerName = logger.getName();
-        return loggerName.startsWith("org.zowe.apiml");
+        return logger.getName().startsWith("org.zowe.apiml");
     }
 }
