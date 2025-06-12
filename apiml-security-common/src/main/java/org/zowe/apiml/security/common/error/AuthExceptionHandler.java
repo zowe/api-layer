@@ -105,6 +105,9 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             if (handler != null) {
                 return handler;
             }
+            if (exClass == exClass.getSuperclass()) {
+                return null;
+            }
             exClass = exClass.getSuperclass();
         }
         return null;
