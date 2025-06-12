@@ -98,6 +98,18 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             (ex, ctx) -> handleServiceNotAccessibleException(ctx.requestUri, ctx.function, ex))
     );
 
+    private ExceptionHandler resolveHandler(RuntimeException ex) {
+        Class<?> exClass = ex.getClass();
+        while (exClass != null && RuntimeException.class.isAssignableFrom(exClass)) {
+            ExceptionHandler handler = exceptionHandlers.get(exClass);
+            if (handler != null) {
+                return handler;
+            }
+            exClass = exClass.getSuperclass();
+        }
+        return null;
+    }
+
     /**
      * Entry method that takes care about the exception passed to it
      *
@@ -113,7 +125,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
                                 RuntimeException ex) throws ServletException {
 
         HandlerContext ctx = new HandlerContext(requestUri, function, addHeader);
-        ExceptionHandler handler = exceptionHandlers.get(ex.getClass());
+        ExceptionHandler handler = resolveHandler(ex);
 
         if (handler != null) {
             handler.handle(ex, ctx);

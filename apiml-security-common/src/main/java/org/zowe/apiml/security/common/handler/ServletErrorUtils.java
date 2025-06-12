@@ -16,6 +16,7 @@ import lombok.experimental.UtilityClass;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.io.IOException;
@@ -33,7 +34,11 @@ public class ServletErrorUtils {
                     var mapper = new ObjectMapper();
                     mapper.writeValue(response.getWriter(), apiMessageView);
                 } catch (IOException e) {
-                    logger.log("org.zowe.apiml.security.errorWritingResponse", e.getMessage());
+                    if (!response.isCommitted()) {
+                        logger.log("org.zowe.apiml.security.errorWritingResponse", e.getMessage());
+                    } else {
+                        logger.log(MessageType.DEBUG, "Response already committed. Skipping error write log.");
+                    }
                 }
             }
         };
