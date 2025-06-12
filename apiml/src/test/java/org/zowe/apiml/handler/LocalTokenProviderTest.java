@@ -64,10 +64,10 @@ class LocalTokenProviderTest {
         Mono<QueryResponse> result = tokenProvider.validateToken(token);
 
         StepVerifier.create(result)
-            .assertNext(response -> {
-                assert response != null;
-                assert response.getUserId() == null;
-            })
-            .verifyComplete();
+            .expectErrorMatches(throwable ->
+                throwable instanceof RuntimeException &&
+                    throwable.getMessage().equals("Invalid token")
+            )
+            .verify();
     }
 }
