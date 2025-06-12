@@ -93,15 +93,18 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
 
         if (!trustedSourceByX509) {
             ServerHttpRequest request = exchange.getRequest();
-            if (request.getRemoteAddress() != null
-                && !isTrusted.test(request.getRemoteAddress().getHostString())) {
-                //Mask the address if it is not trusted so it cannot be used to build the forward headers
-                ServerWebExchange sanitizedExchange = exchange.mutate().request(
-                            new ServerHttpRequestDecorator(request) {
-                                @Override
-                                public InetSocketAddress getRemoteAddress() { return null; }
-                    }
-                ).build();
+            if (!isTrusted.test(request.getRemoteAddress().getHostString()) {
+                ServerWebExchange sanitizedExchange = exchange;
+                if (request.getRemoteAddress() != null) {
+                    //Mask the address if it is not trusted so it cannot be used to build the forward headers
+                    sanitizedExchange = exchange.mutate().request(
+                        new ServerHttpRequestDecorator(request) {
+                            @Override
+                            public InetSocketAddress getRemoteAddress() {
+                                return null;
+                            }
+                        }
+                    ).build();
                 log.trace("Remote address not trusted. Trusted proxies pattern: {}, remote address: {}", trustedProxies, request.getRemoteAddress());
                 return super.filter(removeXForwardHttpHeaders(input), sanitizedExchange);
             }
