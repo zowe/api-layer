@@ -12,6 +12,7 @@ package org.zowe.apiml.security.common.error;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -50,18 +51,11 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         this.isModulith = Boolean.TRUE.equals(isModulith);
     }
 
+    @AllArgsConstructor
     private static class HandlerContext {
         String requestUri;
         BiConsumer<ApiMessageView, HttpStatus> function;
         BiConsumer<String, String> addHeader;
-
-        HandlerContext(String requestUri,
-                       BiConsumer<ApiMessageView, HttpStatus> function,
-                       BiConsumer<String, String> addHeader) {
-            this.requestUri = requestUri;
-            this.function = function;
-            this.addHeader = addHeader;
-        }
     }
 
     @FunctionalInterface

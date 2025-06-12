@@ -31,7 +31,7 @@ public class ConfigReader {
 
     private static final String PASSWORD = "password";
     private static String configurationFile;
-    private static final boolean ISMODULITHENABLED = "true".equals(System.getProperty("environment.modulith"));
+    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
 
     static {
         configurationFile = "environment-configuration" + System.getProperty("environment.config", "") + ".yml";
@@ -126,7 +126,7 @@ public class ConfigReader {
                         }
                     );
 
-                    if (!ISMODULITHENABLED) {
+                    if (!IS_MODULITH_ENABLED) {
                         configuration.getZaasConfiguration().setScheme(System.getProperty("zaas.scheme", configuration.getZaasConfiguration().getScheme()));
                         configuration.getZaasConfiguration().setHost(System.getProperty("zaas.host", configuration.getZaasConfiguration().getHost()));
                         configuration.getZaasConfiguration().setPort(parseInt(System.getProperty("zaas.port", String.valueOf(configuration.getZaasConfiguration().getPort()))));
