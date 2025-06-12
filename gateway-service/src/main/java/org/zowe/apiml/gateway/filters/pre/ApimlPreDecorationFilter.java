@@ -71,7 +71,7 @@ public class ApimlPreDecorationFilter extends PreDecorationFilter {
     public void afterPropertiesSet() {
         if (trustedProxies != null) {
             Pattern pattern = Pattern.compile(trustedProxies);
-            isHostTrusted = host -> pattern.matcher(host).matches();
+            isHostTrusted = host -> host != null && pattern.matcher(host).matches();
         }
     }
 

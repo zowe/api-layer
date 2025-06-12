@@ -12,6 +12,7 @@ package org.zowe.apiml.cloudgatewayservice.acceptance.xForwardHeaders;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithMockServices;
@@ -30,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @TestPropertySource(properties = {
     "apiml.security.forwardHeader.trusted-proxies="
 })
+@ActiveProfiles("forward-headers-proxy-test")
 class XForwardedHeadersProxyTest extends AcceptanceTestWithMockServices {
 
     @BeforeEach
@@ -40,12 +42,12 @@ class XForwardedHeadersProxyTest extends AcceptanceTestWithMockServices {
             .assertion(he -> assertNull(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_FOR_HEADER)))
             .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_HOST_HEADER)))
             .responseCode(SC_OK)
-            .and()
+        .and()
             .addEndpoint("/untrusted-proxies/xForwardedHeadersForwarded")
             .assertion(he -> assertTrue(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_PREFIX_HEADER).contains("/test")))
             .assertion(he -> assertTrue(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_FOR_HEADER).contains(proxyAddress)))
             .responseCode(SC_OK)
-            .and()
+        .and()
             .addEndpoint("/untrusted-proxies/noXForwardedHeadersForwarded")
             // All request headers are stripped, and the untrusted proxy is not present in X-forwarded-for
             // Note: X_FORWARDED_PREFIX_HEADER is processed differently than in the zuul gateway
@@ -54,57 +56,57 @@ class XForwardedHeadersProxyTest extends AcceptanceTestWithMockServices {
             .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_HOST_HEADER)))
             .assertion(he -> assertNull(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.FORWARDED_HEADER)))
             .responseCode(SC_OK)
-            .and()
-            .start();
+        .and()
+        .start();
     }
 
     @Test
-    void whenNoXForwardHeadersInRequest_ThenXForwardHeadersCreated() {
+    void whenNoXForwardHeadersInRequest_thenXForwardHeadersCreated() {
         given()
             .log().all()
-            .when()
+        .when()
             .get(basePath + "/untrusted-proxies/api/v1/xForwardedHeadersCreated")
-            .then()
+        .then()
             .statusCode(is(SC_OK));
     }
 
     @Test
-    void whenXForwardHeadersInRequest_ThenNoXForwardHeadersForwarded() {
+    void whenXForwardHeadersInRequest_thenNoXForwardHeadersForwarded() {
         given()
             .log().all()
             .header("x-Forwarded-for", "1.1.1.1")
             .header("X-forwarded-prefix", "/test")
             .header("forwarded", "for=1.1.1.1;prefix=/test")
-            .when()
+        .when()
             .get(basePath + "/untrusted-proxies/api/v1/noXForwardedHeadersForwarded")
-            .then()
+        .then()
             .statusCode(is(SC_OK));
     }
 
     @Test
-    void whenXForwardHeadersInRequestFromGW_ThenXForwardHeadersForwarded() {
+    void whenXForwardHeadersInRequestFromGW_thenXForwardHeadersForwarded() {
         given()
-            .config(apimlCert)
+        .config(apimlCert)
             .log().all()
             .header("x-forwarded-For", "1.1.1.1")
             .header("X-forwarded-Prefix", "/test")
-            .when()
+        .when()
             .get(basePath + "/untrusted-proxies/api/v1/xForwardedHeadersForwarded")
-            .then()
+        .then()
             .statusCode(is(SC_OK));
     }
 
     @Test
-    void whenXForwardHeadersInRequestWithClientCert_ThenNoXForwardHeadersForwarded() {
+    void whenXForwardHeadersInRequestWithClientCert_thenNoXForwardHeadersForwarded() {
         given()
             .config(clientCert)
             .log().all()
             .header("x-Forwarded-for", "1.1.1.1")
             .header("X-forwarded-prefix", "/test")
             .header("forwarded", "for=1.1.1.1;prefix=/test")
-            .when()
+        .when()
             .get(basePath + "/untrusted-proxies/api/v1/noXForwardedHeadersForwarded")
-            .then()
+        .then()
             .statusCode(is(SC_OK));
     }
 }

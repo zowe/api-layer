@@ -13,6 +13,7 @@ package org.zowe.apiml.cloudgatewayservice.acceptance.xForwardHeaders;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.web.server.ServerWebExchange;
@@ -21,6 +22,7 @@ import org.springframework.web.server.WebFilter;
 import java.net.InetSocketAddress;
 
 @Configuration
+@Profile("forward-headers-proxy-test")
 public class MutateRemoteAddressFilter {
 
     @Value("${test.proxyAddress}")

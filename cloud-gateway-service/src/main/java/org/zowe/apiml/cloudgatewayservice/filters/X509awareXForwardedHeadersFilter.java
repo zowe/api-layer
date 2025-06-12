@@ -76,7 +76,7 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
             isTrusted = host -> false;
         } else {
             Pattern pattern = Pattern.compile(trustedProxies);
-            isTrusted = host -> pattern.matcher(host).matches();
+            isTrusted = host -> host != null && pattern.matcher(host).matches();
         }
     }
 
@@ -93,11 +93,11 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
 
         if (!trustedSourceByX509) {
             ServerHttpRequest request = exchange.getRequest();
-            if (!isTrusted.test(request.getRemoteAddress().getHostString()) {
-                ServerWebExchange sanitizedExchange = exchange;
-                if (request.getRemoteAddress() != null) {
+            InetSocketAddress remoteAddress = request.getRemoteAddress();
+            if (remoteAddress != null) {
+                if (!isTrusted.test(remoteAddress.getHostString())) {
                     //Mask the address if it is not trusted so it cannot be used to build the forward headers
-                    sanitizedExchange = exchange.mutate().request(
+                    ServerWebExchange sanitizedExchange = exchange.mutate().request(
                         new ServerHttpRequestDecorator(request) {
                             @Override
                             public InetSocketAddress getRemoteAddress() {
@@ -105,8 +105,12 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
                             }
                         }
                     ).build();
-                log.trace("Remote address not trusted. Trusted proxies pattern: {}, remote address: {}", trustedProxies, request.getRemoteAddress());
-                return super.filter(removeXForwardHttpHeaders(input), sanitizedExchange);
+                    log.trace("Remote address not trusted. Trusted proxies pattern: {}, remote address: {}", trustedProxies, remoteAddress);
+                    return super.filter(removeXForwardHttpHeaders(input), sanitizedExchange);
+                }
+            } else {
+                log.trace("Remote address is null and cannot be evaluated for trusted proxy.");
+                return super.filter(removeXForwardHttpHeaders(input), exchange);
             }
         }
         return super.filter(input, exchange);

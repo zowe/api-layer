@@ -16,6 +16,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
@@ -30,6 +31,7 @@ import static org.mockito.Mockito.*;
 @TestPropertySource(properties = {
     "apiml.security.forwardHeader.trusted-proxies=${test.trustedProxiesPattern}"
 })
+@ActiveProfiles("forward-headers-proxy-test")
 class ForwardedHeadersTrustedProxyTest extends AcceptanceTestWithTwoServices {
 
     String OTHER_PROXY_ADDRESS = "1.1.1.1";

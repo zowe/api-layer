@@ -26,6 +26,7 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapp
 import org.springframework.cloud.netflix.zuul.filters.discovery.SimpleServiceRouteMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -104,6 +105,7 @@ public class GatewayOverrideConfig {
 
     //For X-forwarded headers proxy tests
     @Bean
+    @Profile("forward-headers-proxy-test")
     public ZuulFilter remoteAddressModifier() {
         return new ZuulFilter() {
             @Override

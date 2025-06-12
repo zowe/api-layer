@@ -21,7 +21,7 @@ public class AcceptanceTestWithBasePath {
     protected String basePath;
     protected SecurityRequests securityRequests;
     @Value("${test.proxyAddress}")
-    public String proxyAddress;
+    protected String proxyAddress;
     @LocalServerPort
     protected int port;
 
