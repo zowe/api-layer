@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.util.HttpClientMockHelper;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
@@ -167,17 +168,13 @@ class OIDCExternalMapperTest {
         private ObjectMapper mockedMapper;
 
         @BeforeEach
-        void setup() throws ReflectiveOperationException {
-            Field field = ExternalMapper.class.getDeclaredField("objectMapper");
-            field.setAccessible(true);
-            field.set(null, mockedMapper);
+        void setup() {
+            ReflectionTestUtils.setField(ExternalMapper.class, "objectMapper", mockedMapper);
         }
 
         @AfterEach
-        void teardown() throws ReflectiveOperationException {
-            Field field = ExternalMapper.class.getDeclaredField("objectMapper");
-            field.setAccessible(true);
-            field.set(null, new ObjectMapper());
+        void teardown() {
+            ReflectionTestUtils.setField(ExternalMapper.class, "objectMapper", new ObjectMapper());
         }
 
         @Test
