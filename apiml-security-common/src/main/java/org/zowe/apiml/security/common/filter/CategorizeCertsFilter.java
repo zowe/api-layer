@@ -21,7 +21,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -155,11 +154,9 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      * @return A new array containing only the certificates that match the predicate.
      */
     public static X509Certificate[] selectCerts(X509Certificate[] certs, Predicate<X509Certificate> test) {
-        if (ArrayUtils.isEmpty(certs)) {
-            return new X509Certificate[0];
-        }
-
-        return Arrays.stream(certs)
+        return Optional.ofNullable(certs)
+            .stream()
+            .flatMap(Arrays::stream)
             .filter(Objects::nonNull)
             .filter(test)
             .toArray(X509Certificate[]::new);

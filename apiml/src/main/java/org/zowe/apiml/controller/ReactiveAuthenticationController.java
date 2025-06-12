@@ -17,6 +17,7 @@ import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -544,7 +545,9 @@ public class ReactiveAuthenticationController {
     })
     public Mono<ResponseEntity<Object>> getPublicKeyUsedForSigning() {
        return Mono.fromSupplier(() -> {
-            List<JWK> publicKeys = getCurrentKey();
+           List<JWK> publicKeys = getCurrentKey().stream()
+               .filter(jwk -> jwk instanceof RSAKey)
+               .toList();
             if (publicKeys.isEmpty()) {
                 log.debug("JWT setup was not yet initialized so there is no public key for response.");
                 return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.zaas.keys.unknownState").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

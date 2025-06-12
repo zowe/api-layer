@@ -181,6 +181,9 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
             if (index < 0) {
                 throw new BadCredentialsException("Invalid basic authentication header");
             }
+            if ((index == 0) || (index == credentials.length - 1)) {
+                throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
+            }
             byte[] password = null;
             char[] passwordChars;
             try {
