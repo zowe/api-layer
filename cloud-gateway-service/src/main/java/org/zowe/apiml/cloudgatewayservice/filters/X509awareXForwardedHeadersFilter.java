@@ -94,23 +94,22 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
         if (!trustedSourceByX509) {
             ServerHttpRequest request = exchange.getRequest();
             InetSocketAddress remoteAddress = request.getRemoteAddress();
-            if (remoteAddress != null) {
-                if (!isTrusted.test(remoteAddress.getHostString())) {
-                    //Mask the address if it is not trusted so it cannot be used to build the forward headers
-                    ServerWebExchange sanitizedExchange = exchange.mutate().request(
-                        new ServerHttpRequestDecorator(request) {
-                            @Override
-                            public InetSocketAddress getRemoteAddress() {
-                                return null;
-                            }
-                        }
-                    ).build();
-                    log.trace("Remote address not trusted. Trusted proxies pattern: {}, remote address: {}", trustedProxies, remoteAddress);
-                    return super.filter(removeXForwardHttpHeaders(input), sanitizedExchange);
-                }
-            } else {
+            if (remoteAddress == null) {
                 log.trace("Remote address is null and cannot be evaluated for trusted proxy.");
                 return super.filter(removeXForwardHttpHeaders(input), exchange);
+            }
+            if (!isTrusted.test(remoteAddress.getHostString())) {
+                //Mask the address if it is not trusted so it cannot be used to build the forward headers
+                ServerWebExchange sanitizedExchange = exchange.mutate().request(
+                    new ServerHttpRequestDecorator(request) {
+                        @Override
+                        public InetSocketAddress getRemoteAddress() {
+                            return null;
+                        }
+                    }
+                ).build();
+                log.trace("Remote address not trusted. Trusted proxies pattern: {}, remote address: {}", trustedProxies, remoteAddress);
+                return super.filter(removeXForwardHttpHeaders(input), sanitizedExchange);
             }
         }
         return super.filter(input, exchange);

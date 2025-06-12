@@ -54,9 +54,9 @@ class ForwardedHeadersProxyTest extends AcceptanceTestWithTwoServices {
     void whenNoXForwardHeadersInRequest_ThenXForwardHeadersCreated() {
         given()
             .log().all()
-            .when()
+        .when()
             .get(serviceUrl)
-            .then()
+        .then()
             .statusCode(Matchers.is(SC_OK));
 
         HttpUriRequest toVerify = getCaptorToEvaluate();
@@ -73,10 +73,9 @@ class ForwardedHeadersProxyTest extends AcceptanceTestWithTwoServices {
             .header("x-Forwarded-for", OTHER_PROXY_ADDRESS)
             .header("X-forwarded-prefix", OTHER_PROXY_PREFIX)
             .header("forwarded", "for=" + OTHER_PROXY_ADDRESS + ";prefix=/test")
-            .when()
+        .when()
             .get(serviceUrl)
-            .then()
-            .log().all()
+        .then()
             .statusCode(Matchers.is(SC_OK));
 
         HttpUriRequest toVerify = getCaptorToEvaluate();
@@ -94,9 +93,9 @@ class ForwardedHeadersProxyTest extends AcceptanceTestWithTwoServices {
         given()
             .header("x-forwarded-For", OTHER_PROXY_ADDRESS)
             .header("X-forwarded-Prefix", OTHER_PROXY_PREFIX)
-            .when()
+        .when()
             .get(serviceUrl)
-            .then()
+        .then()
             .statusCode(Matchers.is(SC_OK));
 
         HttpUriRequest toVerify = getCaptorToEvaluate();

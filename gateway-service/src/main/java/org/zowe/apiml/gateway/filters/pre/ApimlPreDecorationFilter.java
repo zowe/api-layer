@@ -12,8 +12,6 @@ package org.zowe.apiml.gateway.filters.pre;
 
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.http.HttpServletRequestWrapper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
@@ -46,8 +44,6 @@ public class ApimlPreDecorationFilter extends PreDecorationFilter {
 
     // Generic all-in-one Forwarded header not handled by the default filter
     public static final String FORWARDED_HEADER = "Forwarded";
-
-    private static final Log log = LogFactory.getLog(ApimlPreDecorationFilter.class);
 
     private static final String ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE = "javax.servlet.request.X509Certificate";
 
