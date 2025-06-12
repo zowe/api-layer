@@ -59,14 +59,14 @@ public class GatewayInstanceInitializer {
     @EventListener({HeartbeatEvent.class, ApplicationReadyEvent.class})
     public void init() {
 
-        log.info("GatewayInstanceInitializer starting asynchronous initialization of Gateway configuration");
+        log.debug("GatewayInstanceInitializer starting asynchronous initialization of Gateway configuration");
 
         instanceLookupExecutor.run(
             CoreService.GATEWAY.getServiceId(),
             instance -> {
                 ServiceAddress foundGatewayConfigProperties = process(instance);
 
-                log.info(
+                log.debug(
                     "GatewayInstanceInitializer has been initialized with Gateway instance on url: {}://{}",
                     foundGatewayConfigProperties.getScheme(),
                     foundGatewayConfigProperties.getHostname()

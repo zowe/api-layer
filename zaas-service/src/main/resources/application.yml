@@ -1,5 +1,4 @@
 logging:
-    config: classpath:logback-zaas.xml
     level:
         ROOT: INFO
         org.zowe.apiml: INFO
