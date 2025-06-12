@@ -25,7 +25,6 @@ import org.zowe.apiml.handler.FailedAuthenticationWebHandler;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -119,23 +118,26 @@ public class BasicLoginFilter implements WebFilter {
         if (!path.contains("/auth/login")) {
             return Mono.empty();
         }
-        return exchange.getRequest().getBody().flatMap(buffer -> {
+
+        return DataBufferUtils.join(exchange.getRequest().getBody())
+            .flatMap(dataBuffer -> {
+                byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                dataBuffer.read(bytes);
+                DataBufferUtils.release(dataBuffer);
+
+                String bodyString = new String(bytes, StandardCharsets.UTF_8);
                 try {
-                    byte[] bytes = new byte[buffer.readableByteCount()];
-                    buffer.read(bytes);
-                    DataBufferUtils.release(buffer);
-                    var bodyString = new String(bytes, StandardCharsets.UTF_8);
                     var loginRequest = mapper.readValue(bodyString, LoginRequest.class);
-                    if (loginRequest.getUsername() != null && loginRequest.getPassword() != null) {
+                    if (credentialsAvailable(loginRequest)) {
                         return Mono.just(loginRequest);
+                    } else {
+                        return Mono.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format."));
                     }
-                    return Flux.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format."));
                 } catch (IOException e) {
-                    log.debug("Authentication problem: login object has wrong format");
-                    return Flux.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format.", e));
+                    log.debug("Authentication problem: login object has wrong format", e);
+                    return Mono.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format.", e));
                 }
-            }
-        ).next();
+            });
     }
 
 }
