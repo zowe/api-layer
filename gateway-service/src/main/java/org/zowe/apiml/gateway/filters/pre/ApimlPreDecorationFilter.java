@@ -51,7 +51,7 @@ public class ApimlPreDecorationFilter extends PreDecorationFilter {
 
     private static final String ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE = "javax.servlet.request.X509Certificate";
 
-    @Value("${apiml.security.forwardHeader.trusted-proxies:#{null}}")
+    @Value("${apiml.security.forwardHeader.trustedProxies:#{null}}")
     private String trustedProxies;
 
     private final CertificateValidator certificateValidator;

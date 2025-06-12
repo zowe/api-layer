@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 
 @AcceptanceTest
 @TestPropertySource(properties = {
-    "apiml.security.forwardHeader.trusted-proxies="
+    "apiml.security.forwardHeader.trustedProxies="
 })
 @ActiveProfiles("forward-headers-proxy-test")
 class ForwardedHeadersProxyTest extends AcceptanceTestWithTwoServices {

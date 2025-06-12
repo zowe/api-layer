@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @AcceptanceTest
 @TestPropertySource(properties = {
-    "apiml.security.forwardHeader.trusted-proxies=${test.trustedProxiesPattern}"
+    "apiml.security.forwardHeader.trustedProxies=${test.trustedProxiesPattern}"
 })
 @ActiveProfiles("forward-headers-proxy-test")
 class XForwardedHeadersTrustedProxyTest extends AcceptanceTestWithMockServices {

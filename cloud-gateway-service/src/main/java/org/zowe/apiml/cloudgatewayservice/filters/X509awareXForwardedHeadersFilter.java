@@ -35,8 +35,8 @@ import java.util.regex.Pattern;
 /**
  * The aim of the class is to ensure that the content of X-Forwarded-* or Forwarded headers contains only trusted data.
  * Forged values of these headers can pose a security risk as identified by CVE-2025-41235.
- * Trusted proxies can be defined via config property `apiml.security.forwardHeader.trusted-proxies` that is equivalent of
- * the Spring's original one `spring.cloud.gateway.mvc.trusted-proxies`. The benefit of this bean is that it is not
+ * Trusted proxies can be defined via config property `apiml.security.forwardHeader.trustedProxies` that is equivalent of
+ * the Spring's original one `spring.cloud.gateway.mvc.trustedProxies`. The benefit of this bean is that it is not
  * necessary to validate headers if the request is signed by trusted Gateway certificate. It solves, for example,
  * the case when multiple APIML Gateways routes each other. The http context cannot be compromised when the request
  * is signed by a trusted certificate, so the content of headers is considered valid, and it is not necessary to verify
