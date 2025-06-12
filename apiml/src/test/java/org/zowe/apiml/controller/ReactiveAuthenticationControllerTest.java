@@ -672,19 +672,21 @@ class ReactiveAuthenticationControllerTest {
 
     @Test
     void getPublicKeyUsedForSigning_joseException() throws Exception {
-        JWK mockJwk = mock(JWK.class);
-        RSAKey mockRsaKey = mock(RSAKey.class);
-        JWKSet keySet = new JWKSet(mockJwk);
+        KeyPair keyPair = KeyPairGenerator.getInstance("RSA").generateKeyPair();
+        RSAKey realRsaKey = new RSAKey.Builder((RSAPublicKey) keyPair.getPublic()).build();
+
+        RSAKey spyRsaKey = spy(realRsaKey);
+        doThrow(new JOSEException("Test JOSE Exception")).when(spyRsaKey).toPublicKey();
+
+        JWKSet keySet = new JWKSet(List.of(spyRsaKey));
 
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
         when(jwtSecurity.getPublicKeyInSet()).thenReturn(keySet);
-        when(mockJwk.toRSAKey()).thenReturn(mockRsaKey);
-        when(mockRsaKey.toPublicKey()).thenThrow(new JOSEException("Test JOSE Exception"));
 
+        ApiMessage expectedApiMessage = new ApiMessage("org.zowe.apiml.zaas.keys.unknown", MessageType.ERROR, "ZWEAG717E", "cnt", null, null);
         var mockApiMessage = mock(Message.class);
         when(messageService.createMessage("org.zowe.apiml.zaas.keys.unknown")).thenReturn(mockApiMessage);
-        ApiMessage expectedApiMessage = new ApiMessage("org.zowe.apiml.zaas.keys.unknown", MessageType.ERROR, "ZWEAG717E", "cnt", null, null);
-        lenient().when(mockApiMessage.mapToApiMessage()).thenReturn(expectedApiMessage);
+        when(mockApiMessage.mapToApiMessage()).thenReturn(expectedApiMessage);
 
         Mono<ResponseEntity<Object>> result = controller.getPublicKeyUsedForSigning();
 
