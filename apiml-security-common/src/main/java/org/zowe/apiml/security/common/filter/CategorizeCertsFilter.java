@@ -21,6 +21,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -67,7 +68,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      */
     private void categorizeCerts(ServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
-        if (certs != null && certs.length > 0 && certs[0] != null) {
+        if (certs != null && certs.length > 0) {
             Optional<Certificate> clientCert = getClientCertFromHeader((HttpServletRequest) request);
             if (certificateValidator.isForwardingEnabled() && certificateValidator.hasGatewayChain(certs) && clientCert.isPresent()) {
                 certificateValidator.updateAPIMLPublicKeyCertificates(certs);
@@ -154,7 +155,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      * @return A new array containing only the certificates that match the predicate.
      */
     public static X509Certificate[] selectCerts(X509Certificate[] certs, Predicate<X509Certificate> test) {
-        if (certs == null || certs.length == 0) {
+        if (ArrayUtils.isEmpty(certs)) {
             return new X509Certificate[0];
         }
 

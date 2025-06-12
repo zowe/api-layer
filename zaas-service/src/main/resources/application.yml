@@ -59,7 +59,6 @@ apiml:
         auth:
             provider: zosmf
             zosmf:
-                serviceId: ibmzosmf
                 jwtAutoconfiguration: jwt
         oidc:
             enabled: false

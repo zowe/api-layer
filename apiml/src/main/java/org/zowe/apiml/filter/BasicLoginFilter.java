@@ -132,7 +132,7 @@ public class BasicLoginFilter implements WebFilter {
                     return Flux.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format."));
                 } catch (IOException e) {
                     log.debug("Authentication problem: login object has wrong format");
-                    return Flux.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format."));
+                    return Flux.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format.", e));
                 }
             }
         ).next();
