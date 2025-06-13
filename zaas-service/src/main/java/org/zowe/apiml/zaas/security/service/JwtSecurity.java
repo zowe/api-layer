@@ -275,11 +275,11 @@ public class JwtSecurity {
      * Only for unit testing
      */
     @VisibleForTesting
-    ZosmfListener getZosmfListener() {
+    public ZosmfListener getZosmfListener() {
         return zosmfListener;
     }
 
-    class ZosmfListener {
+    public class ZosmfListener {
         private boolean isZosmfReady = false;
         private final EurekaClient eurekaClient;
 
@@ -329,7 +329,7 @@ public class JwtSecurity {
         /**
          * Only for unit testing the event listener.
          */
-        EurekaEventListener getZosmfRegisteredListener() {
+        public EurekaEventListener getZosmfRegisteredListener() {
             return zosmfRegisteredListener;
         }
     }

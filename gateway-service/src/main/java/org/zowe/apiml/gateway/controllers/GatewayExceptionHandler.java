@@ -182,7 +182,9 @@ public class GatewayExceptionHandler {
         Throwable rootCause = getRootCause(ex);
         return Mono.just(ResponseEntity
             .status(SC_BAD_REQUEST)
-            .body(new ErrorInfo("Failed to deserialize the request body", rootCause.getMessage())));
+            .body(new ErrorInfo(
+                "Failed to deserialize the request body",
+                ex.getMessage() + " | Root cause: " + rootCause.getMessage())));
     }
 
     private Throwable getRootCause(Throwable ex) {

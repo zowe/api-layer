@@ -58,7 +58,7 @@ class PassTicketTest implements TestWithStartedInstances {
 
     private static final String COOKIE = "apimlAuthenticationToken";
     private URI url = HttpRequestUtils.getUriFromGateway(ROUTED_PASSTICKET);
-    private static final boolean ISMODULITHENABLED = "true".equals(System.getProperty("environment.modulith"));
+    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
 
     @BeforeEach
     void setUp() {
@@ -125,7 +125,7 @@ class PassTicketTest implements TestWithStartedInstances {
             @Test
             void givenNoToken() {
                 String expectedMessage;
-                if (!ISMODULITHENABLED) {
+                if (!IS_MODULITH_ENABLED) {
                     expectedMessage = "No authorization token provided for URL '" + ZAAS_PASSTICKET_PATH + "'";
                 } else {
                     expectedMessage = "No authorization token provided for URL '" + GATEWAY_PASSTICKET_PATH + "'";

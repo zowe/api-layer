@@ -35,9 +35,6 @@ describe('App Container', () => {
 
     beforeAll(() => {
         global.BroadcastChannel = class {
-            constructor() {
-                this.onmessage = () => {};
-            }
             close() {}
         };
     });

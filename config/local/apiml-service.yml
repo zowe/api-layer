@@ -28,7 +28,6 @@ apiml:
     security:
         x509:
             enabled: true
-            acceptForwardedCert: true
             certificatesUrl: https://localhost:10010/gateway/certificates
         allowTokenRefresh: true
         webfinger:

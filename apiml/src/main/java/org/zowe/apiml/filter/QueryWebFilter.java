@@ -79,7 +79,7 @@ public class QueryWebFilter implements WebFilter {
         if (protectedByCertificate) {
             certificateCheckMono = ReactiveSecurityContextHolder.getContext()
                 .map(SecurityContext::getAuthentication)
-                .filter(auth -> auth != null && auth.isAuthenticated() && auth instanceof X509AuthenticationToken)
+                .filter(auth -> auth.isAuthenticated() && auth instanceof X509AuthenticationToken)
                 .switchIfEmpty(Mono.error(new InvalidCertificateException("Invalid or missing certificate authentication.")))
                 .then();
         }

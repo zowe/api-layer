@@ -19,8 +19,6 @@ import org.slf4j.Marker;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ApimlDependencyLogHider extends TurboFilter {
 
@@ -47,21 +45,14 @@ public class ApimlDependencyLogHider extends TurboFilter {
         "HV000001: Hibernate Validator",
         "You already have RibbonLoadBalancerClient on your classpath.*"); // Known fact, fix in Zowe V2
 
-    private boolean isFilterActive;
-
-    public ApimlDependencyLogHider() {
-        String profiles = System.getProperties().getProperty("spring.profiles.include");
-        isFilterActive = profiles == null || !profiles.toLowerCase().contains("debug");
-    }
-
     @Override
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
-        if (!isFilterActive || format == null || isLowThanInfoLevel(logger.getEffectiveLevel())) {
+        if (format == null || isLowThanInfoLevel(logger.getEffectiveLevel())) {
             return FilterReply.NEUTRAL;
         }
 
         if (t != null) {
-            format += Stream.of(ExceptionUtils.getStackFrames(t)).collect(Collectors.joining());
+            format += String.join("", ExceptionUtils.getStackFrames(t));
         }
 
         return getFilterReply(format);
@@ -72,7 +63,7 @@ public class ApimlDependencyLogHider extends TurboFilter {
     }
 
     private FilterReply getFilterReply(String format) {
-        boolean ignored =  IGNORED_MESSAGE_KEYWORDS.stream()
+        boolean ignored = IGNORED_MESSAGE_KEYWORDS.stream()
             .anyMatch(keyword -> {
                 if (keyword.contains(".*")) {
                     return format.matches(keyword);

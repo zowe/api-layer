@@ -126,7 +126,6 @@ public class AuthEndpointConfig {
     }
 
     @Bean
-    @ConditionalOnMissingBean(name = "modulithConfig")
     public RouterFunction<ServerResponse> routes() {
         return route(path("/gateway/api/v1/auth/login"), resendTo("/api/v1/auth/login"))
             .andRoute(path("/gateway/api/v1/auth/logout"), resendTo("/api/v1/auth/logout"))

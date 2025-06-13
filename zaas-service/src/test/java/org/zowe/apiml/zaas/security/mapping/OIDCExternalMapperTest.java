@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.util.HttpClientMockHelper;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
@@ -32,9 +33,6 @@ import org.zowe.apiml.zaas.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.OIDCAuthSource;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
-import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,15 +42,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OIDCExternalMapperTest {
-    private static final VarHandle MODIFIERS;
-    static {
-        try {
-            var lookup = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup());
-            MODIFIERS = lookup.findVarHandle(Field.class, "modifiers", int.class);
-        } catch (IllegalAccessException | NoSuchFieldException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
 
     @Mock
     private CloseableHttpClient httpClient;
@@ -167,17 +156,13 @@ class OIDCExternalMapperTest {
         private ObjectMapper mockedMapper;
 
         @BeforeEach
-        void setup() throws ReflectiveOperationException {
-            Field field = ExternalMapper.class.getDeclaredField("objectMapper");
-            field.setAccessible(true);
-            field.set(null, mockedMapper);
+        void setup() {
+            ReflectionTestUtils.setField(ExternalMapper.class, "objectMapper", mockedMapper);
         }
 
         @AfterEach
-        void teardown() throws ReflectiveOperationException {
-            Field field = ExternalMapper.class.getDeclaredField("objectMapper");
-            field.setAccessible(true);
-            field.set(null, new ObjectMapper());
+        void teardown() {
+            ReflectionTestUtils.setField(ExternalMapper.class, "objectMapper", new ObjectMapper());
         }
 
         @Test

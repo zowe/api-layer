@@ -136,7 +136,6 @@ apiml:
         auth:
             provider: zosmf
             zosmf:
-                serviceId: ibmzosmf
                 jwtAutoconfiguration: jwt
         oidc:
             enabled: false
@@ -153,14 +152,13 @@ apiml:
             provider: zosmf
         x509:
             enabled: false
-            acceptForwardedCert: true
             certificatesUrl:
             externalMapperUrl:
         saf:
             provider: rest
             urls:
-                authenticate: https://localhost:10013/zss/saf/authenticate
-                verify: https://localhost:10013/zss/saf/verify
+                authenticate: https://${apiml.service.hostname}:10013/zss/saf/authenticate
+                verify: https://${apiml.service.hostname}:10013/zss/saf/verify
     health:
         protected: true
 server:
@@ -182,7 +180,6 @@ server:
 logbackServiceName: ZWEAGW1
 
 logging:
-    config: classpath:logback-gateway.xml
     level:
         ROOT: INFO
         # New Config

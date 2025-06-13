@@ -43,10 +43,10 @@ public class SuccessQueryHandler implements ServerAuthenticationSuccessHandler {
         DefaultDataBuffer buffer;
         try {
             buffer = bufferFactory.wrap(mapper.writeValueAsBytes(authenticationService.parseJwtToken(token)));
+            return webFilterExchange.getExchange().getResponse().writeWith(Mono.just(buffer));
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            return Mono.error(e);
         }
-        return webFilterExchange.getExchange().getResponse().writeWith(Mono.just(buffer));
 
     }
 }

@@ -67,7 +67,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      */
     private void categorizeCerts(ServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
-        if (certs != null && certs.length > 0 && certs[0] != null) {
+        if (certs != null && certs.length > 0) {
             Optional<Certificate> clientCert = getClientCertFromHeader((HttpServletRequest) request);
             if (certificateValidator.isForwardingEnabled() && certificateValidator.hasGatewayChain(certs) && clientCert.isPresent()) {
                 certificateValidator.updateAPIMLPublicKeyCertificates(certs);
@@ -144,20 +144,22 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
 
     /**
      * Selects certificates from an array based on a predicate.
-     * IMPORTANT: This method replicates the original filter's logic. If the first certificate
-     * in the array matches the predicate, the entire original array is returned.
-     * Otherwise, an empty array is returned. This does not filter individual certificates
-     * from the array beyond the first one if the input array contains multiple certificates.
+     * Only certificates that match the predicate will be included in the result array.
+     * IMPORTANT: This method replicates the original filter's logic.
+     * <p>
+     * Null certificates are automatically excluded.
      *
-     * @param certs The array of X.509 certificates.
-     * @param test  The predicate to test the certificates against.
-     * @return An array of X.509 certificates.
+     * @param certs The array of X.509 certificates to be filtered.
+     * @param test  The predicate to test each certificate against.
+     * @return A new array containing only the certificates that match the predicate.
      */
     public static X509Certificate[] selectCerts(X509Certificate[] certs, Predicate<X509Certificate> test) {
-        if (certs != null && certs.length > 0 && certs[0] != null && test.test(certs[0])) {
-            return certs;
-        }
-        return new X509Certificate[0];
+        return Optional.ofNullable(certs)
+            .stream()
+            .flatMap(Arrays::stream)
+            .filter(Objects::nonNull)
+            .filter(test)
+            .toArray(X509Certificate[]::new);
     }
 
     public static String base64EncodePublicKey(X509Certificate cert) {

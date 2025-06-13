@@ -23,11 +23,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.zowe.apiml.constants.ApimlConstants;
-import org.zowe.apiml.gateway.filters.AbstractAuthSchemeFactory;
-import org.zowe.apiml.gateway.filters.ErrorHeaders;
-import org.zowe.apiml.gateway.filters.RequestCredentials;
-import org.zowe.apiml.gateway.filters.ZaasSchemeTransform;
+import org.zowe.apiml.gateway.filters.*;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.ticket.TicketResponse;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
@@ -125,6 +123,9 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             var ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
             var response = new TicketResponse("", authSourceParsed.getUserId(), applicationName, ticket);
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
+        } catch (IRRPassTicketGenerationException e) {
+            log.debug("Cannot generate ticket", e);
+            return Mono.error(new ZaasInternalErrorException(currentApimlId, e.getMessage()));
         } catch (Exception e) {
             log.debug("Token has expired", e);
             return createErrorMessage(e.getMessage());

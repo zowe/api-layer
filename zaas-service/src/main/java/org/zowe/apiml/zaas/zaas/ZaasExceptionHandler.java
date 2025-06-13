@@ -50,9 +50,6 @@ import javax.net.ssl.SSLException;
 @ConditionalOnMissingBean(name = "modulithConfig")
 public class ZaasExceptionHandler {
 
-    private static final String WWW_AUTHENTICATE = "WWW-Authenticate";
-    private static final String BASIC_REALM = "Basic realm=\"Realm\"";
-
     private final MessageService messageService;
 
     @ExceptionHandler(value = {IRRPassTicketGenerationException.class})
