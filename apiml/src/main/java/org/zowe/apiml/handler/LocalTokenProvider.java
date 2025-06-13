@@ -15,7 +15,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.gateway.service.TokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import reactor.core.publisher.Mono;
 
@@ -33,7 +32,8 @@ public class LocalTokenProvider extends TokenProvider {
         return Mono.fromCallable(() -> {
             authenticationService.validateJwtToken(token);
             return authenticationService.parseJwtToken(token);
-        }).onErrorResume(e -> Mono.error(new TokenNotValidException("Invalid token", e)));
+        }).onErrorResume(e -> Mono.just(new QueryResponse()));
+
     }
 
 }
