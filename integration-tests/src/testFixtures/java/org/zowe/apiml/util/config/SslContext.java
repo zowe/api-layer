@@ -63,7 +63,6 @@ public class SslContext {
                 .build();
             clientCertValid = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext, hostnameVerifier)));
 
-
             SSLContext sslContext2 = SSLContextBuilder
                 .create()
                 .loadKeyMaterial(ResourceUtils.getFile(providedConfigurer.getKeystore()),

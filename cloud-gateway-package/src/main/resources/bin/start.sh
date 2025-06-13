@@ -241,6 +241,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE} java \
     -Dserver.ssl.protocol=${ZWE_configs_server_ssl_protocol:-${server_protocol}} \
     -Dserver.ssl.enabled-protocols=${server_enabled_protocols} \
     -Dapiml.httpclient.ssl.enabled-protocols=${client_enabled_protocols} \
+    -Dapiml.security.forwardHeader.trustedProxies=${ZWE_configs_apiml_security_forwardHeader_trustedProxies:-${ZWE_components_gateway_apiml_security_forwardHeader_trustedProxies:-}} \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \

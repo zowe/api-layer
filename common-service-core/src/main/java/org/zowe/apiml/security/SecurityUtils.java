@@ -24,6 +24,7 @@ import java.net.URL;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -121,6 +122,10 @@ public class SecurityUtils {
             out.add(base64);
         }
         return out;
+    }
+
+    public String base64EncodePublicKey(X509Certificate cert) {
+        return Base64.getEncoder().encodeToString(cert.getPublicKey().getEncoded());
     }
 
     /**
