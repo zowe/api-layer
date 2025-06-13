@@ -55,10 +55,10 @@ class GatewayHomepageControllerTest {
     @Test
     void givenBuildVersionNull_whenHomePageCalled_thenBuildInfoShouldStaticText() {
         Model model = new ConcurrentModel();
+        gatewayHomepageController.init();
         gatewayHomepageController.home(model);
 
         Map<String, Object> actualModelMap = model.asMap();
-
         assertThat(actualModelMap, IsMapContaining.hasEntry("buildInfoText", "Build information is not available"));
     }
 
@@ -76,6 +76,8 @@ class GatewayHomepageControllerTest {
             discoveryClient, buildInfo, API_CATALOG_ID, CoreService.ZAAS.getServiceId());
 
         Model model = new ConcurrentModel();
+
+        gatewayHomepageController.init();
         gatewayHomepageController.home(model);
 
         Map<String, Object> actualModelMap = model.asMap();
