@@ -12,8 +12,12 @@ package org.zowe.apiml.acceptance.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.netflix.zuul.ZuulFilter;
+import com.netflix.zuul.context.RequestContext;
+import com.netflix.zuul.http.HttpServletRequestWrapper;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.netflix.zuul.filters.SimpleRouteLocator;
@@ -22,6 +26,7 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapp
 import org.springframework.cloud.netflix.zuul.filters.discovery.SimpleServiceRouteMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -31,18 +36,21 @@ import org.zowe.apiml.acceptance.common.Service;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
 import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
-
 import java.util.HashMap;
-
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_TYPE;
 
 @TestConfiguration
 public class GatewayOverrideConfig {
 
     protected static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
+
+    @Value("${test.proxyAddress}")
+    String proxyAddress;
 
     @Bean
     @Primary
@@ -93,5 +101,40 @@ public class GatewayOverrideConfig {
     public ObjectMapper mapper() {
         return new ObjectMapper()
             .registerModule(new JavaTimeModule());
+    }
+
+    //For X-forwarded headers proxy tests
+    @Bean
+    @Profile("forward-headers-proxy-test")
+    public ZuulFilter remoteAddressModifier() {
+        return new ZuulFilter() {
+            @Override
+            public String filterType() {
+                return PRE_TYPE;
+            }
+
+            @Override
+            public int filterOrder() {
+                return PRE_DECORATION_FILTER_ORDER - 1;
+            }
+
+            @Override
+            public boolean shouldFilter() {
+                return true;
+            }
+
+            @Override
+            public Object run() {
+                RequestContext ctx = RequestContext.getCurrentContext();
+
+                ctx.setRequest(
+                    new HttpServletRequestWrapper(ctx.getRequest()) {
+                        @Override
+                        public String getRemoteAddr() { return proxyAddress; }
+                    }
+                );
+                return null;
+            }
+        };
     }
 }

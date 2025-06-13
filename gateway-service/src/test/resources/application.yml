@@ -59,6 +59,11 @@ apiml:
                 authenticate: https://localhost:10013/zss/saf/authenticate
                 verify: https://localhost:10013/zss/saf/verify
 
+#For testing forwarded headers with (un)trusted proxies
+test:
+    proxyAddress: 6.6.6.6
+    trustedProxiesPattern: 6\.6\.6\.6
+
 spring:
     config:
         useLegacyProcessing: true
