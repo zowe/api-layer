@@ -14,6 +14,7 @@
         <turboFilter class="org.zowe.apiml.product.logging.LogLevelInfoFilter"/>
         <turboFilter class="org.zowe.apiml.product.logging.ApimlDuplicateMessagesFilter">
             <AllowedRepetitions>0</AllowedRepetitions>
+            <cacheSize>3000</cacheSize>
         </turboFilter>
     </springProfile>
 
