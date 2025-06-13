@@ -82,6 +82,22 @@
                                                                         "default": 7601
                                                                     }
                                                                 }
+                                                            },
+                                                            "tcp": {
+                                                                "type": "object",
+                                                                "description": "TCP stack",
+                                                                "properties": {
+                                                                    "diag": {
+                                                                        "type": "object",
+                                                                        "description": "Cluster diagnostics",
+                                                                        "properties": {
+                                                                            "enabled": {
+                                                                                "type": "boolean",
+                                                                                "description": "Enable diagnostics of infinispan cluster"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
                                                             }
                                                         }
                                                     },
