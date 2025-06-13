@@ -116,15 +116,16 @@ public class ClientCertificateAuthentication {
                     HttpPost httpPost = new HttpPost(getApiUrl());
 
                     // Execute the request
-                    CloseableHttpResponse response = httpClient.execute(httpPost);
+                    try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
 
-                    // Print the response status
-                    System.out.println("Response Code: " + response.getStatusLine().getStatusCode());
+                        // Print the response status
+                        System.out.println("Response Code: " + response.getStatusLine().getStatusCode());
 
-                    // Print headers
-                    Header[] headers = response.getAllHeaders();
-                    for (Header header : headers) {
-                        System.out.println("Key : " + header.getName() + " ,Value : " + header.getValue());
+                        // Print headers
+                        Header[] headers = response.getAllHeaders();
+                        for (Header header : headers) {
+                            System.out.println("Key : " + header.getName() + " ,Value : " + header.getValue());
+                        }
                     }
                 }
             }
