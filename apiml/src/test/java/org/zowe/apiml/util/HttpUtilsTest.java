@@ -10,35 +10,30 @@
 
 package org.zowe.apiml.util;
 
-import org.apache.tomcat.util.http.SameSiteCookies;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.ResponseCookie;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties.CookieProperties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@SpringBootTest(properties = {
+    "apiml.security.auth.cookie-properties.cookie-name=test-token",
+    "apiml.security.auth.cookie-properties.cookie-path=/",
+    "apiml.security.auth.cookie-properties.cookie-same-site=Lax",
+    "apiml.security.auth.cookie-properties.cookie-max-age=3600",
+    "apiml.security.auth.cookie-properties.cookie-secure=true"
+})
+@Import(HttpUtilsTest.HttpUtilsTestConfig.class)
 public class HttpUtilsTest {
 
+    @Autowired
     private HttpUtils httpUtils;
-
-    @BeforeEach
-    void setUp() {
-        CookieProperties cookieProperties = new CookieProperties();
-        cookieProperties.setCookieName("test-token");
-        cookieProperties.setCookiePath("/");
-        cookieProperties.setCookieSameSite(SameSiteCookies.LAX);
-        cookieProperties.setCookieMaxAge(3600);
-        cookieProperties.setCookieSecure(true);
-
-        AuthConfigurationProperties authConfigProps = new AuthConfigurationProperties();
-        authConfigProps.setCookieProperties(cookieProperties);
-
-        httpUtils = new HttpUtils(authConfigProps);
-    }
 
     @Test
     void testCreateResponseCookie() {
@@ -52,5 +47,16 @@ public class HttpUtilsTest {
         assertEquals(3600, cookie.getMaxAge().getSeconds());
         assertTrue(cookie.isHttpOnly());
         assertTrue(cookie.isSecure());
+    }
+
+    @TestConfiguration
+    static class HttpUtilsTestConfig {
+        @Autowired
+        private AuthConfigurationProperties props;
+
+        @Bean
+        public HttpUtils httpUtils() {
+            return new HttpUtils(props);
+        }
     }
 }
