@@ -20,6 +20,7 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -48,8 +49,8 @@ class LocalTokenProviderTest {
 
         StepVerifier.create(result)
             .assertNext(response -> {
-                assert response != null;
-                assert "user123".equals(response.getUserId());
+                assertNotNull(response);
+                assertEquals("user123", response.getUserId());
             })
             .verifyComplete();
     }
@@ -65,8 +66,8 @@ class LocalTokenProviderTest {
 
         StepVerifier.create(result)
             .assertNext(response -> {
-                assert response != null;
-                assert response.getUserId() == null;
+                assertNotNull(response);
+                assertNull(response.getUserId());
             })
             .verifyComplete();
     }

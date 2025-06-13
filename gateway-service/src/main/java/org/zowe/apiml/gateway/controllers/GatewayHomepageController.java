@@ -12,7 +12,8 @@ package org.zowe.apiml.gateway.controllers;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
@@ -31,6 +32,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
  * Main page for Gateway, displaying status of Apiml services and build version information
  */
 @Tag(name = "Home page")
+@RequiredArgsConstructor
 @Controller
 public class GatewayHomepageController {
 
@@ -40,27 +42,15 @@ public class GatewayHomepageController {
 
     private final DiscoveryClient discoveryClient;
     private final BuildInfo buildInfo;
-
+    @Value("${apiml.catalog.serviceId:}")
     private final String apiCatalogServiceId;
+
+    @Qualifier("authServiceId")
+    private final String serviceId;
     private String buildString;
 
-    private final String serviceId;
-
-    @Autowired
-    public GatewayHomepageController(DiscoveryClient discoveryClient,
-                                     @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId,
-                                     @Qualifier("authServiceId") String serviceId) {
-        this(discoveryClient, new BuildInfo(), apiCatalogServiceId, serviceId);
-    }
-
-    public GatewayHomepageController(DiscoveryClient discoveryClient,
-                                     BuildInfo buildInfo,
-                                     String apiCatalogServiceId,
-                                     String serviceId) {
-        this.discoveryClient = discoveryClient;
-        this.buildInfo = buildInfo;
-        this.apiCatalogServiceId = apiCatalogServiceId;
-        this.serviceId = serviceId;
+    @PostConstruct
+    public void init() {
         initializeBuildInfos();
     }
 

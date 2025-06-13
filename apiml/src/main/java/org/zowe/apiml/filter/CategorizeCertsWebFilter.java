@@ -74,13 +74,12 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
      * @param exchange The current server web exchange.
      */
     private void categorizeCerts(ServerWebExchange exchange) {
-        X509Certificate[] certsFromTls = null;
-        if (exchange.getRequest().getSslInfo() != null &&
-            exchange.getRequest().getSslInfo().getPeerCertificates() != null) {
-            certsFromTls = exchange.getRequest().getSslInfo().getPeerCertificates();
-        }
+        Optional<X509Certificate[]> certsFromTlsOpt = Optional.of(exchange)
+            .map(ServerWebExchange::getRequest)
+            .map(ServerHttpRequest::getSslInfo)
+            .map(ssl -> getX509Certificates(ssl.getPeerCertificates()));
 
-        if (certsFromTls != null && certsFromTls.length > 0 && certsFromTls[0] != null) {
+        certsFromTlsOpt.ifPresent(certsFromTls -> {
             Optional<X509Certificate> clientCertFromHeader = getClientCertFromHeader(exchange.getRequest());
 
             if (certificateValidator.isForwardingEnabled() &&
@@ -109,11 +108,16 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                 exchange.getAttributes().put(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, apimlFilteredCerts);
                 log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, Arrays.toString(apimlFilteredCerts));
             }
-        } else {
+        });
+
+        if (certsFromTlsOpt.isEmpty()) {
             log.debug("No TLS peer certificates found in the request.");
         }
     }
 
+    private static X509Certificate[] getX509Certificates(X509Certificate[] certs) {
+        return (certs != null && certs.length > 0 && certs[0] != null) ? certs : null;
+    }
 
 
     /**

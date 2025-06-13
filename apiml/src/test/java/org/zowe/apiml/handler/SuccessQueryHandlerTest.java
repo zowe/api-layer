@@ -25,9 +25,9 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -71,7 +71,7 @@ class SuccessQueryHandlerTest {
         byte[] actualBytes = new byte[buffer.readableByteCount()];
         buffer.read(actualBytes);
 
-        assertEquals(new String(expectedBytes, StandardCharsets.UTF_8), new String(actualBytes, StandardCharsets.UTF_8));
+        assertArrayEquals(expectedBytes, actualBytes);
         assertEquals("application/json", Objects.requireNonNull(response.getHeaders().getContentType()).toString());
         assertEquals(200, Objects.requireNonNull(response.getStatusCode()).value());
     }
