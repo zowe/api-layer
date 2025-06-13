@@ -159,7 +159,7 @@ public class AuthenticationService {
         return invalidate(jwtToken, distribute, app);
     }
 
-    public Boolean invalidate(String jwtToken, boolean distribute, Application app) {
+    private Boolean invalidate(String jwtToken, boolean distribute, Application app) {
         /*
          * until ehCache is not distributed, send to other instances invalidation request
          */

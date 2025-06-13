@@ -105,7 +105,6 @@ class OIDCTokenProviderJWKTest {
 
         @Test
         void whenValidTokenExpired_thenReturnInvalid() {
-            // initPublicKeys();
             assertFalse(oidcTokenProviderJwk.isValid(EXPIRED_TOKEN));
         }
 
