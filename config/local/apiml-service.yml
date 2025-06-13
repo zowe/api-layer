@@ -3,7 +3,7 @@ logging:
     level:
         org.springframework.web.socket.client.standard.AnnotatedEndpointConnectionManager: DEBUG
         org.springframework.web.reactive.socket.client.StandardWebSocketClient: TRACE
-        org.apache.tomcat.websocket.WsWebSocketContainer: TRACE
+        # org.apache.tomcat.websocket.WsWebSocketContainer: TRACE
         # org.apache.tomcat: DEBUG
         # org.apache.coyote: DEBUG
 
