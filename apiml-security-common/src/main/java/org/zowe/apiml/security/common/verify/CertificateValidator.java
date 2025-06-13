@@ -56,6 +56,8 @@ public class CertificateValidator {
      * @return true if all given certificates are known false otherwise
      */
     public boolean isTrusted(X509Certificate[] certs) {
+        if (certs == null || certs.length == 0) return false;
+
         if (ObjectUtils.isEmpty(proxyCertificatesEndpoint)) {
             log.debug("No endpoint configured to retrieve trusted certificates. Provide URL via apiml.security.x509.certificatesUrls");
             return false;
