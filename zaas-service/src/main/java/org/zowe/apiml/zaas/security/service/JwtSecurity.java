@@ -238,12 +238,14 @@ public class JwtSecurity {
     }
 
     public Optional<JWK> getJwkPublicKey() {
-        if (jwtPublicKey == null) {
-            return Optional.empty();
+        if (jwtPublicKey instanceof RSAPublicKey rsaPublicKey) {
+            return Optional.of(
+                new RSAKey.Builder(rsaPublicKey).build().toPublicJWK()
+            );
         }
+        log.debug("Unsupported type of public key: {}", jwtPublicKey == null ? null : jwtPublicKey.getClass());
 
-        final RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) jwtPublicKey).build();
-        return Optional.of(rsaKey.toPublicJWK());
+        return Optional.empty();
     }
     /*
      * End of the actual API for the security class
