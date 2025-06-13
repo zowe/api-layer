@@ -147,23 +147,24 @@ public class InstanceRetrievalService {
         for (Header header : createRequestHeader(eurekaServiceInstanceRequest)) {
             httpGet.setHeader(header);
         }
-        CloseableHttpResponse response = httpClient.execute(httpGet);
-        final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
-        final HttpEntity responseEntity = response.getEntity();
-        String responseBody = "";
-        if (responseEntity != null) {
-            responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
-        }
-        if (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES) {
-            return responseBody;
-        }
+        try (CloseableHttpResponse response = httpClient.execute(httpGet)) {
+            final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
+            final HttpEntity responseEntity = response.getEntity();
+            String responseBody = "";
+            if (responseEntity != null) {
+                responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+            }
+            if (statusCode >= HttpStatus.SC_OK && statusCode < HttpStatus.SC_MULTIPLE_CHOICES) {
+                return responseBody;
+            }
 
-        apimlLog.log("org.zowe.apiml.apicatalog.serviceRetrievalRequestFailed",
-            eurekaServiceInstanceRequest.getServiceId(),
-            eurekaServiceInstanceRequest.getEurekaRequestUrl(),
-            statusCode,
-            response.getStatusLine() != null ? response.getStatusLine().getReasonPhrase() : responseBody
+            apimlLog.log("org.zowe.apiml.apicatalog.serviceRetrievalRequestFailed",
+                eurekaServiceInstanceRequest.getServiceId(),
+                eurekaServiceInstanceRequest.getEurekaRequestUrl(),
+                statusCode,
+                response.getStatusLine() != null ? response.getStatusLine().getReasonPhrase() : responseBody
             );
+        }
 
         return null;
     }

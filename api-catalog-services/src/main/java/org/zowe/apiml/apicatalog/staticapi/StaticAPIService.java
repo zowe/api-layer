@@ -55,9 +55,8 @@ public class StaticAPIService {
 
             String discoveryServiceUrl = discoveryServiceUrls.get(i);
 
-            try {
-                HttpPost post = getHttpRequest(discoveryServiceUrl);
-                CloseableHttpResponse response = httpClient.execute(post);
+            HttpPost post = getHttpRequest(discoveryServiceUrl);
+            try (CloseableHttpResponse response = httpClient.execute(post)) {
                 final HttpEntity responseEntity = response.getEntity();
                 String responseBody = "";
                 if (responseEntity != null) {
