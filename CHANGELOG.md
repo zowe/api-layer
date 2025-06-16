@@ -10,7 +10,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Feature:  Support Java 21. (#4027) ([6a554ba](https://github.com/zowe/api-layer/commit/6a554ba)), closes [#4027](https://github.com/zowe/api-layer/issues/4027)
 
 * Bugfix:  Resource leak in the http client. (#4153) ([1acce27](https://github.com/zowe/api-layer/commit/1acce27)), closes [#4153](https://github.com/zowe/api-layer/pull/4153)
-* Bugfix:  Adding HSTS header when AT-TLS enabled V2. (#4071) ([9fdf3e6](https://github.com/zowe/api-layer/commit/9fdf3e6)), closes [#4071](https://github.com/zowe/api-layer/issues/4071)
+* Bugfix:  Adding HSTS header when AT-TLS is enabled. (#4071) ([9fdf3e6](https://github.com/zowe/api-layer/commit/9fdf3e6)), closes [#4071](https://github.com/zowe/api-layer/issues/4071)
 * Bugfix:  Change error code SERVICE_UNAVAILABLE to INTERNAL_SERVER_ERROR when ticket generation fails. (#4043 ([f7f78dd](https://github.com/zowe/api-layer/commit/f7f78dd)), closes [#4043](https://github.com/zowe/api-layer/issues/4043)
 
 ## `APIML 2.18.10 / Zowe 2.18.1 (2025-03-27)`
