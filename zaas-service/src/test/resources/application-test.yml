@@ -57,10 +57,6 @@ spring:
         client:
             hostname: ${apiml.service.hostname}
             ipAddress: ${apiml.service.ipAddress}
-    mvc:
-        throw-exception-if-no-handler-found: false # to suppress NoHandlerFoundException: No handler found for GET /error, we already provide error handling for requests
-        favicon:
-            enabled: false
     output:
         ansi:
             enabled: detect
@@ -142,8 +138,6 @@ eureka:
 ---
 spring:
     config.activate.on-profile: debug
-    mvc:
-        throw-exception-if-no-handler-found: true
 
 management:
     endpoints:

@@ -21,8 +21,6 @@ spring:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
     application:
         name: ${apiml.service.serviceId}
-    mvc:
-        throw-exception-if-no-handler-found: true
     output:
         ansi:
             enabled: detect

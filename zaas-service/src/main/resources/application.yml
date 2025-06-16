@@ -104,10 +104,7 @@ spring:
             mvc.enabled: false
             enabled: false
     mvc:
-        throw-exception-if-no-handler-found: false # to suppress NoHandlerFoundException: No handler found for GET /error, we already provide error handling for requests
         log-resolved-exception: false # Suppress useless logs from AbstractHandlerExceptionResolver
-        favicon:
-            enabled: false
     output:
         ansi:
             enabled: detect
@@ -200,8 +197,6 @@ eureka:
 ---
 spring:
     config.activate.on-profile: debug
-    mvc:
-        throw-exception-if-no-handler-found: true
 
 management:
     endpoints:
