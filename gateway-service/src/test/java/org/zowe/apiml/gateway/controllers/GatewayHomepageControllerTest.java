@@ -16,8 +16,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.product.version.BuildInfoDetails;
@@ -47,9 +49,10 @@ class GatewayHomepageControllerTest {
 
         BuildInfoDetails buildInfoDetails = new BuildInfoDetails(new Properties(), new Properties());
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
-
+        ApplicationInfo applicationInfo = new ApplicationInfo(false, CoreService.ZAAS.getServiceId());
         gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, buildInfo, API_CATALOG_ID, CoreService.ZAAS.getServiceId());
+            discoveryClient, buildInfo, applicationInfo);
+        ReflectionTestUtils.setField(gatewayHomepageController, "apiCatalogServiceId", "apicatalog");
     }
 
     @Test
@@ -72,8 +75,9 @@ class GatewayHomepageControllerTest {
         BuildInfoDetails buildInfoDetails = new BuildInfoDetails(buildProperties, new Properties());
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
+        ApplicationInfo applicationInfo = new ApplicationInfo(false, CoreService.ZAAS.getServiceId());
         GatewayHomepageController gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, buildInfo, API_CATALOG_ID, CoreService.ZAAS.getServiceId());
+            discoveryClient, buildInfo, applicationInfo);
 
         Model model = new ConcurrentModel();
 
@@ -102,7 +106,9 @@ class GatewayHomepageControllerTest {
 
     @Test
     void givenApiCatalogueIsEmpty_whenHomePageIsCalled_thenThereIsNoMessageAroundTheCatalog() {
-        GatewayHomepageController underTest = new GatewayHomepageController(discoveryClient, buildInfo, null, CoreService.GATEWAY.getServiceId());
+        ApplicationInfo applicationInfo = new ApplicationInfo(false, CoreService.GATEWAY.getServiceId());
+
+        GatewayHomepageController underTest = new GatewayHomepageController(discoveryClient, buildInfo, applicationInfo);
         Model model = new ConcurrentModel();
         underTest.home(model);
 

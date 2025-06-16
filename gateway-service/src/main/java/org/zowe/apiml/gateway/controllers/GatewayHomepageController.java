@@ -14,13 +14,13 @@ import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.product.version.BuildInfoDetails;
 
@@ -43,10 +43,9 @@ public class GatewayHomepageController {
     private final DiscoveryClient discoveryClient;
     private final BuildInfo buildInfo;
     @Value("${apiml.catalog.serviceId:}")
-    private final String apiCatalogServiceId;
+    private String apiCatalogServiceId;
 
-    @Qualifier("authServiceId")
-    private final String serviceId;
+    private final ApplicationInfo applicationInfo;
     private String buildString;
 
     @PostConstruct
@@ -147,7 +146,7 @@ public class GatewayHomepageController {
     }
 
     private int authorizationServiceCount() {
-        List<ServiceInstance> zaasServiceInstances = discoveryClient.getInstances(serviceId);
+        List<ServiceInstance> zaasServiceInstances = discoveryClient.getInstances(applicationInfo.getAuthServiceId());
         if (zaasServiceInstances != null) {
             return zaasServiceInstances.size();
         }

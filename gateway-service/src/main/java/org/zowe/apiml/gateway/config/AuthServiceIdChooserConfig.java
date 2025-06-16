@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.config;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.constants.CoreService;
 
 @Configuration
@@ -20,7 +21,7 @@ import org.zowe.apiml.product.constants.CoreService;
 public class AuthServiceIdChooserConfig {
 
     @Bean
-    String authServiceId() {
-        return CoreService.ZAAS.getServiceId();
+    public ApplicationInfo applicationInfo() {
+        return new ApplicationInfo(false, CoreService.ZAAS.getServiceId());
     }
 }

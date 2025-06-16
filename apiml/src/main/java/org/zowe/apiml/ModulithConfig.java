@@ -45,6 +45,7 @@ import org.springframework.http.server.reactive.TomcatHttpHandlerAdapter;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.context.ServletContextAware;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.filter.PreFluxFilter;
 import org.zowe.apiml.message.core.MessageService;
@@ -82,13 +83,8 @@ public class ModulithConfig {
     private int port;
 
     @Bean
-    String authServiceId() {
-        return CoreService.GATEWAY.getServiceId();
-    }
-
-    @Bean
-    public Boolean isModulith() {
-        return true;
+    public ApplicationInfo applicationInfo() {
+        return new ApplicationInfo(true, CoreService.GATEWAY.getServiceId());
     }
 
     private InstanceInfo getInstanceInfo(String serviceId) {

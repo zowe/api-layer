@@ -33,9 +33,7 @@ import java.util.function.Function;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class X509AuthFilterTest {
@@ -55,6 +53,7 @@ public class X509AuthFilterTest {
         filter = new X509AuthFilter(x509AuthProvider);
         request = MockServerHttpRequest.get("/someresource").build();
         exchange = MockServerWebExchange.from(request);
+        when(chain.filter(exchange)).thenReturn(Mono.empty());
     }
 
     @Nested
@@ -73,10 +72,8 @@ public class X509AuthFilterTest {
 
         @Test
         void whenAuthenticationComplete_thenContinue() {
-            when(authentication.isAuthenticated()).thenReturn(true);
-            when(authentication.getPrincipal()).thenReturn(new Object());
-
-            when(chain.filter(exchange)).thenReturn(Mono.empty());
+            Mono<Void> testMono = filter.filter(exchange, chain)
+                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
 
             StepVerifier.create(testMono)
                 .expectComplete()
@@ -91,7 +88,6 @@ public class X509AuthFilterTest {
 
             exchange.getAttributes().put("client.auth.X509Certificate", new X509Certificate[]{});
 
-            when(chain.filter(exchange)).thenReturn(Mono.empty());
 
             StepVerifier.create(testMono)
                 .expectComplete()
