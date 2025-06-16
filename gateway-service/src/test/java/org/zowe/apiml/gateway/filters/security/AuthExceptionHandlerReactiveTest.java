@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.filters.security;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.RequestPath;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.mock.http.server.reactive.MockServerHttpResponse;
@@ -41,8 +43,10 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class AuthExceptionHandlerReactiveTest {
 
-    @Mock private MessageService messageService;
-    @Mock private ObjectMapper objectMapper;
+    @Mock
+    private MessageService messageService;
+    @Mock
+    private ObjectMapper objectMapper;
 
     private AuthExceptionHandlerReactive handler;
 
@@ -54,9 +58,11 @@ public class AuthExceptionHandlerReactiveTest {
     @Nested
     class GivenHandler {
 
-        @Mock private ServerWebExchange exchange;
+        @Mock
+        private ServerWebExchange exchange;
 
         private MockServerHttpResponse response;
+
 
         @BeforeEach
         void setUp() {
@@ -69,9 +75,8 @@ public class AuthExceptionHandlerReactiveTest {
 
         @AfterEach
         void assertResponse() {
-            assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-            assertEquals(List.of("Invalid token"), response.getHeaders().get("X-Zowe-Auth-Failure"));
-            assertEquals(List.of("application/json"), response.getHeaders().get("Content-Type"));
+
+            assertEquals(List.of(MediaType.APPLICATION_JSON_VALUE), response.getHeaders().get(HttpHeaders.CONTENT_TYPE));
         }
 
         @Test
@@ -89,6 +94,8 @@ public class AuthExceptionHandlerReactiveTest {
                 .verify();
 
             assertEquals("{\"code\":\"ZWEA11\"}", response.getBodyAsString().block());
+            assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+            assertEquals(List.of("Invalid token"), response.getHeaders().get("X-Zowe-Auth-Failure"));
         }
 
         @Test
@@ -106,8 +113,45 @@ public class AuthExceptionHandlerReactiveTest {
                 .verify();
 
             assertEquals("{\"message\":\"Invalid token\"}", response.getBodyAsString().block());
+            assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+            assertEquals(List.of("Invalid token"), response.getHeaders().get("X-Zowe-Auth-Failure"));
         }
 
+        @Test
+        void whenHandleUnavailableService_thenUpdateResponse() throws JsonProcessingException {
+            var view = mock(ApiMessageView.class);
+            var correctMessage = mock(Message.class);
+            when(messageService.createMessage(eq("org.zowe.apiml.common.serviceUnavailable"), any(RequestPath.class)))
+                .thenReturn(correctMessage);
+            when(correctMessage.mapToView()).thenReturn(view);
+
+            when(objectMapper.writeValueAsBytes(view)).thenReturn("{\"code\":\"ZWEAO503\"}".getBytes());
+
+            StepVerifier.create(handler.handleServiceUnavailable(exchange))
+                .expectComplete()
+                .verify();
+
+            assertEquals("{\"code\":\"ZWEAO503\"}", response.getBodyAsString().block());
+            assertEquals(HttpStatus.SERVICE_UNAVAILABLE, response.getStatusCode());
+        }
+
+        @Test
+        void whenHandleUnavailableService_AndException_thenDefaultMessage() throws JsonProcessingException {
+            var view = mock(ApiMessageView.class);
+            var correctMessage = mock(Message.class);
+            when(messageService.createMessage(eq("org.zowe.apiml.common.serviceUnavailable"), any(RequestPath.class)))
+                .thenReturn(correctMessage);
+            when(correctMessage.mapToView()).thenReturn(view);
+
+            when(objectMapper.writeValueAsBytes(view)).thenThrow(new JsonParseException("exception"));
+
+            StepVerifier.create(handler.handleServiceUnavailable(exchange))
+                .expectComplete()
+                .verify();
+
+            assertEquals("{\"message\":\"service unavailable\"}", response.getBodyAsString().block());
+            assertEquals(HttpStatus.SERVICE_UNAVAILABLE, response.getStatusCode());
+        }
     }
 
 }

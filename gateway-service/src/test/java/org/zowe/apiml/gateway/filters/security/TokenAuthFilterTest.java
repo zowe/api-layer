@@ -32,7 +32,6 @@ import java.util.function.Function;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.util.CollectionUtils.toMultiValueMap;
@@ -130,14 +129,14 @@ class TokenAuthFilterTest {
             }
 
             @Test
-            void givenTokenIsInvalidError_thenStopChainAndReturnError() {
+            void givenTokenIsInvalidError_thenCompletesWithCorrectHandler() {
                 mockTokenInCookie();
-
+                when(authExceptionHandlerReactive.handleServiceUnavailable(any()))
+                    .thenReturn(Mono.empty());
                 when(tokenProvider.validateToken("token")).thenReturn(Mono.error(new RuntimeException("error in validation")));
                 StepVerifier.create(tokenAuthFilter.filter(serverWebExchange, chain))
-                    .expectErrorSatisfies(error -> assertEquals("error in validation", error.getMessage()))
-                    .verify();
-
+                    .verifyComplete();
+                verify(authExceptionHandlerReactive, times(1)).handleServiceUnavailable(any());
                 verify(chain, never()).filter(serverWebExchange);
             }
 
@@ -157,7 +156,7 @@ class TokenAuthFilterTest {
             void givenTokenIsInvalidEmptyUser_thenHandleException() {
                 mockTokenInCookie();
                 when(tokenProvider.validateToken("token")).thenReturn(Mono.just(new QueryResponse()));
-                when(authExceptionHandlerReactive.handleTokenNotValid(any()))
+                when(authExceptionHandlerReactive.handleServiceUnavailable(any()))
                     .thenReturn(Mono.error(new TokenNotValidException("Invalid token")));
 
                 StepVerifier.create(tokenAuthFilter.filter(serverWebExchange, chain))

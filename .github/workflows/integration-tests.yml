@@ -162,7 +162,7 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ./gradlew :integration-tests:runContainerTests --info
+                    ./gradlew runStartUpCheck :integration-tests:runContainerTests --info -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()

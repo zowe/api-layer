@@ -37,6 +37,7 @@ public class TokenAuthFilter implements WebFilter {
     private final TokenProvider tokenProvider;
     private final AuthConfigurationProperties authConfigurationProperties;
     private final AuthExceptionHandlerReactive authExceptionHandlerReactive;
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         var token = resolveToken(exchange.getRequest()).filter(StringUtils::isNotBlank);
@@ -50,7 +51,7 @@ public class TokenAuthFilter implements WebFilter {
                 }
                 return authExceptionHandlerReactive.handleTokenNotValid(exchange);
 
-            })
+            }).onErrorResume(ex -> authExceptionHandlerReactive.handleServiceUnavailable(exchange))
         ).orElseGet(() -> chain.filter(exchange));
     }
 
