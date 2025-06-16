@@ -49,4 +49,23 @@ public class AuthExceptionHandlerReactive {
 
         return response.writeWith(Mono.just(response.bufferFactory().wrap(bytes)));
     }
+
+    public Mono<Void> handleServiceUnavailable(ServerWebExchange exchange) {
+        var response = exchange.getResponse();
+        response.setStatusCode(HttpStatus.SERVICE_UNAVAILABLE);
+        response.getHeaders().add("Content-Type", "application/json");
+
+        ApiMessageView message = messageService
+            .createMessage("org.zowe.apiml.common.serviceUnavailable", exchange.getRequest().getPath())
+            .mapToView();
+
+        byte[] bytes;
+        try {
+            bytes = objectMapper.writeValueAsBytes(message);
+        } catch (JsonProcessingException e) {
+            bytes = "{\"message\":\"service unavailable\"}".getBytes(StandardCharsets.UTF_8);
+        }
+
+        return response.writeWith(Mono.just(response.bufferFactory().wrap(bytes)));
+    }
 }
