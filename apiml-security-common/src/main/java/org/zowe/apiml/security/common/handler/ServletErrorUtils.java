@@ -28,17 +28,15 @@ public class ServletErrorUtils {
     public static BiConsumer<ApiMessageView, HttpStatus> createApiErrorWriter(HttpServletResponse response, ApimlLogger logger) {
         return (apiMessageView, status) -> {
             response.setStatus(status.value());
-            if (apiMessageView != null) {
-                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                try {
-                    var mapper = new ObjectMapper();
-                    mapper.writeValue(response.getWriter(), apiMessageView);
-                } catch (IOException e) {
-                    if (!response.isCommitted()) {
-                        logger.log("org.zowe.apiml.security.errorWritingResponse", e.getMessage());
-                    } else {
-                        logger.log(MessageType.DEBUG, "Response already committed. Skipping error write log.");
-                    }
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            try {
+                var mapper = new ObjectMapper();
+                mapper.writeValue(response.getWriter(), apiMessageView);
+            } catch (IOException e) {
+                if (!response.isCommitted()) {
+                    logger.log("org.zowe.apiml.security.errorWritingResponse", e.getMessage());
+                } else {
+                    logger.log(MessageType.DEBUG, "Response already committed. Skipping error write log.");
                 }
             }
         };
