@@ -60,7 +60,7 @@ public class InfinispanConfig {
     private String address;
     @Value("${jgroups.keyExchange.port:7601}")
     private String keyExchangePort;
-    @Value("${jgroups.tcp.diag.enabled:true}")
+    @Value("${jgroups.tcp.diag.enabled:false}")
     private String tcpDiagEnabled;
 
     @PostConstruct
