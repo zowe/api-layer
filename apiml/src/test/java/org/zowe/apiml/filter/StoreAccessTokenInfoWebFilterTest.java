@@ -98,7 +98,7 @@ public class StoreAccessTokenInfoWebFilterTest {
 
                 when(failureHandler.onAuthenticationFailure(
                     argThat(webExchange -> webExchange.getChain() == chain && webExchange.getExchange() == exchange),
-                    argThat(e -> e instanceof AccessTokenBodyNotValidException ate && ate.getMessage().equals("org.zowe.apiml.security.query.invalidAccessTokenBody"))))
+                    argThat(e -> e instanceof AccessTokenBodyNotValidException ate && ate.getMessageId().equals("org.zowe.apiml.security.query.invalidAccessTokenBody"))))
                 .thenReturn(Mono.empty());
 
                 StepVerifier.create(filter.filter(exchange, chain))
@@ -122,7 +122,7 @@ public class StoreAccessTokenInfoWebFilterTest {
 
                 when(failureHandler.onAuthenticationFailure(
                     argThat(webExchange -> webExchange.getChain() == chain && webExchange.getExchange() == exchange),
-                    argThat(e -> e instanceof AccessTokenBodyNotValidException ate && ate.getMessage().equals("org.zowe.apiml.security.token.accessTokenBodyMissingScopes"))))
+                    argThat(e -> e instanceof AccessTokenBodyNotValidException ate && ate.getMessageId().equals("org.zowe.apiml.security.token.accessTokenBodyMissingScopes"))))
                 .thenReturn(Mono.empty());
 
                 StepVerifier.create(filter.filter(exchange, chain))
@@ -142,7 +142,7 @@ public class StoreAccessTokenInfoWebFilterTest {
 
                 when(failureHandler.onAuthenticationFailure(
                     argThat(webExchange -> webExchange.getChain() == chain && webExchange.getExchange() == exchange),
-                    argThat(e -> e instanceof AccessTokenBodyNotValidException ate && ate.getMessage().equals("org.zowe.apiml.security.query.invalidAccessTokenBody"))))
+                    argThat(e -> e instanceof AccessTokenBodyNotValidException ate && ate.getMessageId().equals("org.zowe.apiml.security.query.invalidAccessTokenBody"))))
                 .thenReturn(Mono.empty());
 
                 StepVerifier.create(filter.filter(exchange, chain))

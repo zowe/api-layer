@@ -67,7 +67,7 @@ public class SuccessTicketHandler implements ServerAuthenticationSuccessHandler 
             return webFilterExchange.getExchange().getResponse().writeWith(Mono.just(buffer));
 
         }).onErrorResume(PassException.class, exception -> {
-            var ex = (IRRPassTicketGenerationException) exception.e;
+            var ex = (IRRPassTicketGenerationException) exception.getCause();
             ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.ticket.generateFailed",
                 ex.getErrorCode().getMessage()).mapToView();
             return writeResponse(webFilterExchange, response, messageView, HttpStatus.valueOf(ex.getHttpStatus()));
@@ -135,9 +135,9 @@ class IncorrectRequestBodyException extends RuntimeException {
 }
 
 class PassException extends RuntimeException {
-    final PassTicketException e;
+    private static final long serialVersionUID = 1L;
 
-    public PassException(PassTicketException e) {
-        this.e = e;
+    public PassException(PassTicketException cause) {
+        super(cause);
     }
 }

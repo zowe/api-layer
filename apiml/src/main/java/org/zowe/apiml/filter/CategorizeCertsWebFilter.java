@@ -143,6 +143,7 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                 }
             } catch (CertificateException | IllegalArgumentException e) {
                 apimlLog.log("org.zowe.apiml.security.common.filter.errorParsingCertificate", request.getRemoteAddress() != null ? request.getRemoteAddress().getAddress().getHostAddress() : "N/A", e.getMessage(), certFromHeader);
+                log.debug("Certificate parsing failed.", e);
             }
         }
         return Optional.empty();

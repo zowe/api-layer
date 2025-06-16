@@ -16,7 +16,14 @@ import org.springframework.security.core.AuthenticationException;
  * Exception thrown when the request body for Personal Access Token creation is not valid
  */
 public class AccessTokenBodyNotValidException extends AuthenticationException {
-    public AccessTokenBodyNotValidException(String message) {
-        super(message);
+    private final String messageId;
+
+    public AccessTokenBodyNotValidException(String messageId) {
+        super(messageId);
+        this.messageId = messageId;
+    }
+
+    public String getMessageId() {
+        return messageId;
     }
 }
