@@ -422,6 +422,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.security.oidc.userInfo.uri=${ZWE_configs_apiml_security_oidc_userInfo_uri:-} \
     -Dapiml.security.oidc.validationType=${ZWE_configs_apiml_security_oidc_validationType:-"JWK"} \
     -Dapiml.security.allowTokenRefresh=${ZWE_configs_apiml_security_allowtokenrefresh:-false} \
+    -Dapiml.security.forwardHeader.trustedProxies=${ZWE_configs_apiml_security_forwardHeader_trustedProxies:-${ZWE_components_cloudGateway_apiml_security_forwardHeader_trustedProxies:-}} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \

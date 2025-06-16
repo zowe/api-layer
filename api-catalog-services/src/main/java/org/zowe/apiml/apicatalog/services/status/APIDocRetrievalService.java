@@ -323,8 +323,7 @@ public class APIDocRetrievalService {
         httpGet.setHeader(org.apache.http.HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 
         String responseBody = null;
-        try {
-            CloseableHttpResponse response = secureHttpClientWithoutKeystore.execute(httpGet);
+        try (CloseableHttpResponse response = secureHttpClientWithoutKeystore.execute(httpGet)) {
             final HttpEntity responseEntity = response.getEntity();
             if (responseEntity != null) {
                 responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);

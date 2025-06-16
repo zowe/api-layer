@@ -2,25 +2,28 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `APIML 2.18.6 / Zowe 2.18.1 (2025-02-27)`
+## `APIML 2.18.14 / Zowe 2.18.2 (2025-06-09)`
 
+* Feature:  New configuration property **`apiml.security.forwardHeader.trustedProxies`** added to specify the regular expression pattern used to identify trusted proxies from which `X-Forwarded-*` headers are accepted and forwarded. Mitigates CVE-2025-41235. (#4148) ([55c9db6](https://github.com/zowe/api-layer/commit/55c9db6)), closes [#4148](https://github.com/zowe/api-layer/pull/4148)
+* Feature:  Add Java sample app to authenticate client certificate. (#4009) ([0808c65](https://github.com/zowe/api-layer/commit/0808c65)), closes [#4009](https://github.com/zowe/api-layer/issues/4009)
+* Feature:  Users can now configure the connect and read timeout for Eureka HTTP client. (#4046) ([6a1f73e](https://github.com/zowe/api-layer/commit/6a1f73e)), closes [#4046](https://github.com/zowe/api-layer/issues/4046)
+* Feature:  Support Java 21. (#4027) ([6a554ba](https://github.com/zowe/api-layer/commit/6a554ba)), closes [#4027](https://github.com/zowe/api-layer/issues/4027)
 
-* Bugfix:  Fix login filter check causing 400 Invalid credentials (#4014) ([84cac88](https://github.com/zowe/api-layer/commit/84cac88)), closes [#4014](https://github.com/zowe/api-layer/issues/4014)
-* Bugfix:  Add missing OIDC documentation to OpenAPI (#4013) ([d60d23d](https://github.com/zowe/api-layer/commit/d60d23d)), closes [#4013](https://github.com/zowe/api-layer/issues/4013)
+* Bugfix:  Resource leak in the http client. (#4153) ([1acce27](https://github.com/zowe/api-layer/commit/1acce27)), closes [#4153](https://github.com/zowe/api-layer/pull/4153)
+* Bugfix:  Adding HSTS header when AT-TLS is enabled. (#4071) ([9fdf3e6](https://github.com/zowe/api-layer/commit/9fdf3e6)), closes [#4071](https://github.com/zowe/api-layer/issues/4071)
+* Bugfix:  Change error code SERVICE_UNAVAILABLE to INTERNAL_SERVER_ERROR when ticket generation fails. (#4043 ([f7f78dd](https://github.com/zowe/api-layer/commit/f7f78dd)), closes [#4043](https://github.com/zowe/api-layer/issues/4043)
 
-
-## `APIML 2.18.5 / Zowe 2.18.1 (2025-02-21)`
-
-
-* Bugfix:  Add newPassword to Open API Documentation of the login endpoint (#4002) ([5c9c827](https://github.com/zowe/api-layer/commit/5c9c827)), closes [#4002](https://github.com/zowe/api-layer/issues/4002)
-* Bugfix:  Fix four slashes support in SSE class (#4001) ([92371af](https://github.com/zowe/api-layer/commit/92371af)), closes [#4001](https://github.com/zowe/api-layer/issues/4001)
-
-
-## `APIML 2.18.4 / Zowe 2.18.1 (2025-02-20)`
+## `APIML 2.18.10 / Zowe 2.18.1 (2025-03-27)`
 
 * Feature:  Support client AT-TLS setting (#3825) ([999d062](https://github.com/zowe/api-layer/commit/999d062)), closes [#3825](https://github.com/zowe/api-layer/pull/3825)
 
-
+* Bugfix:  Backwards compatible default ciphers list (#4026) ([38a3e54](https://github.com/zowe/api-layer/commit/38a3e548e92050d15722900d095dd09dfd3be28e))), closes [#4026](https://github.com/zowe/api-layer/pull/4026)
+* Bugfix:  Do not fail when missing permissions to create SMF record (#4037) ([4093dd9](https://github.com/zowe/api-layer/commit/4093dd9)), closes [#4037](https://github.com/zowe/api-layer/issues/4037)
+* Bugfix:  Non-strict hostname verification in Jetty client for WebSockets (#4038) ([3b96e91](https://github.com/zowe/api-layer/commit/3b96e91)), closes [#4038](https://github.com/zowe/api-layer/issues/4038)
+* Bugfix:  Fix login filter check causing 400 Invalid credentials (#4014) ([84cac88](https://github.com/zowe/api-layer/commit/84cac88)), closes [#4014](https://github.com/zowe/api-layer/issues/4014)
+* Bugfix:  Add missing OIDC documentation to OpenAPI (#4013) ([d60d23d](https://github.com/zowe/api-layer/commit/d60d23d)), closes [#4013](https://github.com/zowe/api-layer/issues/4013)
+* Bugfix:  Add newPassword to Open API Documentation of the login endpoint (#4002) ([5c9c827](https://github.com/zowe/api-layer/commit/5c9c827)), closes [#4002](https://github.com/zowe/api-layer/issues/4002)
+* Bugfix:  Fix four slashes support in SSE class (#4001) ([92371af](https://github.com/zowe/api-layer/commit/92371af)), closes [#4001](https://github.com/zowe/api-layer/issues/4001)
 * Bugfix:  Fix failing LoginFilter in AccessToken generate filter chain (#3984) ([7acb2ee](https://github.com/zowe/api-layer/commit/7acb2ee)), closes [#3984](https://github.com/zowe/api-layer/issues/3984)
 * Bugfix:  Set default ssl.protocol (#3994) ([8abb6e6](https://github.com/zowe/api-layer/commit/8abb6e6)), closes [#3994](https://github.com/zowe/api-layer/issues/3994)
 * Bugfix:  Improve PassTicket logging (#3996) ([8223a14](https://github.com/zowe/api-layer/commit/8223a14)), closes [#3996](https://github.com/zowe/api-layer/issues/3996)

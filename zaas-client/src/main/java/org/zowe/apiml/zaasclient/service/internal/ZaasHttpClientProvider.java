@@ -22,5 +22,5 @@ public class ZaasHttpClientProvider implements CloseableClientProvider {
     public ZaasHttpClientProvider() {
         httpClient = HttpClientBuilder.create().disableCookieManagement().disableAuthCaching().build();
     }
-    
+
 }

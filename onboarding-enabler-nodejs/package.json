@@ -1,6 +1,6 @@
 {
   "name": "@zowe/apiml-onboarding-enabler-nodejs",
-  "version": "2.18.11",
+  "version": "2.18.14",
   "description": "NodeJS enabler for Zowe API Mediation Layer",
   "type": "module",
   "main": "src/index.js",
@@ -31,7 +31,7 @@
     "eslint": "^2.13.1",
     "eslint-config-airbnb-base": "^3.0.1",
     "eslint-plugin-import": "^1.16.0",
-    "gulp": "5.0.0",
+    "gulp": "5.0.1",
     "gulp-babel": "^7.0.0",
     "gulp-env": "0.4.0",
     "gulp-eslint": "6.0.0",

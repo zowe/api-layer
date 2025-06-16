@@ -12,21 +12,21 @@ package org.zowe.apiml.zaasclient.service.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.cookie.SM;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
 import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.passticket.ZaasClientTicketRequest;
 import org.zowe.apiml.zaasclient.passticket.ZaasPassTicketResponse;
-import org.zowe.apiml.zaasclient.config.ConfigProperties;
 
 import java.io.IOException;
-import org.apache.http.HttpHeaders;
-import org.apache.http.cookie.SM;
 
 @Slf4j
 class PassTicketServiceImpl implements PassTicketService {
@@ -55,8 +55,9 @@ class PassTicketServiceImpl implements PassTicketService {
             httpPost.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
             httpPost.setHeader(SM.COOKIE, passConfigProperties.getTokenPrefix() + "=" + jwtToken);
 
-            CloseableHttpResponse response = closeableHttpsClient.execute(httpPost);
-            return extractPassTicket(response);
+            try (CloseableHttpResponse response = closeableHttpsClient.execute(httpPost)) {
+                return extractPassTicket(response);
+            }
         } catch (ZaasConfigurationException e) {
             throw e;
         } catch (Exception e) {

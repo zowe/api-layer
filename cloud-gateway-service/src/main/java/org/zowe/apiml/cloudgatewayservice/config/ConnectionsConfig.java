@@ -158,7 +158,8 @@ public class ConnectionsConfig {
         }
     }
 
-    public HttpsFactory factory() {
+    @Bean
+    public HttpsConfig httpsConfig() {
         HttpsConfig config = HttpsConfig.builder()
             .protocol(protocol)
             .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
@@ -168,8 +169,11 @@ public class ConnectionsConfig {
             .keyAlias(keyAlias).keyStore(keyStorePath).keyPassword(keyPassword)
             .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
         log.info("Using HTTPS configuration: {}", config.toString());
+        return config;
+    }
 
-        return new HttpsFactory(config);
+    public HttpsFactory factory() {
+        return new HttpsFactory(httpsConfig());
     }
 
     /**
