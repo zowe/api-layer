@@ -31,9 +31,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @ActiveProfiles("ForwardedProxyHeadersTest")
 @TestPropertySource(properties = {
     "apiml.service.corsEnabled=false",
-    "spring.cloud.gateway.x-forwarded.for-append=false",
-    "spring.cloud.gateway.x-forwarded.prefix-enabled=true",
-    "spring.cloud.gateway.x-forwarded.prefix-append=true"
+    "spring.cloud.gateway.server.webflux.x-forwarded.for-append=false",
+    "spring.cloud.gateway.server.webflux.x-forwarded.prefix-enabled=true",
+    "spring.cloud.gateway.server.webflux.x-forwarded.prefix-append=true",
+    "spring.cloud.gateway.server.webflux.trusted-proxies=.*"
 })
 class ForwardedProxyHeadersTest extends AcceptanceTestWithMockServices {
 

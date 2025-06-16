@@ -34,7 +34,8 @@ spring:
     graphql:
         graphiql:
             enabled: true
-        path:  "/api/v3/graphql"
+        http:
+            path:  "/api/v3/graphql"
 
 eureka:
     client:

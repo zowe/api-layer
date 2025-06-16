@@ -53,14 +53,18 @@ eureka:
 spring:
     cloud:
         gateway:
-            x-forwarded:
-                prefix-append: false
-                prefix-enabled: true
-            filter:
-                secure-headers:
-                    disable: content-security-policy,permitted-cross-domain-policies,download-options
-                    referrer-policy: strict-origin-when-cross-origin
-                    frame-options: sameorigin
+            server:
+                webflux:
+                    x-forwarded:
+                        prefix-append: false
+                        prefix-enabled: true
+                    # Discuss backwards compatibility and configuring proxy filter
+                    #trusted-proxies: \.*
+                    filter:
+                        secure-headers:
+                            disable: content-security-policy,permitted-cross-domain-policies,download-options
+                            referrer-policy: strict-origin-when-cross-origin
+                            frame-options: sameorigin
     application:
         name: gateway
     security:
