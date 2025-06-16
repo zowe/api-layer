@@ -47,7 +47,7 @@ import java.util.Collections;
 @Configuration
 @RequiredArgsConstructor
 @EnableApimlAuth
-@Profile({"https", "attls"})
+@Profile({"https", "attlsServer"})
 @ConditionalOnMissingBean(name = "modulithConfig")
 public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
 

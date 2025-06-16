@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer
+
 spring:
     application:
         name: ${apiml.service.id}
@@ -230,13 +233,22 @@ management:
             exposure:
                 include: "*"
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: attlsServer
 
 server:
     attls:
         enabled: true
     ssl:
         enabled: false
+apiml:
+    service:
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+
+---
+spring.config.activate.on-profile: attlsClient
+
 eureka:
     instance:
         securePort: 0
@@ -252,8 +264,3 @@ eureka:
                       version: 1.0.0
                       gatewayUrl: api/v1
                       swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
-apiml:
-    service:
-        scheme: http
-        nonSecurePortEnabled: true
-        securePortEnabled: false

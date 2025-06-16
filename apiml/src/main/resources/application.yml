@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer
+
 eureka:
     dashboard:
         path: /eureka
@@ -226,7 +229,7 @@ logging:
         reactor.netty.http.client.HttpClientConnect: DEBUG
 
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: attlsServer
 
 server:
     attls:
