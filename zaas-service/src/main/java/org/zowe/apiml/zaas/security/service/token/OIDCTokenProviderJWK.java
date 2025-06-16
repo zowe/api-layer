@@ -30,7 +30,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -60,9 +59,6 @@ public class OIDCTokenProviderJWK implements OIDCProvider {
 
     private final LocatorAdapterKid keyLocator = new LocatorAdapterKid();
 
-    @Autowired
-    private DefaultResourceRetriever resourceRetriever;
-
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
 
@@ -77,6 +73,7 @@ public class OIDCTokenProviderJWK implements OIDCProvider {
 
     @Qualifier("oidcJwtClock")
     private final Clock clock;
+    private final DefaultResourceRetriever resourceRetriever;
 
     @Getter
     private final Map<String, PublicKey> publicKeys = new ConcurrentHashMap<>();

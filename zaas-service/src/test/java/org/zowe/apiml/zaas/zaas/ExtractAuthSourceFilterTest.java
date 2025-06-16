@@ -85,6 +85,7 @@ class ExtractAuthSourceFilterTest {
         class WhenAuthSourceInvalid {
 
             RuntimeException tokenNotValidException;
+
             @BeforeEach
             void setUp() {
                 tokenNotValidException = new TokenNotValidException("Token is not valid");
@@ -93,7 +94,7 @@ class ExtractAuthSourceFilterTest {
 
             @Test
             void thenExceptionHandlerIsCalled() throws ServletException, IOException {
-                TokenNotValidException tokenNotValidException = new TokenNotValidException("Token is not valid");
+                tokenNotValidException = new TokenNotValidException("Token is not valid");
                 when(authSourceService.getAuthSourceFromRequest(request)).thenThrow(tokenNotValidException);
                 when(request.getRequestURI()).thenReturn(null);
 
@@ -124,11 +125,11 @@ class ExtractAuthSourceFilterTest {
 
         @Test
         void thenExceptionIsHandled() throws ServletException, IOException {
-            var authSourceService = mock(AuthSourceService.class);
-            var authExceptionHandler = mock(AuthExceptionHandler.class);
-            var request = mock(HttpServletRequest.class);
-            var response = mock(HttpServletResponse.class);
-            var filterChain = mock(FilterChain.class);
+            authSourceService = mock(AuthSourceService.class);
+            authExceptionHandler = mock(AuthExceptionHandler.class);
+            request = mock(HttpServletRequest.class);
+            response = mock(HttpServletResponse.class);
+            filterChain = mock(FilterChain.class);
 
             when(request.getRequestURI()).thenReturn("/some-uri");
             when(authSourceService.getAuthSourceFromRequest(request)).thenReturn(Optional.empty());

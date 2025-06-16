@@ -23,7 +23,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
@@ -81,8 +80,6 @@ public class ZosmfService extends AbstractZosmfService {
     private static final String JWT_ENDPOINT_ERROR_MSGID = "org.zowe.apiml.security.auth.zosmf.jwtEndpointError";
     private static final String CACHE_INVALIDATED_JWT_TOKENS = "invalidatedJwtTokens";
 
-    @Autowired
-    private DefaultResourceRetriever resourceRetriever;
     /**
      * Enumeration of supported security tokens
      */
@@ -131,6 +128,7 @@ public class ZosmfService extends AbstractZosmfService {
 
     private ZosmfService meAsProxy;
     private TokenCreationService tokenCreationService;
+    private DefaultResourceRetriever resourceRetriever;
 
     public ZosmfService(
             final AuthConfigurationProperties authConfigurationProperties,
@@ -138,7 +136,8 @@ public class ZosmfService extends AbstractZosmfService {
             final ObjectMapper securityObjectMapper,
             final ApplicationContext applicationContext,
             final AuthenticationService authenticationService,
-            List<TokenValidationStrategy> tokenValidationStrategy
+            List<TokenValidationStrategy> tokenValidationStrategy,
+            DefaultResourceRetriever resourceRetriever
     ) {
         super(
                 applicationContext,
@@ -148,6 +147,7 @@ public class ZosmfService extends AbstractZosmfService {
         );
         this.tokenValidationStrategy = tokenValidationStrategy;
         this.authenticationService = authenticationService;
+        this.resourceRetriever = resourceRetriever;
     }
 
     private final AuthenticationService authenticationService;

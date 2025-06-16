@@ -13,7 +13,6 @@ package org.zowe.apiml;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.gateway.filters.ErrorHeaders;
 import org.zowe.apiml.gateway.filters.RequestCredentials;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
@@ -28,11 +27,19 @@ import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import reactor.test.StepVerifier;
 
 import javax.management.ServiceNotFoundException;
+
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
 
 class ZaasSchemeTransformApiTest {
@@ -110,13 +117,12 @@ class ZaasSchemeTransformApiTest {
             when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
             when(authSourceService.parse(authSource)).thenReturn(parsed);
             when(passTicketService.generate("USER1", "app1")).thenThrow(new RuntimeException("boom"));
-            var headers = new ErrorHeaders("message");
+
             StepVerifier.create(transformApi.passticket(credentials))
                 .expectNextMatches(resp -> {
                     assertEquals("boom", resp.getHeaders().header(AUTH_FAIL_HEADER).get(0));
                     return true;
                 })
-
                 .verifyComplete();
         }
 

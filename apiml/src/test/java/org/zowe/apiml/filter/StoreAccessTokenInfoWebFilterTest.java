@@ -35,7 +35,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class StoreAccessTokenInfoWebFilterTest {
+class StoreAccessTokenInfoWebFilterTest {
 
     @Mock private ServerAuthenticationFailureHandler failureHandler;
     @Mock private WebFilterChain chain;

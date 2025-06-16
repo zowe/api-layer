@@ -30,9 +30,12 @@ import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
-import org.zowe.apiml.security.common.token.*;
+import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
+import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
+import org.zowe.apiml.security.common.token.TokenNotProvidedException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import java.io.IOException;
 import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -187,7 +190,7 @@ class AuthExceptionHandlerTest {
     }
 
     @Test
-    void testTokenNotInResponseException() throws IOException, ServletException {
+    void testTokenNotInResponseException() throws ServletException {
         authExceptionHandler.handleException(
             httpServletRequest.getRequestURI(),
             function, addHeader,

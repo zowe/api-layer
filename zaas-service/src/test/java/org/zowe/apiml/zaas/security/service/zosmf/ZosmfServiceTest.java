@@ -67,7 +67,6 @@ import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.nio.charset.Charset;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -142,6 +141,7 @@ class ZosmfServiceTest {
             securityObjectMapper,
             applicationContext,
             authenticationService,
+            null,
             null);
         ZosmfService zosmfService = spy(zosmfServiceObj);
         doReturn(ZOSMF_ID).when(zosmfService).getZosmfServiceId();
@@ -156,7 +156,8 @@ class ZosmfServiceTest {
             securityObjectMapper,
             applicationContext,
             authenticationService,
-            validationStrategyList);
+            validationStrategyList,
+            null);
 
         ZosmfService zosmfService = spy(zosmfServiceObj);
         doReturn("http://host:1433").when(zosmfService).getURI(any());
@@ -716,7 +717,7 @@ class ZosmfServiceTest {
                 """;
 
         @Test
-        void thenSuccess() throws JSONException, ParseException, IOException {
+        void thenSuccess() throws JSONException, IOException {
             String zosmfJwtUrl = "/jwt/ibm/api/zOSMFBuilder/jwk";
             when(authConfigurationProperties.getZosmf().getJwtEndpoint()).thenReturn(zosmfJwtUrl);
             ZosmfService zosmfService = getZosmfServiceSpy();
@@ -731,6 +732,7 @@ class ZosmfServiceTest {
         @Test
         void thenReturnNull() {
             assertNull(new ZosmfService(null,
+                null,
                 null,
                 null,
                 null,
@@ -765,6 +767,7 @@ class ZosmfServiceTest {
                 securityObjectMapper,
                 applicationContext,
                 authenticationService,
+                null,
                 null
             );
 
@@ -904,6 +907,7 @@ class ZosmfServiceTest {
                 securityObjectMapper,
                 applicationContext,
                 authenticationService,
+                null,
                 null
             );
 
@@ -940,6 +944,7 @@ class ZosmfServiceTest {
                 securityObjectMapper,
                 applicationContext,
                 authenticationService,
+                null,
                 null
             );
             ReflectionTestUtils.setField(underTest, "tokenCreationService", tokenCreationService);

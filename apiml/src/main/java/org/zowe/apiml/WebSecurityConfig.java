@@ -56,7 +56,7 @@ import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_SH
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
-    private static final String CONTEXT_PATH = "/" + CoreService.GATEWAY.getServiceId();
+    private static final String CONTEXT_PATH = String.format("/%s", CoreService.GATEWAY.getServiceId());
     private static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry";
     private static final String CONFORMANCE_SHORT_URL = CONTEXT_PATH + "/conformance/**";
     private static final String CONFORMANCE_LONG_URL = CONTEXT_PATH + "/api/v1" + "/conformance/**";
@@ -176,9 +176,9 @@ public class WebSecurityConfig {
             .csrf(ServerHttpSecurity.CsrfSpec::disable);
 
         if (defaultExceptionHandler) {
-            return http.exceptionHandling(exceptionHandlingSpec -> {
-                exceptionHandlingSpec.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.FORBIDDEN));
-            });
+            return http.exceptionHandling(exceptionHandlingSpec ->
+                exceptionHandlingSpec.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.FORBIDDEN))
+            );
         }
         return http;
     }
@@ -304,7 +304,7 @@ public class WebSecurityConfig {
                 exchange.anyExchange().authenticated()
             )
 
-            .logout((c) -> c
+            .logout(c -> c
                 .logoutUrl("/gateway/api/v1/auth/logout")
                 .logoutHandler(logoutHandler)
                 .logoutSuccessHandler(new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.NO_CONTENT)))

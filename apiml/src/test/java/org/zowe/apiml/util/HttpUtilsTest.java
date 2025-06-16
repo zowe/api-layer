@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     "apiml.security.auth.cookie-properties.cookie-secure=true"
 })
 @Import(HttpUtilsTest.HttpUtilsTestConfig.class)
-public class HttpUtilsTest {
+class HttpUtilsTest {
 
     @Autowired
     private HttpUtils httpUtils;

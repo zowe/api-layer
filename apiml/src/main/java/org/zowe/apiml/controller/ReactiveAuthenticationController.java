@@ -178,7 +178,7 @@ public class ReactiveAuthenticationController {
         var jwtToken = uri.substring(index + endpoint.length());
         try {
             var app = peerAwareInstanceRegistry.getApplications().getRegisteredApplications(CoreService.GATEWAY.getServiceId());
-            var invalidated = authenticationService.invalidateJwtTokenGateway(jwtToken, false, app);
+            boolean invalidated = authenticationService.invalidateJwtTokenGateway(jwtToken, false, app);
             return Mono.just(ResponseEntity.status(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE).build());
         } catch (TokenNotValidException e) {
             return Mono.just(ResponseEntity.status(SC_SERVICE_UNAVAILABLE).build());
@@ -546,7 +546,7 @@ public class ReactiveAuthenticationController {
     public Mono<ResponseEntity<Object>> getPublicKeyUsedForSigning() {
        return Mono.fromSupplier(() -> {
            List<JWK> publicKeys = getCurrentKey().stream()
-               .filter(jwk -> jwk instanceof RSAKey)
+               .filter(RSAKey.class::isInstance)
                .toList();
             if (publicKeys.isEmpty()) {
                 log.debug("JWT setup was not yet initialized so there is no public key for response.");

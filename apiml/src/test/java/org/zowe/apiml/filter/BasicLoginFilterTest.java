@@ -280,8 +280,7 @@ class BasicLoginFilterTest {
         ServerWebExchange exchange = createExchange(request);
 
         basicLoginFilter = new BasicLoginFilter(mockCompoundAuthProvider, mockObjectMapper, mockFailedAuthenticationWebHandler); // Ensure our mock ObjectMapper is used
-        when(mockObjectMapper.readValue(anyString(), eq(LoginRequest.class))).thenThrow(new JsonMappingException("Simulated JSON parsing error"));
-
+        when(mockObjectMapper.readValue(anyString(), eq(LoginRequest.class))).thenThrow(new JsonMappingException("Simulated JSON parsing error")); //NOSONAR Only for testing purpose
 
         staticLoginFilterMock.when(() -> LoginFilter.getCredentialFromAuthorizationHeader(any(HttpServletRequest.class)))
             .thenReturn(Optional.empty()); // No basic auth

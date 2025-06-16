@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.product.version;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
@@ -31,6 +32,7 @@ public class BuildInfo {
         this.gitProperties = gitProperties;
     }
 
+    @Autowired
     public BuildInfo() {
     }
 

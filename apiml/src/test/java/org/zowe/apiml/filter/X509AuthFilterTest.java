@@ -36,7 +36,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class X509AuthFilterTest {
+class X509AuthFilterTest {
 
     @Mock private Authentication authentication;
     @Mock private ReactiveAuthenticationManager x509AuthProvider;

@@ -32,7 +32,7 @@ import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.requests.Endpoints.SAF_AUTH_CHECK;
 
 @SAFAuthResourceCheckTest
-public class SafAuthCheckTest {
+class SafAuthCheckTest {
 
     private static final String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private static final String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
