@@ -158,11 +158,11 @@ logging:
 management:
     endpoint:
       gateway:
-          enabled: false
+          access: none
       health:
           showDetails: always
       shutdown:
-          enabled: true
+          access: unrestricted
     health:
         diskspace:
             enabled: false

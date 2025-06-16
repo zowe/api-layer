@@ -182,7 +182,7 @@ management:
             enabled: true
     endpoint:
         shutdown:
-            enabled: true
+            access: unrestricted
 
 ---
 spring.config.activate.on-profile: diag
@@ -196,7 +196,7 @@ management:
                 include: "*"
     endpoint:
         shutdown:
-            enabled: true
+            access: unrestricted
 
 ---
 spring.config.activate.on-profile: debug

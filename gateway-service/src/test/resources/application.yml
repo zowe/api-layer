@@ -56,7 +56,7 @@ logging:
 management:
     endpoint:
       gateway:
-          enabled: true
+          access: unrestricted
     endpoints:
         web:
             base-path: /application

@@ -153,7 +153,7 @@ management:
         health:
             showDetails: always
         shutdown:
-            enabled: true
+            access: unrestricted
 eureka:
     instance:
         instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
@@ -207,7 +207,7 @@ management:
                 include: health,info,routes,loggers,shutdown,hystrixstream,websockets
     endpoint:
         shutdown:
-            enabled: true
+            access: unrestricted
 
 logging:
     level:
