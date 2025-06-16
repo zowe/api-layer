@@ -1,4 +1,11 @@
-<infinispan>
+<infinispan
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:15.1 https://infinispan.org/schemas/infinispan-config-15.1.xsd
+                        urn:infinispan:server:15.1 https://infinispan.org/schemas/infinispan-server-15.1.xsd
+                        urn:infinispan:jgroups:5.3 http://www.jgroups.org/schema/jgroups-5.3.xsd
+"
+    xmlns="urn:infinispan:config:15.1"
+    xmlns:server="urn:infinispan:server:15.1">
     <jgroups>
         <stack name="prod">
             <!-- jgroups.tcp.address is deprecated and will be removed, see ISPN-11867 -->
@@ -14,6 +21,7 @@
                  thread_pool.min_threads="${jgroups.thread_pool.min_threads:0}"
                  thread_pool.max_threads="${jgroups.thread_pool.max_threads:200}"
                  thread_pool.keep_alive_time="60000"
+                 diag.enabled="${jgroups.tcp.diag.enabled:false}"
 
                  thread_dumps_threshold="${jgroups.thread_dumps_threshold:10000}"
             />
