@@ -62,6 +62,8 @@ public class InfinispanConfig {
     private String address;
     @Value("${jgroups.keyExchange.port:7118}")
     private String keyExchangePort;
+    @Value("${jgroups.tcp.diag.enabled:false}")
+    private String tcpDiagEnabled;
 
     @PostConstruct
     void updateKeyring() {
@@ -80,6 +82,7 @@ public class InfinispanConfig {
         System.setProperty("server.ssl.keyStoreType", keyStoreType);
         System.setProperty("server.ssl.keyStore", keyStore);
         System.setProperty("server.ssl.keyStorePassword", keyStorePass);
+        System.setProperty("jgroups.tcp.diag.enabled", String.valueOf(Boolean.parseBoolean(tcpDiagEnabled)));
         ConfigurationBuilderHolder holder;
 
         try (InputStream configurationStream = resourceLoader.getResource(
