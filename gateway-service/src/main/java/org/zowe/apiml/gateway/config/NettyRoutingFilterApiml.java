@@ -29,8 +29,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
-import static org.springframework.cloud.gateway.support.RouteMetadataUtils.CONNECT_TIMEOUT_ATTR;
-import static org.springframework.cloud.gateway.support.RouteMetadataUtils.RESPONSE_TIMEOUT_ATTR;
 import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
 
 @Slf4j
@@ -71,16 +69,13 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
         var httpClient = useClientCert ? httpClientClientCert : httpClientNoCert;
 
         log.debug("Using client with keystore {}", useClientCert);
-        var connectTimeoutAttr = route.getMetadata().get(CONNECT_TIMEOUT_ATTR);
-        var responseTimeoutAttr = route.getMetadata().get(RESPONSE_TIMEOUT_ATTR);
+        var connectTimeoutAttr = route.getMetadata().get("apiml.connectTimeout");
+        var responseTimeoutAttr = route.getMetadata().get("apiml.responseTimeout");
 
+        var responseTimeoutResult = responseTimeoutAttr != null ? Long.parseLong(String.valueOf(responseTimeoutAttr)) : requestTimeout;
         httpClient = httpClient
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, requestTimeout)
-            .responseTimeout(Duration.ofMillis(requestTimeout));
-
-        if (responseTimeoutAttr != null) {
-            httpClient = httpClient.responseTimeout(Duration.parse(String.valueOf(responseTimeoutAttr)));
-        }
+            .responseTimeout(Duration.ofMillis(responseTimeoutResult));
 
         if (connectTimeoutAttr != null) {
             // if there is configured timeout, respect it
