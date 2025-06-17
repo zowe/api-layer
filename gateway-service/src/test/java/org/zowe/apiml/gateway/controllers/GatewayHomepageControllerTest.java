@@ -49,7 +49,7 @@ class GatewayHomepageControllerTest {
 
         BuildInfoDetails buildInfoDetails = new BuildInfoDetails(new Properties(), new Properties());
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
-        ApplicationInfo applicationInfo =ApplicationInfo.builder()
+        ApplicationInfo applicationInfo = ApplicationInfo.builder()
             .isModulith(false)
             .authServiceId(CoreService.ZAAS.getServiceId()).build();
         gatewayHomepageController = new GatewayHomepageController(
