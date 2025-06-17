@@ -10,11 +10,11 @@
 
 package org.zowe.apiml.config;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
+@Builder
 public class ApplicationInfo {
     private boolean isModulith;
     private String authServiceId;

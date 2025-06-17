@@ -84,7 +84,9 @@ public class ModulithConfig {
 
     @Bean
     public ApplicationInfo applicationInfo() {
-        return new ApplicationInfo(true, CoreService.GATEWAY.getServiceId());
+        return ApplicationInfo.builder()
+                .isModulith(true)
+                .authServiceId(CoreService.GATEWAY.getServiceId()).build();
     }
 
     private InstanceInfo getInstanceInfo(String serviceId) {

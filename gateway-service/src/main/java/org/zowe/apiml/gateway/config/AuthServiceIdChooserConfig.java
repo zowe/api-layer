@@ -22,6 +22,8 @@ public class AuthServiceIdChooserConfig {
 
     @Bean
     public ApplicationInfo applicationInfo() {
-        return new ApplicationInfo(false, CoreService.ZAAS.getServiceId());
+        return ApplicationInfo.builder()
+            .isModulith(false)
+            .authServiceId(CoreService.ZAAS.getServiceId()).build();
     }
 }

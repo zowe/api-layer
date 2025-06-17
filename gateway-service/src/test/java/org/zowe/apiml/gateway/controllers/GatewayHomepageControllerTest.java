@@ -49,7 +49,9 @@ class GatewayHomepageControllerTest {
 
         BuildInfoDetails buildInfoDetails = new BuildInfoDetails(new Properties(), new Properties());
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
-        ApplicationInfo applicationInfo = new ApplicationInfo(false, CoreService.ZAAS.getServiceId());
+        ApplicationInfo applicationInfo =ApplicationInfo.builder()
+            .isModulith(false)
+            .authServiceId(CoreService.ZAAS.getServiceId()).build();
         gatewayHomepageController = new GatewayHomepageController(
             discoveryClient, buildInfo, applicationInfo);
         ReflectionTestUtils.setField(gatewayHomepageController, "apiCatalogServiceId", "apicatalog");
@@ -75,7 +77,9 @@ class GatewayHomepageControllerTest {
         BuildInfoDetails buildInfoDetails = new BuildInfoDetails(buildProperties, new Properties());
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
-        ApplicationInfo applicationInfo = new ApplicationInfo(false, CoreService.ZAAS.getServiceId());
+        ApplicationInfo applicationInfo = ApplicationInfo.builder()
+            .isModulith(false)
+            .authServiceId(CoreService.ZAAS.getServiceId()).build();
         GatewayHomepageController gatewayHomepageController = new GatewayHomepageController(
             discoveryClient, buildInfo, applicationInfo);
 
@@ -106,7 +110,9 @@ class GatewayHomepageControllerTest {
 
     @Test
     void givenApiCatalogueIsEmpty_whenHomePageIsCalled_thenThereIsNoMessageAroundTheCatalog() {
-        ApplicationInfo applicationInfo = new ApplicationInfo(false, CoreService.GATEWAY.getServiceId());
+        ApplicationInfo applicationInfo = ApplicationInfo.builder()
+            .isModulith(false)
+            .authServiceId(CoreService.GATEWAY.getServiceId()).build();
 
         GatewayHomepageController underTest = new GatewayHomepageController(discoveryClient, buildInfo, applicationInfo);
         Model model = new ConcurrentModel();
