@@ -37,7 +37,15 @@ spring:
   output:
     ansi:
       enabled: always
-
+management:
+    endpoints:
+        migrate-legacy-ids: true
+        web:
+            exposure:
+                include: "*"
+    endpoint:
+        shutdown:
+            access: unrestricted
 
 server:
   address: 0.0.0.0

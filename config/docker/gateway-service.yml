@@ -14,6 +14,16 @@ spring:
         ansi:
             enabled: always
 
+management:
+    endpoints:
+        migrate-legacy-ids: true
+        web:
+            exposure:
+                include: "*"
+    endpoint:
+        shutdown:
+            access: unrestricted
+
 server:
     address: 0.0.0.0
     max-http-header-size: 40000

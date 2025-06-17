@@ -161,8 +161,6 @@ management:
           access: none
       health:
           showDetails: always
-      shutdown:
-          access: unrestricted
     health:
         diskspace:
             enabled: false
@@ -170,7 +168,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,gateway,shutdown
+                include: health,info,gateway
 ---
 spring.config.activate.on-profile: debug
 
