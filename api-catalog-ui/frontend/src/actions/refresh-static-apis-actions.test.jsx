@@ -13,10 +13,24 @@ import {
     REFRESH_STATIC_APIS_ERROR,
     REFRESH_STATIC_APIS_SUCCESS,
 } from '../constants/refresh-static-apis-constants';
-import { refreshStaticApisSuccess, refreshStaticApisError, clearError } from './refresh-static-apis-actions';
+import {
+    refreshStaticApisSuccess,
+    refreshStaticApisError,
+    clearError,
+    refreshedStaticApi
+} from './refresh-static-apis-actions';
 import { ApiError, MessageType } from '../constants/error-constants';
 
+global.fetch = jest.fn();
+
 describe('>>> Refresh static apis actions tests', () => {
+    let dispatch;
+
+    beforeEach(() => {
+        dispatch = jest.fn();
+        jest.clearAllMocks();
+    });
+
     it('should create action to refresh static apis', () => {
         const expectedAction = {
             type: REFRESH_STATIC_APIS_SUCCESS,
@@ -44,5 +58,61 @@ describe('>>> Refresh static apis actions tests', () => {
         };
         const response = clearError();
         expect(response).toEqual(expectedAction);
+    });
+
+    it('should dispatch REFRESH_STATIC_APIS_SUCCESS on successful refresh', async () => {
+        fetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({
+                errors: [],
+                messages: [],
+            }),
+        });
+
+        const action = refreshedStaticApi();
+        await action(dispatch);
+
+        // wait for all pending promises
+        await new Promise(process.nextTick);
+
+        expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({
+            type: REFRESH_STATIC_APIS_SUCCESS,
+        }));
+    });
+
+    it('should dispatch REFRESH_STATIC_APIS_ERROR when server returns error response', async () => {
+        fetch.mockResolvedValueOnce({
+            ok: false,
+            text: async () => 'Bad Request',
+            statusText: 'Bad Request',
+        });
+
+        await refreshedStaticApi()(dispatch);
+        await new Promise(process.nextTick);
+
+        expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({
+            type: REFRESH_STATIC_APIS_ERROR,
+            error: expect.objectContaining({
+                messageNumber: 'ZWEAD702E',
+                messageContent: 'Bad Request',
+                messageType: 'ERROR'
+            })
+        }));
+    });
+
+    it('should dispatch REFRESH_STATIC_APIS_ERROR when fetch fails due to network error', async () => {
+        fetch.mockRejectedValueOnce(new Error('Network failure'));
+
+        await refreshedStaticApi()(dispatch);
+        await new Promise(process.nextTick);
+
+        expect(dispatch).toHaveBeenCalledWith(expect.objectContaining({
+            type: REFRESH_STATIC_APIS_ERROR,
+            error: expect.objectContaining({
+                messageNumber: 'ZWEAD703E',
+                messageContent: 'Network failure',
+                messageType: 'ERROR'
+            })
+        }));
     });
 });

@@ -1,8 +1,10 @@
 apiml:
+    service:
+        port: 10025
     banner: console
 jgroups:
     bind:
-        port: 7098
+        port: 7600
         address: localhost
 caching:
     storage:

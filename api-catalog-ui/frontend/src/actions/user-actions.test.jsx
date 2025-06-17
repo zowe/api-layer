@@ -11,7 +11,6 @@
 import userConstants from '../constants/user-constants';
 import { userActions } from './user-actions';
 import { userService } from '../services';
-import history from '../helpers/history';
 
 describe('>>> User actions tests', () => {
     const credentials = { username: 'user', password: 'password' };
@@ -52,15 +51,11 @@ describe('>>> User actions tests', () => {
 
         userService.login = jest.fn().mockResolvedValue('token');
 
-        const replaceSpy = jest.spyOn(history, 'replace');
 
         await userActions.login(credentials)(dispatch);
 
         expect(dispatch.mock.calls[0][0]).toStrictEqual(expectedAction);
 
-        expect(replaceSpy).toHaveBeenCalledWith('/dashboard');
-
-        replaceSpy.mockRestore();
     });
 
     it('should logout', async () => {
@@ -86,5 +81,12 @@ describe('>>> User actions tests', () => {
         const dispatch = jest.fn();
         await userActions.returnToLogin()(dispatch);
         expect(dispatch.mock.calls[0][0].type).toBe('USERS_LOGIN_INIT');
+    });
+
+    it('should validate token', async () => {
+        const action = userActions.query('user');
+        console.log(action);
+        expect(action.type).toBe('USERS_LOGIN_SUCCESS');
+        expect(action.user).toBe('user');
     });
 });

@@ -15,9 +15,10 @@ import {
     FETCH_TILES_REQUEST,
     FETCH_TILES_STOP,
     FETCH_TILES_SUCCESS,
-    STORE_CURRENT_TILEID,
-    FETCH_NEW_TILES_SUCCESS,
-    FETCH_NEW_TILES_REQUEST,
+    FETCH_NEW_SERVICE_REQUEST,
+    FETCH_NEW_SERVICE_SUCCESS,
+    FETCH_SERVICE_STOP,
+    FETCH_SERVICE_FAILED
 } from '../constants/catalog-tile-constants';
 
 const fetchRetryToastId = 9998;
@@ -27,6 +28,14 @@ export function fetchTilesFailed(error) {
     toast.dismiss(fetchRetryToastId);
     return {
         type: FETCH_TILES_FAILED,
+        payload: error,
+    };
+}
+export function fetchServiceFailed(error) {
+    // send a notification toast message (do not duplicate or auto close)
+    toast.dismiss(fetchRetryToastId);
+    return {
+        type: FETCH_SERVICE_FAILED,
         payload: error,
     };
 }
@@ -40,19 +49,12 @@ export function fetchTilesSuccess(tiles) {
     };
 }
 
-export function fetchNewTilesSuccess(services) {
+export function fetchNewServiceSuccess(service) {
     // dismiss the notification if it is displayed
     toast.dismiss(fetchRetryToastId);
     return {
-        type: FETCH_NEW_TILES_SUCCESS,
-        payload: services,
-    };
-}
-
-export function storeCurrentTileId(currentId) {
-    return {
-        type: STORE_CURRENT_TILEID,
-        payload: currentId,
+        type: FETCH_NEW_SERVICE_SUCCESS,
+        payload: service,
     };
 }
 
@@ -61,6 +63,14 @@ export function fetchTilesStop() {
     toast.dismiss(fetchRetryToastId);
     return {
         type: FETCH_TILES_STOP,
+    };
+}
+
+export function fetchServiceStop() {
+    // dismiss the notification if it is displayed
+    toast.dismiss(fetchRetryToastId);
+    return {
+        type: FETCH_SERVICE_STOP,
     };
 }
 
@@ -86,9 +96,9 @@ export function fetchTilesStart(id) {
     };
 }
 
-export function fetchNewTiles(id) {
+export function fetchNewService(id) {
     return {
-        type: FETCH_NEW_TILES_REQUEST,
+        type: FETCH_NEW_SERVICE_REQUEST,
         payload: id,
     };
 }

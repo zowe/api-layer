@@ -26,4 +26,5 @@ public class GatewayServiceConfiguration implements ServiceConfiguration {
     private int instances;
     private String internalPorts;
     private String servicesEndpoint;
+    private int bucketCapacity;
 }

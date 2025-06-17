@@ -29,7 +29,6 @@ api-catalog-ui/src/main/resources/static
 
 # Python
 *.py[cod]
-Pipfile.lock
 .pytest_cache
 venv
 
@@ -47,6 +46,8 @@ bin
 !api-catalog-package/src/main/resources/bin
 !discovery-package/src/main/resources/bin
 !caching-service-package/src/main/resources/bin
+!zaas-service-package/src/main/resources/bin
+!apiml-package/src/main/resources/bin
 var
 sdist
 develop-eggs
@@ -54,6 +55,7 @@ develop-eggs
 lib64
 __pycache__
 *.jar
+!scripts/*.jar
 *.war
 *.ear
 
@@ -118,3 +120,5 @@ zowe-cli-id-federation-plugin/*.jcl
 
 data/*
 index/*
+
+*.lock

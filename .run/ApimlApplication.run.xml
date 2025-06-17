@@ -1,0 +1,30 @@
+<!--
+  ~ /*
+  ~  * This program and the accompanying materials are made available under the terms of the
+  ~  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+  ~  * https://www.eclipse.org/legal/epl-v20.html
+  ~  *
+  ~  * SPDX-License-Identifier: EPL-2.0
+  ~  *
+  ~  * Copyright Contributors to the Zowe Project.
+  ~  */
+  -->
+
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ApimlApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+    <additionalParameters>
+      <param>
+        <option name="enabled" value="true" />
+        <option name="name" value="spring.config.additional-location" />
+        <option name="value" value="file:./config/local/apiml-service.yml" />
+      </param>
+    </additionalParameters>
+    <module name="api-layer.apiml.main" />
+    <option name="SHORTEN_COMMAND_LINE" value="ARGS_FILE" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.ApimlApplication" />
+    <option name="VM_PARAMETERS" value="--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/javax.net.ssl=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -132,7 +132,6 @@ server:
 logbackServiceName: ZWEAGW1
 
 logging:
-    config: classpath:logback-gateway.xml
     level:
         ROOT: INFO
         com.netflix: WARN
@@ -160,6 +159,9 @@ management:
           showDetails: always
       shutdown:
           enabled: true
+    health:
+        diskspace:
+            enabled: false
     endpoints:
         web:
             base-path: /application
@@ -174,6 +176,7 @@ logging:
         org.springframework.cloud.gateway: DEBUG
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.springframework.security: DEBUG
+        org.springframework.http.server.reactive: DEBUG
         org.springframework.web.reactive: DEBUG
         org.springframework.web.reactive.socket: DEBUG
         reactor.netty.http.client: DEBUG
@@ -181,6 +184,7 @@ logging:
         reactor.netty.http.client.HttpClientConnect: DEBUG
         com.netflix: DEBUG
         org.apache.tomcat.util.net: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         javax.net.ssl: ERROR
 
 ---

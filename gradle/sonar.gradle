@@ -23,6 +23,14 @@ subprojects {
     }
 }
 
+project(":apiml") {
+    sonar {
+        properties {
+            property "sonar.exclusions", "src/main/java/org/zowe/apiml/EurekaConfiguration.java" // Class brought from Eureka code
+        }
+    }
+}
+
 project(":api-catalog-ui") {
     sonar {
         properties {
@@ -57,6 +65,18 @@ project(":onboarding-enabler-nodejs-sample-app") {
     }
 }
 
+project(":onboarding-enabler-python") {
+    sonar {
+        skipProject = true
+    }
+}
+
+project(":onboarding-enabler-python-sample-app") {
+    sonar {
+        skipProject = true
+    }
+}
+
 project(":onboarding-enabler-micronaut-sample-app") {
     sonar {
         skipProject = true
@@ -70,6 +90,13 @@ project(":onboarding-enabler-spring-sample-app") {
 }
 
 project(":platform") {
+    sonar {
+        skipProject = true
+    }
+}
+
+// Packaging project; sonar does not apply
+project(":apiml-package") {
     sonar {
         skipProject = true
     }

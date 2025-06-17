@@ -10,10 +10,13 @@
 
 package org.zowe.apiml.message.yaml;
 
-import org.zowe.apiml.message.core.*;
-import org.zowe.apiml.message.template.MessageTemplates;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
+import org.zowe.apiml.message.core.AbstractMessageService;
+import org.zowe.apiml.message.core.DuplicateMessageException;
+import org.zowe.apiml.message.core.MessageLoadException;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.template.MessageTemplates;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,7 +57,9 @@ public class YamlMessageService extends AbstractMessageService {
         try (InputStream in = YamlMessageService.class.getResourceAsStream(messagesFilePath)) {
             Yaml yaml = new Yaml();
             MessageTemplates messageTemplates = yaml.loadAs(in, MessageTemplates.class);
-            super.addMessageTemplates(messageTemplates);
+            if (messageTemplates.getMessages() != null && !messageTemplates.getMessages().isEmpty()) {
+                super.addMessageTemplates(messageTemplates);
+            }
         } catch (YAMLException | IOException | IllegalArgumentException e) {
             throw new MessageLoadException("There is problem with reading application messages file: " + messagesFilePath, e);
         }

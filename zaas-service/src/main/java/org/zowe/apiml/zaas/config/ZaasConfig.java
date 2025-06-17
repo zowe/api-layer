@@ -10,8 +10,7 @@
 
 package org.zowe.apiml.zaas.config;
 
-import com.netflix.discovery.EurekaClient;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,12 +23,12 @@ public class ZaasConfig {
 
     @Bean
     public GatewayInstanceInitializer gatewayInstanceInitializer(
-            @Qualifier("eurekaClient") EurekaClient eurekaClient,
+            DiscoveryClient discoveryClient,
             ApplicationEventPublisher applicationEventPublisher,
             GatewayClient gatewayClient) {
 
         return new GatewayInstanceInitializer(
-                new InstanceLookupExecutor(eurekaClient),
+                new InstanceLookupExecutor(discoveryClient),
                 applicationEventPublisher,
                 gatewayClient
         );

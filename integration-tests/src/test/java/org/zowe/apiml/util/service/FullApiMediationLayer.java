@@ -35,6 +35,7 @@ public class FullApiMediationLayer {
     private RunningService mockZosmfService;
     private RunningService discoverableClientService;
     private RunningService zaasService;
+    private RunningService apimlService;
 
     private ProcessBuilder nodeJsBuilder;
     private Process nodeJsSampleApp;
@@ -56,6 +57,7 @@ public class FullApiMediationLayer {
         prepareMockServices();
         prepareDiscovery();
         prepareZaas();
+        prepareApiml();
         if (!attlsEnabled) {
             prepareNodeJsSampleApp();
         }
@@ -96,6 +98,13 @@ public class FullApiMediationLayer {
         zaasService = new RunningService("zaas", "zaas-service/build/libs", null, null);
     }
 
+    /**
+     * Modulith
+     */
+    public void prepareApiml() {
+        apimlService = new RunningService("apiml", "apiml/build/libs", null, null);
+    }
+
     private void prepareMockServices() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
@@ -123,21 +132,26 @@ public class FullApiMediationLayer {
 
     public void start() {
         try {
-            Map<String, String> discoveryEnv = new HashMap<>(env);
+            var discoveryEnv = new HashMap<>(env);
             discoveryEnv.put("ZWE_configs_port", "10011");
             discoveryService.startWithScript("discovery-package/src/main/resources/bin", discoveryEnv);
-            Map<String, String> gatewayEnv = new HashMap<>(env);
+            var gatewayEnv = new HashMap<>(env);
             gatewayEnv.put("ZWE_configs_port", "10010");
             gatewayService.startWithScript("gateway-package/src/main/resources/bin", gatewayEnv);
-            Map<String, String> catalogEnv = new HashMap<>(env);
+            var catalogEnv = new HashMap<>(env);
             catalogEnv.put("ZWE_configs_port", "10014");
             apiCatalogService.startWithScript("api-catalog-package/src/main/resources/bin", catalogEnv);
-            Map<String, String> cachingEnv = new HashMap<>(env);
+            var cachingEnv = new HashMap<>(env);
             cachingEnv.put("ZWE_configs_port", "10016");
             cachingService.startWithScript("caching-service-package/src/main/resources/bin", cachingEnv);
-            Map<String, String> zaasEnv = new HashMap<>(env);
+            var zaasEnv = new HashMap<>(env);
             zaasEnv.put("ZWE_configs_port", "10023");
             zaasService.startWithScript("zaas-package/src/main/resources/bin", zaasEnv);
+            var apimlModulithEnv = new HashMap<>(env);
+            apimlModulithEnv.put("ZWE_configs_port", "10020");
+            apimlModulithEnv.put("ZWE_configs_internal_discovery_port", "10021");
+            apimlService.startWithScript("apiml-package/src/main/resources/bin", apimlModulithEnv);
+
             if (!attlsEnabled) {
                 nodeJsSampleApp = nodeJsBuilder.start();
             }

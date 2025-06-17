@@ -18,9 +18,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
-import org.zowe.apiml.gateway.acceptance.common.MockService;
 import org.zowe.apiml.ticket.TicketResponse;
 
 import java.io.IOException;

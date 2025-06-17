@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.config;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.netflix.appinfo.*;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
@@ -74,9 +75,14 @@ import reactor.netty.tcp.SslProvider;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509KeyManager;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.net.URL;
 import java.security.KeyStore;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -190,7 +196,7 @@ public class ConnectionsConfig {
      * @return instance of NettyRoutingFilterApiml
      */
     @Bean
-    public NettyRoutingFilterApiml createNettyRoutingFilterApiml(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
+    NettyRoutingFilterApiml createNettyRoutingFilterApiml(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
         return new NettyRoutingFilterApiml(getHttpClient(httpClient, false), getHttpClient(httpClient, true), headersFiltersProvider, properties);
     }
 
@@ -211,7 +217,7 @@ public class ConnectionsConfig {
      * @return bean processor to replace NettyRoutingFilter by NettyRoutingFilterApiml
      */
     @Bean
-    public static BeanPostProcessor routingFilterHandler(ApplicationContext context) {
+    static BeanPostProcessor routingFilterHandler(ApplicationContext context) {
         return new BeanPostProcessor() {
             @Override
             public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -224,6 +230,11 @@ public class ConnectionsConfig {
                 return bean;
             }
         };
+    }
+
+    @VisibleForTesting
+    X509KeyManager x509KeyManagerSelectedAlias(KeyManagerFactory keyManagerFactory) {
+        return new X509KeyManagerSelectedAlias(keyManagerFactory, keyAlias);
     }
 
     /**
@@ -243,12 +254,16 @@ public class ConnectionsConfig {
                 log.info("Loading keystore: {}: {}", keyStoreType, keyStorePath);
                 KeyStore keyStore = SecurityUtils.loadKeyStore(keyStoreType, keyStorePath, keyStorePassword);
                 keyManagerFactory.init(keyStore, keyStorePassword);
-                builder.keyManager(keyManagerFactory);
+                builder.keyManager(x509KeyManagerSelectedAlias(keyManagerFactory));
             } else {
                 KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
                 emptyKeystore.load(null, null);
                 keyManagerFactory.init(emptyKeystore, null);
                 builder.keyManager(keyManagerFactory);
+            }
+
+            if (verifySslCertificatesOfServices && nonStrictVerifySslCertificatesOfServices) {
+                builder.endpointIdentificationAlgorithm(null);
             }
 
             return builder.build();
@@ -259,10 +274,10 @@ public class ConnectionsConfig {
         }
     }
 
-    @Bean(destroyMethod = "shutdown")
+    @Bean(destroyMethod = "shutdown", name = "eurekaClient")
     @RefreshScope
     @ConditionalOnMissingBean(EurekaClient.class)
-    public CloudEurekaClient primaryEurekaClient(ApplicationInfoManager manager, EurekaClientConfig config,
+    CloudEurekaClient primaryEurekaClient(ApplicationInfoManager manager, EurekaClientConfig config,
                                                  @Autowired(required = false) HealthCheckHandler healthCheckHandler) {
         ApplicationInfoManager appManager;
         if (AopUtils.isAopProxy(manager)) {
@@ -300,7 +315,7 @@ public class ConnectionsConfig {
 
     @Bean
     @DependsOn("discoveryClient")
-    public List<AdditionalRegistration> additionalRegistration() {
+    List<AdditionalRegistration> additionalRegistration() {
         List<AdditionalRegistration> additionalRegistrations = new AdditionalRegistrationParser().extractAdditionalRegistrations(System.getenv());
         log.debug("Parsed {} additional registration: {}", additionalRegistrations.size(), additionalRegistrations);
         return additionalRegistrations;
@@ -309,7 +324,7 @@ public class ConnectionsConfig {
     @Bean(destroyMethod = "shutdown")
     @Conditional(AdditionalRegistrationCondition.class)
     @RefreshScope
-    public AdditionalEurekaClientsHolder additionalEurekaClientsHolder(ApplicationInfoManager manager,
+    AdditionalEurekaClientsHolder additionalEurekaClientsHolder(ApplicationInfoManager manager,
                                                                        EurekaClientConfig config,
                                                                        List<AdditionalRegistration> additionalRegistrations,
                                                                        EurekaFactory eurekaFactory,
@@ -371,13 +386,13 @@ public class ConnectionsConfig {
     }
 
     @Bean
-    public Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {
+    Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {
         return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
             .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()).timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofMillis(requestTimeout)).build()).build());
     }
 
     @Bean
-    public HttpClientFactory gatewayHttpClientFactory(
+    HttpClientFactory gatewayHttpClientFactory(
         HttpClientProperties properties,
         ServerProperties serverProperties, List<HttpClientCustomizer> customizers,
         HttpClientSslConfigurer sslConfigurer
@@ -395,26 +410,26 @@ public class ConnectionsConfig {
 
     @Bean
     @Primary
-    public WebClient webClient(HttpClient httpClient) {
+    WebClient webClient(HttpClient httpClient) {
         return WebClient.builder()
             .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, false)))
             .build();
     }
 
     @Bean
-    public WebClient webClientClientCert(HttpClient httpClient) {
+    WebClient webClientClientCert(HttpClient httpClient) {
         return WebClient.builder()
             .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, true)))
             .build();
     }
 
     @Bean
-    public CorsUtils corsUtils() {
+    CorsUtils corsUtils() {
         return new CorsUtils(corsEnabled, null);
     }
 
     @Bean
-    public WebFilter corsWebFilter(ServiceCorsUpdater serviceCorsUpdater) {
+    WebFilter corsWebFilter(ServiceCorsUpdater serviceCorsUpdater) {
         return new CorsWebFilter(serviceCorsUpdater.getUrlBasedCorsConfigurationSource());
     }
 
@@ -536,6 +551,54 @@ public class ConnectionsConfig {
             String getHomePageUrl();
             String getStatusPageUrl();
 
+        }
+
+    }
+
+    static class X509KeyManagerSelectedAlias implements X509KeyManager {
+
+        private final X509KeyManager originalKm;
+        private final String keyAlias;
+
+        X509KeyManagerSelectedAlias(KeyManagerFactory keyManagerFactory, String keyAlias) {
+            this.originalKm = (X509KeyManager) keyManagerFactory.getKeyManagers()[0];
+            this.keyAlias = keyAlias;
+        }
+
+        @Override
+        public String[] getClientAliases(String keyType, Principal[] issuers) {
+            return originalKm.getClientAliases(keyType, issuers);
+        }
+
+        @Override
+        public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
+            if (keyAlias != null) {
+                return keyAlias;
+            }
+            return originalKm.chooseClientAlias(keyType, issuers, socket);
+        }
+
+        @Override
+        public String[] getServerAliases(String keyType, Principal[] issuers) {
+            return originalKm.getServerAliases(keyType, issuers);
+        }
+
+        @Override
+        public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
+            if (keyAlias != null) {
+                return keyAlias;
+            }
+            return originalKm.chooseServerAlias(keyType, issuers, socket);
+        }
+
+        @Override
+        public X509Certificate[] getCertificateChain(String alias) {
+            return originalKm.getCertificateChain(alias);
+        }
+
+        @Override
+        public PrivateKey getPrivateKey(String alias) {
+            return originalKm.getPrivateKey(alias);
         }
 
     }

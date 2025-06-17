@@ -1,0 +1,44 @@
+eureka:
+  ssl: true
+  host: localhost
+  ipAddress: 127.0.0.1
+  port: 10011
+  servicePath: '/eureka'
+  maxRetries: 30
+  requestRetryDelay: 1000
+  registryFetchInterval: 5
+
+
+instance:
+  app: pythonservice
+  scheme: https
+  vipAddress: pythonservice
+  instanceId: localhost:pythonservice:10018
+  homePageUrl: https://localhost:10018/pythonservice
+  hostName: 'localhost'
+  ipAddr: '127.0.0.1'
+  port: 10018
+  securePort: 10018
+  secureVipAddress: pythonservice
+  statusPageUrl: https://localhost:10018/pythonservice/application/info
+  healthCheckUrl: https://localhost:10018/pythonservice/application/health
+  nonSecurePortEnabled': false
+  securePortEnabled: true
+  metadata:
+    apiml.catalog.tile.id: 'cademoapps'
+    apiml.catalog.tile.title: 'Sample Python Hello World'
+    apiml.catalog.tile.description: 'Applications Hello'
+    apiml.routes.api_v1.gatewayUrl: "api/v1"
+    apiml.routes.api_v1.serviceUrl: "/pythonservice"
+    apiml.apiInfo.0.apiId: org.zowe.pythonservice
+    apiml.apiInfo.0.gatewayUrl: "api/v1"
+    apiml.apiInfo.0.swaggerUrl: https://localhost:10018/pythonservice/apidoc
+    apiml.apiInfo.0.version: 1.0.0
+    apiml.service.title: 'Zowe Sample Python Service'
+    apiml.service.description: 'Sample API services to demonstrate Python Onboarding Enabler'
+
+ssl:
+  certificate: ../../keystore/localhost/localhost.keystore.cer
+  keystore: ../../keystore/localhost/localhost.keystore.key
+  caFile: ../../keystore/localhost/localhost.pem
+  keyPassword: password

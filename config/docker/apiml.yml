@@ -1,0 +1,34 @@
+spring.profiles.include: diag,debug
+apiml:
+    service:
+        apimlId: apiml1
+        hostname: apiml
+    discovery:
+        staticApiDefinitionsDirectories: /api-defs;/docker/api-defs
+        allPeersUrls: https://apiml:10011/eureka
+    security:
+        ssl:
+            verifySslCertificatesOfServices: true
+    banner: console
+spring:
+    output:
+        ansi:
+            enabled: always
+    profiles:
+        include: diag
+
+eureka:
+    client:
+        initialInstanceInfoReplicationIntervalSeconds: 1
+        registryFetchIntervalSeconds: 1
+
+server:
+    address: 0.0.0.0
+    max-http-header-size: 40000
+    ssl:
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: /docker/all-services.keystore.p12
+        keyStorePassword: password
+        trustStore: /docker/all-services.truststore.p12
+        trustStorePassword: password

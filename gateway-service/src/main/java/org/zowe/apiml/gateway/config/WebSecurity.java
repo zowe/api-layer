@@ -50,6 +50,7 @@ import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
+import org.springframework.security.web.server.firewall.StrictServerWebExchangeFirewall;
 import org.springframework.security.web.server.savedrequest.CookieServerRequestCache;
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
@@ -57,6 +58,7 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.zowe.apiml.gateway.config.oidc.ClientConfiguration;
 import org.zowe.apiml.gateway.controllers.GatewayExceptionHandler;
+import org.zowe.apiml.gateway.filters.security.AuthExceptionHandlerReactive;
 import org.zowe.apiml.gateway.filters.security.BasicAuthFilter;
 import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
@@ -114,6 +116,9 @@ public class WebSecurity {
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
 
+    @Value("${apiml.security.enableStrictUrlValidation:false}")
+    private boolean isStrictUrlValidationEnabled;
+
     private final ClientConfiguration clientConfiguration;
 
     private final TokenProvider tokenProvider;
@@ -161,7 +166,10 @@ public class WebSecurity {
             return null;
         }
         return http
-            .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
+            .headers(headers -> headers
+                .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
+                .writer(new CustomHstsServerHttpHeadersWriter())
+                .frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(OAUTH_2_AUTHORIZATION, OAUTH_2_REDIRECT_URI))
             .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
@@ -312,7 +320,10 @@ public class WebSecurity {
     public ServerHttpSecurity defaultSecurityConfig(ServerHttpSecurity http) {
         var gatewayExceptionHandler = applicationContext.getBean(GatewayExceptionHandler.class);
         return http
-            .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
+            .headers(headers -> headers
+                .hsts(hsts -> hsts.disable())
+                .writer(new CustomHstsServerHttpHeadersWriter())
+                .frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .x509(x509 -> x509
                 .principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
@@ -331,7 +342,7 @@ public class WebSecurity {
 
     @Bean
     @Order(1)
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         return defaultSecurityConfig(http)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
                 REGISTRY_PATH,
@@ -362,7 +373,7 @@ public class WebSecurity {
                 authorizeExchangeSpec
                     .anyExchange().authenticated()
             )
-            .addFilterAfter(new TokenAuthFilter(tokenProvider, authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new TokenAuthFilter(tokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new BasicAuthFilter(basicAuthProvider), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }
@@ -485,6 +496,22 @@ public class WebSecurity {
                 .build();
             return chain.filter(writeableExchange);
         };
+    }
+
+    @Bean
+    public StrictServerWebExchangeFirewall httpFirewall() {
+        StrictServerWebExchangeFirewall firewall = new StrictServerWebExchangeFirewall();
+        if (isStrictUrlValidationEnabled) {
+            return firewall;
+        }
+
+        firewall.setAllowUrlEncodedSlash(true);
+        firewall.setAllowUrlEncodedDoubleSlash(true);
+        firewall.setAllowBackSlash(true);
+        firewall.setAllowUrlEncodedPercent(true);
+        firewall.setAllowUrlEncodedPeriod(true);
+        firewall.setAllowSemicolon(true);
+        return firewall;
     }
 
 }

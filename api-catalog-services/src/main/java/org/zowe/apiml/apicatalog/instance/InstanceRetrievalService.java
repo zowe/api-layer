@@ -232,7 +232,7 @@ public class InstanceRetrievalService {
         String[] discoveryServiceUrls = discoveryConfigProperties.getLocations();
         List<EurekaServiceInstanceRequest> eurekaServiceInstanceRequests = new ArrayList<>(discoveryServiceUrls.length);
         for (String discoveryUrl : discoveryServiceUrls) {
-            String discoveryServiceLocatorUrl = discoveryUrl + APPS_ENDPOINT;
+            String discoveryServiceLocatorUrl = discoveryUrl.endsWith("/") ? discoveryUrl + APPS_ENDPOINT : discoveryUrl + "/" + APPS_ENDPOINT;
             if (getDelta) {
                 discoveryServiceLocatorUrl += DELTA_ENDPOINT;
             } else {

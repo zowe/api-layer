@@ -10,33 +10,36 @@
 
 package org.zowe.apiml.discovery.staticdef;
 
-import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
-import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.discovery.ApimlInstanceRegistry;
+import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
 
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class StaticServicesRegistrationServiceTest {
 
-    private PeerAwareInstanceRegistry mockRegistry;
+    private ApimlInstanceRegistry mockRegistry;
 
     @BeforeEach
     void setUp() {
-        mockRegistry = mock(PeerAwareInstanceRegistry.class);
+        mockRegistry = mock(ApimlInstanceRegistry.class);
         EurekaServerContext mockEurekaServerContext = mock(EurekaServerContext.class);
         when(mockEurekaServerContext.getRegistry()).thenReturn(mockRegistry);
         EurekaServerContextHolder.initialize(mockEurekaServerContext);
@@ -149,9 +152,8 @@ class StaticServicesRegistrationServiceTest {
 
         StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
         registrationService.registerServices(directory);
-        registrationService.renewInstances();
 
-        verify(mockRegistry, times(1)).renew(instance.getAppName(), instance.getId(), false);
+        verify(mockRegistry, times(1)).registerStatically(instance, false);
     }
 
 }

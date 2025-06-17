@@ -7,8 +7,8 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { useEffect, Suspense } from 'react';
-import { Redirect, Route, Router, Switch } from 'react-router-dom';
+import React, { useEffect, Suspense } from 'react';
+import { Navigate, Route, Routes, useNavigate } from 'react-router';
 import { ToastContainer } from 'react-toastify';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import ErrorContainer from '../Error/ErrorContainer';
@@ -17,63 +17,89 @@ import PageNotFound from '../PageNotFound/PageNotFound';
 import HeaderContainer from '../Header/HeaderContainer';
 import Spinner from '../Spinner/Spinner';
 import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from './AsyncModules';
+import { userService } from "../../services";
 
-function App({ history }) {
+function App(props) {
     const isLoading = true;
-    const headerPath = '/(dashboard|service/.*)/';
     const dashboardPath = '/dashboard';
-
+    const navigate = useNavigate();
     useEffect(() => {
         window.process = { ...window.process };
     }, []);
+    const { authentication, success } = props;
+    useEffect(() => {
+        const checkAuth = () => {
+            if (!authentication.user) {
+                userService.query().then((result) => {
+                    if (result.status === 200) {
+                        success(result.userId, false);
+                    } else {
+                        navigate('/login');
+                    }
+                }).catch(() => {
+                    navigate('/login');
+                });
+            }
+        };
+
+        // Run once on mount
+        checkAuth();
+
+        // Run again whenever the tab gains focus
+        window.addEventListener('focus', checkAuth);
+
+        return () => { // Remove immediately to avoid loop
+            window.removeEventListener('focus', checkAuth);
+        };
+    }, [authentication.user, success, navigate]);
 
     return (
         <div className="App">
-            <BigShield history={history}>
+            <BigShield>
                 <ToastContainer />
                 <ErrorContainer />
                 <Suspense fallback={<Spinner isLoading={isLoading} />}>
-                    <Router history={history}>
                         {/* eslint-disable-next-line react/jsx-no-useless-fragment */}
                         <>
                             <div className="content">
-                                <Route path={headerPath} component={HeaderContainer} />
-
-                                <Switch>
-                                    <Route path="/" exact render={() => <Redirect replace to={dashboardPath} />} />
+                                <Routes>
+                                    <Route path="/" exact element={<Navigate replace={true} to={dashboardPath} />} />
                                     <Route
                                         path="/login"
                                         exact
-                                        render={(props, state) => <AsyncLoginContainer {...props} {...state} />}
+                                        element={<AsyncLoginContainer />}
                                     />
                                     <Route
                                         exact
                                         path={dashboardPath}
-                                        render={(props, state) => (
-                                            <BigShield history={history}>
-                                                <AsyncDashboardContainer {...props} {...state} />
+                                        element={
+
+                                            <BigShield>
+                                                    <HeaderContainer/>
+                                                    <AsyncDashboardContainer/>
                                             </BigShield>
-                                        )}
+                                        }
                                     />
                                     <Route
-                                        path="/service"
-                                        render={(props, state) => (
-                                            <BigShield history={history}>
-                                                <AsyncDetailPageContainer {...props} {...state} />
+                                        path="/service/*"
+                                        element={
+                                           <BigShield>
+                                               <HeaderContainer/>
+                                                <AsyncDetailPageContainer/>
                                             </BigShield>
-                                        )}
+                                        }
                                     />
+
                                     <Route
-                                        render={(props, state) => (
-                                            <BigShield history={history}>
-                                                <PageNotFound {...props} {...state} />
+                                        element={
+                                            <BigShield>
+                                                <PageNotFound/>
                                             </BigShield>
-                                        )}
+                                        }
                                     />
-                                </Switch>
+                                </Routes>
                             </div>
                         </>
-                    </Router>
                 </Suspense>
             </BigShield>
         </div>

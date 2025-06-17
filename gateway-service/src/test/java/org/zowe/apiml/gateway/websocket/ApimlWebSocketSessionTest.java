@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.websocket;
 
+import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakeException;
 import org.apache.commons.logging.Log;
 import org.apache.tomcat.websocket.AuthenticationException;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,7 @@ import org.springframework.web.reactive.socket.CloseStatus;
 import reactor.core.publisher.Sinks;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -50,9 +52,21 @@ class ApimlWebSocketSessionTest {
     }
 
     @Test
+    void givenNettyHandshakeException_When401Error_then1003() {
+        webSocketSession.onError(new WebSocketClientHandshakeException("401"));
+        verify(webSocketSession, times(1)).close(new CloseStatus(1003, "Invalid login credentials"));
+    }
+
+    @Test
+    void givenNettyHandshakeException_WhenGenericError_thenServerError() {
+        webSocketSession.onError(new WebSocketClientHandshakeException("other"));
+        verify(webSocketSession, times(1)).close(argThat(status -> status.getCode() == CloseStatus.SERVER_ERROR.getCode() && status.getReason().equals("other")));
+    }
+
+    @Test
     void givenGenericException_WhenError_thenServerError() {
         webSocketSession.onError(new RuntimeException("message"));
-        verify(webSocketSession, times(1)).close(CloseStatus.SERVER_ERROR);
+        verify(webSocketSession, times(1)).close(argThat(status -> status.getCode() == CloseStatus.SERVER_ERROR.getCode() && status.getReason().equals("message")));
     }
 
     @Test

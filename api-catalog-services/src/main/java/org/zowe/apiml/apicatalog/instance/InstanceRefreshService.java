@@ -158,10 +158,12 @@ public class InstanceRefreshService {
         if (!InstanceInfo.InstanceStatus.DOWN.equals(instance.getStatus())) {
             // update any containers which contain this service
             updateContainer(containersUpdated, instance);
+            updateService(instance);
         }
         if (InstanceInfo.ActionType.DELETED.equals(instance.getActionType())) {
             // remove instance which isn't available anymore
             cachedProductFamilyService.removeInstance(instance.getMetadata().get(CATALOG_ID), instance);
+            cachedProductFamilyService.removeInstanceFromServices(instance);
             return;
         }
 
@@ -195,6 +197,16 @@ public class InstanceRefreshService {
             log.debug("Created/Updated tile and updated cache for container: " + container.getId() + " @ " + container.getLastUpdatedTimestamp().getTime());
             containersUpdated.add(productFamilyId);
         }
+    }
+
+    /**
+     * Update the container
+     *
+     * @param instanceInfo the instance
+     */
+    private void updateService(InstanceInfo instanceInfo) {
+        cachedProductFamilyService.addService(instanceInfo);
+        log.debug("Created/Updated service and updated cache: {}", instanceInfo.getInstanceId());
     }
 
     /**

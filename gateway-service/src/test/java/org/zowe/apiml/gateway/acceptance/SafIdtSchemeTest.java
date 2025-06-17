@@ -22,9 +22,9 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.http.HttpHeaders;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
-import org.zowe.apiml.gateway.acceptance.common.MockService;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 

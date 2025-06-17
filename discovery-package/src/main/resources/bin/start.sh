@@ -60,8 +60,7 @@ if [ -z "${LIBRARY_PATH}" ]; then
     LIBRARY_PATH="../common-java-lib/bin/"
 fi
 
-if [ "${ZWE_configs_debug}" = "true" ]
-then
+if [ "${ZWE_configs_debug}" = "true" ]; then
     if [ -n "${ZWE_configs_spring_profiles_active}" ];
     then
         ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
@@ -103,8 +102,17 @@ else
   nonStrictVerifySslCertificatesOfServices=false
 fi
 
+ZOWE_CONSOLE_LOG_CHARSET=UTF-8
 if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
+
+    JAVA_VERSION=$(${JAVA_HOME}/bin/javap -J-Xms4m -J-Xmx16m -verbose java.lang.String \
+        | grep "major version" \
+        | cut -d " " -f5)
+
+    if [ $JAVA_VERSION -ge 65 ]; then # Java 21
+        ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
+    fi
 fi
 
 ATTLS_ENABLED="false"
@@ -147,9 +155,9 @@ LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}/bin"
 LIBPATH="$LIBPATH":"${JAVA_HOME}/bin/classic"
 LIBPATH="$LIBPATH":"${JAVA_HOME}/bin/j9vm"
-LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390/classic"
-LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390/default"
-LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390/j9vm"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390x/classic"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390x/default"
+LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390x/j9vm"
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
 ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
@@ -164,13 +172,12 @@ ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
 get_enabled_protocol_limit() {
     target=$1
     type=$2
+    default=$3
     key_component="ZWE_configs_zowe_network_${target}_tls_${type}Tls"
     value_component=$(eval echo \$$key_component)
-    key_gateway="ZWE_components_gateway_zowe_network_${target}_tls_${type}Tls"
-    value_gateway=$(eval echo \$$key_gateway)
     key_zowe="ZWE_zowe_network_${target}_tls_${type}Tls"
     value_zowe=$(eval echo \$$key_zowe)
-    enabled_protocol_limit=${value_component:-${value_gateway:-${value_zowe:-}}}
+    enabled_protocol_limit=${value_component:-${value_zowe:-${default}}}
 }
 
 extract_between() {
@@ -179,9 +186,9 @@ extract_between() {
 
 get_enabled_protocol() {
     target=$1
-    get_enabled_protocol_limit "${target}" "min"
+    get_enabled_protocol_limit "${target}" "min" "TLSv1.2"
     enabled_protocols_min=${enabled_protocol_limit}
-    get_enabled_protocol_limit "${target}" "max"
+    get_enabled_protocol_limit "${target}" "max" "TLSv1.3"
     enabled_protocols_max=${enabled_protocol_limit}
 
     if [ "${enabled_protocols_min:-}" = "${enabled_protocols_max:-}" ]; then
@@ -197,11 +204,10 @@ get_enabled_protocol() {
     fi
 }
 
-get_enabled_protocol_limit "server" "max"
-server_protocol=${enabled_protocol_limit:-"TLS"}
+server_protocol="TLS"
 get_enabled_protocol "server"
 server_enabled_protocols=${result:-"TLSv1.3"}
-server_ciphers=${ZWE_configs_zowe_network_server_tls_ciphers:-${ZWE_components_gateway_zowe_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384}}}
+server_ciphers=${ZWE_configs_zowe_network_server_tls_ciphers:-${ZWE_components_gateway_zowe_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384,TLS_DHE_DSS_WITH_AES_256_GCM_SHA384,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_DSS_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV}}}
 get_enabled_protocol "client"
 client_enabled_protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${result:-${server_enabled_protocols}}}
 client_ciphers=${ZWE_configs_zowe_network_client_tls_ciphers:-${ZWE_components_gateway_zowe_network_client_tls_ciphers:-${ZWE_zowe_network_client_tls_ciphers:-${server_ciphers}}}}
@@ -215,7 +221,7 @@ truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certi
 
 keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}"
 truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
-#echo "keystore='$keystore_location' truststore='$truststore_location'"
+
 if [ "${keystore_type}" = "JCERACFKS" ]; then
     keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
     truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
@@ -226,9 +232,11 @@ elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
     keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
     truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
 fi
-# NOTE: these are moved from below
-# -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
-# -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
+
+LOGBACK=""
+if [ -n "${ZWE_configs_logging_config}" ]; then
+    LOGBACK="-Dlogging.config=${ZWE_configs_logging_config}"
+fi
 
 if [ "${ATTLS_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
   keystore_type=
@@ -249,41 +257,43 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
     ${ADD_OPENS} \
-    -Dibm.serversocket.recover=true \
-    -Dfile.encoding=UTF-8 \
-    -Djava.io.tmpdir=${TMPDIR:-/tmp} \
-    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
-    -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \
-    -Dapiml.discovery.userid=eureka \
-    -Dapiml.discovery.password=password \
+    ${LOGBACK} \
     -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.discovery.password=password \
+    -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer} \
+    -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
+    -Dapiml.discovery.userid=eureka \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-true} \
+    -Dapiml.httpclient.ssl.enabled-protocols=${client_enabled_protocols} \
+    -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
+    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7553} \
-    -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
-    -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer} \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
-    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
-    -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
-    -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
-    -Dapiml.httpclient.ssl.enabled-protocols=${client_enabled_protocols} \
+    -Dfile.encoding=UTF-8 \
+    -Dibm.serversocket.recover=true \
+    -Djava.io.tmpdir=${TMPDIR:-/tmp} \
+    -Djava.library.path=${LIBPATH} \
+    -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+    -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
+    -Dloader.path=${DISCOVERY_LOADER_PATH} \
+    -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
+    -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \
     -Dserver.ssl.ciphers=${server_ciphers} \
-    -Dserver.ssl.protocol=${server_protocol} \
     -Dserver.ssl.enabled-protocols=${server_enabled_protocols} \
-    -Dserver.ssl.keyStore="${keystore_location}" \
-    -Dserver.ssl.keyStoreType="${keystore_type}" \
-    -Dserver.ssl.keyStorePassword="${keystore_pass}" \
+    -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true} \
     -Dserver.ssl.keyAlias="${key_alias}" \
     -Dserver.ssl.keyPassword="${key_pass}" \
+    -Dserver.ssl.keyStore="${keystore_location}" \
+    -Dserver.ssl.keyStorePassword="${keystore_pass}" \
+    -Dserver.ssl.keyStoreType="${keystore_type}" \
+    -Dserver.ssl.protocol=${server_protocol} \
     -Dserver.ssl.trustStore="${truststore_location}" \
-    -Dserver.ssl.trustStoreType="${truststore_type}" \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
-    -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Dloader.path=${DISCOVERY_LOADER_PATH} \
-    -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
-    -Djava.library.path=${LIBPATH} \
+    -Dserver.ssl.trustStoreType="${truststore_type}" \
+    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"

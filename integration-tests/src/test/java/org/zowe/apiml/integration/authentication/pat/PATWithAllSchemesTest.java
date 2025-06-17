@@ -62,7 +62,7 @@ class PATWithAllSchemesTest {
         var schemasTest = new ArrayList<Arguments>();
         schemasTest.add(Arguments.of("zowejwt", HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST), (Consumer<Response>) r -> {
             assertEquals(HttpStatus.SC_OK, r.getStatusCode());
-            assertNull(r.getBody().path("headers.authorization"));
+            assertNotNull(r.getBody().path("headers.authorization"));
             assertThat(r.getBody().path("headers.cookie"), containsString(COOKIE_NAME));
             String jwt = r.getBody().path("headers.cookie").toString();
             try {

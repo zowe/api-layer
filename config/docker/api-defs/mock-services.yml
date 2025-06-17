@@ -14,7 +14,7 @@ services:
           scheme: zosmf     # This service expects z/OSMF LTPA token
       apiInfo:
           - apiId: ibm.zosmf
-            gatewayUrl: api
+            gatewayUrl: api/v1
             version: 2.4.0
             documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.4.0/com.ibm.zos.v2r4.izua700/IZUHPINFO_RESTServices.htm
             swaggerUrl: https://mock-services:10013/zosmf/api/docs

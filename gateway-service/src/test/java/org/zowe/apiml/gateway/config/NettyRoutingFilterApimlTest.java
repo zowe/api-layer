@@ -22,8 +22,8 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
-import org.zowe.apiml.gateway.acceptance.common.MockService;
 import org.zowe.apiml.ticket.TicketResponse;
 import reactor.netty.http.client.HttpClient;
 

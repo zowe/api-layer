@@ -61,6 +61,13 @@ messages:
       reason: "The JWT token is not valid."
       action: "Provide a valid token."
 
+    - key: org.zowe.apiml.common.unauthorized
+      number: ZWEAO402
+      type: ERROR
+      text: "The request has not been applied because it lacks valid authentication credentials."
+      reason: "The accessed resource requires authentication. The request is missing valid authentication credentials or the token expired."
+      action: "Review the product documentation for more details about acceptable authentication. Verify that your credentials are valid and contact security administrator to obtain valid credentials."
+
     - key: org.zowe.apiml.zaas.security.expiredToken
       number: ZWEAG103
       type: ERROR
@@ -153,7 +160,8 @@ messages:
       type: ERROR
       text: "The generation of the PassTicket failed. Reason: %s"
       reason: "An error occurred in the SAF Auth Service. Review the reason in the error message."
-      action: "Supply a valid user and application name, and check that corresponding permissions have been set up."
+      action: >-
+        Supply a valid user and application name, and check that corresponding permissions have been set up.  See the <a href="https://docs.zowe.org/stable/user-guide/api-mediation/configuration-extender-passtickets/#configuring-zowe-to-use-passtickets" title="Enabling single sign on for extending services via PassTicket configuration">docs</a> for reference.
 
   # IDT messages (150 - 159)
     - key: org.zowe.apiml.security.idt.failed

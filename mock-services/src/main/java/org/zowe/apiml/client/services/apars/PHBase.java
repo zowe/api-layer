@@ -70,7 +70,7 @@ public class PHBase extends FunctionalApar {
         String authorization = headers.get(AUTHORIZATION_HEADER);
 
         if (authorization != null) {
-            if (authorization.startsWith("Bearer")) {
+            if (!isValidAuthHeader(authorization) && !ltpaIsPresent(headers)) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
         } else {
@@ -136,7 +136,7 @@ public class PHBase extends FunctionalApar {
             "  \"zos_version\": \"04.27.00\",\n" +
             "  \"zosmf_port\": \"1443\",\n" +
             "  \"zosmf_version\": \"27\",\n" +
-            "  \"zosmf_hostname\": \"usilca32.lvn.broadcom.net\",\n" +
+            "  \"zosmf_hostname\": \"mock.service.host\",\n" +
             "  \"plugins\": {\n" +
             "    \"msgId\": \"IZUG612E\",\n" +
             "    \"msgText\": \"IZUG612E\"\n" +

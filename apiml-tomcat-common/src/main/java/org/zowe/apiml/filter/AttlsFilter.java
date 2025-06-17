@@ -15,7 +15,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.codec.binary.Base64;
+import org.springframework.lang.NonNull;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.commons.attls.InboundAttls;
 
@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 
 
 /**
@@ -34,7 +35,7 @@ import java.security.cert.X509Certificate;
 public class AttlsFilter extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             byte[] certificate = InboundAttls.getCertificate();
             if (certificate != null && certificate.length > 0) {
@@ -54,7 +55,7 @@ public class AttlsFilter extends OncePerRequestFilter {
             %s
             -----END CERTIFICATE-----
             """,
-            Base64.encodeBase64String(rawCertificate)
+            Base64.getEncoder().encodeToString(rawCertificate)
         );
 
         var certificate = (X509Certificate) CertificateFactory

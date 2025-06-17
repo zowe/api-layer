@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.util.config;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,8 +27,8 @@ public class EnvironmentConfiguration {
     private ZaasConfiguration zaasConfiguration;
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private DiscoverableClientConfiguration discoverableClientConfiguration;
-    private ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
-    private ApiCatalogServiceConfiguration apiCatalogStandaloneConfiguration;
+    @JsonProperty("apiCatalogServiceConfiguration") private ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
+    @JsonProperty("apiCatalogStandaloneConfiguration") private ApiCatalogServiceConfiguration apiCatalogStandaloneConfiguration;
     private CachingServiceConfiguration cachingServiceConfiguration;
     private TlsConfiguration tlsConfiguration;
     private ZosmfServiceConfiguration zosmfServiceConfiguration;

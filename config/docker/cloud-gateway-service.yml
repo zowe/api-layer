@@ -6,6 +6,7 @@ eureka:
         serviceUrl:
             defaultZone: https://discovery-service:10011/eureka/
 server:
+    address: 0.0.0.0
     ssl:
         keyAlias: localhost
         keyStore: /docker/all-services.keystore.p12

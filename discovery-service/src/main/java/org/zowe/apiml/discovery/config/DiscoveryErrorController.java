@@ -12,6 +12,7 @@ package org.zowe.apiml.discovery.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
 import org.springframework.boot.autoconfigure.web.servlet.error.ErrorViewResolver;
@@ -28,6 +29,7 @@ import java.util.Map;
 @Primary
 @Controller
 @RequestMapping(value = "${server.error.path:${error.path:/error}}")
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class DiscoveryErrorController extends BasicErrorController {
 
     public DiscoveryErrorController(ErrorAttributes errorAttributes, ServerProperties serverProperties, List<ErrorViewResolver> errorViewResolvers) {

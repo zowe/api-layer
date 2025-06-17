@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61", "setuptools_scm[toml]>=7", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zowe-apiml-onboarding-enabler-python"
+description = "Python enabler for Zowe API Mediation Layer"
+authors = [{name = "Zowe Project"}]
+license = {text = "EPL-2.0"}
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "requests",
+    "pyyaml"
+]
+dynamic = ["version"]
+
+[tool.setuptools]
+packages = { find = { where = ["src"] } }
+
+[tool.setuptools_scm]
+fallback_version = "0.0.1"
+write_to = "src/_version.py"
+version_scheme = "guess-next-dev"
+local_scheme = "no-local-version"

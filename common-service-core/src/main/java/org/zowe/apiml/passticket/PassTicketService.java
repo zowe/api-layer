@@ -10,12 +10,12 @@
 
 package org.zowe.apiml.passticket;
 
-import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
-import org.zowe.apiml.util.ObjectUtil;
 import lombok.AllArgsConstructor;
 import lombok.Value;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
+import org.zowe.apiml.util.ObjectUtil;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,6 +25,7 @@ import java.util.Set;
 /**
  * This class allows to get a PassTicket from SAF.
  */
+@Slf4j
 public class PassTicketService {
 
     private final IRRPassTicket irrPassTicket;
@@ -41,18 +42,35 @@ public class PassTicketService {
     }
 
     // IRRPassTicket is not thread-safe, must be synchronized
-    public synchronized void evaluate(String userId, String applId, String passTicket) throws IRRPassTicketEvaluationException {
+    public synchronized void evaluate(String userId, String applId, String passTicket) throws PassTicketException {
+        validateUserIdAndApplId(userId, applId);
         irrPassTicket.evaluate(userId.toUpperCase(), applId.toUpperCase(), passTicket.toUpperCase());
     }
 
     // IRRPassTicket is not thread-safe, must be synchronized
-    public synchronized String generate(String userId, String applId) throws IRRPassTicketGenerationException {
-        return irrPassTicket.generate(userId.toUpperCase(), applId.toUpperCase());
+    public synchronized String generate(String userId, String applId) throws PassTicketException {
+        try {
+            validateUserIdAndApplId(userId, applId);
+            return irrPassTicket.generate(userId.toUpperCase(), applId.toUpperCase());
+        } catch (PassTicketException | RuntimeException e) {
+            log.debug("Error during pass ticket generation, userId={}, applid={}, exception={}", userId, applId, e);
+            throw e;
+        }
     }
 
     public boolean isUsingSafImplementation() {
         ClassOrDefaultProxyUtils.ClassOrDefaultProxyState stateInterface = (ClassOrDefaultProxyUtils.ClassOrDefaultProxyState) irrPassTicket;
         return stateInterface.isUsingBaseImplementation();
+    }
+
+    private void validateUserIdAndApplId(String userId, String applId) throws ApplicationNameNotProvidedException, UsernameNotProvidedException {
+        if (StringUtils.isBlank(applId)) {
+           throw new ApplicationNameNotProvidedException();
+        }
+
+        if (StringUtils.isBlank(userId)) {
+            throw new UsernameNotProvidedException();
+        }
     }
 
     public static class DefaultPassTicketImpl implements IRRPassTicket {

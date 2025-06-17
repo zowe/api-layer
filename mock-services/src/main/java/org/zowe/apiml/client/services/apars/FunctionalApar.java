@@ -13,6 +13,7 @@ package org.zowe.apiml.client.services.apars;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.zowe.apiml.client.model.LoginBody;
 import org.zowe.apiml.client.services.JwtTokenService;
 
@@ -216,6 +217,19 @@ public class FunctionalApar implements Apar {
         String jwtToken = jwtTokenService.extractToken(headers);
         return jwtTokenService.validateJwtToken(jwtToken);
 
+    }
+
+    protected boolean isValidAuthHeader(String authHeader) {
+        if (!StringUtils.hasText(authHeader)) {
+            return false;
+        }
+
+        if (authHeader.startsWith("Bearer")) {
+            var jwtToken = authHeader.length() > 8 ? authHeader.substring(7) : "";
+            return jwtTokenService.validateJwtToken(jwtToken);
+        }
+
+        return true;
     }
 
     private String getAuthCookie(Map<String, String> headers) {

@@ -92,10 +92,11 @@ class ServicesInfoTest implements TestWithStartedInstances {
             @MethodSource("endpoints")
             void givenNoAuthentication(String endpoint) {
                 //@formatter:off
-                given().config(SslContext.tlsWithoutCert)
-                    .when()
+                given()
+                    .config(SslContext.tlsWithoutCert)
+                .when()
                     .get(getUriFromGateway(endpoint))
-                    .then()
+                .then()
                     .statusCode(is(SC_UNAUTHORIZED));
                 //@formatter:on
             }
@@ -109,10 +110,11 @@ class ServicesInfoTest implements TestWithStartedInstances {
                 ROUTED_SERVICE_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
             })
             void returns200WithoutSafCheck(String endpoint) {
-                given().config(SslContext.clientCertValid)
-                    .when()
+                given()
+                    .config(SslContext.clientCertValid)
+                .when()
                     .get(getUriFromGateway(endpoint))
-                    .then()
+                .then()
                     .statusCode(is(SC_OK));
             }
 
@@ -122,10 +124,11 @@ class ServicesInfoTest implements TestWithStartedInstances {
                 ROUTED_SERVICE_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
             })
             void returns401WithUntrustedCert(String endpoint) {
-                given().config(SslContext.selfSignedUntrusted)
-                    .when()
+                given()
+                    .config(SslContext.selfSignedUntrusted)
+                .when()
                     .get(getUriFromGateway(endpoint))
-                    .then()
+                .then()
                     .statusCode(is(SC_UNAUTHORIZED));
             }
         }
@@ -146,9 +149,9 @@ class ServicesInfoTest implements TestWithStartedInstances {
                 //@formatter:off
                 given()
                     .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
-                    .when()
+                .when()
                     .get(getUriFromGateway(ROUTED_SERVICE))
-                    .then()
+                .then()
                     .statusCode(is(SC_OK))
                     .header(VERSION_HEADER, CURRENT_VERSION)
                     .body("serviceId", hasItems("gateway", "discovery", API_CATALOG_SERVICE_ID));
@@ -167,9 +170,9 @@ class ServicesInfoTest implements TestWithStartedInstances {
                 //@formatter:off
                 given()
                     .auth().basic(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD)
-                    .when()
+                .when()
                     .get(getUriFromGateway(ROUTED_SERVICE))
-                    .then()
+                .then()
                     .statusCode(is(SC_FORBIDDEN))
                     .body("messages.find { it.messageNumber == 'ZWEAT403E' }.messageContent", startsWith(expectedMessage));
                 //@formatter:on
@@ -226,9 +229,9 @@ class ServicesInfoTest implements TestWithStartedInstances {
                 //@formatter:off
                 given()
                     .cookie(GATEWAY_TOKEN_COOKIE_NAME, token)
-                    .when()
+                .when()
                     .get(getUriFromGateway(ROUTED_SERVICE, new BasicNameValuePair("apiId", API_CATALOG_SERVICE_API_ID)))
-                    .then()
+                .then()
                     .statusCode(is(SC_OK))
                     .header(VERSION_HEADER, CURRENT_VERSION)
 

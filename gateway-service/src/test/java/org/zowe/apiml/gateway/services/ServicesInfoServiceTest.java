@@ -11,9 +11,7 @@
 package org.zowe.apiml.gateway.services;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import com.netflix.discovery.shared.Applications;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,24 +20,44 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
+import org.zowe.apiml.constants.EurekaMetadataDefinition.RegistrationType;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.services.ServiceInfo;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasProperty;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 
 @ExtendWith(MockitoExtension.class)
 class ServicesInfoServiceTest {
@@ -82,8 +100,9 @@ class ServicesInfoServiceTest {
     private static final String SERVICE_SERVICE_ID = "serviceId";
     private static final String SERVICE_API_ID = "apiId";
     private static final String SERVICE_API_VERSION = "version";
+
     @Mock
-    private EurekaClient eurekaClient;
+    private DiscoveryClient discoveryClient;
 
     private final ServiceAddress zaasAddress = ServiceAddress.builder()
             .scheme(GW_SCHEME).hostname(GW_HOSTNAME + ":" + GW_PORT).build();
@@ -96,19 +115,17 @@ class ServicesInfoServiceTest {
 
     @BeforeEach
     void setUp() {
-        servicesInfoService = new ServicesInfoService(eurekaClient, eurekaMetadataParser, gatewayClient, transformService);
+        servicesInfoService = new ServicesInfoService(discoveryClient, eurekaMetadataParser, gatewayClient, transformService);
     }
 
     @Test
     void whenListingAllServices_thenReturnList() {
         String clientServiceId2 = "testclient2";
 
-        List<Application> applications = Arrays.asList(
-                new Application(CLIENT_SERVICE_ID, Collections.singletonList(createBasicTestInstance())),
-                new Application(clientServiceId2)
-        );
-        when(eurekaClient.getApplications())
-                .thenReturn(new Applications(null, 1L, applications));
+        when(discoveryClient.getServices())
+            .thenReturn(List.of(CLIENT_SERVICE_ID, clientServiceId2));
+
+        when(discoveryClient.getInstances(CLIENT_SERVICE_ID)).thenReturn(List.of(createBasicTestInstance()));
 
         List<ServiceInfo> servicesInfo = servicesInfoService.getServicesInfo();
         List<ServiceInfo> servicesInfo2 = servicesInfoService.getServicesInfo(null);
@@ -123,12 +140,10 @@ class ServicesInfoServiceTest {
 
     @Test
     void whenListingServicesByApiId_thenReturnList() {
-        List<Application> applications = Arrays.asList(
-                new Application(CLIENT_SERVICE_ID, Collections.singletonList(createFullTestInstance())),
-                new Application("testclient2")
-        );
-        when(eurekaClient.getApplications())
-                .thenReturn(new Applications(null, 1L, applications));
+        when(discoveryClient.getServices())
+            .thenReturn(List.of(CLIENT_SERVICE_ID, "testclient2"));
+        when(discoveryClient.getInstances(CLIENT_SERVICE_ID)).thenReturn(List.of(createFullTestInstance()));
+        when(discoveryClient.getInstances("testclient2")).thenReturn(List.of());
 
         List<ServiceInfo> servicesInfo = servicesInfoService.getServicesInfo(CLIENT_API_ID);
 
@@ -136,12 +151,11 @@ class ServicesInfoServiceTest {
         assertEquals(CLIENT_SERVICE_ID, servicesInfo.get(0).getServiceId());
     }
 
-    // Splitting asserts to multiple tests would make it less readable
     @SuppressWarnings({"java:S5961"})
     @Test
     void whenInstanceProvidesFullInfo_thenReturnAllDetails() {
-        when(eurekaClient.getApplication(CLIENT_SERVICE_ID))
-                .thenReturn(new Application(CLIENT_SERVICE_ID, Collections.singletonList(createFullTestInstance())));
+        when(discoveryClient.getServices()).thenReturn(List.of(CLIENT_SERVICE_ID));
+        when(discoveryClient.getInstances(CLIENT_SERVICE_ID)).thenReturn(List.of(createFullTestInstance()));
 
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(CLIENT_SERVICE_ID);
 
@@ -181,8 +195,8 @@ class ServicesInfoServiceTest {
 
     @Test
     void whenInstanceProvidesLittleInfo_thenStillReturnUp() {
-        when(eurekaClient.getApplication(CLIENT_SERVICE_ID))
-                .thenReturn(new Application(CLIENT_SERVICE_ID, Collections.singletonList(createBasicTestInstance())));
+        when(discoveryClient.getServices()).thenReturn(List.of(CLIENT_SERVICE_ID));
+        when(discoveryClient.getInstances(CLIENT_SERVICE_ID)).thenReturn(List.of(createBasicTestInstance()));
 
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(CLIENT_SERVICE_ID);
 
@@ -191,7 +205,8 @@ class ServicesInfoServiceTest {
 
     @Test
     void whenNoInstances_thenReturnServiceDown() {
-        when(eurekaClient.getApplication(CLIENT_SERVICE_ID)).thenReturn(new Application(CLIENT_SERVICE_ID, Collections.emptyList()));
+        when(discoveryClient.getServices()).thenReturn(List.of(CLIENT_SERVICE_ID));
+        when(discoveryClient.getInstances(CLIENT_SERVICE_ID)).thenReturn(List.of());
 
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(CLIENT_SERVICE_ID);
 
@@ -203,7 +218,7 @@ class ServicesInfoServiceTest {
 
     @Test
     void whenServiceNeverRegistered_thenReturnServiceUnknown() {
-        when(eurekaClient.getApplication(CLIENT_SERVICE_ID)).thenReturn(null);
+        when(discoveryClient.getServices()).thenReturn(List.of());
 
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(CLIENT_SERVICE_ID);
 
@@ -215,12 +230,14 @@ class ServicesInfoServiceTest {
 
     @Test
     void whenOneInstanceIsUpAndOthersNot_ReturnUp() {
-        InstanceInfo instance1 = createBasicTestInstance(InstanceInfo.InstanceStatus.STARTING);
-        InstanceInfo instance2 = createBasicTestInstance(InstanceInfo.InstanceStatus.UNKNOWN);
-        InstanceInfo instance3 = createBasicTestInstance(InstanceInfo.InstanceStatus.DOWN);
-        InstanceInfo instance4 = createBasicTestInstance(InstanceInfo.InstanceStatus.UP);
-        List<InstanceInfo> instances = Arrays.asList(instance1, instance2, instance3, instance4);
-        when(eurekaClient.getApplication(CLIENT_SERVICE_ID)).thenReturn(new Application(CLIENT_SERVICE_ID, instances));
+        var instance1 = createBasicTestInstance(InstanceInfo.InstanceStatus.STARTING);
+        var instance2 = createBasicTestInstance(InstanceInfo.InstanceStatus.UNKNOWN);
+        var instance3 = createBasicTestInstance(InstanceInfo.InstanceStatus.DOWN);
+        var instance4 = createBasicTestInstance(InstanceInfo.InstanceStatus.UP);
+        List<ServiceInstance> instances = Arrays.asList(instance1, instance2, instance3, instance4);
+
+        when(discoveryClient.getServices()).thenReturn(List.of(CLIENT_SERVICE_ID));
+        when(discoveryClient.getInstances(CLIENT_SERVICE_ID)).thenReturn(instances);
 
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(CLIENT_SERVICE_ID);
 
@@ -230,13 +247,14 @@ class ServicesInfoServiceTest {
 
     @Test
     void whenNoInstanceIsUp_ReturnDown() {
-        InstanceInfo instance1 = createBasicTestInstance(InstanceInfo.InstanceStatus.STARTING);
-        InstanceInfo instance2 = createBasicTestInstance(InstanceInfo.InstanceStatus.UNKNOWN);
-        InstanceInfo instance3 = createBasicTestInstance(InstanceInfo.InstanceStatus.DOWN);
-        InstanceInfo instance4 = createBasicTestInstance(InstanceInfo.InstanceStatus.OUT_OF_SERVICE);
-        List<InstanceInfo> instances = Arrays.asList(instance1, instance2, instance3, instance4);
+        var instance1 = createBasicTestInstance(InstanceInfo.InstanceStatus.STARTING);
+        var instance2 = createBasicTestInstance(InstanceInfo.InstanceStatus.UNKNOWN);
+        var instance3 = createBasicTestInstance(InstanceInfo.InstanceStatus.DOWN);
+        var instance4 = createBasicTestInstance(InstanceInfo.InstanceStatus.OUT_OF_SERVICE);
+        List<ServiceInstance> instances = Arrays.asList(instance1, instance2, instance3, instance4);
 
-        when(eurekaClient.getApplication(CLIENT_SERVICE_ID)).thenReturn(new Application(CLIENT_SERVICE_ID, instances));
+        when(discoveryClient.getServices()).thenReturn(List.of(CLIENT_SERVICE_ID));
+        when(discoveryClient.getInstances(CLIENT_SERVICE_ID)).thenReturn(instances);
 
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(CLIENT_SERVICE_ID);
 
@@ -253,20 +271,21 @@ class ServicesInfoServiceTest {
      */
     @Test
     void checkApisVersioning() {
-        InstanceInfo instance1 = createMultipleApisInstance(1, Arrays.asList(
+        var instance1 = createMultipleApisInstance(1, Arrays.asList(
                 new ImmutablePair<>("api1", "1.0.0"),
                 new ImmutablePair<>("api3", null)));
-        InstanceInfo instance2 = createMultipleApisInstance(2, Arrays.asList(
+        var instance2 = createMultipleApisInstance(2, Arrays.asList(
                 new ImmutablePair<>(null, "2.7.0"),
                 new ImmutablePair<>("api1", "0.0.0"),
                 new ImmutablePair<>("api2", "3.0.1")));
-        InstanceInfo instance3 = createMultipleApisInstance(3, Arrays.asList(
+        var instance3 = createMultipleApisInstance(3, Arrays.asList(
                 new ImmutablePair<>("api1", "1.0.1"),
                 new ImmutablePair<>("api3", "2.0.0"),
                 new ImmutablePair<>("api1", "1.0-99")));
-        List<InstanceInfo> instances = Arrays.asList(instance1, instance2, instance3);
+        List<ServiceInstance> instances = Arrays.asList(instance1, instance2, instance3);
 
-        when(eurekaClient.getApplication(CLIENT_SERVICE_ID)).thenReturn(new Application(CLIENT_SERVICE_ID, instances));
+        when(discoveryClient.getServices()).thenReturn(List.of(CLIENT_SERVICE_ID));
+        when(discoveryClient.getInstances(CLIENT_SERVICE_ID)).thenReturn(instances);
 
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(CLIENT_SERVICE_ID);
 
@@ -301,7 +320,7 @@ class ServicesInfoServiceTest {
         )));
     }
 
-    private InstanceInfo createMultipleApisInstance(int clientNumber, List<Pair<String, String>> versions) {
+    private ServiceInstance createMultipleApisInstance(int clientNumber, List<Pair<String, String>> versions) {
         Map<String, String> metadata = new HashMap<>();
         ApiInfo apiInfo;
 
@@ -321,28 +340,28 @@ class ServicesInfoServiceTest {
         return createBasicTestInstance(metadata);
     }
 
-    private InstanceInfo createBasicTestInstance() {
+    private ServiceInstance createBasicTestInstance() {
         return createBasicTestInstance(InstanceInfo.InstanceStatus.UP, Collections.emptyMap());
     }
 
-    private InstanceInfo createBasicTestInstance(Map<String, String> metadata) {
+    private ServiceInstance createBasicTestInstance(Map<String, String> metadata) {
         return createBasicTestInstance(InstanceInfo.InstanceStatus.UP, metadata);
     }
 
-    private InstanceInfo createBasicTestInstance(InstanceInfo.InstanceStatus status) {
+    private ServiceInstance createBasicTestInstance(InstanceInfo.InstanceStatus status) {
         return createBasicTestInstance(status, Collections.emptyMap());
     }
 
-    private InstanceInfo createBasicTestInstance(InstanceInfo.InstanceStatus status, Map<String, String> metadata) {
-        return InstanceInfo.Builder.newBuilder()
+    private ServiceInstance createBasicTestInstance(InstanceInfo.InstanceStatus status, Map<String, String> metadata) {
+        return new EurekaServiceInstance(InstanceInfo.Builder.newBuilder()
                 .setAppName(CLIENT_SERVICE_ID)
                 .setInstanceId(CLIENT_INSTANCE_ID + Math.random())
                 .setStatus(status)
                 .setMetadata(metadata)
-                .build();
+                .build());
     }
 
-    private InstanceInfo createFullTestInstance() {
+    private ServiceInstance createFullTestInstance() {
         ApiInfo apiInfo = ApiInfo.builder()
                 .apiId(CLIENT_API_ID)
                 .version(CLIENT_API_VERSION)
@@ -360,7 +379,7 @@ class ServicesInfoServiceTest {
         metadata.put(AUTHENTICATION_APPLID, CLIENT_AUTHENTICATION_APPLID);
         metadata.put(CLIENT_CUSTOM_METADATA_KEY, CLIENT_CUSTOM_METADATA_VALUE);
 
-        return InstanceInfo.Builder.newBuilder()
+        return new EurekaServiceInstance(InstanceInfo.Builder.newBuilder()
                 .setAppName(CLIENT_SERVICE_ID)
                 .setInstanceId(CLIENT_INSTANCE_ID + Math.random())
                 .setHostName(CLIENT_HOSTNAME)
@@ -371,7 +390,7 @@ class ServicesInfoServiceTest {
                 .setHealthCheckUrls(CLIENT_RELATIVE_HEALTH_URL, null, null)
                 .setStatusPageUrl(null, CLIENT_STATUS_URL)
                 .setMetadata(metadata)
-                .build();
+                .build());
     }
 
     @Nested

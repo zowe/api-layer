@@ -350,6 +350,19 @@ class ZaasClientImplHttpsTests {
     }
 
     @Test
+    void testPassTicketWithToken_InValidApplicationID_throwsException() throws Exception {
+
+        ZaasPassTicketResponse zaasPassTicketResponse = new ZaasPassTicketResponse();
+
+        var response = prepareResponse(500, false);
+        when(response.getEntity()).thenReturn(httpsEntity);
+        when(httpsEntity.getContent()).thenReturn(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(zaasPassTicketResponse)));
+
+        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> passTicketService.passTicket(token, "XBADAPPL"));
+        assertTrue(exception.getMessage().contains("'ZWEAS504E', message='Internal server error while generating PassTicket.'"));
+    }
+
+    @Test
     void givenValidToken_whenLogout_thenSuccess() throws ZaasClientException {
         prepareResponse(HttpStatus.SC_NO_CONTENT, true);
         String authToken = tokenService.login(getAuthHeader(VALID_USER, VALID_PASSWORD));
@@ -362,7 +375,7 @@ class ZaasClientImplHttpsTests {
         when(response.getEntity()).thenReturn(httpsEntity);
         ZaasClientException exception = assertThrows(ZaasClientException.class, () -> tokenService.logout("invalid"));
 
-        assertTrue(exception.getMessage().contains("'ZWEAS130E', message='Invalid token provided'"));
+        assertTrue(exception.getMessage().contains("'ZWEAO402E'"));
     }
 
     @Test

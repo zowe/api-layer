@@ -24,6 +24,7 @@ import org.zowe.apiml.gateway.service.TokenProvider;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties.CookieProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -31,14 +32,8 @@ import java.util.function.Function;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.util.CollectionUtils.toMultiValueMap;
 
 @ExtendWith(MockitoExtension.class)
@@ -61,6 +56,9 @@ class TokenAuthFilterTest {
     @Mock
     private AuthConfigurationProperties authConfigurationProperties;
 
+    @Mock
+    private AuthExceptionHandlerReactive authExceptionHandlerReactive;
+
     private TokenAuthFilter tokenAuthFilter;
 
     @Nested
@@ -70,7 +68,7 @@ class TokenAuthFilterTest {
         void setUp() {
             when(serverWebExchange.getRequest()).thenReturn(httpRequest);
 
-            tokenAuthFilter = new TokenAuthFilter(tokenProvider, authConfigurationProperties);
+            tokenAuthFilter = new TokenAuthFilter(tokenProvider, authConfigurationProperties, authExceptionHandlerReactive);
         }
 
         @Nested
@@ -131,14 +129,14 @@ class TokenAuthFilterTest {
             }
 
             @Test
-            void givenTokenIsInvalidError_thenStopChainAndReturnError() {
+            void givenTokenIsInvalidError_thenCompletesWithCorrectHandler() {
                 mockTokenInCookie();
-
+                when(authExceptionHandlerReactive.handleServiceUnavailable(any()))
+                    .thenReturn(Mono.empty());
                 when(tokenProvider.validateToken("token")).thenReturn(Mono.error(new RuntimeException("error in validation")));
                 StepVerifier.create(tokenAuthFilter.filter(serverWebExchange, chain))
-                    .expectErrorSatisfies(error -> assertEquals("error in validation", error.getMessage()))
-                    .verify();
-
+                    .verifyComplete();
+                verify(authExceptionHandlerReactive, times(1)).handleServiceUnavailable(any());
                 verify(chain, never()).filter(serverWebExchange);
             }
 
@@ -155,16 +153,15 @@ class TokenAuthFilterTest {
             }
 
             @Test
-            void givenTokenIsInvalidEmptyUser_thenContinueChain() {
+            void givenTokenIsInvalidEmptyUser_thenHandleException() {
                 mockTokenInCookie();
                 when(tokenProvider.validateToken("token")).thenReturn(Mono.just(new QueryResponse()));
-                when(chain.filter(any())).thenReturn(Mono.empty());
+                when(authExceptionHandlerReactive.handleServiceUnavailable(any()))
+                    .thenReturn(Mono.error(new TokenNotValidException("Invalid token")));
 
                 StepVerifier.create(tokenAuthFilter.filter(serverWebExchange, chain))
-                    .expectComplete()
+                    .expectError(TokenNotValidException.class)
                     .verify();
-
-                verify(chain, times(1)).filter(any());
             }
         }
 

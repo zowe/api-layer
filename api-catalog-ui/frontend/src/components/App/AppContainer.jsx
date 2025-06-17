@@ -7,7 +7,24 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { withRouter } from 'react-router-dom';
 import App from './App';
+import { connect } from "react-redux";
+import { userActions } from '../../actions/user-actions';
 
-export default withRouter(App);
+const withRouter = (App) =>{
+    return (props) =>{
+        return <App {...props}/>
+    }
+}
+
+const mapDispatchToProps = (dispatch) => ({
+    success: (user) => dispatch(userActions.query(user)),
+});
+
+
+const mapStateToProps = (state) => ({
+    authentication: state.authenticationReducer,
+});
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(withRouter(App))

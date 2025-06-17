@@ -19,7 +19,7 @@ import org.apache.hc.core5.http.HttpStatus;
  */
 @AllArgsConstructor
 @Getter
-public abstract class AbstractIRRPassTicketException extends Exception {
+public abstract class AbstractIRRPassTicketException extends PassTicketException {
 
     private static final long serialVersionUID = -6233392272992529775L;
 
@@ -38,7 +38,10 @@ public abstract class AbstractIRRPassTicketException extends Exception {
     }
 
     protected String getMessage(String baseMessage) {
-        return baseMessage + ' ' + getErrorCode().getMessage();
+        return String.format("%s %s: safRc=%d, racfRc=%d, racfRsn=%d",
+            baseMessage, getErrorCode().getMessage(),
+            this.safRc, this.racfRc, this.racfRsn
+        );
     }
 
     public int getHttpStatus() {

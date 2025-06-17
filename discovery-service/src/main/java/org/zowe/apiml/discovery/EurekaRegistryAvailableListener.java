@@ -11,7 +11,8 @@
 package org.zowe.apiml.discovery;
 
 import org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -22,17 +23,15 @@ import org.springframework.stereotype.Component;
  * It is calling services that require registry to be initialized.
  */
 @Component
+@RequiredArgsConstructor
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class EurekaRegistryAvailableListener implements ApplicationListener<EurekaRegistryAvailableEvent> {
+
     private final StaticServicesRegistrationService registrationService;
 
-    @Autowired
-    public EurekaRegistryAvailableListener(StaticServicesRegistrationService registrationService) {
-        this.registrationService = registrationService;
-    }
-
-    @SuppressWarnings("NullableProblems")
     @Override
     public void onApplicationEvent(EurekaRegistryAvailableEvent event) {
         registrationService.registerServices();
     }
+
 }

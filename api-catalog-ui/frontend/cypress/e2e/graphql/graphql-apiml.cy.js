@@ -18,7 +18,7 @@ const expectedKeyWords = [
     'Down Under'
 ];
 const PATH_TO_SERVICE_DESCRIPTION =
-    '#root > div > div.content > div.main > div.main-content2.detail-content > div.content-description-container > div > div > div.header > h6:nth-child(4)';
+    '#root > div > div.content > div.main > div.main-content2.detail-content > div.content-description-container > div > div.tabs-swagger > div.serviceTab > div.header > h6:nth-child(4)';
 const PATH_TO_PLAYGROUND_INPUT_TEXTAREA =
     '#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-editor > div > div:nth-child(1) > textarea';
 const PATH_TO_QUERY_OUTPUT =
@@ -104,8 +104,6 @@ describe('>>> GraphiQL Playground page test', () => {
         cy.contains('Discoverable client with GraphQL').click();
 
         cy.get('#graphiql-container').should('exist');
-
-        cy.get(PATH_TO_PLAYGROUND_INPUT_TEXTAREA).should('be.visible');
 
         cy.get(PATH_TO_DEFAULT_QUERY)
             .should('exist')

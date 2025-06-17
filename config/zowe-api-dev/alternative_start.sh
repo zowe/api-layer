@@ -31,9 +31,9 @@ LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/classic
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin/j9vm
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/classic
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/default
-LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390/j9vm
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390x/classic
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390x/default
+LIBPATH="$LIBPATH":"${JAVA_HOME}"/lib/s390x/j9vm
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
 ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
@@ -213,7 +213,7 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dcaching.storage.evictionStrategy=${ZWE_CACHING_EVICTION_STRATEGY:-reject} \
   -Dcaching.storage.size=${ZWE_CACHING_STORAGE_SIZE:-100} \
   -Dcaching.storage.mode=${ZWE_CACHING_SERVICE_PERSISTENT:-inMemory} \
-  -Djgroups.bind.port=7098 \
+  -Djgroups.bind.port=7600 \
   -Djgroups.bind.address=${ZOWE_EXPLORER_HOST} \
   -Dcaching.storage.infinispan.initialHosts="${ZOWE_EXPLORER_HOST}[7099]" \
   -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \

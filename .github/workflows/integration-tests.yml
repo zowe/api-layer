@@ -32,6 +32,77 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
+    CITestsModulith:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 15
+
+        services:
+            apiml:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
+                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
+                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
+                    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
+                    SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
+                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_HOSTNAME: api-catalog-services
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+            zaas-service:
+                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://apiml:10010/gateway/certificates
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Run CI Tests
+                run: >
+                    ENV_CONFIG=docker-modulith ./gradlew runStartUpCheck :integration-tests:runContainerModulithTests --info
+                    -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ContainerCITestsModulith-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        results/**
+                        integration-tests/build/test-results/runContainerModulithTests/binary/**
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+
+            -   uses: ./.github/actions/teardown
+
     CITests:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
@@ -91,7 +162,7 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ./gradlew :integration-tests:runContainerTests --info
+                    ./gradlew runStartUpCheck :integration-tests:runContainerTests --info -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -168,6 +239,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_APIMLID: apiml2
+                    logbackService: ZWEAGW2
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -324,6 +396,7 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
+                    logbackService: ZWEAGW2
 
         steps:
             -   uses: actions/checkout@v4
@@ -334,7 +407,8 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ./gradlew :integration-tests:runGatewayCentralRegistryTest --info -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck :integration-tests:runGatewayCentralRegistryTest --info
+                    -Denvironment.config=-docker -Dgateway.instances=2 -Ddiscoverableclient.instances=0
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Dump CGW jacoco data
@@ -414,7 +488,7 @@ jobs:
                     ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "caching-service"
-                    JGROUPS_BIND_PORT: "7099"
+                    JGROUPS_BIND_PORT: "7600"
             central-gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
@@ -458,11 +532,12 @@ jobs:
 
             -   name: Build with Gradle
                 run: >
-                    ./gradlew :integration-tests:runZaasTest --info -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck :integration-tests:runZaasTest --info -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
                     -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
                     -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }} -Doidc.test.alt_user=${{ secrets.OKTA_WINNIE_USER }}
                     -Doidc.test.alt_pass=${{ secrets.OKTA_WINNIE_PASS }} -DidpConfiguration.host=${{secrets.OKTA_HOST}}
+                    -Ddiscoverableclient.instances=1
 
             -   name: Dump DC jacoco data
                 run: >
@@ -730,6 +805,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+                    logbackService: ZWEAGW2
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -808,6 +884,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     APIML_ROUTING_INSTANCEIDHEADER: true
+                    logbackService: ZWEAGW2
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -828,7 +905,8 @@ jobs:
 
             -   name: Run HA Tests
                 run: >
-                    ./gradlew runDeterministicLbHaTests --info -Denvironment.config=-ha
+                    ./gradlew runStartUpCheck runDeterministicLbHaTests --info
+                    -Denvironment.config=-ha -Ddiscoverableclient.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -904,6 +982,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
+                    logbackService: ZWEAGW2
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -980,8 +1059,12 @@ jobs:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: zaas-service
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: zaas-service-2
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -991,6 +1074,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+                    logbackService: ZWEAGW2
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1000,8 +1084,8 @@ jobs:
 
             -   name: Run Discovery Service Chaotic HA Tests
                 run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
-                    --info -Denvironment.config=-ha
+                    ./gradlew runStartUpCheck :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
+                    --info -Denvironment.config=-ha -Ddiscoverableclient.instances=1
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1010,7 +1094,7 @@ jobs:
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
-            # Coverage results are not stored in this job as it would not provide much additional data
+
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
@@ -1064,6 +1148,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+                    logbackService: ZWEAGW2
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1141,6 +1226,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+                    logbackService: ZWEAGW2
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1218,6 +1304,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+                    logbackService: ZWEAGW2
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1239,7 +1326,7 @@ jobs:
 
             -   name: Dump DC jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address discoverable-client --port 6303 --destfile ./results/discoverable-client.exec
+                    java -jar ./scripts/jacococli.jar dump --address discoverable-client --port 6303 --destfile ./results/discoverable-client.exec || echo "Discoverable Client is not available to obtain JaCoCo report at the moment"
 
             -   name: Correct Permisions
                 run: |
@@ -1271,10 +1358,10 @@ jobs:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
-                    JGROUPS_BIND_PORT: "7099"
+                    JGROUPS_BIND_PORT: "7600"
                     SERVER_SSL_KEYSTORETYPE: "PKCS12"
                     CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data_replica"
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service-2[7098]"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service-2[7600]"
                     CACHING_STORAGE_MODE: "infinispan"
                     APIML_SERVICE_PORT: "10022"
                     JGROUPS_BIND_ADDRESS: "caching-service"
@@ -1283,10 +1370,10 @@ jobs:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
-                    JGROUPS_BIND_PORT: "7098"
+                    JGROUPS_BIND_PORT: "7600"
                     SERVER_SSL_KEYSTORETYPE: "PKCS12"
                     CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data"
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7099]"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600]"
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "caching-service-2"
                     APIML_SERVICE_HOSTNAME: "caching-service-2"
@@ -1387,6 +1474,7 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
+                    logbackService: ZWEAGW2
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1502,7 +1590,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
     PublishResults:
-        needs: [ CITests,CITestsWithInfinispan,CITestsZaas,GatewayProxy,GatewayServiceRouting ]
+        needs: [ CITests,CITestsModulith,CITestsWithInfinispan,CITestsZaas,GatewayProxy,GatewayServiceRouting,CITestsWebSocketChaoticHA ]
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
@@ -1518,6 +1606,10 @@ jobs:
                 with:
                     name: ContainerCITests-${{ env.JOB_ID }}
                     path: containercitests
+            -   uses: actions/download-artifact@v4
+                with:
+                    name: ContainerCITestsModulith-${{ env.JOB_ID }}
+                    path: containercitestsmodulith
             -   uses: actions/download-artifact@v4
                 with:
                     name: CITestsWithInfinispan-${{ env.JOB_ID }}
@@ -1541,7 +1633,7 @@ jobs:
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --info coverage sonar -Dresults="containercitests/results,citestswithinfinispan/results,GatewayProxy/results,citestswebsocketchaoticha/results,GatewayServiceRouting/results,ContainerCITestsZaas/results"
+                    ./gradlew --scan coverage sonar -Dresults="containercitests/results,containercitestsmodulith/results,citestswithinfinispan/results,GatewayProxy/results,citestswebsocketchaoticha/results,GatewayServiceRouting/results,ContainerCITestsZaas/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1549,5 +1641,13 @@ jobs:
                     SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
                     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: failure()
+                with:
+                    name: SonarResults-${{ env.JOB_ID }}
+                    path: |
+                        build/reports/problems/problems-report.html
 
             -   uses: ./.github/actions/teardown

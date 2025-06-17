@@ -15,17 +15,21 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.Credentials;
+import org.zowe.apiml.util.config.DiscoverableClientConfiguration;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -37,12 +41,17 @@ import static org.awaitility.Awaitility.await;
  */
 @Slf4j
 public class ApiMediationLayerStartupChecker {
+
     private final GatewayServiceConfiguration gatewayConfiguration;
+    private final DiscoverableClientConfiguration discoverableClientConfiguration;
+    private final Credentials credentials;
     private final List<Service> servicesToCheck = new ArrayList<>();
     private final String healthEndpoint = "/application/health";
 
     public ApiMediationLayerStartupChecker() {
         gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        credentials = ConfigReader.environmentConfiguration().getCredentials();
+        discoverableClientConfiguration = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration();
 
         servicesToCheck.add(new Service("Gateway", "$.status"));
         servicesToCheck.add(new Service("ZAAS", "$.components.gateway.details.zaas"));
@@ -63,13 +72,16 @@ public class ApiMediationLayerStartupChecker {
         try {
             final HttpResponse response = HttpClientUtils.client().execute(request);
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                log.warn("Unexpected HTTP status code: {} for URI: {}", response.getStatusLine().getStatusCode(), request.getURI().toString());
+                log.warn("Unexpected HTTP status code: {} for URI: {}. Message: {}", response.getStatusLine().getStatusCode(), request.getURI().toString(), EntityUtils.toString(response.getEntity()));
                 return null;
             }
             final String jsonResponse = EntityUtils.toString(response.getEntity());
             log.debug("URI: {}, JsonResponse is {}", request.getURI().toString(), jsonResponse);
 
-            return JsonPath.parse(jsonResponse);
+            if (StringUtils.isNotEmpty(jsonResponse)) {
+                return JsonPath.parse(jsonResponse);
+            }
+            return null;
         } catch (IOException e) {
             log.warn("Check failed on getting the document: {}", e.getMessage());
             return null;
@@ -79,6 +91,7 @@ public class ApiMediationLayerStartupChecker {
     private boolean areAllServicesUp() {
         try {
             HttpGet requestToGateway = HttpRequestUtils.getRequest(healthEndpoint);
+            requestToGateway.addHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes()));
             DocumentContext context = getDocumentAsContext(requestToGateway);
             if (context == null) {
                 return false;
@@ -98,14 +111,20 @@ public class ApiMediationLayerStartupChecker {
             }
 
             String allComponents = context.read("$.components.discoveryComposite.components.discoveryClient.details.services").toString();
-            boolean isTestApplicationUp = allComponents.contains("discoverableclient");
+            boolean isTestApplicationUp = allComponents.toLowerCase().contains("discoverableclient");
+            boolean needsTestApplication = discoverableClientConfiguration.getInstances() > 0;
+
             log.debug("Discoverable Client is {}", isTestApplicationUp);
+            log.debug("Needs Discoverable Client: {}", needsTestApplication);
+            isTestApplicationUp = !needsTestApplication || isTestApplicationUp;
+
 
             Integer amountOfActiveGateways = context.read("$.components.gateway.details.gatewayCount");
             boolean isValidAmountOfGatewaysUp = amountOfActiveGateways != null &&
-                amountOfActiveGateways.equals(gatewayConfiguration.getInstances());
-            log.debug("There is {} gateways", amountOfActiveGateways);
+                amountOfActiveGateways >= gatewayConfiguration.getInstances();
+            log.debug("There are {} gateways", amountOfActiveGateways);
             if (!isValidAmountOfGatewaysUp) {
+                log.debug("Expecting at least {} gateways", gatewayConfiguration.getInstances());
                 return false;
             }
             // Consider properly the case with multiple gateway services running on different ports.
@@ -114,7 +133,12 @@ public class ApiMediationLayerStartupChecker {
                 String[] hosts = gatewayConfiguration.getHost().split(",");
                 for (int i = 0; i < Math.min(internalPorts.length, hosts.length); i++) {
                     log.debug("Trying to access the Gateway at port {}", internalPorts[i]);
-                    HttpRequestUtils.getResponse(healthEndpoint, HttpStatus.SC_OK, Integer.parseInt(internalPorts[i]), hosts[i]);
+                    requestToGateway = HttpRequestUtils.getRequest(healthEndpoint);
+                    requestToGateway.addHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes()));
+                    var response = HttpClientUtils.client().execute(requestToGateway);
+                    if (response.getStatusLine().getStatusCode() != 200) {
+                        throw new IOException();
+                    }
                 }
             }
 
@@ -127,6 +151,7 @@ public class ApiMediationLayerStartupChecker {
 
     private boolean isAuthUp() {
         HttpGet requestToZaas = new HttpGet(HttpRequestUtils.getUriFromZaas(healthEndpoint));
+        requestToZaas.addHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes()));
         DocumentContext zaasContext = getDocumentAsContext(requestToZaas);
         if (zaasContext == null) {
             return false;

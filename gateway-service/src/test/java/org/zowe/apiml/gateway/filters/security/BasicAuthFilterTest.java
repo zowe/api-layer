@@ -17,7 +17,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.mock.http.server.reactive.MockServerHttpResponse;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
@@ -30,29 +32,30 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.util.CollectionUtils.toMultiValueMap;
 
 @ExtendWith(MockitoExtension.class)
 public class BasicAuthFilterTest {
 
-    @Mock
-    private BasicAuthProvider basicAuthProvider;
+    private static final String VALID_BASIC_CREDENTIALS = "dXNlcjpwYXNz";
 
-    @Mock
-    private WebFilterChain chain;
+    @Mock private BasicAuthProvider basicAuthProvider;
 
-    @Mock
-    private ServerWebExchange serverWebExchange;
+    @Mock private WebFilterChain chain;
 
-    @Mock
-    private ServerHttpRequest httpRequest;
+    @Mock private ServerWebExchange serverWebExchange;
+
+    @Mock private ServerHttpRequest httpRequest;
 
     private BasicAuthFilter basicAuthFilter;
+    private MockServerHttpResponse response;
 
     @Nested
     class GivenBasicAuthFilter {
@@ -61,17 +64,19 @@ public class BasicAuthFilterTest {
         void setUp() {
             when(serverWebExchange.getRequest()).thenReturn(httpRequest);
             basicAuthFilter = new BasicAuthFilter(basicAuthProvider);
+            response = new MockServerHttpResponse();
+            lenient().when(serverWebExchange.getResponse()).thenReturn(response);
         }
 
         @Nested
         class WhenBasicCredentialsAreAvailable {
 
-            private void mockBasicAuth() {
+            private void mockBasicAuth(String credentials) {
                 when(httpRequest.getHeaders())
                     .thenReturn(new HttpHeaders(
                         toMultiValueMap(
                             singletonMap("Authorization", asList(
-                                "Basic dXNlcjpwYXNz"
+                                "Basic " + credentials
                             ))
                         )
                     ));
@@ -80,7 +85,7 @@ public class BasicAuthFilterTest {
             @SuppressWarnings("unchecked")
             @Test
             void givenAuthIsValid_whenFilter_thenAuthenticate() {
-                mockBasicAuth();
+                mockBasicAuth(VALID_BASIC_CREDENTIALS);
                 when(basicAuthProvider.getToken("Basic dXNlcjpwYXNz"))
                     .thenReturn(Mono.just("token"));
                 Mono<Void> monoSpy = spy(Mono.empty());
@@ -95,8 +100,8 @@ public class BasicAuthFilterTest {
 
             @Test
             void givenAuthIsInvalidError_whenFilter_thenError() {
-                mockBasicAuth();
-                when(basicAuthProvider.getToken("Basic dXNlcjpwYXNz"))
+                mockBasicAuth(VALID_BASIC_CREDENTIALS);
+                when(basicAuthProvider.getToken("Basic " + VALID_BASIC_CREDENTIALS))
                     .thenReturn(Mono.error(new RuntimeException("invalid credentials")));
 
                 StepVerifier.create(basicAuthFilter.filter(serverWebExchange, chain))
@@ -108,8 +113,8 @@ public class BasicAuthFilterTest {
 
             @Test
             void givenAuthIsInvalidEmpty_whenFilter_thenDontContinue() {
-                mockBasicAuth();
-                when(basicAuthProvider.getToken("Basic dXNlcjpwYXNz"))
+                mockBasicAuth(VALID_BASIC_CREDENTIALS);
+                when(basicAuthProvider.getToken("Basic " + VALID_BASIC_CREDENTIALS))
                     .thenReturn(Mono.empty());
 
                 StepVerifier.create(basicAuthFilter.filter(serverWebExchange, chain))
@@ -117,6 +122,45 @@ public class BasicAuthFilterTest {
                     .verify();
 
                 verify(chain, never()).filter(serverWebExchange);
+            }
+
+            @Test
+            void givenAuthIsInalidBase64_whenFilter_thenUnauthorized() {
+                mockBasicAuth("INVALID_BASE64");
+
+                StepVerifier.create(basicAuthFilter.filter(serverWebExchange, chain))
+                    .expectComplete()
+                    .verify();
+
+                assertEquals(HttpStatusCode.valueOf(401), response.getStatusCode());
+                verifyNoInteractions(basicAuthProvider);
+            }
+
+            @Test
+            void givenAuthIsInvalidFormat_whenFilter_thenUnauthorized() {
+                mockBasicAuth("dXNlcnBhc3M="); //userpass (no colon)
+
+                StepVerifier.create(basicAuthFilter.filter(serverWebExchange, chain))
+                    .expectComplete()
+                    .verify();
+
+                assertEquals(HttpStatusCode.valueOf(401), response.getStatusCode());
+                verifyNoInteractions(basicAuthProvider);
+            }
+
+            @Test
+            void givenAuthIsValidFormat_whenEmptyToken_thenUnauthorized() {
+                mockBasicAuth(VALID_BASIC_CREDENTIALS);
+
+                when(basicAuthProvider.getToken("Basic " + VALID_BASIC_CREDENTIALS))
+                    .thenReturn(Mono.just(""));
+
+                StepVerifier.create(basicAuthFilter.filter(serverWebExchange, chain))
+                    .expectComplete()
+                    .verify();
+
+                assertEquals(HttpStatusCode.valueOf(401), response.getStatusCode());
+                verifyNoInteractions(chain);
             }
 
         }

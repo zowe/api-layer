@@ -113,11 +113,11 @@ public class InstanceInitializeService {
         log.debug("Found: " + listApplication.size() + " services on startup.");
         String s = listApplication.stream()
             .map(Application::getName).collect(Collectors.joining(", "));
-        log.debug("Discovered Services: " + s);
+        log.debug("Discovered Services: {}", s);
 
         // create containers for services
         listApplication.forEach(this::createContainers);
-
+        listApplication.forEach(this::createServices);
         // populate the cache
         Collection<APIContainer> containers = cachedProductFamilyService.getAllContainers();
         log.debug("Cache contains: " + containers.size() + " tiles.");
@@ -133,6 +133,14 @@ public class InstanceInitializeService {
                 cachedProductFamilyService.saveContainerFromInstance(productFamilyId, instanceInfo);
             }
 
+        });
+    }
+
+    public void createServices(Application application) {
+        cachedServicesService.updateService(application.getName(), application);
+        application.getInstances().forEach(instanceInfo -> {
+            log.debug("Initialising service: {}", instanceInfo.getInstanceId());
+            cachedProductFamilyService.addService(instanceInfo);
         });
     }
 

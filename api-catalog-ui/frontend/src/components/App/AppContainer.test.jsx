@@ -11,7 +11,7 @@ import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import { Router } from 'react-router-dom';
+import {HashRouter} from 'react-router';
 import AppContainer from './AppContainer';
 
 const mockStore = configureStore();
@@ -19,21 +19,17 @@ const mockStore = configureStore();
 describe('App Container', () => {
     let store;
     let container;
+    const authentication = { user: 'user' };
     beforeEach(() => {
-        store = mockStore({});
-        const history = {
-            location: {
-                pathname: {},
-            },
-            push: jest.fn(),
-            listen: jest.fn(),
-        };
+        store = mockStore({
+            authenticationReducer: authentication
+        });
         container = render(
-            <Router history={history}>
+            <HashRouter>
                 <Provider store={store}>
                     <AppContainer />
                 </Provider>
-            </Router>
+            </HashRouter>
         );
     });
 

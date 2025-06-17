@@ -16,7 +16,7 @@ import { CustomizedSnippedGenerator } from '../../utils/generateSnippets';
 import { AdvancedFilterPlugin } from '../../utils/filterApis';
 import PropTypes from "prop-types";
 
-function transformSwaggerToCurrentHost(swagger, selectedService) {
+function transformSwaggerToCurrentHost(swagger, service) {
     swagger.host = window.location.host;
 
     if (swagger.servers?.length) {
@@ -25,7 +25,7 @@ function transformSwaggerToCurrentHost(swagger, selectedService) {
             try {
                 const swaggerUrl = new URL(server.url);
                 if (swaggerUrl?.pathname?.includes('gateway')) {
-                    const basePath = selectedService?.basePath === '/' ? '' : selectedService?.basePath || '';
+                    const basePath = service?.basePath === '/' ? '' : service?.basePath || '';
 
                     server.url = location + basePath + swaggerUrl.pathname;
                 }
@@ -63,10 +63,10 @@ export default class SwaggerUIApiml extends Component {
 
     componentDidUpdate(prevProps) {
         setFilterBarStyle();
-        const { selectedService, selectedVersion } = this.props;
+        const { service, selectedVersion } = this.props;
         if (
-            selectedService.serviceId !== prevProps.selectedService.serviceId ||
-            selectedService.tileId !== prevProps.selectedService.tileId ||
+            service.serviceId !== prevProps.service.serviceId ||
+            service.tileId !== prevProps.service.tileId ||
             selectedVersion !== prevProps.selectedVersion
         ) {
             this.setSwaggerState();
@@ -97,11 +97,11 @@ export default class SwaggerUIApiml extends Component {
             // prettier-ignore
             // eslint-disable-next-line no-shadow, react/no-unstable-nested-components
             operations: (Original, { React }) => props => { // NOSONAR
-                const { selectedService, selectedVersion, tiles } = this.props;
+                const { service, selectedVersion, tiles } = this.props;
 
                 return (
                     <div>
-                        <InstanceInfo {...props} selectedService={selectedService} selectedVersion={selectedVersion} tiles={tiles} />
+                        <InstanceInfo {...props} service={service} selectedVersion={selectedVersion} tiles={tiles} />
                         <Original {...props} />
                     </div>
                 )
@@ -110,36 +110,36 @@ export default class SwaggerUIApiml extends Component {
     });
 
     setSwaggerState = () => {
-        const { selectedService, selectedVersion } = this.props;
+        const { service, selectedVersion } = this.props;
         let codeSnippets = null;
-        if (selectedService && 'apis' in selectedService && selectedService.apis && selectedService.apis.length !== 0) {
+        if (service && 'apis' in service && service.apis && service.apis.length !== 0) {
             if (
-                selectedService.apis[selectedVersion] !== null &&
-                selectedService.apis[selectedVersion] !== undefined &&
-                'codeSnippet' in selectedService.apis[selectedVersion]
+                service.apis[selectedVersion] !== null &&
+                service.apis[selectedVersion] !== undefined &&
+                'codeSnippet' in service.apis[selectedVersion]
             ) {
-                codeSnippets = selectedService.apis[selectedVersion].codeSnippet;
+                codeSnippets = service.apis[selectedVersion].codeSnippet;
             } else if (
-                selectedService.apis[selectedService.defaultApiVersion] !== null &&
-                selectedService.apis[selectedService.defaultApiVersion] !== undefined &&
-                'codeSnippet' in selectedService.apis[selectedService.defaultApiVersion]
+                service.apis[service.defaultApiVersion] !== null &&
+                service.apis[service.defaultApiVersion] !== undefined &&
+                'codeSnippet' in service.apis[service.defaultApiVersion]
             ) {
-                codeSnippets = selectedService.apis[selectedService.defaultApiVersion].codeSnippet;
+                codeSnippets = service.apis[service.defaultApiVersion].codeSnippet;
             } else if (
-                selectedService.apis.default !== null &&
-                selectedService.apis.default !== undefined &&
-                'codeSnippet' in selectedService.apis.default
+                service.apis.default !== null &&
+                service.apis.default !== undefined &&
+                'codeSnippet' in service.apis.default
             ) {
-                codeSnippets = selectedService.apis.default.codeSnippet;
+                codeSnippets = service.apis.default.codeSnippet;
             }
         }
         try {
             // If no version selected use the default apiDoc
             if (
                 (selectedVersion === null || selectedVersion === undefined) &&
-                selectedService?.apiDoc?.length
+                service?.apiDoc?.length
             ) {
-                const swagger = transformSwaggerToCurrentHost(JSON.parse(selectedService.apiDoc), selectedService);
+                const swagger = transformSwaggerToCurrentHost(JSON.parse(service.apiDoc), service);
 
                 this.setState({
                     swaggerReady: true,
@@ -153,8 +153,8 @@ export default class SwaggerUIApiml extends Component {
                     },
                 });
             }
-            if (selectedVersion && selectedService) {
-                const basePath = `${selectedService.serviceId}/${selectedVersion}`;
+            if (selectedVersion && service) {
+                const basePath = `${service.serviceId}/${selectedVersion}`;
                 const url = `${getBaseUrl()}${process?.env.REACT_APP_APIDOC_UPDATE}/${basePath}`;
                 this.setState({
                     swaggerReady: true,
@@ -166,7 +166,7 @@ export default class SwaggerUIApiml extends Component {
                         plugins: [this.customPlugins, AdvancedFilterPlugin, CustomizedSnippedGenerator(codeSnippets)],
                         responseInterceptor: (res) => {
                             // response.text field is used to render the swagger
-                            const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text), selectedService);
+                            const swagger = transformSwaggerToCurrentHost(JSON.parse(res.text), service);
                             res.text = JSON.stringify(swagger);
                             return res;
                         },
@@ -179,13 +179,13 @@ export default class SwaggerUIApiml extends Component {
     };
 
     render() {
-        const { selectedService } = this.props;
+        const { service } = this.props;
         const { swaggerReady, swaggerProps } = this.state;
         let error = false;
         if (
-            selectedService.apiDoc === undefined ||
-            selectedService.apiDoc === null ||
-            selectedService.apiDoc.length === 0
+            service.apiDoc === undefined ||
+            service.apiDoc === null ||
+            service.apiDoc.length === 0
         ) {
             error = true;
         }
@@ -194,8 +194,8 @@ export default class SwaggerUIApiml extends Component {
                 {error && (
                     <div style={{ width: '100%', background: '#ffffff', paddingLeft: 55 }}>
                         <h4 id="no-doc_message">
-                            {selectedService.apiDocErrorMessage
-                                ? selectedService.apiDocErrorMessage
+                            {service.apiDocErrorMessage
+                                ? service.apiDocErrorMessage
                                 : "API documentation could not be retrieved. There may be something wrong in your Swagger definition. Please review the values of 'schemes', 'host' and 'basePath'."}
                         </h4>
                     </div>
@@ -211,7 +211,7 @@ export default class SwaggerUIApiml extends Component {
 }
 
 SwaggerUIApiml.propTypes = {
-    selectedService: PropTypes.shape({
+    service: PropTypes.shape({
         apiDoc: PropTypes.string,
         apiDocErrorMessage: PropTypes.string,
     }).isRequired,

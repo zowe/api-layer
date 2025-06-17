@@ -14,9 +14,8 @@ spring:
         ansi:
             enabled: always
 
-
 server:
-    address: ${apiml.service.hostname}
+    address: 0.0.0.0
     max-http-header-size: 40000
     ssl:
         keyAlias: localhost

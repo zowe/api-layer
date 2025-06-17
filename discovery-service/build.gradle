@@ -22,11 +22,12 @@ apply from: "$projectDir/gradle/lite.gradle"
 apply plugin: 'com.google.cloud.tools.jib'
 apply from: "../gradle/jib.gradle"
 
-def javaAgentPort = 6302
-def debugPort = 5121
+def applicationPort = '10011'
+def javaAgentPort = '6302'
+def debugPort = '5121'
 def componentName = "discovery-service"
 
-setJib(componentName, javaAgentPort, debugPort)
+setJib(componentName, javaAgentPort, debugPort, applicationPort)
 jib.container.args.add('--spring.profiles.active=https')
 
 
@@ -48,6 +49,7 @@ springBoot {
 }
 
 gitProperties {
+    dotGitDirectory = project.rootProject.layout.projectDirectory.dir(".git")
     gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
 }
 
@@ -94,6 +96,18 @@ bootRun {
     if (project.hasProperty('args')) {
         args project.args.split(',')
     }
+
+    jvmArgs([
+        '--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED',
+        '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
+        '--add-opens=java.base/java.io=ALL-UNNAMED',
+        '--add-opens=java.base/java.util=ALL-UNNAMED',
+        '--add-opens=java.base/java.util.concurrent=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED',
+        '--add-opens=java.base/javax.net.ssl=ALL-UNNAMED',
+        '--add-opens=java.base/java.net=ALL-UNNAMED'
+    ])
 
     debugOptions {
         port = 5011

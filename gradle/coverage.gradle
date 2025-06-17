@@ -1,6 +1,7 @@
 apply plugin: 'jacoco'
 
 ext.javaProjectsWithUnitTests = [
+    'apiml',
     'api-catalog-services',
     'common-service-core',
     'discoverable-client',

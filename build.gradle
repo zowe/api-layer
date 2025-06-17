@@ -32,6 +32,7 @@ buildscript {
         classpath libs.gradle.jib.plugin
         classpath libs.apache.compress
     }
+
 }
 
 
@@ -109,6 +110,7 @@ configure(subprojects.findAll { it.name in [
     'caching-service',
     'discovery-service',
     'gateway-service',
+    'apiml',
     'zaas-service',
     'integration-tests'
 ]}) {

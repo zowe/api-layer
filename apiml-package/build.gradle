@@ -1,0 +1,82 @@
+ext {
+    artifactName = 'apiml-package'
+    pullNo = project.hasProperty("pullRequest") && project.getProperty("pullRequest") != null ? "-" + project.getProperty("pullRequest") : ""
+}
+
+configurations {
+    apimlServiceJar
+    zip
+}
+def resourceDir = 'src/main/resources/'
+
+dependencies {
+    apimlServiceJar(project(path: ":apiml", configuration: "liteJarConfiguration"))
+}
+
+task packageApiml(type: Zip) {
+    archiveFileName = artifactName + pullNo + ".zip"
+    includeEmptyDirs = true
+
+    into('/') {
+        from "$resourceDir/zosmf-static-definition.yaml.template"
+        from "$buildDir/convert/manifest.yaml"
+        from "../schemas/apiml-schema.json"
+    }
+
+    into('bin/') {
+        from configurations.apimlServiceJar
+        from "$resourceDir/bin/start.sh"
+        from "$resourceDir/bin/validate.sh"
+    }
+}
+
+// TODO should z/OSMF static definition be part of this package now?
+
+// save build information to manifest
+packageApiml.doFirst {
+    String manifest = file('src/main/resources/manifest.yaml').text
+
+    def getCommitHash = 'git rev-parse --verify HEAD'.execute()
+    def commit_hash = new ByteArrayOutputStream()
+    def command_err = new ByteArrayOutputStream()
+    getCommitHash.consumeProcessOutput(commit_hash, command_err)
+    getCommitHash.waitForOrKill(1000)
+
+    manifest = manifest.replaceAll("\\{\\{build.branch\\}\\}", System.getenv("BRANCH_NAME") ?: "")
+        .replaceAll("\\{\\{build.number\\}\\}", System.getenv("BUILD_NUMBER") ?: "")
+        .replaceAll("\\{\\{build.commitHash\\}\\}", commit_hash.toString().trim())
+        .replaceAll("\\{\\{build.timestamp\\}\\}", (new Date()).getTime().toString())
+
+    Provider<Directory> output = layout.buildDirectory.dir("convert")
+    def scriptOutputDir = output.get().asFile
+    if (!scriptOutputDir.exists()) {
+        scriptOutputDir.mkdirs()
+    }
+
+    Provider<RegularFile> manifestOutput = layout.buildDirectory.file("convert/manifest.yaml")
+    File convertedManifest = manifestOutput.get().asFile
+    if (convertedManifest.exists()) {
+        convertedManifest.delete()
+    }
+    convertedManifest.createNewFile()
+    convertedManifest.write(manifest)
+}
+
+jar.dependsOn(packageApiml)
+build.dependsOn(packageApiml)
+
+artifacts {
+    zip packageApiml
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact("$buildDir/distributions/$artifactName" + pullNo + ".zip")
+        }
+    }
+}
+
+jar {
+    enabled false
+}

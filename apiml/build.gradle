@@ -1,0 +1,135 @@
+buildscript {
+    repositories mavenRepositories
+    dependencies {
+        classpath libs.spring.boot.gradle.plugin
+        classpath libs.jgit
+    }
+}
+
+plugins {
+    alias(libs.plugins.gradle.git.properties)
+}
+
+normalization {
+    runtimeClasspath {
+        ignore("**/*git.properties*")
+        ignore("**/*build-info.properties*")
+    }
+}
+
+apply plugin: 'org.springframework.boot'
+apply from: "$projectDir/gradle/lite.gradle"
+apply plugin: 'com.google.cloud.tools.jib'
+apply from: "../gradle/jib.gradle"
+
+def applicationPort = '10010-10011'
+def javaAgentPort = '6310'
+def debugPort = '5130'
+def componentName = "apiml"
+
+setJib(componentName, javaAgentPort, debugPort, applicationPort)
+jib.container.mainClass = 'org.zowe.apiml.ApimlApplication'
+
+ext['netty.version'] = libs.versions.netty.get()
+ext['reactor-bom.version'] = libs.versions.reactorBom.get()
+springBoot {
+    // This statement tells the Gradle Spring Boot plugin to generate a file
+    // build/resources/main/META-INF/build-info.properties that is picked up by Spring Boot to display
+    // via /info endpoint
+    buildInfo {
+        properties {
+            // Generate extra build info:
+            additional = [
+                by             : System.properties['user.name'],
+                operatingSystem: "${System.properties['os.name']} (${System.properties['os.version']})",
+                number         : System.getenv('BUILD_NUMBER') ? System.getenv('BUILD_NUMBER') : "n/a",
+                machine        : InetAddress.localHost.hostName
+            ]
+        }
+    }
+}
+
+gitProperties {
+    dotGitDirectory = project.rootProject.layout.projectDirectory.dir(".git")
+    gitPropertiesDir = new File("${project.rootDir}/${name}/build/resources/main/META-INF")
+}
+
+dependencies {
+    api project(":gateway-service")
+    api project(":discovery-service")
+
+    implementation libs.bundles.modulith
+    implementation libs.spring.boot.starter.web
+    implementation libs.bundles.jaxb
+    implementation libs.spring.cloud.starter.eureka.client
+    implementation libs.spring.cloud.starter.eureka.server
+    implementation libs.spring.cloud.starter.gateway
+    implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.boot.starter.security
+
+    testImplementation(testFixtures(project(":gateway-service")))
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.mock.mvc
+    testImplementation libs.modulith.test
+    testImplementation libs.reactor.test
+    testImplementation libs.rest.assured
+    testImplementation libs.rest.assured.web.test.client
+
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+}
+
+bootJar {
+    archiveFileName = "apiml.jar"
+    manifest {
+        attributes 'Main-Class': 'org.springframework.boot.loader.launch.PropertiesLauncher'
+    }
+    archiveClassifier = "application"
+}
+
+jar {
+    enabled true
+    archiveClassifier = ""
+}
+
+bootRun {
+    if (project.hasProperty('args')) {
+        args project.args.split(',')
+    }
+
+    jvmArgs([
+        '--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED',
+        '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
+        '--add-opens=java.base/java.io=ALL-UNNAMED',
+        '--add-opens=java.base/java.util=ALL-UNNAMED',
+        '--add-opens=java.base/java.util.concurrent=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED',
+        '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED',
+        '--add-opens=java.base/javax.net.ssl=ALL-UNNAMED',
+        '--add-opens=java.base/java.net=ALL-UNNAMED'
+    ])
+
+    debugOptions {
+        port = 5009
+        suspend = false
+        server = true
+    }
+
+    workingDir = project.rootDir
+
+    systemProperties = System.properties
+}
+
+publishing {
+    publications {
+        mavenJavaFat(MavenPublication) {
+            groupId = 'org.zowe.apiml'
+            artifactId = 'apiml-fat-jar'
+
+            artifact bootJar
+        }
+    }
+}

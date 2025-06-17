@@ -25,7 +25,7 @@ configurations.all {
 dependencies {
     testImplementation project(':apiml-security-common')
     testImplementation project(':zaas-client')
-    testImplementation group: 'org.springframework.graphql', name: 'spring-graphql-test', version: '1.3.3'
+    testImplementation group: 'org.springframework.graphql', name: 'spring-graphql-test', version: '1.4.0'
 
 
     testImplementation libs.spring.boot.starter.actuator
@@ -307,12 +307,46 @@ task runCITests(type: Test) {
     }
 }
 
+task runContainerModulithTests(type: Test) {
+    group "Integration tests"
+    description "Run only tests without long tests"
+
+    outputs.cacheIf { false }
+    systemProperty "environment.config", "-docker-modulith"
+
+    systemProperties System.properties
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'SlowTests',
+            'AdditionalLocalTest',
+            'MainframeDependentTests',
+            'SAFAuthTest',
+            'AttlsTest',
+            'RegistrationTest',
+            'ServiceIdPrefixReplacerTest',
+            'NodeEnablerTest',
+            'HATest',
+            'ChaoticHATest',
+            'InfinispanStorageTest',
+            'OktaOauth2Test',
+            'GatewayProxyTest',
+            'GatewayServiceRouting',
+            'GatewayCentralRegistry',
+            'ZaasTest',
+            'ApiCatalogStandaloneTest'
+        )
+    }
+}
+
 task runContainerTests(type: Test) {
     group "Integration tests"
     description "Run only tests without long tests"
 
     outputs.cacheIf { false }
-    systemProperty "environment.config", "-docker"
+    def envConfig = System.getenv("ENV_CONFIG") ? System.getenv("ENV_CONFIG") : "docker"
+    systemProperty "environment.config", "-$envConfig"
 
     systemProperties System.properties
     useJUnitPlatform {

@@ -32,11 +32,4 @@ describe('>>> Selected Service actions tests', () => {
         expect(clearService()).toEqual(expectedAction);
     });
 
-    it('should return store content anchor', () => {
-        const expectedAction = {
-            type: STORE_CONTENT_ANCHOR,
-            payload: '#id',
-        };
-        expect(storeContentAnchor('#id')).toEqual(expectedAction);
-    });
 });
