@@ -103,27 +103,16 @@ public class SuccessTicketHandler implements ServerAuthenticationSuccessHandler 
             DataBuffer mergedBuffer = bufferFactory.allocateBuffer(totalSize);
             bufferList.forEach(mergedBuffer::write); // Write each buffer into the new one
 
-            String applicationName;
             try {
-                applicationName = mapper.readValue(mergedBuffer.asInputStream(), TicketRequest.class).getApplicationName();
-                if (applicationName == null || applicationName.trim().isEmpty()) {
-                    sink.error(new IncorrectRequestBodyException("ApplicationName not provided"));
-                    return;
-                }
-            } catch (IOException e) {
-                sink.error(new IncorrectRequestBodyException("ApplicationName not provided"));
-                return;
-            }
-
-            String ticket;
-            try {
-                ticket = passTicketService.generate(userId, applicationName);
+                String applicationName = mapper.readValue(mergedBuffer.asInputStream(), TicketRequest.class).getApplicationName();
+                String ticket = passTicketService.generate(userId, applicationName);
+                sink.next(new TicketResponse(tokenAuthentication.getCredentials(), userId, applicationName, ticket));
             } catch (PassTicketException e) {
-                sink.error(new PassException(e));
-                return;
+                sink.error(new IncorrectRequestBodyException("ApplicationName not provided"));
+            } catch (IOException e) {
+                sink.error(new IncorrectRequestBodyException("Cannot parse the passticket body"));
             }
 
-            sink.next(new TicketResponse(tokenAuthentication.getCredentials(), userId, applicationName, ticket));
         });
     }
 }

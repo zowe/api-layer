@@ -110,8 +110,6 @@ public class TokenCreationService {
             return passTicket;
         } catch (IRRPassTicketGenerationException e) {
             throw new AuthenticationTokenException("Generation of PassTicket failed", e);
-        } catch (PassTicketException e) {
-            throw new RuntimeException(e);
         }
 
     }

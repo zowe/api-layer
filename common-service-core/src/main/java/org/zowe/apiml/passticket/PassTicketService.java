@@ -53,7 +53,7 @@ public class PassTicketService {
         try {
             validateUserIdAndApplId(userId, applId);
             return irrPassTicket.generate(userId.toUpperCase(), applId.toUpperCase());
-        } catch (PassTicketException | RuntimeException e) {
+        } catch (RuntimeException e) {
             log.debug("Error during pass ticket generation, userId={}, applid={}, exception={}", userId, applId, e);
             throw e;
         }
