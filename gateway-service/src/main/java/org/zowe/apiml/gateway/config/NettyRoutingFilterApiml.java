@@ -73,16 +73,10 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
         var responseTimeoutAttr = route.getMetadata().get("apiml.responseTimeout");
 
         var responseTimeoutResult = responseTimeoutAttr != null ? Long.parseLong(String.valueOf(responseTimeoutAttr)) : requestTimeout;
+        var connectTimeoutResult = connectTimeoutAttr != null ? getInteger(connectTimeoutAttr) : requestTimeout;
         httpClient = httpClient
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, requestTimeout)
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutResult)
             .responseTimeout(Duration.ofMillis(responseTimeoutResult));
-
-        if (connectTimeoutAttr != null) {
-            // if there is configured timeout, respect it
-            Integer connectTimeout = getInteger(connectTimeoutAttr);
-            httpClient = httpClient
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout);
-        }
 
         return httpClient;
     }
