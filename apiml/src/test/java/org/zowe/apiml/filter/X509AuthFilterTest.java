@@ -72,7 +72,7 @@ class X509AuthFilterTest {
 
         @Test
         void whenAuthenticationComplete_thenContinue() {
-            Mono<Void> testMono = filter.filter(exchange, chain)
+            testMono = filter.filter(exchange, chain)
                 .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication));
 
             StepVerifier.create(testMono)

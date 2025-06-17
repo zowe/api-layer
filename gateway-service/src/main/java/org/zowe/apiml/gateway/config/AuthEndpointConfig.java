@@ -126,7 +126,7 @@ public class AuthEndpointConfig {
     }
 
     @Bean
-    public RouterFunction<ServerResponse> routes() {
+    RouterFunction<ServerResponse> routes() {
         return route(path("/gateway/api/v1/auth/login"), resendTo("/api/v1/auth/login"))
             .andRoute(path("/gateway/api/v1/auth/logout"), resendTo("/api/v1/auth/logout"))
             .andRoute(path("/gateway/api/v1/auth/query"), resendTo("/api/v1/auth/query"))

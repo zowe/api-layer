@@ -8,19 +8,14 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.security.common.error;
+package org.zowe.apiml.controller;
 
-import org.springframework.security.core.AuthenticationException;
-
-/**
- * Exception thrown when the request body for Personal Access Token creation is not valid
- */
-public class AccessTokenBodyNotValidException extends AuthenticationException {
+public class InvalidWebFingerConfigurationException extends RuntimeException {
 
     private final String messageId;
 
-    public AccessTokenBodyNotValidException(String messageId) {
-        super(messageId);
+    public InvalidWebFingerConfigurationException(Throwable cuase, String messageId) {
+        super(cuase);
         this.messageId = messageId;
     }
 

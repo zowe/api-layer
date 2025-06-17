@@ -105,7 +105,7 @@ public class ZaasSchemeTransformRest implements ZaasSchemeTransform {
             });
     }
 
-    private WebClient.RequestHeadersSpec createRequest(RequestCredentials requestCredentials, String uri, String jsonBody) {
+    private WebClient.RequestHeadersSpec<?> createRequest(RequestCredentials requestCredentials, String uri, String jsonBody) {
         var requestBuild = webClient.post().uri(uri);
 
         Optional.ofNullable(requestCredentials.getHeaders()).orElse(Collections.emptyMap())

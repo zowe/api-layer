@@ -11,7 +11,6 @@
 package org.zowe.apiml.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
@@ -61,12 +60,25 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ReactiveAuthenticationControllerTest {
@@ -786,32 +798,17 @@ class ReactiveAuthenticationControllerTest {
         when(webFingerProvider.isEnabled()).thenReturn(true);
         when(webFingerProvider.getWebFingerConfig(clientId)).thenThrow(new IOException("Config read error"));
 
-        var mockApiMessage = mock(Message.class);
-        var mockApiMessageView = mock(ApiMessageView.class);
-        when(messageService.createMessage("org.zowe.apiml.security.oidc.invalidWebfingerConfiguration")).thenReturn(mockApiMessage);
-        when(mockApiMessage.mapToView()).thenReturn(mockApiMessageView);
-
-
-        Mono<ResponseEntity<Object>> result = controller.getWebFinger(clientId);
+        var result = controller.getWebFinger(clientId);
 
         StepVerifier.create(result)
-            .expectNextMatches(responseEntity -> {
-                assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
-                try {
-                    String expectedBody = new ObjectMapper().writer().writeValueAsString(mockApiMessageView);
-                    assertEquals(expectedBody, responseEntity.getBody());
-                    return true;
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .verifyComplete();
+            .expectErrorMatches(e -> e instanceof InvalidWebFingerConfigurationException ex && ex.getMessageId().equals("org.zowe.apiml.security.oidc.invalidWebfingerConfiguration"))
+            .verify();
     }
-
 
     private KeyPair generateKeyPair() throws NoSuchAlgorithmException {
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
         kpg.initialize(2048);
         return kpg.generateKeyPair();
     }
+
 }

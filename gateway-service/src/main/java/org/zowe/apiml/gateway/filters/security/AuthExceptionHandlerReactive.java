@@ -72,4 +72,5 @@ public class AuthExceptionHandlerReactive {
 
         return response.writeWith(Mono.just(response.bufferFactory().wrap(bytes)));
     }
+
 }

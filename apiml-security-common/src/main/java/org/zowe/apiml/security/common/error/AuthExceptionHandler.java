@@ -26,7 +26,12 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.security.common.token.*;
+import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
+import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
+import org.zowe.apiml.security.common.token.TokenNotProvidedException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -48,7 +53,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         ObjectMapper objectMapper,
         @Autowired(required = false) @Qualifier("isModulith") Boolean isModulith) {
         super(messageService, objectMapper);
-        this.isModulith = Boolean.TRUE.equals(isModulith);
+        this.isModulith = (Boolean.TRUE == isModulith);
     }
 
     @AllArgsConstructor
@@ -229,4 +234,5 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         log.debug(MESSAGE_FORMAT, status.value(), ex.getMessage());
         function.accept(message, status);
     }
+
 }

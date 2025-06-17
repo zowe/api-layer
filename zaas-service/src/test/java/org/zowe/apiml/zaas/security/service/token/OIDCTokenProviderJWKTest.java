@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.PublicKey;
-import java.text.ParseException;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
@@ -120,7 +119,7 @@ class OIDCTokenProviderJWKTest {
         }
 
         @Test
-        void whenInvalidToken_thenReturnInvalid() throws IOException, ParseException {
+        void whenInvalidToken_thenReturnInvalid() {
             assertFalse(oidcTokenProviderJwk.isValid(TOKEN));
         }
 

@@ -171,7 +171,6 @@ public class WebSecurity {
      * Security chain for oauth2 client. To enable this chain, please refer to Zowe OIDC configuration.
      */
     @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE + 2)
     SecurityWebFilterChain oauth2WebFilterChain(
         ServerHttpSecurity http,
         Optional<ReactiveOAuth2AuthorizedClientService> reactiveOAuth2AuthorizedClientService,
@@ -334,7 +333,7 @@ public class WebSecurity {
     }
 
     public ServerHttpSecurity defaultSecurityConfig(ServerHttpSecurity http) {
-        var gatewayExceptionHandler = applicationContext.getBean(GatewayExceptionHandler.class);
+        var gatewayExceptionHandler = applicationContext.getBean("gatewayExceptionHandler", GatewayExceptionHandler.class);
         return http
             .headers(headers -> headers
                 .hsts(hsts -> hsts.disable())

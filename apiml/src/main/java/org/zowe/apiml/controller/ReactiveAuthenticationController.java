@@ -46,12 +46,14 @@ import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.audit.RauditxService;
+import org.zowe.apiml.security.common.error.AccessTokenBodyNotValidException;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.HttpUtils;
 import org.zowe.apiml.zaas.controllers.AuthController;
+import org.zowe.apiml.zaas.controllers.AuthController.ValidateRequestModel;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderJWK;
@@ -67,7 +69,6 @@ import java.util.*;
 
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter.TOKEN_REQUEST;
 import static org.zowe.apiml.zaas.controllers.AuthController.*;
 
 @RestController
@@ -88,8 +89,7 @@ public class ReactiveAuthenticationController {
     private final AccessTokenProvider tokenProvider;
     private final WebFingerProvider webFingerProvider;
     private final RauditxService rauditxService;
-    @Nullable
-    private final OIDCProvider oidcProvider;
+    @Nullable private final OIDCProvider oidcProvider;
 
     /**
      * Endpoint to authenticate a user based on credentials from EITHER:
@@ -128,11 +128,15 @@ public class ReactiveAuthenticationController {
     }
 
     @PostMapping("/access-token/generate")
-    public Mono<ResponseEntity<String>> generatePat(@RequestAttribute(TOKEN_REQUEST) AccessTokenRequest accessTokenRequest) {
+    public Mono<ResponseEntity<String>> generatePat(@RequestBody AccessTokenRequest accessTokenRequest) {
         return ReactiveSecurityContextHolder.getContext()
             .map(SecurityContext::getAuthentication)
             .filter(Objects::nonNull)
             .map(authentication -> {
+                if (accessTokenRequest.getScopes() == null || accessTokenRequest.getScopes().isEmpty()) {
+                    throw new AccessTokenBodyNotValidException("org.zowe.apiml.security.token.accessTokenBodyMissingScopes");
+                }
+
                 var userId = authentication.getName();
 
                 log.debug("Generating access token for user {}", userId);
@@ -662,13 +666,7 @@ public class ReactiveAuthenticationController {
                     WebFingerResponse response = webFingerProvider.getWebFingerConfig(clientId);
                     return ResponseEntity.ok(response);
                 } catch (IOException e) {
-                    log.debug("Error while reading webfinger configuration from source.", e);
-                    final ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.oidc.invalidWebfingerConfiguration").mapToView();
-                    try {
-                        return ResponseEntity.internalServerError().body(WRITER.writeValueAsString(message));
-                    } catch (JsonProcessingException ex) {
-                        return ResponseEntity.internalServerError().build();
-                    }
+                    throw new InvalidWebFingerConfigurationException(e, "org.zowe.apiml.security.oidc.invalidWebfingerConfiguration");
                 }
 
             }

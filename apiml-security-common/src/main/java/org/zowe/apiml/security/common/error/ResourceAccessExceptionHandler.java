@@ -42,23 +42,17 @@ public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
      */
     @Override
     public void handleException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, RuntimeException ex) {
+        ErrorType errorType;
         if (ex instanceof GatewayNotAvailableException) {
-            handleGatewayNotAvailable(requestUri, function, ex);
+            errorType = ErrorType.GATEWAY_NOT_AVAILABLE;
         } else if (ex instanceof ServiceNotAccessibleException) {
-            handleServiceNotAccessible(requestUri, function, ex);
+            errorType = ErrorType.SERVICE_UNAVAILABLE;
         } else {
             throw ex;
         }
+
+        log.debug(MESSAGE_FORMAT, HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage());
+        writeErrorResponse(errorType.getErrorMessageKey(), HttpStatus.SERVICE_UNAVAILABLE, requestUri, function);
     }
 
-    //503
-    private void handleGatewayNotAvailable(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex)  {
-        log.debug(MESSAGE_FORMAT, HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage());
-        writeErrorResponse(ErrorType.GATEWAY_NOT_AVAILABLE.getErrorMessageKey(), HttpStatus.SERVICE_UNAVAILABLE, requestUri, function);
-    }
-
-    private void handleServiceNotAccessible(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
-        log.debug(MESSAGE_FORMAT, HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage());
-        writeErrorResponse(ErrorType.SERVICE_UNAVAILABLE.getErrorMessageKey(), HttpStatus.SERVICE_UNAVAILABLE, requestUri, function);
-    }
 }
