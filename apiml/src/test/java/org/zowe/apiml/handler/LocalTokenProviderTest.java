@@ -12,6 +12,7 @@ package org.zowe.apiml.handler;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.security.common.token.QueryResponse;
@@ -20,7 +21,8 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -56,7 +58,7 @@ class LocalTokenProviderTest {
     }
 
     @Test
-    void validateToken_invalidToken_returnsEmptyQueryResponse() {
+    void validateToken_invalidToken_throwAuthException() {
         String token = "invalid-token";
 
         when(authenticationService.validateJwtToken(token))
@@ -65,10 +67,7 @@ class LocalTokenProviderTest {
         Mono<QueryResponse> result = tokenProvider.validateToken(token);
 
         StepVerifier.create(result)
-            .assertNext(response -> {
-                assertNotNull(response);
-                assertNull(response.getUserId());
-            })
-            .verifyComplete();
+            .expectError(AuthenticationCredentialsNotFoundException.class)
+            .verify();
     }
 }
