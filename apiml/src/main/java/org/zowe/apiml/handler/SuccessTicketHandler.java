@@ -105,10 +105,14 @@ public class SuccessTicketHandler implements ServerAuthenticationSuccessHandler 
 
             try {
                 String applicationName = mapper.readValue(mergedBuffer.asInputStream(), TicketRequest.class).getApplicationName();
+                if (applicationName == null || applicationName.trim().isEmpty()) {
+                    sink.error(new IncorrectRequestBodyException("ApplicationName not provided"));
+                    return;
+                }
                 String ticket = passTicketService.generate(userId, applicationName);
                 sink.next(new TicketResponse(tokenAuthentication.getCredentials(), userId, applicationName, ticket));
             } catch (PassTicketException e) {
-                sink.error(new IncorrectRequestBodyException("ApplicationName not provided"));
+                sink.error(new PassException(e));
             } catch (IOException e) {
                 sink.error(new IncorrectRequestBodyException("Cannot parse the passticket body"));
             }
