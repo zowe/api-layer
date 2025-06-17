@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.handler;
 
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
@@ -32,7 +33,9 @@ public class LocalTokenProvider extends TokenProvider {
         return Mono.fromCallable(() -> {
             authenticationService.validateJwtToken(token);
             return authenticationService.parseJwtToken(token);
-        }).onErrorResume(e -> Mono.just(new QueryResponse()));
+        }).onErrorResume(e ->
+            Mono.error(new AuthenticationCredentialsNotFoundException("Token validation failed", e))
+        );
 
     }
 
