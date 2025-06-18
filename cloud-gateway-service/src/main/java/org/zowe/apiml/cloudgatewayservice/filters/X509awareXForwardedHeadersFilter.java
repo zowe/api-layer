@@ -27,8 +27,10 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -63,6 +65,8 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
     final Predicate<String> isTrusted;
     final String trustedProxies;
 
+    final AtomicReference<Set<String>> trustedIpAddresses = new AtomicReference<>(Collections.emptySet());
+
     /*
      *
      * @param httpsConfig gateway certificate configuration
@@ -72,12 +76,19 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
     public X509awareXForwardedHeadersFilter(HttpsConfig httpsConfig, String trustedProxiesPattern) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         certificateChainBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
         trustedProxies = trustedProxiesPattern;
+        Predicate<String> isTrusted;
         if (StringUtils.isEmpty(trustedProxies)) {
             isTrusted = host -> false;
         } else {
             Pattern pattern = Pattern.compile(trustedProxies);
             isTrusted = host -> host != null && pattern.matcher(host).matches();
         }
+
+        this.isTrusted = isTrusted.or(hostname -> trustedIpAddresses.get().contains(hostname));
+    }
+
+    public void setTrustedIpAddresses(Set<String> trustedProxies) {
+        this.trustedIpAddresses.set(trustedProxies);
     }
 
     @Override

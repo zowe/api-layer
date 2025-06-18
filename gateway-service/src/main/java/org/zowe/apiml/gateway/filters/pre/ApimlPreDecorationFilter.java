@@ -29,6 +29,8 @@ import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -54,6 +56,8 @@ public class ApimlPreDecorationFilter extends PreDecorationFilter {
 
     private Predicate<String> isHostTrusted = host -> false;
 
+    final AtomicReference<Set<String>> trustedIpAddresses = new AtomicReference<>(Collections.emptySet());
+
     public ApimlPreDecorationFilter(
         RouteLocator routeLocator, ProxyRequestHelper proxyRequestHelper,
         ZuulProperties zuulProperties, ServerProperties server,
@@ -69,6 +73,12 @@ public class ApimlPreDecorationFilter extends PreDecorationFilter {
             Pattern pattern = Pattern.compile(trustedProxies);
             isHostTrusted = host -> host != null && pattern.matcher(host).matches();
         }
+
+        isHostTrusted = isHostTrusted.or(hostname -> trustedIpAddresses.get().contains(hostname));
+    }
+
+    public void setTrustedIpAddresses(Set<String> trustedProxies) {
+        this.trustedIpAddresses.set(trustedProxies);
     }
 
     private boolean isTrusted(RequestContext ctx) {

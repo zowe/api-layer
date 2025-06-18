@@ -14,7 +14,9 @@ import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
+import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaClientConfig;
+import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,13 +38,15 @@ import org.zowe.apiml.config.AdditionalRegistrationCondition;
 import org.zowe.apiml.config.AdditionalRegistrationParser;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClientFactory;
+import org.zowe.apiml.gateway.filters.pre.ApimlPreDecorationFilter;
+import org.zowe.apiml.product.constants.CoreService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
@@ -92,16 +96,44 @@ public class DiscoveryClientConfig {
     @Bean(destroyMethod = "shutdown")
     @Conditional({AdditionalRegistrationCondition.class})
     @RefreshScope
-    public DiscoveryClientWrapper additionalDiscoveryClientWrapper(ApplicationInfoManager manager,
-                                                                   EurekaClientConfig config,
-                                                                   @Autowired(required = false) HealthCheckHandler healthCheckHandler,
-                                                                   List<AdditionalRegistration> additionalRegistrations
+    public DiscoveryClientWrapper additionalDiscoveryClientWrapper(
+        ApplicationInfoManager manager,
+        EurekaClientConfig config,
+        @Autowired(required = false) HealthCheckHandler healthCheckHandler,
+        List<AdditionalRegistration> additionalRegistrations,
+        Optional<ApimlPreDecorationFilter> apimlPreDecorationFilter
     ) {
 
         List<ApimlDiscoveryClient> discoveryClientsList = new ArrayList<>(additionalRegistrations.size());
         for (AdditionalRegistration apimlRegistration : additionalRegistrations) {
             ApimlDiscoveryClient additionalApimlRegistration = registerInTheApimlInstance(config, healthCheckHandler, apimlRegistration, manager);
             discoveryClientsList.add(additionalApimlRegistration);
+            if (apimlPreDecorationFilter.isPresent()) {
+                additionalApimlRegistration.registerEventListener(event -> {
+                    if (event instanceof CacheRefreshedEvent) {
+                        Set<String> trustedProxies = Stream.of(
+                            additionalApimlRegistration.getApplication(CoreService.GATEWAY.getServiceId()),
+                            additionalApimlRegistration.getApplication(CoreService.CLOUD_GATEWAY.getServiceId())
+                        ).map(Application::getInstances)
+                        .flatMap(List::stream)
+                        .flatMap(instanceInfo -> {
+                            try {
+                                return Stream.of(
+                                        InetAddress.getAllByName(instanceInfo.getHostName()),
+                                        InetAddress.getAllByName(instanceInfo.getIPAddr())
+                                    )
+                                    .flatMap(Stream::of)
+                                    .map(InetAddress::getHostAddress);
+                            } catch (UnknownHostException e) {
+                                log.debug("Unknown host for instance {}", instanceInfo);
+                                return Stream.empty();
+                            }
+                        })
+                        .collect(Collectors.toSet());
+                        apimlPreDecorationFilter.get().setTrustedIpAddresses(trustedProxies);
+                    }
+                });
+            }
         }
 
         return new DiscoveryClientWrapper(discoveryClientsList);
