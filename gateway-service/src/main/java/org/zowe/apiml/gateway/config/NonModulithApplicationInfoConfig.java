@@ -10,18 +10,16 @@
 
 package org.zowe.apiml.gateway.config;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.constants.CoreService;
 
 @Configuration
-@ConditionalOnMissingBean(name = "modulithConfig")
-public class AuthServiceIdChooserConfig {
+public class NonModulithApplicationInfoConfig {
 
     @Bean
-    public ApplicationInfo applicationInfo() {
+    ApplicationInfo applicationInfo() {
         return ApplicationInfo.builder()
             .isModulith(false)
             .authServiceId(CoreService.ZAAS.getServiceId()).build();
