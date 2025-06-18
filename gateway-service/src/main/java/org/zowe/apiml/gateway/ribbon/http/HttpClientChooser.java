@@ -11,13 +11,16 @@
 package org.zowe.apiml.gateway.ribbon.http;
 
 import com.netflix.zuul.context.RequestContext;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.zowe.apiml.gateway.security.service.schema.RoutingConstants;
+import org.zowe.apiml.product.constants.CoreService;
 
 import java.security.cert.X509Certificate;
 
+import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 import static org.zowe.apiml.gateway.security.service.schema.ByPassScheme.AUTHENTICATION_SCHEME_BY_PASS_KEY;
 
 /**
@@ -33,6 +36,19 @@ public class HttpClientChooser {
     }
 
     private boolean isRequestToSign() {
+        String serviceId = (String) RequestContext.getCurrentContext().get(SERVICE_ID_KEY);
+        if (StringUtils.equalsAnyIgnoreCase(serviceId,
+            CoreService.GATEWAY.getServiceId(),
+            CoreService.CLOUD_GATEWAY.getServiceId()
+        )) {
+            /**
+             * This is only a theoretical routing to another Gateway. It supports the trusted proxies and usage of
+             * X-Forwarded-* headers. In theory just routing to the Cloud Gateway makes sense, even the aimed direction
+             * is Cloud Gateway > Gateway > Service
+             */
+            return true;
+        }
+
         if (!Boolean.TRUE.equals(RequestContext.getCurrentContext().get(AUTHENTICATION_SCHEME_BY_PASS_KEY))) {
             return false;
         }
