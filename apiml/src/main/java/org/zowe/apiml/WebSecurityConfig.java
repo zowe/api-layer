@@ -302,9 +302,11 @@ public class WebSecurityConfig {
                 ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, "gateway/api/v1/auth/login", "gateway/api/v1/auth/logout")
             ))
             .authorizeExchange(exchange ->
-                exchange.anyExchange().authenticated()
+                exchange.matchers(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, "gateway/api/v1/auth/logout")).authenticated()
             )
-
+            .authorizeExchange(exchange ->
+                exchange.matchers(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, "gateway/api/v1/auth/login")).permitAll()
+            )
             .logout(c -> c
                 .logoutUrl("/gateway/api/v1/auth/logout")
                 .logoutHandler(logoutHandler)

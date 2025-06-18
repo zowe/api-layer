@@ -83,7 +83,7 @@ public class ModulithConfig {
     private int port;
 
     @Bean
-    public ApplicationInfo applicationInfo() {
+    ApplicationInfo applicationInfo() {
         return ApplicationInfo.builder()
                 .isModulith(true)
                 .authServiceId(CoreService.GATEWAY.getServiceId()).build();

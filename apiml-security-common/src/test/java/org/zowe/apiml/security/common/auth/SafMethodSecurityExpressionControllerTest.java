@@ -115,37 +115,37 @@ class SafMethodSecurityExpressionControllerTest {
     public static class SecurityConfiguration {
 
         @Bean
-        public SafResourceAccessVerifying safResourceAccessVerifying() throws IOException {
+        SafResourceAccessVerifying safResourceAccessVerifying() throws IOException {
             return new SafResourceAccessDummy();
         }
 
         @Bean
-        public ObjectMapper objectMapper() {
+        ObjectMapper objectMapper() {
             return new ObjectMapper();
         }
 
         @Bean
-        public MessageService messageService() {
+        MessageService messageService() {
             return new YamlMessageService("/security-service-messages.yml");
         }
 
         @Bean
-        public ResourceAccessExceptionHandler resourceAccessExceptionHandler() {
+        ResourceAccessExceptionHandler resourceAccessExceptionHandler() {
             return new ResourceAccessExceptionHandler(messageService(), objectMapper());
         }
 
         @Bean
-        public AuthExceptionHandler authExceptionHandler() {
+        AuthExceptionHandler authExceptionHandler() {
             return new AuthExceptionHandler(messageService(), objectMapper(), false);
         }
 
         @Bean
-        public FailedAuthenticationHandler failedAuthenticationHandler() {
+        FailedAuthenticationHandler failedAuthenticationHandler() {
             return new FailedAuthenticationHandler(authExceptionHandler());
         }
 
         @Bean
-        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             return http
                     .authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
                     .with(new CustomSecurityFilters(), Customizer.withDefaults())
@@ -153,7 +153,7 @@ class SafMethodSecurityExpressionControllerTest {
         }
 
         @Bean
-        public SafMethodSecurityExpressionRoot safMethodSecurityExpressionRoot(
+        SafMethodSecurityExpressionRoot safMethodSecurityExpressionRoot(
             SafSecurityConfigurationProperties safSecurityConfigurationProperties,
             SafResourceAccessVerifying safResourceAccessVerifying
         ) {

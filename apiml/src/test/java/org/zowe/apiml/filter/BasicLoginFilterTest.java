@@ -130,14 +130,14 @@ class BasicLoginFilterTest {
 
     @Test
     void withValidBasicAuth_authenticationSuccess_andReachFinalChain() {
-        String credentials = "testUser:testPassword";
-        String basicAuthHeader = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
-        MockServerHttpRequest request = MockServerHttpRequest.post("/login")
+        var credentials = "testUser:testPassword";
+        var basicAuthHeader = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+        var request = MockServerHttpRequest.post("/login")
             .header(HttpHeaders.AUTHORIZATION, basicAuthHeader)
             .build();
-        ServerWebExchange exchange = createExchange(request);
+        var exchange = createExchange(request);
 
-        LoginRequest loginRequest = new LoginRequest("testUser", "testPassword".toCharArray());
+        var loginRequest = new LoginRequest("testUser", "testPassword".toCharArray());
         staticLoginFilterMock.when(() -> LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(basicAuthHeader)))
             .thenReturn(Optional.of(loginRequest));
         when(mockAuthentication.isAuthenticated()).thenReturn(true);
@@ -156,19 +156,19 @@ class BasicLoginFilterTest {
         assertEquals("testUser", authTokenCaptor.getValue().getName());
         assertEquals("testPassword", new String((char[]) authTokenCaptor.getValue().getCredentials()));
 
-        verify(mockFilterChain, times(2)).filter(exchange);
+        verify(mockFilterChain, times(1)).filter(exchange);
     }
 
     @Test
     void withValidBasicAuth_authenticationFailure_shouldDelegateToFailureHandler() {
-        String credentials = "testUser:wrongPassword";
-        String basicAuthHeader = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
-        MockServerHttpRequest request = MockServerHttpRequest.post("/login")
+        var credentials = "testUser:wrongPassword";
+        var basicAuthHeader = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+        var request = MockServerHttpRequest.post("/login")
             .header(HttpHeaders.AUTHORIZATION, basicAuthHeader)
             .build();
-        ServerWebExchange exchange = createExchange(request);
+        var exchange = createExchange(request);
 
-        LoginRequest loginRequest = new LoginRequest("testUser", "wrongPassword".toCharArray());
+        var loginRequest = new LoginRequest("testUser", "wrongPassword".toCharArray());
         staticLoginFilterMock.when(() -> LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(basicAuthHeader)))
             .thenReturn(Optional.of(loginRequest));
 
@@ -178,7 +178,7 @@ class BasicLoginFilterTest {
 
         when(mockFailedAuthenticationWebHandler.onAuthenticationFailure(any(WebFilterExchange.class), eq(authException)))
             .thenReturn(Mono.empty());
-        when(mockFilterChain.filter(exchange)).thenReturn(Mono.empty());
+
         StepVerifier.create(basicLoginFilter.filter(exchange, mockFilterChain))
             .verifyComplete();
 
@@ -188,10 +188,10 @@ class BasicLoginFilterTest {
     @SuppressWarnings("unchecked")
     @Test
     void withInvalidBasicAuthFormat_shouldDelegateToFailureHandler() {
-        MockServerHttpRequest request = MockServerHttpRequest.post("/login")
+        var request = MockServerHttpRequest.post("/login")
             .header(HttpHeaders.AUTHORIZATION, "Basic invalid-base64")
             .build();
-        ServerWebExchange exchange = createExchange(request);
+        var exchange = createExchange(request);
 
         staticLoginFilterMock.when(() -> LoginFilter.getCredentialFromAuthorizationHeader(any(Optional.class)))
             .thenThrow(new IllegalArgumentException("Simulated decode error"));
@@ -200,7 +200,7 @@ class BasicLoginFilterTest {
 
         when(mockFailedAuthenticationWebHandler.onAuthenticationFailure(any(WebFilterExchange.class), any(AuthenticationCredentialsNotFoundException.class)))
             .thenReturn(Mono.empty());
-        when(mockFilterChain.filter(exchange)).thenReturn(Mono.empty());
+
         StepVerifier.create(basicLoginFilter.filter(exchange, mockFilterChain))
             .verifyComplete();
 
@@ -213,13 +213,13 @@ class BasicLoginFilterTest {
 
     @Test
     void whenPathIsNotAuthLogin_shouldSkipBodyParsing() throws JsonProcessingException {
-        LoginRequest loginRequestPojo = new LoginRequest("user", "pass".toCharArray());
-        ObjectMapper realMapper = new ObjectMapper();
+        var loginRequestPojo = new LoginRequest("user", "pass".toCharArray());
+        var realMapper = new ObjectMapper();
 
-        MockServerHttpRequest request = MockServerHttpRequest.post("/some/other/path")
+        var request = MockServerHttpRequest.post("/some/other/path")
             .contentType(MediaType.APPLICATION_JSON)
             .body(realMapper.writeValueAsString(loginRequestPojo));
-        ServerWebExchange exchange = createExchange(request);
+        var exchange = createExchange(request);
 
         staticLoginFilterMock.when(() -> LoginFilter.getCredentialFromAuthorizationHeader(any(HttpServletRequest.class)))
             .thenReturn(Optional.empty());

@@ -74,15 +74,13 @@ public class BasicLoginFilter implements WebFilter {
         }
         return extractBasicAuth(exchange)
             .map(this::useCredentials)
-            .switchIfEmpty(chain.filter(exchange).then(Mono.empty()))
+            .switchIfEmpty(Mono.<AbstractAuthenticationToken>defer(() -> chain.filter(exchange).then(Mono.empty())))
             .flatMap(credentials ->
                 authenticationManager.authenticate(credentials)
                     .flatMap(authentication -> chain.filter(exchange)
-                        .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication))
-                    )
-                    .onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), ex))
-            ).onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), ex)
-            );
+                        .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication)))
+                    .onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), ex)))
+            .onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), ex));
     }
 
     private AbstractAuthenticationToken useCredentials(LoginRequest credentials) {
