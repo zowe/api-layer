@@ -67,21 +67,18 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
         // select proper HttpClient instance by attribute apiml.useClientCert
         boolean useClientCert = Optional.ofNullable((Boolean) exchange
             .getAttribute(HTTP_CLIENT_USE_CLIENT_CERTIFICATE))
-            .filter(Boolean.TRUE::equals)
-            .orElseGet(() -> StringUtils.equalsAnyIgnoreCase((String) route.getMetadata().get(SERVICE_ID),
-                CoreService.CLOUD_GATEWAY.getServiceId(),
-                CoreService.GATEWAY.getServiceId()
-            ));
+            .orElse(Boolean.FALSE);
 
-        HttpClient httpClient;
-        if (useClientCert) {
-            if (exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER) == null) {
-                ServerHttpRequest request = exchange.getRequest().mutate().header(CLIENT_CERT_HEADER, "").build();
-                exchange = exchange.mutate().request(request).build();
-            }
-            httpClient = httpClientClientCert;
-        } else {
-            httpClient = httpClientNoCert;
+        boolean isTargetGateway = StringUtils.equalsAnyIgnoreCase((String) route.getMetadata().get(SERVICE_ID),
+            CoreService.CLOUD_GATEWAY.getServiceId(),
+            CoreService.GATEWAY.getServiceId()
+        );
+
+        HttpClient httpClient = isTargetGateway || useClientCert ? httpClientClientCert : httpClientNoCert;
+
+        if (isTargetGateway && exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER) == null) {
+            ServerHttpRequest request = exchange.getRequest().mutate().header(CLIENT_CERT_HEADER, "").build();
+            exchange = exchange.mutate().request(request).build();
         }
 
         log.debug("Using client with keystore {}", useClientCert);
