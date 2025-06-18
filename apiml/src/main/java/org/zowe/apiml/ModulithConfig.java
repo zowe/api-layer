@@ -43,6 +43,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.TomcatHttpHandlerAdapter;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.context.ServletContextAware;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
@@ -147,12 +148,16 @@ public class ModulithConfig {
     public void onApplicationEvent(EurekaRegistryAvailableEvent event) {
         ApimlInstanceRegistry registry = getRegistry();
         instances.forEach((key, value) -> registry.registerStatically(instances.get(key), CoreService.GATEWAY.getServiceId().equals(key)));
+    }
 
+    @Scheduled(fixedRate = 20_000) // TODO: probably not needed to auto init zosmf, consider removing the logic
+    public void publishPeriodicEvent() {
         var jwtSec = applicationContext.getBean(JwtSecurity.class);
         if (!jwtSec.getZosmfListener().isZosmfReady()) {
             jwtSec.getZosmfListener().getZosmfRegisteredListener().onEvent(new CacheRefreshedEvent());
         }
     }
+
 
     @Bean
     ReactiveDiscoveryClient registryReactiveDiscoveryClient(DiscoveryClient registryDiscoveryClient) {
