@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.gateway.MockService;
-import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
+import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 
 import static io.restassured.RestAssured.given;
@@ -27,7 +27,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@AcceptanceTest
+@MicroservicesAcceptanceTest
 @ActiveProfiles("ForwardedProxyHeadersTest")
 @TestPropertySource(properties = {
     "apiml.service.corsEnabled=false",

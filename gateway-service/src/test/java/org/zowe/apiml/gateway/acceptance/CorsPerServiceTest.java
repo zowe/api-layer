@@ -12,7 +12,7 @@ package org.zowe.apiml.gateway.acceptance;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
+import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 
 import java.io.IOException;
@@ -21,7 +21,7 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-@AcceptanceTest
+@MicroservicesAcceptanceTest
 class CorsPerServiceTest extends AcceptanceTestWithMockServices {
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";

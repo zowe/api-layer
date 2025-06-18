@@ -29,5 +29,5 @@ import java.lang.annotation.Target;
     properties = {"management.port=-1"})
 @Import(DiscoveryClientTestConfig.class)
 @DirtiesContext
-public @interface AcceptanceTest {
+public @interface MicroservicesAcceptanceTest {
 }

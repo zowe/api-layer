@@ -20,7 +20,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.zowe.apiml.gateway.ApplicationRegistry;
 import org.zowe.apiml.gateway.MockService;
 
-@AcceptanceTest
+@MicroservicesAcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
 
