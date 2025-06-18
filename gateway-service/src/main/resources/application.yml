@@ -53,14 +53,16 @@ eureka:
 spring:
     cloud:
         gateway:
-            x-forwarded:
-                prefix-append: false
-                prefix-enabled: true
-            filter:
-                secure-headers:
-                    disable: content-security-policy,permitted-cross-domain-policies,download-options
-                    referrer-policy: strict-origin-when-cross-origin
-                    frame-options: sameorigin
+            server:
+                webflux:
+                    x-forwarded:
+                        prefix-append: false
+                        prefix-enabled: true
+                    filter:
+                        secure-headers:
+                            disable: content-security-policy,permitted-cross-domain-policies,download-options
+                            referrer-policy: strict-origin-when-cross-origin
+                            frame-options: sameorigin
     application:
         name: gateway
     security:
@@ -154,11 +156,9 @@ logging:
 management:
     endpoint:
       gateway:
-          enabled: false
+          access: none
       health:
           showDetails: always
-      shutdown:
-          enabled: true
     health:
         diskspace:
             enabled: false
@@ -166,7 +166,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,gateway,shutdown
+                include: health,info,gateway
 ---
 spring.config.activate.on-profile: debug
 

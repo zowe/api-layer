@@ -17,7 +17,6 @@ spring.output.ansi.enabled: always
 ---
 spring.config.activate.on-profile: https
 
-
 server:
     ssl:
         keyAlias: localhost

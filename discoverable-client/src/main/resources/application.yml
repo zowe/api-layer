@@ -21,8 +21,6 @@ spring:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
     application:
         name: ${apiml.service.serviceId}
-    mvc:
-        throw-exception-if-no-handler-found: true
     output:
         ansi:
             enabled: detect
@@ -34,7 +32,8 @@ spring:
     graphql:
         graphiql:
             enabled: true
-        path:  "/api/v3/graphql"
+        http:
+            path:  "/api/v3/graphql"
 
 eureka:
     client:
@@ -183,7 +182,7 @@ management:
             enabled: true
     endpoint:
         shutdown:
-            enabled: true
+            access: unrestricted
 
 ---
 spring.config.activate.on-profile: diag
@@ -195,9 +194,6 @@ management:
             base-path: /application
             exposure:
                 include: "*"
-    endpoint:
-        shutdown:
-            enabled: true
 
 ---
 spring.config.activate.on-profile: debug

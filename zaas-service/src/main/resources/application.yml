@@ -104,10 +104,7 @@ spring:
             mvc.enabled: false
             enabled: false
     mvc:
-        throw-exception-if-no-handler-found: false # to suppress NoHandlerFoundException: No handler found for GET /error, we already provide error handling for requests
         log-resolved-exception: false # Suppress useless logs from AbstractHandlerExceptionResolver
-        favicon:
-            enabled: false
     output:
         ansi:
             enabled: detect
@@ -148,15 +145,13 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,shutdown
+                include: health,info
     health:
         defaults:
             enabled: false
     endpoint:
         health:
             showDetails: always
-        shutdown:
-            enabled: true
 eureka:
     instance:
         instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
@@ -200,8 +195,6 @@ eureka:
 ---
 spring:
     config.activate.on-profile: debug
-    mvc:
-        throw-exception-if-no-handler-found: true
 
 management:
     endpoints:
@@ -209,10 +202,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,routes,loggers,shutdown,hystrixstream,websockets
-    endpoint:
-        shutdown:
-            enabled: true
+                include: health,info,routes,loggers,hystrixstream,websockets
 
 logging:
     level:
