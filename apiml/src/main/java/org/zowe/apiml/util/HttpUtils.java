@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.util;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
@@ -21,14 +22,22 @@ public class HttpUtils {
 
     private final AuthConfigurationProperties authConfigurationProperties;
 
-    public ResponseCookie createResponseCookie(String jwt) {
-        AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
+    private AuthConfigurationProperties.CookieProperties cp;
+    private int cookieMaxAge = -1;
 
-        // Create the HttpOnly cookie containing the JWT
+    @PostConstruct
+    void readConfig() {
+        cp = authConfigurationProperties.getCookieProperties();
+        if (cp.getCookieMaxAge() != null) {
+            cookieMaxAge = cp.getCookieMaxAge();
+        }
+    }
+
+    public ResponseCookie createResponseCookie(String jwt) {
         return ResponseCookie.from(cp.getCookieName(), jwt)
             .path(cp.getCookiePath())
             .sameSite(cp.getCookieSameSite().getValue())
-            .maxAge(cp.getCookieMaxAge() != null ? cp.getCookieMaxAge() : -1)
+            .maxAge(cookieMaxAge)
             .httpOnly(true)
             .secure(cp.isCookieSecure())
             .build();
