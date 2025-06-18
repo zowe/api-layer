@@ -77,6 +77,9 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
                     log.debug("Found client certificate in header, adding it to the request. Subject DN: {}", subjectDN);
                     certs = Arrays.copyOf(certs, certs.length + 1);
                     certs[certs.length - 1] = (X509Certificate) clientCert.get();
+                } else if (((HttpServletRequest) request).getHeader(CLIENT_CERT_HEADER) != null) {
+                    // request was signed just to prove the source proxy is trusted
+                    certs = new X509Certificate[0];
                 }
             }
 

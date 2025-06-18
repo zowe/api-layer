@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.zowe.apiml.constants.ApimlConstants;
 
 import java.security.cert.CertificateEncodingException;
+import java.util.List;
 
 import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
 
@@ -47,10 +48,17 @@ public class ClientCertFilterFactory extends AbstractGatewayFilterFactory<Client
     public GatewayFilter apply(Config config) {
         return ((exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest().mutate().headers(headers -> {
+                boolean useClientCert = true;
+
+                List<String> forwardedCertificate = headers.get(CLIENT_CERT_HEADER);
+                if ((forwardedCertificate != null) && forwardedCertificate.stream().allMatch(String::isEmpty)) {
+                    useClientCert = false;
+                }
+
                 headers.remove(CLIENT_CERT_HEADER);
                 try {
                     final String encodedCert = X509Util.getEncodedClientCertificate(exchange.getRequest().getSslInfo());
-                    if (encodedCert != null) {
+                    if (useClientCert && encodedCert != null) {
                         exchange.getAttributes().put(HTTP_CLIENT_USE_CLIENT_CERTIFICATE, Boolean.TRUE);
                         headers.add(CLIENT_CERT_HEADER, encodedCert);
                         log.debug("Incoming client certificate has been added to the {} header.", CLIENT_CERT_HEADER);

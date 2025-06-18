@@ -28,6 +28,8 @@ import static org.zowe.apiml.gateway.security.service.schema.ByPassScheme.AUTHEN
  */
 public class HttpClientChooser {
 
+    private static final String CLIENT_CERT_HEADER = "Client-Cert";
+
     private final CloseableHttpClient clientWithoutCertificate;
     private final CloseableHttpClient clientWithCertificate;
     HttpClientChooser(CloseableHttpClient clientWithoutCertificate, CloseableHttpClient clientWithCertificate) {
@@ -46,6 +48,10 @@ public class HttpClientChooser {
              * X-Forwarded-* headers. In theory just routing to the Cloud Gateway makes sense, even the aimed direction
              * is Cloud Gateway > Gateway > Service
              */
+            if (RequestContext.getCurrentContext().getZuulRequestHeaders().get(CLIENT_CERT_HEADER) == null) {
+                RequestContext.getCurrentContext().addZuulRequestHeader(CLIENT_CERT_HEADER, "");
+            }
+
             return true;
         }
 

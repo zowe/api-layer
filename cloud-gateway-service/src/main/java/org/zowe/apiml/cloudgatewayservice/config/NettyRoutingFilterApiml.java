@@ -19,6 +19,7 @@ import org.springframework.cloud.gateway.config.HttpClientProperties;
 import org.springframework.cloud.gateway.filter.NettyRoutingFilter;
 import org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter;
 import org.springframework.cloud.gateway.route.Route;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.product.constants.CoreService;
 import reactor.netty.http.client.HttpClient;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.cloud.gateway.support.RouteMetadataUtils.CONNECT_TIMEOUT_ATTR;
+import static org.zowe.apiml.cloudgatewayservice.x509.ClientCertFilterFactory.CLIENT_CERT_HEADER;
 import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_ID;
 
@@ -71,7 +73,16 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
                 CoreService.GATEWAY.getServiceId()
             ));
 
-        HttpClient httpClient = useClientCert ? httpClientClientCert : httpClientNoCert;
+        HttpClient httpClient;
+        if (useClientCert) {
+            if (exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER) == null) {
+                ServerHttpRequest request = exchange.getRequest().mutate().header(CLIENT_CERT_HEADER, "").build();
+                exchange = exchange.mutate().request(request).build();
+            }
+            httpClient = httpClientClientCert;
+        } else {
+            httpClient = httpClientNoCert;
+        }
 
         log.debug("Using client with keystore {}", useClientCert);
         Object connectTimeoutAttr = route.getMetadata().get(CONNECT_TIMEOUT_ATTR);
