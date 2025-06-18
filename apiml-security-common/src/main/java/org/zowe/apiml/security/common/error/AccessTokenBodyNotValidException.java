@@ -10,22 +10,31 @@
 
 package org.zowe.apiml.security.common.error;
 
+import lombok.Getter;
 import org.springframework.security.core.AuthenticationException;
 
 /**
  * Exception thrown when the request body for Personal Access Token creation is not valid
  */
+@Getter
 public class AccessTokenBodyNotValidException extends AuthenticationException {
 
-    private final String messageId;
+    private final Reason reason;
 
-    public AccessTokenBodyNotValidException(String messageId) {
-        super(messageId);
-        this.messageId = messageId;
+    public AccessTokenBodyNotValidException(Reason reason) {
+        super(reason.getMessageKey());
+        this.reason = reason;
     }
 
-    public String getMessageId() {
-        return messageId;
-    }
+    @Getter
+    public enum Reason {
+        MISSING_SCOPES("org.zowe.apiml.security.token.accessTokenBodyMissingScopes"),
+        INVALID_FORMAT("org.zowe.apiml.accessToken.invalidFormat");
 
+        private final String messageKey;
+
+        Reason(String messageKey) {
+            this.messageKey = messageKey;
+        }
+    }
 }

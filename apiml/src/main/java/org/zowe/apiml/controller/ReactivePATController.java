@@ -92,9 +92,10 @@ public class ReactivePATController {
         return ReactiveSecurityContextHolder.getContext()
             .map(SecurityContext::getAuthentication)
             .filter(Objects::nonNull)
-            .map(authentication -> {
+            .<ResponseEntity<String>>handle((authentication, sink) -> {
                 if (accessTokenRequest.getScopes() == null || accessTokenRequest.getScopes().isEmpty()) {
-                    throw new AccessTokenBodyNotValidException("org.zowe.apiml.security.token.accessTokenBodyMissingScopes");
+                    sink.error(new AccessTokenBodyNotValidException(AccessTokenBodyNotValidException.Reason.MISSING_SCOPES));
+                    return;
                 }
 
                 var userId = authentication.getName();
@@ -114,9 +115,10 @@ public class ReactivePATController {
                 } catch (RuntimeException e) {
                     rauditBuilder.failure();
                     rauditBuilder.issue();
-                    throw e;
+                    sink.error(e);
+                    return;
                 }
-                return ResponseEntity.ok(pat);
+                sink.next(ResponseEntity.ok(pat));
             })
             .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatusCode.valueOf(401)).build()));
     }

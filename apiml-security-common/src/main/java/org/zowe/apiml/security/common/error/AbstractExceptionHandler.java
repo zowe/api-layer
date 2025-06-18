@@ -48,8 +48,8 @@ public abstract class AbstractExceptionHandler {
      * @param status     Http response status
      * @param response   Update response with message and status
      */
-    protected void writeErrorResponse(String messageKey, HttpStatus status, String requestUri, BiConsumer<ApiMessageView, HttpStatus> response) {
-        final ApiMessageView message = messageService.createMessage(messageKey, requestUri, status.getReasonPhrase()).mapToView();
+    protected void writeErrorResponse(String messageKey, HttpStatus status, BiConsumer<ApiMessageView, HttpStatus> response, Object...arguments) {
+        final ApiMessageView message = messageService.createMessage(messageKey, arguments).mapToView();
         response.accept(message, status);
     }
 

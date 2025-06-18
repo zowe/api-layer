@@ -88,7 +88,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         entry(TokenFormatNotValidException.class,
             (ex, ctx) -> handleTokenFormatException(ctx.requestUri, ctx.function, ex)),
         entry(AccessTokenBodyNotValidException.class,
-            (ex, ctx) -> handleInvalidAccessTokenBodyException(ctx.requestUri, ctx.function, ex)),
+            (ex, ctx) -> handleInvalidAccessTokenBodyException(ctx.requestUri, ctx.function, (AccessTokenBodyNotValidException) ex)),
         entry(InvalidCertificateException.class,
             (ex, ctx) -> handleInvalidCertificate(ctx.function, ex)),
         entry(ZosAuthenticationException.class,
@@ -157,17 +157,17 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         String error = this.messageService.createMessage("org.zowe.apiml.zaas.security.schema.missingAuthentication").mapToLogMessage();
         addHeader.accept(ApimlConstants.AUTH_FAIL_HEADER, error);
-        writeErrorResponse(ErrorType.AUTH_REQUIRED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, requestUri, function);
+        writeErrorResponse(ErrorType.AUTH_REQUIRED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, function, requestUri);
     }
 
     private void handleBadCredentials(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
-        writeErrorResponse(ErrorType.BAD_CREDENTIALS.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, requestUri, function);
+        writeErrorResponse(ErrorType.BAD_CREDENTIALS.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, function, requestUri);
     }
 
     private void handleAuthenticationCredentialsNotFound(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.BAD_REQUEST.value(), ex.getMessage());
-        writeErrorResponse(ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getErrorMessageKey(), HttpStatus.BAD_REQUEST, requestUri, function);
+        writeErrorResponse(ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getErrorMessageKey(), HttpStatus.BAD_REQUEST, function, requestUri);
     }
 
     private void handleAuthMethodNotSupported(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
@@ -181,24 +181,24 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         String error = this.messageService.createMessage("org.zowe.apiml.common.unauthorized").mapToLogMessage();
         addHeader.accept(ApimlConstants.AUTH_FAIL_HEADER, error);
-        writeErrorResponse(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, requestUri, function);
+        writeErrorResponse(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, function, requestUri);
     }
 
     private void handleNoMainframeIdentity(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, NoMainframeIdentityException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         addHeader.accept(ApimlConstants.HEADER_OIDC_TOKEN, ex.getToken());
         addHeader.accept(ApimlConstants.AUTH_FAIL_HEADER, ex.getMessage());
-        writeErrorResponse(ErrorType.IDENTITY_MAPPING_FAILED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, requestUri, function);
+        writeErrorResponse(ErrorType.IDENTITY_MAPPING_FAILED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, function, requestUri);
     }
 
     private void handleTokenNotProvided(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
-        writeErrorResponse(ErrorType.TOKEN_NOT_PROVIDED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, requestUri, function);
+        writeErrorResponse(ErrorType.TOKEN_NOT_PROVIDED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, function, requestUri);
     }
 
     private void handleTokenExpire(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
-        writeErrorResponse(ErrorType.TOKEN_EXPIRED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, requestUri, function);
+        writeErrorResponse(ErrorType.TOKEN_EXPIRED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, function, requestUri);
     }
 
     private void handleInvalidCertificate(BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
@@ -208,17 +208,18 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
 
     private void handleTokenFormatException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.BAD_REQUEST.value(), ex.getMessage());
-        writeErrorResponse(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), HttpStatus.BAD_REQUEST, requestUri, function);
+        writeErrorResponse(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), HttpStatus.BAD_REQUEST, function, requestUri);
     }
 
     private void handleInvalidTokenTypeException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
-        writeErrorResponse(ErrorType.INVALID_TOKEN_TYPE.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, requestUri, function);
+        writeErrorResponse(ErrorType.INVALID_TOKEN_TYPE.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, function, requestUri);
     }
 
-    private void handleInvalidAccessTokenBodyException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
+    private void handleInvalidAccessTokenBodyException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, AccessTokenBodyNotValidException ex) {
+        String messageKey = ex.getReason().getMessageKey();
         log.debug(MESSAGE_FORMAT, HttpStatus.BAD_REQUEST.value(), ex.getMessage());
-        writeErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, requestUri, function);
+        writeErrorResponse(messageKey, HttpStatus.BAD_REQUEST, function, requestUri);
     }
 
     private void handleAuthenticationException(String uri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {

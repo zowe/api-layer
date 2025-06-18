@@ -43,7 +43,7 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
     public Mono<Void> handleAccessTokenBodyNotValidException(ServerWebExchange exchange, AccessTokenBodyNotValidException
      ex) {
         log.debug("Invalid AccessToken body format, status: {}, message: {}", HttpStatus.BAD_REQUEST.value(), ex.getMessage());
-        return setBodyResponse(exchange, SC_BAD_REQUEST, ex.getMessageId());
+        return setBodyResponse(exchange, SC_BAD_REQUEST, ex.getMessage());
     }
 
     @ExceptionHandler(InvalidWebFingerConfigurationException.class)

@@ -54,18 +54,18 @@ public class StoreAccessTokenInfoFilter extends OncePerRequestFilter {
                 SuccessfulAccessTokenHandler.AccessTokenRequest accessTokenRequest = mapper.readValue(inputStream, SuccessfulAccessTokenHandler.AccessTokenRequest.class);
                 Set<String> scopes = accessTokenRequest.getScopes();
                 if (scopes == null || scopes.isEmpty()) {
-                    authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, new AccessTokenBodyNotValidException("org.zowe.apiml.security.token.accessTokenBodyMissingScopes"));
+                    authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, new AccessTokenBodyNotValidException(AccessTokenBodyNotValidException.Reason.MISSING_SCOPES));
                     return;
                 }
                 accessTokenRequest.setScopes(scopes.stream().map(String::toLowerCase).collect(Collectors.toSet()));
                 request.setAttribute(TOKEN_REQUEST, accessTokenRequest);
                 filterChain.doFilter(request, response);
             } else {
-                authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, new AccessTokenBodyNotValidException("org.zowe.apiml.security.token.accessTokenBodyMissingScopes"));
+                authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, new AccessTokenBodyNotValidException(AccessTokenBodyNotValidException.Reason.MISSING_SCOPES));
             }
 
         } catch (IOException e) {
-            authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, new AccessTokenBodyNotValidException("org.zowe.apiml.security.query.invalidAccessTokenBody"));
+            authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, new AccessTokenBodyNotValidException(AccessTokenBodyNotValidException.Reason.INVALID_FORMAT));
         }
 
     }

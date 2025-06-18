@@ -52,7 +52,7 @@ public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
         }
 
         log.debug(MESSAGE_FORMAT, HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage());
-        writeErrorResponse(errorType.getErrorMessageKey(), HttpStatus.SERVICE_UNAVAILABLE, requestUri, function);
+        writeErrorResponse(errorType.getErrorMessageKey(), HttpStatus.SERVICE_UNAVAILABLE, function, requestUri);
     }
 
 }
