@@ -13,12 +13,14 @@ package org.zowe.apiml.cloudgatewayservice.config;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.ssl.SslContext;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.cloud.gateway.config.HttpClientProperties;
 import org.springframework.cloud.gateway.filter.NettyRoutingFilter;
 import org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter;
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.product.constants.CoreService;
 import reactor.netty.http.client.HttpClient;
 
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.Optional;
 
 import static org.springframework.cloud.gateway.support.RouteMetadataUtils.CONNECT_TIMEOUT_ATTR;
 import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_ID;
 
 @Slf4j
 public class NettyRoutingFilterApiml extends NettyRoutingFilter {
@@ -60,7 +63,14 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
     @Override
     protected HttpClient getHttpClient(Route route, ServerWebExchange exchange) {
         // select proper HttpClient instance by attribute apiml.useClientCert
-        boolean useClientCert = Optional.ofNullable((Boolean) exchange.getAttribute(HTTP_CLIENT_USE_CLIENT_CERTIFICATE)).orElse(Boolean.FALSE);
+        boolean useClientCert = Optional.ofNullable((Boolean) exchange
+            .getAttribute(HTTP_CLIENT_USE_CLIENT_CERTIFICATE))
+            .filter(Boolean.TRUE::equals)
+            .orElseGet(() -> StringUtils.equalsAnyIgnoreCase((String) route.getMetadata().get(SERVICE_ID),
+                CoreService.CLOUD_GATEWAY.getServiceId(),
+                CoreService.GATEWAY.getServiceId()
+            ));
+
         HttpClient httpClient = useClientCert ? httpClientClientCert : httpClientNoCert;
 
         log.debug("Using client with keystore {}", useClientCert);

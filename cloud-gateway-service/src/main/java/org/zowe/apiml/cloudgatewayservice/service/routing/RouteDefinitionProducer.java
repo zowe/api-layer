@@ -25,8 +25,7 @@ import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_EXTERNAL_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 /**
  * The class that extends this abstract class is responsible to generate routing rule for a specific service and routing.
@@ -79,6 +78,14 @@ public abstract class RouteDefinitionProducer {
         return new ServiceInstanceEval(serviceInstance, serviceId.toLowerCase());
     }
 
+    private String getOriginalServiceId(ServiceInstance serviceInstance) {
+        if (serviceInstance instanceof ServiceInstanceEval) {
+            ServiceInstanceEval serviceInstanceEval = (ServiceInstanceEval) serviceInstance;
+            return serviceInstanceEval.original.getServiceId();
+        }
+        return serviceInstance.getServiceId();
+    }
+
     protected RouteDefinition buildRouteDefinition(ServiceInstance serviceInstance, String routeId) {
         RouteDefinition routeDefinition = new RouteDefinition();
         routeDefinition.setId(serviceInstance.getInstanceId() + ":" + routeId);
@@ -86,7 +93,9 @@ public abstract class RouteDefinitionProducer {
         routeDefinition.setUri(URI.create(getHostname(serviceInstance)));
 
         // add instance metadata
-        routeDefinition.setMetadata(new LinkedHashMap<>(serviceInstance.getMetadata()));
+        Map<String, Object> metadata = new LinkedHashMap<>(serviceInstance.getMetadata());
+        metadata.put(SERVICE_ID, getOriginalServiceId(serviceInstance));
+        routeDefinition.setMetadata(metadata);
         return routeDefinition;
     }
 
