@@ -77,6 +77,7 @@ public class FailedAuthenticationWebHandler implements ServerAuthenticationFailu
         } else {
             return exchange.getResponse().setComplete(); // avoids NPE
         }
+
     }
 
 }

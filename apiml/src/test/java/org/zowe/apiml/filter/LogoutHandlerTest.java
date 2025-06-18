@@ -14,7 +14,9 @@ import com.netflix.discovery.shared.Applications;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpCookie;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
@@ -24,62 +26,30 @@ import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.handler.FailedAuthenticationWebHandler;
 import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.util.HttpUtils;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class LogoutHandlerTest {
 
-    private AuthenticationService authenticationService;
-    private FailedAuthenticationWebHandler failureHandler;
-    private PeerAwareInstanceRegistryImpl registry;
+    @Mock private AuthenticationService authenticationService;
+    @Mock private FailedAuthenticationWebHandler failureHandler;
+    @Mock private PeerAwareInstanceRegistryImpl registry;
+    private HttpUtils httpUtils = new HttpUtils(null);
+
     private LogoutHandler logoutHandler;
 
     @BeforeEach
     void setUp() {
-        authenticationService = mock(AuthenticationService.class);
-        failureHandler = mock(FailedAuthenticationWebHandler.class);
-        registry = mock(PeerAwareInstanceRegistryImpl.class);
-        logoutHandler = new LogoutHandler(authenticationService, failureHandler, registry);
-    }
-
-    @Test
-    void shouldExtractTokenFromCookie() {
-        var cookie = new HttpCookie("apimlAuthenticationToken", "test-token");
-        var request = MockServerHttpRequest.get("/logout")
-            .cookie(cookie)
-            .build();
-
-        var exchange = MockServerWebExchange.from(request);
-
-        StepVerifier.create(LogoutHandler.getTokenFromRequest(exchange))
-            .expectNext("test-token")
-            .verifyComplete();
-    }
-
-    @Test
-    void shouldExtractTokenFromAuthorizationHeader() {
-        var request = MockServerHttpRequest.get("/logout")
-            .header(HttpHeaders.AUTHORIZATION, "Bearer test-token")
-            .build();
-
-        var exchange = MockServerWebExchange.from(request);
-
-        StepVerifier.create(LogoutHandler.getTokenFromRequest(exchange))
-            .expectNext("test-token")
-            .verifyComplete();
-    }
-
-    @Test
-    void shouldReturnEmptyForMissingToken() {
-        var request = MockServerHttpRequest.get("/logout").build();
-        var exchange = MockServerWebExchange.from(request);
-
-        StepVerifier.create(LogoutHandler.getTokenFromRequest(exchange))
-            .verifyComplete();
+        logoutHandler = new LogoutHandler(authenticationService, failureHandler, registry, httpUtils);
     }
 
     @Test
@@ -159,4 +129,5 @@ class LogoutHandlerTest {
 
         verify(authenticationService).invalidateJwtTokenGateway(eq("token123"), eq(true), any());
     }
+
 }

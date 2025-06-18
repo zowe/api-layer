@@ -39,7 +39,7 @@ apiml:
             clientId:
             clientSecret:
             registry: zowe.okta.com
-            identityMapperUrl: https://localhost:10010/zss/api/v1/certificate/dn
+            identityMapperUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/zss/api/v1/certificate/dn
             identityMapperUser: APIMTST
             jwks:
                 uri:

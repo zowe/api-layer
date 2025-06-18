@@ -18,7 +18,6 @@ import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
-import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
@@ -28,6 +27,7 @@ import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
+import org.zowe.apiml.util.HttpUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.Objects;
@@ -37,23 +37,23 @@ import java.util.Objects;
  */
 public class QueryWebFilter implements WebFilter {
 
-    private final ServerAuthenticationSuccessHandler successHandler;
     private final ServerAuthenticationFailureHandler failureHandler;
     private final HttpMethod httpMethod;
     private final boolean protectedByCertificate;
-    private final ReactiveAuthenticationManager authenticationManager;
+    private final ReactiveAuthenticationManager authenticationService;
+    private final HttpUtils httpUtils;
 
     public QueryWebFilter(
-        ServerAuthenticationSuccessHandler successHandler,
         ServerAuthenticationFailureHandler failureHandler,
         HttpMethod httpMethod,
         boolean protectedByCertificate,
-        ReactiveAuthenticationManager authenticationService) {
-        this.successHandler = Objects.requireNonNull(successHandler, "successHandler cannot be null");
+        ReactiveAuthenticationManager authenticationService,
+        HttpUtils httpUtils) {
         this.failureHandler = Objects.requireNonNull(failureHandler, "failureHandler cannot be null");
         this.httpMethod = Objects.requireNonNull(httpMethod, "httpMethod cannot be null");
         this.protectedByCertificate = protectedByCertificate;
-        this.authenticationManager = authenticationService;
+        this.authenticationService = authenticationService;
+        this.httpUtils = httpUtils;
     }
 
     @Override
@@ -66,7 +66,7 @@ public class QueryWebFilter implements WebFilter {
         }
 
         return attemptAuthentication(exchange)
-            .flatMap(authResult -> this.successHandler.onAuthenticationSuccess(new WebFilterExchange(exchange, chain), authResult)
+            .flatMap(authResult -> chain.filter(exchange)
                     .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authResult))
             )
             .onErrorResume(AuthenticationException.class, failed ->
@@ -86,11 +86,11 @@ public class QueryWebFilter implements WebFilter {
         }
 
         return certificateCheckMono
-            .then(LogoutHandler.getTokenFromRequest(exchange))
+            .then(httpUtils.getTokenFromRequest(exchange))
                 .switchIfEmpty(Mono.error(new TokenNotProvidedException("Authorization token not provided.")))
                 .flatMap(tokenValue -> {
                     var tokenAuthRequest = new TokenAuthentication(tokenValue, TokenAuthentication.Type.JWT);
-                    return this.authenticationManager.authenticate(tokenAuthRequest)
+                    return this.authenticationService.authenticate(tokenAuthRequest)
                         .filter(Authentication::isAuthenticated)
                         .switchIfEmpty(Mono.error(new TokenNotValidException("JWT Token is not authenticated")));
                 });

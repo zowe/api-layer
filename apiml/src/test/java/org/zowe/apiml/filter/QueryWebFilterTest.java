@@ -27,13 +27,13 @@ import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.web.server.authentication.ServerAuthenticationFailureHandler;
-import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
+import org.zowe.apiml.util.HttpUtils;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import reactor.util.context.Context;
@@ -42,7 +42,6 @@ import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -50,10 +49,10 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class QueryWebFilterTest {
 
-    @Mock private ServerAuthenticationSuccessHandler successHandler;
     @Mock private ServerAuthenticationFailureHandler failureHandler;
     @Mock private ReactiveAuthenticationManager authenticationService;
     @Mock private WebFilterChain chain;
+    private HttpUtils httpUtils = new HttpUtils(null);
 
     private QueryWebFilter filter;
 
@@ -62,7 +61,7 @@ class QueryWebFilterTest {
 
     @BeforeEach
     void setUp() {
-        this.filter = new QueryWebFilter(successHandler, failureHandler, HttpMethod.GET, false, authenticationService);
+        this.filter = new QueryWebFilter(failureHandler, HttpMethod.GET, false, authenticationService, httpUtils);
     }
 
     @Nested
@@ -109,7 +108,7 @@ class QueryWebFilterTest {
                     var securityContext = new SecurityContextImpl(authentication);
                     Mono<SecurityContext> contextMono = Mono.just(securityContext);
 
-                    filter = new QueryWebFilter(successHandler, failureHandler, HttpMethod.GET, certProtected, authenticationService);
+                    filter = new QueryWebFilter(failureHandler, HttpMethod.GET, certProtected, authenticationService, httpUtils);
                     testMono = filter.filter(exchange, chain)
                         .contextWrite(ReactiveSecurityContextHolder.withSecurityContext(contextMono));
                 }
@@ -159,7 +158,7 @@ class QueryWebFilterTest {
 
                     var mockMono = mock(Mono.class);
 
-                    when(successHandler.onAuthenticationSuccess(any(), eq(authentication))).thenReturn(mockMono);
+                    when(chain.filter(exchange)).thenReturn(mockMono);
                     when(mockMono.contextWrite(any(Context.class))).thenReturn(Mono.empty());
 
                     StepVerifier.create(testMono)

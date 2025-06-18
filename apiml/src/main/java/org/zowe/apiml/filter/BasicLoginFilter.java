@@ -10,11 +10,13 @@
 
 package org.zowe.apiml.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.authentication.*;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.ReactiveAuthenticationManagerAdapter;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.web.server.WebFilterExchange;
@@ -27,8 +29,6 @@ import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import reactor.core.publisher.Mono;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /**
@@ -57,25 +57,22 @@ import java.util.Optional;
 @Slf4j
 public class BasicLoginFilter implements WebFilter {
 
-    private final ObjectMapper mapper;
     private final ReactiveAuthenticationManagerAdapter authenticationManager;
     private final FailedAuthenticationWebHandler failedAuthenticationWebHandler;
 
-    public BasicLoginFilter(CompoundAuthProvider compoundAuthProvider, ObjectMapper mapper, FailedAuthenticationWebHandler failedAuthenticationWebHandler) {
+    public BasicLoginFilter(CompoundAuthProvider compoundAuthProvider, FailedAuthenticationWebHandler failedAuthenticationWebHandler) {
         var authManager = new ProviderManager(compoundAuthProvider);
         this.authenticationManager = new ReactiveAuthenticationManagerAdapter(authManager);
-        this.mapper = mapper;
         this.failedAuthenticationWebHandler = failedAuthenticationWebHandler;
     }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        var authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader != null && authHeader.toLowerCase().startsWith("bearer ")) {
             return chain.filter(exchange);
         }
         return extractBasicAuth(exchange)
-            .switchIfEmpty(getCredentialsFromBody(exchange))
             .map(this::useCredentials)
             .switchIfEmpty(chain.filter(exchange).then(Mono.empty()))
             .flatMap(credentials ->
@@ -109,33 +106,6 @@ public class BasicLoginFilter implements WebFilter {
     private boolean credentialsAvailable(LoginRequest credentials) {
         return credentials.getUsername() != null && !credentials.getUsername().isBlank()
             && credentials.getPassword() != null && credentials.getPassword().length > 0;
-    }
-
-    private Mono<LoginRequest> getCredentialsFromBody(ServerWebExchange exchange) {
-        var path = exchange.getRequest().getPath().value();
-        if (!path.contains("/auth/login")) {
-            return Mono.empty();
-        }
-
-        return DataBufferUtils.join(exchange.getRequest().getBody())
-            .flatMap(dataBuffer -> {
-                byte[] bytes = new byte[dataBuffer.readableByteCount()];
-                dataBuffer.read(bytes);
-                DataBufferUtils.release(dataBuffer);
-
-                String bodyString = new String(bytes, StandardCharsets.UTF_8);
-                try {
-                    var loginRequest = mapper.readValue(bodyString, LoginRequest.class);
-                    if (credentialsAvailable(loginRequest)) {
-                        return Mono.just(loginRequest);
-                    } else {
-                        return Mono.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format."));
-                    }
-                } catch (IOException e) {
-                    log.debug("Authentication problem: login object has wrong format", e);
-                    return Mono.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format.", e));
-                }
-            });
     }
 
 }

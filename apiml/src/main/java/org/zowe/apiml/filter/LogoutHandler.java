@@ -12,7 +12,6 @@ package org.zowe.apiml.filter;
 
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -24,11 +23,11 @@ import org.zowe.apiml.handler.FailedAuthenticationWebHandler;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.util.HttpUtils;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import reactor.core.publisher.Mono;
 
 import static org.zowe.apiml.constants.ApimlConstants.BEARER_AUTHENTICATION_PREFIX;
-import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 @RequiredArgsConstructor
 @Component
@@ -37,22 +36,11 @@ public class LogoutHandler implements ServerLogoutHandler {
     private final AuthenticationService authenticationService;
     private final FailedAuthenticationWebHandler failure;
     private final PeerAwareInstanceRegistryImpl peerAwareInstanceRegistry;
+    private final HttpUtils httpUtils;
 
     @Override
     public Mono<Void> logout(WebFilterExchange exchange, Authentication authentication) {
-        return getTokenFromRequest(exchange.getExchange()).flatMap(token -> invalidateJwtToken(token, exchange));
-    }
-
-    public static Mono<String> getTokenFromRequest(ServerWebExchange exchange) {
-        return getCookieValue(exchange, COOKIE_AUTH_NAME)
-            .switchIfEmpty(Mono.defer(() -> getBearerTokenFromHeaderReactive(exchange)));
-    }
-
-    public static Mono<String> getCookieValue(ServerWebExchange exchange, String cookieName) {
-        return Mono.justOrEmpty(exchange)
-            .filter(ex -> ex.getRequest().getCookies().getFirst(cookieName) != null)
-            .mapNotNull(ex -> ex.getRequest().getCookies().getFirst(cookieName))
-            .map(HttpCookie::getValue);
+        return httpUtils.getTokenFromRequest(exchange.getExchange()).flatMap(token -> invalidateJwtToken(token, exchange));
     }
 
     private Mono<Void> invalidateJwtToken(String token, WebFilterExchange exchange) {

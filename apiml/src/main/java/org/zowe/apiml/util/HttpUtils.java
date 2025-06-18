@@ -12,9 +12,16 @@ package org.zowe.apiml.util;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpCookie;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import reactor.core.publisher.Mono;
+
+import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
+import static org.zowe.apiml.constants.ApimlConstants.BEARER_AUTHENTICATION_PREFIX;
 
 @Component
 @RequiredArgsConstructor
@@ -41,5 +48,24 @@ public class HttpUtils {
             .httpOnly(true)
             .secure(cp.isCookieSecure())
             .build();
+    }
+
+    public Mono<String> getTokenFromRequest(ServerWebExchange exchange) {
+        return getCookieValue(exchange, COOKIE_AUTH_NAME)
+            .switchIfEmpty(getBearerTokenFromHeaderReactive(exchange));
+    }
+
+    public Mono<String> getBearerTokenFromHeaderReactive(ServerWebExchange exchange) {
+        return Mono.justOrEmpty(exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
+            .filter(authHeader -> authHeader.toLowerCase().startsWith((BEARER_AUTHENTICATION_PREFIX + " ").toLowerCase()))
+            .map(authHeader -> authHeader.substring((BEARER_AUTHENTICATION_PREFIX + " ").length()).trim())
+            .filter(token -> !token.isBlank());
+    }
+
+    public Mono<String> getCookieValue(ServerWebExchange exchange, String cookieName) {
+        return Mono.justOrEmpty(exchange)
+            .filter(ex -> ex.getRequest().getCookies().getFirst(cookieName) != null)
+            .mapNotNull(ex -> ex.getRequest().getCookies().getFirst(cookieName))
+            .map(HttpCookie::getValue);
     }
 }

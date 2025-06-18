@@ -24,7 +24,6 @@ import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
-import reactor.test.StepVerifier;
 
 import javax.management.ServiceNotFoundException;
 
@@ -118,12 +117,8 @@ class ZaasSchemeTransformApiTest {
             when(authSourceService.parse(authSource)).thenReturn(parsed);
             when(passTicketService.generate("USER1", "app1")).thenThrow(new RuntimeException("boom"));
 
-            StepVerifier.create(transformApi.passticket(credentials))
-                .expectNextMatches(resp -> {
-                    assertEquals("boom", resp.getHeaders().header(AUTH_FAIL_HEADER).get(0));
-                    return true;
-                })
-                .verifyComplete();
+            var result = transformApi.passticket(credentials).block();
+            assertEquals("boom", result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
         }
 
         @Test

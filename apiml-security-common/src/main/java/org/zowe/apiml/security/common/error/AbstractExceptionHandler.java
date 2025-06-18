@@ -23,14 +23,12 @@ import java.util.function.BiConsumer;
  * Base class for exception handlers
  * Aggregates boilerplate and constants, which are reused by concrete classes
  */
-
 @RequiredArgsConstructor
 public abstract class AbstractExceptionHandler {
     protected static final String MESSAGE_FORMAT = "Status Code {}, error message: {}";
 
     protected final MessageService messageService;
     protected final ObjectMapper mapper;
-
 
     /**
      * Entry method that takes care of an exception passed to it

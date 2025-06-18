@@ -77,7 +77,9 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
         Optional<X509Certificate[]> certsFromTlsOpt = Optional.of(exchange)
             .map(ServerWebExchange::getRequest)
             .map(ServerHttpRequest::getSslInfo)
-            .map(ssl -> getX509Certificates(ssl.getPeerCertificates()));
+            .map(ssl -> ssl.getPeerCertificates())
+            .filter(Objects::nonNull)
+            .filter(ssl -> ssl.length > 0);
 
         certsFromTlsOpt.ifPresent(certsFromTls -> {
             Optional<X509Certificate> clientCertFromHeader = getClientCertFromHeader(exchange.getRequest());
@@ -114,11 +116,6 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
             log.debug("No TLS peer certificates found in the request.");
         }
     }
-
-    private static X509Certificate[] getX509Certificates(X509Certificate[] certs) {
-        return (certs != null && certs.length > 0 && certs[0] != null) ? certs : null;
-    }
-
 
     /**
      * Extracts and decodes an X.509 certificate from the CLIENT_CERT_HEADER.
