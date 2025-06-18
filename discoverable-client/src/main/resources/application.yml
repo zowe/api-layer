@@ -194,9 +194,6 @@ management:
             base-path: /application
             exposure:
                 include: "*"
-    endpoint:
-        shutdown:
-            access: unrestricted
 
 ---
 spring.config.activate.on-profile: debug
