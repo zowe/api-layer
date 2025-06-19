@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,9 +19,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.ReactiveAuthenticationManagerAdapter;
@@ -31,7 +34,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
@@ -45,6 +47,7 @@ import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.util.Objects;
 
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
@@ -63,6 +66,7 @@ public class ReactiveAuthenticationController {
     private final PeerAwareInstanceRegistryImpl peerAwareInstanceRegistry;
     private final HttpUtils httpUtils;
     private final CompoundAuthProvider compoundAuthProvider;
+    private final ObjectMapper objectMapper;
 
     /**
      * Endpoint to authenticate a user based on credentials from EITHER:
@@ -74,7 +78,7 @@ public class ReactiveAuthenticationController {
      * @return A Mono<ResponseEntity<Void>> indicating success or failure.
      */
     @PostMapping(value = "/login")
-    public Mono<ResponseEntity<Object>> login(ServerWebExchange exchange, @RequestBody(required = false) LoginRequest request) {
+    public Mono<ResponseEntity<Object>> login(ServerWebExchange exchange, ServerHttpRequest request) { // To maintain support for wrongly-formed requests (with content-type but no content for example which are used)
         return ReactiveSecurityContextHolder.getContext()
             .map(SecurityContext::getAuthentication)
             .filter(Objects::nonNull)
@@ -84,14 +88,34 @@ public class ReactiveAuthenticationController {
             .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatusCode.valueOf(401)).build()));
     }
 
-    private Mono<ResponseEntity<Object>> authWithBody(ServerWebExchange exchange, LoginRequest request) {
-        if (request == null || StringUtils.isBlank(request.getUsername()) || request.getPassword() == null || request.getPassword().length == 0) {
-            throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
-        }
-        var providerManager = new ProviderManager(compoundAuthProvider);
-        var authAdapter = new ReactiveAuthenticationManagerAdapter(providerManager);
-        return authAdapter.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request))
-            .map(authentication -> replyWithJwt(exchange, authentication));
+    private Mono<ResponseEntity<Object>> authWithBody(ServerWebExchange exchange, ServerHttpRequest request) {
+        return readLoginRequestFromBody(request)
+            .flatMap(loginRequest -> {
+                if (loginRequest == null || StringUtils.isBlank(loginRequest.getUsername()) || loginRequest.getPassword() == null || loginRequest.getPassword().length == 0) {
+                    throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
+                }
+                var providerManager = new ProviderManager(compoundAuthProvider);
+                var authAdapter = new ReactiveAuthenticationManagerAdapter(providerManager);
+                return authAdapter.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), request))
+                    .map(authentication -> replyWithJwt(exchange, authentication));
+            });
+    }
+
+    private Mono<LoginRequest> readLoginRequestFromBody(ServerHttpRequest request) {
+        return DataBufferUtils.join(request.getBody())
+            .map(buffer -> {
+                var bytes = new byte[buffer.readableByteCount()];
+                buffer.read(bytes);
+                DataBufferUtils.release(buffer);
+                return bytes;
+            })
+            .map(body -> {
+                try {
+                    return objectMapper.readValue(body, LoginRequest.class);
+                } catch (IOException e) {
+                    throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.", e);
+                }
+            });
     }
 
     private ResponseEntity<Object> replyWithJwt(ServerWebExchange exchange, Authentication authentication) {
