@@ -168,7 +168,6 @@ public class ZaasExceptionHandler {
             .body(messageView);
     }
 
-
     @ExceptionHandler(UnsupportedResourceClassException.class)
     public ResponseEntity<ApiMessageView> handleUnsupportedResourceClassException(UnsupportedResourceClassException unsupportedResourceClassException) {
         log.debug("Unsupported resource class", unsupportedResourceClassException);

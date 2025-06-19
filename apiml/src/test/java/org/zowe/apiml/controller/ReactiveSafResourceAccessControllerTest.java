@@ -18,12 +18,9 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
-import org.zowe.apiml.message.api.ApiMessage;
-import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.auth.saf.AccessLevel;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
@@ -32,24 +29,18 @@ import reactor.test.StepVerifier;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ReactiveSafResourceAccessControllerTest {
 
-    @Mock
-    private SafResourceAccessVerifying safResourceAccessVerifying;
-    @Mock
-    private MessageService messageService;
+    @Mock private SafResourceAccessVerifying safResourceAccessVerifying;
+    @Mock private MessageService messageService;
+    @Mock private SecurityContext securityContext;
+    @Mock private Authentication authentication;
+
     @InjectMocks
     private ReactiveSafResourceAccessController controller;
-
-    @Mock
-    private SecurityContext securityContext;
-
-    @Mock
-    private Authentication authentication;
 
     private final ReactiveSafResourceAccessController.CheckRequestModel validRequest =
         new ReactiveSafResourceAccessController.CheckRequestModel("ZOWE", "APIML.SERVICES", AccessLevel.READ);
@@ -64,7 +55,7 @@ class ReactiveSafResourceAccessControllerTest {
         try (MockedStatic<ReactiveSecurityContextHolder> mocked = Mockito.mockStatic(ReactiveSecurityContextHolder.class)) {
             mocked.when(ReactiveSecurityContextHolder::getContext).thenReturn(Mono.just(securityContext));
 
-            Mono<ResponseEntity<?>> result = controller.hasSafAccess(validRequest);
+            var result = controller.hasSafAccess(validRequest);
 
             StepVerifier.create(result)
                 .expectNextMatches(response -> response.getStatusCode().equals(HttpStatus.NO_CONTENT))
@@ -79,22 +70,14 @@ class ReactiveSafResourceAccessControllerTest {
         when(safResourceAccessVerifying.hasSafResourceAccess(any(), eq("ZOWE"), eq("APIML.SERVICES"), eq("READ")))
             .thenReturn(false);
 
-        Message mockMessage = mock(Message.class);
-        ApiMessage apiMessage = new ApiMessage("org.zowe.apiml.security.unauthorized", null, null, null, null, null);
-        when(messageService.createMessage("org.zowe.apiml.security.unauthorized", "USER2")).thenReturn(mockMessage);
-        when(mockMessage.mapToApiMessage()).thenReturn(apiMessage);
-
         try (MockedStatic<ReactiveSecurityContextHolder> mocked = Mockito.mockStatic(ReactiveSecurityContextHolder.class)) {
             mocked.when(ReactiveSecurityContextHolder::getContext).thenReturn(Mono.just(securityContext));
 
-            Mono<ResponseEntity<?>> result = controller.hasSafAccess(validRequest);
+            var result = controller.hasSafAccess(validRequest);
 
             StepVerifier.create(result)
-                .expectNextMatches(response ->
-                    response.getStatusCode().equals(HttpStatus.UNAUTHORIZED) &&
-                        response.getBody().equals(apiMessage)
-                )
-                .verifyComplete();
+                .expectErrorMatches(e -> e instanceof SafAccessDeniedException sade && sade.getPrincipal().equals("USER2"))
+                .verify();
         }
     }
 
@@ -103,7 +86,7 @@ class ReactiveSafResourceAccessControllerTest {
         try (MockedStatic<ReactiveSecurityContextHolder> mocked = Mockito.mockStatic(ReactiveSecurityContextHolder.class)) {
             mocked.when(ReactiveSecurityContextHolder::getContext).thenReturn(Mono.empty());
 
-            Mono<ResponseEntity<?>> result = controller.hasSafAccess(validRequest);
+            var result = controller.hasSafAccess(validRequest);
 
             StepVerifier.create(result)
                 .expectNextMatches(response -> response.getStatusCode().equals(HttpStatus.UNAUTHORIZED))
@@ -118,7 +101,7 @@ class ReactiveSafResourceAccessControllerTest {
         try (MockedStatic<ReactiveSecurityContextHolder> mocked = Mockito.mockStatic(ReactiveSecurityContextHolder.class)) {
             mocked.when(ReactiveSecurityContextHolder::getContext).thenReturn(Mono.just(securityContext));
 
-            Mono<ResponseEntity<?>> result = controller.hasSafAccess(validRequest);
+            var result = controller.hasSafAccess(validRequest);
 
             StepVerifier.create(result)
                 .expectNextMatches(response -> response.getStatusCode().equals(HttpStatus.UNAUTHORIZED))
@@ -134,7 +117,7 @@ class ReactiveSafResourceAccessControllerTest {
         try (MockedStatic<ReactiveSecurityContextHolder> mocked = Mockito.mockStatic(ReactiveSecurityContextHolder.class)) {
             mocked.when(ReactiveSecurityContextHolder::getContext).thenReturn(Mono.just(securityContext));
 
-            Mono<ResponseEntity<?>> result = controller.hasSafAccess(validRequest);
+            var result = controller.hasSafAccess(validRequest);
 
             StepVerifier.create(result)
                 .expectNextMatches(response -> response.getStatusCode().equals(HttpStatus.UNAUTHORIZED))
