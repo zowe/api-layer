@@ -96,7 +96,7 @@ public class ReactiveAuthenticationController {
                 }
                 var providerManager = new ProviderManager(compoundAuthProvider);
                 var authAdapter = new ReactiveAuthenticationManagerAdapter(providerManager);
-                return authAdapter.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), request))
+                return authAdapter.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest))
                     .map(authentication -> replyWithJwt(exchange, authentication));
             });
     }
