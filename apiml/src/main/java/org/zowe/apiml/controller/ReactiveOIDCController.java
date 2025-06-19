@@ -111,7 +111,7 @@ public class ReactiveOIDCController {
                     WebFingerResponse response = webFingerProvider.getWebFingerConfig(clientId);
                     return ResponseEntity.ok(response);
                 } catch (IOException e) {
-                    throw new InvalidWebFingerConfigurationException(e, "org.zowe.apiml.security.oidc.invalidWebfingerConfiguration");
+                    throw new InvalidWebFingerConfigurationException(e);
                 }
 
             }

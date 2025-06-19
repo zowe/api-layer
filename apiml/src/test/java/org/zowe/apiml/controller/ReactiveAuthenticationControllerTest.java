@@ -140,7 +140,7 @@ class ReactiveAuthenticationControllerTest {
         Mono<ResponseEntity<Void>> result = controller.invalidateJwtToken(exchange);
 
         StepVerifier.create(result)
-            .expectNextMatches(responseEntity -> HttpStatus.SERVICE_UNAVAILABLE.equals(responseEntity.getStatusCode()))
+            .expectNextMatches(responseEntity -> HttpStatus.BAD_REQUEST.equals(responseEntity.getStatusCode()))
             .verifyComplete();
     }
 

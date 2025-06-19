@@ -12,15 +12,10 @@ package org.zowe.apiml.controller;
 
 public class InvalidWebFingerConfigurationException extends RuntimeException {
 
-    private final String messageId;
+    private static final long serialVersionUID = 3570367176319366489L;
 
-    public InvalidWebFingerConfigurationException(Throwable cuase, String messageId) {
-        super(cuase);
-        this.messageId = messageId;
-    }
-
-    public String getMessageId() {
-        return messageId;
+    public InvalidWebFingerConfigurationException(Throwable cause) {
+        super(cause);
     }
 
 }

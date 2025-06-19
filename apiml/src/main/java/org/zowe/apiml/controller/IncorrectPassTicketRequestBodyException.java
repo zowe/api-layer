@@ -12,4 +12,6 @@ package org.zowe.apiml.controller;
 
 public class IncorrectPassTicketRequestBodyException extends RuntimeException {
 
+    private static final long serialVersionUID = 9223372036854775807L;
+
 }

@@ -47,8 +47,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.Objects;
 
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.zowe.apiml.zaas.controllers.AuthController.INVALIDATE_PATH;
 
 @RestController
@@ -115,7 +117,7 @@ public class ReactiveAuthenticationController {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(authenticationService.parseJwtToken(tokenAuthentication.getCredentials()))
             )
-            .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatusCode.valueOf(401)).build()));
+            .switchIfEmpty(Mono.just(ResponseEntity.status(SC_UNAUTHORIZED).build()));
     }
 
     @DeleteMapping(path = INVALIDATE_PATH)
@@ -142,7 +144,7 @@ public class ReactiveAuthenticationController {
             boolean invalidated = authenticationService.invalidateJwtTokenGateway(jwtToken, false, app);
             return Mono.just(ResponseEntity.status(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE).build());
         } catch (TokenNotValidException e) {
-            return Mono.just(ResponseEntity.status(SC_SERVICE_UNAVAILABLE).build());
+            return Mono.just(ResponseEntity.status(SC_BAD_REQUEST).build());
         }
 
     }

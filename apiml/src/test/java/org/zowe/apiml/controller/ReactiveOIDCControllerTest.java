@@ -63,7 +63,7 @@ public class ReactiveOIDCControllerTest {
         var result = controller.getWebFinger(clientId);
 
         StepVerifier.create(result)
-            .expectErrorMatches(e -> e instanceof InvalidWebFingerConfigurationException ex && ex.getMessageId().equals("org.zowe.apiml.security.oidc.invalidWebfingerConfiguration"))
+            .expectErrorMatches(e -> e instanceof InvalidWebFingerConfigurationException)
             .verify();
     }
 

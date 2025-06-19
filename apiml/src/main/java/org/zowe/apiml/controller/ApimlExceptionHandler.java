@@ -54,7 +54,7 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
     @ExceptionHandler(InvalidWebFingerConfigurationException.class)
     public Mono<Void> handleInvalidWebFingerConfigurationException(ServerWebExchange exchange, InvalidWebFingerConfigurationException ex) {
         log.debug("Error while reading webfinger configuration from source.", ex);
-        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, ex.getMessageId());
+        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.security.oidc.invalidWebfingerConfiguration");
     }
 
     @ExceptionHandler(IncorrectPassTicketRequestBodyException.class)
