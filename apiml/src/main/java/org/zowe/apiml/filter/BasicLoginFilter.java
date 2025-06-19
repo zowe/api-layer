@@ -74,8 +74,7 @@ public class BasicLoginFilter implements WebFilter {
             .flatMap(credentials ->
                 authenticationManager.authenticate(credentials)
                     .flatMap(authentication -> chain.filter(exchange)
-                        .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication)))
-                    .onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), ex)))
+                        .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication))))
             .onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), ex));
     }
 
