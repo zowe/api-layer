@@ -133,7 +133,7 @@ dependencyResolutionManagement {
 
             library('spring_cloud_starter_eureka_client', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-client').versionRef('springCloudNetflix')
             library('spring_cloud_starter_eureka_server', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-server').versionRef('springCloudNetflix')
-            library('spring_cloud_starter_gateway', 'org.springframework.cloud', 'spring-cloud-starter-gateway').versionRef('springCloudGateway')
+            library('spring_cloud_starter_gateway', 'org.springframework.cloud', 'spring-cloud-starter-gateway-server-webflux').versionRef('springCloudGateway')
             library('spring_cloud_commons', 'org.springframework.cloud', 'spring-cloud-commons').versionRef('springCloudCommons')
             library('spring_cloud_circuit_breaker', 'org.springframework.cloud', 'spring-cloud-starter-circuitbreaker-reactor-resilience4j').versionRef('springCloudCB')
 
