@@ -26,6 +26,8 @@ import org.zowe.apiml.security.common.verify.CertificateValidator;
 import reactor.core.publisher.Mono;
 
 import java.io.ByteArrayInputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -99,8 +101,6 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
 
                 exchange.getAttributes().put(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, certsFromTls);
                 log.debug("Retaining full TLS certificate chain in attribute {}: {}", ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, Arrays.toString(certsFromTls));
-
-
             } else {
                 X509Certificate[] clientAuthCerts = selectCerts(certsFromTls, certificateForClientAuth);
                 exchange.getAttributes().put(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, clientAuthCerts);
@@ -139,7 +139,7 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                     log.warn("Certificate parsed from header {} is not an X.509 certificate.", certFromHeader);
                 }
             } catch (CertificateException | IllegalArgumentException e) {
-                apimlLog.log("org.zowe.apiml.security.common.filter.errorParsingCertificate", request.getRemoteAddress() != null ? request.getRemoteAddress().getAddress().getHostAddress() : "N/A", e.getMessage(), certFromHeader);
+                apimlLog.log("org.zowe.apiml.security.common.filter.errorParsingCertificate", Optional.ofNullable(request.getRemoteAddress()).map(InetSocketAddress::getAddress).map(InetAddress::getHostAddress).orElse("N/A"), e.getMessage(), certFromHeader);
                 log.debug("Certificate parsing failed.", e);
             }
         }
