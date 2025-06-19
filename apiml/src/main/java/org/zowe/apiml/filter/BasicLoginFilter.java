@@ -68,10 +68,6 @@ public class BasicLoginFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        var authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (authHeader != null && authHeader.toLowerCase().startsWith("bearer ")) {
-            return chain.filter(exchange);
-        }
         return extractBasicAuth(exchange)
             .map(this::useCredentials)
             .switchIfEmpty(Mono.<AbstractAuthenticationToken>defer(() -> chain.filter(exchange).then(Mono.empty())))
@@ -90,6 +86,7 @@ public class BasicLoginFilter implements WebFilter {
     private Mono<LoginRequest> extractBasicAuth(ServerWebExchange exchange) {
         var authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader == null) return Mono.empty();
+        if (!authHeader.toLowerCase().startsWith("basic ")) return Mono.empty();
 
         return Mono.fromCallable(() ->
             LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(authHeader))

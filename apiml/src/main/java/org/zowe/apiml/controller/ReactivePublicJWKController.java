@@ -91,12 +91,12 @@ public class ReactivePublicJWKController {
             }
             Optional<JWK> key = jwtSecurity.getJwkPublicKey();
             key.ifPresent(keys::add);
-        if ((oidcProvider != null) && (oidcProvider instanceof OIDCTokenProviderJWK oidcTokenProviderJwk)) {
-            JWKSet oidcSet = oidcTokenProviderJwk.getJwkSet();
-            if (oidcSet != null) {
-                keys.addAll(oidcSet.getKeys());
+            if ((oidcProvider != null) && (oidcProvider instanceof OIDCTokenProviderJWK oidcTokenProviderJwk)) {
+                JWKSet oidcSet = oidcTokenProviderJwk.getJwkSet();
+                if (oidcSet != null) {
+                    keys.addAll(oidcSet.getKeys());
+                }
             }
-        }
             return new JWKSet(keys).toJSONObject(true);
         });
     }
