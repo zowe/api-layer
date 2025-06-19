@@ -26,12 +26,7 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
-import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
-import org.zowe.apiml.security.common.token.TokenNotProvidedException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.*;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -87,8 +82,10 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             (ex, ctx) -> handleTokenExpire(ctx.requestUri, ctx.function, ex)),
         entry(TokenFormatNotValidException.class,
             (ex, ctx) -> handleTokenFormatException(ctx.requestUri, ctx.function, ex)),
-        entry(AccessTokenBodyNotValidException.class,
-            (ex, ctx) -> handleInvalidAccessTokenBodyException(ctx.requestUri, ctx.function, (AccessTokenBodyNotValidException) ex)),
+        entry(AccessTokenInvalidBodyException.class,
+            (ex, ctx) -> handleBadRequest(ctx.requestUri, ctx.function, ex, "org.zowe.apiml.accessToken.invalidFormat")),
+        entry(AccessTokenMissingBodyException.class,
+            (ex, ctx) -> handleBadRequest(ctx.requestUri, ctx.function, ex, "org.zowe.apiml.security.token.accessTokenBodyMissingScopes")),
         entry(InvalidCertificateException.class,
             (ex, ctx) -> handleInvalidCertificate(ctx.function, ex)),
         entry(ZosAuthenticationException.class,
@@ -122,9 +119,9 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
      * Entry method that takes care about the exception passed to it
      *
      * @param requestUri Http request URI
-     * @param function message function
-     * @param addHeader header
-     * @param ex Exception to be handled
+     * @param function   message function
+     * @param addHeader  header
+     * @param ex         Exception to be handled
      */
     @Override
     public void handleException(String requestUri,
@@ -216,8 +213,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         writeErrorResponse(ErrorType.INVALID_TOKEN_TYPE.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, function, requestUri);
     }
 
-    private void handleInvalidAccessTokenBodyException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, AccessTokenBodyNotValidException ex) {
-        String messageKey = ex.getReason().getMessageKey();
+    private void handleBadRequest(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex, String messageKey) {
         log.debug(MESSAGE_FORMAT, HttpStatus.BAD_REQUEST.value(), ex.getMessage());
         writeErrorResponse(messageKey, HttpStatus.BAD_REQUEST, function, requestUri);
     }

@@ -25,12 +25,11 @@ import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketException;
 import org.zowe.apiml.passticket.UsernameNotProvidedException;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.common.error.AccessTokenBodyNotValidException;
+import org.zowe.apiml.security.common.error.AccessTokenInvalidBodyException;
+import org.zowe.apiml.security.common.error.AccessTokenMissingBodyException;
 import reactor.core.publisher.Mono;
 
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.http.HttpStatus.*;
 
 @Slf4j
 @RestControllerAdvice
@@ -40,15 +39,22 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     public ApimlExceptionHandler(ObjectMapper mapper, MessageService messageService,
-            LocaleContextResolver localeContextResolver) {
+                                 LocaleContextResolver localeContextResolver) {
         super(mapper, messageService, localeContextResolver);
     }
 
-    @ExceptionHandler(AccessTokenBodyNotValidException.class)
-    public Mono<Void> handleAccessTokenBodyNotValidException(ServerWebExchange exchange, AccessTokenBodyNotValidException
-     ex) {
+    @ExceptionHandler(AccessTokenInvalidBodyException.class)
+    public Mono<Void> handleAccessTokenBodyNotValidException(ServerWebExchange exchange, AccessTokenInvalidBodyException
+        ex) {
         log.debug("Invalid AccessToken body format, status: {}, message: {}", HttpStatus.BAD_REQUEST.value(), ex.getMessage());
-        return setBodyResponse(exchange, SC_BAD_REQUEST, ex.getMessage());
+        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.accessToken.invalidFormat");
+    }
+
+    @ExceptionHandler(AccessTokenMissingBodyException.class)
+    public Mono<Void> handleAccessTokenMissingBodyException(ServerWebExchange exchange, AccessTokenMissingBodyException
+        ex) {
+        log.debug("Missing AccessToken body, status: {}, message: {}", HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.security.token.accessTokenBodyMissingScopes");
     }
 
     @ExceptionHandler(InvalidWebFingerConfigurationException.class)

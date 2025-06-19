@@ -32,22 +32,17 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.audit.RauditxService;
-import org.zowe.apiml.security.common.error.AccessTokenBodyNotValidException;
+import org.zowe.apiml.security.common.error.AccessTokenMissingBodyException;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.util.HttpUtils;
-import org.zowe.apiml.zaas.controllers.AuthController.RulesRequestModel;
-import org.zowe.apiml.zaas.controllers.AuthController.ValidateRequestModel;
+import org.zowe.apiml.zaas.controllers.AuthController.*;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import reactor.core.publisher.Mono;
@@ -94,7 +89,7 @@ public class ReactivePATController {
             .filter(Objects::nonNull)
             .<ResponseEntity<String>>handle((authentication, sink) -> {
                 if (accessTokenRequest.getScopes() == null || accessTokenRequest.getScopes().isEmpty()) {
-                    sink.error(new AccessTokenBodyNotValidException(AccessTokenBodyNotValidException.Reason.MISSING_SCOPES));
+                    sink.error(new AccessTokenMissingBodyException("Missing required scopes in the request body."));
                     return;
                 }
 

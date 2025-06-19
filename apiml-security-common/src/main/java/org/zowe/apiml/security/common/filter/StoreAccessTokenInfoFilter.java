@@ -21,7 +21,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.common.error.AccessTokenBodyNotValidException;
+import org.zowe.apiml.security.common.error.AccessTokenInvalidBodyException;
+import org.zowe.apiml.security.common.error.AccessTokenMissingBodyException;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.handler.ServletErrorUtils;
 import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
@@ -54,18 +55,18 @@ public class StoreAccessTokenInfoFilter extends OncePerRequestFilter {
                 SuccessfulAccessTokenHandler.AccessTokenRequest accessTokenRequest = mapper.readValue(inputStream, SuccessfulAccessTokenHandler.AccessTokenRequest.class);
                 Set<String> scopes = accessTokenRequest.getScopes();
                 if (scopes == null || scopes.isEmpty()) {
-                    authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, new AccessTokenBodyNotValidException(AccessTokenBodyNotValidException.Reason.MISSING_SCOPES));
+                    authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, new AccessTokenMissingBodyException("Scopes are missing in the request."));
                     return;
                 }
                 accessTokenRequest.setScopes(scopes.stream().map(String::toLowerCase).collect(Collectors.toSet()));
                 request.setAttribute(TOKEN_REQUEST, accessTokenRequest);
                 filterChain.doFilter(request, response);
             } else {
-                authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, new AccessTokenBodyNotValidException(AccessTokenBodyNotValidException.Reason.MISSING_SCOPES));
+                authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, new AccessTokenMissingBodyException("Body is missing in the request."));
             }
 
         } catch (IOException e) {
-            authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, new AccessTokenBodyNotValidException(AccessTokenBodyNotValidException.Reason.INVALID_FORMAT));
+            authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, new AccessTokenInvalidBodyException("Format of the request body is invalid. Exception message: " + e.getMessage()));
         }
 
     }

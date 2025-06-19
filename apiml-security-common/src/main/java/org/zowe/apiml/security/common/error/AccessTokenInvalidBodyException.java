@@ -17,24 +17,10 @@ import org.springframework.security.core.AuthenticationException;
  * Exception thrown when the request body for Personal Access Token creation is not valid
  */
 @Getter
-public class AccessTokenBodyNotValidException extends AuthenticationException {
+public class AccessTokenInvalidBodyException extends AuthenticationException {
 
-    private final Reason reason;
+    public AccessTokenInvalidBodyException(String message) {
+        super(message);
 
-    public AccessTokenBodyNotValidException(Reason reason) {
-        super(reason.getMessageKey());
-        this.reason = reason;
-    }
-
-    @Getter
-    public enum Reason {
-        MISSING_SCOPES("org.zowe.apiml.security.token.accessTokenBodyMissingScopes"),
-        INVALID_FORMAT("org.zowe.apiml.accessToken.invalidFormat");
-
-        private final String messageKey;
-
-        Reason(String messageKey) {
-            this.messageKey = messageKey;
-        }
     }
 }
