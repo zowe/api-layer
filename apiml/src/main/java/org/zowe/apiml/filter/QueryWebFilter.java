@@ -33,7 +33,8 @@ import reactor.core.publisher.Mono;
 import java.util.Objects;
 
 /**
- * Reactive Filter for /query endpoint requests with JWT token.
+ * Reactive Filter for endpoints have optional X.509 authentication + token authentication
+ * such as /ticket, /query (check {@link WebSecurityConfig} to view which specific endpoints use it)
  */
 public class QueryWebFilter implements WebFilter {
 

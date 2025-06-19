@@ -105,7 +105,6 @@ public class WebSecurityConfig {
     private final ServerWebExchangeMatcher isInUnauthenticatedPaths = ServerWebExchangeMatchers.pathMatchers(UNAUTHENTICATED_PATTERNS.toArray(new String[]{}));
     private final ServerWebExchangeMatcher notInUnauthenticatedPaths = new NegatedServerWebExchangeMatcher(isInUnauthenticatedPaths);
 
-
     @Bean
     SecurityWebFilterChain errorFilterChain(ServerHttpSecurity http) {
         return http

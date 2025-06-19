@@ -20,6 +20,9 @@ import org.springframework.web.server.i18n.LocaleContextResolver;
 import org.zowe.apiml.gateway.controllers.GatewayExceptionHandler;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import org.zowe.apiml.passticket.PassTicketException;
+import org.zowe.apiml.passticket.UsernameNotProvidedException;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.AccessTokenBodyNotValidException;
 import reactor.core.publisher.Mono;
@@ -50,6 +53,28 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
     public Mono<Void> handleInvalidWebFingerConfigurationException(ServerWebExchange exchange, InvalidWebFingerConfigurationException ex) {
         log.debug("Error while reading webfinger configuration from source.", ex);
         return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, ex.getMessageId());
+    }
+
+    @ExceptionHandler(IncorrectPassTicketRequestBodyException.class)
+    public Mono<Void> handleIncorrectPassTicketRequestBodyException(ServerWebExchange exchange, IncorrectPassTicketRequestBodyException ex) {
+        log.debug("Incorrect passticket request body received: {}", ex.getMessage());
+        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.security.ticket.invalidApplicationName");
+    }
+
+    @ExceptionHandler(UsernameNotProvidedException.class)
+    public Mono<Void> handleUsernameNotProvidedException(ServerWebExchange exchange, UsernameNotProvidedException ex) {
+        log.debug("Username not provided in PassTicket generation: {}", ex.getMessage());
+        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.security.ticket.generateFailed");
+    }
+
+    @ExceptionHandler(PassTicketException.class)
+    public Mono<Void> handlePassTicketException(ServerWebExchange exchange, PassTicketException ex) {
+        log.debug("PassTicket generation exception: {}", ex.getMessage());
+        if (ex.getCause() instanceof IRRPassTicketGenerationException irrEx && irrEx.getCause() != null) {
+            var reason = irrEx.getCause().getMessage();
+            return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.security.ticket.generateFailed", reason);
+        }
+        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.security.ticket.generateFailed", ex.getMessage());
     }
 
 }

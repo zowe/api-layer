@@ -187,6 +187,7 @@ class PassTicketTest implements TestWithStartedInstances {
 
                 given()
                     .cookie(COOKIE, jwt)
+                    .contentType(JSON)
                 .when()
                     .post(url)
                 .then()

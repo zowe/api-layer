@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.ReactiveAuthenticationManagerAdapter;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -70,7 +71,7 @@ public class ReactiveAuthenticationController {
      * @param exchange The ServerWebExchange to access request headers, body, and response.
      * @return A Mono<ResponseEntity<Void>> indicating success or failure.
      */
-    @PostMapping("/login")
+    @PostMapping(value = "/login", consumes = MediaType.ALL_VALUE)
     public Mono<ResponseEntity<Object>> login(ServerWebExchange exchange, @RequestBody(required = false) LoginRequest request) {
         return ReactiveSecurityContextHolder.getContext()
             .map(SecurityContext::getAuthentication)
@@ -83,7 +84,7 @@ public class ReactiveAuthenticationController {
 
     private Mono<ResponseEntity<Object>> authWithBody(ServerWebExchange exchange, LoginRequest request) {
         if (request == null || StringUtils.isBlank(request.getUsername()) || request.getPassword() == null || request.getPassword().length == 0) {
-            throw new RuntimeException(); // TODO Use the specific exception Handle exception in case of missing credentials
+            throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
         }
         var providerManager = new ProviderManager(compoundAuthProvider);
         var authAdapter = new ReactiveAuthenticationManagerAdapter(providerManager);
@@ -143,6 +144,7 @@ public class ReactiveAuthenticationController {
         } catch (TokenNotValidException e) {
             return Mono.just(ResponseEntity.status(SC_SERVICE_UNAVAILABLE).build());
         }
+
     }
 
 }

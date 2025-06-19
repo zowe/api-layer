@@ -10,9 +10,6 @@
 
 package org.zowe.apiml.controller;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -22,10 +19,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
 import reactor.core.publisher.Mono;
 
@@ -39,17 +39,11 @@ public class ReactivePassTicketController {
 
     private final PassTicketService passTicketService;
 
-    @Data
-    @AllArgsConstructor
-    public static class PassTicketRequest {
-        String applicationName;
-    }
-
-    @PostMapping("/ticket")
-    public Mono<ResponseEntity<TicketResponse>> createPassTicket(@RequestBody(required = false) PassTicketRequest request) {
+    @PostMapping(value = "/ticket", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    public Mono<ResponseEntity<TicketResponse>> createPassTicket(@RequestBody(required = false) TicketRequest request) {
         if (request == null || StringUtils.isBlank(request.getApplicationName())) {
-            // throw exception 400
-            throw new RuntimeException();
+            throw new IncorrectPassTicketRequestBodyException();
         }
 
         return ReactiveSecurityContextHolder.getContext()
