@@ -14,6 +14,8 @@ import lombok.Getter;
 
 public class SafAccessDeniedException extends RuntimeException {
 
+    private static final long serialVersionUID = 7742132986283292513L;
+
     @Getter
     private final Object principal;
 

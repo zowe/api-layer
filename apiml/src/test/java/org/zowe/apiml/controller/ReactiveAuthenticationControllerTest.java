@@ -57,10 +57,10 @@ class ReactiveAuthenticationControllerTest {
 
     @Test
     void login_success() {
-        MockServerWebExchange exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/login"));
-        String jwtToken = "test-jwt-token";
-        String username = "testUser";
-        ResponseCookie mockCookie = ResponseCookie.from("apimlAuthenticationToken", jwtToken).build();
+        var exchange = MockServerWebExchange.from(MockServerHttpRequest.get("/login"));
+        var jwtToken = "test-jwt-token";
+        var username = "testUser";
+        var mockCookie = ResponseCookie.from("apimlAuthenticationToken", jwtToken).build();
 
         when(tokenAuthentication.getCredentials()).thenReturn(jwtToken);
         when(tokenAuthentication.getName()).thenReturn(username);
