@@ -11,6 +11,7 @@
 package org.zowe.apiml.filter;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -45,7 +46,7 @@ public class X509AuthFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         X509Certificate[] certs = exchange.getAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
-        if (certs == null || certs.length == 0) {
+        if (ArrayUtils.isEmpty(certs)) {
             return chain.filter(exchange);
         }
         return ReactiveSecurityContextHolder.getContext().defaultIfEmpty(new SecurityContextImpl(new X509AuthenticationToken(null)))
