@@ -13,6 +13,7 @@ package org.zowe.apiml.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ServerWebExchange;
@@ -29,6 +30,7 @@ import reactor.core.publisher.Mono;
 
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 
 @Slf4j
 @RestControllerAdvice
@@ -61,6 +63,12 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
         return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.security.ticket.invalidApplicationName");
     }
 
+    @ExceptionHandler(SafAccessDeniedException.class)
+    public Mono<Void> handleSafAccessDeniedException(ServerWebExchange exchange, SafAccessDeniedException ex) {
+        log.debug("Access denied: {}", ex.getMessage());
+        return setBodyResponse(exchange, SC_UNAUTHORIZED, "org.zowe.apiml.security.unauthorized", String.valueOf(ex.getPrincipal()));
+    }
+
     @ExceptionHandler(UsernameNotProvidedException.class)
     public Mono<Void> handleUsernameNotProvidedException(ServerWebExchange exchange, UsernameNotProvidedException ex) {
         log.debug("Username not provided in PassTicket generation: {}", ex.getMessage());
@@ -75,6 +83,12 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
             return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.security.ticket.generateFailed", reason);
         }
         return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.security.ticket.generateFailed", ex.getMessage());
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public Mono<Void> handleBadCredentialsException(ServerWebExchange exchange, BadCredentialsException ex) {
+        log.debug("Bad credentials: {}", ex.getMessage());
+        return setBodyResponse(exchange, SC_UNAUTHORIZED, "org.zowe.apiml.security.login.invalidCredentials");
     }
 
 }

@@ -191,14 +191,16 @@ class ApiCatalogAuthenticationTest {
 
                 request.execute(
                         given()
+                            .log().all()
                             .auth().basic(INVALID_USERNAME, INVALID_PASSWORD)
                             .when(),
                         endpoint
                     )
                     .then()
-                    .body(
-                        "messages.find { it.messageNumber == 'ZWEAS120E' }.messageContent", equalTo(expectedMessage)
-                    ).statusCode(is(SC_UNAUTHORIZED));
+                        .statusCode(is(SC_UNAUTHORIZED))
+                        .body(
+                            "messages.find { it.messageNumber == 'ZWEAS120E' }.messageContent", equalTo(expectedMessage)
+                        );
             }
 
             @ParameterizedTest(name = "givenInvalidBearerAuthentication {index} {0}")

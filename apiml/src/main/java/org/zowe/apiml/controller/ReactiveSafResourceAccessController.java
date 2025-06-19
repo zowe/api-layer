@@ -15,7 +15,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.auth.saf.AccessLevel;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
 import reactor.core.publisher.Mono;
@@ -36,10 +34,9 @@ import reactor.core.publisher.Mono;
 public class ReactiveSafResourceAccessController {
 
     private final SafResourceAccessVerifying safResourceAccessVerifying;
-    private final MessageService messageService;
 
     @PostMapping(path = "/check", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<?>> hasSafAccess(@RequestBody CheckRequestModel request) {
+    public Mono<ResponseEntity<Object>> hasSafAccess(@RequestBody CheckRequestModel request) {
         return ReactiveSecurityContextHolder.getContext()
             .flatMap(ctx -> Mono.justOrEmpty(ctx.getAuthentication()))
             .filter(auth -> auth.getPrincipal() != null)
@@ -52,16 +49,7 @@ public class ReactiveSafResourceAccessController {
                 )) {
                     return Mono.just(ResponseEntity.noContent().build());
                 } else {
-                    log.debug("Access denied for user: {}", authentication.getPrincipal());
-                    return Mono.just(
-                        new ResponseEntity<>(
-                            messageService.createMessage(
-                                "org.zowe.apiml.security.unauthorized",
-                                authentication.getPrincipal().toString()
-                            ).mapToApiMessage(),
-                            HttpStatus.UNAUTHORIZED
-                        )
-                    );
+                    throw new SafAccessDeniedException("Access denied for user: " + authentication.getPrincipal(), authentication.getPrincipal());
                 }
             })
             .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatusCode.valueOf(401)).build()));

@@ -71,7 +71,7 @@ public class ReactiveAuthenticationController {
      * @param exchange The ServerWebExchange to access request headers, body, and response.
      * @return A Mono<ResponseEntity<Void>> indicating success or failure.
      */
-    @PostMapping(value = "/login", consumes = MediaType.ALL_VALUE)
+    @PostMapping(value = "/login")
     public Mono<ResponseEntity<Object>> login(ServerWebExchange exchange, @RequestBody(required = false) LoginRequest request) {
         return ReactiveSecurityContextHolder.getContext()
             .map(SecurityContext::getAuthentication)
