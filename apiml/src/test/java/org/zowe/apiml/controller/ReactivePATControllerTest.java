@@ -46,6 +46,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -95,7 +96,7 @@ public class ReactivePATControllerTest {
         verify(tokenProvider).getToken(username, request.getValidity(), request.getScopes());
         verify(mockRauditBuilder).success();
         verify(mockRauditBuilder, never()).failure();
-        verify(mockRauditBuilder, never()).issue();
+        verify(mockRauditBuilder, times(1)).issue();
     }
 
     @Test

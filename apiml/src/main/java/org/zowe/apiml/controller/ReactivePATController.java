@@ -114,9 +114,10 @@ public class ReactivePATController {
                     rauditBuilder.success();
                 } catch (RuntimeException e) {
                     rauditBuilder.failure();
-                    rauditBuilder.issue();
                     sink.error(e);
                     return;
+                } finally {
+                    rauditBuilder.issue();
                 }
                 sink.next(ResponseEntity.ok(pat));
             })
