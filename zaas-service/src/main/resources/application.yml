@@ -253,7 +253,7 @@ server:
         ssl:
             enabled: false
     attls:
-    #enabled: true
+        enabled: true
     ssl:
         enabled: false
 
