@@ -51,7 +51,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ReactivePATControllerTest {
+class ReactivePATControllerTest {
 
     @Mock private RauditxService rauditxService;
     @Mock private TokenAuthentication tokenAuthentication;

@@ -35,6 +35,8 @@ import static org.apache.http.HttpStatus.*;
 @RestControllerAdvice
 public class ApimlExceptionHandler extends GatewayExceptionHandler {
 
+    private static final String GENERATE_FAILED_MESSAGE_KEY = "org.zowe.apiml.security.ticket.generateFailed";
+
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
@@ -78,7 +80,7 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
     @ExceptionHandler(UsernameNotProvidedException.class)
     public Mono<Void> handleUsernameNotProvidedException(ServerWebExchange exchange, UsernameNotProvidedException ex) {
         log.debug("Username not provided in PassTicket generation: {}", ex.getMessage());
-        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.security.ticket.generateFailed");
+        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, GENERATE_FAILED_MESSAGE_KEY);
     }
 
     @ExceptionHandler(PassTicketException.class)
@@ -86,9 +88,9 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
         log.debug("PassTicket generation exception: {}", ex.getMessage());
         if (ex.getCause() instanceof IRRPassTicketGenerationException irrEx && irrEx.getCause() != null) {
             var reason = irrEx.getCause().getMessage();
-            return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.security.ticket.generateFailed", reason);
+            return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, GENERATE_FAILED_MESSAGE_KEY, reason);
         }
-        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.security.ticket.generateFailed", ex.getMessage());
+        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, GENERATE_FAILED_MESSAGE_KEY, ex.getMessage());
     }
 
     @ExceptionHandler(BadCredentialsException.class)

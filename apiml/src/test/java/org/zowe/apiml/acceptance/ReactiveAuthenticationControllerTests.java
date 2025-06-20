@@ -47,10 +47,12 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
                 @Test
                 void whenLoginWithBody_thenSuccess() {
                     given()
-                        .body("{\n" + //
-                        "    \"username\": \"USER\",\n" + //
-                        "    \"password\": \"validPassword\"\n" + //
-                        "}")
+                        .body("""
+                            {
+                                "username": "USER",
+                                "password": "validPassword"
+                            }
+                        """)
                     .when()
                         .post(URI.create(basePath + "/gateway/api/v1/auth/login"))
                     .then()

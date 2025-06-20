@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.Ordered;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
@@ -79,7 +80,7 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
         Optional<X509Certificate[]> certsFromTlsOpt = Optional.of(exchange)
             .map(ServerWebExchange::getRequest)
             .map(ServerHttpRequest::getSslInfo)
-            .map(ssl -> ssl.getPeerCertificates())
+            .map(SslInfo::getPeerCertificates)
             .filter(Objects::nonNull)
             .filter(ssl -> ssl.length > 0);
 
