@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ProviderManager;
@@ -114,9 +115,14 @@ public class WebSecurityConfig {
     }
 
     /**
-    * Filter chain for protecting endpoints with client certificate
-    */
+     * This chain is only applicable for the Discovery Service connector in the API ML modulith
+     * Secures the /eureka/** API endpoints with an explicit exclusion for /eureka (homepage)
+     *
+     * @param http
+     * @return
+     */
     @Bean
+    @Order(0)
     SecurityWebFilterChain discoveryServiceClientCertificateFilterChain(ServerHttpSecurity http) {
         http
             .securityMatcher(new AndServerWebExchangeMatcher(
@@ -144,8 +150,18 @@ public class WebSecurityConfig {
         return http.build();
     }
 
+    /**
+     * This chain is only applicable for the Discovery Service connector in the API ML modulith
+     * Secures the /discovery/** API endpoints
+     *
+     * @param http
+     * @param authConfigurationProperties
+     * @param authExceptionHandlerReactive
+     * @return
+     */
     @Bean
-    SecurityWebFilterChain basicAuthOrTokenOrCertFilterChain(ServerHttpSecurity http,
+    @Order(1)
+    SecurityWebFilterChain discoveryServiceBasicAuthOrTokenOrCertFilterChain(ServerHttpSecurity http,
                                                              AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         http
             .securityMatcher(new AndServerWebExchangeMatcher(
@@ -188,7 +204,14 @@ public class WebSecurityConfig {
         return x509SecurityConfig(http, true);
     }
 
+    /**
+     * This chain is only applicable for the Discovery Service connector in the API ML modulith
+     *
+     * @param http
+     * @return
+     */
     @Bean
+    @Order(9)
     SecurityWebFilterChain discoveryAllowedEndpoints(ServerHttpSecurity http) {
         http
             .securityMatcher(new AndServerWebExchangeMatcher(
@@ -207,17 +230,23 @@ public class WebSecurityConfig {
                         "/favicon.ico"
                     )
                     .permitAll();
-
-                if (!isHealthEndpointProtected) {
-                    exchange.pathMatchers(APPLICATION_HEALTH).permitAll();
-                }
                 exchange.anyExchange().authenticated();
             });
         return http.build();
     }
 
+    /**
+     * Optionally protect the /application/health endpoint due to the information exposed there
+     * This one applies independently of connector, it covers /application/health in both GW and DS
+     *
+     * @param http
+     * @param authConfigurationProperties Obtain auth configuration such as auth cookie name
+     * @param authExceptionHandlerReactive Exception handler
+     * @return The configured {@link SecurityWebFilterChain} to optionally protect /application/health path
+     */
     @Bean
-    SecurityWebFilterChain gatewayAllowedEndpoints(ServerHttpSecurity http,
+    @Order(2)
+    SecurityWebFilterChain healthEndpointFilterChain(ServerHttpSecurity http,
                                                    AuthConfigurationProperties authConfigurationProperties,
                                                    AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         http
@@ -252,7 +281,6 @@ public class WebSecurityConfig {
      * </ul>
      *
      * @param http                         HTTP security configuration
-     * @param mapper                       object mapper used by authentication filters
      * @param authConfigurationProperties  authentication configuration properties
      * @param authExceptionHandlerReactive custom handler for authentication failures
      * @return the configured {@link SecurityWebFilterChain} for protecting "/application/**" paths
@@ -272,12 +300,14 @@ public class WebSecurityConfig {
             .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
+
     }
 
     /**
     * Filter chain for protecting endpoints with MF credentials (basic or token)
     */
     @Bean
+    @Order(10)
     SecurityWebFilterChain discoveryBasicAuthOrToken(ServerHttpSecurity http,
                                                      AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         return http
@@ -292,6 +322,14 @@ public class WebSecurityConfig {
             .build();
     }
 
+    /**
+     * This filter chain secures the /logout endpoint
+     * The /login endpoint is explicitly permitted for clarity
+     *
+     * @param http
+     * @param logoutHandler the logout handler
+     * @return
+     */
     @Bean
     SecurityWebFilterChain loginFilter(ServerHttpSecurity http, LogoutHandler logoutHandler) {
         var man = new ProviderManager(x509AuthenticationProvider);
@@ -317,6 +355,12 @@ public class WebSecurityConfig {
             .build();
     }
 
+    /**
+     * This security filter chain secures the /query endpoint
+     *
+     * @param http
+     * @return
+     */
     @Bean
     SecurityWebFilterChain queryFilter(ServerHttpSecurity http) {
         var man = new ProviderManager(tokenAuthenticationProvider);
@@ -340,7 +384,6 @@ public class WebSecurityConfig {
      * The request is fulfilled by the filter chain only, there is no controller to handle it.
      * Order of custom filters:
      *   - CategorizeCertsWebFilter - checks for forwarded client certificate and put it into a custom request attribute
-     *   - StoreAccessTokenInfoWebFilter - extracts access token filter from request to a custom attribute
      *   - X509AuthFilter - attempts to log in a user using forwarded client certificate, generates access token and stops the chain on success, reply with the token
      *   - ShouldBeAlreadyAuthenticatedFilter - stops filter chain if none of the authentications was successful
      *
@@ -388,6 +431,12 @@ public class WebSecurityConfig {
             .build();
     }
 
+    /**
+     * This security filter chain secures the /refresh access token (PAT) endpoint
+     *
+     * @param http
+     * @return
+     */
     @ConditionalOnProperty(name = "apiml.security.allowTokenRefresh", havingValue = "true")
     @Bean
     SecurityWebFilterChain refreshTokenFilter(ServerHttpSecurity http) {
@@ -403,7 +452,12 @@ public class WebSecurityConfig {
             .build();
     }
 
-
+    /**
+     * This security filter chain secures the /ticket endpoint
+     *
+     * @param http
+     * @return
+     */
     @Bean
     SecurityWebFilterChain ticketFilter(ServerHttpSecurity http) {
         var man = new ProviderManager(tokenAuthenticationProvider);
@@ -418,6 +472,14 @@ public class WebSecurityConfig {
             .build();
     }
 
+    /**
+     * This security filter chain secures the SAF Resource check endpoint
+     *
+     * @param http
+     * @param authConfigurationProperties
+     * @param authExceptionHandlerReactive
+     * @return
+     */
     @Bean
     SecurityWebFilterChain safResourceCheckFilter(ServerHttpSecurity http,
                                                   AuthConfigurationProperties authConfigurationProperties,
@@ -438,6 +500,18 @@ public class WebSecurityConfig {
             .build();
     }
 
+    /**
+     * This security filter chain secures the Gateway's endpoints:
+     * /services
+     * /registry
+     * /conformance
+     * /validate
+     *
+     * @param http
+     * @param authConfigurationProperties
+     * @param authExceptionHandlerReactive
+     * @return
+     */
     @Bean
     SecurityWebFilterChain gatewayAuthenticatedEndpoints(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         return x509SecurityConfig(http, false)
