@@ -44,7 +44,7 @@ public class LogoutHandler implements ServerLogoutHandler {
     }
 
     private Mono<Void> invalidateJwtToken(String token, WebFilterExchange exchange) {
-        if (Boolean.TRUE == authenticationService.isInvalidated(token)) {
+        if (Boolean.TRUE.equals(authenticationService.isInvalidated(token))) {
            return failure.onAuthenticationFailure(exchange,new TokenNotValidException("The token you are trying to logout is not valid"));
         } else {
             try {
