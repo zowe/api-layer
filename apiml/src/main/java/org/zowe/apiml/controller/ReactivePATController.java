@@ -82,6 +82,32 @@ public class ReactivePATController {
         private Set<String> scopes;
     }
 
+    @Operation(summary = "Authenticate mainframe credentials and return personal access token.",
+        tags = {"Access token"},
+        operationId = "access-token-generate-POST",
+        description = "Use the `/access-token/generate` API to authenticate mainframe user credentials and return personal access token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.\\n" + //
+            "\\n" + //
+            "**Request:**\\n" + //
+            "\\n" + //
+            "The generate request requires the user credentials in one of the following formats:\\n" + //
+            "  * Basic access authentication\\n" + //
+            "  * HTTP header containing the client certificate\\n" + //
+            "\\n" + //
+            "**Response:**\\n" + //
+            "\\n" + //
+            "The response contains a personal access token in the plain text.\\n" + //
+            "",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                schema = @Schema(implementation = AccessTokenRequest.class)
+            ),
+            description = "Specifies the parameters of the requested personal access token."
+        )
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Authenticated - Personal Access Token created"),
+        @ApiResponse(responseCode = "401", description = "Invalid credentials")
+    })
     @PostMapping("/access-token/generate")
     public Mono<ResponseEntity<String>> generatePat(@RequestBody AccessTokenRequest accessTokenRequest) {
         return ReactiveSecurityContextHolder.getContext()
@@ -163,6 +189,31 @@ public class ReactivePATController {
         return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
 
+    @Operation(summary = "Authenticate mainframe credentials and return personal access token.",
+        tags = {"Access token"},
+        operationId = "RefreshTokenUsingPOST",
+        description = "**Note:** This endpoint is disabled by default.\\n" + //
+            "\\n" + //
+            "Use the `/refresh` API to request a new JWT authentication token for the user associated with provided token.\\n" + //
+            "The old token is invalidated and new token is issued with refreshed expiration time.\\n" + //
+            "\\n" + //
+            "This endpoint is protect by a client certificate.\\n" + //
+            "\\n" + //
+            "**HTTP Headers:**\\n" + //
+            "\\n" + //
+            "The ticket request requires the token in one of the following formats:  \\n" + //
+            "  * Cookie named `apimlAuthenticationToken`.\\n" + //
+            "  * Bearer authentication\\n" + //
+            "  \\n" + //
+            "*Header example:* Authorization: Bearer *token*"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Authenticated - Refreshed Personal Access Token"),
+        @ApiResponse(responseCode = "401", description = "Zowe token is not provided, is invalid or is expired."),
+        @ApiResponse(responseCode = "403", description = "A client certificate is not provided or is expired."),
+        @ApiResponse(responseCode = "404", description = "Not Found. The endpoint is not enabled or not properly configured"),
+        @ApiResponse(responseCode = "500", description = "Process of refreshing token has failed unexpectedly.")
+    })
     @PostMapping("/refresh")
     public Mono<ResponseEntity<Void>> refreshAccessToken(ServerWebExchange exchange) {
         ReactiveSecurityContextHolder.getContext()

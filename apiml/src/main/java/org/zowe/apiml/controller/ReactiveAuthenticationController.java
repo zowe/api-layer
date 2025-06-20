@@ -13,6 +13,8 @@ package org.zowe.apiml.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -78,6 +80,34 @@ public class ReactiveAuthenticationController {
      * @return A Mono<ResponseEntity<Void>> indicating success or failure.
      */
     @PostMapping(value = "/login")
+    @Operation(summary = "Authenticate mainframe user credentials and return authentication token.",
+        tags = {"Security"},
+        operationId = "loginUsingPOST",
+        description = "Use the `/login` API to authenticate mainframe user credentials and return authentication token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.\\n" + //
+            "\\n" + //
+            "**Request:**\\n" + //
+            "\\n" + //
+            "The login request requires the user credentials in one of the following formats:\\n" + //
+            "  * Basic access authentication\\n" + //
+            "  * JSON body, which provides an object with the user credentials\\n" + //
+            "  * HTTP header containing the client certificate\\n" + //
+            "\\n" + //
+            "**Response:**\\n" + //
+            "\\n" + //
+            "The response is an empty body and a token in a secure HttpOnly cookie named `apimlAuthenticationToken`.\\n" + //
+            "",
+        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = @Content(
+                schema = @Schema(implementation = LoginRequest.class)
+            ),
+            description = "Specifies the user credentials to be authenticated. If newPassword is provided and the password is valid, the password is changed to newPassword"
+        )
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Cookie named apimlAuthenticationToken contains authentication\\n" + //
+            "token."),
+        @ApiResponse(responseCode = "401", description = "Invalid credentials.")
+    })
     public Mono<ResponseEntity<Object>> login(ServerWebExchange exchange, ServerHttpRequest request) { // To maintain support for wrongly-formed requests (with content-type but no content for example which are used)
         return ReactiveSecurityContextHolder.getContext()
             .map(SecurityContext::getAuthentication)
@@ -129,6 +159,37 @@ public class ReactiveAuthenticationController {
     }
 
     @GetMapping("/query")
+    @Operation(summary = "Validate the authentication token.",
+        tags = {"Security"},
+        operationId = "validateUsingGET",
+        description = "Use the `/query` API to validate the token and retrieve the information associated with the token.\\n" + //
+            "\\n" + //
+            " **HTTP Headers:**\\n" + //
+            "\\n" + //
+            "The query request requires the token in one of the following formats:\\n" + //
+            "  * Cookie named `apimlAuthenticationToken`.\\n" + //
+            "  * Bearer authentication \\n" + //
+            "*Header example:* Authorization: Bearer *token*\\n" + //
+            "\\n" + //
+            "**Request payload:**\\n" + //
+            "\\n" + //
+            "The request body is empty.\\n" + //
+            "\\n" + //
+            "**Response Payload:**\\n" + //
+            "\\n" + //
+            "The response is a JSON object, which contains information associated with the token.\\n" + //
+            ""
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "OK",
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = Authentication.class)
+            )),
+        @ApiResponse(responseCode = "401", description = "Invalid credentials.")
+    })
     public Mono<ResponseEntity<QueryResponse>> query() {
         return ReactiveSecurityContextHolder.getContext()
             .map(SecurityContext::getAuthentication)

@@ -36,7 +36,7 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public OpenApiCustomizer servletEndpoints() {
+    OpenApiCustomizer servletEndpoints() {
         return this::customizeSwagger;
     }
 
@@ -57,7 +57,7 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi groupedOpenApiAuth() {
+    GroupedOpenApi groupedOpenApiAuth() {
         return GroupedOpenApi.builder()
             .group("auth").pathsToMatch("/zaas/api/v1/auth/**")
             .addOpenApiCustomizer(servletEndpoints())
@@ -65,7 +65,7 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi groupedOpenApiAll() {
+    GroupedOpenApi groupedOpenApiAll() {
         return GroupedOpenApi.builder()
             .group("v1").pathsToMatch("/**")
                 .addOpenApiCustomizer(servletEndpoints())
