@@ -10,13 +10,7 @@
 /* eslint-disable spaced-comment */
 /// <reference types="Cypress" />
 
-const expectedKeyWords = [
-    'name',
-    'getAllBooks',
-    'Effective Java',
-    'Hitchhiker\'s Guide to the Galaxy',
-    'Down Under'
-];
+const expectedKeyWords = ['name', 'getAllBooks', 'Effective Java', "Hitchhiker's Guide to the Galaxy", 'Down Under'];
 const PATH_TO_SERVICE_DESCRIPTION =
     '#root > div > div.content > div.main > div.main-content2.detail-content > div.content-description-container > div > div.tabs-swagger > div.serviceTab > div.header > h6:nth-child(4)';
 const PATH_TO_PLAYGROUND_INPUT_TEXTAREA =
@@ -39,7 +33,8 @@ const PATH_TO_HEADER_INPUT_TEXTAREA =
     '#graphiql-session > div:nth-child(1) > div > div:nth-child(3) > section > div:nth-child(2) > div > div:nth-child(1) > textarea';
 const PATH_TO_HEADER_DATA =
     '#graphiql-session > div:nth-child(1) > div > div:nth-child(3) > section > div:nth-child(2) > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code';
-const PATH_TO_PLAYGROUND_INPUT_DATA = '#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-editor > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code';
+const PATH_TO_PLAYGROUND_INPUT_DATA =
+    '#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-editor > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code';
 
 function login() {
     cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
@@ -89,10 +84,7 @@ describe('>>> GraphiQL Playground page test', () => {
 
         cy.get(PATH_TO_SERVICE_DESCRIPTION)
             .should('exist')
-            .should(
-                'contain',
-                'Sample for data demonstration using GraphiQL Playround.'
-            );
+            .should('contain', 'Sample for data demonstration using GraphiQL Playround.');
         cy.get('#swagger-label').should('contain', 'GraphQL');
 
         cy.get(`a[href="#/service/graphqlclient"]`).should('have.class', 'Mui-selected');
@@ -105,10 +97,7 @@ describe('>>> GraphiQL Playground page test', () => {
 
         cy.get('#graphiql-container').should('exist');
 
-        cy.get(PATH_TO_DEFAULT_QUERY)
-            .should('exist')
-            .should('be.visible')
-            .and('have.text', '# Write your query here!');
+        cy.get(PATH_TO_DEFAULT_QUERY).should('exist').should('be.visible').and('have.text', '# Write your query here!');
 
         const query = '{ "query": "{ hello }" }';
         cy.get(PATH_TO_PLAYGROUND_INPUT_TEXTAREA)
@@ -118,24 +107,18 @@ describe('>>> GraphiQL Playground page test', () => {
             .type('{del}')
             .type(query, { parseSpecialCharSequences: false });
 
-        cy.get(PATH_TO_PLAYGROUND_INPUT_DATA)
-            .then($container => {
-                const text = $container.text().trim();
-                expect(text).to.include('{ "query": "{ hello }" }');
-            })
-    })
+        cy.get(PATH_TO_PLAYGROUND_INPUT_DATA).then(($container) => {
+            const text = $container.text().trim();
+            expect(text).to.include('{ "query": "{ hello }" }');
+        });
+    });
 
     it('Should run query', () => {
-        login()
+        login();
 
         cy.contains('Discoverable client with GraphQL').click();
 
-        const query = 'query {' +
-            'getAllBooks{' +
-            'name' +
-            ' }'
-            ;
-
+        const query = 'query {' + 'getAllBooks{' + 'name' + ' }';
         cy.get(PATH_TO_PLAYGROUND_INPUT_TEXTAREA)
             .first()
             .focus()
@@ -147,87 +130,78 @@ describe('>>> GraphiQL Playground page test', () => {
 
         cy.get('span.cm-def').should('contain.text', 'data');
 
-        cy.get(PATH_TO_QUERY_OUTPUT)
-            .then($container => {
-                const text = $container.text().trim();
-                expectedKeyWords.forEach(word => {
-                    expect(text).to.include(word);
-                });
-            })
-    })
+        cy.get(PATH_TO_QUERY_OUTPUT).then(($container) => {
+            const text = $container.text().trim();
+            expectedKeyWords.forEach((word) => {
+                expect(text).to.include(word);
+            });
+        });
+    });
 
     it('Should add and remove a tab in the playground', () => {
-        login()
+        login();
 
         cy.contains('Discoverable client with GraphQL').click();
 
-        cy.get(PATH_TO_ADD_TAB_BUTTON)
-            .click()
+        cy.get('button[aria-label="Add tab"]').click();
 
-        cy.get('#graphiql-session-tab-1')
-            .should('exist')
-            .should('contain.text', 'My Query 2');
+        cy.get('#graphiql-session-tab-1').should('exist').should('contain.text', 'My Query 2');
 
-        cy.get(PATH_TO_REMOVE_SPECIFIC_TAB_BUTTON)
-            .click()
+        cy.get(PATH_TO_REMOVE_SPECIFIC_TAB_BUTTON).click();
 
-        cy.get('#graphiql-session-tab-1')
-            .should('not.exist');
-    })
+        cy.get('#graphiql-session-tab-1').should('not.exist');
+    });
 
     it('Should open the Documentation Explorer', () => {
-        login()
+        login();
         cy.contains('Discoverable client with GraphQL').click();
 
         cy.get('[aria-label="Show Documentation Explorer"]').click();
 
         cy.get('.graphiql-doc-explorer').should('be.visible');
 
-        cy.get('.graphiql-markdown-description').should('contain', 'A GraphQL schema provides a root type for each kind of operation.')
+        cy.get('.graphiql-markdown-description').should(
+            'contain',
+            'A GraphQL schema provides a root type for each kind of operation.'
+        );
     });
 
     it('Should open the History window', () => {
-        login()
+        login();
         cy.contains('Discoverable client with GraphQL').click();
 
         cy.get('[aria-label="Show History"]').click();
 
-        cy.get('.graphiql-history')
-            .should('be.visible')
-            .should('contain', 'History');
+        cy.get('.graphiql-history').should('be.visible').should('contain', 'History');
     });
 
     it('Refetch button is present', () => {
-        login()
+        login();
         cy.contains('Discoverable client with GraphQL').click();
 
         cy.get('[aria-label="Re-fetch GraphQL schema"]').should('be.visible');
     });
 
     it('Should open the short keys dialog', () => {
-        login()
+        login();
         cy.contains('Discoverable client with GraphQL').click();
 
         cy.get('[aria-label="Open short keys dialog"]').click();
 
-        cy.get('.graphiql-dialog-header h2')
-            .should('be.visible')
-            .should('contain', 'Short Keys');
+        cy.get('.graphiql-dialog-header h2').should('be.visible').should('contain', 'Short Keys');
     });
 
     it('Should open the settings keys dialog', () => {
-        login()
+        login();
         cy.contains('Discoverable client with GraphQL').click();
 
         cy.get('[aria-label="Open settings dialog"]').click();
 
-        cy.get('.graphiql-dialog-header h2')
-            .should('be.visible')
-            .should('contain', 'Settings');
+        cy.get('.graphiql-dialog-header h2').should('be.visible').should('contain', 'Settings');
     });
 
     it('Variable usage', () => {
-        login()
+        login();
         cy.contains('Discoverable client with GraphQL').click();
 
         cy.get('[data-name="variables"]').click();
@@ -236,20 +210,16 @@ describe('>>> GraphiQL Playground page test', () => {
 
         const variable = '{"id" :"book-1"}';
 
-        cy.get(PATH_TO_VARIABLES_INPUT_TEXTAREA)
-                .first()
-                .focus()
-                .type(variable, { parseSpecialCharSequences: false });
+        cy.get(PATH_TO_VARIABLES_INPUT_TEXTAREA).first().focus().type(variable, { parseSpecialCharSequences: false });
 
-        cy.get(PATH_TO_VARIABLE_DATA)
-            .then($container => {
-                const text = $container.text().trim();
-                expect(text).to.include(variable);
-            })
+        cy.get(PATH_TO_VARIABLE_DATA).then(($container) => {
+            const text = $container.text().trim();
+            expect(text).to.include(variable);
+        });
     });
 
     it('Header usage', () => {
-        login()
+        login();
         cy.contains('Discoverable client with GraphQL').click();
 
         cy.get('[data-name="headers"]').click();
@@ -258,15 +228,11 @@ describe('>>> GraphiQL Playground page test', () => {
 
         const header = '{"X-Custom-Header": "CustomValue"}';
 
-        cy.get(PATH_TO_HEADER_INPUT_TEXTAREA)
-            .first()
-            .focus()
-            .type(header, { parseSpecialCharSequences: false });
+        cy.get(PATH_TO_HEADER_INPUT_TEXTAREA).first().focus().type(header, { parseSpecialCharSequences: false });
 
-        cy.get(PATH_TO_HEADER_DATA)
-            .then($container => {
-                const text = $container.text().trim();
-                expect(text).to.include(header);
-            })
+        cy.get(PATH_TO_HEADER_DATA).then(($container) => {
+            const text = $container.text().trim();
+            expect(text).to.include(header);
+        });
     });
-})
+});
