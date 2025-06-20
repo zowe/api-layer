@@ -63,7 +63,7 @@ public class ReactiveOIDCControllerTest {
         var result = controller.getWebFinger(clientId);
 
         StepVerifier.create(result)
-            .expectErrorMatches(e -> e instanceof InvalidWebFingerConfigurationException)
+            .expectErrorMatches(InvalidWebFingerConfigurationException.class::isInstance)
             .verify();
     }
 

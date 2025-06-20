@@ -64,7 +64,6 @@ public class HttpUtils {
 
     public Mono<String> getCookieValue(ServerWebExchange exchange, String cookieName) {
         return Mono.justOrEmpty(exchange)
-            .filter(ex -> ex.getRequest().getCookies().getFirst(cookieName) != null)
             .mapNotNull(ex -> ex.getRequest().getCookies().getFirst(cookieName))
             .map(HttpCookie::getValue);
     }
