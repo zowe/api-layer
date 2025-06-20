@@ -19,8 +19,9 @@ import org.springframework.security.core.AuthenticationException;
 @Getter
 public class AccessTokenInvalidBodyException extends AuthenticationException {
 
+    private static final long serialVersionUID = 2846297491901169989L;
+
     public AccessTokenInvalidBodyException(String message) {
         super(message);
-
     }
 }

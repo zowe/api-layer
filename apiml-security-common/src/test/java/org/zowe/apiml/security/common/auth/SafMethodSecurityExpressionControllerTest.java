@@ -140,7 +140,7 @@ class SafMethodSecurityExpressionControllerTest {
 
         @Bean
         AuthExceptionHandler authExceptionHandler(ApplicationInfo applicationInfo) {
-            return new AuthExceptionHandler(messageService(), objectMapper(), applicationInfo.isModulith());
+            return new AuthExceptionHandler(messageService(), objectMapper(), applicationInfo);
         }
 
         @Bean

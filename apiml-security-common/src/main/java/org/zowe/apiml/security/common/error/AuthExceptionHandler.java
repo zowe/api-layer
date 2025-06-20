@@ -15,7 +15,6 @@ import jakarta.servlet.ServletException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -23,10 +22,16 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.security.common.token.*;
+import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
+import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
+import org.zowe.apiml.security.common.token.TokenNotProvidedException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -40,15 +45,15 @@ import static java.util.Map.entry;
 @Component
 public class AuthExceptionHandler extends AbstractExceptionHandler {
 
-    private final boolean isModulith;
+    private ApplicationInfo applicationInfo;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public AuthExceptionHandler(
         MessageService messageService,
         ObjectMapper objectMapper,
-        @Autowired(required = false) @Qualifier("isModulith") Boolean isModulith) {
-        super(messageService, objectMapper);
-        this.isModulith = (Boolean.TRUE == isModulith);
+        @Autowired(required = false) ApplicationInfo applicationInfo) {
+            super(messageService, objectMapper);
+            this.applicationInfo = applicationInfo == null ? ApplicationInfo.builder().isModulith(false).build() : applicationInfo;
     }
 
     @AllArgsConstructor
@@ -137,7 +142,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             return;
         }
 
-        if (!isModulith) {
+        if (!applicationInfo.isModulith()) {
             throw new ServletException(ex);
         }
 

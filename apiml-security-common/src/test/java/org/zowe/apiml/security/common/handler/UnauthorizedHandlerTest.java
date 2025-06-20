@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
@@ -44,7 +45,7 @@ class UnauthorizedHandlerTest {
 
     @Test
     void testCommence() throws IOException, ServletException {
-        UnauthorizedHandler unauthorizedHandler = new UnauthorizedHandler(new AuthExceptionHandler(messageService, objectMapper, true));
+        UnauthorizedHandler unauthorizedHandler = new UnauthorizedHandler(new AuthExceptionHandler(messageService, objectMapper, ApplicationInfo.builder().isModulith(true).build()));
 
         MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setRequestURI("URI");

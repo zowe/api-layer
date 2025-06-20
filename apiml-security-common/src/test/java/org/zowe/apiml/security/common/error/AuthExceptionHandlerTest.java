@@ -26,6 +26,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
@@ -60,7 +61,7 @@ class AuthExceptionHandlerTest {
 
     @BeforeEach
     void setup() {
-        authExceptionHandler = new AuthExceptionHandler(messageService, objectMapper, false);
+        authExceptionHandler = new AuthExceptionHandler(messageService, objectMapper, ApplicationInfo.builder().isModulith(false).build());
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setRequestURI("URI");
 
