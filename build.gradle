@@ -320,10 +320,6 @@ release {
     }
 }
 
-tasks.named('beforeReleaseBuild') {
-    dependsOn 'generateGitProperties'
-}
-
 afterReleaseBuild.dependsOn publishAllVersions
 //-----------Release part end
 
