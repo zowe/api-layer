@@ -73,8 +73,7 @@ jobs:
 
     store-results:
         runs-on: ubuntu-latest
-
-        needs: [ release ]
+        if: always()
 
         steps:
             -   name: Store test results
