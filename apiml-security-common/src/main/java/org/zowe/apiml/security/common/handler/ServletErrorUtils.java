@@ -13,6 +13,7 @@ package org.zowe.apiml.security.common.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.zowe.apiml.message.api.ApiMessageView;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.util.function.BiConsumer;
 
 @UtilityClass
+@Slf4j
 public class ServletErrorUtils {
 
     public static BiConsumer<ApiMessageView, HttpStatus> createApiErrorWriter(HttpServletResponse response, ApimlLogger logger) {
@@ -34,7 +36,7 @@ public class ServletErrorUtils {
                 mapper.writeValue(response.getWriter(), apiMessageView);
             } catch (IOException e) {
                 if (!response.isCommitted()) {
-                    logger.log("org.zowe.apiml.security.errorWritingResponse", e.getMessage());
+                    log.debug("Failed writing content to not-commited response", e);
                 } else {
                     logger.log(MessageType.DEBUG, "Response already committed. Skipping error write log.");
                 }

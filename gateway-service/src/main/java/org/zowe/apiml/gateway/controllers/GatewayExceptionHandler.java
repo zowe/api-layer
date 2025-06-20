@@ -89,7 +89,7 @@ public class GatewayExceptionHandler {
             DataBuffer buffer = serverWebExchange.getResponse().bufferFactory().wrap(mapper.writeValueAsBytes(message.mapToView()));
             return serverWebExchange.getResponse().writeWith(Flux.just(buffer));
         } catch (JsonProcessingException e) {
-            apimlLog.log("org.zowe.apiml.security.errorWritingResponse", e.getMessage());
+            apimlLog.log("org.zowe.apiml.security.errorWrittingResponse", e.getMessage());
             return Mono.error(e);
         }
     }

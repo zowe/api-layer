@@ -58,7 +58,7 @@ public class FailedAuthenticationWebHandler implements ServerAuthenticationFailu
                 try {
                     buffer.set(bufferFactory.wrap(mapper.writeValueAsBytes(message)));
                 } catch (IOException e) {
-                    apimlLog.log("org.zowe.apiml.security.errorWritingResponse", e.getMessage());
+                    apimlLog.log("org.zowe.apiml.security.errorWrittingResponse", e.getMessage());
                 }
             } else {
                 buffer.set(bufferFactory.wrap(new byte[0]));
