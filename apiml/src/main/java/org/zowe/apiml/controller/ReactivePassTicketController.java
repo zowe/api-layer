@@ -49,26 +49,26 @@ public class ReactivePassTicketController {
     @Operation(summary = "Generate a passticket for the user associated with a token.",
         tags = {"Security"},
         operationId = "GenerateTicketUsingPOST",
-        description = "Use the `/ticket` API to request a passticket for the user associated with a token.\\n" + //
-            "\\n" + //
-            "This endpoint is protect by a client certificate.\\n" + //
-            "\\n" + //
-            "**HTTP Headers:**\\n" + //
-            "\\n" + //
-            "The ticket request requires the token in one of the following formats:  \\n" + //
-            "  * Cookie named `apimlAuthenticationToken`.\\n" + //
-            "  * Bearer authentication\\n" + //
-            "  \\n" + //
-            "*Header example:* Authorization: Bearer *token*\\n" + //
-            "\\n" + //
-            "**Request payload:**\\n" + //
-            "\\n" + //
-            "The request takes one parameter, the name of the application for which the passticket should be generated. This parameter must be supplied.\\n" + //
-            "\\n" + //
-            "**Response Payload:**\\n" + //
-            "\\n" + //
-            "The response is a JSON object, which contains information associated with the ticket.\\n" + //
-            ""
+        description = """
+            Use the `/ticket` API to request a passticket for the user associated with a token.
+
+            This endpoint is protect by a client certificate.
+
+            **HTTP Headers:**
+
+                The ticket request requires the token in one of the following formats:
+                    * Cookie named `apimlAuthenticationToken`.
+                    * Bearer authentication
+
+                *Header example:* Authorization: Bearer *token*
+
+            **Request payload:**
+                The request takes one parameter, the name of the application for which the passticket should be generated. This parameter must be supplied.
+
+            **Response Payload:**
+
+                The response is a JSON object, which contains information associated with the ticket.
+        """
     )
     @ApiResponses(value = {
         @ApiResponse(

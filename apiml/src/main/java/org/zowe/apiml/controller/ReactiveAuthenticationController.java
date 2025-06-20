@@ -83,19 +83,16 @@ public class ReactiveAuthenticationController {
     @Operation(summary = "Authenticate mainframe user credentials and return authentication token.",
         tags = {"Security"},
         operationId = "loginUsingPOST",
-        description = "Use the `/login` API to authenticate mainframe user credentials and return authentication token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.\\n" + //
-            "\\n" + //
-            "**Request:**\\n" + //
-            "\\n" + //
-            "The login request requires the user credentials in one of the following formats:\\n" + //
-            "  * Basic access authentication\\n" + //
-            "  * JSON body, which provides an object with the user credentials\\n" + //
-            "  * HTTP header containing the client certificate\\n" + //
-            "\\n" + //
-            "**Response:**\\n" + //
-            "\\n" + //
-            "The response is an empty body and a token in a secure HttpOnly cookie named `apimlAuthenticationToken`.\\n" + //
-            "",
+        description = """
+            Use the `/login` API to authenticate mainframe user credentials and return authentication token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.
+            **Request:**
+                The login request requires the user credentials in one of the following formats:
+                    * Basic access authentication
+                    * JSON body, which provides an object with the user credentials
+                    * HTTP header containing the client certificate
+            **Response:**
+                The response is an empty body and a token in a secure HttpOnly cookie named `apimlAuthenticationToken`.
+        """,
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(
                 schema = @Schema(implementation = LoginRequest.class)
@@ -104,7 +101,7 @@ public class ReactiveAuthenticationController {
         )
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Cookie named apimlAuthenticationToken contains authentication\\n" + //
+        @ApiResponse(responseCode = "204", description = "Cookie named apimlAuthenticationToken contains authentication\n" + //
             "token."),
         @ApiResponse(responseCode = "401", description = "Invalid credentials.")
     })
@@ -162,23 +159,21 @@ public class ReactiveAuthenticationController {
     @Operation(summary = "Validate the authentication token.",
         tags = {"Security"},
         operationId = "validateUsingGET",
-        description = "Use the `/query` API to validate the token and retrieve the information associated with the token.\\n" + //
-            "\\n" + //
-            " **HTTP Headers:**\\n" + //
-            "\\n" + //
-            "The query request requires the token in one of the following formats:\\n" + //
-            "  * Cookie named `apimlAuthenticationToken`.\\n" + //
-            "  * Bearer authentication \\n" + //
-            "*Header example:* Authorization: Bearer *token*\\n" + //
-            "\\n" + //
-            "**Request payload:**\\n" + //
-            "\\n" + //
-            "The request body is empty.\\n" + //
-            "\\n" + //
-            "**Response Payload:**\\n" + //
-            "\\n" + //
-            "The response is a JSON object, which contains information associated with the token.\\n" + //
-            ""
+        description = """
+            Use the `/query` API to validate the token and retrieve the information associated with the token."
+                **HTTP Headers:**
+                    The query request requires the token in one of the following formats:
+                        * Cookie named `apimlAuthenticationToken`.
+                        * Bearer authentication
+
+                        "*Header example:* Authorization: Bearer *token*
+
+            **Request payload:**
+            The request body is empty.
+
+            **Response Payload:**
+            The response is a JSON object, which contains information associated with the token.
+        """
     )
     @ApiResponses(value = {
         @ApiResponse(

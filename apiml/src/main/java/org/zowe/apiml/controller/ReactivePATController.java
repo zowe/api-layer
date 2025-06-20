@@ -85,18 +85,19 @@ public class ReactivePATController {
     @Operation(summary = "Authenticate mainframe credentials and return personal access token.",
         tags = {"Access token"},
         operationId = "access-token-generate-POST",
-        description = "Use the `/access-token/generate` API to authenticate mainframe user credentials and return personal access token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.\\n" + //
-            "\\n" + //
-            "**Request:**\\n" + //
-            "\\n" + //
-            "The generate request requires the user credentials in one of the following formats:\\n" + //
-            "  * Basic access authentication\\n" + //
-            "  * HTTP header containing the client certificate\\n" + //
-            "\\n" + //
-            "**Response:**\\n" + //
-            "\\n" + //
-            "The response contains a personal access token in the plain text.\\n" + //
-            "",
+        description = """
+            Use the `/access-token/generate` API to authenticate mainframe user credentials and return personal access token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.
+
+                **Request:**
+
+                    The generate request requires the user credentials in one of the following formats:
+                        * Basic access authentication
+                        * HTTP header containing the client certificate
+
+                **Response:**
+
+                    The response contains a personal access token in the plain text.
+        """,
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(
                 schema = @Schema(implementation = AccessTokenRequest.class)
@@ -192,20 +193,22 @@ public class ReactivePATController {
     @Operation(summary = "Authenticate mainframe credentials and return personal access token.",
         tags = {"Access token"},
         operationId = "RefreshTokenUsingPOST",
-        description = "**Note:** This endpoint is disabled by default.\\n" + //
-            "\\n" + //
-            "Use the `/refresh` API to request a new JWT authentication token for the user associated with provided token.\\n" + //
-            "The old token is invalidated and new token is issued with refreshed expiration time.\\n" + //
-            "\\n" + //
-            "This endpoint is protect by a client certificate.\\n" + //
-            "\\n" + //
-            "**HTTP Headers:**\\n" + //
-            "\\n" + //
-            "The ticket request requires the token in one of the following formats:  \\n" + //
-            "  * Cookie named `apimlAuthenticationToken`.\\n" + //
-            "  * Bearer authentication\\n" + //
-            "  \\n" + //
-            "*Header example:* Authorization: Bearer *token*"
+        description = """
+            **Note:** This endpoint is disabled by default.
+
+            Use the `/refresh` API to request a new JWT authentication token for the user associated with provided token.
+            The old token is invalidated and new token is issued with refreshed expiration time.
+
+            This endpoint is protect by a client certificate.
+
+            **HTTP Headers:**
+
+                The ticket request requires the token in one of the following formats:
+                    * Cookie named `apimlAuthenticationToken`.
+                    * Bearer authentication.
+
+            *Header example:* Authorization: Bearer *token*
+        """
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Authenticated - Refreshed Personal Access Token"),
