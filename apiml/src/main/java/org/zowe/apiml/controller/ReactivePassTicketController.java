@@ -31,6 +31,8 @@ import reactor.core.publisher.Mono;
 
 import java.util.Objects;
 
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+
 @RestController
 @RequestMapping("/gateway/api/v1/auth")
 @Slf4j
@@ -59,7 +61,8 @@ public class ReactivePassTicketController {
                     .ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(ticketResponse);
-            });
+            })
+            .switchIfEmpty(Mono.just(ResponseEntity.status(SC_UNAUTHORIZED).build()));
     }
 
 }
