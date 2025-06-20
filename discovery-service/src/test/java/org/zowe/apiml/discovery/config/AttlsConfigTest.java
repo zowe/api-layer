@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.fail;
     }
 )
 @TestInstance(Lifecycle.PER_CLASS)
-@ActiveProfiles("attls")
+@ActiveProfiles("attlsServer")
 class AttlsConfigTest extends DiscoveryFunctionalTest {
 
     private String protocol = "http";
