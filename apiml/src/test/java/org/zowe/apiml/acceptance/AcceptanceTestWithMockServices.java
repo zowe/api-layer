@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.acceptance;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sun.net.httpserver.Headers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -83,6 +85,21 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
     @AfterAll
     void stopMocksWithClassScope() {
         applicationRegistry.afterClass();
+    }
+
+    protected void mockAuthSuccess() throws JsonProcessingException {
+        var headers = new Headers();
+        headers.add("Set-Cookie", "jwtToken=jwt");
+        headers.add("Set-Cookie", "LtpaToken2=ltpatoken");
+
+        mockService("zosmf").scope(MockService.Scope.TEST)
+            .addEndpoint("/zosmf/info")
+                .responseCode(200)
+                .contentType("application/json")
+                .headers(headers)
+                .bodyJson("{\"zosmf_version\":\"29\",\"zosmf_saf_realm\":\"SAFRealm\",\"zosmf_full_version\":\"29.0\"}")
+        .and()
+            .start();
     }
 
 }
