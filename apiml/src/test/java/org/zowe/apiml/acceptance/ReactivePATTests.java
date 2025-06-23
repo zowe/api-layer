@@ -12,7 +12,6 @@ package org.zowe.apiml.acceptance;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.net.URI;
 
@@ -22,13 +21,6 @@ import static io.restassured.RestAssured.given;
 public class ReactivePATTests extends AcceptanceTestWithMockServices {
 
     private static final String REFRESH_ENDPOINT = "/gateway/api/v1/auth/refresh";
-
-    @Value("${server.ssl.keyPassword}")
-    char[] password;
-    @Value("${server.ssl.keyStore}")
-    String client_cert_keystore;
-    @Value("${server.ssl.keyStore}")
-    String keystore;
 
     @BeforeEach
     void setUp() throws Exception {
