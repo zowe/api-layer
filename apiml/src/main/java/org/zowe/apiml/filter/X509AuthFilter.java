@@ -13,14 +13,15 @@ package org.zowe.apiml.filter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
 
 import java.security.cert.X509Certificate;
 
@@ -49,22 +50,28 @@ public class X509AuthFilter implements WebFilter {
         if (ArrayUtils.isEmpty(certs)) {
             return chain.filter(exchange);
         }
-        return ReactiveSecurityContextHolder.getContext().defaultIfEmpty(new SecurityContextImpl(new X509AuthenticationToken(null)))
-            .flatMap(ctx -> {
+
+        ReactiveSecurityContextHolder.getContext()
+            .map(ctx -> {
                 if (ctx.getAuthentication().isAuthenticated() && ctx.getAuthentication().getPrincipal() != null) {
-                    return chain.filter(exchange);
+                    return ctx.getAuthentication();
                 }
-                return x509AuthenticationProvider.authenticate(new X509AuthenticationToken(certs))
-                    .flatMap(authentication -> {
-                        if (!authentication.isAuthenticated()) {
-                            return chain.filter(exchange);
-                        }
-                        return chain.filter(exchange)
-                            .contextWrite(context -> ReactiveSecurityContextHolder.withAuthentication(authentication));
-                    })
-                    .onErrorResume(AuthenticationException.class, ex -> chain.filter(exchange));
+                return null;
+            })
+            .switchIfEmpty(Mono.<Authentication>defer(() -> x509AuthenticationProvider.authenticate(new X509AuthenticationToken(certs))))
+            .onErrorResume(AuthenticationException.class, ex -> Mono.empty())
+            .map(auth -> auth.isAuthenticated() ? ReactiveSecurityContextHolder.withAuthentication(auth) : Mono.empty())
+            .switchIfEmpty(Mono.<Context>just(Context.empty()))
+            .map(Context.class::cast)
+            .flatMap(ctx -> {
+                var next = chain.filter(exchange);
+                if (!ctx.isEmpty()) {
+                    return next.contextWrite(ctx);
+                }
+                return next;
             });
 
+        return Mono.empty();
     }
 
 }
