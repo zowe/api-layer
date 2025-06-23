@@ -218,8 +218,8 @@ public class ReactivePATController {
         @ApiResponse(responseCode = "500", description = "Process of refreshing token has failed unexpectedly.")
     })
     @PostMapping("/refresh")
-    public Mono<ResponseEntity<Void>> refreshAccessToken(ServerWebExchange exchange) {
-        ReactiveSecurityContextHolder.getContext()
+    public Mono<ResponseEntity<Object>> refreshAccessToken(ServerWebExchange exchange) {
+        return ReactiveSecurityContextHolder.getContext()
             .map(SecurityContext::getAuthentication)
             .filter(Objects::nonNull)
             .filter(Authentication::isAuthenticated)
@@ -233,8 +233,6 @@ public class ReactivePATController {
                 return ResponseEntity.ok().build();
             })
             .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatusCode.valueOf(401)).build()));
-
-        return Mono.empty();
     }
 
     /**
