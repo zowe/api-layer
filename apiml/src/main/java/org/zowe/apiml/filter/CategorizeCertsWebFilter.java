@@ -10,9 +10,7 @@
 
 package org.zowe.apiml.filter;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.Ordered;
@@ -86,6 +84,7 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
 
         certsFromTlsOpt.ifPresent(certsFromTls -> {
             Optional<X509Certificate> clientCertFromHeader = getClientCertFromHeader(exchange.getRequest());
+            ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate();
 
             if (certificateValidator.isForwardingEnabled() &&
                 certificateValidator.hasGatewayChain(certsFromTls) &&
@@ -102,6 +101,10 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
 
                 exchange.getAttributes().put(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, certsFromTls);
                 log.debug("Retaining full TLS certificate chain in attribute {}: {}", ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, Arrays.toString(certsFromTls));
+
+                var sslInfo = SimpleSslInfo.builder().peerCertificates(clientAuthCerts).build();
+                requestBuilder.sslInfo(sslInfo);
+
             } else {
                 X509Certificate[] clientAuthCerts = selectCerts(certsFromTls, certificateForClientAuth);
                 exchange.getAttributes().put(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, clientAuthCerts);
@@ -110,7 +113,12 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                 X509Certificate[] apimlFilteredCerts = selectCerts(certsFromTls, apimlCertificate);
                 exchange.getAttributes().put(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, apimlFilteredCerts);
                 log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, Arrays.toString(apimlFilteredCerts));
+                var sslInfo = SimpleSslInfo.builder().peerCertificates(clientAuthCerts).build();
+                requestBuilder.sslInfo(sslInfo);
+
             }
+
+            exchange.mutate().request(requestBuilder.build()).build();
         });
 
         if (certsFromTlsOpt.isEmpty()) {
@@ -178,6 +186,15 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
     @Override
     public int getOrder() {
         return Ordered.HIGHEST_PRECEDENCE;
+    }
+
+    @Builder
+    @Value
+    static class SimpleSslInfo implements SslInfo {
+
+        String sessionId;
+        X509Certificate[] peerCertificates;
+
     }
 }
 
