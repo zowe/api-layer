@@ -61,6 +61,7 @@ public class X509AuthFilter implements WebFilter {
             .switchIfEmpty(Mono.<Authentication>defer(() -> x509AuthenticationProvider.authenticate(new X509AuthenticationToken(certs))))
             .onErrorResume(AuthenticationException.class, ex -> Mono.empty())
             .map(auth -> auth.isAuthenticated() ? ReactiveSecurityContextHolder.withAuthentication(auth) : Context.empty())
+            .switchIfEmpty(Mono.just(Context.empty()))
             .flatMap(ctx -> {
                 var next = chain.filter(exchange);
                 if (!ctx.isEmpty()) {
