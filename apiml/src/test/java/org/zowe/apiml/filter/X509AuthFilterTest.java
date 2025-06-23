@@ -11,7 +11,6 @@
 package org.zowe.apiml.filter;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,13 +26,15 @@ import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import reactor.util.context.ContextView;
 
 import java.security.cert.X509Certificate;
-import java.util.function.Function;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class X509AuthFilterTest {
@@ -97,7 +98,6 @@ class X509AuthFilterTest {
         }
 
         @Nested
-        @Disabled
         class GivenCertsProvided {
 
             @Mock X509Certificate cert;
@@ -122,7 +122,7 @@ class X509AuthFilterTest {
                 when(authentication.isAuthenticated()).thenReturn(true);
                 var mockMono = mock(Mono.class);
                 when(chain.filter(exchange)).thenReturn(mockMono);
-                when(mockMono.contextWrite(any(Function.class))).thenReturn(Mono.empty());
+                when(mockMono.contextWrite(any(ContextView.class))).thenReturn(Mono.empty());
 
                 StepVerifier.create(testMono)
                     .expectComplete()
