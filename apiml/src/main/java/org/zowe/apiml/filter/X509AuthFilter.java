@@ -52,11 +52,11 @@ public class X509AuthFilter implements WebFilter {
         }
 
         return ReactiveSecurityContextHolder.getContext()
-            .map(ctx -> {
+            .flatMap(ctx -> {
                 if (ctx.getAuthentication().isAuthenticated() && ctx.getAuthentication().getPrincipal() != null) {
-                    return ctx.getAuthentication();
+                    return Mono.just(ctx.getAuthentication());
                 }
-                return null;
+                return Mono.empty();
             })
             .switchIfEmpty(Mono.<Authentication>defer(() -> x509AuthenticationProvider.authenticate(new X509AuthenticationToken(certs))))
             .onErrorResume(AuthenticationException.class, ex -> Mono.empty())
