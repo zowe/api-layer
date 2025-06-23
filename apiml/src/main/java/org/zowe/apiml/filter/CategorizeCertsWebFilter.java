@@ -63,9 +63,9 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        categorizeCerts(exchange);
-        ServerHttpRequest mutatedRequest = mutateRequestToRemoveHeader(exchange.getRequest());
-        return chain.filter(exchange.mutate().request(mutatedRequest).build());
+        ServerWebExchange updatedExchange = categorizeCerts(exchange);
+        ServerHttpRequest mutatedRequest = mutateRequestToRemoveHeader(updatedExchange.getRequest());
+        return chain.filter(updatedExchange.mutate().request(mutatedRequest).build());
     }
 
     /**
@@ -74,7 +74,7 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
      *
      * @param exchange The current server web exchange.
      */
-    private void categorizeCerts(ServerWebExchange exchange) {
+    private ServerWebExchange categorizeCerts(ServerWebExchange exchange) {
         Optional<X509Certificate[]> certsFromTlsOpt = Optional.of(exchange)
             .map(ServerWebExchange::getRequest)
             .map(ServerHttpRequest::getSslInfo)
@@ -82,9 +82,10 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
             .filter(Objects::nonNull)
             .filter(ssl -> ssl.length > 0);
 
+        ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate();
+
         certsFromTlsOpt.ifPresent(certsFromTls -> {
             Optional<X509Certificate> clientCertFromHeader = getClientCertFromHeader(exchange.getRequest());
-            ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate();
 
             if (certificateValidator.isForwardingEnabled() &&
                 certificateValidator.hasGatewayChain(certsFromTls) &&
@@ -118,12 +119,12 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
 
             }
 
-            exchange.mutate().request(requestBuilder.build()).build();
         });
 
         if (certsFromTlsOpt.isEmpty()) {
             log.debug("No TLS peer certificates found in the request.");
         }
+        return exchange.mutate().request(requestBuilder.build()).build();
     }
 
     /**
