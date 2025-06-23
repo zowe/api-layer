@@ -70,7 +70,6 @@ dependencies {
     implementation libs.nimbus.jose.jwt
     implementation libs.spring.doc.webflux.ui
 
-    testImplementation(testFixtures(project(":apiml-common")))
     testImplementation(testFixtures(project(":gateway-service")))
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.spring.mock.mvc

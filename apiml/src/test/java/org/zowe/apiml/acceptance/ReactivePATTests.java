@@ -13,8 +13,6 @@ package org.zowe.apiml.acceptance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
-import org.zowe.apiml.util.config.SslContext;
-import org.zowe.apiml.util.config.SslContextConfigurer;
 
 import java.net.URI;
 
@@ -35,8 +33,6 @@ public class ReactivePATTests extends AcceptanceTestWithMockServices {
     @BeforeEach
     void setUp() throws Exception {
         mockZosmfSuccess();
-        SslContextConfigurer configurer = new SslContextConfigurer(password, client_cert_keystore, keystore);
-        SslContext.prepareSslAuthentication(configurer);
     }
 
     @Test
