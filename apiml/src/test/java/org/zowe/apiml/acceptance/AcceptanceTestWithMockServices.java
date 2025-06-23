@@ -87,7 +87,7 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
         applicationRegistry.afterClass();
     }
 
-    protected void mockAuthSuccess() throws JsonProcessingException {
+    protected void mockZosmfSuccess() throws JsonProcessingException {
         var headers = new Headers();
         headers.add("Set-Cookie", "jwtToken=jwt");
         headers.add("Set-Cookie", "LtpaToken2=ltpatoken");

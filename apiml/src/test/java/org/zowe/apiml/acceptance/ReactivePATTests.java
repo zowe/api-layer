@@ -34,7 +34,7 @@ public class ReactivePATTests extends AcceptanceTestWithMockServices {
 
     @BeforeEach
     void setUp() throws Exception {
-        mockAuthSuccess();
+        mockZosmfSuccess();
         SslContextConfigurer configurer = new SslContextConfigurer(password, client_cert_keystore, keystore);
         SslContext.prepareSslAuthentication(configurer);
     }

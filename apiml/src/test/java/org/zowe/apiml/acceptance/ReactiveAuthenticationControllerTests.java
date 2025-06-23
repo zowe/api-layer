@@ -23,7 +23,7 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
 
     @BeforeEach
     void setUp() throws JsonProcessingException {
-        mockAuthSuccess();
+        mockZosmfSuccess();
     }
 
     @Test
