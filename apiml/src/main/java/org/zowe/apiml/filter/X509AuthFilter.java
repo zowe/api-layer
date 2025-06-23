@@ -51,7 +51,7 @@ public class X509AuthFilter implements WebFilter {
             return chain.filter(exchange);
         }
 
-        ReactiveSecurityContextHolder.getContext()
+        return ReactiveSecurityContextHolder.getContext()
             .map(ctx -> {
                 if (ctx.getAuthentication().isAuthenticated() && ctx.getAuthentication().getPrincipal() != null) {
                     return ctx.getAuthentication();
@@ -71,7 +71,6 @@ public class X509AuthFilter implements WebFilter {
                 return next;
             });
 
-        return Mono.empty();
     }
 
 }
