@@ -444,11 +444,11 @@ public class WebSecurityConfig {
         var reactiveTokenAuthProvider = new ReactiveAuthenticationManagerAdapter(man);
         return x509SecurityConfig(http)
             .securityMatcher(new AndServerWebExchangeMatcher(
-                ServerWebExchangeMatchers.pathMatchers("gateway/api/v1/auth/refresh")
+                ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, "gateway/api/v1/auth/refresh")
             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-            .addFilterAfter(new QueryWebFilter(failedAuthenticationWebHandler, HttpMethod.GET, true, reactiveTokenAuthProvider, httpUtils), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new QueryWebFilter(failedAuthenticationWebHandler, HttpMethod.POST, true, reactiveTokenAuthProvider, httpUtils), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }
 
