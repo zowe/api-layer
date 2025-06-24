@@ -11,6 +11,7 @@
 package org.zowe.apiml.caching;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
@@ -29,8 +30,8 @@ public class CachingService implements ApplicationListener<ApplicationReadyEvent
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(CachingService.class);
-        app.setLogStartupInfo(false);
-
+//        app.setLogStartupInfo(false);
+        app.setWebApplicationType(WebApplicationType.REACTIVE);
         app.run(args);
     }
 
@@ -38,5 +39,6 @@ public class CachingService implements ApplicationListener<ApplicationReadyEvent
     public void onApplicationEvent(@Nonnull final ApplicationReadyEvent event) {
         new ServiceStartupEventHandler().onServiceStartup("Caching Service",
             ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
+
     }
 }

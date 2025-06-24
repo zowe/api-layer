@@ -60,7 +60,7 @@ dependencies {
     api project(':onboarding-enabler-spring')
 
     implementation libs.spring.boot.starter.aop
-//    implementation libs.spring.boot.starter.webflux
+    implementation libs.spring.boot.starter.webflux
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.doc
