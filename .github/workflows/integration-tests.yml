@@ -1644,5 +1644,7 @@ jobs:
                     name: SonarResults-${{ env.JOB_ID }}
                     path: |
                         build/reports/problems/problems-report.html
+                        results/**
+                        apiml/build/reports/tests/**
 
             -   uses: ./.github/actions/teardown
