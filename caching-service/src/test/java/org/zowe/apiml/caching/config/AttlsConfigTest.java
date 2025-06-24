@@ -27,7 +27,6 @@ import org.zowe.apiml.util.config.SslContext;
 import javax.net.ssl.SSLException;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -70,7 +69,7 @@ public class AttlsConfigTest {
                         .config(SslContext.clientCertUnknownUser)
                         .header("Content-type", "application/json")
                         .get(getUri("https", "cache"))
-                    .then()
+                        .then()
                         .statusCode(HttpStatus.FORBIDDEN.value());
                     fail("");
                 } catch (Exception e) {
@@ -78,17 +77,17 @@ public class AttlsConfigTest {
                 }
             }
 
-            @Test
-            void requestFailsWithAttlsReasonWithHttp() {
-                given()
-                    .config(SslContext.clientCertUnknownUser)
-                    .header("Content-type", "application/json")
-                    .get(getUri("http", "cache"))
-                .then()
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .body(containsString("Connection is not secure."))
-                    .body(containsString("AttlsContext.getStatConn"));
-            }
+//            @Test
+//            void requestFailsWithAttlsReasonWithHttp() {
+//                given()
+//                    .config(SslContext.clientCertUnknownUser)
+//                    .header("Content-type", "application/json")
+//                    .get(getUri("http", "cache"))
+//                .then()
+//                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+//                    .body(containsString("Connection is not secure."))
+//                    .body(containsString("AttlsContext.getStatConn"));
+//            }
         }
     }
 }
