@@ -1,6 +1,11 @@
 dependencies {
+    api project(':common-service-core')
     api libs.spring.boot.starter.web
     api libs.zowe.zos.utils
+    implementation libs.netty.reactor.http
+    implementation libs.apache.commons.lang3
+    implementation libs.http.client5
+
 
     testImplementation libs.spring.boot.starter.test
 

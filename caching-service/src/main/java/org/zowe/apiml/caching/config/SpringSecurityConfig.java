@@ -13,23 +13,21 @@ package org.zowe.apiml.caching.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
-import org.zowe.apiml.filter.AttlsFilter;
-import org.zowe.apiml.filter.SecureConnectionFilter;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.preauth.x509.X509PrincipalExtractor;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebFluxSecurity
 public class SpringSecurityConfig {
 
     @Value("${apiml.service.ssl.verifySslCertificatesOfServices:true}")
@@ -45,42 +43,32 @@ public class SpringSecurityConfig {
     private boolean isHealthEndpointProtected;
 
     @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         String[] noSecurityAntMatchers = {
             "/application/info",
             "/v3/api-docs"
         };
 
-        return web -> {
-            if (!isHealthEndpointProtected) {
-                web.ignoring().requestMatchers("/application/health");
-            }
-            web.ignoring().requestMatchers(noSecurityAntMatchers);
-        };
-    }
+        List<String> antMatchersToIgnore = new ArrayList<>(List.of(noSecurityAntMatchers));
+        if (!isHealthEndpointProtected) {
+            antMatchersToIgnore.add("/application/health");
+        }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)   // NOSONAR
-            .headers(httpSecurityHeadersConfigurer ->
-                httpSecurityHeadersConfigurer.httpStrictTransportSecurity(HeadersConfigurer.HstsConfig::disable))
-            .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .headers(headers -> headers.hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable))
+            .authorizeExchange(exchange -> exchange
+                .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
+                .anyExchange().authenticated()
+            );
 
         if (verifyCertificates || !nonStrictVerifyCerts) {
-            http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
-                .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
-            if (isAttlsEnabled) {
-                http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
-                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-            }
+            http.x509(x509spec -> x509spec.principalExtractor(cert -> "cachingUser"));
         } else {
-            http.authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
+            http.authorizeExchange(exchange -> exchange.anyExchange().permitAll());
         }
 
         return http.build();
     }
 
-    private UserDetailsService x509UserDetailsService() {
-        return username -> new User("cachingUser", "", Collections.emptyList());
-    }
 }
