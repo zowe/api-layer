@@ -77,7 +77,7 @@ dependencies {
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.spring.boot.starter
     testImplementation libs.rest.assured
-
+    testImplementation libs.reactor.test
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
