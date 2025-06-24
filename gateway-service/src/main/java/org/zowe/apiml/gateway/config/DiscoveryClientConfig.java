@@ -40,6 +40,7 @@ import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClientFactory;
 import org.zowe.apiml.gateway.filters.pre.ApimlPreDecorationFilter;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.gateway.AdditionalRegistrationGatewayRegistry;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -71,9 +72,10 @@ public class DiscoveryClientConfig {
     private final ApimlDiscoveryClientFactory apimlDiscoveryClientFactory;
     private final ApplicationContext context;
     private final Supplier<EurekaJerseyClientImpl.EurekaJerseyClientBuilder> eurekaJerseyClientBuilder;
+    private final AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry;
 
     @Bean
-    public List<AdditionalRegistration> additionalRegistration(StandardEnvironment environment) {
+    public List<AdditionalRegistration> additionalRegistration() {
         List<AdditionalRegistration> additionalRegistrations = new AdditionalRegistrationParser().extractAdditionalRegistrations(System.getenv());
         log.debug("Parsed {} additional registration: {}", additionalRegistrations.size(), additionalRegistrations);
         return additionalRegistrations;
@@ -108,32 +110,8 @@ public class DiscoveryClientConfig {
         for (AdditionalRegistration apimlRegistration : additionalRegistrations) {
             ApimlDiscoveryClient additionalApimlRegistration = registerInTheApimlInstance(config, healthCheckHandler, apimlRegistration, manager);
             discoveryClientsList.add(additionalApimlRegistration);
-            if (apimlPreDecorationFilter.isPresent()) {
-                additionalApimlRegistration.registerEventListener(event -> {
-                    if (event instanceof CacheRefreshedEvent) {
-                        Set<String> trustedProxies = Stream.of(
-                            additionalApimlRegistration.getApplication(CoreService.GATEWAY.getServiceId()),
-                            additionalApimlRegistration.getApplication(CoreService.CLOUD_GATEWAY.getServiceId())
-                        ).map(Application::getInstances)
-                        .flatMap(List::stream)
-                        .flatMap(instanceInfo -> {
-                            try {
-                                return Stream.of(
-                                        InetAddress.getAllByName(instanceInfo.getHostName()),
-                                        InetAddress.getAllByName(instanceInfo.getIPAddr())
-                                    )
-                                    .flatMap(Stream::of)
-                                    .map(InetAddress::getHostAddress);
-                            } catch (UnknownHostException e) {
-                                log.debug("Unknown host for instance {}", instanceInfo);
-                                return Stream.empty();
-                            }
-                        })
-                        .collect(Collectors.toSet());
-                        apimlPreDecorationFilter.get().setTrustedIpAddresses(trustedProxies);
-                    }
-                });
-            }
+            apimlPreDecorationFilter.ifPresent(__ ->
+                additionalRegistrationGatewayRegistry.registerAdditionalRegistrationsGatewayRegistryRefresh(additionalApimlRegistration));
         }
 
         return new DiscoveryClientWrapper(discoveryClientsList);

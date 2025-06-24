@@ -32,6 +32,8 @@ dependencies {
     testImplementation libs.javax.servlet.api
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.json.smart
+    testImplementation libs.mockito.inline
+    testImplementation libs.awaitility
 
     testCompileOnly libs.lombok
     annotationProcessor libs.lombok

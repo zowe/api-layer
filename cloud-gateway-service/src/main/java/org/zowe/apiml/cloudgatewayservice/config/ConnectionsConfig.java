@@ -294,10 +294,9 @@ public class ConnectionsConfig {
             additionalClients.add(cloudEurekaClient);
             cloudEurekaClient.registerHealthCheck(healthCheckHandler);
 
-            if (x509awareXForwardedHeadersFilter.isPresent()) {
-                cloudEurekaClient.registerEventListener(event -> {
-                    if (event instanceof CacheRefreshedEvent) {
-                        Set<String> trustedProxies = Stream.of(
+            x509awareXForwardedHeadersFilter.ifPresent(awareXForwardedHeadersFilter -> cloudEurekaClient.registerEventListener(event -> {
+                if (event instanceof CacheRefreshedEvent) {
+                    Set<String> trustedProxies = Stream.of(
                             cloudEurekaClient.getApplication(CoreService.GATEWAY.getServiceId()),
                             cloudEurekaClient.getApplication(CoreService.CLOUD_GATEWAY.getServiceId())
                         ).map(Application::getInstances)
@@ -305,21 +304,20 @@ public class ConnectionsConfig {
                         .flatMap(instanceInfo -> {
                             try {
                                 return Stream.of(
-                                    InetAddress.getAllByName(instanceInfo.getHostName()),
-                                    InetAddress.getAllByName(instanceInfo.getIPAddr())
-                                )
-                                .flatMap(Stream::of)
-                                .map(InetAddress::getHostAddress);
+                                        InetAddress.getAllByName(instanceInfo.getHostName()),
+                                        InetAddress.getAllByName(instanceInfo.getIPAddr())
+                                    )
+                                    .flatMap(Stream::of)
+                                    .map(InetAddress::getHostAddress);
                             } catch (UnknownHostException e) {
                                 log.debug("Unknown host for instance {}", instanceInfo);
                                 return Stream.empty();
                             }
                         })
                         .collect(Collectors.toSet());
-                        x509awareXForwardedHeadersFilter.get().setTrustedIpAddresses(trustedProxies);
-                    }
-                });
-            }
+                    awareXForwardedHeadersFilter.setTrustedIpAddresses(trustedProxies);
+                }
+            }));
         }
         return new AdditionalEurekaClientsHolder(additionalClients);
     }

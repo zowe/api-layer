@@ -22,6 +22,7 @@ import org.springframework.cloud.netflix.zuul.filters.pre.PreDecorationFilter;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.product.gateway.AdditionalRegistrationGatewayRegistry;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 
 import javax.annotation.PostConstruct;
@@ -54,17 +55,19 @@ public class ApimlPreDecorationFilter extends PreDecorationFilter {
 
     private final CertificateValidator certificateValidator;
 
-    private Predicate<String> isHostTrusted = host -> false;
+    private final AtomicReference<Set<String>> trustedApimlGateways;
 
-    final AtomicReference<Set<String>> trustedIpAddresses = new AtomicReference<>(Collections.emptySet());
+    private Predicate<String> isHostTrusted = host -> false;
 
     public ApimlPreDecorationFilter(
         RouteLocator routeLocator, ProxyRequestHelper proxyRequestHelper,
         ZuulProperties zuulProperties, ServerProperties server,
-        CertificateValidator certificateValidator
+        CertificateValidator certificateValidator,
+        AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry
     ) {
         super(routeLocator, server.getServlet().getContextPath(), zuulProperties, proxyRequestHelper);
         this.certificateValidator = certificateValidator;
+        this.trustedApimlGateways = additionalRegistrationGatewayRegistry.getAdditionalGatewayIpAddressesReference();
     }
 
     @PostConstruct
@@ -74,11 +77,7 @@ public class ApimlPreDecorationFilter extends PreDecorationFilter {
             isHostTrusted = host -> host != null && pattern.matcher(host).matches();
         }
 
-        isHostTrusted = isHostTrusted.or(hostname -> trustedIpAddresses.get().contains(hostname));
-    }
-
-    public void setTrustedIpAddresses(Set<String> trustedProxies) {
-        this.trustedIpAddresses.set(trustedProxies);
+        isHostTrusted = isHostTrusted.or(hostname -> trustedApimlGateways.get().contains(hostname));
     }
 
     private boolean isTrusted(RequestContext ctx) {
