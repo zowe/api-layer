@@ -89,11 +89,11 @@ public class AttlsHttpHandler implements BeanPostProcessor {
         }
 
         var str = String.format("""
-                        -----BEGIN CERTIFICATE-----
-                        %s
-                        -----END CERTIFICATE-----
-                        """,
-                Base64.getEncoder().encodeToString(rawCertificate)
+            -----BEGIN CERTIFICATE-----
+            %s
+            -----END CERTIFICATE-----
+            """,
+            Base64.getEncoder().encodeToString(rawCertificate)
         );
 
         var certificate = (X509Certificate) CertificateFactory
