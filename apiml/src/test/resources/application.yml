@@ -45,6 +45,7 @@ apiml:
         securePortEnabled: true
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
     security:
+        allowTokenRefresh: true
         auth:
             provider: zosmf
             zosmf:
