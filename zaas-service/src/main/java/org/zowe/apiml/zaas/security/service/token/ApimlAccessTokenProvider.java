@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.zaas.cache.CachingClient;
 import org.zowe.apiml.zaas.cache.CachingServiceClient;
 import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
@@ -43,7 +44,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     static final String INVALID_USERS_KEY = "invalidUsers";
     static final String INVALID_SCOPES_KEY = "invalidScopes";
 
-    private final CachingServiceClient cachingServiceClient;
+    private final CachingClient cachingServiceClient;
     private final AuthenticationService authenticationService;
     @Qualifier("oidcJwkMapper")
     private final ObjectMapper objectMapper;

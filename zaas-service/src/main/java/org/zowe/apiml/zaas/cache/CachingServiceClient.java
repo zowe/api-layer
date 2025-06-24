@@ -35,7 +35,7 @@ import java.util.Map;
  */
 @Slf4j
 @SuppressWarnings({"squid:S1192"}) // literals are repeating in debug logs only
-public class CachingServiceClient {
+public class CachingServiceClient implements CachingClient {
 
     private final GatewayClient gatewayClient;
     private final RestTemplate restTemplate;

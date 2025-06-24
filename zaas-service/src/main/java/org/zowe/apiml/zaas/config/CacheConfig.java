@@ -28,6 +28,7 @@ import org.ehcache.impl.copy.SerializingCopier;
 import org.ehcache.jsr107.EhcacheCachingProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -43,6 +44,7 @@ import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.util.CacheUtils;
+import org.zowe.apiml.zaas.cache.CachingClient;
 import org.zowe.apiml.zaas.cache.CachingServiceClient;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 
@@ -194,7 +196,8 @@ public class CacheConfig {
     }
 
     @Bean
-    public CachingServiceClient cachingServiceClient(GatewayClient gatewayClient, @Qualifier("restTemplateWithKeystore") RestTemplate restTemplate) {
+    @ConditionalOnMissingBean
+    public CachingClient cachingServiceClient(GatewayClient gatewayClient, @Qualifier("restTemplateWithKeystore") RestTemplate restTemplate) {
         return new CachingServiceClient(restTemplate, gatewayClient);
     }
 
