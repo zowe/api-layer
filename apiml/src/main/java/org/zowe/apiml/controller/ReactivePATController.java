@@ -12,7 +12,6 @@ package org.zowe.apiml.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,22 +28,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.error.AccessTokenMissingBodyException;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.util.HttpUtils;
-import org.zowe.apiml.zaas.controllers.AuthController.*;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
-import org.zowe.apiml.zaas.security.service.TokenCreationService;
+import org.zowe.apiml.zaas.controllers.AuthController.RulesRequestModel;
+import org.zowe.apiml.zaas.controllers.AuthController.ValidateRequestModel;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -67,12 +64,8 @@ public class ReactivePATController {
 
     private final AccessTokenProvider tokenProvider;
     private final RauditxService rauditxService;
-    private final AuthenticationService authenticationService;
-    private final TokenCreationService tokenCreationService;
     private final MessageService messageService;
-    private final HttpUtils httpUtils;
     private final ObjectMapper mapper;
-    private final PeerAwareInstanceRegistryImpl peerAwareInstanceRegistry;
 
     @Data
     @NoArgsConstructor
@@ -188,51 +181,6 @@ public class ReactivePATController {
             return Mono.just(ResponseEntity.noContent().build());
         }
         return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
-    }
-
-    @Operation(summary = "Authenticate mainframe credentials and return personal access token.",
-        tags = {"Access token"},
-        operationId = "RefreshTokenUsingPOST",
-        description = """
-            **Note:** This endpoint is disabled by default.
-
-            Use the `/refresh` API to request a new JWT authentication token for the user associated with provided token.
-            The old token is invalidated and new token is issued with refreshed expiration time.
-
-            This endpoint is protect by a client certificate.
-
-            **HTTP Headers:**
-
-                The ticket request requires the token in one of the following formats:
-                    * Cookie named `apimlAuthenticationToken`.
-                    * Bearer authentication.
-
-            *Header example:* Authorization: Bearer *token*
-        """
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Authenticated - Refreshed Personal Access Token"),
-        @ApiResponse(responseCode = "401", description = "Zowe token is not provided, is invalid or is expired."),
-        @ApiResponse(responseCode = "403", description = "A client certificate is not provided or is expired."),
-        @ApiResponse(responseCode = "404", description = "Not Found. The endpoint is not enabled or not properly configured"),
-        @ApiResponse(responseCode = "500", description = "Process of refreshing token has failed unexpectedly.")
-    })
-    @PostMapping("/refresh")
-    public Mono<ResponseEntity<Object>> refreshAccessToken(ServerWebExchange exchange) {
-        return ReactiveSecurityContextHolder.getContext()
-            .map(SecurityContext::getAuthentication)
-            .filter(Objects::nonNull)
-            .filter(Authentication::isAuthenticated)
-            .filter(TokenAuthentication.class::isInstance)
-            .map(TokenAuthentication.class::cast)
-            .map(tokenAuthentication -> {
-                var gateway = peerAwareInstanceRegistry.getApplications().getRegisteredApplications(CoreService.GATEWAY.getServiceId());
-                authenticationService.invalidateJwtTokenGateway(tokenAuthentication.getCredentials(), true, gateway);
-                var newToken = tokenCreationService.createJwtTokenWithoutCredentials(tokenAuthentication.getPrincipal());
-                exchange.getResponse().addCookie(httpUtils.createResponseCookie(newToken));
-                return ResponseEntity.ok().build();
-            })
-            .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatusCode.valueOf(401)).build()));
     }
 
     /**

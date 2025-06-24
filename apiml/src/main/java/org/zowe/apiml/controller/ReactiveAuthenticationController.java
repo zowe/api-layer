@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -47,6 +48,7 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.HttpUtils;
 import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
+import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -69,6 +71,7 @@ public class ReactiveAuthenticationController {
     private final HttpUtils httpUtils;
     private final CompoundAuthProvider compoundAuthProvider;
     private final ObjectMapper objectMapper;
+    private final TokenCreationService tokenCreationService;
 
     /**
      * Endpoint to authenticate a user based on credentials from EITHER:
@@ -227,6 +230,52 @@ public class ReactiveAuthenticationController {
             return Mono.just(ResponseEntity.status(SC_BAD_REQUEST).build());
         }
 
+    }
+
+    @Operation(summary = "Refresh authentication token.",
+        tags = {"Security"},
+        operationId = "RefreshTokenUsingPOST",
+        description = """
+            **Note:** This endpoint is disabled by default.
+
+            Use the `/refresh` API to request a new JWT authentication token for the user associated with provided token.
+            The old token is invalidated and new token is issued with refreshed expiration time.
+
+            This endpoint is protect by a client certificate.
+
+            **HTTP Headers:**
+
+                The ticket request requires the token in one of the following formats:
+                    * Cookie named `apimlAuthenticationToken`.
+                    * Bearer authentication.
+
+            *Header example:* Authorization: Bearer *token*
+        """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Authenticated - Refreshed Personal Access Token"),
+        @ApiResponse(responseCode = "401", description = "Zowe token is not provided, is invalid or is expired."),
+        @ApiResponse(responseCode = "403", description = "A client certificate is not provided or is expired."),
+        @ApiResponse(responseCode = "404", description = "Not Found. The endpoint is not enabled or not properly configured"),
+        @ApiResponse(responseCode = "500", description = "Process of refreshing token has failed unexpectedly.")
+    })
+    @ConditionalOnProperty(value = "apiml.security.allowTokenRefresh", havingValue = "true")
+    @PostMapping("/refresh")
+    public Mono<ResponseEntity<Object>> refreshAccessToken(ServerWebExchange exchange) {
+        return ReactiveSecurityContextHolder.getContext()
+            .map(SecurityContext::getAuthentication)
+            .filter(Objects::nonNull)
+            .filter(Authentication::isAuthenticated)
+            .filter(TokenAuthentication.class::isInstance)
+            .map(TokenAuthentication.class::cast)
+            .map(tokenAuthentication -> {
+                var gateway = peerAwareInstanceRegistry.getApplications().getRegisteredApplications(CoreService.GATEWAY.getServiceId());
+                authenticationService.invalidateJwtTokenGateway(tokenAuthentication.getCredentials(), true, gateway);
+                var newToken = tokenCreationService.createJwtTokenWithoutCredentials(tokenAuthentication.getPrincipal());
+                exchange.getResponse().addCookie(httpUtils.createResponseCookie(newToken));
+                return ResponseEntity.ok().build();
+            })
+            .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatusCode.valueOf(401)).build()));
     }
 
 }

@@ -10,17 +10,20 @@
 
 package org.zowe.apiml.acceptance;
 
+import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @AcceptanceTest
 public class ReactivePATTests extends AcceptanceTestWithMockServices {
 
-    private static final String REFRESH_ENDPOINT = "/gateway/api/v1/auth/refresh";
+    private static final String GENERATE_PAT_ENDPOINT = "/gateway/api/v1/auth/access-token/generate";
 
     @BeforeEach
     void setUp() throws Exception {
@@ -28,21 +31,26 @@ public class ReactivePATTests extends AcceptanceTestWithMockServices {
     }
 
     @Test
-    void whenRefreshPATWithoutCert_then403() {
-        given()
+    void generatePAT_Success() {
+        var token = given()
+            .auth().preemptive().basic("USER", "validPassword")
+            .body("""
+            {
+                "scopes": ["gateway"],
+                "validity": 90
+            }
+            """)
+            .contentType(ContentType.JSON)
         .when()
-            .post(URI.create(basePath + REFRESH_ENDPOINT))
+            .post(URI.create(basePath + GENERATE_PAT_ENDPOINT))
         .then()
-            .statusCode(403);
-    }
+            .statusCode(200)
+        .extract()
+            .body()
+            .asString();
 
-    @Test
-    void whenWrongMethod_thenFail() {
-        given()
-        .when()
-            .get(URI.create(basePath + REFRESH_ENDPOINT))
-        .then()
-            .statusCode(405);
+        assertNotNull(token);
+        assertFalse(token.isEmpty());
     }
 
 }

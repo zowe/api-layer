@@ -10,25 +10,39 @@
 
 package org.zowe.apiml.acceptance;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Value;
+import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.SslContextConfigurer;
 
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @AcceptanceTest
 class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServices {
 
+    private static final String REFRESH_ENDPOINT = "/gateway/api/v1/auth/refresh";
+    private static final String AUTH_COOKIE = "apimlAuthenticationToken";
+
+    @Value("${server.ssl.keyPassword}")
+    char[] password;
+    @Value("${server.ssl.keyStore}")
+    String client_cert_keystore;
+    @Value("${server.ssl.keyStore}")
+    String keystore;
+
     @BeforeEach
-    void setUp() throws JsonProcessingException {
+    void setUp() throws Exception {
         mockZosmfSuccess();
+        SslContextConfigurer configurer = new SslContextConfigurer(password, client_cert_keystore, keystore);
+        SslContext.prepareSslAuthentication(configurer);
     }
 
-    @Test
-    void whenLoginWithBody_thenSuccess() {
-        given()
+    private String login() {
+        return given()
             .body("""
                 {
                     "username": "USER",
@@ -40,7 +54,33 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
             .post(URI.create(basePath + "/gateway/api/v1/auth/login"))
         .then()
             .statusCode(204)
-            .cookie("apimlAuthenticationToken");
+            .cookie(AUTH_COOKIE)
+        .extract()
+            .cookie(AUTH_COOKIE);
+    }
+
+    @Test
+    void whenLoginWithBody_thenSuccess() {
+        var token = login();
+        assertNotNull(token);
+    }
+
+    @Test
+    void whenRefreshPATWithoutCert_then403() {
+        given()
+        .when()
+            .post(URI.create(basePath + REFRESH_ENDPOINT))
+        .then()
+            .statusCode(403);
+    }
+
+    @Test
+    void whenWrongMethod_thenFail() {
+        given()
+        .when()
+            .get(URI.create(basePath + REFRESH_ENDPOINT))
+        .then()
+            .statusCode(405);
     }
 
 }

@@ -46,7 +46,6 @@ jobs:
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
                     APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://apiml:10010/gateway/certificates
                     SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
                     SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
