@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.attls;
+package org.zowe.apiml.filter;
 
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.commons.lang3.StringUtils;
