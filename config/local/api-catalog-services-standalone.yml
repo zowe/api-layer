@@ -38,6 +38,8 @@ apiml:
     metrics:
         serviceId: metrics-service
         enabled: true
+    service:
+        gatewayHostname: https://localhost:10010 # Add a default but unused in standalone
 spring:
     output:
         ansi:
