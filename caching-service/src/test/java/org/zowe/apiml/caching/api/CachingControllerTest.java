@@ -16,7 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
@@ -25,9 +27,10 @@ import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import reactor.test.StepVerifier;
-import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.*;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,16 +48,19 @@ class CachingControllerTest {
 
     private static final KeyValue KEY_VALUE = new KeyValue(KEY, VALUE);
 
-    private HttpServletRequest mockRequest;
+    private ServerHttpRequest mockRequest;
     private Storage mockStorage;
     private final MessageService messageService = new YamlMessageService("/caching-log-messages.yml");
     private CachingController underTest;
 
     @BeforeEach
     void setUp() {
-        mockRequest = mock(HttpServletRequest.class);
-        when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(SERVICE_ID);
-        when(mockRequest.getHeader("X-CS-Service-ID")).thenReturn(null);
+        mockRequest = mock(ServerHttpRequest.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-Certificate-DistinguishedName", SERVICE_ID);
+        headers.add("X-CS-Service-ID", null);
+        when(mockRequest.getHeaders()).thenReturn(headers);
+        when(mockRequest.getURI()).thenReturn(URI.create("http://localhost"));
         mockStorage = mock(Storage.class);
         underTest = new CachingController(mockStorage, messageService);
     }
@@ -302,7 +308,9 @@ class CachingControllerTest {
 
     @Test
     void givenNoCertificateInformationInHeader_whenGetAllValues_thenReturnUnauthorized() {
-        when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-Certificate-DistinguishedName", null);
+        when(mockRequest.getHeaders()).thenReturn(headers);
 
         ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.missingCertificate",
             "parameter").mapToView();
@@ -318,12 +326,14 @@ class CachingControllerTest {
     class WhenUseSpecificServiceHeader {
         @BeforeEach
         void setUp() {
-            when(mockRequest.getHeader("X-CS-Service-ID")).thenReturn(SERVICE_ID);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("X-Certificate-DistinguishedName", SERVICE_ID);
+            headers.add("X-CS-Service-ID", null);
+            when(mockRequest.getHeaders()).thenReturn(headers);
         }
 
         @Test
         void givenServiceIdHeader_thenReturnProperValues() {
-            when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
 
             Map<String, KeyValue> values = new HashMap<>();
             values.put(KEY, new KeyValue("key2", VALUE));
@@ -340,7 +350,10 @@ class CachingControllerTest {
 
         @Test
         void givenServiceIdHeaderAndCertificateHeaderForReadForService_thenReturnProperValues() {
-            when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn("certificate");
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("X-Certificate-DistinguishedName", "certificate");
+            headers.add("X-CS-Service-ID", SERVICE_ID);
+            when(mockRequest.getHeaders()).thenReturn(headers);
 
             Map<String, KeyValue> values = new HashMap<>();
             values.put(KEY, new KeyValue("key2", VALUE));
@@ -413,7 +426,7 @@ class CachingControllerTest {
 
             when(mockStorage.getAllMapItems(anyString(), any())).thenReturn(expectedMap);
 
-            StepVerifier.create(underTest.getAllMapItems(any(), mockRequest))
+            StepVerifier.create(underTest.getAllMapItems(MAP_KEY, mockRequest))
                 .assertNext(response -> {
                     assertThat(response.getStatusCode(), is(HttpStatus.OK));
                     assertThat(response.getBody(), is(expectedMap));
@@ -452,11 +465,13 @@ class CachingControllerTest {
 
         @Test
         void givenNoCertificateInformation_thenReturnUnauthorized() throws StorageException {
-            when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("X-Certificate-DistinguishedName", null);
+            when(mockRequest.getHeaders()).thenReturn(headers);
 
             ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.missingCertificate", "parameter").mapToView();
 
-            StepVerifier.create(underTest.getAllMapItems(any(), mockRequest))
+            StepVerifier.create(underTest.getAllMapItems(MAP_KEY, mockRequest))
                 .assertNext(response -> {
                     assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
                     assertThat(response.getBody(), is(expectedBody));
@@ -466,10 +481,10 @@ class CachingControllerTest {
 
         @Test
         void givenErrorReadingStorage_thenResponseBadRequest() throws StorageException {
-            when(mockStorage.getAllMapItems(any(), any()))
+            when(mockStorage.getAllMapItems(anyString(), anyString()))
                 .thenThrow(new RuntimeException("error"));
 
-            StepVerifier.create(underTest.getAllMapItems(any(), mockRequest))
+            StepVerifier.create(underTest.getAllMapItems(MAP_KEY, mockRequest))
                 .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST)))
                 .verifyComplete();
         }
