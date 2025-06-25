@@ -117,9 +117,6 @@ spring:
         name: Caching service
     webflux:
         base-path: /${apiml.service.serviceId}
-    mvc:
-        pathmatch:
-            matchingStrategy: ant-path-matcher # used to resolve spring fox path matching issue
     output.ansi.enabled: always
     main:
         allow-circular-references: true

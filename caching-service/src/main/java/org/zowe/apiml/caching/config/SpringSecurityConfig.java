@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,6 +22,8 @@ import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
+import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
@@ -60,10 +63,13 @@ public class SpringSecurityConfig {
             .authorizeExchange(exchange -> exchange
                 .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
                 .anyExchange().authenticated()
+            ).exceptionHandling(exceptionHandlingSpec ->
+                exceptionHandlingSpec.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.FORBIDDEN))
             );
 
         if (verifyCertificates || !nonStrictVerifyCerts) {
-            http.x509(x509spec -> x509spec.principalExtractor(cert -> "cachingUser"));
+            http.x509(x509spec -> x509spec.principalExtractor(X509Util.x509PrincipalExtractor())
+                .authenticationManager(X509Util.x509ReactiveAuthenticationManager()));
         } else {
             http.authorizeExchange(exchange -> exchange.anyExchange().permitAll());
         }

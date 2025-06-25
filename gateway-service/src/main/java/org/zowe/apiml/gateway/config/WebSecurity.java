@@ -73,10 +73,11 @@ import org.zowe.apiml.gateway.filters.security.BasicAuthFilter;
 import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
 import org.zowe.apiml.gateway.service.TokenProvider;
-import org.zowe.apiml.gateway.x509.X509Util;
+
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
+import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;

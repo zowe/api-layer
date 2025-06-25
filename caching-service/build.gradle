@@ -58,6 +58,7 @@ configurations.all {
 dependencies {
     api project(':apiml-tomcat-common')
     api project(':onboarding-enabler-spring')
+    api project(':apiml-security-common')
 
     implementation libs.spring.boot.starter.aop
     implementation libs.spring.boot.starter.webflux

@@ -12,7 +12,7 @@ package org.zowe.apiml.caching;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.caching.service.Storage;
+//import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.zaas.cache.CachingClient;
 import org.zowe.apiml.zaas.cache.CachingServiceClient;
 
@@ -22,7 +22,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class InMemoryCachingClient implements CachingClient {
 
-    private final Storage storage;
+//    private final Storage storage;
     @Override
     public void create(CachingServiceClient.KeyValue kv) {
 //            storage.create()
