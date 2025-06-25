@@ -13,7 +13,6 @@ package org.zowe.apiml.apicatalog.security;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -48,10 +47,8 @@ public class ApiCatalogLogoutHandler implements LogoutHandler {
         setRequestHeaders(logoutRequest, request);
         try (CloseableHttpResponse logoutResponse = httpClient.execute(logoutRequest)) {
             if (logoutResponse.getStatusLine().getStatusCode() != SC_NO_CONTENT) {
-                log.warn("Logout request to Gateway failed with status code {}: {}", logoutResponse.getStatusLine().getStatusCode(), EntityUtils.toString(logoutResponse.getEntity()));
+                log.warn("Logout request to Gateway failed with status code {}: {}", logoutResponse.getStatusLine().getStatusCode(), logoutResponse.getEntity() != null ? EntityUtils.toString(logoutResponse.getEntity()) : "");
             }
-        } catch (ClientProtocolException e) {
-            log.debug("Client error in logout request: {}", e.getMessage(), e);
         } catch (IOException e) {
             log.debug("I/O Exception in logout request: {}", e.getMessage(), e);
         }
