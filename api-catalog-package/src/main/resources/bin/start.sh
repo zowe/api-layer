@@ -261,6 +261,10 @@ fi
 #    -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
 #    -Dapiml.service.preferIpAddress=false \
 
+if [ -z $ZWE_GATEWAY_HOST ]; then
+    ZWE_GATEWAY_HOST="$ZWE_haInstance_hostname:$ZWE_components_gateway_port"
+fi
+
 CATALOG_CODE=AC
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
@@ -277,7 +281,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7552} \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dapiml.service.gatewayHostname=${ZWE_GATEWAY_HOST:-${ZWE_haInstance_hostname:-localhost}} \
+    -Dapiml.service.gatewayHostname="${ZWE_GATEWAY_HOST:-localhost:7554}" \
+    -Dapiml.service.internalProtocol=${internalProtocol:-https} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-false} \
     -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \

@@ -119,8 +119,9 @@ public class ApiMediationLayerStartupChecker {
                     HttpRequestUtils.getResponse(healthEndpoint, HttpStatus.SC_OK, Integer.parseInt(internalPorts[i]), hosts[i]);
                 }
             }
-
-            return areAllServicesUp && isTestApplicationUp && (isCloudGatewayUp || !cloudGatewayEnabled);
+            boolean result = areAllServicesUp && isTestApplicationUp && (isCloudGatewayUp || !cloudGatewayEnabled);
+            log.debug("Result is: {}", result);
+            return result;
         } catch (PathNotFoundException | IOException e) {
             log.warn("Check failed on retrieving the information from document: {}", e.getMessage());
             return false;

@@ -12,7 +12,9 @@ package org.zowe.apiml.functional.apicatalog;
 
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
+import io.restassured.http.ContentType;
 import io.restassured.response.Validatable;
+import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
@@ -39,6 +41,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -58,6 +61,10 @@ class ApiCatalogAuthenticationTest {
     private static final String CATALOG_STATIC_REFRESH_ENDPOINT = "/static-api/refresh";
     private static final String CATALOG_ACTUATOR_ENDPOINT = "/application";
     private static final String CATALOG_HEALTH_ENDPOINT = "/application/health";
+
+    private static final String CATALOG_LOGIN_ENDPOINT = "/auth/login";
+    private static final String CATALOG_LOGOUT_ENDPOINT = "/auth/logout";
+
     private final static String COOKIE = "apimlAuthenticationToken";
     private final static String BASIC_AUTHENTICATION_PREFIX = "Basic";
     private final static String INVALID_USERNAME = "incorrectUser";
@@ -109,14 +116,16 @@ class ApiCatalogAuthenticationTest {
     //@formatter:off
     @Nested
     class WhenAccessingCatalog {
+
         @Nested
         class ReturnOk {
+
             @ParameterizedTest(name = "givenValidBasicAuthentication {index} {0} ")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
             void givenValidBasicAuthentication(String endpoint, Request request) {
                 request.execute(
                         given()
-                            .auth().preemptive().basic(USERNAME, new String(PASSWORD)) // Isn't this kind of strange behavior?
+                            .auth().preemptive().basic(USERNAME, new String(PASSWORD))
                             .when(),
                         endpoint
                     )
@@ -144,7 +153,7 @@ class ApiCatalogAuthenticationTest {
                 request.execute(
                         given()
                             .config(SslContext.clientCertApiml)
-                            .auth().preemptive().basic(USERNAME, new String(PASSWORD)) // Isn't this kind of strange behavior?
+                            .auth().preemptive().basic(USERNAME, new String(PASSWORD))
                             .when(),
                         endpoint
                     )
@@ -298,9 +307,9 @@ class ApiCatalogAuthenticationTest {
         void givenOnlyValidCertificate_whenAccessNotCertificateAuthedRoute_thenReturnUnauthorized() {
             given()
                 .config(SslContext.clientCertApiml)
-                .when()
+            .when()
                 .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_ACTUATOR_ENDPOINT)
-                .then()
+            .then()
                 .statusCode(HttpStatus.UNAUTHORIZED.value());
         }
     }
@@ -308,14 +317,67 @@ class ApiCatalogAuthenticationTest {
     @Nested
     @Tag("HealthEndpointProtectionDisabledTest")
     class GivenHealthEndpointProtectionDisabled {
+
         @Test
         @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication disabled.")
         void thenDoNotRequireAuthentication() {
             given()
-                .when()
+            .when()
                 .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_HEALTH_ENDPOINT)
-                .then()
+            .then()
                 .statusCode(is(SC_OK));
         }
+
     }
+
+    @Nested
+    class WhenLoggingInAndOut {
+
+        private String loginWithCatalog() {
+            return given()
+                .body(String.format("{\"username\":\"%s\",\"password\":\"%s\"}", USERNAME, PASSWORD))
+                .contentType(ContentType.JSON)
+            .when()
+                .post(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + CATALOG_LOGIN_ENDPOINT))
+            .then()
+                .statusCode(SC_NO_CONTENT)
+            .extract()
+                .cookie(COOKIE);
+        }
+
+        private ValidatableResponse getApiDocAuthenticated(String token) {
+            return given()
+                .urlEncodingEnabled(false)
+                .cookie(COOKIE, token)
+            .when()
+                .get(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + CATALOG_APIDOC_ENDPOINT))
+            .then();
+        }
+
+        @Test
+        void whenLogout_thenTokenInvalidated() {
+            String tokenToLogout = loginWithCatalog();
+
+            getApiDocAuthenticated(tokenToLogout)
+                .and()
+                    .statusCode(SC_OK);
+
+            logoutWithCatalog(tokenToLogout);
+
+            getApiDocAuthenticated(tokenToLogout)
+                .and()
+                    .statusCode(SC_UNAUTHORIZED);
+        }
+
+        private void logoutWithCatalog(String tokenToLogout) {
+            given()
+                .cookie(COOKIE, tokenToLogout)
+            .when()
+                .post(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + CATALOG_LOGOUT_ENDPOINT))
+            .then()
+                .statusCode(SC_OK);
+        }
+
+    }
+
 }

@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.converters.jackson.EurekaJsonJacksonCodec;
 import com.netflix.discovery.shared.Applications;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -26,7 +27,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
@@ -36,6 +36,7 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.product.registry.ApplicationWrapper;
 
 import javax.validation.constraints.NotBlank;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class InstanceRetrievalService {
 
     private final DiscoveryConfigProperties discoveryConfigProperties;
@@ -58,13 +60,6 @@ public class InstanceRetrievalService {
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
-
-    @Autowired
-    public InstanceRetrievalService(DiscoveryConfigProperties discoveryConfigProperties,
-                                    CloseableHttpClient httpClient) {
-        this.discoveryConfigProperties = discoveryConfigProperties;
-        this.httpClient = httpClient;
-    }
 
     /**
      * Retrieves {@link InstanceInfo} of particular service

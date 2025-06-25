@@ -48,6 +48,7 @@ apiml:
         port: 10014
         contextPath: /apicatalog
         scheme: https
+        gatewayHostname: https://localhost:10010
 
         discoveryServiceUrls: https://localhost2:10021/eureka/,https://localhost:10011/eureka/
         nonSecurePortEnabled: false
