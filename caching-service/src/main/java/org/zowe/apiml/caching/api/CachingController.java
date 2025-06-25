@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
@@ -25,7 +26,6 @@ import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
@@ -43,13 +43,13 @@ public class CachingController {
     @Operation(summary = "Retrieves all values in the cache",
         description = "Values returned for the calling service")
     @ResponseBody
-    public Mono<ResponseEntity<Object>> getAllValues(HttpServletRequest request) {
+    public Mono<ResponseEntity<Object>> getAllValues(ServerHttpRequest request) {
         return Mono.just(getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
                 try {
                     return new ResponseEntity<>(storage.readForService(s), HttpStatus.OK);
                 } catch (Exception exception) {
-                    return handleInternalError(exception, request.getRequestURL());
+                    return handleInternalError(exception, request);
                 }
             }
         ).orElseGet(this::getUnauthorizedResponse));
@@ -59,14 +59,14 @@ public class CachingController {
     @Operation(summary = "Delete all values for service from the cache",
         description = "Will delete all key-value pairs for specific service")
     @ResponseBody
-    public Mono<ResponseEntity<Object>> deleteAllValues(HttpServletRequest request) {
+    public Mono<ResponseEntity<Object>> deleteAllValues(ServerHttpRequest request) {
         return Mono.just(getServiceId(request).map(
             s -> {
                 try {
                     storage.deleteForService(s);
                     return new ResponseEntity<>(HttpStatus.OK);
                 } catch (Exception exception) {
-                    return handleInternalError(exception, request.getRequestURL());
+                    return handleInternalError(exception, request);
                 }
             }
         ).orElseGet(this::getUnauthorizedResponse));
@@ -82,7 +82,7 @@ public class CachingController {
     @Operation(summary = "Retrieves a specific value in the cache",
         description = "Value returned is for the provided {key}")
     @ResponseBody
-    public Mono<ResponseEntity<Object>> getValue(@PathVariable String key, HttpServletRequest request) {
+    public Mono<ResponseEntity<Object>> getValue(@PathVariable String key, ServerHttpRequest request) {
         return Mono.just(keyRequest(storage::read,
             key, request, HttpStatus.OK));
     }
@@ -91,7 +91,7 @@ public class CachingController {
     @Operation(summary = "Delete key from the cache",
         description = "Will delete key-value pair for the provided {key}")
     @ResponseBody
-    public Mono<ResponseEntity<Object>> delete(@PathVariable String key, HttpServletRequest request) {
+    public Mono<ResponseEntity<Object>> delete(@PathVariable String key, ServerHttpRequest request) {
         return Mono.just(keyRequest(storage::delete,
             key, request, HttpStatus.NO_CONTENT));
     }
@@ -100,7 +100,7 @@ public class CachingController {
     @Operation(summary = "Create a new key in the cache",
         description = "A new key-value pair will be added to the cache")
     @ResponseBody
-    public Mono<ResponseEntity<Object>> createKey(@RequestBody KeyValue keyValue, HttpServletRequest request) {
+    public Mono<ResponseEntity<Object>> createKey(@RequestBody KeyValue keyValue, ServerHttpRequest request) {
         return Mono.just(keyValueRequest(storage::create,
             keyValue, request, HttpStatus.CREATED));
     }
@@ -109,7 +109,7 @@ public class CachingController {
     @Operation(summary = "Add a new item in the cache map",
         description = "A new key-value pair will be added to the specific cache map with given map key.")
     @ResponseBody
-    public Mono<ResponseEntity<Object>> storeMapItem(@PathVariable String mapKey, @RequestBody KeyValue keyValue, HttpServletRequest request) {
+    public Mono<ResponseEntity<Object>> storeMapItem(@PathVariable String mapKey, @RequestBody KeyValue keyValue, ServerHttpRequest request) {
         return Mono.just(mapKeyValueRequest(storage::storeMapItem,
             mapKey, keyValue, request, HttpStatus.CREATED));
     }
@@ -118,14 +118,14 @@ public class CachingController {
     @Operation(summary = "Retrieves all the items in the cache map",
         description = "Values returned for the calling service and specific cache map.")
     @ResponseBody
-    public Mono<ResponseEntity<Object>> getAllMapItems(@PathVariable String mapKey, HttpServletRequest request) {
+    public Mono<ResponseEntity<Object>> getAllMapItems(@PathVariable String mapKey, ServerHttpRequest request) {
         return Mono.just(getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
                 log.debug("Storing for serviceId: {}", s);
                 try {
                     return new ResponseEntity<>(storage.getAllMapItems(s, mapKey), HttpStatus.OK);
                 } catch (Exception exception) {
-                    return handleIncompatibleStorageMethod(exception, request.getRequestURL());
+                    return handleIncompatibleStorageMethod(exception, request);
                 }
             }
         ).orElseGet(this::getUnauthorizedResponse));
@@ -135,14 +135,14 @@ public class CachingController {
     @Operation(summary = "Retrieves all the maps in the cache",
         description = "Values returned for the calling service")
     @ResponseBody
-    public Mono<ResponseEntity<Object>> getAllMaps(HttpServletRequest request) {
+    public Mono<ResponseEntity<Object>> getAllMaps(ServerHttpRequest request) {
         return Mono.just(getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
                 log.debug("Get all for serviceId: {}", s);
                 try {
                     return new ResponseEntity<>(storage.getAllMaps(s), HttpStatus.OK);
                 } catch (Exception exception) {
-                    return handleIncompatibleStorageMethod(exception, request.getRequestURL());
+                    return handleIncompatibleStorageMethod(exception, request);
                 }
             }
         ).orElseGet(this::getUnauthorizedResponse));
@@ -152,7 +152,7 @@ public class CachingController {
     @Operation(summary = "Delete a record from a rules map in the cache",
         description = "Will delete a key-value pair from a specific rules map")
     @ResponseBody
-    public Mono<ResponseEntity<Object>> evictRules(@PathVariable String mapKey, HttpServletRequest request) {
+    public Mono<ResponseEntity<Object>> evictRules(@PathVariable String mapKey, ServerHttpRequest request) {
         return Mono.just(getServiceId(request).map(
             s -> {
                 log.debug("Delete record for serviceId: {}", s);
@@ -160,7 +160,7 @@ public class CachingController {
                     storage.removeNonRelevantRules(s, mapKey);
                     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
                 } catch (Exception exception) {
-                    return handleInternalError(exception, request.getRequestURL());
+                    return handleInternalError(exception, request);
                 }
             }
         ).orElseGet(this::getUnauthorizedResponse));
@@ -170,7 +170,7 @@ public class CachingController {
     @Operation(summary = "Delete a record from an invalid tokens map in the cache",
         description = "Will delete a key-value pair from a specific tokens map")
     @ResponseBody
-    public Mono<ResponseEntity<Object>> evictTokens(@PathVariable String mapKey, HttpServletRequest request) {
+    public Mono<ResponseEntity<Object>> evictTokens(@PathVariable String mapKey, ServerHttpRequest request) {
         return Mono.just(getServiceId(request).map(
             s -> {
                 log.debug("Evict tokens for serviceId: {}", s);
@@ -178,7 +178,7 @@ public class CachingController {
                     storage.removeNonRelevantTokens(s, mapKey);
                     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
                 } catch (Exception exception) {
-                    return handleInternalError(exception, request.getRequestURL());
+                    return handleInternalError(exception, request);
                 }
             }
         ).orElseGet(this::getUnauthorizedResponse));
@@ -188,7 +188,7 @@ public class CachingController {
     @Operation(summary = "Update key in the cache",
         description = "Value at the key in the provided key-value pair will be updated to the provided value")
     @ResponseBody
-    public Mono<ResponseEntity<Object>> update(@RequestBody KeyValue keyValue, HttpServletRequest request) {
+    public Mono<ResponseEntity<Object>> update(@RequestBody KeyValue keyValue, ServerHttpRequest request) {
         return Mono.just(keyValueRequest(storage::update,
             keyValue, request, HttpStatus.NO_CONTENT));
     }
@@ -205,7 +205,7 @@ public class CachingController {
      * Do the storage operation passed in as Lambda
      * Properly handle and package Exceptions.
      */
-    private ResponseEntity<Object> keyRequest(KeyOperation keyOperation, String key, HttpServletRequest request, HttpStatus successStatus) {
+    private ResponseEntity<Object> keyRequest(KeyOperation keyOperation, String key, ServerHttpRequest request, HttpStatus successStatus) {
         Optional<String> serviceId = getServiceId(request);
         if (!serviceId.isPresent()) {
             return getUnauthorizedResponse();
@@ -221,7 +221,7 @@ public class CachingController {
         } catch (StorageException exception) {
             return exceptionToResponse(exception);
         } catch (Exception exception) {
-            return handleInternalError(exception, request.getRequestURL());
+            return handleInternalError(exception, request);
         }
     }
 
@@ -232,7 +232,7 @@ public class CachingController {
      * Properly handle and package Exceptions.
      */
     private ResponseEntity<Object> keyValueRequest(KeyValueOperation keyValueOperation, KeyValue keyValue,
-                                                   HttpServletRequest request, HttpStatus successStatus) {
+                                                   ServerHttpRequest request, HttpStatus successStatus) {
         Optional<String> serviceId = getServiceId(request);
         if (!serviceId.isPresent()) {
             return getUnauthorizedResponse();
@@ -247,12 +247,12 @@ public class CachingController {
         } catch (StorageException exception) {
             return exceptionToResponse(exception);
         } catch (Exception exception) {
-            return handleInternalError(exception, request.getRequestURL());
+            return handleInternalError(exception, request);
         }
     }
 
     private ResponseEntity<Object> mapKeyValueRequest(MapKeyValueOperation operation, String mapKey, KeyValue keyValue,
-                                                      HttpServletRequest request, HttpStatus successStatus) {
+                                                      ServerHttpRequest request, HttpStatus successStatus) {
         Optional<String> serviceId = getServiceId(request);
         if (serviceId.isEmpty()) {
             return getUnauthorizedResponse();
@@ -268,11 +268,11 @@ public class CachingController {
         } catch (StorageException exception) {
             return exceptionToResponse(exception);
         } catch (Exception exception) {
-            return handleInternalError(exception, request.getRequestURL());
+            return handleInternalError(exception, request);
         }
     }
 
-    private Optional<String> getServiceId(HttpServletRequest request) {
+    private Optional<String> getServiceId(ServerHttpRequest request) {
         Optional<String> certificateServiceId = getHeader(request, "X-Certificate-DistinguishedName");
         Optional<String> specificServiceId = getHeader(request, "X-CS-Service-ID");
 
@@ -285,8 +285,8 @@ public class CachingController {
         }
     }
 
-    private Optional<String> getHeader(HttpServletRequest request, String headerName) {
-        String serviceId = request.getHeader(headerName);
+    private Optional<String> getHeader(ServerHttpRequest request, String headerName) {
+        String serviceId = request.getHeaders().getFirst(headerName);
         if (StringUtils.isEmpty(serviceId)) {
             return Optional.empty();
         } else {
@@ -294,15 +294,15 @@ public class CachingController {
         }
     }
 
-    private ResponseEntity<Object> handleInternalError(Exception exception, StringBuffer requestURL) {
+    private ResponseEntity<Object> handleInternalError(Exception exception, ServerHttpRequest request) {
         Messages internalServerError = Messages.INTERNAL_SERVER_ERROR;
-        Message message = messageService.createMessage(internalServerError.getKey(), requestURL, exception.getMessage(), exception.toString());
+        Message message = messageService.createMessage(internalServerError.getKey(), request.getURI().toString(), exception.getMessage(), exception.toString());
         return new ResponseEntity<>(message.mapToView(), internalServerError.getStatus());
     }
 
-    private ResponseEntity<Object> handleIncompatibleStorageMethod(Exception exception, StringBuffer requestURL) {
+    private ResponseEntity<Object> handleIncompatibleStorageMethod(Exception exception, ServerHttpRequest request) {
         Messages internalServerError = Messages.INCOMPATIBLE_STORAGE_METHOD;
-        Message message = messageService.createMessage(internalServerError.getKey(), requestURL, exception.getMessage(), exception.toString());
+        Message message = messageService.createMessage(internalServerError.getKey(), request.getURI().toString(), exception.getMessage(), exception.toString());
         return new ResponseEntity<>(message.mapToView(), internalServerError.getStatus());
     }
 

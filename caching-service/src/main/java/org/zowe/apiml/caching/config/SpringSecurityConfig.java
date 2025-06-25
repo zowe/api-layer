@@ -13,9 +13,15 @@ package org.zowe.apiml.caching.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,4 +71,15 @@ public class SpringSecurityConfig {
         return http.build();
     }
 
+
+    @Bean
+    @Primary
+    ReactiveUserDetailsService userDetailsService() {
+
+        return username -> {
+            List<GrantedAuthority> authorities = new ArrayList<>();
+            UserDetails userDetails = User.withUsername(username).authorities(authorities).password("").build();
+            return Mono.just(userDetails);
+        };
+    }
 }
