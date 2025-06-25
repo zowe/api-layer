@@ -104,6 +104,7 @@ dependencies {
     testFixturesImplementation libs.lombok
     testFixturesImplementation libs.spring.cloud.starter.eureka.client
     testFixturesImplementation libs.guava
+    testFixturesImplementation libs.jaxbApi
     testFixturesAnnotationProcessor libs.lombok
 
     compileOnly libs.lombok

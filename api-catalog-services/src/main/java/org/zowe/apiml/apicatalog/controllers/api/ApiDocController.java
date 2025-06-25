@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,20 +31,10 @@ import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
 @RestController
 @RequestMapping("/apidoc")
 @Tag(name = "API Documentation")
-public class CatalogApiDocController {
+@RequiredArgsConstructor
+public class ApiDocController {
 
     private final APIServiceStatusService apiServiceStatusService;
-
-    /**
-     * Create the controller and autowire in the repository services
-     *
-     * @param apiServiceStatusService repo service for registered services
-     */
-    @Autowired
-    public CatalogApiDocController(APIServiceStatusService apiServiceStatusService) {
-        this.apiServiceStatusService = apiServiceStatusService;
-    }
-
 
     /**
      * Retrieve the api-doc info for this service

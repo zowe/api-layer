@@ -28,22 +28,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = {ApiCatalogController.class},
+@WebMvcTest(controllers = {ApiDocController.class},
     excludeFilters = { @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = WebSecurityConfigurer.class) },
     excludeAutoConfiguration = { SecurityAutoConfiguration.class}
 )
-@ContextConfiguration(classes = ApiCatalogControllerContainerRetrievalTestContextConfiguration.class)
-class ApiCatalogControllerContainerRetrievalTest {
+@ContextConfiguration(classes = CatalogApiDocControllerServiceNotFoundTestContextConfiguration.class)
+class ApiDocControllerServiceNotFoundTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    void getContainers() throws Exception {
-        this.mockMvc.perform(get("/containers"))
-            .andExpect(status().is5xxServerError())
-            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'ZWEAC104E')].messageContent",
-                hasItem("Could not retrieve container statuses, java.lang.NullPointerException")));
+    void getApiDocForServiceDown() throws Exception {
+        this.mockMvc.perform(get("/apidoc/service1/v1"))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'ZWEAC706E')].messageContent",
+                hasItem("Service not located, API Documentation not retrieved, The service is running.")));
     }
 
 

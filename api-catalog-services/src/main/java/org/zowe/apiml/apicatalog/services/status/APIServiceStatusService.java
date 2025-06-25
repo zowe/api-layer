@@ -10,8 +10,6 @@
 
 package org.zowe.apiml.apicatalog.services.status;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.shared.Applications;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -22,61 +20,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.apicatalog.model.APIContainer;
+import org.zowe.apiml.apicatalog.instance.InstanceInitializeService;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
-import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
-import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
-import org.zowe.apiml.apicatalog.services.status.event.model.ContainerStatusChangeEvent;
-import org.zowe.apiml.apicatalog.services.status.event.model.STATUS_EVENT_TYPE;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDiffNotAvailableException;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 @Slf4j
 @Service
 @AllArgsConstructor
 public class APIServiceStatusService {
 
-    private final CachedProductFamilyService cachedProductFamilyService;
-    private final CachedServicesService cachedServicesService;
+    private final InstanceInitializeService instanceInitializeService;
     private final CachedApiDocService cachedApiDocService;
     private final OpenApiCompareProducer openApiCompareProducer;
-
-    /**
-     * Return a cached snapshot of services and instances as a response
-     *
-     * @return Applications from cache
-     */
-    public ResponseEntity<Applications> getCachedApplicationStateResponse() {
-        return new ResponseEntity<>(cachedServicesService.getAllCachedServices(), createHeaders(), HttpStatus.OK);
-    }
-
-    /**
-     * Return a cached snapshot of services and instances
-     *
-     * @return Applications from cache
-     */
-    public Applications getCachedApplicationState() {
-        return cachedServicesService.getAllCachedServices();
-    }
-
-    /**
-     * Retrieve all containers and return them as events
-     *
-     * @return container status as events
-     */
-    public List<ContainerStatusChangeEvent> getContainersStateAsEvents() {
-        log.debug("Retrieving all containers statuses as events");
-        List<ContainerStatusChangeEvent> events = new ArrayList<>();
-        Iterable<APIContainer> allContainers = cachedProductFamilyService.getAllContainers();
-        allContainers.forEach(container -> {
-            cachedProductFamilyService.calculateContainerServiceValues(container);
-            addContainerEvent(events, container);
-        });
-        return events;
-    }
 
     /**
      * Return the cached API docs for a service
@@ -121,50 +78,6 @@ public class APIServiceStatusService {
             log.error(errorMessage, e);
             throw new ApiDiffNotAvailableException(errorMessage);
         }
-    }
-
-    /**
-     * Retrieve all containers which were updated inside a given threshold value and return them as events
-     *
-     * @return recent container status as events
-     */
-    public List<ContainerStatusChangeEvent> getRecentlyUpdatedContainersAsEvents() {
-        List<ContainerStatusChangeEvent> recentEvents = new ArrayList<>();
-        Iterable<APIContainer> allContainers = cachedProductFamilyService.getRecentlyUpdatedContainers();
-        allContainers.forEach(container -> {
-            cachedProductFamilyService.calculateContainerServiceValues(container);
-            addContainerEvent(recentEvents, container);
-        });
-        if (!recentEvents.isEmpty()) {
-            log.debug("Recent events found: " + recentEvents.size());
-        }
-        return recentEvents;
-    }
-
-    /**
-     * Create an event based on the status of the instance
-     *
-     * @param events    the list of events to return
-     * @param container the instance
-     */
-    private void addContainerEvent(List<ContainerStatusChangeEvent> events, APIContainer container) {
-        STATUS_EVENT_TYPE eventType;
-        if (InstanceInfo.InstanceStatus.DOWN.name().equalsIgnoreCase(container.getStatus())) {
-            eventType = STATUS_EVENT_TYPE.CANCEL;
-        } else if (container.getCreatedTimestamp().equals(container.getLastUpdatedTimestamp())) {
-            eventType = STATUS_EVENT_TYPE.CREATED_CONTAINER;
-        } else {
-            eventType = STATUS_EVENT_TYPE.RENEW;
-        }
-        events.add(new ContainerStatusChangeEvent(
-            container.getId(),
-            container.getTitle(),
-            container.getStatus(),
-            container.getTotalServices(),
-            container.getActiveServices(),
-            container.getServices(),
-            eventType)
-        );
     }
 
 // ============================== HELPER METHODS

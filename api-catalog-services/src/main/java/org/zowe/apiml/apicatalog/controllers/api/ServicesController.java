@@ -15,8 +15,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,18 +25,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
+import org.zowe.apiml.apicatalog.instance.InstanceInitializeService;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
-import org.zowe.apiml.apicatalog.security.OidcUtils;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
-import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.StreamSupport;
 
 /**
@@ -46,38 +44,14 @@ import java.util.stream.StreamSupport;
 @RestController
 @RequestMapping("/")
 @Tag(name = "API Catalog")
-public class ApiCatalogController {
+@RequiredArgsConstructor
+public class ServicesController {
 
-    private final CachedProductFamilyService cachedProductFamilyService;
+    private final InstanceInitializeService instanceInitializeService;
     private final CachedApiDocService cachedApiDocService;
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
-
-    private AtomicReference<List<String>> oidcProviderCache = new AtomicReference<>();
-
-    /**
-     * Create the controller and autowire in the repository services
-     *
-     * @param cachedProductFamilyService cached service for containers
-     * @param cachedApiDocService        Cached state opf containers and services
-     */
-    @Autowired
-    public ApiCatalogController(CachedProductFamilyService cachedProductFamilyService,
-                                CachedApiDocService cachedApiDocService) {
-        this.cachedProductFamilyService = cachedProductFamilyService;
-        this.cachedApiDocService = cachedApiDocService;
-    }
-
-    @GetMapping(value = "/oidc/provider", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<String>> getOidcProvider() {
-        if (oidcProviderCache.get() == null) {
-            oidcProviderCache.set(OidcUtils.getOidcProvider());
-        }
-
-        return new ResponseEntity<>(oidcProviderCache.get(), oidcProviderCache.get().isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK);
-    }
-
 
     /**
      * Get all containers
@@ -101,15 +75,12 @@ public class ApiCatalogController {
     })
     public ResponseEntity<List<APIContainer>> getAllAPIContainers() throws ContainerStatusRetrievalThrowable {
         try {
-            Iterable<APIContainer> allContainers = cachedProductFamilyService.getAllContainers();
+            Iterable<APIContainer> allContainers = instanceInitializeService.getAllContainers();
             List<APIContainer> apiContainers = toList(allContainers);
             if (apiContainers == null || apiContainers.isEmpty()) {
                 return new ResponseEntity<>(apiContainers, HttpStatus.NO_CONTENT);
-            } else {
-                // for each container, check the status of all it's services so it's overall status can be set here
-                apiContainers.forEach(cachedProductFamilyService::calculateContainerServiceValues);
-                return new ResponseEntity<>(apiContainers, HttpStatus.OK);
             }
+            return new ResponseEntity<>(apiContainers, HttpStatus.OK);
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalThrowable(e);
@@ -138,14 +109,12 @@ public class ApiCatalogController {
     public ResponseEntity<List<APIContainer>> getAPIContainerById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalThrowable {
         try {
             List<APIContainer> apiContainers = new ArrayList<>();
-            APIContainer containerById = cachedProductFamilyService.getContainerById(id);
+            APIContainer containerById = instanceInitializeService.getContainerById(id);
             if (containerById != null) {
                 apiContainers.add(containerById);
             }
             if (!apiContainers.isEmpty()) {
                 apiContainers.forEach(apiContainer -> {
-                    // For this single container, check the status of all it's services so it's overall status can be set here
-                    cachedProductFamilyService.calculateContainerServiceValues(apiContainer);
                     // add API Doc to the services to improve UI performance
                     setApiDocToService(apiContainer);
                 });
@@ -179,12 +148,7 @@ public class ApiCatalogController {
     })
     public ResponseEntity<APIService> getAPIServicesById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalThrowable {
         try {
-
-            var services = cachedProductFamilyService.getServices();
-            if (services == null) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            }
-            var service = services.get(id);
+            var service = instanceInitializeService.getService(id);
             if (service == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }

@@ -27,13 +27,13 @@ class CatalogApiDocControllerServiceNotFoundTestContextConfiguration {
     }
 
     @Bean
-    public CatalogApiDocController catalogApiDocController(APIServiceStatusService apiServiceStatusService) {
+    public ApiDocController catalogApiDocController(APIServiceStatusService apiServiceStatusService) {
         when(apiServiceStatusService.getServiceCachedApiDocInfo("service1", "v1"))
             .thenThrow(new ServiceNotFoundException("API Documentation not retrieved, The service is running."));
 
         verify(apiServiceStatusService, never()).getServiceCachedApiDocInfo("service1", "v1");
 
-        return new CatalogApiDocController(apiServiceStatusService);
+        return new ApiDocController(apiServiceStatusService);
     }
 
     @Bean

@@ -12,7 +12,7 @@ package org.zowe.apiml.apicatalog.controllers.api;
 
 import org.springframework.context.annotation.Bean;
 import org.zowe.apiml.apicatalog.controllers.handlers.ApiCatalogControllerExceptionHandler;
-import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
+import org.zowe.apiml.apicatalog.instance.InstanceInitializeService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
@@ -21,18 +21,18 @@ import static org.mockito.Mockito.*;
 class ApiCatalogControllerContainerRetrievalTestContextConfiguration {
 
     @Bean
-    public CachedProductFamilyService cachedProductFamilyService() {
-        return mock(CachedProductFamilyService.class);
+    public InstanceInitializeService instanceInitializeService() {
+        return mock(InstanceInitializeService.class);
     }
 
     @Bean
-    public ApiCatalogController apiCatalogController(CachedProductFamilyService cachedProductFamilyService) {
-        when(cachedProductFamilyService.getAllContainers())
+    public ServicesController apiCatalogController(InstanceInitializeService instanceInitializeService) {
+        when(instanceInitializeService.getAllContainers())
             .thenThrow(new NullPointerException());
 
-        verify(cachedProductFamilyService, never()).getAllContainers();
+        verify(instanceInitializeService, never()).getAllContainers();
 
-        return new ApiCatalogController(cachedProductFamilyService, null);
+        return new ServicesController(instanceInitializeService, null);
     }
 
     @Bean

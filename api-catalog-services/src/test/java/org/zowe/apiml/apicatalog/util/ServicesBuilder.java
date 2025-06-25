@@ -10,35 +10,24 @@
 
 package org.zowe.apiml.apicatalog.util;
 
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.shared.Application;
+import lombok.experimental.UtilityClass;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.shared.Application;
-
-import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
-
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
+@UtilityClass
 public class ServicesBuilder {
+
     private int id = 0;
-    private CachedProductFamilyService service;
-
-    public InstanceInfo instance1;
-    public InstanceInfo instance2;
-
-    public ServicesBuilder(CachedProductFamilyService service) {
-        this.service = service;
-
-        instance1 = createInstance("service1", "demoapp");
-        instance2 = createInstance("service2", "demoapp2");
-    }
 
     public Application createApp(String serviceId, InstanceInfo...instanceInfos) {
         Application application = new Application(serviceId);
         for (InstanceInfo instanceInfo : instanceInfos) {
             application.addInstance(instanceInfo);
-            service.saveContainerFromInstance(serviceId, instanceInfo);
         }
         return application;
     }

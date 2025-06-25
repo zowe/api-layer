@@ -14,12 +14,9 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
-import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
 
 import java.util.*;
 import java.util.stream.Stream;
-
-import static org.mockito.Mockito.when;
 
 public class ContainerServiceMockUtil {
 
@@ -58,11 +55,12 @@ public class ContainerServiceMockUtil {
         return containerServiceState;
     }
 
+    /* FIXME
     public void mockServiceRetrievalFromCache(CachedServicesService cachedServicesService,
                                               List<Application> applications) {
         applications.forEach(application ->
             when(cachedServicesService.getService(application.getName())).thenReturn(application));
-    }
+    }*/
 
     public InstanceInfo createInstance(String serviceId, String instanceId,
                                        InstanceInfo.InstanceStatus status,

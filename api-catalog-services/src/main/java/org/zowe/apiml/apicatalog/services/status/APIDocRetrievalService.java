@@ -19,7 +19,6 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
@@ -49,10 +48,6 @@ import java.util.Map;
  * Retrieves the API documentation for a registered service
  */
 @Service
-@ConditionalOnProperty(
-        value = "apiml.catalog.standalone.enabled",
-        havingValue = "false",
-        matchIfMissing = true)
 @RequiredArgsConstructor
 @Slf4j
 public class APIDocRetrievalService {
