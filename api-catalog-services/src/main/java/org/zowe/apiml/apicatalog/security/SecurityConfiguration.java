@@ -12,6 +12,7 @@ package org.zowe.apiml.apicatalog.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -78,6 +79,12 @@ public class SecurityConfiguration {
 
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
+
+    @Value("${apiml.service.internalProtocol:https}") // Based on AT-TLS
+    private String internalProtocol;
+
+    @Value("${apiml.service.gatewayHostname}")
+    private String gatewayHostname;
 
     @Value("${apiml.metrics.enabled:false}")
     private boolean isMetricsEnabled;
@@ -216,8 +223,8 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    LogoutHandler logoutHandler(GatewayAuthClient gatewayAuthClient) {
-        return new ApiCatalogLogoutHandler(gatewayAuthClient);
+    LogoutHandler logoutHandler(CloseableHttpClient httpClient) {
+        return new ApiCatalogLogoutHandler(httpClient, authConfigurationProperties, internalProtocol, gatewayHostname);
     }
 
     private HttpSecurity mainframeCredentialsConfiguration(HttpSecurity http, LogoutHandler logoutHandler) throws Exception {
