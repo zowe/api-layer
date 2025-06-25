@@ -25,7 +25,6 @@ import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
-
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
@@ -39,7 +38,7 @@ public class CachingController {
     private final MessageService messageService;
 
 
-    @GetMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = {"/cache", "/cache/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Retrieves all values in the cache",
         description = "Values returned for the calling service")
     @ResponseBody
@@ -55,7 +54,7 @@ public class CachingController {
         ).orElseGet(this::getUnauthorizedResponse));
     }
 
-    @DeleteMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(value = {"/cache", "/cache/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Delete all values for service from the cache",
         description = "Will delete all key-value pairs for specific service")
     @ResponseBody
@@ -96,7 +95,7 @@ public class CachingController {
             key, request, HttpStatus.NO_CONTENT));
     }
 
-    @PostMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = {"/cache", "/cache/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new key in the cache",
         description = "A new key-value pair will be added to the cache")
     @ResponseBody
@@ -131,7 +130,7 @@ public class CachingController {
         ).orElseGet(this::getUnauthorizedResponse));
     }
 
-    @GetMapping(value = "/cache-list", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = {"/cache-list", "/cache-list/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Retrieves all the maps in the cache",
         description = "Values returned for the calling service")
     @ResponseBody
@@ -184,7 +183,7 @@ public class CachingController {
         ).orElseGet(this::getUnauthorizedResponse));
     }
 
-    @PutMapping(value = "/cache", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = {"/cache", "/cache/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update key in the cache",
         description = "Value at the key in the provided key-value pair will be updated to the provided value")
     @ResponseBody
