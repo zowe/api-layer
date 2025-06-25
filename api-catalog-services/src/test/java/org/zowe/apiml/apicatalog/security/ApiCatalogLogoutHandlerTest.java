@@ -63,7 +63,7 @@ class ApiCatalogLogoutHandlerTest {
         private MockHttpServletResponse response;
 
         @BeforeEach
-        void setUp() throws ClientProtocolException, IOException {
+        void setUp() throws IOException {
             request = new MockHttpServletRequest();
             response = new MockHttpServletResponse();
             lenient().when(httpClient.execute(any())).thenReturn(logoutResponse);
@@ -77,7 +77,7 @@ class ApiCatalogLogoutHandlerTest {
         }
 
         @Test
-        void success_WithCredentials() throws ClientProtocolException, IOException {
+        void success_WithCredentials() throws IOException {
             requestWithAuthentication();
 
             when(status.getStatusCode()).thenReturn(204);
@@ -97,7 +97,7 @@ class ApiCatalogLogoutHandlerTest {
         }
 
         @Test
-        void whenInternalProtocolHttp_thenUnsecureAttls() throws ClientProtocolException, IOException {
+        void whenInternalProtocolHttp_thenUnsecureAttls() throws IOException {
             ReflectionTestUtils.setField(handler, "internalProtocol", "http");
             requestWithAuthentication();
 
@@ -125,7 +125,7 @@ class ApiCatalogLogoutHandlerTest {
         }
 
         @Test
-        void whenClientError_thenDoesNotThrow() throws ClientProtocolException, IOException {
+        void whenClientError_thenDoesNotThrow() throws IOException {
             doThrow(new ClientProtocolException()).when(httpClient).execute(any());
             assertDoesNotThrow(() -> handler.logout(request, response, null));
         }
