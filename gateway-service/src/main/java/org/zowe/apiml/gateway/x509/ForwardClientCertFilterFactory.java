@@ -16,6 +16,7 @@ import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFac
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.security.common.util.X509Util;
 
 import java.security.cert.CertificateEncodingException;
 

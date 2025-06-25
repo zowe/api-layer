@@ -24,7 +24,7 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
-import org.zowe.apiml.gateway.x509.X509Util;
+import org.zowe.apiml.security.common.util.X509Util;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.util.CookieUtil;
 import reactor.core.publisher.Mono;
