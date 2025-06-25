@@ -6,7 +6,7 @@ on:
         paths-ignore:
             - '**.md'
     pull_request:
-        branches: [ v2.x.x, v3.x.x ]
+        branches: [ v2.x.x, v3.x.x, reboot/catalog-modulith ]
         paths-ignore:
             - '**.md'
     workflow_dispatch:

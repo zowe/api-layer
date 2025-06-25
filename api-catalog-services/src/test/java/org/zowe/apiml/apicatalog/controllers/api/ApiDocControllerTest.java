@@ -22,15 +22,15 @@ import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-class CatalogApiDocControllerTest {
+class ApiDocControllerTest {
 
     private APIServiceStatusService mockApiServiceStatusService;
-    private CatalogApiDocController underTest;
+    private ApiDocController underTest;
 
     @BeforeEach
     void setup() {
         mockApiServiceStatusService = Mockito.mock(APIServiceStatusService.class);
-        underTest = new CatalogApiDocController(mockApiServiceStatusService);
+        underTest = new ApiDocController(mockApiServiceStatusService);
     }
 
     @Test

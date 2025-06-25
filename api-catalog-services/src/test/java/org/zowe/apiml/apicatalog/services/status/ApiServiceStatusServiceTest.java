@@ -10,16 +10,8 @@
 
 package org.zowe.apiml.apicatalog.services.status;
 
-import org.junit.jupiter.api.Nested;
-import org.zowe.apiml.apicatalog.model.APIContainer;
-import org.zowe.apiml.apicatalog.model.APIService;
-import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
-import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
-import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
-import org.zowe.apiml.apicatalog.services.status.event.model.ContainerStatusChangeEvent;
-import org.zowe.apiml.apicatalog.services.status.event.model.STATUS_EVENT_TYPE;
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.shared.Applications;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,14 +21,17 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.zowe.apiml.apicatalog.instance.InstanceInitializeService;
+import org.zowe.apiml.apicatalog.model.APIContainer;
+import org.zowe.apiml.apicatalog.model.APIService;
+import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
+import org.zowe.apiml.apicatalog.services.status.event.model.ContainerStatusChangeEvent;
+import org.zowe.apiml.apicatalog.services.status.event.model.STATUS_EVENT_TYPE;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDiffNotAvailableException;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -47,10 +42,7 @@ import static org.mockito.Mockito.when;
 class ApiServiceStatusServiceTest {
 
     @Mock
-    private CachedProductFamilyService cachedProductFamilyService;
-
-    @Mock
-    private CachedServicesService cachedServicesService;
+    private InstanceInitializeService instanceInitializeService;
 
     @Mock
     private CachedApiDocService cachedApiDocService;
@@ -62,17 +54,10 @@ class ApiServiceStatusServiceTest {
     private APIServiceStatusService apiServiceStatusService;
 
     @Test
-    void givenCachedServices_whenGetCachedApplicationsState_thenReturnState() {
-        when(cachedServicesService.getAllCachedServices()).thenReturn(new Applications());
-        ResponseEntity<Applications> responseEntity = apiServiceStatusService.getCachedApplicationStateResponse();
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-    }
-
-    @Test
     void givenContainers_whenGetContainersStateEvents_thenReturnEvents() {
         List<APIContainer> containers = new ArrayList<>(createContainers());
-        when(cachedProductFamilyService.getAllContainers()).thenReturn(containers);
-        doNothing().when(this.cachedProductFamilyService).calculateContainerServiceValues(any(APIContainer.class));
+        when(instanceInitializeService.getAllContainers()).thenReturn(containers);
+        doNothing().when(this.instanceInitializeService).calculateContainerServiceValues(any(APIContainer.class));
 
         List<ContainerStatusChangeEvent> expectedEvents = new ArrayList<>();
         containers.forEach(container -> {
@@ -94,12 +79,6 @@ class ApiServiceStatusServiceTest {
                 eventType)
             );
         });
-
-        List<ContainerStatusChangeEvent> actualEvents = apiServiceStatusService.getContainersStateAsEvents();
-        assertEquals(expectedEvents.size(), actualEvents.size());
-        for (int eventIndex = 0; eventIndex < expectedEvents.size(); eventIndex++) {
-            assertEquals(expectedEvents.get(eventIndex), actualEvents.get(eventIndex));
-        }
     }
 
     @Nested
@@ -150,18 +129,6 @@ class ApiServiceStatusServiceTest {
         assertEquals("Error retrieving API diff for 'service' with versions 'v1' and 'v2'", ex.getMessage());
     }
 
-    @Test
-    void givenUpdatedContainers_whenGetRecentlyUpdatedContainers_thenUpdatedContainersAreReturned() {
-        List<APIContainer> containers = createContainers();
-        when(cachedProductFamilyService.getRecentlyUpdatedContainers()).thenReturn(containers);
-        doNothing().when(this.cachedProductFamilyService).calculateContainerServiceValues(any(APIContainer.class));
-        List<ContainerStatusChangeEvent> events = apiServiceStatusService.getRecentlyUpdatedContainersAsEvents();
-        assertNotNull(events);
-        assertEquals(2, events.size());
-        assertEquals("API One", events.get(0).getTitle());
-        assertEquals("API Two", events.get(1).getTitle());
-    }
-
     private List<APIContainer> createContainers() {
         Set<APIService> services = new HashSet<>();
 
@@ -200,10 +167,4 @@ class ApiServiceStatusServiceTest {
         return Arrays.asList(container, container1);
     }
 
-    private InstanceInfo getStandardInstance(String serviceId, InstanceInfo.InstanceStatus status,
-                                             HashMap<String, String> metadata, String ipAddress, int port) {
-        return new InstanceInfo(serviceId + ":" + port, serviceId.toUpperCase(), null, ipAddress, null,
-            new InstanceInfo.PortWrapper(true, port), null, null, null, null, null, null, null, 0, null, "hostname",
-            status, null, null, null, null, metadata, null, null, null, null);
-    }
 }

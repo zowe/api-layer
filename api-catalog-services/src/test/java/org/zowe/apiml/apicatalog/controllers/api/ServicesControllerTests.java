@@ -11,21 +11,26 @@
 package org.zowe.apiml.apicatalog.controllers.api;
 
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
+import org.zowe.apiml.apicatalog.instance.InstanceInitializeService;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
+import org.zowe.apiml.apicatalog.model.CustomStyleConfig;
 import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
-import org.zowe.apiml.apicatalog.services.cached.CachedProductFamilyService;
-import org.zowe.apiml.apicatalog.services.cached.CachedServicesService;
+import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.instance.ServiceAddress;
+import org.zowe.apiml.product.routing.transform.TransformService;
 
-import java.lang.reflect.Field;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static io.restassured.module.mockmvc.RestAssuredMockMvc.standaloneSetup;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,23 +38,29 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
-class ApiCatalogControllerTests {
+class ServicesControllerTests {
+
     private final String pathToContainers = "/containers";
 
-    private CachedServicesService cachedServicesService;
-    private CachedProductFamilyService cachedProductFamilyService;
+    private EurekaClient eurekaClient;
+    private InstanceInitializeService instanceInitializeService;
     private CachedApiDocService cachedApiDocService;
 
-    private ApiCatalogController underTest;
+    private ServicesController underTest;
 
     @BeforeEach
     void setUp() {
-        cachedServicesService = mock(CachedServicesService.class);
-        cachedProductFamilyService = mock(CachedProductFamilyService.class);
+        eurekaClient = mock(EurekaClient.class);
+        instanceInitializeService = spy(new InstanceInitializeService(
+            eurekaClient,
+            new TransformService(new GatewayClient(ServiceAddress.builder().scheme("https").hostname("localhost").build())),
+            new CustomStyleConfig())
+        );
         cachedApiDocService = mock(CachedApiDocService.class);
 
-        underTest = new ApiCatalogController(cachedProductFamilyService, cachedApiDocService);
+        underTest = new ServicesController(instanceInitializeService, cachedApiDocService);
         standaloneSetup(underTest);
     }
 
@@ -59,7 +70,7 @@ class ApiCatalogControllerTests {
         class WhenAllContainersAreRequested {
             @Test
             void thenReturnNoContent() {
-                given(cachedProductFamilyService.getAllContainers()).willReturn(null);
+                given(instanceInitializeService.getAllContainers()).willReturn(null);
 
                 RestAssuredMockMvc.given().
                     when().
@@ -74,7 +85,7 @@ class ApiCatalogControllerTests {
             @Test
             void thenReturnOk() {
                 String containerId = "service1";
-                given(cachedProductFamilyService.getContainerById(containerId)).willReturn(null);
+                given(instanceInitializeService.getContainerById(containerId)).willReturn(null);
 
                 RestAssuredMockMvc.given().
                     when().
@@ -101,22 +112,22 @@ class ApiCatalogControllerTests {
 
             apiVersions = Arrays.asList("1.0.0", "2.0.0");
 
-            given(cachedServicesService.getService("service1")).willReturn(service1);
+            given(eurekaClient.getApplication("service1")).willReturn(service1);
             given(cachedApiDocService.getDefaultApiDocForService("service1")).willReturn("service1");
             given(cachedApiDocService.getApiVersionsForService("service1")).willReturn(apiVersions);
 
-            given(cachedServicesService.getService("service2")).willReturn(service2);
+            given(eurekaClient.getApplication("service2")).willReturn(service2);
             given(cachedApiDocService.getDefaultApiDocForService("service2")).willReturn("service2");
             given(cachedApiDocService.getApiVersionsForService("service2")).willReturn(apiVersions);
 
-            given(cachedProductFamilyService.getContainerById("api-one")).willReturn(createContainers().get(0));
+            given(instanceInitializeService.getContainerById("api-one")).willReturn(createContainers().get(0));
         }
 
         @Nested
         class WhenGettingAllContainers {
             @Test
             void thenReturnContainersWithState() {
-                given(cachedProductFamilyService.getAllContainers()).willReturn(createContainers());
+                given(instanceInitializeService.getAllContainers()).willReturn(createContainers());
 
                 RestAssuredMockMvc.given().
                     when().
@@ -204,7 +215,7 @@ class ApiCatalogControllerTests {
 
         @Test
         void thenReturnNotFound() {
-            given(cachedProductFamilyService.getServices()).willReturn(null);
+            given(eurekaClient.getApplications()).willReturn(null);
 
             String pathToServices = "/services";
             RestAssuredMockMvc.given().
@@ -218,10 +229,7 @@ class ApiCatalogControllerTests {
         void thenReturnOk() throws ContainerStatusRetrievalThrowable {
             String defaultApiVersion = "v1";
 
-            Map<String, APIService> services = new ConcurrentHashMap<>();
-            services.put(serviceId, service);
-            given(cachedProductFamilyService.getServices()).willReturn(services);
-
+            given(instanceInitializeService.getService(serviceId)).willReturn(service);
             given(cachedApiDocService.getDefaultApiVersionForService(serviceId)).willReturn(defaultApiVersion);
             given(cachedApiDocService.getDefaultApiDocForService(serviceId)).willReturn("mockApiDoc");
 
@@ -236,10 +244,7 @@ class ApiCatalogControllerTests {
         void thenReturnOkWithApiDocNull() throws ContainerStatusRetrievalThrowable {
             String defaultApiVersion = "v1";
 
-            Map<String, APIService> services = new ConcurrentHashMap<>();
-            services.put(serviceId, service);
-            given(cachedProductFamilyService.getServices()).willReturn(services);
-
+            given(instanceInitializeService.getService(serviceId)).willReturn(service);
             given(cachedApiDocService.getDefaultApiVersionForService(serviceId)).willReturn(defaultApiVersion);
             given(cachedApiDocService.getDefaultApiDocForService(serviceId)).willReturn(null);
 
@@ -249,9 +254,6 @@ class ApiCatalogControllerTests {
             assertNull(apiServicesById.getBody().getApiDoc());
         }
     }
-
-
-
 
     // =========================================== Helper Methods ===========================================
 
@@ -293,53 +295,6 @@ class ApiCatalogControllerTests {
         return new InstanceInfo(serviceId, null, null, "192.168.0.1", null, new InstanceInfo.PortWrapper(true, 9090),
             null, null, null, null, null, null, null, 0, null, "hostname", status, null, null, null, null, null,
             null, null, null, null);
-    }
-
-    @Nested
-    class OidcProviders {
-
-        private String[] env = {
-            "ZWE_components_gateway_spring_security_oauth2_client_provider_oidc1_authorizationUri",
-            "ZWE_components_gateway_spring_security_oauth2_client_registration_oidc2_clientId",
-            "ZWE_components_gateway_spring_security_oauth2_client_provider_oidc1_tokenUri"
-        };
-
-        Map<String, String> getEnvMap() {
-            try {
-                Class<?> envVarClass = System.getenv().getClass();
-                Field mField = envVarClass.getDeclaredField("m");
-                mField.setAccessible(true);
-                return (Map<String, String>) mField.get(System.getenv());
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                fail(e);
-                return null;
-            }
-        }
-
-        @AfterEach
-        void tearDown() {
-            Arrays.stream(env).forEach(k -> getEnvMap().remove(k));
-        }
-
-        @Test
-        void givenSystemEnv_whenInvokeOidcProviders_thenReturnTheList() {
-            Arrays.stream(env).forEach(k -> getEnvMap().put(k, "anyValue"));
-            List<String> oidcProviders = RestAssuredMockMvc.given()
-                .when().get("/oidc/provider")
-                .getBody().jsonPath().getList(".");
-            assertEquals(2, oidcProviders.size());
-            assertTrue(oidcProviders.contains("oidc1"));
-            assertTrue(oidcProviders.contains("oidc2"));
-        }
-
-        @Test
-        void givenNoSystemEnv_whenInvokeOidcProviders_thenReturnAnEmptyList() {
-            List<String> oidcProviders = RestAssuredMockMvc.given()
-                .when().get("/oidc/provider")
-                .getBody().jsonPath().getList(".");
-            assertEquals(0, oidcProviders.size());
-        }
-
     }
 
 }

@@ -25,12 +25,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = {CatalogApiDocController.class},
+@WebMvcTest(controllers = {ApiDocController.class},
     excludeFilters = { @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = WebSecurityConfigurer.class) },
     excludeAutoConfiguration = { SecurityAutoConfiguration.class}
 )
 @ContextConfiguration(classes = CatalogApiDocControllerApiDocNotFoundTestContextConfiguration.class)
-class CatalogApiDocControllerApiDocNotFoundTest {
+class ApiDocControllerApiDocNotFoundTest {
 
     @Autowired
     private MockMvc mockMvc;

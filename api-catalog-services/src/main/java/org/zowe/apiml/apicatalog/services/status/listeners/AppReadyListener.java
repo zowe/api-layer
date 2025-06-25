@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.apicatalog.services.status.listeners;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -20,11 +19,6 @@ import org.zowe.apiml.product.service.ServiceStartupEventHandler;
  * This class fires on ApplicationReadyEvent event during Spring context initialization
  */
 @Component
-@ConditionalOnProperty(
-    value = "apiml.catalog.standalone.enabled",
-    havingValue = "false",
-    matchIfMissing = true
-)
 public class AppReadyListener {
 
     /**
@@ -38,4 +32,5 @@ public class AppReadyListener {
         new ServiceStartupEventHandler().onServiceStartup("API Catalog Service",
             ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
+
 }
