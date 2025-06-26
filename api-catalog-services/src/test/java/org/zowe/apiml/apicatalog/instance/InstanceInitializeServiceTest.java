@@ -19,8 +19,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.model.APIContainer;
@@ -43,107 +41,6 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 @ExtendWith(MockitoExtension.class)
 class InstanceInitializeServiceTest {
-
-    @Mock
-    private InstanceRetrievalService instanceRetrievalService;
-
-    @InjectMocks
-    private InstanceInitializeService instanceInitializeService;
-
-    private Map<String, InstanceInfo> createInstances() {
-        Map<String, InstanceInfo> instanceInfoMap = new HashMap<>();
-
-        InstanceInfo instanceInfo = getStandardInstance(
-            CoreService.GATEWAY.getServiceId(),
-            InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("apimediationlayer", "/" + CoreService.GATEWAY.getServiceId()),
-            "gateway",
-            "https://localhost:9090/");
-        instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
-
-        instanceInfo = getStandardInstance(
-            CoreService.ZAAS.getServiceId(),
-            InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("apimediationlayer", "/" + CoreService.ZAAS.getServiceId()),
-            "zaas",
-            "https://localhost:9090/");
-        instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
-
-        instanceInfo = getStandardInstance(
-            CoreService.API_CATALOG.getServiceId(),
-            InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("apimediationlayer", "/" + CoreService.API_CATALOG.getServiceId()),
-            "apicatalog",
-            "https://localhost:9090/");
-        instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
-
-        instanceInfo = getStandardInstance(
-            "STATICCLIENT",
-            InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("static", "/discoverableclient"),
-            "staticclient",
-            "https://localhost:9090/discoverableclient");
-        instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
-
-        instanceInfo = getStandardInstance(
-            "STATICCLIENT2",
-            InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("static", "/discoverableclient"),
-            "staticclient2",
-            null);
-        instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
-
-        instanceInfo = getStandardInstance(
-            "ZOSMF1",
-            InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("zosmf", "/zosmf1"),
-            "zosmf1",
-            null);
-        instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
-
-        instanceInfo = getStandardInstance(
-            "ZOSMF2",
-            InstanceInfo.InstanceStatus.UP,
-            getMetadataByCatalogUiTitleId("zosmf", "/zosmf2"),
-            "zosmf2",
-            null);
-        instanceInfoMap.put(instanceInfo.getAppName(), instanceInfo);
-
-        return instanceInfoMap;
-    }
-
-    private HashMap<String, String> getMetadataByCatalogUiTitleId(String catalogUiTileId, String uiRoute) {
-        HashMap<String, String> metadata = new HashMap<>();
-        metadata.put(CATALOG_ID, catalogUiTileId);
-        metadata.put(ROUTES + ".ui-v1." + ROUTES_SERVICE_URL, uiRoute);
-        metadata.put(ROUTES + ".ui-v1." + ROUTES_GATEWAY_URL, "ui/v1");
-        metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "api/v1");
-        metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "/");
-
-        return metadata;
-    }
-
-
-    private InstanceInfo getStandardInstance(String serviceId,
-                                             InstanceInfo.InstanceStatus status,
-                                             HashMap<String, String> metadata,
-                                             String vipAddress,
-                                             String homePageUrl) {
-
-        return InstanceInfo.Builder.newBuilder()
-            .setInstanceId(serviceId)
-            .setAppName(serviceId)
-            .setIPAddr("192.168.0.1")
-            .enablePort(InstanceInfo.PortType.SECURE, true)
-            .setSecurePort(9090)
-            .setHostName("localhost")
-            .setHomePageUrl(homePageUrl, homePageUrl)
-            .setSecureVIPAddress("localhost")
-            .setMetadata(metadata)
-            .setVIPAddress(vipAddress)
-            .setStatus(status)
-            .build();
-    }
 
     @Nested
     class WhenCalculatingContainerTotals {
