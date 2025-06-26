@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.openapitools.openapidiff.core.OpenApiCompare;
 import org.openapitools.openapidiff.core.model.ChangedOpenApi;
 import org.openapitools.openapidiff.core.output.HtmlRender;
 import org.springframework.http.MediaType;
@@ -26,9 +27,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.apicatalog.services.status.ApiDocRetrievalService;
-import org.zowe.apiml.apicatalog.services.status.OpenApiCompareProducer;
-import org.zowe.apiml.apicatalog.services.status.model.ApiDiffNotAvailableException;
+import org.zowe.apiml.apicatalog.exceptions.ApiDiffNotAvailableException;
+import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
 
 import java.util.Collections;
 
@@ -43,7 +43,6 @@ import java.util.Collections;
 public class ApiDocController {
 
     private final ApiDocRetrievalService apiDocRetrievalService;
-    private final OpenApiCompareProducer openApiCompareProducer;
 
     /**
      * Retrieve the api-doc info for this service
@@ -124,7 +123,7 @@ public class ApiDocController {
         try {
             String doc1 = apiDocRetrievalService.retrieveApiDoc(serviceId, apiId1);
             String doc2 = apiDocRetrievalService.retrieveApiDoc(serviceId, apiId2);
-            ChangedOpenApi diff = openApiCompareProducer.fromContents(doc1, doc2);
+            ChangedOpenApi diff = OpenApiCompare.fromContents(doc1, doc2);
             HtmlRender render = new HtmlRender();
             String result = render.render(diff);
             //Remove external stylesheet

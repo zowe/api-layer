@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.instance;
+package org.zowe.apiml.apicatalog.swagger;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
@@ -47,7 +47,7 @@ import static org.zowe.apiml.product.constants.CoreService.GATEWAY;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class InstanceInitializeService {
+public class ContainerService {
 
     private static final String DEFAULT_APIINFO_KEY = "default";
 

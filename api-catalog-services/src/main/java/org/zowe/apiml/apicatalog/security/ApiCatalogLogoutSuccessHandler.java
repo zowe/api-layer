@@ -58,4 +58,5 @@ public class ApiCatalogLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandle
         context.setAuthentication(null);
         SecurityContextHolder.clearContext();
     }
+
 }

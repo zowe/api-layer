@@ -21,7 +21,7 @@ import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestClientException;
-import org.zowe.apiml.apicatalog.services.status.model.ServiceNotFoundException;
+import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.reset;

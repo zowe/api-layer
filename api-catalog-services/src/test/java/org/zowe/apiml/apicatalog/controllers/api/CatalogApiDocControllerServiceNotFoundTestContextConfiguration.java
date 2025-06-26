@@ -12,9 +12,8 @@ package org.zowe.apiml.apicatalog.controllers.api;
 
 import org.springframework.context.annotation.Bean;
 import org.zowe.apiml.apicatalog.controllers.handlers.CatalogApiDocControllerExceptionHandler;
-import org.zowe.apiml.apicatalog.services.status.ApiDocRetrievalService;
-import org.zowe.apiml.apicatalog.services.status.OpenApiCompareProducer;
-import org.zowe.apiml.apicatalog.services.status.model.ServiceNotFoundException;
+import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
+import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
@@ -28,18 +27,13 @@ class CatalogApiDocControllerServiceNotFoundTestContextConfiguration {
     }
 
     @Bean
-    public OpenApiCompareProducer openApiCompareProducer() {
-        return mock(OpenApiCompareProducer.class);
-    }
-
-    @Bean
-    public ApiDocController catalogApiDocController(ApiDocRetrievalService apiServiceStatusService, OpenApiCompareProducer openApiCompareProducer) {
+    public ApiDocController catalogApiDocController(ApiDocRetrievalService apiServiceStatusService) {
         when(apiServiceStatusService.retrieveApiDoc("service1", "v1"))
             .thenThrow(new ServiceNotFoundException("API Documentation not retrieved, The service is running."));
 
         verify(apiServiceStatusService, never()).retrieveApiDoc("service1", "v1");
 
-        return new ApiDocController(apiServiceStatusService, openApiCompareProducer);
+        return new ApiDocController(apiServiceStatusService);
     }
 
     @Bean

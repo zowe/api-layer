@@ -25,10 +25,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
-import org.zowe.apiml.apicatalog.instance.InstanceInitializeService;
+import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
-import org.zowe.apiml.apicatalog.services.status.ApiDocRetrievalService;
+import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
@@ -47,7 +47,7 @@ import java.util.stream.StreamSupport;
 @RequiredArgsConstructor
 public class ServicesController {
 
-    private final InstanceInitializeService instanceInitializeService;
+    private final ContainerService containerService;
     private final ApiDocRetrievalService apiDocRetrievalService;
 
     @InjectApimlLogger
@@ -75,7 +75,7 @@ public class ServicesController {
     })
     public ResponseEntity<List<APIContainer>> getAllAPIContainers() throws ContainerStatusRetrievalThrowable {
         try {
-            Iterable<APIContainer> allContainers = instanceInitializeService.getAllContainers();
+            Iterable<APIContainer> allContainers = containerService.getAllContainers();
             List<APIContainer> apiContainers = toList(allContainers);
             if (apiContainers == null || apiContainers.isEmpty()) {
                 return new ResponseEntity<>(apiContainers, HttpStatus.NO_CONTENT);
@@ -109,7 +109,7 @@ public class ServicesController {
     public ResponseEntity<List<APIContainer>> getAPIContainerById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalThrowable {
         try {
             List<APIContainer> apiContainers = new ArrayList<>();
-            APIContainer containerById = instanceInitializeService.getContainerById(id);
+            APIContainer containerById = containerService.getContainerById(id);
             if (containerById != null) {
                 apiContainers.add(containerById);
             }
@@ -148,7 +148,7 @@ public class ServicesController {
     })
     public ResponseEntity<APIService> getAPIServicesById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalThrowable {
         try {
-            var service = instanceInitializeService.getService(id);
+            var service = containerService.getService(id);
             if (service == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
@@ -212,4 +212,5 @@ public class ServicesController {
         return StreamSupport.stream(iterable.spliterator(), false)
             .toList();
     }
+
 }

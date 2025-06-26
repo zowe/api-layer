@@ -18,9 +18,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CustomErrorStatusHandlingBean implements WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> {
+
     @Override
     public void customize(ConfigurableServletWebServerFactory factory) {
         factory.addErrorPages(new ErrorPage(HttpStatus.NOT_FOUND, "/not_found"));
         factory.addErrorPages(new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/internal_error"));
     }
+
 }

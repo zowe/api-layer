@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice(assignableTypes = {ServicesController.class})
 @RequiredArgsConstructor
 public class ApiCatalogControllerExceptionHandler {
+
     private final MessageService messageService;
 
     /**
@@ -42,4 +43,5 @@ public class ApiCatalogControllerExceptionHandler {
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(message.mapToView());
     }
+
 }

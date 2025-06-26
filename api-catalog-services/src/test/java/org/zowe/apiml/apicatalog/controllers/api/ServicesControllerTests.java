@@ -21,11 +21,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
-import org.zowe.apiml.apicatalog.instance.InstanceInitializeService;
+import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.model.CustomStyleConfig;
-import org.zowe.apiml.apicatalog.services.status.ApiDocRetrievalService;
+import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.transform.TransformService;
@@ -45,7 +45,7 @@ class ServicesControllerTests {
     private final String pathToContainers = "/containers";
 
     private EurekaClient eurekaClient;
-    private InstanceInitializeService instanceInitializeService;
+    private ContainerService containerService;
     private ApiDocRetrievalService apiDocRetrievalService;
 
     private ServicesController underTest;
@@ -53,14 +53,14 @@ class ServicesControllerTests {
     @BeforeEach
     void setUp() {
         eurekaClient = mock(EurekaClient.class);
-        instanceInitializeService = spy(new InstanceInitializeService(
+        containerService = spy(new ContainerService(
             eurekaClient,
             new TransformService(new GatewayClient(ServiceAddress.builder().scheme("https").hostname("localhost").build())),
             new CustomStyleConfig())
         );
         apiDocRetrievalService = mock(ApiDocRetrievalService.class);
 
-        underTest = new ServicesController(instanceInitializeService, apiDocRetrievalService);
+        underTest = new ServicesController(containerService, apiDocRetrievalService);
         standaloneSetup(underTest);
     }
 
@@ -70,7 +70,7 @@ class ServicesControllerTests {
         class WhenAllContainersAreRequested {
             @Test
             void thenReturnNoContent() {
-                given(instanceInitializeService.getAllContainers()).willReturn(null);
+                given(containerService.getAllContainers()).willReturn(null);
 
                 RestAssuredMockMvc.given().
                     when().
@@ -85,7 +85,7 @@ class ServicesControllerTests {
             @Test
             void thenReturnOk() {
                 String containerId = "service1";
-                given(instanceInitializeService.getContainerById(containerId)).willReturn(null);
+                given(containerService.getContainerById(containerId)).willReturn(null);
 
                 RestAssuredMockMvc.given().
                     when().
@@ -120,14 +120,14 @@ class ServicesControllerTests {
             given(apiDocRetrievalService.retrieveDefaultApiDoc("service2")).willReturn("service2");
             given(apiDocRetrievalService.retrieveApiVersions("service2")).willReturn(apiVersions);
 
-            given(instanceInitializeService.getContainerById("api-one")).willReturn(createContainers().get(0));
+            given(containerService.getContainerById("api-one")).willReturn(createContainers().get(0));
         }
 
         @Nested
         class WhenGettingAllContainers {
             @Test
             void thenReturnContainersWithState() {
-                given(instanceInitializeService.getAllContainers()).willReturn(createContainers());
+                given(containerService.getAllContainers()).willReturn(createContainers());
 
                 RestAssuredMockMvc.given().
                     when().
@@ -230,7 +230,7 @@ class ServicesControllerTests {
         void thenReturnOk() throws ContainerStatusRetrievalThrowable {
             String defaultApiVersion = "v1";
 
-            given(instanceInitializeService.getService(serviceId)).willReturn(service);
+            given(containerService.getService(serviceId)).willReturn(service);
             given(apiDocRetrievalService.retrieveDefaultApiVersion(serviceId)).willReturn(defaultApiVersion);
             given(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)).willReturn("mockApiDoc");
 
@@ -245,7 +245,7 @@ class ServicesControllerTests {
         void thenReturnOkWithApiDocNull() throws ContainerStatusRetrievalThrowable {
             String defaultApiVersion = "v1";
 
-            given(instanceInitializeService.getService(serviceId)).willReturn(service);
+            given(containerService.getService(serviceId)).willReturn(service);
             given(apiDocRetrievalService.retrieveDefaultApiVersion(serviceId)).willReturn(defaultApiVersion);
             given(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)).willReturn(null);
 

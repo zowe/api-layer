@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.services.cached.model;
+package org.zowe.apiml.apicatalog.swagger;
 
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.routing.RoutedServices;
@@ -24,7 +24,9 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public class ApiDocInfo {
+
     ApiInfo apiInfo;
     String apiDocContent;
     RoutedServices routes;
+
 }

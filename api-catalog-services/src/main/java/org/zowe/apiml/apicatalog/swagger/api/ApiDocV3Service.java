@@ -32,7 +32,7 @@ import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import jakarta.validation.UnexpectedTypeException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
+import org.zowe.apiml.apicatalog.swagger.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.ApiDocTransformationException;
 import org.zowe.apiml.apicatalog.swagger.SecuritySchemeSerializer;
 import org.zowe.apiml.config.ApiInfo;

@@ -13,9 +13,8 @@ package org.zowe.apiml.apicatalog.controllers.api;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.apicatalog.controllers.handlers.CatalogApiDocControllerExceptionHandler;
-import org.zowe.apiml.apicatalog.services.status.ApiDocRetrievalService;
-import org.zowe.apiml.apicatalog.services.status.OpenApiCompareProducer;
-import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
+import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
+import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
@@ -30,12 +29,7 @@ class CatalogApiDocControllerApiDocNotFoundTestContextConfiguration {
     }
 
     @Bean
-    public OpenApiCompareProducer openApiCompareProducer() {
-        return mock(OpenApiCompareProducer.class);
-    }
-
-    @Bean
-    public ApiDocController catalogApiDocController(ApiDocRetrievalService apiDocRetrievalService, OpenApiCompareProducer openApiCompareProducer) {
+    public ApiDocController catalogApiDocController(ApiDocRetrievalService apiDocRetrievalService) {
         when(apiDocRetrievalService.retrieveApiDoc("service2", "v1"))
             .thenThrow(new ApiDocNotFoundException("Really bad stuff happened"));
 
@@ -44,7 +38,7 @@ class CatalogApiDocControllerApiDocNotFoundTestContextConfiguration {
 
         verify(apiDocRetrievalService, never()).retrieveApiDoc("service2", "v1");
 
-        return new ApiDocController(apiDocRetrievalService, openApiCompareProducer);
+        return new ApiDocController(apiDocRetrievalService);
     }
 
     @Bean
