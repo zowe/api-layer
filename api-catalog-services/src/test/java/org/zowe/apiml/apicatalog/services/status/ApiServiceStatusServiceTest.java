@@ -11,29 +11,21 @@
 package org.zowe.apiml.apicatalog.services.status;
 
 import com.netflix.appinfo.InstanceInfo;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.apicatalog.instance.InstanceInitializeService;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
-import org.zowe.apiml.apicatalog.services.cached.CachedApiDocService;
 import org.zowe.apiml.apicatalog.services.status.event.model.ContainerStatusChangeEvent;
 import org.zowe.apiml.apicatalog.services.status.event.model.STATUS_EVENT_TYPE;
-import org.zowe.apiml.apicatalog.services.status.model.ApiDiffNotAvailableException;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -43,15 +35,6 @@ class ApiServiceStatusServiceTest {
 
     @Mock
     private InstanceInitializeService instanceInitializeService;
-
-    @Mock
-    private CachedApiDocService cachedApiDocService;
-
-    @Mock
-    private OpenApiCompareProducer openApiCompareProducer;
-
-    @InjectMocks
-    private APIServiceStatusService apiServiceStatusService;
 
     @Test
     void givenContainers_whenGetContainersStateEvents_thenReturnEvents() {
@@ -79,54 +62,6 @@ class ApiServiceStatusServiceTest {
                 eventType)
             );
         });
-    }
-
-    @Nested
-    class GivenCachedApiDoc {
-        @Test
-        void whenGetApiDocForService_thenSuccessfulResponse() {
-            String apiDoc = "this is the api doc";
-            when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
-
-            ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.OK);
-            ResponseEntity<String> actualResponse = apiServiceStatusService.getServiceCachedApiDocInfo("aaa", "v1");
-
-            assertEquals(expectedResponse.getStatusCode(), actualResponse.getStatusCode());
-            assertEquals(expectedResponse.getBody(), actualResponse.getBody());
-        }
-
-        @Test
-        void whenGetDefaultApiDocForService_thenSuccessfulResponse() {
-            String apiDoc = "this is the api doc";
-            when(cachedApiDocService.getDefaultApiDocForService(anyString())).thenReturn(apiDoc);
-
-            ResponseEntity<String> expectedResponse = new ResponseEntity<>(apiDoc, HttpStatus.OK);
-            ResponseEntity<String> actualResponse = apiServiceStatusService.getServiceCachedDefaultApiDocInfo("aaa");
-
-            assertEquals(expectedResponse.getStatusCode(), actualResponse.getStatusCode());
-            assertEquals(expectedResponse.getBody(), actualResponse.getBody());
-        }
-
-        @Test
-        void whenGetApiDiff_thenReturnsApiDiff() {
-            String apiDoc = "{}";
-            when(cachedApiDocService.getApiDocForService(anyString(), anyString())).thenReturn(apiDoc);
-            OpenApiCompareProducer actualProducer = new OpenApiCompareProducer();
-            when(openApiCompareProducer.fromContents(anyString(), anyString())).thenReturn(actualProducer.fromContents(apiDoc, apiDoc));
-            ResponseEntity<String> actualResponse = apiServiceStatusService.getApiDiffInfo("service", "v1", "v2");
-            assertNotNull(actualResponse.getBody());
-            assertTrue(actualResponse.getBody().contains("Api Change Log"));
-            assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-        }
-    }
-
-    @Test
-    void givenInvalidAPIs_whenDifferenceIsProduced_thenTheProperExceptionIsRaised() {
-        when(openApiCompareProducer.fromContents(anyString(), anyString())).thenThrow(new RuntimeException());
-        Exception ex = assertThrows(ApiDiffNotAvailableException.class, () ->
-            apiServiceStatusService.getApiDiffInfo("service", "v1", "v2")
-        );
-        assertEquals("Error retrieving API diff for 'service' with versions 'v1' and 'v2'", ex.getMessage());
     }
 
     private List<APIContainer> createContainers() {
