@@ -11,7 +11,6 @@
 package org.zowe.apiml.security.common.auth;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +26,6 @@ public class SecurityControllerExceptionHandler {
 
     private static final String FORBIDDEN_MESSAGE_KEY = "org.zowe.apiml.security.forbidden";
 
-    @Qualifier("messageServiceDiscovery")
     private final MessageService messageService;
 
     @ExceptionHandler({ AccessDeniedException.class })

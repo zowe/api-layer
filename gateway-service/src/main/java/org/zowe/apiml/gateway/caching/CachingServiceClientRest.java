@@ -32,7 +32,7 @@ public class CachingServiceClientRest implements CachingServiceClient {
     private static final String CACHING_SERVICE_RETURNED = ". Caching service returned: ";
 
     @Value("${apiml.cachingServiceClient.apiPath}")
-    private final String CACHING_API_PATH = "/cachingservice/api/v1/cache"; //NOSONAR parametrization provided by @Value annotation
+    private final static String CACHING_API_PATH = "/cachingservice/api/v1/cache"; //NOSONAR parametrization provided by @Value annotation
 
     private final String cachingBalancerUrl;
 
@@ -90,7 +90,7 @@ public class CachingServiceClientRest implements CachingServiceClient {
                     return handler.bodyToMono(ApiKeyValue.class);
                 } else if (handler.statusCode().is4xxClientError()) {
                     if (log.isTraceEnabled()) {
-                        log.trace("Key with ID " + key + "not found. Status code from caching service: " + handler.statusCode());
+                        log.trace("Key with ID {}not found. Status code from caching service: {}", key, handler.statusCode());
                     }
                     return empty();
                 } else {
