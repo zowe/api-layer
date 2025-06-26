@@ -11,6 +11,8 @@
 package org.zowe.apiml.apicatalog.services.status;
 
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
@@ -23,11 +25,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.TransformApiDocService;
+import org.zowe.apiml.apicatalog.util.ServicesBuilder;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.gateway.GatewayClient;
@@ -48,6 +50,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class LocalApiDocServiceTest {
+
     private static final String SERVICE_ID = "service";
     private static final String SERVICE_HOST = "service";
     private static final int SERVICE_PORT = 8080;
@@ -62,7 +65,7 @@ class LocalApiDocServiceTest {
     private static final String SWAGGER_URL = "https://service:8080/service/api-doc";
 
     @Mock
-    private InstanceRetrievalService instanceRetrievalService;
+    private EurekaClient eurekaClient;
 
     private ApiDocRetrievalServiceRest apiDocRetrievalServiceRest;
 
@@ -84,7 +87,7 @@ class LocalApiDocServiceTest {
         HttpClientMockHelper.mockExecuteWithResponse(httpClient, response);
         apiDocRetrievalServiceRest = new ApiDocRetrievalServiceRest(
             httpClient,
-            instanceRetrievalService,
+            eurekaClient,
             new GatewayClient(getProperties()),
             new TransformApiDocService(null) {
                 @Override
@@ -109,7 +112,7 @@ class LocalApiDocServiceTest {
         void givenValidApiInfo_thenReturnApiDoc() {
             String responseBody = "api-doc body";
 
-            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            when(eurekaClient.getApplication(SERVICE_ID))
                 .thenReturn(getStandardInstance(getStandardMetadata(), true));
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
@@ -138,7 +141,7 @@ class LocalApiDocServiceTest {
             void givenServerErrorWhenRequestingSwaggerUrl() {
                 String responseBody = "Server not found";
 
-                when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+                when(eurekaClient.getApplication(SERVICE_ID))
                     .thenReturn(getStandardInstance(getStandardMetadata(), true));
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_INTERNAL_SERVER_ERROR, responseBody);
@@ -151,7 +154,7 @@ class LocalApiDocServiceTest {
             void givenNoInstanceMetadata() {
                 String responseBody = "api-doc body";
 
-                when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+                when(eurekaClient.getApplication(SERVICE_ID))
                     .thenReturn(getStandardInstance(new HashMap<>(), true));
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
@@ -198,7 +201,7 @@ class LocalApiDocServiceTest {
             String responseBody = "api-doc body";
 
             generatedResponseBody = generatedResponseBody.replaceAll("\\s+", "");
-            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            when(eurekaClient.getApplication(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithoutSwaggerUrl(), true));
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
@@ -219,7 +222,7 @@ class LocalApiDocServiceTest {
         void givenApiDocUrlInRouting_thenCreateApiDocUrlFromRoutingAndReturnApiDoc() {
             String responseBody = "api-doc body";
 
-            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            when(eurekaClient.getApplication(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), true));
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
@@ -234,7 +237,7 @@ class LocalApiDocServiceTest {
         void shouldCreateApiDocUrlFromRoutingAndUseHttp() {
             String responseBody = "api-doc body";
 
-            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            when(eurekaClient.getApplication(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), false));
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
@@ -247,7 +250,7 @@ class LocalApiDocServiceTest {
 
         @Test
         void givenServerCommunicationErrorWhenRequestingSwaggerUrl_thenLogCustomError() {
-            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            when(eurekaClient.getApplication(SERVICE_ID))
                 .thenReturn(getStandardInstance(getStandardMetadata(), true));
 
             var exception = new IOException("Unable to reach the host");
@@ -272,7 +275,7 @@ class LocalApiDocServiceTest {
             String responseBody = "api-doc body";
             Map<String, String> metadata = getMetadataWithMultipleApiInfo();
 
-            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            when(eurekaClient.getApplication(SERVICE_ID))
                 .thenReturn(getStandardInstance(metadata, true));
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
@@ -295,7 +298,7 @@ class LocalApiDocServiceTest {
             Map<String, String> metadata = getMetadataWithMultipleApiInfo();
             metadata.remove(API_INFO + ".1." + API_INFO_IS_DEFAULT); // unset default API, so higher version becomes default
 
-            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            when(eurekaClient.getApplication(SERVICE_ID))
                 .thenReturn(getStandardInstance(metadata, true));
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
@@ -316,7 +319,7 @@ class LocalApiDocServiceTest {
         void givenNoDefaultApiDocAndDifferentVersionFormat_thenReturnHighestVersion() {
             String responseBody = "api-doc body";
 
-            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            when(eurekaClient.getApplication(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfoWithDifferentVersionFormat(), true));
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
@@ -337,7 +340,7 @@ class LocalApiDocServiceTest {
         void givenNoApiDocs_thenReturnNull() {
             String responseBody = "api-doc body";
 
-            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            when(eurekaClient.getApplication(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), true));
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
@@ -353,7 +356,7 @@ class LocalApiDocServiceTest {
     class WhenGetApiVersions {
         @Test
         void givenApiVersions_thenReturnThem() {
-            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            when(eurekaClient.getApplication(SERVICE_ID))
                 .thenReturn(getStandardInstance(getStandardMetadata(), false));
 
             List<String> actualVersions = apiDocRetrievalServiceRest.retrieveApiVersions(SERVICE_ID);
@@ -362,7 +365,7 @@ class LocalApiDocServiceTest {
 
         @Test
         void givenNoApiVersions_thenThrowException() {
-            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
+            when(eurekaClient.getApplication(SERVICE_ID)).thenReturn(null);
 
             Exception exception = assertThrows(ApiVersionNotFoundException.class, () ->
                 apiDocRetrievalServiceRest.retrieveApiVersions(SERVICE_ID)
@@ -375,7 +378,7 @@ class LocalApiDocServiceTest {
     class WhenGetDefaultApiVersion {
         @Test
         void givenDefaultApiVersion_thenReturnIt() {
-            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            when(eurekaClient.getApplication(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfo(), false));
 
             String defaultVersion = apiDocRetrievalServiceRest.retrieveDefaultApiVersion(SERVICE_ID);
@@ -387,7 +390,7 @@ class LocalApiDocServiceTest {
             Map<String, String> metadata = getMetadataWithMultipleApiInfo();
             metadata.remove(API_INFO + ".1." + API_INFO_IS_DEFAULT); // unset default API, so higher version becomes default
 
-            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
+            when(eurekaClient.getApplication(SERVICE_ID))
                 .thenReturn(getStandardInstance(metadata, false));
 
             String defaultVersion = apiDocRetrievalServiceRest.retrieveDefaultApiVersion(SERVICE_ID);
@@ -396,7 +399,7 @@ class LocalApiDocServiceTest {
 
         @Test
         void givenNoApiInfo_thenThrowException() {
-            when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
+            when(eurekaClient.getApplication(SERVICE_ID)).thenReturn(null);
 
             Exception exception = assertThrows(ApiVersionNotFoundException.class, () ->
                 apiDocRetrievalServiceRest.retrieveDefaultApiVersion(SERVICE_ID)
@@ -405,8 +408,8 @@ class LocalApiDocServiceTest {
         }
     }
 
-    private InstanceInfo getStandardInstance(Map<String, String> metadata, Boolean isPortSecure) {
-        return InstanceInfo.Builder.newBuilder()
+    private Application getStandardInstance(Map<String, String> metadata, Boolean isPortSecure) {
+        InstanceInfo instance = InstanceInfo.Builder.newBuilder()
             .setAppName(SERVICE_ID)
             .setHostName(SERVICE_HOST)
             .setPort(SERVICE_PORT)
@@ -415,6 +418,7 @@ class LocalApiDocServiceTest {
             .setStatus(InstanceInfo.InstanceStatus.UP)
             .setMetadata(metadata)
             .build();
+        return ServicesBuilder.createApp(SERVICE_ID, instance);
     }
 
     private Map<String, String> getStandardMetadata() {
@@ -503,4 +507,5 @@ class LocalApiDocServiceTest {
             .hostname(GATEWAY_HOST)
             .build();
     }
+
 }

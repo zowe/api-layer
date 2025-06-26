@@ -11,9 +11,12 @@
 package org.zowe.apiml.apicatalog.services.status;
 
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.HttpStatus;
@@ -23,17 +26,16 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.SubstituteSwaggerGenerator;
 import org.zowe.apiml.apicatalog.swagger.TransformApiDocService;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.instance.InstanceInitializationException;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.product.routing.RoutedService;
@@ -44,7 +46,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
+
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
+import static org.zowe.apiml.product.constants.CoreService.GATEWAY;
 
 /**
  * Retrieves the API documentation for a registered service
@@ -59,7 +65,7 @@ public class ApiDocRetrievalServiceRest implements ApiDocRetrievalService {
     @Qualifier("secureHttpClientWithoutKeystore")
     private final CloseableHttpClient secureHttpClientWithoutKeystore;
 
-    private final InstanceRetrievalService instanceRetrievalService;
+    private final EurekaClient eurekaClient;
     private final GatewayClient gatewayClient;
 
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
@@ -342,18 +348,31 @@ public class ApiDocRetrievalServiceRest implements ApiDocRetrievalService {
             });
     }
 
-    private InstanceInfo getInstanceInfo(String serviceId) {
-        String errMsg = "Could not load instance information for service " + serviceId + ".";
-        try {
-            InstanceInfo instanceInfo = instanceRetrievalService.getInstanceInfo(serviceId);
-            if (instanceInfo == null) {
-                throw new ApiDocNotFoundException(errMsg);
-            }
+    private Optional<InstanceInfo> getPrimaryInstanceInfo(String serviceId) {
+        return Optional.ofNullable(eurekaClient.getApplication(GATEWAY.getServiceId()))
+            .map(Application::getInstances)
+            .map(instances -> instances.stream()
+                .filter(instance -> EurekaMetadataDefinition.RegistrationType.of(instance.getMetadata()).isPrimary())
+                .findFirst()
+                .get()
+            );
+    }
 
-            return instanceInfo;
-        } catch (InstanceInitializationException e) {
-            throw new ApiDocNotFoundException(errMsg, e);
-        }
+    private Optional<InstanceInfo> getSecondaryInstanceInfo(String apimlId) {
+        return Optional.ofNullable(eurekaClient.getApplication(GATEWAY.getServiceId()))
+            .map(Application::getInstances)
+            .map(instances -> instances.stream()
+                .filter(instance -> EurekaMetadataDefinition.RegistrationType.of(instance.getMetadata()).isAdditional())
+                .filter(instance -> StringUtils.equals(apimlId, instance.getMetadata().get(APIML_ID)))
+                .findFirst()
+                .get()
+            );
+    }
+
+    private InstanceInfo getInstanceInfo(String serviceId) {
+        return getPrimaryInstanceInfo(serviceId)
+            .or(() -> getSecondaryInstanceInfo(serviceId))
+            .orElseThrow(() -> new ApiDocNotFoundException("Could not load instance information for service " + serviceId + "."));
     }
 
     /**
