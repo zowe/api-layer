@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
+import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
 import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
@@ -140,7 +140,7 @@ class ServicesControllerTests {
         @Nested
         class WhenGettingSpecificContainer {
             @Test
-            void thenPopulateApiDocForServices() throws ContainerStatusRetrievalThrowable {
+            void thenPopulateApiDocForServices() throws ContainerStatusRetrievalException {
                 String defaultApiVersion = "v1";
 
                 given(apiDocRetrievalService.retrieveDefaultApiVersion("service1")).willReturn(defaultApiVersion);
@@ -157,7 +157,7 @@ class ServicesControllerTests {
             }
 
             @Test
-            void thenPopulateApiDocForServicesExceptOneWhichFails() throws ContainerStatusRetrievalThrowable {
+            void thenPopulateApiDocForServicesExceptOneWhichFails() throws ContainerStatusRetrievalException {
                 given(apiDocRetrievalService.retrieveDefaultApiDoc("service2")).willThrow(new RuntimeException());
 
                 ResponseEntity<List<APIContainer>> containers = underTest.getAPIContainerById("api-one");
@@ -176,7 +176,7 @@ class ServicesControllerTests {
             }
 
             @Test
-            void thenPopulateApiVersionsForServicesExceptOneWhichFails() throws ContainerStatusRetrievalThrowable {
+            void thenPopulateApiVersionsForServicesExceptOneWhichFails() throws ContainerStatusRetrievalException {
                 given(apiDocRetrievalService.retrieveApiVersions("service2")).willThrow(new RuntimeException());
 
                 ResponseEntity<List<APIContainer>> containers = underTest.getAPIContainerById("api-one");
@@ -227,7 +227,7 @@ class ServicesControllerTests {
         }
 
         @Test
-        void thenReturnOk() throws ContainerStatusRetrievalThrowable {
+        void thenReturnOk() throws ContainerStatusRetrievalException {
             String defaultApiVersion = "v1";
 
             given(containerService.getService(serviceId)).willReturn(service);
@@ -242,7 +242,7 @@ class ServicesControllerTests {
         }
 
         @Test
-        void thenReturnOkWithApiDocNull() throws ContainerStatusRetrievalThrowable {
+        void thenReturnOkWithApiDocNull() throws ContainerStatusRetrievalException {
             String defaultApiVersion = "v1";
 
             given(containerService.getService(serviceId)).willReturn(service);

@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
+import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
 import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
@@ -73,7 +73,7 @@ public class ServicesController {
         @ApiResponse(responseCode = "404", description = "URI not found"),
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
     })
-    public ResponseEntity<List<APIContainer>> getAllAPIContainers() throws ContainerStatusRetrievalThrowable {
+    public ResponseEntity<List<APIContainer>> getAllAPIContainers() throws ContainerStatusRetrievalException {
         try {
             Iterable<APIContainer> allContainers = containerService.getAllContainers();
             List<APIContainer> apiContainers = toList(allContainers);
@@ -83,7 +83,7 @@ public class ServicesController {
             return new ResponseEntity<>(apiContainers, HttpStatus.OK);
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
-            throw new ContainerStatusRetrievalThrowable(e);
+            throw new ContainerStatusRetrievalException(e);
         }
     }
 
@@ -106,7 +106,7 @@ public class ServicesController {
         @ApiResponse(responseCode = "404", description = "URI not found"),
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
     })
-    public ResponseEntity<List<APIContainer>> getAPIContainerById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalThrowable {
+    public ResponseEntity<List<APIContainer>> getAPIContainerById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalException {
         try {
             List<APIContainer> apiContainers = new ArrayList<>();
             APIContainer containerById = containerService.getContainerById(id);
@@ -122,7 +122,7 @@ public class ServicesController {
             return new ResponseEntity<>(apiContainers, HttpStatus.OK);
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
-            throw new ContainerStatusRetrievalThrowable(e);
+            throw new ContainerStatusRetrievalException(e);
         }
     }
 
@@ -146,7 +146,7 @@ public class ServicesController {
         @ApiResponse(responseCode = "404", description = "URI not found"),
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
     })
-    public ResponseEntity<APIService> getAPIServicesById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalThrowable {
+    public ResponseEntity<APIService> getAPIServicesById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalException {
         try {
             var service = containerService.getService(id);
             if (service == null) {
@@ -171,7 +171,7 @@ public class ServicesController {
             return new ResponseEntity<>(service, HttpStatus.OK);
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.serviceCouldNotBeRetrieved", e.getMessage());
-            throw new ContainerStatusRetrievalThrowable(e);
+            throw new ContainerStatusRetrievalException(e);
         }
     }
 

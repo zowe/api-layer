@@ -10,11 +10,11 @@
 
 package org.zowe.apiml.apicatalog.exceptions;
 
-public class ContainerStatusRetrievalThrowable extends Exception {
+public class ContainerStatusRetrievalException extends Exception {
 
     private static final long serialVersionUID = 2060505088907324466L;
 
-    public ContainerStatusRetrievalThrowable(Throwable e) {
+    public ContainerStatusRetrievalException(Throwable e) {
         super(e);
     }
 
