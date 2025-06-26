@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.apicatalog.swagger.api.dummy;
 
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
+import org.zowe.apiml.apicatalog.swagger.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 

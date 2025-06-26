@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.services.status;
+package org.zowe.apiml.apicatalog.swagger;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
@@ -25,10 +25,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
-import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
-import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundException;
-import org.zowe.apiml.apicatalog.swagger.TransformApiDocService;
+import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
+import org.zowe.apiml.apicatalog.exceptions.ApiVersionNotFoundException;
 import org.zowe.apiml.apicatalog.util.ServicesBuilder;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.message.log.ApimlLogger;

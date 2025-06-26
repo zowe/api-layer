@@ -8,9 +8,12 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.services.status.model;
+package org.zowe.apiml.apicatalog.exceptions;
 
 public class ApiVersionNotFoundException extends RuntimeException {
+
+    private static final long serialVersionUID = 1187349522463958685L;
+
     public ApiVersionNotFoundException(String s) {
         super(s);
     }
@@ -22,4 +25,5 @@ public class ApiVersionNotFoundException extends RuntimeException {
     public synchronized Throwable fillInStackTrace() {
         return this;
     }
+
 }

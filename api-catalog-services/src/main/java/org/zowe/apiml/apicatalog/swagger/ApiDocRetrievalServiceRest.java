@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.services.status;
+package org.zowe.apiml.apicatalog.swagger;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
@@ -26,11 +26,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
-import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
-import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundException;
-import org.zowe.apiml.apicatalog.swagger.SubstituteSwaggerGenerator;
-import org.zowe.apiml.apicatalog.swagger.TransformApiDocService;
+import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
+import org.zowe.apiml.apicatalog.exceptions.ApiVersionNotFoundException;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
@@ -349,7 +346,7 @@ public class ApiDocRetrievalServiceRest implements ApiDocRetrievalService {
     }
 
     private Optional<InstanceInfo> getPrimaryInstanceInfo(String serviceId) {
-        return Optional.ofNullable(eurekaClient.getApplication(GATEWAY.getServiceId()))
+        return Optional.ofNullable(eurekaClient.getApplication(serviceId))
             .map(Application::getInstances)
             .map(instances -> instances.stream()
                 .filter(instance -> EurekaMetadataDefinition.RegistrationType.of(instance.getMetadata()).isPrimary())

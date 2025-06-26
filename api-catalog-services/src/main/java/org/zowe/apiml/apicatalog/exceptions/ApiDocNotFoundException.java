@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.services.status.model;
+package org.zowe.apiml.apicatalog.exceptions;
 
 /**
  * Exception thrown when API Doc is not accessible
@@ -21,8 +21,8 @@ public class ApiDocNotFoundException extends RuntimeException {
         super(message, cause);
     }
 
-    public ApiDocNotFoundException(String s) {
-        super(s);
+    public ApiDocNotFoundException(String message) {
+        this(message, null);
     }
 
     /**
@@ -33,4 +33,5 @@ public class ApiDocNotFoundException extends RuntimeException {
     public synchronized Throwable fillInStackTrace() {
         return this;
     }
+
 }

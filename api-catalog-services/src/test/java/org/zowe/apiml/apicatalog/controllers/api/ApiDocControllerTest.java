@@ -14,11 +14,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.zowe.apiml.apicatalog.services.status.ApiDocRetrievalService;
-import org.zowe.apiml.apicatalog.services.status.OpenApiCompareProducer;
-import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
+import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
+import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -28,14 +26,12 @@ class ApiDocControllerTest {
     private static final String API_DOC = "Some API Doc";
 
     private ApiDocRetrievalService mockApiDocRetrievalService;
-    private OpenApiCompareProducer mockOpenApiCompareProducer;
     private ApiDocController underTest;
 
     @BeforeEach
     void setup() {
         mockApiDocRetrievalService = Mockito.mock(ApiDocRetrievalService.class);
-        mockOpenApiCompareProducer = Mockito.mock(OpenApiCompareProducer.class);
-        underTest = new ApiDocController(mockApiDocRetrievalService, mockOpenApiCompareProducer);
+        underTest = new ApiDocController(mockApiDocRetrievalService);
     }
 
     @Test

@@ -38,4 +38,5 @@ public class ApiCatalogHealthIndicator extends AbstractHealthIndicator {
             .status(healthStatus)
             .withDetail(gatewayServiceId, healthStatus.getCode());
     }
+
 }

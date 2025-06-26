@@ -42,4 +42,5 @@ public class WebConfig implements WebMvcConfigurer {
         .setCacheControl(CacheControl.maxAge(Duration.ofDays(365L)))
         .addResourceLocations("/resources/", "/resources/static/", "/resources/templates/");
     }
+
 }

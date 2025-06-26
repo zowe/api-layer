@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.services.status.model;
+package org.zowe.apiml.apicatalog.exceptions;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

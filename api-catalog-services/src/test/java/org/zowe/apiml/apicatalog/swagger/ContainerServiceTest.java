@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.instance;
+package org.zowe.apiml.apicatalog.swagger;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
@@ -40,7 +40,7 @@ import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 @ExtendWith(MockitoExtension.class)
-class InstanceInitializeServiceTest {
+class ContainerServiceTest {
 
     @Nested
     class WhenCalculatingContainerTotals {
@@ -53,7 +53,7 @@ class InstanceInitializeServiceTest {
 
         private InstanceInfo instance1;
         private InstanceInfo instance2;
-        private InstanceInitializeService instanceInitializeService;
+        private ContainerService containerService;
 
         @BeforeEach
         void prepareApplications() {
@@ -65,7 +65,7 @@ class InstanceInitializeServiceTest {
             when(eurekaClient.getApplication("service1")).thenReturn(application1);
             when(eurekaClient.getApplication("service2")).thenReturn(application2);
             when(eurekaClient.getApplications()).thenReturn(new Applications("hash", 0L, Arrays.asList(application1, application2)));
-            instanceInitializeService = new InstanceInitializeService(
+            containerService = new ContainerService(
                 eurekaClient,
                 transformService,
                 customStyleConfig
@@ -88,7 +88,7 @@ class InstanceInitializeServiceTest {
 
                 @Test
                 void containerStatusIsUp() {
-                    APIContainer container = instanceInitializeService.getContainerById("demoapp");
+                    APIContainer container = containerService.getContainerById("demoapp");
                     assertNotNull(container);
 
                     assertThatContainerHasValidState(container, "UP", 2);
@@ -104,7 +104,7 @@ class InstanceInitializeServiceTest {
                     instance1.setStatus(InstanceInfo.InstanceStatus.DOWN);
                     instance2.setStatus(InstanceInfo.InstanceStatus.DOWN);
 
-                    APIContainer container = instanceInitializeService.getContainerById("demoapp");
+                    APIContainer container = containerService.getContainerById("demoapp");
                     assertNotNull(container);
 
                     assertThatContainerHasValidState(container, "DOWN", 0);
@@ -118,7 +118,7 @@ class InstanceInitializeServiceTest {
                 void containerStatusIsWarning() {
                     instance2.setStatus(InstanceInfo.InstanceStatus.DOWN);
 
-                    APIContainer container = instanceInitializeService.getContainerById("demoapp");
+                    APIContainer container = containerService.getContainerById("demoapp");
                     assertNotNull(container);
 
                     assertThatContainerHasValidState(container, "WARNING", 1);
@@ -143,7 +143,7 @@ class InstanceInitializeServiceTest {
                 Applications applications = new Applications("hash", 0L, Collections.singletonList(application));
                 doReturn(application).when(eurekaClient).getApplication(SERVICE_ID);
                 doReturn(applications).when(eurekaClient).getApplications();
-                APIContainer apiContainer = instanceInitializeService.getContainerById(SERVICE_ID);
+                APIContainer apiContainer = containerService.getContainerById(SERVICE_ID);
 
                 APIService apiService = apiContainer.getServices().iterator().next();
                 assertNotNull(apiService.getApis());
@@ -172,7 +172,7 @@ class InstanceInitializeServiceTest {
                     doReturn(application).when(eurekaClient).getApplication(SERVICE_ID);
                     doReturn(applications).when(eurekaClient).getApplications();
 
-                    APIContainer apiContainer = instanceInitializeService.getContainerById(SERVICE_ID);
+                    APIContainer apiContainer = containerService.getContainerById(SERVICE_ID);
 
                     assertFalse(apiContainer.isSso());
                     for (APIService apiService : apiContainer.getServices()) {
@@ -192,7 +192,7 @@ class InstanceInitializeServiceTest {
                     Applications applications = new Applications("hash", 0L, Collections.singletonList(application));
                     doReturn(application).when(eurekaClient).getApplication(SERVICE_ID);
                     doReturn(applications).when(eurekaClient).getApplications();
-                    APIContainer apiContainer = instanceInitializeService.getContainerById(SERVICE_ID);
+                    APIContainer apiContainer = containerService.getContainerById(SERVICE_ID);
 
                     assertTrue(apiContainer.isSso());
                     for (APIService apiService : apiContainer.getServices()) {
@@ -213,8 +213,8 @@ class InstanceInitializeServiceTest {
                 Application application = ServicesBuilder.createApp(SERVICE_ID, instanceInfo);
                 Applications applications = new Applications("hash", 0L, Collections.singletonList(application));
                 doReturn(applications).when(eurekaClient).getApplications();
-                ReflectionTestUtils.setField(instanceInitializeService, "hideServiceInfo", true);
-                APIContainer apiContainer = instanceInitializeService.getContainerById(SERVICE_ID);
+                ReflectionTestUtils.setField(containerService, "hideServiceInfo", true);
+                APIContainer apiContainer = containerService.getContainerById(SERVICE_ID);
                 assertTrue(apiContainer.isHideServiceInfo());
             }
 
@@ -225,11 +225,11 @@ class InstanceInitializeServiceTest {
     @Nested
     class MultiTenancy {
 
-        private InstanceInitializeService instanceInitializeService;
+        private ContainerService containerService;
 
         @BeforeEach
         void init() {
-            instanceInitializeService = new InstanceInitializeService(
+            containerService = new ContainerService(
                 mock(EurekaClient.class),
                 new TransformService(new GatewayClient(ServiceAddress.builder().scheme("https").hostname("localhost").build())),
                 new CustomStyleConfig()
@@ -245,7 +245,7 @@ class InstanceInitializeServiceTest {
                 .setAppName(CoreService.GATEWAY.getServiceId())
                 .setMetadata(metadata)
                 .build();
-            return instanceInitializeService.createAPIServiceFromInstance(service);
+            return containerService.createAPIServiceFromInstance(service);
         }
 
         @Test

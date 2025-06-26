@@ -43,5 +43,4 @@ class ApiDocControllerApiDocNotFoundTest {
                 hasItem("API Documentation not retrieved, Really bad stuff happened")));
     }
 
-
 }

@@ -69,6 +69,7 @@ import java.util.Set;
 @EnableMethodSecurity
 @EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
 public class SecurityConfiguration {
+
     private static final String APIDOC_ROUTES = "/apidoc/**";
     private static final String STATIC_REFRESH_ROUTE = "/static-api/refresh";
 
@@ -84,6 +85,7 @@ public class SecurityConfiguration {
     private boolean isAttlsEnabled;
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
+
     /**
      * Filter chain for protecting /apidoc/** endpoints with MF credentials for client certificate.
      */
