@@ -11,8 +11,10 @@
 package org.zowe.apiml.apicatalog.controllers.api;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.apicatalog.controllers.handlers.CatalogApiDocControllerExceptionHandler;
-import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
+import org.zowe.apiml.apicatalog.services.status.ApiDocRetrievalService;
+import org.zowe.apiml.apicatalog.services.status.OpenApiCompareProducer;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
@@ -22,21 +24,27 @@ import static org.mockito.Mockito.*;
 class CatalogApiDocControllerApiDocNotFoundTestContextConfiguration {
 
     @Bean
-    public APIServiceStatusService apiServiceStatusService() {
-        return mock(APIServiceStatusService.class);
+    @Primary
+    public ApiDocRetrievalService apiServiceStatusService() {
+        return mock(ApiDocRetrievalService.class);
     }
 
     @Bean
-    public ApiDocController catalogApiDocController(APIServiceStatusService apiServiceStatusService) {
-        when(apiServiceStatusService.getServiceCachedApiDocInfo("service2", "v1"))
+    public OpenApiCompareProducer openApiCompareProducer() {
+        return mock(OpenApiCompareProducer.class);
+    }
+
+    @Bean
+    public ApiDocController catalogApiDocController(ApiDocRetrievalService apiDocRetrievalService, OpenApiCompareProducer openApiCompareProducer) {
+        when(apiDocRetrievalService.retrieveApiDoc("service2", "v1"))
             .thenThrow(new ApiDocNotFoundException("Really bad stuff happened"));
 
-        when(apiServiceStatusService.getServiceCachedApiDocInfo("service2", null))
+        when(apiDocRetrievalService.retrieveApiDoc("service2", null))
             .thenThrow(new ApiDocNotFoundException("Really bad stuff happened"));
 
-        verify(apiServiceStatusService, never()).getServiceCachedApiDocInfo("service2", "v1");
+        verify(apiDocRetrievalService, never()).retrieveApiDoc("service2", "v1");
 
-        return new ApiDocController(apiServiceStatusService);
+        return new ApiDocController(apiDocRetrievalService, openApiCompareProducer);
     }
 
     @Bean

@@ -28,6 +28,7 @@ import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.SubstituteSwaggerGenerator;
+import org.zowe.apiml.apicatalog.swagger.TransformApiDocService;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -43,6 +44,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 
 /**
  * Retrieves the API documentation for a registered service
@@ -50,7 +52,9 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class APIDocRetrievalService {
+public class ApiDocRetrievalServiceRest implements ApiDocRetrievalService {
+
+    private static final UnaryOperator<String> exceptionMessage = serviceId -> "No API Documentation was retrieved for the service " + serviceId + ".";
 
     @Qualifier("secureHttpClientWithoutKeystore")
     private final CloseableHttpClient secureHttpClientWithoutKeystore;
@@ -61,17 +65,12 @@ public class APIDocRetrievalService {
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
     private final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
 
+    private final TransformApiDocService transformApiDocService;
+
     @InjectApimlLogger
     private ApimlLogger apimlLogger = ApimlLogger.empty();
 
-    /**
-     * Retrieves the available API versions for a registered service.
-     * Takes the versions available in each 'apiml.service.apiInfo' element.
-     *
-     * @param serviceId the unique service ID
-     * @return a list of API version strings
-     * @throws ApiVersionNotFoundException if the API versions cannot be loaded
-     */
+    @Override
     public List<String> retrieveApiVersions(@NonNull String serviceId) {
         log.debug("Retrieving API versions for service '{}'", serviceId);
         InstanceInfo instanceInfo;
@@ -88,7 +87,7 @@ public class APIDocRetrievalService {
         return apiVersions;
     }
 
-    public List<String> retrieveApiVersions(@NonNull Map<String, String> metadata) {
+    private List<String> retrieveApiVersions(@NonNull Map<String, String> metadata) {
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(metadata);
         List<String> apiVersions = new ArrayList<>();
         for (ApiInfo apiInfo : apiInfoList) {
@@ -98,15 +97,7 @@ public class APIDocRetrievalService {
         return apiVersions;
     }
 
-    /**
-     * Retrieves the default API version for a registered service.
-     * Uses 'apiml.service.apiInfo.defaultApi' field.
-     * <p>
-     * Returns version in the format 'v{majorVersion|'}. If no API is set as default, null is returned.
-     *
-     * @param serviceId the unique service ID
-     * @return default API version in the format v{majorVersion}, or null.
-     */
+    @Override
     public String retrieveDefaultApiVersion(@NonNull String serviceId) {
         log.debug("Retrieving default API version for service '{}'", serviceId);
         InstanceInfo instanceInfo;
@@ -123,7 +114,7 @@ public class APIDocRetrievalService {
         return defaultVersion;
     }
 
-    public String retrieveDefaultApiVersion(@NonNull Map<String, String> metadata) {
+    private String retrieveDefaultApiVersion(@NonNull Map<String, String> metadata) {
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(metadata);
         ApiInfo defaultApiInfo = getDefaultApiInfo(apiInfoList);
 
@@ -134,23 +125,8 @@ public class APIDocRetrievalService {
         return String.format("%s v%s", defaultApiInfo.getApiId(), defaultApiInfo.getVersion());
     }
 
-    /**
-     * Retrieve the API docs for a registered service
-     * <p>
-     * API doc URL is taken from the application metadata in the following
-     * order:
-     * <p>
-     * 1. 'apiml.service.apiInfo.swaggerUrl' (preferred way)
-     * 2. 'apiml.service.apiInfo' is present and 'swaggerUrl' is not, ApiDoc info is automatically generated
-     * 3. URL is constructed from 'apiml.routes.api-doc.serviceUrl'. This method is deprecated and used for
-     * backwards compatibility only
-     *
-     * @param serviceId  the unique service id
-     * @param apiVersion the version of the API
-     * @return the API doc and related information for transformation
-     * @throws ApiDocNotFoundException if the response is error
-     */
-    public ApiDocInfo retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
+    @Override
+    public String retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
         log.debug("Retrieving API doc for '{} {}'", serviceId, apiVersion);
         InstanceInfo instanceInfo = getInstanceInfo(serviceId);
 
@@ -160,38 +136,33 @@ public class APIDocRetrievalService {
         return buildApiDocInfo(serviceId, apiInfo, instanceInfo);
     }
 
-    private ApiDocInfo buildApiDocInfo(String serviceId, ApiInfo apiInfo, InstanceInfo instanceInfo) {
+    String buildApiDocInfo(String serviceId, ApiInfo apiInfo, InstanceInfo instanceInfo) {
         RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
         String apiDocUrl = getApiDocUrl(apiInfo, instanceInfo, routes);
 
+        ApiDocInfo apiDocInfo;
         if (apiDocUrl == null) {
             log.warn("No api doc URL for '{} {} {}'", serviceId, apiInfo.getApiId(), apiInfo.getVersion());
-            return getApiDocInfoBySubstituteSwagger(instanceInfo, routes, apiInfo);
+            apiDocInfo = getApiDocInfoBySubstituteSwagger(instanceInfo, routes, apiInfo);
+        } else {
+            String apiDocContent = "";
+            try {
+                apiDocContent = getApiDocContentByUrl(serviceId, apiDocUrl);
+                apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routes);
+            } catch (IOException e) {
+                apimlLogger.log("org.zowe.apiml.apicatalog.apiDocHostCommunication", serviceId, e.getMessage());
+                log.debug("Error retrieving api doc for '{}'", serviceId, e);
+                throw new ApiDocNotFoundException(
+                    exceptionMessage.apply(serviceId) + " Root cause: " + e.getMessage(), e
+                );
+            }
         }
 
-        String apiDocContent = "";
-        try {
-            apiDocContent = getApiDocContentByUrl(serviceId, apiDocUrl);
-        } catch (IOException e) {
-            apimlLogger.log("org.zowe.apiml.apicatalog.apiDocHostCommunication", serviceId, e.getMessage());
-            log.debug("Error retrieving api doc for '{}'", serviceId, e);
-        }
-        return new ApiDocInfo(apiInfo, apiDocContent, routes);
+        return transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
     }
 
-    /**
-     * Retrieve the default API docs for a registered service.
-     * <p>
-     * Default API doc is selected via the configuration parameter 'apiml.service.apiInfo.isDefault'.
-     * <p>
-     * If there are multiple apiInfo elements with isDefault set to 'true', or there are none set to 'true',
-     * then the high API version will be selected.
-     *
-     * @param serviceId the unique service id
-     * @return the default API doc and related information for transfer
-     * @throws ApiDocNotFoundException if the response is error
-     */
-    public ApiDocInfo retrieveDefaultApiDoc(@NonNull String serviceId) {
+    @Override
+    public String retrieveDefaultApiDoc(@NonNull String serviceId) {
         log.debug("Retrieving default API doc for service '{}'", serviceId);
         InstanceInfo instanceInfo = getInstanceInfo(serviceId);
 
@@ -426,4 +397,5 @@ public class APIDocRetrievalService {
 
         return uri.toUriString();
     }
+
 }

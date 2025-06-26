@@ -27,6 +27,8 @@ import org.zowe.apiml.apicatalog.instance.InstanceRetrievalService;
 import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.services.status.model.ApiVersionNotFoundException;
+import org.zowe.apiml.apicatalog.swagger.TransformApiDocService;
+import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
@@ -37,6 +39,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -61,7 +64,7 @@ class LocalApiDocServiceTest {
     @Mock
     private InstanceRetrievalService instanceRetrievalService;
 
-    private APIDocRetrievalService apiDocRetrievalService;
+    private ApiDocRetrievalServiceRest apiDocRetrievalServiceRest;
 
     @Mock
     private ApimlLogger apimlLogger;
@@ -72,16 +75,32 @@ class LocalApiDocServiceTest {
     @Mock
     private CloseableHttpResponse response;
 
+    private AtomicReference<ApiInfo> lastApiInfo = new AtomicReference<>();
+
     @BeforeEach
     void setup() {
-        HttpClientMockHelper.mockExecuteWithResponse(httpClient, response);
+        lastApiInfo.set(null);
 
-        apiDocRetrievalService = new APIDocRetrievalService(
+        HttpClientMockHelper.mockExecuteWithResponse(httpClient, response);
+        apiDocRetrievalServiceRest = new ApiDocRetrievalServiceRest(
             httpClient,
             instanceRetrievalService,
-            new GatewayClient(getProperties()));
+            new GatewayClient(getProperties()),
+            new TransformApiDocService(null) {
+                @Override
+                public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
+                    return apiDocInfo.getApiDocContent();
+                }
+            }
+        ) {
+            @Override
+            String buildApiDocInfo(String serviceId, ApiInfo apiInfo, InstanceInfo instanceInfo) {
+                lastApiInfo.set(apiInfo);
+                return super.buildApiDocInfo(serviceId, apiInfo, instanceInfo);
+            }
+        };
 
-        ReflectionTestUtils.setField(apiDocRetrievalService, "apimlLogger", apimlLogger);
+        ReflectionTestUtils.setField(apiDocRetrievalServiceRest, "apimlLogger", apimlLogger);
     }
 
     @Nested
@@ -95,25 +114,23 @@ class LocalApiDocServiceTest {
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
+            String actualApiDoc = apiDocRetrievalServiceRest.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
-            assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
-            assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
-            assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
-            assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
+            assertNotNull(lastApiInfo.get());
+            assertEquals(API_ID, lastApiInfo.get().getApiId());
+            assertEquals(GATEWAY_URL, lastApiInfo.get().getGatewayUrl());
+            assertEquals(SERVICE_VERSION, lastApiInfo.get().getVersion());
+            assertEquals(SWAGGER_URL, lastApiInfo.get().getSwaggerUrl());
 
-            assertNotNull(actualResponse);
-            assertNotNull(actualResponse.getApiDocContent());
-            assertEquals(responseBody, actualResponse.getApiDocContent());
-
-            assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+            assertNotNull(actualApiDoc);
+            assertEquals(responseBody, actualApiDoc);
         }
 
         @Nested
         class ThenThrowException {
             @Test
             void givenNoApiDocFoundForService() {
-                Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
+                Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocRetrievalServiceRest.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
                 assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
             }
 
@@ -126,7 +143,7 @@ class LocalApiDocServiceTest {
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_INTERNAL_SERVER_ERROR, responseBody);
 
-                Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
+                Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocRetrievalServiceRest.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
                 assertEquals("No API Documentation was retrieved due to " + SERVICE_ID + " server error: '" + responseBody + "'.", exception.getMessage());
             }
 
@@ -139,7 +156,7 @@ class LocalApiDocServiceTest {
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-                Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
+                Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocRetrievalServiceRest.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
                 assertEquals("No API Documentation defined for service " + SERVICE_ID + ".", exception.getMessage());
             }
 
@@ -186,18 +203,16 @@ class LocalApiDocServiceTest {
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
+            String actualApiDoc = apiDocRetrievalServiceRest.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
-            assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
-            assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
-            assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
-            assertNull(actualResponse.getApiInfo().getSwaggerUrl());
+            assertNotNull(lastApiInfo.get());
+            assertEquals(API_ID, lastApiInfo.get().getApiId());
+            assertEquals(GATEWAY_URL, lastApiInfo.get().getGatewayUrl());
+            assertEquals(SERVICE_VERSION, lastApiInfo.get().getVersion());
+            assertNull(lastApiInfo.get().getSwaggerUrl());
 
-            assertNotNull(actualResponse);
-            assertNotNull(actualResponse.getApiDocContent());
-            assertEquals(generatedResponseBody, actualResponse.getApiDocContent().replaceAll("\\s+", ""));
-
-            assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+            assertNotNull(actualApiDoc);
+            assertEquals(generatedResponseBody, actualApiDoc.replaceAll("\\s+", ""));
         }
 
         @Test
@@ -209,12 +224,10 @@ class LocalApiDocServiceTest {
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
+            String actualApiDoc = apiDocRetrievalServiceRest.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
-            assertNotNull(actualResponse);
-            assertNotNull(actualResponse.getApiDocContent());
-
-            assertEquals(responseBody, actualResponse.getApiDocContent());
+            assertNotNull(actualApiDoc);
+            assertEquals(responseBody, actualApiDoc);
         }
 
         @Test
@@ -226,12 +239,10 @@ class LocalApiDocServiceTest {
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
+            String actualApiDoc = apiDocRetrievalServiceRest.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
 
-            assertNotNull(actualResponse);
-            assertNotNull(actualResponse.getApiDocContent());
-
-            assertEquals(responseBody, actualResponse.getApiDocContent());
+            assertNotNull(actualApiDoc);
+            assertEquals(responseBody, actualApiDoc);
         }
 
         @Test
@@ -242,14 +253,13 @@ class LocalApiDocServiceTest {
             var exception = new IOException("Unable to reach the host");
             HttpClientMockHelper.whenExecuteThenThrow(httpClient, exception);
 
-            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
+            assertThrows(ApiDocNotFoundException.class,  () -> apiDocRetrievalServiceRest.retrieveDefaultApiDoc(SERVICE_ID));
 
-            assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
-            assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
-            assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
-            assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
-
-            assertEquals("", actualResponse.getApiDocContent());
+            assertNotNull(lastApiInfo.get());
+            assertEquals(API_ID, lastApiInfo.get().getApiId());
+            assertEquals(GATEWAY_URL, lastApiInfo.get().getGatewayUrl());
+            assertEquals(SERVICE_VERSION, lastApiInfo.get().getVersion());
+            assertEquals(SWAGGER_URL, lastApiInfo.get().getSwaggerUrl());
 
             verify(apimlLogger, times(1)).log("org.zowe.apiml.apicatalog.apiDocHostCommunication", SERVICE_ID, exception.getMessage());
         }
@@ -267,18 +277,16 @@ class LocalApiDocServiceTest {
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
+            String actualApiDoc = apiDocRetrievalServiceRest.retrieveDefaultApiDoc(SERVICE_ID);
 
-            assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
-            assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
-            assertEquals(SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
-            assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
+            assertNotNull(lastApiInfo.get());
+            assertEquals(API_ID, lastApiInfo.get().getApiId());
+            assertEquals(GATEWAY_URL, lastApiInfo.get().getGatewayUrl());
+            assertEquals(SERVICE_VERSION, lastApiInfo.get().getVersion());
+            assertEquals(SWAGGER_URL, lastApiInfo.get().getSwaggerUrl());
 
-            assertNotNull(actualResponse);
-            assertNotNull(actualResponse.getApiDocContent());
-            assertEquals(responseBody, actualResponse.getApiDocContent());
-
-            assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+            assertNotNull(actualApiDoc);
+            assertEquals(responseBody, actualApiDoc);
         }
 
         @Test
@@ -292,18 +300,16 @@ class LocalApiDocServiceTest {
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
+            String actualApiDoc = apiDocRetrievalServiceRest.retrieveDefaultApiDoc(SERVICE_ID);
 
-            assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
-            assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
-            assertEquals(HIGHER_SERVICE_VERSION, actualResponse.getApiInfo().getVersion());
-            assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
+            assertNotNull(lastApiInfo.get());
+            assertEquals(API_ID, lastApiInfo.get().getApiId());
+            assertEquals(GATEWAY_URL, lastApiInfo.get().getGatewayUrl());
+            assertEquals(HIGHER_SERVICE_VERSION, lastApiInfo.get().getVersion());
+            assertEquals(SWAGGER_URL, lastApiInfo.get().getSwaggerUrl());
 
-            assertNotNull(actualResponse);
-            assertNotNull(actualResponse.getApiDocContent());
-            assertEquals(responseBody, actualResponse.getApiDocContent());
-
-            assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+            assertNotNull(actualApiDoc);
+            assertEquals(responseBody, actualApiDoc);
         }
 
         @Test
@@ -315,18 +321,16 @@ class LocalApiDocServiceTest {
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
+            String actualApiDoc = apiDocRetrievalServiceRest.retrieveDefaultApiDoc(SERVICE_ID);
 
-            assertEquals(API_ID, actualResponse.getApiInfo().getApiId());
-            assertEquals(GATEWAY_URL, actualResponse.getApiInfo().getGatewayUrl());
-            assertEquals(HIGHER_SERVICE_VERSION_V, actualResponse.getApiInfo().getVersion());
-            assertEquals(SWAGGER_URL, actualResponse.getApiInfo().getSwaggerUrl());
+            assertNotNull(lastApiInfo.get());
+            assertEquals(API_ID, lastApiInfo.get().getApiId());
+            assertEquals(GATEWAY_URL, lastApiInfo.get().getGatewayUrl());
+            assertEquals(HIGHER_SERVICE_VERSION_V, lastApiInfo.get().getVersion());
+            assertEquals(SWAGGER_URL, lastApiInfo.get().getSwaggerUrl());
 
-            assertNotNull(actualResponse);
-            assertNotNull(actualResponse.getApiDocContent());
-            assertEquals(responseBody, actualResponse.getApiDocContent());
-
-            assertEquals("[api -> api=RoutedService(subServiceId=api-v1, gatewayUrl=api, serviceUrl=/)]", actualResponse.getRoutes().toString());
+            assertNotNull(actualApiDoc);
+            assertEquals(responseBody, actualApiDoc);
         }
 
         @Test
@@ -338,12 +342,10 @@ class LocalApiDocServiceTest {
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-            ApiDocInfo actualResponse = apiDocRetrievalService.retrieveDefaultApiDoc(SERVICE_ID);
+            String actualApiDoc = apiDocRetrievalServiceRest.retrieveDefaultApiDoc(SERVICE_ID);
 
-            assertNotNull(actualResponse);
-            assertNotNull(actualResponse.getApiDocContent());
-
-            assertEquals(responseBody, actualResponse.getApiDocContent());
+            assertNotNull(actualApiDoc);
+            assertEquals(responseBody, actualApiDoc);
         }
     }
 
@@ -354,7 +356,7 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getStandardMetadata(), false));
 
-            List<String> actualVersions = apiDocRetrievalService.retrieveApiVersions(SERVICE_ID);
+            List<String> actualVersions = apiDocRetrievalServiceRest.retrieveApiVersions(SERVICE_ID);
             assertEquals(Collections.singletonList(SERVICE_VERSION_V), actualVersions);
         }
 
@@ -363,7 +365,7 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
 
             Exception exception = assertThrows(ApiVersionNotFoundException.class, () ->
-                apiDocRetrievalService.retrieveApiVersions(SERVICE_ID)
+                apiDocRetrievalServiceRest.retrieveApiVersions(SERVICE_ID)
             );
             assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
         }
@@ -376,7 +378,7 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfo(), false));
 
-            String defaultVersion = apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
+            String defaultVersion = apiDocRetrievalServiceRest.retrieveDefaultApiVersion(SERVICE_ID);
             assertEquals(SERVICE_VERSION_V, defaultVersion);
         }
 
@@ -388,7 +390,7 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID))
                 .thenReturn(getStandardInstance(metadata, false));
 
-            String defaultVersion = apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID);
+            String defaultVersion = apiDocRetrievalServiceRest.retrieveDefaultApiVersion(SERVICE_ID);
             assertEquals(HIGHER_SERVICE_VERSION_V, defaultVersion);
         }
 
@@ -397,7 +399,7 @@ class LocalApiDocServiceTest {
             when(instanceRetrievalService.getInstanceInfo(SERVICE_ID)).thenReturn(null);
 
             Exception exception = assertThrows(ApiVersionNotFoundException.class, () ->
-                apiDocRetrievalService.retrieveDefaultApiVersion(SERVICE_ID)
+                apiDocRetrievalServiceRest.retrieveDefaultApiVersion(SERVICE_ID)
             );
             assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
         }

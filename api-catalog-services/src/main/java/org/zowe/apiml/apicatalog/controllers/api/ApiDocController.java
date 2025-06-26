@@ -17,24 +17,33 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.openapitools.openapidiff.core.model.ChangedOpenApi;
+import org.openapitools.openapidiff.core.output.HtmlRender;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
+import org.zowe.apiml.apicatalog.services.status.ApiDocRetrievalService;
+import org.zowe.apiml.apicatalog.services.status.OpenApiCompareProducer;
+import org.zowe.apiml.apicatalog.services.status.model.ApiDiffNotAvailableException;
+
+import java.util.Collections;
 
 /**
  * Main API for handling requests from the API Catalog UI, routed through the gateway
  */
+@Slf4j
 @RestController
 @RequestMapping("/apidoc")
 @Tag(name = "API Documentation")
 @RequiredArgsConstructor
 public class ApiDocController {
 
-    private final APIServiceStatusService apiServiceStatusService;
+    private final ApiDocRetrievalService apiDocRetrievalService;
+    private final OpenApiCompareProducer openApiCompareProducer;
 
     /**
      * Retrieve the api-doc info for this service
@@ -62,7 +71,7 @@ public class ApiDocController {
         @PathVariable(value = "serviceId") String serviceId,
         @Parameter(name = "apiId", description = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v1.0.0")
         @PathVariable(value = "apiId") String apiId) {
-        return this.apiServiceStatusService.getServiceCachedApiDocInfo(serviceId, apiId);
+        return ResponseEntity.ok(apiDocRetrievalService.retrieveApiDoc(serviceId, apiId));
     }
 
     /**
@@ -87,7 +96,8 @@ public class ApiDocController {
     public ResponseEntity<String> getDefaultApiDocInfo(
         @Parameter(name = "serviceId", description = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "serviceId") String serviceId) {
-        return this.apiServiceStatusService.getServiceCachedDefaultApiDocInfo(serviceId);
+
+        return ResponseEntity.ok(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId));
     }
 
     @GetMapping(value = "/{serviceId}/{apiId1}/{apiId2}", produces = MediaType.TEXT_HTML_VALUE)
@@ -110,6 +120,23 @@ public class ApiDocController {
         @PathVariable(value = "apiId1") String apiId1,
         @Parameter(name = "apiId2", description = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v2.0.0")
         @PathVariable(value = "apiId2") String apiId2) {
-        return this.apiServiceStatusService.getApiDiffInfo(serviceId, apiId1, apiId2);
+
+        try {
+            String doc1 = apiDocRetrievalService.retrieveApiDoc(serviceId, apiId1);
+            String doc2 = apiDocRetrievalService.retrieveApiDoc(serviceId, apiId2);
+            ChangedOpenApi diff = openApiCompareProducer.fromContents(doc1, doc2);
+            HtmlRender render = new HtmlRender();
+            String result = render.render(diff);
+            //Remove external stylesheet
+            result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
+            ResponseEntity<String> response = ResponseEntity.ok(result);
+            response.getHeaders().setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+            return response;
+        } catch (Exception e) {
+            String errorMessage = String.format("Error retrieving API diff for '%s' with versions '%s' and '%s'", serviceId, apiId1, apiId2);
+            log.error(errorMessage, e);
+            throw new ApiDiffNotAvailableException(errorMessage);
+        }
     }
+
 }
