@@ -189,7 +189,9 @@ public class FullApiMediationLayer {
             discoverableClientService.stop();
 
             cachingService.stop();
-            zaasService.stop();
+            if (!IS_MODULITH_ENABLED) {
+                zaasService.stop();
+            }
             if (!attlsEnabled && startServices()) {
                 nodeJsSampleApp.destroy();
             }
