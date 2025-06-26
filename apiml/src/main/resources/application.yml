@@ -125,6 +125,7 @@ apiml:
         nonSecurePortEnabled: false
         securePortEnabled: true
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
+        title: API ML
     security:
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         ssl:
@@ -178,7 +179,15 @@ server:
         trustStorePassword: password
         trustStoreType: PKCS12
 
-
+caching:
+    storage:
+        mode: infinispan
+        infinispan:
+            initialHosts: localhost[7099]
+jgroups:
+    bind:
+        port: 7600
+        address: localhost
 logbackServiceName: ZWEAGW1
 
 logging:

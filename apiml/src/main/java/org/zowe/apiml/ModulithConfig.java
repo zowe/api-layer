@@ -140,6 +140,7 @@ public class ModulithConfig {
     void createLocalInstances() {
         instances.put(CoreService.GATEWAY.getServiceId(), getInstanceInfo(CoreService.GATEWAY.getServiceId()));
         instances.put(CoreService.DISCOVERY.getServiceId(), getInstanceInfo(CoreService.DISCOVERY.getServiceId()));
+        instances.put(CoreService.CACHING.getServiceId(), getInstanceInfo(CoreService.CACHING.getServiceId()));
         EurekaServerContextHolder.initialize(applicationContext.getBean(EurekaServerContext.class));
     }
 
@@ -229,6 +230,8 @@ public class ModulithConfig {
 
         messageService.loadMessages("/apiml-log-messages.yml");
         messageService.loadMessages("/zaas-log-messages.yml");
+
+        messageService.loadMessages("/caching-log-messages.yml");
         return messageService;
     }
 

@@ -93,6 +93,7 @@ public class CacheConfig {
 
     @Bean("cacheManager")
     @ConditionalOnProperty(value = "apiml.caching.enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnMissingBean(name = "modulithConfig")
     public CacheManager cacheManager() {
         var caches = new HashMap<String, CacheConfiguration<?, ?>>();
 
@@ -176,6 +177,7 @@ public class CacheConfig {
 
     @ConditionalOnProperty(value = "apiml.caching.enabled", havingValue = "false")
     @Bean("cacheManager")
+    @ConditionalOnMissingBean(name = "modulithConfig")
     public CacheManager cacheManagerNoOp() {
         return new NoOpCacheManager();
     }
