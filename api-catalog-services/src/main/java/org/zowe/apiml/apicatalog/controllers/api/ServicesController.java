@@ -25,10 +25,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
-import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
+import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
@@ -114,16 +114,25 @@ public class ServicesController {
                 apiContainers.add(containerById);
             }
             if (!apiContainers.isEmpty()) {
-                apiContainers.forEach(apiContainer -> {
+                apiContainers.forEach(
                     // add API Doc to the services to improve UI performance
-                    setApiDocToService(apiContainer);
-                });
+                    this::setApiDocToService
+                );
             }
             return new ResponseEntity<>(apiContainers, HttpStatus.OK);
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalException(e);
         }
+    }
+
+    private String getApiDoc(String serviceId) {
+        try {
+            return apiDocRetrievalService.retrieveDefaultApiDoc(serviceId);
+        } catch (Exception e) {
+            log.debug("Cannot download api doc", e);
+        }
+        return null;
     }
 
     /**
@@ -152,15 +161,10 @@ public class ServicesController {
             if (service == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
-            log.debug("Getting service by id {}", id);
-            String apiDoc = null;
-            try {
-                apiDoc = apiDocRetrievalService.retrieveDefaultApiDoc(id);
-            } catch (Exception e) {
-                log.debug("Cannot download api doc", e);
-            }
-            log.debug("Getting service: {} with status {}", service.getServiceId(), service.getStatus());
+            log.debug("Getting service api doc by id {}", id);
+            String apiDoc = getApiDoc(id);
 
+            log.debug("Getting service: {} with status {}", service.getServiceId(), service.getStatus());
             if (apiDoc != null) {
                 log.debug("API doc was retrieved");
                 service.setApiDoc(apiDoc);
