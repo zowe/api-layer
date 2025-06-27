@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.cache.KeyValue;
 import org.zowe.apiml.caching.service.redis.exceptions.RedisEntryException;
 import org.zowe.apiml.caching.service.redis.exceptions.RedisOutOfMemoryException;
 import org.zowe.apiml.caching.service.redis.exceptions.RetryableRedisException;

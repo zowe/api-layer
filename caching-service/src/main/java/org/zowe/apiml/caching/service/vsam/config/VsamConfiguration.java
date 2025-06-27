@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.zowe.apiml.caching.service.Storage;
+import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.caching.service.vsam.EvictionStrategyProducer;
 import org.zowe.apiml.caching.service.vsam.VsamInitializer;
 import org.zowe.apiml.caching.service.vsam.VsamStorage;

@@ -12,7 +12,7 @@ package org.zowe.apiml.caching.service.inmemory;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.cache.KeyValue;
 import org.zowe.apiml.caching.service.EvictionStrategy;
 
 import java.util.Map;

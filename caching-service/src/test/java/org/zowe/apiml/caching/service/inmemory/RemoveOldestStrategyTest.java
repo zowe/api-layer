@@ -12,7 +12,7 @@ package org.zowe.apiml.caching.service.inmemory;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.cache.KeyValue;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

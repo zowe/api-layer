@@ -28,7 +28,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
-import org.zowe.apiml.caching.service.Storage;
+import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.caching.service.infinispan.exception.InfinispanConfigException;
 import org.zowe.apiml.caching.service.infinispan.storage.InfinispanStorage;
 

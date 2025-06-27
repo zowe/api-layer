@@ -20,7 +20,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
-import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.cache.KeyValue;
+import org.zowe.apiml.cache.Storage;
+import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.StorageException;
@@ -211,7 +213,7 @@ public class CachingController {
      */
     private ResponseEntity<Object> keyRequest(KeyOperation keyOperation, String key, ServerHttpRequest request, HttpStatus successStatus) {
         Optional<String> serviceId = getServiceId(request);
-        if (!serviceId.isPresent()) {
+        if (serviceId.isEmpty()) {
             return getUnauthorizedResponse();
         }
         try {
@@ -238,7 +240,7 @@ public class CachingController {
     private ResponseEntity<Object> keyValueRequest(KeyValueOperation keyValueOperation, KeyValue keyValue,
                                                    ServerHttpRequest request, HttpStatus successStatus) {
         Optional<String> serviceId = getServiceId(request);
-        if (!serviceId.isPresent()) {
+        if (serviceId.isEmpty()) {
             return getUnauthorizedResponse();
         }
 
