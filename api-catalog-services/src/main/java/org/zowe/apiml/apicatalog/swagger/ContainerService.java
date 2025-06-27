@@ -33,6 +33,7 @@ import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
+import org.zowe.apiml.util.EurekaUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -342,10 +343,7 @@ public class ContainerService {
     }
 
     public APIService getService(String serviceId) {
-        return Optional.ofNullable(eurekaClient.getApplication(serviceId))
-            .map(Application::getInstances)
-            .filter(applications -> !applications.isEmpty())
-            .map(applications -> applications.get(0))
+        return EurekaUtils.getInstanceInfo(eurekaClient, serviceId)
             .map(this::createAPIServiceFromInstance)
             .orElse(null);
     }
