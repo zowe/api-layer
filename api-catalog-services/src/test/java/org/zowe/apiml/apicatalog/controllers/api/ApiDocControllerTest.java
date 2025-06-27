@@ -13,13 +13,19 @@ package org.zowe.apiml.apicatalog.controllers.api;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.openapitools.openapidiff.core.OpenApiCompare;
+import org.openapitools.openapidiff.core.compare.OpenApiDiffOptions;
+import org.openapitools.openapidiff.core.model.ChangedOpenApi;
 import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
 
+import java.util.Collections;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class ApiDocControllerTest {
 
@@ -30,7 +36,7 @@ class ApiDocControllerTest {
 
     @BeforeEach
     void setup() {
-        mockApiDocRetrievalService = Mockito.mock(ApiDocRetrievalService.class);
+        mockApiDocRetrievalService = mock(ApiDocRetrievalService.class);
         underTest = new ApiDocController(mockApiDocRetrievalService);
     }
 
@@ -77,16 +83,23 @@ class ApiDocControllerTest {
             }
         }
 
-        /*@Test
+        @Test
         void whenGetApiDiff_thenReturnApiDiffHtml() {
-            String responseString = "<html>Some Diff</html>";
-            ResponseEntity<String> response = new ResponseEntity<>("<html>Some Diff</html>", HttpStatus.OK);
+            ChangedOpenApi changedOpenApi = new ChangedOpenApi(OpenApiDiffOptions.builder().build());
+            changedOpenApi.setChangedOperations(Collections.emptyList());
+            changedOpenApi.setMissingEndpoints(Collections.emptyList());
+            changedOpenApi.setNewEndpoints(Collections.emptyList());
+            doReturn("doc1").when(mockApiDocRetrievalService).retrieveApiDoc("service", "v1");
+            doReturn("doc2").when(mockApiDocRetrievalService).retrieveApiDoc("service", "v2");
 
-            when(mockApiServiceStatusService.getApiDiffInfo("service", "v1", "v2")).thenReturn(response);
-            ResponseEntity<String> res = underTest.getApiDiff("service", "v1", "v2");
-            assertNotNull(res);
-            assertEquals(responseString, res.getBody());
-        }*/
+            try (MockedStatic<OpenApiCompare> openApiCompare = Mockito.mockStatic(OpenApiCompare.class)) {
+                openApiCompare.when(() -> OpenApiCompare.fromContents("doc1", "doc2")).thenReturn(changedOpenApi);
+                //when(mockApiDocRetrievalService.getApiDiffInfo("service", "v1", "v2")).thenReturn(response);
+                ResponseEntity<String> res = underTest.getApiDiff("service", "v1", "v2");
+                assertNotNull(res);
+                assertTrue(res.getBody().contains("<title>Api Change Log</title>"));
+            }
+        }
 
     }
 
