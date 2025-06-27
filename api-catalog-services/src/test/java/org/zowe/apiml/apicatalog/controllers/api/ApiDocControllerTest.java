@@ -94,7 +94,6 @@ class ApiDocControllerTest {
 
             try (MockedStatic<OpenApiCompare> openApiCompare = Mockito.mockStatic(OpenApiCompare.class)) {
                 openApiCompare.when(() -> OpenApiCompare.fromContents("doc1", "doc2")).thenReturn(changedOpenApi);
-                //when(mockApiDocRetrievalService.getApiDiffInfo("service", "v1", "v2")).thenReturn(response);
                 ResponseEntity<String> res = underTest.getApiDiff("service", "v1", "v2");
                 assertNotNull(res);
                 assertTrue(res.getBody().contains("<title>Api Change Log</title>"));
