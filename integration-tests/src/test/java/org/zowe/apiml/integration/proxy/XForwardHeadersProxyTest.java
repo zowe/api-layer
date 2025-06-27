@@ -15,7 +15,6 @@ import io.restassured.specification.RequestSpecification;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -28,7 +27,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.text.IsEmptyString.isEmptyOrNullString;
 import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
 
 @Tag("CloudGatewayCentralRegistry")
 class XForwardHeadersProxyTest {
@@ -68,9 +67,9 @@ class XForwardHeadersProxyTest {
     void throughCGW_throughGW_noXForwardHeadersProvided_newXForwardHeadersCreated(RequestSpecification requestSpecs) {
         requestSpecs
             .header(HEADER_X_FORWARD_TO, "apiml1")
-        .when()
+            .when()
             .get(cgwUrl)
-        .then()
+            .then()
             .statusCode(HttpStatus.SC_OK)
             .body("headers.x-forwarded-proto", is("https,https"))
             .body("headers.x-forwarded-prefix", is("/dcpassticket/api/v1"))
@@ -89,9 +88,9 @@ class XForwardHeadersProxyTest {
             .header("x-forwarded-port", "666")
             .header("x-forwarded-for", "6.6.6.6")
             .header("x-forwarded-host", "9.9.9.9")
-        .when()
+            .when()
             .get(cgwUrl)
-        .then()
+            .then()
             .statusCode(HttpStatus.SC_OK)
             .body("headers.x-forwarded-proto", is("https,https"))
             .body("headers.x-forwarded-prefix", is("/dcpassticket/api/v1"))
@@ -109,9 +108,9 @@ class XForwardHeadersProxyTest {
             .header("x-forwarded-port", "666")
             .header("x-forwarded-for", "6.6.6.6")
             .header("x-forwarded-host", "9.9.9.9")
-        .when()
+            .when()
             .get(gwUrl)
-        .then()
+            .then()
             .statusCode(HttpStatus.SC_OK)
             .body("headers.x-forwarded-proto", is("https"))
             .body("headers.x-forwarded-prefix", is("/dcpassticket/api/v1"))

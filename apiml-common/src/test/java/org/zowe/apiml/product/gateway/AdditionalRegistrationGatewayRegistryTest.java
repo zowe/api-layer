@@ -1,3 +1,13 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
 package org.zowe.apiml.product.gateway;
 
 import com.google.common.cache.CacheBuilder;
@@ -38,7 +48,7 @@ public class AdditionalRegistrationGatewayRegistryTest {
     private final String CGW_IP_ADDRESS = "1.1.1.1";
     private final String CGW_HOSTNAME = "cgw-hostname";
 
-    private Application CGW_APPLICATION =
+    private final Application CGW_APPLICATION =
         new Application(CoreService.GATEWAY.getServiceId(),
             Arrays.asList(InstanceInfo.Builder.newBuilder()
                 .setAppName(CoreService.GATEWAY.getServiceId())
@@ -51,13 +61,15 @@ public class AdditionalRegistrationGatewayRegistryTest {
     private final String GW1_INSTANCE_ID = "gw1-instance-id";
     private final String GW1_IP_ADDRESS = "2.2.2.2";
     private final String GW1_HOSTNAME = "gw1-hostname";
+
     private final InstanceInfo GW1_INSTANCE_INFO = InstanceInfo.Builder.newBuilder()
         .setAppName(CoreService.CLOUD_GATEWAY.getServiceId())
         .setInstanceId(GW1_INSTANCE_ID)
         .setHostName(GW1_HOSTNAME)
         .setIPAddr(GW1_IP_ADDRESS)
         .build();
-    private Application GW1_APPLICATION =
+
+    private final Application GW1_APPLICATION =
         new Application(CoreService.CLOUD_GATEWAY.getServiceId(),
             Arrays.asList(GW1_INSTANCE_INFO));
 
@@ -66,6 +78,7 @@ public class AdditionalRegistrationGatewayRegistryTest {
     private final String GW2_IP_ADDRESS = "3.3.3.3";
     private final String GW2_IP_ADDRESS_FROM_DNS = "4.4.4.4";
     private final String GW2_HOSTNAME = "gw2-hostname";
+
     private final InstanceInfo GW2_INSTANCE_INFO =
         InstanceInfo.Builder.newBuilder()
             .setAppName(CoreService.CLOUD_GATEWAY.getServiceId())
@@ -73,7 +86,8 @@ public class AdditionalRegistrationGatewayRegistryTest {
             .setHostName(GW2_HOSTNAME)
             .setIPAddr(GW2_IP_ADDRESS)
             .build();
-    private Application GW2_APPLICATION =
+
+    private final Application GW2_APPLICATION =
         new Application(CoreService.CLOUD_GATEWAY.getServiceId(),
             Arrays.asList(GW2_INSTANCE_INFO));
 
