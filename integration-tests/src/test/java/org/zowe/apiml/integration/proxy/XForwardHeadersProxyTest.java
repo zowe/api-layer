@@ -11,17 +11,26 @@
 package org.zowe.apiml.integration.proxy;
 
 import io.restassured.RestAssured;
+import io.restassured.specification.RequestSpecification;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.config.*;
+
+import java.util.stream.Stream;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.text.IsEmptyString.isEmptyOrNullString;
+import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
+import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
-@Tag("CloudGatewayProxyTest")
+@Tag("CloudGatewayCentralRegistry")
 class XForwardHeadersProxyTest {
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
@@ -31,6 +40,7 @@ class XForwardHeadersProxyTest {
 
     static String cgwUrl;
     static String gwUrl;
+    static String jwt;
 
     @BeforeAll
     static void init() throws Exception {
@@ -42,13 +52,21 @@ class XForwardHeadersProxyTest {
 
         cgwUrl = String.format("%s://%s:%s%s", cgwConf.getScheme(), cgwConf.getHost(), cgwConf.getPort(), REQUEST_INFO_ENDPOINT);
         gwUrl = String.format("%s://%s:%s%s", gwConf.getScheme(), gwConf.getHost(), gwConf.getPort(), REQUEST_INFO_ENDPOINT);
+
+        jwt = gatewayToken();
     }
 
-    // The request from cloud gateway to gateway is signed and as such trusted
-    @Test
-    void throughCGW_throughGW_noXForwardHeadersProvided_newXForwardHeadersCreated() {
-        given()
-            .config(SslContext.clientCertValid)
+    private static Stream<Arguments> authenticationRequestSpecifications() {
+        return Stream.of(
+            Arguments.of(given().config(SslContext.clientCertValid)),
+            Arguments.of(given().cookie(COOKIE_NAME, jwt))
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("authenticationRequestSpecifications")
+    void throughCGW_throughGW_noXForwardHeadersProvided_newXForwardHeadersCreated(RequestSpecification requestSpecs) {
+        requestSpecs
             .header(HEADER_X_FORWARD_TO, "apiml1")
         .when()
             .get(cgwUrl)
@@ -61,10 +79,10 @@ class XForwardHeadersProxyTest {
             .body("headers.x-forwarded-host", not(isEmptyOrNullString()));
     }
 
-    @Test
-    void fromUntrustedProxy_throughCGW_throughGW_xForwardHeadersProvided_untrustedXForwardHeadersForwarded() {
-        given()
-            .config(SslContext.clientCertValid)
+    @ParameterizedTest
+    @MethodSource("authenticationRequestSpecifications")
+    void fromUntrustedProxy_throughCGW_throughGW_xForwardHeadersProvided_untrustedXForwardHeadersForwarded(RequestSpecification requestSpecs) {
+        requestSpecs
             .header(HEADER_X_FORWARD_TO, "apiml1")
             .header("x-forwarded-proto", "http")
             .header("x-forwarded-prefix", "/untrusted-proxy")
@@ -82,10 +100,10 @@ class XForwardHeadersProxyTest {
             .body("headers.x-forwarded-host", not(containsString("9.9.9.9")));
     }
 
-    @Test
-    void fromUntrustedProxy_throughGW_xForwardHeadersProvided_untrustedXForwardHeadersForwarded() {
-        given()
-            .config(SslContext.clientCertValid)
+    @ParameterizedTest
+    @MethodSource("authenticationRequestSpecifications")
+    void fromUntrustedProxy_throughGW_xForwardHeadersProvided_untrustedXForwardHeadersForwarded(RequestSpecification requestSpecs) {
+        requestSpecs
             .header("x-forwarded-proto", "http")
             .header("x-forwarded-prefix", "/untrusted-proxy")
             .header("x-forwarded-port", "666")
