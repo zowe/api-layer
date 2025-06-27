@@ -411,7 +411,7 @@ public class SecurityUtils {
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
 
         try {
-            return given().config(sslConfig)
+            return given().config(sslConfig).contentType(JSON)
                 .body(accessTokenRequest)
                 .when()
                 .post(gatewayGenerateAccessTokenEndpoint)

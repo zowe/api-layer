@@ -93,14 +93,14 @@ public class WebSecurityConfig {
     private int internalDiscoveryPort;
 
     private static final List<String> UNAUTHENTICATED_PATTERNS = List.of(
-    "/application/",
-    "/application/version",
-    "/eureka/css/**",
-    "/eureka/js/**",
-    "/eureka/fonts/**",
-    "/eureka/images/**",
-    APPLICATION_INFO,
-    "/favicon.ico");
+        "/application/",
+        "/application/version",
+        "/eureka/css/**",
+        "/eureka/js/**",
+        "/eureka/fonts/**",
+        "/eureka/images/**",
+        APPLICATION_INFO,
+        "/favicon.ico");
 
     private final ServerWebExchangeMatcher discoveryPortMatcher = exchange -> exchange.getRequest().getURI().getPort() == internalDiscoveryPort ? MatchResult.match() : MatchResult.notMatch();
     private final ServerWebExchangeMatcher isInUnauthenticatedPaths = ServerWebExchangeMatchers.pathMatchers(UNAUTHENTICATED_PATTERNS.toArray(new String[]{}));
@@ -162,7 +162,7 @@ public class WebSecurityConfig {
     @Bean
     @Order(1)
     SecurityWebFilterChain discoveryServiceBasicAuthOrTokenOrCertFilterChain(ServerHttpSecurity http,
-                                                             AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+                                                                             AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         http
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
@@ -240,15 +240,15 @@ public class WebSecurityConfig {
      * This one applies independently of connector, it covers /application/health in both GW and DS
      *
      * @param http
-     * @param authConfigurationProperties Obtain auth configuration such as auth cookie name
+     * @param authConfigurationProperties  Obtain auth configuration such as auth cookie name
      * @param authExceptionHandlerReactive Exception handler
      * @return The configured {@link SecurityWebFilterChain} to optionally protect /application/health path
      */
     @Bean
     @Order(2)
     SecurityWebFilterChain healthEndpointFilterChain(ServerHttpSecurity http,
-                                                   AuthConfigurationProperties authConfigurationProperties,
-                                                   AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+                                                     AuthConfigurationProperties authConfigurationProperties,
+                                                     AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         http
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(APPLICATION_HEALTH))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
@@ -304,8 +304,8 @@ public class WebSecurityConfig {
     }
 
     /**
-    * Filter chain for protecting endpoints with MF credentials (basic or token)
-    */
+     * Filter chain for protecting endpoints with MF credentials (basic or token)
+     */
     @Bean
     @Order(10)
     SecurityWebFilterChain discoveryBasicAuthOrToken(ServerHttpSecurity http,
@@ -378,15 +378,14 @@ public class WebSecurityConfig {
 
     /**
      * Secures endpoints:
-     *   - /auth/access-token/generate
+     * - /auth/access-token/generate
      * <p>
      * Requires authentication by a client certificate or basic authentication, supports credentials in header and body.
      * The request is fulfilled by the filter chain only, there is no controller to handle it.
      * Order of custom filters:
-     *   - CategorizeCertsWebFilter - checks for forwarded client certificate and put it into a custom request attribute
-     *   - X509AuthFilter - attempts to log in a user using forwarded client certificate, generates access token and stops the chain on success, reply with the token
-     *   - ShouldBeAlreadyAuthenticatedFilter - stops filter chain if none of the authentications was successful
-     *
+     * - CategorizeCertsWebFilter - checks for forwarded client certificate and put it into a custom request attribute
+     * - X509AuthFilter - attempts to log in a user using forwarded client certificate, generates access token and stops the chain on success, reply with the token
+     * - ShouldBeAlreadyAuthenticatedFilter - stops filter chain if none of the authentications was successful
      */
     @Bean
     SecurityWebFilterChain accessTokenFilter(ServerHttpSecurity http) {
@@ -405,14 +404,14 @@ public class WebSecurityConfig {
 
     /**
      * Secures endpoints:
-     *  - /auth/access-token/revoke/tokens/**
-     *  - /auth/access-token/evict
+     * - /auth/access-token/revoke/tokens/**
+     * - /auth/access-token/evict
      * <p>
      * Requires authentication by a client certificate forwarded form Gateway or basic authentication, supports only credentials in header.
      * Order of custom filters:
-     *  - CategorizeCertsWebFilter - checks for forwarded client certificate and put it into a custom request attribute
-     *  - X509AuthFilter - attempts to log in using a user using forwarded client certificate, replaces pre-authentication in security context by the authentication result
-     *  - BasicLoginFilter - attempts to log in a user using credentials from basic authentication header
+     * - CategorizeCertsWebFilter - checks for forwarded client certificate and put it into a custom request attribute
+     * - X509AuthFilter - attempts to log in using a user using forwarded client certificate, replaces pre-authentication in security context by the authentication result
+     * - BasicLoginFilter - attempts to log in a user using credentials from basic authentication header
      */
     @Bean
     SecurityWebFilterChain revokeTokenFilterChain(ServerHttpSecurity http,
@@ -422,7 +421,7 @@ public class WebSecurityConfig {
         var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
 
         return x509SecurityConfig(http)
-            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/gateway/api/v1/auth/access-token/revoke/tokens/**"))
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/gateway/api/v1/auth/access-token/revoke/tokens/**", "/gateway/api/v1/auth/access-token/evict"))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)

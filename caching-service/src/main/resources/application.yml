@@ -115,8 +115,6 @@ spring:
             enabled: false
     application:
         name: Caching service
-    webflux:
-        base-path: /${apiml.service.serviceId}
     output.ansi.enabled: always
     main:
         allow-circular-references: true

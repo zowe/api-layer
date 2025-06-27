@@ -30,11 +30,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.audit.RauditxService;
@@ -50,9 +46,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.zowe.apiml.zaas.controllers.AuthController.ACCESS_TOKEN_REVOKE;
-import static org.zowe.apiml.zaas.controllers.AuthController.ACCESS_TOKEN_REVOKE_MULTIPLE;
-import static org.zowe.apiml.zaas.controllers.AuthController.ACCESS_TOKEN_VALIDATE;
+import static org.zowe.apiml.zaas.controllers.AuthController.*;
 
 @RestController
 @RequestMapping("/gateway/api/v1/auth")
@@ -79,18 +73,18 @@ public class ReactivePATController {
         tags = {"Access token"},
         operationId = "access-token-generate-POST",
         description = """
-            Use the `/access-token/generate` API to authenticate mainframe user credentials and return personal access token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.
+                Use the `/access-token/generate` API to authenticate mainframe user credentials and return personal access token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.
 
-                **Request:**
+                    **Request:**
 
-                    The generate request requires the user credentials in one of the following formats:
-                        * Basic access authentication
-                        * HTTP header containing the client certificate
+                        The generate request requires the user credentials in one of the following formats:
+                            * Basic access authentication
+                            * HTTP header containing the client certificate
 
-                **Response:**
+                    **Response:**
 
-                    The response contains a personal access token in the plain text.
-        """,
+                        The response contains a personal access token in the plain text.
+            """,
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(
                 schema = @Schema(implementation = AccessTokenRequest.class)
@@ -139,6 +133,30 @@ public class ReactivePATController {
             .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatusCode.valueOf(401)).build()));
     }
 
+    @DeleteMapping(value = ACCESS_TOKEN_EVICT)
+    @Operation(summary = "Remove invalidated tokens and rules which are not relevant anymore.",
+        tags = {"Access token"},
+        description = "Will evict all the invalidated tokens which are not relevant anymore\n\n**Request:**\n\nThe evict requires the user credentials in one of the following formats:\n\n* Basic authentication\n* Client certificate  \n\n**Response:**\n\nThe response is no content.",
+        operationId = "accessTokensInvalidateAdminScopeDELETE",
+        security = {
+            @SecurityRequirement(name = "Bearer"),
+            @SecurityRequirement(name = "CookieAuth"),
+            @SecurityRequirement(name = "LoginBasicAuth"),
+            @SecurityRequirement(name = "ClientCert")
+        }
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Successfully evicted")
+    })
+    @ResponseBody
+    @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'UPDATE',#root)")
+    public Mono<ResponseEntity<Void>> evictNonRelevantTokensAndRules() {
+        return Mono.fromCallable(() -> {
+            tokenProvider.evictNonRelevantTokensAndRules();
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        });
+    }
+
     /**
      * Validates whether a personal access token is currently valid and authorized for the specified service ID.
      * The request must contain a valid token and the associated service ID. If the token is valid and has not been
@@ -146,8 +164,8 @@ public class ReactivePATController {
      * <p>
      * Request body example:
      * {
-     *   "token": "pat-token",
-     *   "serviceId": "target-service"
+     * "token": "pat-token",
+     * "serviceId": "target-service"
      * }
      * <p>
      * Responses:
@@ -189,7 +207,7 @@ public class ReactivePATController {
      * <p>
      * Request body (optional):
      * {
-     *   "timestamp": 1710000000000
+     * "timestamp": 1710000000000
      * }
      * <p>
      * Responses:
@@ -244,7 +262,7 @@ public class ReactivePATController {
      * Invalidates a specific personal access token. Requires the token to be provided in the request body.
      * Request body:
      * {
-     *   "token": "your_access_token"
+     * "token": "your_access_token"
      * }
      * Responses:
      * - 204 No Content – Token successfully invalidated
@@ -300,13 +318,14 @@ public class ReactivePATController {
 
     //todo fix: if no body is passed at all, it currently returns
     // The service has encountered a situation it doesn't know how to handle. Please contact support for further assistance. More details are available in the log under the provided message instance ID.
+
     /**
      * Admin-only: Invalidates all PATs for a specific user ID. Requires SAF authorization and a valid userId in the request body.
      * <p>
      * Request body:
      * {
-     *   "userId": "target_user",
-     *   "timestamp": 1710000000000
+     * "userId": "target_user",
+     * "timestamp": 1710000000000
      * }
      * <p>
      * Responses:
@@ -360,8 +379,8 @@ public class ReactivePATController {
      * <p>
      * Request body:
      * {
-     *   "serviceId": "target_service",
-     *   "timestamp": 1710000000000 // optional
+     * "serviceId": "target_service",
+     * "timestamp": 1710000000000 // optional
      * }
      * <p>
      * Responses:

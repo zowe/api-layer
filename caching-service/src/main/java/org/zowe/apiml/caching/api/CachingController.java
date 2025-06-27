@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
 import org.zowe.apiml.caching.service.StorageException;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import reactor.core.publisher.Mono;
@@ -32,10 +34,13 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1")
+@RequestMapping("/cachingservice/api/v1")
 public class CachingController {
     private final Storage storage;
     private final MessageService messageService;
+
+    @Autowired(required = false)
+    ApplicationInfo applicationInfo;
 
 
     @GetMapping(value = {"/cache", "/cache/"}, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -272,12 +277,22 @@ public class CachingController {
     }
 
     private Optional<String> getServiceId(ServerHttpRequest request) {
-        Optional<String> certificateServiceId = getHeader(request, "X-Certificate-DistinguishedName");
+        Optional<String> certificateServiceId = Optional.empty();
+        if (applicationInfo != null && applicationInfo.isModulith()) {
+            if (request.getSslInfo() != null) {
+                var certs = request.getSslInfo().getPeerCertificates();
+                if (certs != null && certs.length > 0) {
+                    certificateServiceId = Optional.of(certs[0].getSubjectDN().getName());
+                }
+            }
+        } else {
+            certificateServiceId = getHeader(request, "X-Certificate-DistinguishedName");
+        }
         Optional<String> specificServiceId = getHeader(request, "X-CS-Service-ID");
 
         if (certificateServiceId.isPresent() && specificServiceId.isPresent()) {
             return Optional.of(certificateServiceId.get() + ", SERVICE=" + specificServiceId.get());
-        } else if (!specificServiceId.isPresent()) {
+        } else if (specificServiceId.isEmpty()) {
             return certificateServiceId;
         } else {
             return specificServiceId;

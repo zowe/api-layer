@@ -23,6 +23,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
+import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
 
@@ -60,6 +62,9 @@ public class SpringSecurityConfig {
         http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .headers(headers -> headers.hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable))
+            .securityMatcher(new AndServerWebExchangeMatcher(
+                ServerWebExchangeMatchers.pathMatchers("/cachinservice/**")
+            ))
             .authorizeExchange(exchange -> exchange
                 .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
                 .anyExchange().authenticated()
