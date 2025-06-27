@@ -189,7 +189,7 @@
                         "apiId":"zowe.apiml.discoverableclient",
                         "gatewayUrl":"api/v1",
                         "version":null,
-                        "swaggerUrl":"https://localhost:10012/discoverableclient/v2/api-docs",
+                        "swaggerUrl":"https://localhost:10012/discoverableclient/v3/api-docs",
                         "documentationUrl":null,
                         "codeSnippet":[
 
