@@ -28,7 +28,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -44,16 +43,15 @@ import java.util.regex.Pattern;
  * the case when multiple APIML Gateways routes each other. The http context cannot be compromised when the request
  * is signed by a trusted certificate, so the content of headers is considered valid, and it is not necessary to verify
  * the host against the list. Otherwise, if the request is not signed, the client address should be validated against configuration.
- *
+ * <p>
  * The implementation supports empty configuration value. The empty value means when the request is signed, the
  * content of headers is accepted otherwise the headers are considered vulnerable and are removed from the request.
- *
+ * <p>
  * Signed / defined pattern | empty list of trusted proxies | a trusted proxy is defined
  * -------------------------+-------------------------------+---------------------------
  * untrusted signature/no   |        headers removed        |   check against the list
  * -------------------------+-------------------------------+---------------------------
  * trusted signature        |        forward headers        |      forward headers
- *
  */
 
 @Slf4j
@@ -65,9 +63,7 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
     final Set<String> certificateChainBase64;
     final Predicate<String> isTrusted;
     final String trustedProxiesRegex;
-    final AtomicReference<Set<String>> trustedApimlGateways;
-
-    final AtomicReference<Set<String>> trustedIpAddresses = new AtomicReference<>(Collections.emptySet());
+    final AtomicReference<Set<String>> trustedAdditionalGateways;
 
     /*
      *
@@ -82,10 +78,9 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
         throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         certificateChainBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
         trustedProxiesRegex = trustedProxiesPattern;
-        trustedApimlGateways = additionalRegistrationGatewayRegistry.getAdditionalGatewayIpAddressesReference();
+        trustedAdditionalGateways = additionalRegistrationGatewayRegistry.getAdditionalGatewayIpAddressesReference();
 
-        Predicate<String> isTrusted =  host -> trustedApimlGateways.get().contains(host);
-        isTrusted = isTrusted.or(host -> trustedIpAddresses.get().contains(host));
+        Predicate<String> isTrusted = host -> trustedAdditionalGateways.get().contains(host);
         if (StringUtils.isEmpty(trustedProxiesRegex)) {
             isTrusted = isTrusted.or(host -> false);
         } else {
@@ -93,10 +88,6 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
             isTrusted = isTrusted.or(host -> host != null && pattern.matcher(host).matches());
         }
         this.isTrusted = isTrusted;
-    }
-
-    public void setTrustedIpAddresses(Set<String> trustedProxies) {
-        this.trustedIpAddresses.set(trustedProxies);
     }
 
     @Override

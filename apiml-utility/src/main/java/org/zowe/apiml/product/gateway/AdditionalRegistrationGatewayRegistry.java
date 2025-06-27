@@ -20,14 +20,16 @@ import com.netflix.discovery.shared.Application;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.zowe.apiml.product.constants.CoreService;
 
 import javax.annotation.PostConstruct;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -35,7 +37,18 @@ import java.util.stream.Stream;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-@Component
+/**
+ * Registry for APIML gateways discovered through additional registrations.
+ * <p>
+ * This class maintains a cache of cloud (central) and standard APIML gateways obtained via additional
+ * registration sources. The cache is automatically updated when the
+ * {@code registerAdditionalRegistrationsGatewayRegistryRefresh} handler is registered with the
+ * {@link DiscoveryClient} associated with the additional registration.
+ * <p>
+ * The primary purpose of this class is to retain the IP addresses of other APIML gateways so they
+ * can be used to evaluate trusted proxy headers.
+ */
+
 @Slf4j
 public class AdditionalRegistrationGatewayRegistry {
 
@@ -58,7 +71,7 @@ public class AdditionalRegistrationGatewayRegistry {
 
     void cacheRefreshEventHandler(EurekaEvent event, DiscoveryClient additionalApimlRegistration) {
         if (event instanceof CacheRefreshedEvent) {
-            Set<String> trustedProxies = Stream.of(
+            Set<String> additionalGateways = Stream.of(
                     additionalApimlRegistration.getApplication(CoreService.GATEWAY.getServiceId()),
                     additionalApimlRegistration.getApplication(CoreService.CLOUD_GATEWAY.getServiceId())
                 )
@@ -67,8 +80,8 @@ public class AdditionalRegistrationGatewayRegistry {
                 .flatMap(List::stream)
                 .flatMap(this::processInstanceInfoForIpAddresses)
                 .collect(Collectors.toSet());
-            log.debug("Additional registrations gateway ip addresses resolved: {}", trustedProxies);
-            additionalGatewayIpAddressesReference.set(trustedProxies);
+            log.debug("Additional registrations gateway ip addresses resolved: {}", additionalGateways);
+            additionalGatewayIpAddressesReference.set(additionalGateways);
         }
     }
 
@@ -102,5 +115,4 @@ public class AdditionalRegistrationGatewayRegistry {
             return Stream.empty();
         }
     }
-
 }

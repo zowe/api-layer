@@ -22,6 +22,7 @@ public class AcceptanceTestWithBasePath {
     protected SecurityRequests securityRequests;
     @Value("${test.proxyAddress}")
     protected String proxyAddress;
+    protected String additionalGatewayAddress = "7.7.7.7";
     @LocalServerPort
     protected int port;
 

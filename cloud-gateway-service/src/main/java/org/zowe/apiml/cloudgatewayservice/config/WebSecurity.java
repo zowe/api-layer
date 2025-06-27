@@ -453,11 +453,10 @@ public class WebSecurity {
     @Primary
     @ConditionalOnProperty(name = "spring.cloud.gateway.x-forwarded.enabled", matchIfMissing = true)
     public XForwardedHeadersFilter xForwardedHeadersFilter(
-        HttpsConfig httpsConfig,
         @Value("${apiml.security.forwardHeader.trustedProxies:#{null}}") String trustedProxies,
+        HttpsConfig httpsConfig,
         AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry
-        ) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+    ) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         return new X509awareXForwardedHeadersFilter(httpsConfig, trustedProxies, additionalRegistrationGatewayRegistry);
     }
-
 }

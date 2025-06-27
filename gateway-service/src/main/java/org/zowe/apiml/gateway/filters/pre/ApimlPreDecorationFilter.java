@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.filters.pre;
 
 import com.netflix.zuul.context.RequestContext;
 import com.netflix.zuul.http.HttpServletRequestWrapper;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
@@ -51,11 +52,11 @@ public class ApimlPreDecorationFilter extends PreDecorationFilter {
     private static final String ATTRNAME_JAVAX_SERVLET_REQUEST_X509_CERTIFICATE = "javax.servlet.request.X509Certificate";
 
     @Value("${apiml.security.forwardHeader.trustedProxies:#{null}}")
-    private String trustedProxies;
+    private String trustedProxiesRegex;
 
     private final CertificateValidator certificateValidator;
 
-    private final AtomicReference<Set<String>> trustedApimlGateways;
+    private final AtomicReference<Set<String>> trustedAdditionalGateways;
 
     private Predicate<String> isHostTrusted = host -> false;
 
@@ -67,17 +68,17 @@ public class ApimlPreDecorationFilter extends PreDecorationFilter {
     ) {
         super(routeLocator, server.getServlet().getContextPath(), zuulProperties, proxyRequestHelper);
         this.certificateValidator = certificateValidator;
-        this.trustedApimlGateways = additionalRegistrationGatewayRegistry.getAdditionalGatewayIpAddressesReference();
+        this.trustedAdditionalGateways = additionalRegistrationGatewayRegistry.getAdditionalGatewayIpAddressesReference();
     }
 
     @PostConstruct
     public void afterPropertiesSet() {
-        if (trustedProxies != null) {
-            Pattern pattern = Pattern.compile(trustedProxies);
+        if (!StringUtils.isEmpty(trustedProxiesRegex)) {
+            Pattern pattern = Pattern.compile(trustedProxiesRegex);
             isHostTrusted = host -> host != null && pattern.matcher(host).matches();
         }
 
-        isHostTrusted = isHostTrusted.or(hostname -> trustedApimlGateways.get().contains(hostname));
+        isHostTrusted = isHostTrusted.or(hostname -> trustedAdditionalGateways.get().contains(hostname));
     }
 
     private boolean isTrusted(RequestContext ctx) {

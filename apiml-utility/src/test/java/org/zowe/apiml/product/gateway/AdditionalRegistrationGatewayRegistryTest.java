@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.product.gateway;
 
-import com.google.common.cache.CacheBuilder;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.DiscoveryClient;
@@ -29,7 +28,6 @@ import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Arrays;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -49,9 +47,9 @@ public class AdditionalRegistrationGatewayRegistryTest {
     private final String CGW_HOSTNAME = "cgw-hostname";
 
     private final Application CGW_APPLICATION =
-        new Application(CoreService.GATEWAY.getServiceId(),
+        new Application(CoreService.CLOUD_GATEWAY.getServiceId(),
             Arrays.asList(InstanceInfo.Builder.newBuilder()
-                .setAppName(CoreService.GATEWAY.getServiceId())
+                .setAppName(CoreService.CLOUD_GATEWAY.getServiceId())
                 .setInstanceId(CGW_INSTANCE_ID)
                 .setHostName(CGW_HOSTNAME)
                 .setIPAddr(CGW_IP_ADDRESS)
@@ -63,14 +61,14 @@ public class AdditionalRegistrationGatewayRegistryTest {
     private final String GW1_HOSTNAME = "gw1-hostname";
 
     private final InstanceInfo GW1_INSTANCE_INFO = InstanceInfo.Builder.newBuilder()
-        .setAppName(CoreService.CLOUD_GATEWAY.getServiceId())
+        .setAppName(CoreService.GATEWAY.getServiceId())
         .setInstanceId(GW1_INSTANCE_ID)
         .setHostName(GW1_HOSTNAME)
         .setIPAddr(GW1_IP_ADDRESS)
         .build();
 
     private final Application GW1_APPLICATION =
-        new Application(CoreService.CLOUD_GATEWAY.getServiceId(),
+        new Application(CoreService.GATEWAY.getServiceId(),
             Arrays.asList(GW1_INSTANCE_INFO));
 
     // Gateway resolved to multiple ip addresses
@@ -81,19 +79,19 @@ public class AdditionalRegistrationGatewayRegistryTest {
 
     private final InstanceInfo GW2_INSTANCE_INFO =
         InstanceInfo.Builder.newBuilder()
-            .setAppName(CoreService.CLOUD_GATEWAY.getServiceId())
+            .setAppName(CoreService.GATEWAY.getServiceId())
             .setInstanceId(GW2_INSTANCE_ID)
             .setHostName(GW2_HOSTNAME)
             .setIPAddr(GW2_IP_ADDRESS)
             .build();
 
     private final Application GW2_APPLICATION =
-        new Application(CoreService.CLOUD_GATEWAY.getServiceId(),
+        new Application(CoreService.GATEWAY.getServiceId(),
             Arrays.asList(GW2_INSTANCE_INFO));
 
     // Appplication with both gateways
     private Application ALL_GW_APPLICATION =
-        new Application(CoreService.CLOUD_GATEWAY.getServiceId(),
+        new Application(CoreService.GATEWAY.getServiceId(),
             Arrays.asList(GW1_INSTANCE_INFO, GW2_INSTANCE_INFO));
 
     @BeforeEach
@@ -114,7 +112,7 @@ public class AdditionalRegistrationGatewayRegistryTest {
     }
 
     @Test
-    void whenClouGateway_thenAddIpToRegistry() {
+    void whenCloudGateway_thenAddIpToRegistry() {
         when(discoveryClientMock.getApplication(CoreService.CLOUD_GATEWAY.getServiceId())).thenReturn(CGW_APPLICATION);
         when(discoveryClientMock.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(null);
 
@@ -128,7 +126,7 @@ public class AdditionalRegistrationGatewayRegistryTest {
     }
 
     @Test
-    void whenClouGateway_andGateway_thenAddIpToRegistry() {
+    void whenCloudGateway_andGateway_thenAddIpToRegistry() {
         when(discoveryClientMock.getApplication(CoreService.CLOUD_GATEWAY.getServiceId())).thenReturn(CGW_APPLICATION);
         when(discoveryClientMock.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(GW1_APPLICATION);
 
@@ -143,7 +141,7 @@ public class AdditionalRegistrationGatewayRegistryTest {
     }
 
     @Test
-    void whenClouGateway_andGatewayWithDNSResolution_thenAddIpToRegistry() throws UnknownHostException {
+    void whenCloudGateway_andGatewayWithDNSResolution_thenAddIpToRegistry() throws UnknownHostException {
         when(discoveryClientMock.getApplication(CoreService.CLOUD_GATEWAY.getServiceId())).thenReturn(CGW_APPLICATION);
         when(discoveryClientMock.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(GW2_APPLICATION);
 
@@ -173,7 +171,36 @@ public class AdditionalRegistrationGatewayRegistryTest {
     }
 
     @Test
-    void whenClouGateway_andMultipleGateways_thenAddIpToRegistry() {
+    void whenCloudGateway_andGatewayWithDNSResolutionFailed_thenAddIpToRegistry() throws UnknownHostException {
+        when(discoveryClientMock.getApplication(CoreService.CLOUD_GATEWAY.getServiceId())).thenReturn(CGW_APPLICATION);
+        when(discoveryClientMock.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(GW2_APPLICATION);
+
+
+        InetAddress[] resolvedCgwHostname = new InetAddress[]{InetAddress.getByName(CGW_IP_ADDRESS)};
+        InetAddress[] resolvedCgwIpAddress = new InetAddress[]{InetAddress.getByName(CGW_IP_ADDRESS)};
+        InetAddress[] resolvedGw2IpAddress = new InetAddress[]{InetAddress.getByName(GW2_IP_ADDRESS)};
+
+        try (MockedStatic<InetAddress> inetAddressMocked = Mockito.mockStatic(InetAddress.class)) {
+            // We cannot use .callReaLMethod() as it relies on native call that cannot be used via mock
+            inetAddressMocked.when(() -> InetAddress.getAllByName(CGW_HOSTNAME)).thenReturn(resolvedCgwHostname);
+            inetAddressMocked.when(() -> InetAddress.getAllByName(CGW_IP_ADDRESS)).thenReturn(resolvedCgwIpAddress);
+            inetAddressMocked.when(() -> InetAddress.getAllByName(GW2_IP_ADDRESS)).thenReturn(resolvedGw2IpAddress);
+            inetAddressMocked.when(() -> InetAddress.getAllByName(GW2_HOSTNAME)).thenThrow(new UnknownHostException());
+
+            gatewayRegistry.cacheRefreshEventHandler(new CacheRefreshedEvent(), discoveryClientMock);
+        }
+
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().size(), is(2));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(CGW_INSTANCE_ID), is(Arrays.asList(CGW_IP_ADDRESS)));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(GW2_INSTANCE_ID).size(), is(1));
+        assertTrue(gatewayRegistry.knownAdditionalGateways.asMap().get(GW2_INSTANCE_ID).containsAll(Arrays.asList(GW2_IP_ADDRESS)));
+
+        assertThat(gatewayRegistry.additionalGatewayIpAddressesReference.get().size(), is(2));
+        assertTrue(gatewayRegistry.additionalGatewayIpAddressesReference.get().containsAll(Arrays.asList(CGW_IP_ADDRESS, GW2_IP_ADDRESS)));
+    }
+
+    @Test
+    void whenCloudGateway_andMultipleGateways_thenAddIpToRegistry() {
         when(discoveryClientMock.getApplication(CoreService.CLOUD_GATEWAY.getServiceId())).thenReturn(CGW_APPLICATION);
         when(discoveryClientMock.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(ALL_GW_APPLICATION);
 
@@ -190,8 +217,10 @@ public class AdditionalRegistrationGatewayRegistryTest {
 
     @Test
     void clearGwRegistryCache() {
-        gatewayRegistry.knownAdditionalGateways = CacheBuilder.newBuilder().expireAfterWrite(1L, SECONDS).build();
-        whenClouGateway_thenAddIpToRegistry();
+        gatewayRegistry.registryExpiration = Duration.ofSeconds(1);
+        gatewayRegistry.init();
+
+        whenCloudGateway_thenAddIpToRegistry();
         assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(CGW_INSTANCE_ID).size(), is(1));
 
         await().atMost(Duration.ofSeconds(3)).untilAsserted(() ->

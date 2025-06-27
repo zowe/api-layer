@@ -15,10 +15,8 @@ import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
-import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
@@ -64,7 +62,7 @@ import org.zowe.apiml.config.AdditionalRegistrationParser;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
-import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.gateway.AdditionalRegistrationGatewayRegistry;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.HttpsFactory;
@@ -75,13 +73,9 @@ import reactor.netty.http.client.HttpClient;
 import javax.annotation.PostConstruct;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.security.KeyStore;
 import java.time.Duration;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
 
@@ -285,6 +279,7 @@ public class ConnectionsConfig {
         List<AdditionalRegistration> additionalRegistrations,
         EurekaFactory eurekaFactory,
         @Autowired(required = false) HealthCheckHandler healthCheckHandler,
+        AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry,
         Optional<X509awareXForwardedHeadersFilter> x509awareXForwardedHeadersFilter
     ) {
         List<CloudEurekaClient> additionalClients = new ArrayList<>(additionalRegistrations.size());
@@ -293,30 +288,9 @@ public class ConnectionsConfig {
             additionalClients.add(cloudEurekaClient);
             cloudEurekaClient.registerHealthCheck(healthCheckHandler);
 
-            x509awareXForwardedHeadersFilter.ifPresent(awareXForwardedHeadersFilter -> cloudEurekaClient.registerEventListener(event -> {
-                if (event instanceof CacheRefreshedEvent) {
-                    Set<String> trustedProxies = Stream.of(
-                            cloudEurekaClient.getApplication(CoreService.GATEWAY.getServiceId()),
-                            cloudEurekaClient.getApplication(CoreService.CLOUD_GATEWAY.getServiceId())
-                        ).map(Application::getInstances)
-                        .flatMap(List::stream)
-                        .flatMap(instanceInfo -> {
-                            try {
-                                return Stream.of(
-                                        InetAddress.getAllByName(instanceInfo.getHostName()),
-                                        InetAddress.getAllByName(instanceInfo.getIPAddr())
-                                    )
-                                    .flatMap(Stream::of)
-                                    .map(InetAddress::getHostAddress);
-                            } catch (UnknownHostException e) {
-                                log.debug("Unknown host for instance {}", instanceInfo);
-                                return Stream.empty();
-                            }
-                        })
-                        .collect(Collectors.toSet());
-                    awareXForwardedHeadersFilter.setTrustedIpAddresses(trustedProxies);
-                }
-            }));
+            x509awareXForwardedHeadersFilter
+                .ifPresent(__ ->
+                    additionalRegistrationGatewayRegistry.registerAdditionalRegistrationsGatewayRegistryRefresh(cloudEurekaClient));
         }
         return new AdditionalEurekaClientsHolder(additionalClients);
     }
