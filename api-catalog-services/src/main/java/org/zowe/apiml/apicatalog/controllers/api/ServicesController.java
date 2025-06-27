@@ -153,7 +153,12 @@ public class ServicesController {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
             log.debug("Getting service by id {}", id);
-            String apiDoc = apiDocRetrievalService.retrieveDefaultApiDoc(id);
+            String apiDoc = null;
+            try {
+                apiDoc = apiDocRetrievalService.retrieveDefaultApiDoc(id);
+            } catch (Exception e) {
+                log.debug("Cannot download api doc", e);
+            }
             log.debug("Getting service: {} with status {}", service.getServiceId(), service.getStatus());
 
             if (apiDoc != null) {
