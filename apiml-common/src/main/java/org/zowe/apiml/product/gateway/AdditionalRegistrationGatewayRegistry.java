@@ -34,11 +34,11 @@ public class AdditionalRegistrationGatewayRegistry {
 
     @Getter
     AtomicReference<Set<String>> additionalGatewayIpAddressesReference = new AtomicReference<>(Collections.emptySet());
-    Cache<String, List<String>> knownGateways;
+    Cache<String, List<String>> knownAdditionalGateways;
 
     @PostConstruct
     public void init() {
-        knownGateways = CacheBuilder.newBuilder().expireAfterWrite(registryExpiration.toMillis(), MILLISECONDS).build();
+        knownAdditionalGateways = CacheBuilder.newBuilder().expireAfterWrite(registryExpiration.toMillis(), MILLISECONDS).build();
     }
 
     public void registerAdditionalRegistrationsGatewayRegistryRefresh(DiscoveryClient additionalApimlRegistration) {
@@ -73,7 +73,7 @@ public class AdditionalRegistrationGatewayRegistry {
 
     private Stream<String> processInstanceInfoForIpAddresses(InstanceInfo instanceInfo) {
         try {
-            return knownGateways.get(instanceInfo.getInstanceId(), () -> {
+            return knownAdditionalGateways.get(instanceInfo.getInstanceId(), () -> {
                 List<String> addresses = Stream.of(
                         getInetAddressesByName(instanceInfo.getInstanceId(), instanceInfo.getHostName()),
                         getInetAddressesByName(instanceInfo.getInstanceId(), instanceInfo.getIPAddr())

@@ -10,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedStatic;
-import org.mockito.MockingDetails;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.product.constants.CoreService;
@@ -107,8 +106,11 @@ public class AdditionalRegistrationGatewayRegistryTest {
 
         gatewayRegistry.cacheRefreshEventHandler(new CacheRefreshedEvent(), discoveryClientMock);
 
-        assertThat(gatewayRegistry.knownGateways.asMap().size(), is(1));
-        assertThat(gatewayRegistry.knownGateways.asMap().get(CGW_INSTANCE_ID), is(Arrays.asList(CGW_IP_ADDRESS)));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().size(), is(1));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(CGW_INSTANCE_ID), is(Arrays.asList(CGW_IP_ADDRESS)));
+
+        assertThat(gatewayRegistry.additionalGatewayIpAddressesReference.get().size(), is(1));
+        assertTrue(gatewayRegistry.additionalGatewayIpAddressesReference.get().contains(CGW_IP_ADDRESS));
     }
 
     @Test
@@ -118,9 +120,12 @@ public class AdditionalRegistrationGatewayRegistryTest {
 
         gatewayRegistry.cacheRefreshEventHandler(new CacheRefreshedEvent(), discoveryClientMock);
 
-        assertThat(gatewayRegistry.knownGateways.asMap().size(), is(2));
-        assertThat(gatewayRegistry.knownGateways.asMap().get(CGW_INSTANCE_ID), is(Arrays.asList(CGW_IP_ADDRESS)));
-        assertThat(gatewayRegistry.knownGateways.asMap().get(GW1_INSTANCE_ID), is(Arrays.asList(GW1_IP_ADDRESS)));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().size(), is(2));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(CGW_INSTANCE_ID), is(Arrays.asList(CGW_IP_ADDRESS)));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(GW1_INSTANCE_ID), is(Arrays.asList(GW1_IP_ADDRESS)));
+
+        assertThat(gatewayRegistry.additionalGatewayIpAddressesReference.get().size(), is(2));
+        assertTrue(gatewayRegistry.additionalGatewayIpAddressesReference.get().containsAll(Arrays.asList(CGW_IP_ADDRESS, GW1_IP_ADDRESS)));
     }
 
     @Test
@@ -141,15 +146,16 @@ public class AdditionalRegistrationGatewayRegistryTest {
             inetAddressMocked.when(() -> InetAddress.getAllByName(GW2_IP_ADDRESS)).thenReturn(resolvedGw2IpAddress);
             inetAddressMocked.when(() -> InetAddress.getAllByName(GW2_HOSTNAME)).thenReturn(resolvedGw2Hostname);
 
-            MockingDetails foo = Mockito.mockingDetails(inetAddressMocked);
-
             gatewayRegistry.cacheRefreshEventHandler(new CacheRefreshedEvent(), discoveryClientMock);
-
-            assertThat(gatewayRegistry.knownGateways.asMap().size(), is(2));
-            assertThat(gatewayRegistry.knownGateways.asMap().get(CGW_INSTANCE_ID), is(Arrays.asList(CGW_IP_ADDRESS)));
-            assertThat(gatewayRegistry.knownGateways.asMap().get(GW2_INSTANCE_ID).size(), is(2));
-            assertTrue(gatewayRegistry.knownGateways.asMap().get(GW2_INSTANCE_ID).containsAll(Arrays.asList(GW2_IP_ADDRESS, GW2_IP_ADDRESS_FROM_DNS)));
         }
+
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().size(), is(2));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(CGW_INSTANCE_ID), is(Arrays.asList(CGW_IP_ADDRESS)));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(GW2_INSTANCE_ID).size(), is(2));
+        assertTrue(gatewayRegistry.knownAdditionalGateways.asMap().get(GW2_INSTANCE_ID).containsAll(Arrays.asList(GW2_IP_ADDRESS, GW2_IP_ADDRESS_FROM_DNS)));
+
+        assertThat(gatewayRegistry.additionalGatewayIpAddressesReference.get().size(), is(3));
+        assertTrue(gatewayRegistry.additionalGatewayIpAddressesReference.get().containsAll(Arrays.asList(CGW_IP_ADDRESS, GW2_IP_ADDRESS, GW2_IP_ADDRESS_FROM_DNS)));
     }
 
     @Test
@@ -159,21 +165,31 @@ public class AdditionalRegistrationGatewayRegistryTest {
 
         gatewayRegistry.cacheRefreshEventHandler(new CacheRefreshedEvent(), discoveryClientMock);
 
-        assertThat(gatewayRegistry.knownGateways.asMap().size(), is(3));
-        assertThat(gatewayRegistry.knownGateways.asMap().get(CGW_INSTANCE_ID), is(Arrays.asList(CGW_IP_ADDRESS)));
-        assertThat(gatewayRegistry.knownGateways.asMap().get(GW1_INSTANCE_ID), is(Arrays.asList(GW1_IP_ADDRESS)));
-        assertThat(gatewayRegistry.knownGateways.asMap().get(GW2_INSTANCE_ID), is(Arrays.asList(GW2_IP_ADDRESS)));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().size(), is(3));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(CGW_INSTANCE_ID), is(Arrays.asList(CGW_IP_ADDRESS)));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(GW1_INSTANCE_ID), is(Arrays.asList(GW1_IP_ADDRESS)));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(GW2_INSTANCE_ID), is(Arrays.asList(GW2_IP_ADDRESS)));
+
+        assertThat(gatewayRegistry.additionalGatewayIpAddressesReference.get().size(), is(3));
+        assertTrue(gatewayRegistry.additionalGatewayIpAddressesReference.get().containsAll(Arrays.asList(CGW_IP_ADDRESS, GW1_IP_ADDRESS, GW2_IP_ADDRESS)));
     }
 
     @Test
     void clearGwRegistryCache() {
-        gatewayRegistry.knownGateways = CacheBuilder.newBuilder().expireAfterWrite(1L, SECONDS).build();
+        gatewayRegistry.knownAdditionalGateways = CacheBuilder.newBuilder().expireAfterWrite(1L, SECONDS).build();
         whenClouGateway_thenAddIpToRegistry();
-        assertThat(gatewayRegistry.knownGateways.asMap().get(CGW_INSTANCE_ID).size(), is(1));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(CGW_INSTANCE_ID).size(), is(1));
 
         await().atMost(Duration.ofSeconds(3)).untilAsserted(() ->
             // We cannot validate on size as the entries may still be in the cache but masked
-            assertNull(gatewayRegistry.knownGateways.asMap().get(CGW_INSTANCE_ID))
+            assertNull(gatewayRegistry.knownAdditionalGateways.asMap().get(CGW_INSTANCE_ID))
         );
+
+        when(discoveryClientMock.getApplication(CoreService.CLOUD_GATEWAY.getServiceId())).thenReturn(null);
+        when(discoveryClientMock.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(null);
+
+        gatewayRegistry.cacheRefreshEventHandler(new CacheRefreshedEvent(), discoveryClientMock);
+        assertNull(gatewayRegistry.knownAdditionalGateways.asMap().get(CGW_INSTANCE_ID));
+        assertThat(gatewayRegistry.additionalGatewayIpAddressesReference.get().size(), is(0));
     }
 }
