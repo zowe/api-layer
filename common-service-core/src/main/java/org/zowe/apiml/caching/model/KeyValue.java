@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -25,6 +26,9 @@ import java.util.Date;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @Data
 public class KeyValue implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 4831101523346346817L;
     private final String key;
     private final String value;
     private String serviceId;
