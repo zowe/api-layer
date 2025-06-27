@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.zowe.apiml.caching.config.GeneralConfig;
-import org.zowe.apiml.cache.KeyValue;
+import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Strategies;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.zfile.ZFile;

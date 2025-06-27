@@ -14,7 +14,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.cache.KeyValue;
+import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.zaas.cache.CachingClient;

@@ -12,7 +12,7 @@ package org.zowe.apiml.caching.service.redis;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Retryable;
-import org.zowe.apiml.cache.KeyValue;
+import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;

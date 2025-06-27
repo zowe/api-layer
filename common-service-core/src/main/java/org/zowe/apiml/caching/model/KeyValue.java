@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.cache;
+package org.zowe.apiml.caching.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;

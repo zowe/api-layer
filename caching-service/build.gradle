@@ -57,7 +57,7 @@ configurations.all {
 
 dependencies {
     api project(':apiml-tomcat-common')
-//    api project(':onboarding-enabler-spring') TODO fix for microservice
+    api project(':onboarding-enabler-spring') //TODO fix for microservice
     api project(':apiml-security-common')
 
     implementation libs.spring.boot.starter.aop

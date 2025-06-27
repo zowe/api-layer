@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
+import org.zowe.apiml.caching.model.KeyValue;
 import reactor.core.publisher.Mono;
 
 import static reactor.core.publisher.Mono.empty;
@@ -54,7 +55,7 @@ public class CachingServiceClientApi implements CachingServiceClient {
     public Mono<ApiKeyValue> read(String key) {
         try {
             String serviceId = extractServiceId(key);
-            org.zowe.apiml.cache.KeyValue stored = storage.read(serviceId, key);
+            KeyValue stored = storage.read(serviceId, key);
             if (stored != null) {
                 return Mono.just(new ApiKeyValue(stored.getKey(), stored.getValue()));
             } else {
@@ -76,8 +77,8 @@ public class CachingServiceClientApi implements CachingServiceClient {
         }
     }
 
-    private org.zowe.apiml.cache.KeyValue mapToApiKeyValue(ApiKeyValue apiValue) {
-        return new org.zowe.apiml.cache.KeyValue(apiValue.getKey(), apiValue.getValue());
+    private KeyValue mapToApiKeyValue(ApiKeyValue apiValue) {
+        return new KeyValue(apiValue.getKey(), apiValue.getValue());
     }
 
     /**

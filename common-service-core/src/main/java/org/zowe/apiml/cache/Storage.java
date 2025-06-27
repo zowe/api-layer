@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.cache;
 
+import org.zowe.apiml.caching.model.KeyValue;
+
 import java.util.Map;
 
 /**

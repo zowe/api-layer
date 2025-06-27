@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.config.GeneralConfig;
-import org.zowe.apiml.cache.KeyValue;
+import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.RejectStrategy;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.service.Strategies;

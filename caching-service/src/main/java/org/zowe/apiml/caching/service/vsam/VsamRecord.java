@@ -13,7 +13,7 @@ package org.zowe.apiml.caching.service.vsam;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.zowe.apiml.cache.KeyValue;
+import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;

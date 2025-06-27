@@ -20,7 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
-import org.zowe.apiml.cache.KeyValue;
+import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.service.Messages;

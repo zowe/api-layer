@@ -19,7 +19,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.zowe.apiml.cache.KeyValue;
+import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
