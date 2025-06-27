@@ -57,6 +57,7 @@ import org.springframework.web.server.WebFilter;
 import org.zowe.apiml.cloudgatewayservice.config.oidc.ClientConfiguration;
 import org.zowe.apiml.cloudgatewayservice.filters.X509awareXForwardedHeadersFilter;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.gateway.AdditionalRegistrationGatewayRegistry;
 import org.zowe.apiml.security.HttpsConfig;
 import reactor.core.publisher.Mono;
 
@@ -444,12 +445,19 @@ public class WebSecurity {
     }
 
     @Bean
+    public AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry() {
+        return new AdditionalRegistrationGatewayRegistry();
+    }
+
+    @Bean
     @Primary
     @ConditionalOnProperty(name = "spring.cloud.gateway.x-forwarded.enabled", matchIfMissing = true)
     public XForwardedHeadersFilter xForwardedHeadersFilter(
         HttpsConfig httpsConfig,
-        @Value("${apiml.security.forwardHeader.trustedProxies:#{null}}") String trustedProxies) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
-        return new X509awareXForwardedHeadersFilter(httpsConfig, trustedProxies);
+        @Value("${apiml.security.forwardHeader.trustedProxies:#{null}}") String trustedProxies,
+        AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry
+        ) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+        return new X509awareXForwardedHeadersFilter(httpsConfig, trustedProxies, additionalRegistrationGatewayRegistry);
     }
 
 }

@@ -63,6 +63,7 @@ dependencies {
     api project(':common-service-core')
     api project(':apiml-utility')
     api project(':apiml-tomcat-common')
+    api project(':apiml-common')
 
     implementation libs.eh.cache
     implementation libs.spring.cloud.starter.gateway

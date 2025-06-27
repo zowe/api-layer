@@ -18,6 +18,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.product.gateway.AdditionalRegistrationGatewayRegistry;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.SecurityUtils;
 
@@ -63,7 +64,8 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
 
     final Set<String> certificateChainBase64;
     final Predicate<String> isTrusted;
-    final String trustedProxies;
+    final String trustedProxiesRegex;
+    final AtomicReference<Set<String>> trustedApimlGateways;
 
     final AtomicReference<Set<String>> trustedIpAddresses = new AtomicReference<>(Collections.emptySet());
 
@@ -73,18 +75,24 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
      * @param trustedProxies configuration value of a pattern on how validate proxy
      *
      */
-    public X509awareXForwardedHeadersFilter(HttpsConfig httpsConfig, String trustedProxiesPattern) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+    public X509awareXForwardedHeadersFilter(
+        HttpsConfig httpsConfig,
+        String trustedProxiesPattern,
+        AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry)
+        throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         certificateChainBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
-        trustedProxies = trustedProxiesPattern;
-        Predicate<String> isTrusted;
-        if (StringUtils.isEmpty(trustedProxies)) {
-            isTrusted = host -> false;
-        } else {
-            Pattern pattern = Pattern.compile(trustedProxies);
-            isTrusted = host -> host != null && pattern.matcher(host).matches();
-        }
+        trustedProxiesRegex = trustedProxiesPattern;
+        trustedApimlGateways = additionalRegistrationGatewayRegistry.getAdditionalGatewayIpAddressesReference();
 
-        this.isTrusted = isTrusted.or(hostname -> trustedIpAddresses.get().contains(hostname));
+        Predicate<String> isTrusted =  host -> trustedApimlGateways.get().contains(host);
+        isTrusted = isTrusted.or(host -> trustedIpAddresses.get().contains(host));
+        if (StringUtils.isEmpty(trustedProxiesRegex)) {
+            isTrusted = isTrusted.or(host -> false);
+        } else {
+            Pattern pattern = Pattern.compile(trustedProxiesRegex);
+            isTrusted = isTrusted.or(host -> host != null && pattern.matcher(host).matches());
+        }
+        this.isTrusted = isTrusted;
     }
 
     public void setTrustedIpAddresses(Set<String> trustedProxies) {
@@ -119,7 +127,7 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
                         }
                     }
                 ).build();
-                log.trace("Remote address not trusted. Trusted proxies pattern: {}, remote address: {}", trustedProxies, remoteAddress);
+                log.trace("Remote address not trusted. Trusted proxies pattern: {}, remote address: {}", trustedProxiesRegex, remoteAddress);
                 return super.filter(removeXForwardHttpHeaders(input), sanitizedExchange);
             }
         }
