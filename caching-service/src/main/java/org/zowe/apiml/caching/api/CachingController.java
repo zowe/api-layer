@@ -24,8 +24,6 @@ import org.zowe.apiml.cache.KeyValue;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.service.Messages;
-import org.zowe.apiml.caching.service.Storage;
-import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
