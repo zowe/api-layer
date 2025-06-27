@@ -18,6 +18,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpStatus;
 import org.openapitools.openapidiff.core.OpenApiCompare;
 import org.openapitools.openapidiff.core.model.ChangedOpenApi;
 import org.openapitools.openapidiff.core.output.HtmlRender;
@@ -29,8 +31,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.apicatalog.exceptions.ApiDiffNotAvailableException;
 import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
-
-import java.util.Collections;
 
 /**
  * Main API for handling requests from the API Catalog UI, routed through the gateway
@@ -128,9 +128,10 @@ public class ApiDocController {
             String result = render.render(diff);
             //Remove external stylesheet
             result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
-            ResponseEntity<String> response = ResponseEntity.ok(result);
-            response.getHeaders().setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-            return response;
+            return ResponseEntity
+                .status(HttpStatus.SC_OK)
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .body(result);
         } catch (Exception e) {
             String errorMessage = String.format("Error retrieving API diff for '%s' with versions '%s' and '%s'", serviceId, apiId1, apiId2);
             log.error(errorMessage, e);
