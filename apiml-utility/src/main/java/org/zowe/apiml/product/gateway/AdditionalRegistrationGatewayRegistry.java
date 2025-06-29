@@ -62,11 +62,14 @@ public class AdditionalRegistrationGatewayRegistry {
     @PostConstruct
     public void init() {
         knownAdditionalGateways = CacheBuilder.newBuilder().expireAfterWrite(registryExpiration.toMillis(), MILLISECONDS).build();
+        log.debug("AdditionalRegistrationGatewayRegistry initialized");
     }
 
     public void registerAdditionalRegistrationsGatewayRegistryRefresh(DiscoveryClient additionalApimlRegistration) {
         additionalApimlRegistration.registerEventListener(
             event -> cacheRefreshEventHandler(event, additionalApimlRegistration));
+        log.debug("AdditionalRegistrationGatewayRegistry refresh registered for additional registration: {}",
+            additionalApimlRegistration.getEurekaClientConfig().getEurekaServerServiceUrls(null));
     }
 
     void cacheRefreshEventHandler(EurekaEvent event, DiscoveryClient additionalApimlRegistration) {

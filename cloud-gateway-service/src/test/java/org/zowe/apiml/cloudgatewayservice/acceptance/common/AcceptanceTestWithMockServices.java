@@ -43,6 +43,8 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
 
     public String additionalGatewayAddress = "7.7.7.7";
 
+    public String clientAddress = "11.11.11.11";
+
     @Value("${server.ssl.keyStore}")
     private String apimlKeyStorePath;
 

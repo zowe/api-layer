@@ -61,7 +61,7 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
     public static final String FORWARDED_HEADER = "Forwarded";
 
     final Set<String> certificateChainBase64;
-    final Predicate<String> isTrusted;
+    final Predicate<String> isProxyTrusted;
     final String trustedProxiesRegex;
     final AtomicReference<Set<String>> trustedAdditionalGateways;
 
@@ -87,11 +87,13 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
             Pattern pattern = Pattern.compile(trustedProxiesRegex);
             isTrusted = isTrusted.or(host -> host != null && pattern.matcher(host).matches());
         }
-        this.isTrusted = isTrusted;
+        this.isProxyTrusted = isTrusted;
     }
 
     @Override
     public HttpHeaders filter(HttpHeaders input, ServerWebExchange exchange) {
+        if (!hasXForwardedHeader(input)) return super.filter(input, exchange);
+
         boolean trustedSourceByX509 = Optional.ofNullable(exchange.getRequest().getSslInfo())
             .map(SslInfo::getPeerCertificates)
             .filter(certs -> certs.length > 0)
@@ -108,7 +110,7 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
                 log.trace("Remote address is null and cannot be evaluated for trusted proxy.");
                 return super.filter(removeXForwardHttpHeaders(input), exchange);
             }
-            if (!isTrusted.test(remoteAddress.getHostString())) {
+            if (!isProxyTrusted.test(remoteAddress.getHostString())) {
                 //Mask the address if it is not trusted so it cannot be used to build the forward headers
                 ServerWebExchange sanitizedExchange = exchange.mutate().request(
                     new ServerHttpRequestDecorator(request) {
@@ -127,7 +129,7 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
 
     private HttpHeaders removeXForwardHttpHeaders(HttpHeaders input) {
         HttpHeaders h = new HttpHeaders();
-        input.forEach( (header, values) -> {
+        input.forEach((header, values) -> {
             if (!isXForwardedHeader(header)) {
                 h.put(header, values);
             }
@@ -144,4 +146,8 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
             header.equalsIgnoreCase(FORWARDED_HEADER);
     }
 
+    private boolean hasXForwardedHeader(HttpHeaders headers) {
+        return headers.keySet().stream()
+            .anyMatch(this::isXForwardedHeader);
+    }
 }

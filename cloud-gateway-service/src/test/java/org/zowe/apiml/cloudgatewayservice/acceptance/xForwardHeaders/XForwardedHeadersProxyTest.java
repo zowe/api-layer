@@ -47,7 +47,7 @@ class XForwardedHeadersProxyTest extends AcceptanceTestWithMockServices {
         mockService("untrusted-proxies")
             .scope(MockService.Scope.CLASS)
             .addEndpoint("/untrusted-proxies/xForwardedHeadersCreated")
-            .assertion(he -> assertNull(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_FOR_HEADER)))
+            .assertion(he -> assertEquals(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_FOR_HEADER), clientAddress))
             .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst(X509awareXForwardedHeadersFilter.X_FORWARDED_HOST_HEADER)))
             .responseCode(SC_OK)
         .and()
@@ -75,12 +75,14 @@ class XForwardedHeadersProxyTest extends AcceptanceTestWithMockServices {
 
     @Test
     void whenNoXForwardHeadersInRequest_thenXForwardHeadersCreated() {
+        mutateRemoteAddressFilter.proxyAddressReference.set(clientAddress);
         given()
             .log().all()
         .when()
             .get(basePath + "/untrusted-proxies/api/v1/xForwardedHeadersCreated")
         .then()
             .statusCode(is(SC_OK));
+        mutateRemoteAddressFilter.reset();
     }
 
     @Test

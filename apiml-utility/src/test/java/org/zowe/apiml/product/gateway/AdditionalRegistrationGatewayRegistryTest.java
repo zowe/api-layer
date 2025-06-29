@@ -13,6 +13,7 @@ package org.zowe.apiml.product.gateway;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.DiscoveryClient;
+import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Application;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.is;
@@ -105,6 +107,11 @@ public class AdditionalRegistrationGatewayRegistryTest {
 
     @Test
     void eventListenerRegistered() {
+        EurekaClientConfig mockEurekaClientConfig = Mockito.mock(EurekaClientConfig.class);
+        when(discoveryClientMock.getEurekaClientConfig()).thenReturn(mockEurekaClientConfig);
+        when(mockEurekaClientConfig.getEurekaServerServiceUrls(any()))
+            .thenReturn(Collections.singletonList("dummy"));
+
         gatewayRegistry.registerAdditionalRegistrationsGatewayRegistryRefresh(discoveryClientMock);
 
         verify(discoveryClientMock, times(1))
