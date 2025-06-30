@@ -13,7 +13,7 @@ package org.zowe.apiml.caching.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -29,7 +29,6 @@ import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -46,10 +45,12 @@ public class SpringSecurityConfig {
     private boolean isHealthEndpointProtected;
 
     @Bean
+    @Order(1)
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
 
-
-        List<String> antMatchersToIgnore = Arrays.asList("/cachingservice/application/info", "/cachingservice/v3/api-docs");
+        var antMatchersToIgnore = new ArrayList<String>();
+        antMatchersToIgnore.add("/cachingservice/application/info");
+        antMatchersToIgnore.add("/cachingservice/v3/api-docs");
         if (!isHealthEndpointProtected) {
             antMatchersToIgnore.add("/cachingservice/application/health");
         }
@@ -79,7 +80,6 @@ public class SpringSecurityConfig {
 
 
     @Bean
-    @Primary
     ReactiveUserDetailsService userDetailsService() {
 
         return username -> {
