@@ -51,13 +51,13 @@ public class FullApiMediationLayer {
     private FullApiMediationLayer() {
         env = ConfigReader.environmentConfiguration().getInstanceEnv();
 
-        prepareCaching();
         prepareCatalog();
         prepareDiscoverableClient();
         prepareGateway();
         prepareMockServices();
         prepareDiscovery();
         if (!IS_MODULITH_ENABLED) {
+            prepareCaching();
             prepareZaas();
         }
         prepareApiml();
@@ -188,8 +188,8 @@ public class FullApiMediationLayer {
             apiCatalogService.stop();
             discoverableClientService.stop();
 
-            cachingService.stop();
             if (!IS_MODULITH_ENABLED) {
+                cachingService.stop();
                 zaasService.stop();
             }
             if (!attlsEnabled && startServices()) {
