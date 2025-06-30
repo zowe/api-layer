@@ -1455,6 +1455,8 @@ jobs:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka/
 
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
