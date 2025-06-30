@@ -26,3 +26,4 @@ DNS.20 = gateway-service-2
 DNS.21 = central-gateway-service
 DNS.22 = central-gateway-service-2
 DNS.23 = apiml
+DNS.24 = apiml-2
