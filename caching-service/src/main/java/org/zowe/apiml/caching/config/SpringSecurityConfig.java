@@ -29,6 +29,7 @@ import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -41,22 +42,16 @@ public class SpringSecurityConfig {
     @Value("${apiml.service.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifyCerts;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
-
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        String[] noSecurityAntMatchers = {
-            "/application/info",
-            "/v3/api-docs"
-        };
 
-        List<String> antMatchersToIgnore = new ArrayList<>(List.of(noSecurityAntMatchers));
+
+        List<String> antMatchersToIgnore = Arrays.asList("/cachingservice/application/info", "/cachingservice/v3/api-docs");
         if (!isHealthEndpointProtected) {
-            antMatchersToIgnore.add("/application/health");
+            antMatchersToIgnore.add("/cachingservice/application/health");
         }
 
         http
