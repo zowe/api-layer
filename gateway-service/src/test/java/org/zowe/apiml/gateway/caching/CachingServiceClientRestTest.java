@@ -38,7 +38,7 @@ import static org.mockito.Mockito.*;
 import static reactor.core.publisher.Mono.empty;
 import static reactor.core.publisher.Mono.just;
 @ExtendWith(MockitoExtension.class)
-class CachingServiceClientTest {
+class CachingServiceClientRestTest {
 
     @Mock
     private ExchangeFunction exchangeFunction;

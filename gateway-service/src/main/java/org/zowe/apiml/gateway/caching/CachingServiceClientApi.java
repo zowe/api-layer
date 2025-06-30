@@ -22,6 +22,18 @@ import reactor.core.publisher.Mono;
 import static reactor.core.publisher.Mono.empty;
 import static reactor.core.publisher.Mono.error;
 
+/**
+ * {@code CachingServiceClientApi} is the internal implementation of {@link CachingServiceClient}
+ * <p>
+ * Unlike {@code CachingServiceClientRest}, which makes HTTP requests to the Caching service, it directly uses the storage methods.
+ * </p>
+ * <p>
+ * This bean is only active when {@code modulithConfig} is present in the Spring context.
+ * </p>
+ *
+ * @see CachingServiceClient
+ * @see CachingServiceClientRest
+ */
 @Component
 @ConditionalOnBean(name = "modulithConfig")
 @Slf4j
@@ -85,15 +97,15 @@ public class CachingServiceClientApi implements CachingServiceClient {
      * Extracts serviceId from the full key
      */
     private String extractServiceId(String key) {
-        try {
-            String prefixRemoved = key.substring(LoadBalancerCache.LOAD_BALANCER_KEY_PREFIX.length());
-            int colonPos = prefixRemoved.indexOf(':');
-            if (colonPos == -1) {
-                throw new IllegalArgumentException("Invalid key format, cannot extract serviceId: " + key);
-            }
-            return prefixRemoved.substring(colonPos + 1);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid key format, cannot extract serviceId: " + key, e);
+        if (!key.startsWith(LoadBalancerCache.LOAD_BALANCER_KEY_PREFIX)) {
+            throw new IllegalArgumentException("Missing prefix in key: " + key);
         }
+        String prefixRemoved = key.substring(LoadBalancerCache.LOAD_BALANCER_KEY_PREFIX.length());
+        int colonPos = prefixRemoved.indexOf(':');
+        if (colonPos == -1) {
+            throw new IllegalArgumentException("Invalid key format, cannot extract serviceId: " + key);
+        }
+        return prefixRemoved.substring(colonPos + 1);
     }
+
 }
