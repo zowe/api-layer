@@ -63,7 +63,7 @@ public class SpringSecurityConfig {
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .headers(headers -> headers.hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable))
             .securityMatcher(new AndServerWebExchangeMatcher(
-                ServerWebExchangeMatchers.pathMatchers("/cachinservice/**")
+                ServerWebExchangeMatchers.pathMatchers("/cachingservice/**")
             ))
             .authorizeExchange(exchange -> exchange
                 .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()

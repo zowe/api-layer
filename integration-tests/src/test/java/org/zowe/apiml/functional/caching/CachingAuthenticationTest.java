@@ -104,6 +104,7 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
                 .when()
                 .get(caching_url + CACHING_PATH)
                 .then()
+                .log().ifValidationFails()
                 .statusCode(HttpStatus.FORBIDDEN.value());
         }
 
