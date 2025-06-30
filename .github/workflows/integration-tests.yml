@@ -1469,7 +1469,8 @@ jobs:
 
             -   name: Build with Gradle
                 run: >
-                    ./gradlew :integration-tests:runInfinispanServiceTests --info -Denvironment.config=-docker
+                    ENV_CONFIG=docker-modulith  ./gradlew :integration-tests:runInfinispanServiceTests --info
+                    -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   uses: ./.github/actions/dump-jacoco

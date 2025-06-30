@@ -41,11 +41,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.cache.CompositeKeyGenerator;
 import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
+import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.zaas.cache.CachingClient;
 import org.zowe.apiml.zaas.cache.CachingServiceClient;
+import org.zowe.apiml.zaas.cache.InMemoryCachingClient;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 
 import javax.cache.Caching;
@@ -198,9 +200,15 @@ public class CacheConfig {
     }
 
     @Bean
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(name = "modulithConfig")
     public CachingClient cachingServiceClient(GatewayClient gatewayClient, @Qualifier("restTemplateWithKeystore") RestTemplate restTemplate) {
         return new CachingServiceClient(restTemplate, gatewayClient);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public CachingClient cachingClient(Storage storage) {
+        return new InMemoryCachingClient(storage);
     }
 
 }

@@ -8,17 +8,14 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.caching;
+package org.zowe.apiml.zaas.cache;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.cache.Storage;
+import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.security.SecurityUtils;
-import org.zowe.apiml.zaas.cache.CachingClient;
-import org.zowe.apiml.zaas.cache.CachingServiceClient;
 
 import java.io.IOException;
 import java.security.KeyStore;
@@ -28,7 +25,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 
-@Component
 @RequiredArgsConstructor
 public class InMemoryCachingClient implements CachingClient {
     @Value("${server.ssl.keyAlias:#{null}}")
