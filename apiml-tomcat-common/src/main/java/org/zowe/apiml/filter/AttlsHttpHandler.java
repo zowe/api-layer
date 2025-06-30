@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.attls;
+package org.zowe.apiml.filter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.hc.client5.http.utils.Base64;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -42,6 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -93,13 +93,13 @@ public class AttlsHttpHandler implements BeanPostProcessor {
             %s
             -----END CERTIFICATE-----
             """,
-            Base64.encodeBase64String(rawCertificate)
+            Base64.getEncoder().encodeToString(rawCertificate)
         );
 
         var certificate = (X509Certificate) CertificateFactory
-            .getInstance("X509")
-            .generateCertificate(new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8)));
-        var certs = new X509Certificate[] { certificate };
+                .getInstance("X509")
+                .generateCertificate(new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8)));
+        var certs = new X509Certificate[]{certificate};
         nativeRequest.setAttribute("jakarta.servlet.request.X509Certificate", certs);
 
         var sslInfo = AttlsSslInfo.builder().peerCertificates(certs).build();
@@ -120,7 +120,8 @@ public class AttlsHttpHandler implements BeanPostProcessor {
                     RequestFacade requestFacade = ((AbstractServerHttpRequest) request).getNativeRequest();
                     requestFacade.setAttribute("attls", attlsContext);
                     request = updateCertificate(request, requestFacade, attlsContext.getCertificate());
-                } catch (IoctlCallException | UnknownEnumValueException | ContextIsNotInitializedException | CertificateException e) {
+                } catch (IoctlCallException | UnknownEnumValueException | ContextIsNotInitializedException |
+                         CertificateException e) {
                     return internalError(request, response);
                 }
 

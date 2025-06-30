@@ -39,7 +39,7 @@ import org.zowe.apiml.filter.QueryWebFilter;
 import org.zowe.apiml.filter.X509AuthFilter;
 import org.zowe.apiml.gateway.filters.security.AuthExceptionHandlerReactive;
 import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
-import org.zowe.apiml.gateway.x509.X509Util;
+import org.zowe.apiml.security.common.util.X509Util;
 import org.zowe.apiml.handler.FailedAuthenticationWebHandler;
 import org.zowe.apiml.handler.LocalTokenProvider;
 import org.zowe.apiml.product.constants.CoreService;
