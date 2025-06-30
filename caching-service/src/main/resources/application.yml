@@ -123,6 +123,8 @@ spring:
         allow-bean-definition-overriding: true
 springdoc:
     pathsToMatch: /api/v1/**
+    api-docs:
+        path: /cachingservice/v3/api-docs
 
 server:
     port: ${apiml.service.port}
