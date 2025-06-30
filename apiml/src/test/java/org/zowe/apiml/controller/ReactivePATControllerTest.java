@@ -362,4 +362,15 @@ class ReactivePATControllerTest {
         verify(messageService).createMessage("org.zowe.apiml.security.query.invalidRevokeRequestBody");
     }
 
+    @Test
+    void evictNonRelevantTokensAndRules_success() {
+        Mono<ResponseEntity<Void>> result = controller.evictNonRelevantTokensAndRules();
+
+        StepVerifier.create(result)
+            .expectNextMatches(response -> HttpStatus.NO_CONTENT.equals(response.getStatusCode()))
+            .verifyComplete();
+
+        verify(tokenProvider, times(1)).evictNonRelevantTokensAndRules();
+    }
+
 }
