@@ -49,6 +49,7 @@ apiml:
         auth:
             provider: zosmf
             zosmf:
+                jwtAutoconfiguration: ltpa
                 serviceId: zosmf
         saf:
             urls:

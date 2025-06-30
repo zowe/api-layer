@@ -245,7 +245,7 @@ public class ReactiveAuthenticationController {
         var jwtToken = uri.substring(index + endpoint.length());
         try {
             var app = peerAwareInstanceRegistry.getApplications().getRegisteredApplications(CoreService.GATEWAY.getServiceId());
-            var invalidated = authenticationService.invalidateJwtTokenGateway(jwtToken, true, app); // FIXME should be distribute true?
+            var invalidated = authenticationService.invalidateJwtTokenGateway(jwtToken, true, app);
             return Mono.just(ResponseEntity.status(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE).build());
         } catch (TokenNotValidException e) {
             return Mono.just(ResponseEntity.status(SC_BAD_REQUEST).build());
