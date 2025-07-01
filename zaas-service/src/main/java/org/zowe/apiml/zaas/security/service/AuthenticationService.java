@@ -252,7 +252,7 @@ public class AuthenticationService {
                 continue;
             }
 
-            final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/" + jwtToken; // FIXME this is forcing ZAAS call
+            final String url = getInvalidateUrl(instanceInfo, jwtToken);
             try {
                 restTemplate.delete(url);
             } catch (HttpClientErrorException e) {

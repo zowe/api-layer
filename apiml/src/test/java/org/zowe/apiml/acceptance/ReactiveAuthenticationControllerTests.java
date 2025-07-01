@@ -11,7 +11,6 @@
 package org.zowe.apiml.acceptance;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.util.config.SslContext;
@@ -71,7 +70,7 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
     }
 
     @Test
-    void whenRefreshPATWithoutCert_then403() {
+    void whenRefreshTokenWithoutCert_then403() {
         given()
         .when()
             .post(URI.create(basePath + REFRESH_ENDPOINT))
@@ -89,7 +88,6 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
     }
 
     @Test
-    @Disabled
     void whenRefreshTokenWithCert_thenSuccess() {
         var token = login();
 
@@ -108,55 +106,58 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
     }
 
     @Test
-    @Disabled
     void whenDistributeInvalidate_thenRequireCertificateAuthentication() {
         given()
+            .log()
+            .all()
         .when()
-            .get(URI.create(basePath + DISTRIBUTE_INVALIDATE_ENDPOINT))
+            .get(URI.create(basePath + DISTRIBUTE_INVALIDATE_ENDPOINT + "/instanceId"))
         .then()
             .statusCode(403);
     }
 
     @Test
-    @Disabled
     void whenDistributeInvalidate_withCert_thenSuccess() {
         given()
             .config(SslContext.clientCertApiml)
         .when()
-            .get(URI.create(basePath + DISTRIBUTE_INVALIDATE_ENDPOINT))
+            .get(URI.create(basePath + DISTRIBUTE_INVALIDATE_ENDPOINT + "/instanceId"))
         .then()
-            .statusCode(200);
+            .statusCode(204);
     }
 
     @Test
-    @Disabled
     void whenInvalidateJwt_thenRequireCertificateAuthentication() {
+        var token = login();
+
         given()
+            .log()
+            .all()
         .when()
-            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT))
+            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT + "/" + token))
         .then()
             .statusCode(403);
     }
 
     @Test
-    @Disabled
     void whenInvalidate_wrongMethod_thenFail() {
+        var token = login();
+
         given()
         .when()
-            .get(URI.create(basePath + INVALIDATE_JWT_ENDPOINT))
+            .get(URI.create(basePath + INVALIDATE_JWT_ENDPOINT + "/" + token))
         .then()
             .statusCode(SC_METHOD_NOT_ALLOWED);
     }
 
     @Test
-    @Disabled
     void whenInvalidateJwt_withCert_thenSuccess() {
         var token = login();
 
         given()
             .config(SslContext.clientCertApiml)
         .when()
-            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT))
+            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT + "/" + token))
         .then()
             .statusCode(200);
     }

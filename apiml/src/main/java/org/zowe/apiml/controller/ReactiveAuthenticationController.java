@@ -36,6 +36,7 @@ import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -58,8 +59,6 @@ import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.zowe.apiml.zaas.controllers.AuthController.DISTRIBUTE_PATH;
-import static org.zowe.apiml.zaas.controllers.AuthController.INVALIDATE_PATH;
 
 
 
@@ -232,20 +231,15 @@ public class ReactiveAuthenticationController {
     /**
      * Invalidate JWT, hidden endpoint undocumented
      *
-     * @param exchange
+     * @param token The JWT token to invalidate
      * @return
      */
     @Hidden
-    @DeleteMapping(path = INVALIDATE_PATH)
-    public Mono<ResponseEntity<Void>> invalidateJwtToken(ServerWebExchange exchange) {
-        var endpoint = "/auth/invalidate/";
-        var uri = exchange.getRequest().getURI().getPath();
-        var index = uri.indexOf(endpoint);
-
-        var jwtToken = uri.substring(index + endpoint.length());
+    @DeleteMapping(path = "/invalidate/{token}")
+    public Mono<ResponseEntity<Void>> invalidateJwtToken(@PathVariable String token) {
         try {
             var app = peerAwareInstanceRegistry.getApplications().getRegisteredApplications(CoreService.GATEWAY.getServiceId());
-            var invalidated = authenticationService.invalidateJwtTokenGateway(jwtToken, true, app);
+            var invalidated = authenticationService.invalidateJwtTokenGateway(token, true, app);
             return Mono.just(ResponseEntity.status(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE).build());
         } catch (TokenNotValidException e) {
             return Mono.just(ResponseEntity.status(SC_BAD_REQUEST).build());
@@ -256,17 +250,13 @@ public class ReactiveAuthenticationController {
      * Distribute JWT invalidate action to path-specified instance ID
      * Undocumented endpoint
      *
-     * @param exchange
-     * @return
+     * @param instanceId The instance Id to distribute JWT invalidation to
+     * @return 200 if distributed, 204 if not
      */
     @Hidden
-    @GetMapping(path = DISTRIBUTE_PATH)
-    public Mono<ResponseEntity<Void>> distributeInvalidate(ServerWebExchange exchange) {
-        var endpoint = "/auth/distribute";
-        var uri = exchange.getRequest().getURI().toString();
-        var index = uri.indexOf(endpoint);
-        var toInstanceId = uri.substring(index + endpoint.length());
-        var distributed = authenticationService.distributeInvalidate(toInstanceId);
+    @GetMapping(path = "/distribute/{instanceId}")
+    public Mono<ResponseEntity<Void>> distributeInvalidate(@PathVariable String instanceId) {
+        var distributed = authenticationService.distributeInvalidate(instanceId);
         if (distributed) {
             return Mono.just(ResponseEntity.ok().build());
         }
@@ -315,10 +305,6 @@ public class ReactiveAuthenticationController {
                 var newToken = tokenCreationService.createJwtTokenWithoutCredentials(tokenAuthentication.getPrincipal());
                 exchange.getResponse().addCookie(httpUtils.createResponseCookie(newToken));
                 return ResponseEntity.ok().build();
-            })
-            .onErrorResume(ex -> {
-                System.out.println(ex);
-                return Mono.empty();
             })
             .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatusCode.valueOf(401)).build()));
     }

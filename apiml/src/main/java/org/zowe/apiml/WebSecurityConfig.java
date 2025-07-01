@@ -53,6 +53,8 @@ import org.zowe.apiml.zaas.security.query.TokenAuthenticationProvider;
 import java.util.List;
 import java.util.Set;
 
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers.pathMatchers;
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_FULL_URL;
@@ -466,8 +468,8 @@ public class WebSecurityConfig {
         return x509SecurityConfig(http)
             .securityMatcher(
                 new OrServerWebExchangeMatcher(
-                    pathMatchers(POST, "gateway/api/v1/auth/invalidate/**"),
-                    pathMatchers(POST, "gateway/api/v1/auth/distribute/**")
+                    pathMatchers(DELETE, "gateway/api/v1/auth/invalidate/**"),
+                    pathMatchers(GET, "gateway/api/v1/auth/distribute/**")
                 )
             )
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())

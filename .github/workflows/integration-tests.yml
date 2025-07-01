@@ -1524,7 +1524,7 @@ jobs:
                     path: ContainerCITestsZaas
             -   uses: actions/download-artifact@v4
                 with:
-                    name: CITestsChaoticHA-${{ env.JOB_ID }}
+                    name: CITestsChaoticHA-${{ env.JOB_ID }}-websocket
                     path: citestschaoticha
             -   uses: actions/download-artifact@v4
                 with:
