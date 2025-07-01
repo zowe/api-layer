@@ -36,9 +36,6 @@ public class InMemoryCachingClient implements CachingClient {
     @Value("${server.ssl.keyStorePassword:#{null}}")
     private char[] keyStorePassword;
 
-    @Value("${server.ssl.keyPassword:#{null}}")
-    private char[] keyPassword;
-
     @Value("${server.ssl.keyStoreType:PKCS12}")
     private String keyStoreType;
 

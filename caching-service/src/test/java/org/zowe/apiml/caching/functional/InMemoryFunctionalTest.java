@@ -72,7 +72,6 @@ public class InMemoryFunctionalTest {
         void createEntry() throws Exception {
             KeyValue keyValue = new KeyValue("first-key", "anyValue");
             ObjectMapper mapper = new ObjectMapper();
-            System.out.println(1);
             given().config(SslContext.clientCertApiml)
                 .body(mapper.writeValueAsString(keyValue))
                 .header("Content-type", "application/json")
@@ -85,7 +84,6 @@ public class InMemoryFunctionalTest {
         @Test
         @Order(2)
         void readAllEntries() {
-            System.out.println(2);
             given().config(SslContext.clientCertApiml)
                 .header("Content-type", "application/json")
                 .header(SERVICE_ID_HEADER, "service1")
