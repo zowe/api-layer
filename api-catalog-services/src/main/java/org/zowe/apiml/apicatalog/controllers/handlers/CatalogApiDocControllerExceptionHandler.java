@@ -21,6 +21,7 @@ import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
+import reactor.core.publisher.Mono;
 
 /**
  * This class creates responses for exceptional behavior of the CatalogApiDocController
@@ -38,12 +39,12 @@ public class CatalogApiDocControllerExceptionHandler {
      * @return 404 and the message 'API Documentation not retrieved...'
      */
     @ExceptionHandler(ApiDocNotFoundException.class)
-    public ResponseEntity<ApiMessageView> handleApiDocNotFoundException(ApiDocNotFoundException exception) {
+    public Mono<ResponseEntity<ApiMessageView>> handleApiDocNotFoundException(ApiDocNotFoundException exception) {
         Message message = messageService.createMessage("org.zowe.apiml.apicatalog.apiDocNotFound", exception.getMessage());
 
-        return ResponseEntity
+        return Mono.just(ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(message.mapToView());
+            .body(message.mapToView()));
     }
 
     /**
@@ -53,12 +54,12 @@ public class CatalogApiDocControllerExceptionHandler {
      * @return 404 and the message 'Service not located...'
      */
     @ExceptionHandler(ServiceNotFoundException.class)
-    public ResponseEntity<ApiMessageView> handleServiceNotFoundException(ServiceNotFoundException exception) {
+    public Mono<ResponseEntity<ApiMessageView>> handleServiceNotFoundException(ServiceNotFoundException exception) {
         Message message = messageService.createMessage("org.zowe.apiml.apicatalog.serviceNotFound", exception.getMessage());
 
-        return ResponseEntity
+        return Mono.just(ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(message.mapToView());
+            .body(message.mapToView()));
     }
 
 }

@@ -146,7 +146,7 @@ class ServicesControllerTests {
                 given(apiDocRetrievalService.retrieveDefaultApiVersion("service1")).willReturn(defaultApiVersion);
                 given(apiDocRetrievalService.retrieveDefaultApiVersion("service2")).willReturn(defaultApiVersion);
 
-                ResponseEntity<List<APIContainer>> containers = underTest.getAPIContainerById("api-one");
+                ResponseEntity<List<APIContainer>> containers = underTest.getAPIContainerById("api-one").block();
 
                 containers.getBody().forEach(apiContainer ->
                     apiContainer.getServices().forEach(apiService -> {
@@ -160,7 +160,7 @@ class ServicesControllerTests {
             void thenPopulateApiDocForServicesExceptOneWhichFails() throws ContainerStatusRetrievalException {
                 given(apiDocRetrievalService.retrieveDefaultApiDoc("service2")).willThrow(new RuntimeException());
 
-                ResponseEntity<List<APIContainer>> containers = underTest.getAPIContainerById("api-one");
+                ResponseEntity<List<APIContainer>> containers = underTest.getAPIContainerById("api-one").block();
                 assertThereIsOneContainer(containers);
 
                 containers.getBody().forEach(apiContainer ->
@@ -179,7 +179,7 @@ class ServicesControllerTests {
             void thenPopulateApiVersionsForServicesExceptOneWhichFails() throws ContainerStatusRetrievalException {
                 given(apiDocRetrievalService.retrieveApiVersions("service2")).willThrow(new RuntimeException());
 
-                ResponseEntity<List<APIContainer>> containers = underTest.getAPIContainerById("api-one");
+                ResponseEntity<List<APIContainer>> containers = underTest.getAPIContainerById("api-one").block();
                 assertThereIsOneContainer(containers);
 
                 containers.getBody().forEach(apiContainer ->
@@ -234,7 +234,7 @@ class ServicesControllerTests {
             given(apiDocRetrievalService.retrieveDefaultApiVersion(serviceId)).willReturn(defaultApiVersion);
             given(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)).willReturn("mockApiDoc");
 
-            ResponseEntity<APIService> apiServicesById = underTest.getAPIServicesById(serviceId);
+            ResponseEntity<APIService> apiServicesById = underTest.getAPIServicesById(serviceId).block();
             assertEquals(HttpStatus.OK, apiServicesById.getStatusCode());
             assertNotNull(apiServicesById.getBody());
             assertEquals( "mockApiDoc", apiServicesById.getBody().getApiDoc());
@@ -249,7 +249,7 @@ class ServicesControllerTests {
             given(apiDocRetrievalService.retrieveDefaultApiVersion(serviceId)).willReturn(defaultApiVersion);
             given(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)).willReturn(null);
 
-            ResponseEntity<APIService> apiServicesById = underTest.getAPIServicesById(serviceId);
+            ResponseEntity<APIService> apiServicesById = underTest.getAPIServicesById(serviceId).block();
             assertEquals(HttpStatus.OK, apiServicesById.getStatusCode());
             assertNotNull(apiServicesById.getBody());
             assertNull(apiServicesById.getBody().getApiDoc());

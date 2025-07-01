@@ -21,6 +21,7 @@ import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.constants.CoreService;
+import reactor.core.publisher.Mono;
 
 /**
  * This class creates responses for exceptional behavior of the StaticAPIRefreshController
@@ -37,12 +38,12 @@ public class StaticAPIRefreshControllerExceptionHandler {
      * @return 503 status code
      */
     @ExceptionHandler(ServiceNotFoundException.class)
-    public ResponseEntity<ApiMessageView> handleServiceNotFoundException(ServiceNotFoundException exception) {
+    public Mono<ResponseEntity<ApiMessageView>> handleServiceNotFoundException(ServiceNotFoundException exception) {
         Message message = messageService.createMessage("org.zowe.apiml.apicatalog.serviceNotFound", CoreService.DISCOVERY.getServiceId());
 
-        return ResponseEntity
+        return Mono.just(ResponseEntity
             .status(HttpStatus.SERVICE_UNAVAILABLE)
-            .body(message.mapToView());
+            .body(message.mapToView()));
     }
 
     /**
@@ -52,12 +53,12 @@ public class StaticAPIRefreshControllerExceptionHandler {
      * @return 500 status code if there is any exception with refresh api
      */
     @ExceptionHandler(RestClientException.class)
-    public ResponseEntity<ApiMessageView> handleServiceNotFoundException(RestClientException exception) {
+    public Mono<ResponseEntity<ApiMessageView>> handleServiceNotFoundException(RestClientException exception) {
         Message message = messageService.createMessage("org.zowe.apiml.apicatalog.StaticApiRefreshFailed",
             exception);
 
-        return ResponseEntity
+        return Mono.just(ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(message.mapToView());
+            .body(message.mapToView()));
     }
 }
