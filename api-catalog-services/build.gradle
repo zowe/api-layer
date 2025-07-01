@@ -69,6 +69,7 @@ dependencies {
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.webflux
     implementation libs.spring.cloud.starter.eureka.client
     implementation libs.spring.doc
     implementation libs.spring.retry

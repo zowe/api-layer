@@ -31,6 +31,7 @@ import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
 import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,7 +43,7 @@ import java.util.stream.StreamSupport;
  */
 @Slf4j
 @RestController
-@RequestMapping("/")
+@RequestMapping({"/", "/apicatalog/api/v1/"})
 @Tag(name = "API Catalog")
 @RequiredArgsConstructor
 public class ServicesController {
@@ -73,14 +74,14 @@ public class ServicesController {
         @ApiResponse(responseCode = "404", description = "URI not found"),
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
     })
-    public ResponseEntity<List<APIContainer>> getAllAPIContainers() throws ContainerStatusRetrievalException {
+    public Mono<ResponseEntity<List<APIContainer>>> getAllAPIContainers() throws ContainerStatusRetrievalException {
         try {
             Iterable<APIContainer> allContainers = containerService.getAllContainers();
             List<APIContainer> apiContainers = toList(allContainers);
             if (apiContainers == null || apiContainers.isEmpty()) {
-                return new ResponseEntity<>(apiContainers, HttpStatus.NO_CONTENT);
+                return Mono.just(new ResponseEntity<>(apiContainers, HttpStatus.NO_CONTENT));
             }
-            return new ResponseEntity<>(apiContainers, HttpStatus.OK);
+            return Mono.just(new ResponseEntity<>(apiContainers, HttpStatus.OK));
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalException(e);
@@ -106,7 +107,7 @@ public class ServicesController {
         @ApiResponse(responseCode = "404", description = "URI not found"),
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
     })
-    public ResponseEntity<List<APIContainer>> getAPIContainerById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalException {
+    public Mono<ResponseEntity<List<APIContainer>>> getAPIContainerById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalException {
         try {
             List<APIContainer> apiContainers = new ArrayList<>();
             APIContainer containerById = containerService.getContainerById(id);
@@ -119,7 +120,7 @@ public class ServicesController {
                     this::setApiDocToService
                 );
             }
-            return new ResponseEntity<>(apiContainers, HttpStatus.OK);
+            return Mono.just(new ResponseEntity<>(apiContainers, HttpStatus.OK));
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalException(e);
@@ -155,11 +156,11 @@ public class ServicesController {
         @ApiResponse(responseCode = "404", description = "URI not found"),
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
     })
-    public ResponseEntity<APIService> getAPIServicesById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalException {
+    public Mono<ResponseEntity<APIService>> getAPIServicesById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalException {
         try {
             var service = containerService.getService(id);
             if (service == null) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                return Mono.just(new ResponseEntity<>(HttpStatus.NOT_FOUND));
             }
             log.debug("Getting service api doc by id {}", id);
             String apiDoc = getApiDoc(id);
@@ -177,7 +178,7 @@ public class ServicesController {
             } else {
                 log.debug("No API doc was retrieved for service with id {}", id);
             }
-            return new ResponseEntity<>(service, HttpStatus.OK);
+            return Mono.just(new ResponseEntity<>(service, HttpStatus.OK));
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.serviceCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalException(e);
