@@ -1122,6 +1122,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
         strategy:
+            max-parallel: 1
             matrix:
                 type: ["discovery", "gateway", "discoverableclient", "websocket"]
         services:
@@ -1233,7 +1234,7 @@ jobs:
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
-                    name: CITestsDiscoveryChaoticHA-${{ env.JOB_ID }}
+                    name: CITestsChaoticHA-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -1523,8 +1524,8 @@ jobs:
                     path: ContainerCITestsZaas
             -   uses: actions/download-artifact@v4
                 with:
-                    name: CITestsWebSocketChaoticHA-${{ env.JOB_ID }}
-                    path: citestswebsocketchaoticha
+                    name: CITestsChaoticHA-${{ env.JOB_ID }}
+                    path: citestschaoticha
             -   uses: actions/download-artifact@v4
                 with:
                     name: GatewayServiceRouting-${{ env.JOB_ID }}
@@ -1532,7 +1533,7 @@ jobs:
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --scan coverage sonar -Dresults="containercitests/results,containercitestsmodulith/results,citestswithinfinispan/results,GatewayProxy/results,citestswebsocketchaoticha/results,GatewayServiceRouting/results,ContainerCITestsZaas/results"
+                    ./gradlew --scan coverage sonar -Dresults="containercitests/results,containercitestsmodulith/results,citestswithinfinispan/results,GatewayProxy/results,citestschaoticha/results,GatewayServiceRouting/results,ContainerCITestsZaas/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
