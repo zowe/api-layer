@@ -51,7 +51,7 @@ public class InMemoryFunctionalTest {
 
     public static final String SERVICE_ID_HEADER = "X-Certificate-DistinguishedName";
 
-    String contextPath = "/api/v1";
+    String contextPath = "/cachingservice/api/v1";
 
     String getUri(String endpoint) {
         return String.format("https://%s:%s%s%s", hostname, port, contextPath, endpoint);
