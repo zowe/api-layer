@@ -47,12 +47,14 @@ dependencyResolutionManagement {
             version('jakartaInject', '2.0.1')
             version('jakartaServlet', '6.1.0')
             version('javaxAnnotation', '1.3.2')
+
+            // Eureka requires this specific version of Jakarta JAXB bindings
             version('jaxbApi') {
-                strictly '[2.3.3,3.0.0['
+                strictly '[2.3.3,3.0.0)'
                 prefer '2.3.3'
             }
             version('jaxbImpl') {
-                strictly '[2.3.9,3.0.0['
+                strictly '[2.3.9,3.0.0)'
                 prefer '2.3.9'
             }
             version('jbossLogging', '3.6.1.Final')
