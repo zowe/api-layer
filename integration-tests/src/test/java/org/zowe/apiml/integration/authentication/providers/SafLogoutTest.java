@@ -23,6 +23,9 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
+/**
+ * FIXME No integration test (Github Actions) sets up SAF authentication provider, they all test z/OSMF
+ */
 @SAFAuthTest
 @Tag("SAFProviderTest")
 class SafLogoutTest implements TestWithStartedInstances {

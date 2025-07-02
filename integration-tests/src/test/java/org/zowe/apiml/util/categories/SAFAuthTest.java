@@ -20,7 +20,7 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 
 /**
- * Tests intended to verify SAF authentication, through either of the providers.
+ * Tests intended to verify SAF authentication, through ANY of the providers.
  */
 @Tag("SAFAuthTest")
 @Target({ TYPE, METHOD })

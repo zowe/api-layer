@@ -342,7 +342,7 @@ task runContainerModulithTests(type: Test) {
 
 task runContainerTests(type: Test) {
     group "Integration tests"
-    description "Run only tests without long tests"
+    description "Run only tests without long tests. These tests run in Github Actions CITests workflow"
 
     outputs.cacheIf { false }
     def envConfig = System.getenv("ENV_CONFIG") ? System.getenv("ENV_CONFIG") : "docker"
@@ -370,6 +370,22 @@ task runContainerTests(type: Test) {
             'GatewayCentralRegistry',
             'ZaasTest',
             'SAFAuthResourceCheckTest'
+        )
+    }
+}
+
+task runContainerSAFProviderTests(type: Test) {
+    group "Integration tests"
+    description "Run only tests that verify SAF (non z/OSMF) authentication scenarios"
+
+    outputs.cacheIf { false }
+    def envConfig = System.getenv("ENV_CONFIG") ? System.getenv("ENV_CONFIG") : "docker"
+    systemProperty "environment.config", "-$envConfig"
+
+    systemProperties System.properties
+    useJUnitPlatform {
+        includeTags(
+            'SAFProviderTest'
         )
     }
 }

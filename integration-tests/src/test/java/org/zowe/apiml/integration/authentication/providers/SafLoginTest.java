@@ -41,10 +41,13 @@ import static org.hamcrest.core.IsNot.not;
  * will be produced.
  * <p>
  * Also verify that the invalid credentials will be properly rejected.
+ *
+ * FIXME No integration test sets up anything other than z/OSMF provider
  */
 @SAFAuthTest
 @Tag("SAFProviderTest")
 class SafLoginTest implements TestWithStartedInstances {
+
     @BeforeAll
     static void switchToTestedProvider() {
         RestAssured.useRelaxedHTTPSValidation();
