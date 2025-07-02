@@ -1718,8 +1718,8 @@ jobs:
 
     PublishResults:
         needs: [
-            CITests,CITestsWithInfinispan,CITestsZaas,GatewayProxy,GatewayServiceRouting,CITestsChaoticHA,
-            CITestsModulith
+            CITests,CITestsWithInfinispan,CITestsZaas,GatewayProxy,GatewayServiceRouting,CITestsHA,
+            CITestsModulith,CITestsModulithHA
         ]
         runs-on: ubuntu-latest
         timeout-minutes: 20
