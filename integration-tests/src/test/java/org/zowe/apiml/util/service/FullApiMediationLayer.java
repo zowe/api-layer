@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.util.service;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.startup.impl.ApiMediationLayerStartupChecker;
@@ -43,8 +44,8 @@ public class FullApiMediationLayer {
     private boolean firstCheck = true;
     private final Map<String, String> env;
     private static final boolean attlsEnabled = "true".equals(System.getProperty("environment.attls"));
-//    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
 
+    @Getter
     private static final FullApiMediationLayer instance = new FullApiMediationLayer();
 
 
@@ -56,10 +57,8 @@ public class FullApiMediationLayer {
         prepareGateway();
         prepareMockServices();
         prepareDiscovery();
-//        if (!IS_MODULITH_ENABLED) {
-            prepareCaching();
-            prepareZaas();
-//        }
+        prepareCaching();
+        prepareZaas();
         prepareApiml();
         if (!attlsEnabled) {
             prepareNodeJsSampleApp();
@@ -129,10 +128,6 @@ public class FullApiMediationLayer {
         discoverableClientService = new RunningService("discoverableclient", "discoverable-client/build/libs/discoverable-client.jar", before, after);
     }
 
-    public static FullApiMediationLayer getInstance() {
-        return instance;
-    }
-
     public void start() {
         try {
             var discoveryEnv = new HashMap<>(env);
@@ -162,7 +157,7 @@ public class FullApiMediationLayer {
             mockZosmfService.start();
             log.info("Services started");
         } catch (IOException ex) {
-            log.error("error while starting services: " + ex.getMessage(), ex.getCause());
+            log.error("error while starting services: {}", ex.getMessage(), ex.getCause());
         }
     }
 
@@ -188,10 +183,8 @@ public class FullApiMediationLayer {
             apiCatalogService.stop();
             discoverableClientService.stop();
 
-//            if (!IS_MODULITH_ENABLED) {
-                cachingService.stop();
-                zaasService.stop();
-//            }
+            cachingService.stop();
+            zaasService.stop();
             if (!attlsEnabled && startServices()) {
                 nodeJsSampleApp.destroy();
             }
