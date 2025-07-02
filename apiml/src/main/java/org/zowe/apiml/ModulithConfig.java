@@ -33,13 +33,11 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
-import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.event.EventListener;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.TomcatHttpHandlerAdapter;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -85,8 +83,8 @@ public class ModulithConfig {
     @Bean
     ApplicationInfo applicationInfo() {
         return ApplicationInfo.builder()
-                .isModulith(true)
-                .authServiceId(CoreService.GATEWAY.getServiceId()).build();
+            .isModulith(true)
+            .authServiceId(CoreService.GATEWAY.getServiceId()).build();
     }
 
     private InstanceInfo getInstanceInfo(String serviceId) {
