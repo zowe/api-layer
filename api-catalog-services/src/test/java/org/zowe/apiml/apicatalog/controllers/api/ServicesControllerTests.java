@@ -18,86 +18,103 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import org.zowe.apiml.apicatalog.controllers.handlers.ApiCatalogControllerExceptionHandler;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
-import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.model.CustomStyleConfig;
 import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
+import org.zowe.apiml.apicatalog.swagger.ContainerService;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.transform.TransformService;
 
 import java.util.*;
 
-import static io.restassured.module.mockmvc.RestAssuredMockMvc.standaloneSetup;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 
+@ExtendWith(SpringExtension.class)
+@WebFluxTest(controllers = ServicesController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@ContextConfiguration(classes = {
+    ServicesController.class,
+    ApiCatalogControllerExceptionHandler.class,
+    ContainerService.class,
+    ServicesControllerTests.Context.class
+})
 class ServicesControllerTests {
 
-    private final String pathToContainers = "/containers";
+    private final String pathToContainers = "/apicatalog/containers";
 
-    private EurekaClient eurekaClient;
-    private ContainerService containerService;
-    private ApiDocRetrievalService apiDocRetrievalService;
+    @Autowired
+    private WebTestClient webTestClient;
 
+    @Autowired
     private ServicesController underTest;
 
-    @BeforeEach
-    void setUp() {
-        eurekaClient = mock(EurekaClient.class);
-        containerService = spy(new ContainerService(
-            eurekaClient,
-            new TransformService(new GatewayClient(ServiceAddress.builder().scheme("https").hostname("localhost").build())),
-            new CustomStyleConfig())
-        );
-        apiDocRetrievalService = mock(ApiDocRetrievalService.class);
+    @MockitoBean
+    private EurekaClient eurekaClient;
 
-        underTest = new ServicesController(containerService, apiDocRetrievalService);
-        standaloneSetup(underTest);
-    }
+    @MockitoBean
+    private CustomStyleConfig customStyleConfig;
+
+    @MockitoSpyBean
+    private ContainerService containerService;
+
+    @MockitoBean
+    private ApiDocRetrievalService apiDocRetrievalService;
 
     @Nested
     class GivenThereAreNoValidContainers {
+
         @Nested
         class WhenAllContainersAreRequested {
+
             @Test
             void thenReturnNoContent() {
                 given(containerService.getAllContainers()).willReturn(null);
 
-                RestAssuredMockMvc.given().
-                    when().
-                    get(pathToContainers).
-                    then().
-                    statusCode(HttpStatus.NO_CONTENT.value());
+                webTestClient.get().uri(pathToContainers).exchange()
+                    .expectStatus().isNoContent();
             }
+
         }
 
         @Nested
         class WhenSpecificContainerRequested {
+
             @Test
             void thenReturnOk() {
                 String containerId = "service1";
                 given(containerService.getContainerById(containerId)).willReturn(null);
 
-                RestAssuredMockMvc.given().
-                    when().
-                    get(pathToContainers + "/" + containerId).
-                    then().
-                    statusCode(HttpStatus.OK.value());
+                webTestClient.get().uri(pathToContainers + "/" + containerId).exchange()
+                    .expectStatus().isOk();
             }
+
         }
+
     }
 
     @Nested
     class GivenMultipleValidContainers {
+
         Application service1;
         Application service2;
         List<String> apiVersions;
@@ -125,20 +142,20 @@ class ServicesControllerTests {
 
         @Nested
         class WhenGettingAllContainers {
+
             @Test
             void thenReturnContainersWithState() {
                 given(containerService.getAllContainers()).willReturn(createContainers());
 
-                RestAssuredMockMvc.given().
-                    when().
-                    get(pathToContainers).
-                    then().
-                    statusCode(HttpStatus.OK.value());
+                webTestClient.get().uri(pathToContainers).exchange()
+                    .expectStatus().isOk();
             }
+
         }
 
         @Nested
         class WhenGettingSpecificContainer {
+
             @Test
             void thenPopulateApiDocForServices() throws ContainerStatusRetrievalException {
                 String defaultApiVersion = "v1";
@@ -199,7 +216,9 @@ class ServicesControllerTests {
                 assertThat(containers.getBody(), is(not(nullValue())));
                 assertThat(containers.getBody().size(), is(1));
             }
+
         }
+
     }
 
     @Nested
@@ -218,12 +237,9 @@ class ServicesControllerTests {
         void thenReturnNotFound() {
             given(eurekaClient.getApplications()).willReturn(null);
 
-            String pathToServices = "/services";
-            RestAssuredMockMvc.given().
-                when().
-                get(pathToServices + "/" + serviceId).
-                then().
-                statusCode(HttpStatus.NOT_FOUND.value());
+            String pathToServices = "/apicatalog/services";
+            webTestClient.get().uri(pathToServices + "/" + serviceId).exchange()
+                .expectStatus().isNotFound();
         }
 
         @Test
@@ -296,6 +312,20 @@ class ServicesControllerTests {
         return new InstanceInfo(serviceId, null, null, "192.168.0.1", null, new InstanceInfo.PortWrapper(true, 9090),
             null, null, null, null, null, null, null, 0, null, "hostname", status, null, null, null, null, null,
             null, null, null, null);
+    }
+
+    static class Context {
+
+        @Bean
+        public TransformService transformService() {
+            return new TransformService(new GatewayClient(ServiceAddress.builder().scheme("https").hostname("localhost").build()));
+        }
+
+        @Bean
+        public MessageService messageService() {
+            return new YamlMessageService("/apicatalog-log-messages.yml");
+        }
+
     }
 
 }

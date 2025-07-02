@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @Slf4j
 @RestController
-@RequestMapping({"/oidc", "/apicatalog/api/v1/oidc"})
+@RequestMapping({"/apicatalog/oidc", "/apicatalog/api/v1/oidc"})
 @Tag(name = "OIDC integration")
 public class OidcController {
 

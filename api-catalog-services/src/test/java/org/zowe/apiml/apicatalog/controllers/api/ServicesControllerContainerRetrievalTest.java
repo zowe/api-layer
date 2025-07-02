@@ -10,41 +10,67 @@
 
 package org.zowe.apiml.apicatalog.controllers.api;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
+import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import org.zowe.apiml.apicatalog.controllers.handlers.ApiCatalogControllerExceptionHandler;
+import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalServiceRest;
+import org.zowe.apiml.apicatalog.swagger.ContainerService;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 
-import static org.hamcrest.Matchers.hasItem;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.contains;
+import static org.mockito.Mockito.when;
 
+@ContextConfiguration(classes = {
+    ServicesController.class,
+    ApiCatalogControllerExceptionHandler.class,
+    ServicesControllerContainerRetrievalTest.Context.class
+})
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = {ServicesController.class},
-    excludeFilters = { @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = WebSecurityConfigurer.class) },
-    excludeAutoConfiguration = { SecurityAutoConfiguration.class}
-)
-@ContextConfiguration(classes = ApiCatalogControllerContainerRetrievalTestContextConfiguration.class)
+@WebFluxTest(controllers = ServicesController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@TestInstance(TestInstance.Lifecycle. PER_CLASS)
 class ServicesControllerContainerRetrievalTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
+
+    @MockitoBean
+    private ApiDocRetrievalServiceRest apiDocRetrievalService;
+
+    @MockitoBean
+    private ContainerService containerService;
+
+    @BeforeAll
+    void initContainerService() {
+        when(containerService.getAllContainers())
+            .thenThrow(new NullPointerException());
+    }
 
     @Test
     void getContainers() throws Exception {
-        this.mockMvc.perform(get("/containers"))
-            .andExpect(status().is5xxServerError())
-            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'ZWEAC104E')].messageContent",
-                hasItem("Could not retrieve container statuses, java.lang.NullPointerException")));
+        webTestClient.get().uri("/apicatalog/containers").exchange()
+            .expectStatus().is5xxServerError()
+            .expectBody().jsonPath("$.messages[?(@.messageNumber == 'ZWEAC104E')].messageContent")
+                .value(contains("Could not retrieve container statuses, java.lang.NullPointerException"));
     }
 
+    static class Context {
+
+        @Bean
+        public MessageService messageService() {
+            return new YamlMessageService("/apicatalog-log-messages.yml");
+        }
+
+    }
 
 }

@@ -10,28 +10,37 @@
 
 package org.zowe.apiml.apicatalog.controllers.api;
 
-import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
-import static io.restassured.module.mockmvc.RestAssuredMockMvc.standaloneSetup;
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(SpringExtension.class)
+@WebFluxTest(controllers = OidcController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@ContextConfiguration(classes = OidcController.class)
 class OidcControllerTest {
 
-    private OidcController oidcController = new OidcController();
+    @Autowired
+    private WebTestClient webTestClient;
 
-    @BeforeEach
-    void setUp() {
-        standaloneSetup(oidcController);
-    }
+    @Autowired
+    private OidcController oidcController;
 
     @Nested
     class OidcProviders {
@@ -54,17 +63,19 @@ class OidcControllerTest {
             }
         }
 
+        @BeforeEach
         @AfterEach
-        void tearDown() {
+        void cleanUp() {
             Arrays.stream(env).forEach(k -> getEnvMap().remove(k));
+            ((AtomicReference<List<String>>) ReflectionTestUtils.getField(oidcController, "oidcProviderCache")).set(null);
         }
 
         @Test
         void givenSystemEnv_whenInvokeOidcProviders_thenReturnTheList() {
             Arrays.stream(env).forEach(k -> getEnvMap().put(k, "anyValue"));
-            List<String> oidcProviders = RestAssuredMockMvc.given()
-                .when().get("/oidc/provider")
-                .getBody().jsonPath().getList(".");
+            List<String> oidcProviders = webTestClient
+                .get().uri("/apicatalog/oidc/provider").exchange()
+                .returnResult(List.class).getResponseBody().blockFirst();
             assertEquals(2, oidcProviders.size());
             assertTrue(oidcProviders.contains("oidc1"));
             assertTrue(oidcProviders.contains("oidc2"));
@@ -72,9 +83,9 @@ class OidcControllerTest {
 
         @Test
         void givenNoSystemEnv_whenInvokeOidcProviders_thenReturnAnEmptyList() {
-            List<String> oidcProviders = RestAssuredMockMvc.given()
-                .when().get("/oidc/provider")
-                .getBody().jsonPath().getList(".");
+            List<String> oidcProviders = webTestClient
+                .get().uri("/apicatalog/oidc/provider").exchange()
+                .returnResult(List.class).getResponseBody().blockFirst();
             assertEquals(0, oidcProviders.size());
         }
 

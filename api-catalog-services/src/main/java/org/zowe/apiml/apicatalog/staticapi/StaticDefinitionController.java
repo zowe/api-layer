@@ -23,7 +23,7 @@ import java.io.IOException;
  * a static definition file from the Wizard interface
  */
 @RestController
-@RequestMapping("/static-api")
+@RequestMapping({"/apicatalog/static-api", "/apicatalog/api/v1/static-api"})
 @RequiredArgsConstructor
 @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
 public class StaticDefinitionController {

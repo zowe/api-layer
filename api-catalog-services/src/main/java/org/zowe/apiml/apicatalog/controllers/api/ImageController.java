@@ -24,7 +24,7 @@ import reactor.core.publisher.Mono;
 import java.io.File;
 
 @RestController
-@RequestMapping({"/", "/apicatalog/api/v1/"})
+@RequestMapping({"/apicatalog", "/apicatalog/api/v1/"})
 public class ImageController {
 
     @Value("${apiml.catalog.customStyle.logo:}")

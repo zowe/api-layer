@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -26,12 +27,7 @@ import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
-import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
-import org.zowe.apiml.security.common.token.TokenNotProvidedException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.*;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -102,7 +98,9 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         entry(AuthenticationException.class,
             (ex, ctx) -> handleAuthenticationException(ctx.requestUri, ctx.function, ex)),
         entry(ServiceNotAccessibleException.class,
-            (ex, ctx) -> handleServiceNotAccessibleException(ctx.requestUri, ctx.function, ex))
+            (ex, ctx) -> handleServiceNotAccessibleException(ctx.requestUri, ctx.function, ex)),
+        entry(RuntimeException.class,
+            (ex, ctx) -> handleRuntimeException(ctx.requestUri, ctx.function, ex))
     );
 
     private ExceptionHandler resolveHandler(RuntimeException ex) {
@@ -235,6 +233,11 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         final HttpStatus status = HttpStatus.SERVICE_UNAVAILABLE;
         log.debug(MESSAGE_FORMAT, status.value(), ex.getMessage());
         function.accept(message, status);
+    }
+
+    private void handleRuntimeException(String uri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
+        log.debug(MESSAGE_FORMAT, HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.getMessage());
+        writeErrorResponse("org.zowe.apiml.common.internalRequestError", HttpStatus.INTERNAL_SERVER_ERROR, function, uri, ExceptionUtils.getMessage(ex), ExceptionUtils.getRootCauseMessage(ex));
     }
 
 }

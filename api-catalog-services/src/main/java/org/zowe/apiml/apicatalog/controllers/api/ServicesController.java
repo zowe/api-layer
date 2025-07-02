@@ -43,7 +43,7 @@ import java.util.stream.StreamSupport;
  */
 @Slf4j
 @RestController
-@RequestMapping({"/", "/apicatalog/api/v1/"})
+@RequestMapping({"/apicatalog/", "/apicatalog/api/v1/"})
 @Tag(name = "API Catalog")
 @RequiredArgsConstructor
 public class ServicesController {
@@ -78,7 +78,7 @@ public class ServicesController {
         try {
             Iterable<APIContainer> allContainers = containerService.getAllContainers();
             List<APIContainer> apiContainers = toList(allContainers);
-            if (apiContainers == null || apiContainers.isEmpty()) {
+            if (apiContainers.isEmpty()) {
                 return Mono.just(new ResponseEntity<>(apiContainers, HttpStatus.NO_CONTENT));
             }
             return Mono.just(new ResponseEntity<>(apiContainers, HttpStatus.OK));

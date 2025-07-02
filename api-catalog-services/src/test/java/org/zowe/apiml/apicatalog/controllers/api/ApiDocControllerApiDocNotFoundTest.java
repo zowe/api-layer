@@ -10,37 +10,67 @@
 
 package org.zowe.apiml.apicatalog.controllers.api;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
+import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import org.zowe.apiml.apicatalog.controllers.handlers.CatalogApiDocControllerExceptionHandler;
+import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
+import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 
-import static org.hamcrest.Matchers.hasItem;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.hamcrest.Matchers.contains;
+import static org.mockito.Mockito.when;
 
-@WebMvcTest(controllers = {ApiDocController.class},
-    excludeFilters = { @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = WebSecurityConfigurer.class) },
-    excludeAutoConfiguration = { SecurityAutoConfiguration.class}
-)
-@ContextConfiguration(classes = CatalogApiDocControllerApiDocNotFoundTestContextConfiguration.class)
+@ContextConfiguration(classes = {
+    ApiDocController.class,
+    CatalogApiDocControllerExceptionHandler.class,
+    ApiDocControllerApiDocNotFoundTest.Context.class
+})
+@ExtendWith(SpringExtension.class)
+@WebFluxTest(controllers = ApiDocController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@TestInstance(TestInstance.Lifecycle. PER_CLASS)
 class ApiDocControllerApiDocNotFoundTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
+
+    @MockitoBean
+    private ApiDocRetrievalService apiServiceStatusService;
+
+    @BeforeAll
+    void initApiDocRetrievalService() {
+        when(apiServiceStatusService.retrieveApiDoc("service2", "v1"))
+            .thenThrow(new ApiDocNotFoundException("Really bad stuff happened"));
+
+        when(apiServiceStatusService.retrieveApiDoc("service2", null))
+            .thenThrow(new ApiDocNotFoundException("Really bad stuff happened"));
+    }
 
     @Test
-    void getApiDocAndFailThenThrowApiDocNotFoundException() throws Exception {
-        this.mockMvc.perform(get("/apidoc/service2/v1"))
-            .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.messages[?(@.messageNumber == 'ZWEAC103E')].messageContent",
-                hasItem("API Documentation not retrieved, Really bad stuff happened")));
+    void getApiDocAndFailThenThrowApiDocNotFoundException() {
+        webTestClient.get().uri("/apicatalog/apidoc/service2/v1").exchange()
+            .expectStatus().isNotFound()
+            .expectBody().jsonPath("$.messages[?(@.messageNumber == 'ZWEAC103E')].messageContent")
+                .value(contains("API Documentation not retrieved, Really bad stuff happened"));
+    }
+
+    static class Context {
+
+        @Bean
+        public MessageService messageService() {
+            return new YamlMessageService("/apicatalog-log-messages.yml");
+        }
+
     }
 
 }

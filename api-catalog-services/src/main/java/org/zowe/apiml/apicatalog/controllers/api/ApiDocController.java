@@ -38,7 +38,7 @@ import reactor.core.publisher.Mono;
  */
 @Slf4j
 @RestController
-@RequestMapping({"/apidoc", "/apicatalog/api/v1/apidoc"})
+@RequestMapping({"/apicatalog/apidoc", "/apicatalog/api/v1/apidoc"})
 @Tag(name = "API Documentation")
 @RequiredArgsConstructor
 public class ApiDocController {
