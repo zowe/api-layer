@@ -50,11 +50,11 @@ dependencyResolutionManagement {
 
             // Eureka requires this specific version of Jakarta JAXB bindings
             version('jaxbApi') {
-                strictly '[2.3.3,3.0.1['
+                strictly '[2.3.3,3.0.0)'
                 prefer '2.3.3'
             }
             version('jaxbImpl') {
-                strictly '[2.3.9,3.0.0['
+                strictly '[2.3.9,3.0.0)'
                 prefer '2.3.9'
             }
             version('jbossLogging', '3.6.1.Final')

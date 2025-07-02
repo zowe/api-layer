@@ -89,7 +89,7 @@ class ReactiveAuthenticationControllerTest {
         Application mockApplication = mock(Application.class);
         when(peerAwareInstanceRegistry.getApplications()).thenReturn(mockApplications);
         when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
-        when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(true), any(Application.class))).thenReturn(true);
+        when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class))).thenReturn(true);
 
         var result = controller.invalidateJwtToken(jwtToInvalidate);
 
@@ -105,7 +105,7 @@ class ReactiveAuthenticationControllerTest {
         Application mockApplication = mock(Application.class);
         when(peerAwareInstanceRegistry.getApplications()).thenReturn(mockApplications);
         when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
-        when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(true), any(Application.class))).thenReturn(false);
+        when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class))).thenReturn(false);
 
         var result = controller.invalidateJwtToken(jwtToInvalidate);
 
@@ -121,7 +121,7 @@ class ReactiveAuthenticationControllerTest {
         Application mockApplication = mock(Application.class);
         when(peerAwareInstanceRegistry.getApplications()).thenReturn(mockApplications);
         when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
-        when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(true), any(Application.class)))
+        when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class)))
             .thenThrow(new TokenNotValidException("Token is not valid"));
 
         var result = controller.invalidateJwtToken(jwtToInvalidate);
