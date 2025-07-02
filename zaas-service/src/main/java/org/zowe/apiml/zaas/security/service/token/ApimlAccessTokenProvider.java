@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
@@ -155,7 +156,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         try {
             CachingServiceClient.KeyValue keyValue = cachingServiceClient.read("salt");
             localSalt = keyValue.getValue();
-        } catch (CachingServiceClientException e) {
+        } catch (CachingServiceClientException | StorageException e) {
             byte[] newSalt = generateSalt();
             storeSalt(newSalt);
             localSalt = new String(newSalt);
