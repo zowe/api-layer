@@ -10,9 +10,15 @@
 
 package org.zowe.apiml.acceptance;
 
+import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
+import org.zowe.apiml.enable.register.RegisterToApiLayer;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 
@@ -20,11 +26,14 @@ import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 @AcceptanceTest
+@Import(ReactiveAuthenticationControllerTests.MockRegisterToApiLayerConfig.class)
 class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServices {
 
     private static final String REFRESH_ENDPOINT = "/gateway/api/v1/auth/refresh";
+    private static final String LOGIN_ENDPOINT = "/gateway/api/v1/auth/login";
     private static final String AUTH_COOKIE = "apimlAuthenticationToken";
 
     @Value("${server.ssl.keyPassword}")
@@ -43,6 +52,7 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
 
     private String login() {
         return given()
+            .contentType(ContentType.JSON)
             .body("""
                 {
                     "username": "USER",
@@ -51,7 +61,7 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
             """)
             .log().all()
         .when()
-            .post(URI.create(basePath + "/gateway/api/v1/auth/login"))
+            .post(URI.create(basePath + LOGIN_ENDPOINT))
         .then()
             .statusCode(204)
             .cookie(AUTH_COOKIE)
@@ -83,4 +93,12 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
             .statusCode(405);
     }
 
+    @TestConfiguration
+    public static class MockRegisterToApiLayerConfig {
+        @Bean
+        @Primary
+        public RegisterToApiLayer registerToApiLayer() {
+            return mock(RegisterToApiLayer.class);
+        }
+    }
 }

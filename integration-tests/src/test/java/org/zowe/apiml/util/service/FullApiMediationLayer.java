@@ -43,7 +43,7 @@ public class FullApiMediationLayer {
     private boolean firstCheck = true;
     private final Map<String, String> env;
     private static final boolean attlsEnabled = "true".equals(System.getProperty("environment.attls"));
-    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
+//    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
 
     private static final FullApiMediationLayer instance = new FullApiMediationLayer();
 
@@ -56,10 +56,10 @@ public class FullApiMediationLayer {
         prepareGateway();
         prepareMockServices();
         prepareDiscovery();
-        if (!IS_MODULITH_ENABLED) {
+//        if (!IS_MODULITH_ENABLED) {
             prepareCaching();
             prepareZaas();
-        }
+//        }
         prepareApiml();
         if (!attlsEnabled) {
             prepareNodeJsSampleApp();
@@ -188,10 +188,10 @@ public class FullApiMediationLayer {
             apiCatalogService.stop();
             discoverableClientService.stop();
 
-            if (!IS_MODULITH_ENABLED) {
+//            if (!IS_MODULITH_ENABLED) {
                 cachingService.stop();
                 zaasService.stop();
-            }
+//            }
             if (!attlsEnabled && startServices()) {
                 nodeJsSampleApp.destroy();
             }
