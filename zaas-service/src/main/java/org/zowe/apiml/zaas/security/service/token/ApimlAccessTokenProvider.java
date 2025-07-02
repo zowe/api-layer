@@ -151,7 +151,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return getSecurePassword(token, getSalt());
     }
 
-    private String initializeSalt() throws CachingServiceClientException,SecureTokenInitializationException {
+    private String initializeSalt() throws CachingServiceClientException, SecureTokenInitializationException {
         String localSalt;
         try {
             CachingServiceClient.KeyValue keyValue = cachingServiceClient.read("salt");
