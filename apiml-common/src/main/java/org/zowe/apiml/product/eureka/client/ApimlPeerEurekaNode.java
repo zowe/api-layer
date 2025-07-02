@@ -339,17 +339,6 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
         }
     }
 
-    @Override
-    public String getBatcherName() {
-        String batcherName;
-        try {
-            batcherName = new URL(serviceUrl).getHost();
-        } catch (MalformedURLException e1) {
-            batcherName = serviceUrl;
-        }
-        return "target_" + batcherName;
-    }
-
     private static String taskId(String requestType, String appName, String id) {
         return requestType + '#' + appName + '/' + id;
     }

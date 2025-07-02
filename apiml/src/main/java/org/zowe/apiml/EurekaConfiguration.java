@@ -81,6 +81,7 @@ import org.jvnet.hk2.spring.bridge.api.SpringIntoHK2Bridge;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -266,14 +267,6 @@ public class EurekaConfiguration implements WebMvcConfigurer {
             eurekaServerHttpClientFactory,
             this.instanceRegistryProperties.getExpectedNumberOfClientsSendingRenews(),
             this.instanceRegistryProperties.getDefaultOpenForTrafficCount());
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    PeerEurekaNodes peerEurekaNodes(PeerAwareInstanceRegistry registry, ServerCodecs serverCodecs,
-                                 ReplicationClientAdditionalFilters replicationClientAdditionalFilters) {
-        return new RefreshablePeerEurekaNodes(registry, this.eurekaServerConfig, this.eurekaClientConfig, serverCodecs,
-            this.applicationInfoManager, replicationClientAdditionalFilters);
     }
 
     @Bean

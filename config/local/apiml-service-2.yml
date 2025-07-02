@@ -18,7 +18,9 @@ server:
         # org.springframework.boot.autoconfigure.web: TRACE
         # reactor.netty: TRACE
         # redisratelimiter: TRACE
-
+eureka:
+    server:
+        myUrl: https://localhost:10021/eureka/
 apiml:
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
@@ -26,16 +28,29 @@ apiml:
         # The `apiml.discovery` node contains discovery-service only configuration
         userid: eureka  # Userid that Eureka server will use to check authentication of its clients (other services)
         password: password  # Password that Eureka server will use to check authentication of its clients (other services)
-        allPeersUrls: https://localhost:10021/eureka/
+        allPeersUrls: https://localhost:10011/eureka/
+    internal-discovery:
+        port: 10021
     health:
         protected: false
     gateway:
         servicesToLimitRequestRate: discoverableclient
         cookieNameForRateLimiter: apimlAuthenticationToken
+    service:
+        apimlId: apiml2
+
+        discoveryServiceUrls: https://localhost:10021/eureka/
+        forwardClientCertEnabled: false
+        hostname: localhost
+        id: ${spring.application.name}
+        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
+        port: 10020
+        externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
+        title: API ML 2
     security:
         x509:
             enabled: true
-            certificatesUrl: https://localhost:10020/gateway/certificates
+            certificatesUrl: https://localhost:10010/gateway/certificates
         allowTokenRefresh: true
         webfinger:
             fileLocation: config/local/webfinger.yml
@@ -63,9 +78,10 @@ caching:
     storage:
         mode: infinispan
         infinispan:
-            initialHosts: localhost[7601]
+            initialHosts: localhost[7600]
+
 jgroups:
     bind:
-        port: 7600
+        port: 7601
         address: localhost
 

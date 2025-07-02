@@ -208,7 +208,7 @@ logging:
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.eclipse.jetty: WARN
         org.ehcache: WARN
-        org.springframework: WARN
+        org.springframework: DEBUG
         org.springframework.beans: WARN
         org.springframework.boot.autoconfigure.web: WARN
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
@@ -219,8 +219,8 @@ logging:
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
         org.springframework.http.server.reactive: INFO
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
-        org.springframework.security.web: INFO
-        org.springframework.web.reactive: INFO
+        org.springframework.security.web: DEBUG
+        org.springframework.web.reactive: DEBUG
         org.zowe.apiml: INFO
         reactor.netty: DEBUG
         reactor.netty.http.client: INFO
@@ -245,6 +245,7 @@ logging:
     level:
         com.netflix: INFO # Update to DEBUG
         com.netflix.discovery.shared.transport.decorator: DEBUG
+        com.netflix.eureka.cluster: DEBUG
         com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
         javax.net.ssl: ERROR
         org.apache: INFO
