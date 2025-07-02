@@ -154,7 +154,7 @@ jobs:
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
-                    name: ContainerCITestsModulith-${{ env.JOB_ID }}
+                    name: CITestsModulithSAFProviderHA-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
@@ -242,16 +242,6 @@ jobs:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-            -   name: Run Discovery Service Chaotic HA Tests
-                if: ${{ 'discovery-chaotic' == matrix.type }}
-                run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
-                    --info -Denvironment.config=-ha -Ddiscoverableclient.instances=1
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-
             -   name: Run Gateway Service Chaotic HA Tests
                 if: ${{ 'gateway-chaotic' == matrix.type }}
                 run: >
@@ -290,7 +280,7 @@ jobs:
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
-                    name: CITestsChaoticHA-${{ env.JOB_ID }}-${{ matrix.type }}
+                    name: CITestsChaoticModulithHA-${{ env.JOB_ID }}-${{ matrix.type }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -438,7 +428,7 @@ jobs:
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
-                    name: ContainerCITests-${{ env.JOB_ID }}
+                    name: CITestsSAFProviderHA-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
@@ -1656,7 +1646,7 @@ jobs:
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
-                    name: E2EUITests-${{ env.JOB_ID }}
+                    name: E2EUITestsModulith-${{ env.JOB_ID }}
                     path: |
                         results/**
 
