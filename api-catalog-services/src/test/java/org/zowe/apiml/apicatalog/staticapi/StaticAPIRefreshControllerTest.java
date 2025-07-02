@@ -12,14 +12,12 @@ package org.zowe.apiml.apicatalog.staticapi;
 
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.client.RestClientException;
 import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
@@ -37,7 +35,6 @@ import static org.mockito.Mockito.when;
     StaticDefinitionControllerExceptionHandler.class,
     StaticAPIRefreshControllerTest.Context.class
 })
-@ExtendWith(SpringExtension.class)
 @WebFluxTest(controllers = {StaticAPIRefreshController.class, StaticDefinitionController.class}, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
 class StaticAPIRefreshControllerTest {
 
