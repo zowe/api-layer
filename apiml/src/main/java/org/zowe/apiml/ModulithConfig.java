@@ -43,6 +43,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.TomcatHttpHandlerAdapter;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.context.ServletContextAware;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
@@ -144,8 +145,9 @@ public class ModulithConfig {
         EurekaServerContextHolder.initialize(applicationContext.getBean(EurekaServerContext.class));
     }
 
-    @EventListener
-    public void onApplicationEvent(EurekaRegistryAvailableEvent event) {
+
+    @Scheduled(fixedRate = 20_000) // TODO find better solution but DON'T JUST REMOVE!
+    public void onApplicationEvent() {
         ApimlInstanceRegistry registry = getRegistry();
         instances.forEach((key, value) -> registry.registerStatically(instances.get(key), CoreService.GATEWAY.getServiceId().equals(key)));
 
