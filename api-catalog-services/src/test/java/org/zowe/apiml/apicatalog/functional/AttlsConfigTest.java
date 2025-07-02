@@ -10,19 +10,32 @@
 
 package org.zowe.apiml.apicatalog.functional;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.LoggingEvent;
+import ch.qos.logback.core.Appender;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.slf4j.LoggerFactory;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.zowe.apiml.filter.AttlsHttpHandler;
 
 import javax.net.ssl.SSLException;
 
 import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.verify;
 
 @TestPropertySource(
     properties = {
@@ -40,13 +53,19 @@ public class AttlsConfigTest extends ApiCatalogFunctionalTest {
         @Nested
         class WhenContextLoads {
 
+            @Mock
+            private Appender<ILoggingEvent> mockedAppender;
+
+            @Captor
+            private ArgumentCaptor<LoggingEvent> loggingEventCaptor;
+
             @Test
             void requestFailsWithHttps() {
                 try {
                     given()
                         .log().all()
                     .when()
-                        .get(getCatalogUriWithPath("containers"))
+                        .get(getCatalogUriWithPath("apicatalog/containers"))
                     .then()
                         .log().all()
                         .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
@@ -58,6 +77,10 @@ public class AttlsConfigTest extends ApiCatalogFunctionalTest {
 
             @Test
             void requestFailsWithAttlsContextReasonWithHttp() {
+                var logger = (Logger) LoggerFactory.getLogger(AttlsHttpHandler.class);
+                logger.addAppender(mockedAppender);
+                logger.setLevel(Level.ERROR);
+
                 given()
                     .log().all()
                 .when()
@@ -65,9 +88,16 @@ public class AttlsConfigTest extends ApiCatalogFunctionalTest {
                 .then()
                     .log().all()
                     .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-                    .body(containsString("Connection is not secure."))
-                    .body(containsString("AttlsContext.getStatConn"));
+                    .body(containsString("org.zowe.apiml.common.internalServerError"));
+
+                verify(mockedAppender, atLeast(1)).doAppend(loggingEventCaptor.capture());
+                assertThat(loggingEventCaptor.getAllValues())
+                    .filteredOn(element -> element.getMessage().contains("Cannot verify AT-TLS status"))
+                    .isNotEmpty();
             }
+
         }
+
     }
+
 }

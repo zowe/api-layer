@@ -124,18 +124,6 @@ public class SecurityConfiguration {
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated());
 
             if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
-                /* AT-TLS should be solved by org.zowe.apiml.filter.AttlsHttpHandler
-                if (isAttlsEnabled) {
-                    http.x509(x509 -> x509.
-                            .userDetailsService(x509UserDetailsService()))
-                        .addFilterBefore(reversedCategorizeCertFilter(), X509AuthenticationFilter.class)
-                        .addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class)
-                        .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-                } else {
-                    http.x509(x509 -> x509
-                        .userDetailsService(x509UserDetailsService()));
-                }
-                */
                 http.x509(x509 -> x509
                     .principalExtractor(X509Util.x509PrincipalExtractor())
                     .authenticationManager(X509Util.x509ReactiveAuthenticationManager())

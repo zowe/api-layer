@@ -61,7 +61,7 @@ class ApiDocControllerTest {
             @Test
             void givenNoApiDoc_thenThrowException() {
                 when(mockApiDocRetrievalService.retrieveApiDoc("service", "1.0.0")).thenThrow(new ApiDocNotFoundException("error"));
-                assertThrows(ApiDocNotFoundException.class, () -> underTest.getApiDocInfo("service", "1.0.0"));
+                assertThrows(ApiDocNotFoundException.class, () -> underTest.getApiDocInfo("service", "1.0.0").block());
             }
         }
 
@@ -79,7 +79,7 @@ class ApiDocControllerTest {
             @Test
             void givenNoApiDocExists_thenThrowException() {
                 when(mockApiDocRetrievalService.retrieveDefaultApiDoc("service")).thenThrow(new ApiDocNotFoundException("error"));
-                assertThrows(ApiDocNotFoundException.class, () -> underTest.getDefaultApiDocInfo("service"));
+                assertThrows(ApiDocNotFoundException.class, () -> underTest.getDefaultApiDocInfo("service").block());
             }
         }
 

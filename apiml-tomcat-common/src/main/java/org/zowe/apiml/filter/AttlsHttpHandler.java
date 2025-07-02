@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.BeansException;
@@ -48,6 +49,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Component
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "server.attls.enabled", havingValue = "true")
+@Slf4j
 public class AttlsHttpHandler implements BeanPostProcessor {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -76,11 +78,11 @@ public class AttlsHttpHandler implements BeanPostProcessor {
     }
 
     Mono<Void> internalError(ServerHttpRequest request, ServerHttpResponse response) {
-        return writeError(request, response, getMessage("org.zowe.apiml.gateway.internalServerError"));
+        return writeError(request, response, getMessage("org.zowe.apiml.common.internalServerError"));
     }
 
     Mono<Void> unsecureError(ServerHttpRequest request, ServerHttpResponse response) {
-        return writeError(request, response, getMessage("org.zowe.apiml.gateway.security.attls.notSecure"));
+        return writeError(request, response, getMessage("org.zowe.apiml.security.common.attls.notSecure"));
     }
 
     ServerHttpRequest updateCertificate(ServerHttpRequest request, HttpServletRequest nativeRequest, byte[] rawCertificate) throws CertificateException {
@@ -121,7 +123,8 @@ public class AttlsHttpHandler implements BeanPostProcessor {
                     requestFacade.setAttribute("attls", attlsContext);
                     request = updateCertificate(request, requestFacade, attlsContext.getCertificate());
                 } catch (IoctlCallException | UnknownEnumValueException | ContextIsNotInitializedException |
-                         CertificateException e) {
+                         CertificateException | UnsatisfiedLinkError e) {
+                    log.error("Cannot verify AT-TLS status", e);
                     return internalError(request, response);
                 }
 

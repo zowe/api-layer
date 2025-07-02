@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/static-api")
+@RequestMapping({"/apicatalog/static-api", "/apicatalog/api/v1/static-api"})
 @RequiredArgsConstructor
 public class StaticAPIRefreshController {
 
