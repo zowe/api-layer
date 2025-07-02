@@ -13,14 +13,12 @@ package org.zowe.apiml.apicatalog.staticapi;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
@@ -37,7 +35,6 @@ import static org.mockito.Mockito.when;
     StaticDefinitionControllerExceptionHandler.class,
     StaticDefinitionControllerTest.Context.class
 })
-@ExtendWith(SpringExtension.class)
 @WebFluxTest(controllers = StaticDefinitionController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
 class StaticDefinitionControllerTest {
 
