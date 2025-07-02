@@ -12,12 +12,12 @@ package org.zowe.apiml.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +36,7 @@ import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -58,7 +59,8 @@ import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.zowe.apiml.zaas.controllers.AuthController.INVALIDATE_PATH;
+
+
 
 @RestController
 @RequestMapping("/gateway/api/v1/auth")
@@ -203,33 +205,62 @@ public class ReactiveAuthenticationController {
             .switchIfEmpty(Mono.just(ResponseEntity.status(SC_UNAUTHORIZED).build()));
     }
 
-    @DeleteMapping(path = INVALIDATE_PATH)
-    @Operation(summary = "Logout JWT token.",
-        tags = {"Security"},
-        operationId = "invalidateJwtToken",
-        description = "Use the `/auth/invalidate` API to invalidate token on specific instance of Gateway.",
-        security = {
-            @SecurityRequirement(name = "ClientCert")
-        })
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully invalidated"),
-        @ApiResponse(responseCode = "400", description = "Invalid token"),
-        @ApiResponse(responseCode = "503", description = "Authentication service is not available")
-    })
-    public Mono<ResponseEntity<Void>> invalidateJwtToken(ServerWebExchange exchange) {
-        var endpoint = "/auth/invalidate/";
-        var uri = exchange.getRequest().getURI().getPath();
-        var index = uri.indexOf(endpoint);
+    @Operation(
+        summary = "Invalidate mainframe user session.",
+        tags = { "Security" },
+        operationId = "logoutUsingPOST",
+        description = """
+            Use the `/logout` API to invalidate mainframe user session.
 
-        var jwtToken = uri.substring(index + endpoint.length());
+            The cookie named `apimlAuthenticationToken` will be removed.
+        """
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Invalidated user session")
+    })
+    @PostMapping("/logout")
+    public String postMethodName() {
+        throw new IllegalStateException(
+        """
+            This method should not be called.
+            Logout handler is implemented in Spring Security (see WebSecurityConfig)
+            This method is created for OpenAPI documentation purposes only.
+        """);
+    }
+
+    /**
+     * Invalidate JWT, hidden endpoint undocumented
+     *
+     * @param token The JWT token to invalidate
+     * @return
+     */
+    @Hidden
+    @DeleteMapping(path = "/invalidate/{token}")
+    public Mono<ResponseEntity<Void>> invalidateJwtToken(@PathVariable String token) {
         try {
             var app = peerAwareInstanceRegistry.getApplications().getRegisteredApplications(CoreService.GATEWAY.getServiceId());
-            boolean invalidated = authenticationService.invalidateJwtTokenGateway(jwtToken, false, app);
+            var invalidated = authenticationService.invalidateJwtTokenGateway(token, false, app);
             return Mono.just(ResponseEntity.status(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE).build());
         } catch (TokenNotValidException e) {
             return Mono.just(ResponseEntity.status(SC_BAD_REQUEST).build());
         }
+    }
 
+    /**
+     * Distribute JWT invalidate action to path-specified instance ID
+     * Undocumented endpoint
+     *
+     * @param instanceId The instance Id to distribute JWT invalidation to
+     * @return 200 if distributed, 204 if not
+     */
+    @Hidden
+    @GetMapping(path = "/distribute/{instanceId}")
+    public Mono<ResponseEntity<Void>> distributeInvalidate(@PathVariable String instanceId) {
+        var distributed = authenticationService.distributeInvalidate(instanceId);
+        if (distributed) {
+            return Mono.just(ResponseEntity.ok().build());
+        }
+        return Mono.just(ResponseEntity.noContent().build());
     }
 
     @Operation(summary = "Refresh authentication token.",

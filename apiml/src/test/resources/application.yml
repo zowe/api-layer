@@ -29,6 +29,52 @@ apiml:
         userid: eureka  # Userid that Eureka server will use to check authentication of its clients (other services)
         password: password  # Password that Eureka server will use to check authentication of its clients (other services)
         allPeersUrls: http://${apiml.discovery.userid}:${apiml.discovery.password}@${apiml.service.hostname}:${apiml.service.port}/eureka/
+    gateway:
+        eureka:
+            instance:
+                instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
+                hostname: ${apiml.service.hostname}
+                #ports are computed in code
+                homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/
+                healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+                healthCheckUrlPath: /application/health
+                port: ${apiml.service.port}
+                securePort: ${apiml.service.port}
+                nonSecurePortEnabled: ${apiml.service.nonSecurePortEnabled}
+                securePortEnabled: ${apiml.service.securePortEnabled}
+                statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info
+                statusPageUrlPath: /application/info
+                metadata-map:
+                    apiml:
+                        registrationType: primary
+                        apiBasePath: /gateway/api/v1
+                        catalog:
+                            tile:
+                                id: apimediationlayer
+                                title:  API Mediation Layer API
+                                description: The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.
+                                version: 1.0.0
+                        routes:
+                            api_v1:
+                                gatewayUrl: /
+                                serviceUrl: /
+                        apiInfo:
+                            - apiId: zowe.apiml.gateway
+                              version: 1.0.0
+                              gatewayUrl: api/v1
+                              swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/gateway/api-docs
+                              documentationUrl: https://zowe.github.io/docs-site/
+                        service:
+                            title: API Gateway
+                            description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
+                            supportClientCertForwarding: true
+                            apimlId: ${apiml.service.apimlId:${apiml.service.hostname}_${apiml.service.port}}
+                            externalUrl: ${apiml.service.externalUrl:${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}}
+                        authentication:
+                            sso: true
+        registry:
+            enabled: false
+            metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
     service:
         apimlId: apiml1
         corsEnabled: true
@@ -49,6 +95,7 @@ apiml:
         auth:
             provider: zosmf
             zosmf:
+                jwtAutoconfiguration: ltpa
                 serviceId: zosmf
         saf:
             urls:
@@ -69,6 +116,8 @@ server:
         trustStoreType: PKCS12
 
 spring:
+    application:
+        name: gateway
     main:
         allow-circular-references: true
         banner-mode: ${apiml.banner:"console"}

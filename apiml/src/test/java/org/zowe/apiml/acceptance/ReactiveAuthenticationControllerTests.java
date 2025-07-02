@@ -19,6 +19,8 @@ import org.zowe.apiml.util.config.SslContextConfigurer;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @AcceptanceTest
@@ -26,6 +28,8 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
 
     private static final String REFRESH_ENDPOINT = "/gateway/api/v1/auth/refresh";
     private static final String AUTH_COOKIE = "apimlAuthenticationToken";
+    private static final String DISTRIBUTE_INVALIDATE_ENDPOINT = "/gateway/api/v1/auth/distribute";
+    private static final String INVALIDATE_JWT_ENDPOINT = "/gateway/api/v1/auth/invalidate";
 
     @Value("${server.ssl.keyPassword}")
     char[] password;
@@ -66,7 +70,7 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
     }
 
     @Test
-    void whenRefreshPATWithoutCert_then403() {
+    void whenRefreshTokenWithoutCert_then403() {
         given()
         .when()
             .post(URI.create(basePath + REFRESH_ENDPOINT))
@@ -81,6 +85,81 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
             .get(URI.create(basePath + REFRESH_ENDPOINT))
         .then()
             .statusCode(405);
+    }
+
+    @Test
+    void whenRefreshTokenWithCert_thenSuccess() {
+        var token = login();
+
+        var newToken = given()
+            .config(SslContext.clientCertApiml)
+            .cookie(AUTH_COOKIE, token)
+        .when()
+            .post(URI.create(basePath + REFRESH_ENDPOINT))
+        .then()
+            .statusCode(200)
+            .cookie(AUTH_COOKIE)
+        .extract()
+            .cookie(AUTH_COOKIE);
+
+        assertNotEquals(token, newToken);
+    }
+
+    @Test
+    void whenDistributeInvalidate_thenRequireCertificateAuthentication() {
+        given()
+            .log()
+            .all()
+        .when()
+            .get(URI.create(basePath + DISTRIBUTE_INVALIDATE_ENDPOINT + "/instanceId"))
+        .then()
+            .statusCode(403);
+    }
+
+    @Test
+    void whenDistributeInvalidate_withCert_thenSuccess() {
+        given()
+            .config(SslContext.clientCertApiml)
+        .when()
+            .get(URI.create(basePath + DISTRIBUTE_INVALIDATE_ENDPOINT + "/instanceId"))
+        .then()
+            .statusCode(204);
+    }
+
+    @Test
+    void whenInvalidateJwt_thenRequireCertificateAuthentication() {
+        var token = login();
+
+        given()
+            .log()
+            .all()
+        .when()
+            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT + "/" + token))
+        .then()
+            .statusCode(403);
+    }
+
+    @Test
+    void whenInvalidate_wrongMethod_thenFail() {
+        var token = login();
+
+        given()
+        .when()
+            .get(URI.create(basePath + INVALIDATE_JWT_ENDPOINT + "/" + token))
+        .then()
+            .statusCode(SC_METHOD_NOT_ALLOWED);
+    }
+
+    @Test
+    void whenInvalidateJwt_withCert_thenSuccess() {
+        var token = login();
+
+        given()
+            .config(SslContext.clientCertApiml)
+        .when()
+            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT + "/" + token))
+        .then()
+            .statusCode(200);
     }
 
 }
