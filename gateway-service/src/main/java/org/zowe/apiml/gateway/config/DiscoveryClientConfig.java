@@ -38,12 +38,18 @@ import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClientFactory;
 import org.zowe.apiml.gateway.filters.pre.ApimlPreDecorationFilter;
 import org.zowe.apiml.product.gateway.AdditionalRegistrationGatewayRegistry;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
 
 /**
  * This configuration override bean EurekaClient with custom ApimlDiscoveryClient. This bean offer additional method
@@ -102,7 +108,7 @@ public class DiscoveryClientConfig {
             ApimlDiscoveryClient additionalApimlRegistration = registerInTheApimlInstance(config, healthCheckHandler, apimlRegistration, manager);
             discoveryClientsList.add(additionalApimlRegistration);
             apimlPreDecorationFilter.ifPresent(__ ->
-                additionalRegistrationGatewayRegistry.registerAdditionalRegistrationsGatewayRegistryRefresh(additionalApimlRegistration));
+                additionalRegistrationGatewayRegistry.registerCacheRefreshEventListener(additionalApimlRegistration));
         }
 
         return new DiscoveryClientWrapper(discoveryClientsList);

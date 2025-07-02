@@ -112,7 +112,7 @@ public class AdditionalRegistrationGatewayRegistryTest {
         when(mockEurekaClientConfig.getEurekaServerServiceUrls(any()))
             .thenReturn(Collections.singletonList("dummy"));
 
-        gatewayRegistry.registerAdditionalRegistrationsGatewayRegistryRefresh(discoveryClientMock);
+        gatewayRegistry.registerCacheRefreshEventListener(discoveryClientMock);
 
         verify(discoveryClientMock, times(1))
             .registerEventListener(any());

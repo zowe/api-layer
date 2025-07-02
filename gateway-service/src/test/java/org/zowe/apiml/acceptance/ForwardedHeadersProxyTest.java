@@ -111,13 +111,7 @@ class ForwardedHeadersProxyTest extends AcceptanceTestWithTwoServices {
         .then()
             .statusCode(Matchers.is(SC_OK));
 
-        HttpUriRequest toVerify = getCaptorToEvaluate();
-
-        assertHeaderEqualsValue(toVerify, "X-Forwarded-Prefix", OTHER_PROXY_PREFIX + "/" + serviceWithDefaultConfiguration.getId());
-        assertHeaderContainsValue(toVerify, "X-Forwarded-For", OTHER_PROXY_ADDRESS);
-        assertHeaderContainsValue(toVerify, "X-Forwarded-For", proxyAddress);
-
-        assertHeaderEqualsValue(toVerify, "X-Forwarded-Host", "localhost:" + port);
+        assertHeadersForwarded(proxyAddress);
     }
 
     @Test
@@ -134,18 +128,21 @@ class ForwardedHeadersProxyTest extends AcceptanceTestWithTwoServices {
         .then()
             .statusCode(Matchers.is(SC_OK));
 
-        HttpUriRequest toVerify = getCaptorToEvaluate();
-
-        assertHeaderEqualsValue(toVerify, "X-Forwarded-Prefix", OTHER_PROXY_PREFIX + "/" + serviceWithDefaultConfiguration.getId());
-        assertHeaderContainsValue(toVerify, "X-Forwarded-For", OTHER_PROXY_ADDRESS);
-        assertHeaderContainsValue(toVerify, "X-Forwarded-For", additionalGatewayAddress);
-
-        assertHeaderEqualsValue(toVerify, "X-Forwarded-Host", "localhost:" + port);
+        assertHeadersForwarded(additionalGatewayAddress);
 
         mutateRemoteAddressFilter.reset();
         additionalGatewayRegistry.getAdditionalGatewayIpAddressesReference().set(Collections.emptySet());
     }
 
+    private void assertHeadersForwarded(String address) {
+        HttpUriRequest toVerify = getCaptorToEvaluate();
+
+        assertHeaderEqualsValue(toVerify, "X-Forwarded-Prefix", OTHER_PROXY_PREFIX + "/" + serviceWithDefaultConfiguration.getId());
+        assertHeaderContainsValue(toVerify, "X-Forwarded-For", OTHER_PROXY_ADDRESS);
+        assertHeaderContainsValue(toVerify, "X-Forwarded-For", address);
+
+        assertHeaderEqualsValue(toVerify, "X-Forwarded-Host", "localhost:" + port);
+    }
 
     @SneakyThrows
     private HttpUriRequest getCaptorToEvaluate() {

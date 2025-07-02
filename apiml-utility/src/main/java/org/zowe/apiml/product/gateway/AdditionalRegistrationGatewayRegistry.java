@@ -65,7 +65,7 @@ public class AdditionalRegistrationGatewayRegistry {
         log.debug("AdditionalRegistrationGatewayRegistry initialized");
     }
 
-    public void registerAdditionalRegistrationsGatewayRegistryRefresh(DiscoveryClient additionalApimlRegistration) {
+    public void registerCacheRefreshEventListener(DiscoveryClient additionalApimlRegistration) {
         additionalApimlRegistration.registerEventListener(
             event -> cacheRefreshEventHandler(event, additionalApimlRegistration));
         log.debug("AdditionalRegistrationGatewayRegistry refresh registered for additional registration: {}",

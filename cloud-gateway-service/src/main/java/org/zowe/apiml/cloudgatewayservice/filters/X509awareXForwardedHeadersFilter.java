@@ -68,7 +68,8 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
     /*
      *
      * @param httpsConfig gateway certificate configuration
-     * @param trustedProxies configuration value of a pattern on how validate proxy
+     * @param trustedProxiesPattern configuration value of a pattern on how validate proxy
+     * @param additionalRegistrationGatewayRegistry cache of apiml gateway ip addresses from additional registrations
      *
      */
     public X509awareXForwardedHeadersFilter(

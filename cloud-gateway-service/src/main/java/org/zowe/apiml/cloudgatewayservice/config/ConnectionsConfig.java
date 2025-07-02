@@ -290,7 +290,7 @@ public class ConnectionsConfig {
 
             x509awareXForwardedHeadersFilter
                 .ifPresent(__ ->
-                    additionalRegistrationGatewayRegistry.registerAdditionalRegistrationsGatewayRegistryRefresh(cloudEurekaClient));
+                    additionalRegistrationGatewayRegistry.registerCacheRefreshEventListener(cloudEurekaClient));
         }
         return new AdditionalEurekaClientsHolder(additionalClients);
     }
