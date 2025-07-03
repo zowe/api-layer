@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.apicatalog.exceptions.ApiDiffNotAvailableException;
+import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
 import reactor.core.publisher.Mono;
 
@@ -143,6 +144,8 @@ public class ApiDocController {
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .body(result)
             );
+        } catch (ApiDocNotFoundException adnfe) {
+            throw adnfe;
         } catch (Exception e) {
             String errorMessage = String.format("Error retrieving API diff for '%s' with versions '%s' and '%s'", serviceId, apiId1, apiId2);
             log.error(errorMessage, e);
