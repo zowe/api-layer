@@ -17,6 +17,7 @@ import io.restassured.response.ResponseOptions;
 import io.restassured.response.ValidatableResponseOptions;
 import org.apache.http.HttpHeaders;
 import org.apache.http.message.BasicNameValuePair;
+import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,12 +61,12 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
 
     public static Stream<Arguments> getTokens() {
         return Stream.of(
-            Arguments.of("validJwt", SC_OK),
-            Arguments.of("noSignJwt", SC_OK),
-            Arguments.of("publicKeySignedJwt", SC_OK),
-            Arguments.of("changedRealmJwt", SC_OK),
-            Arguments.of("changedUserJwt", SC_OK),
-            Arguments.of("personalAccessToken", SC_OK)
+            Arguments.of("validJwt", SC_OK, Matchers.blankOrNullString()),
+            Arguments.of("noSignJwt", SC_OK, startsWith("ZWEAO402E")),
+            Arguments.of("publicKeySignedJwt", SC_OK, startsWith("ZWEAO402E")),
+            Arguments.of("changedRealmJwt", SC_OK, startsWith("Unknown token issued by: ThirdParty")),
+            Arguments.of("changedUserJwt", SC_OK, startsWith("ZWEAO402E")),
+            Arguments.of("personalAccessToken", SC_OK, Matchers.blankOrNullString())
         );
     }
 
@@ -103,9 +104,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             verifyPassTicketHeaders(
                 given()
                     .cookie(COOKIE_NAME, jwt)
-                .when()
+                    .when()
                     .get(scgUrl)
-                .then()
+                    .then()
             );
         }
 
@@ -114,9 +115,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
         void givenNoJWT_thenErrorHeaderIsCreated() {
             String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
             given()
-            .when()
+                .when()
                 .get(scgUrl)
-            .then()
+                .then()
                 .statusCode(SC_OK)
                 .body("headers.x-zowe-auth-failure", startsWith("ZWEAG160E"))
                 .header(ApimlConstants.AUTH_FAIL_HEADER, startsWith("ZWEAG160E"));
@@ -136,9 +137,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                 verifyPassTicketHeaders(
                     given()
                         .header(header)
-                    .when()
+                        .when()
                         .get(requestUrl)
-                    .then()
+                        .then()
                 );
 
             }
@@ -151,9 +152,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                 verifyPassTicketHeaders(
                     given()
                         .cookie(cookie, token)
-                    .when()
+                        .when()
                         .get(requestUrl)
-                    .then()
+                        .then()
                 );
 
             }
@@ -163,9 +164,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                 verifyPassTicketHeaders(
                     given()
                         .auth().preemptive().basic(USERNAME, new String(PASSWORD))
-                    .when()
+                        .when()
                         .get(requestUrl)
-                    .then()
+                        .then()
                 );
             }
 
@@ -178,9 +179,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                     given()
                         .cookie(cookie, token)
                         .header(header)
-                    .when()
+                        .when()
                         .get(requestUrl)
-                    .then()
+                        .then()
                 );
 
             }
@@ -194,9 +195,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                     given()
                         .auth().preemptive().basic(USERNAME, new String(PASSWORD))
                         .cookie(cookie, token)
-                    .when()
+                        .when()
                         .get(requestUrl)
-                    .then()
+                        .then()
                 );
 
             }
@@ -205,7 +206,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#getTokens")
             @InfinispanStorageTest
             @TestsNotMeantForZowe
-            void whenCallPassTicketService(String tokenType, int status) throws JSONException {
+            void whenCallPassTicketService(String tokenType, int status, Matcher<String> matcher) throws JSONException {
                 String token = getToken(tokenType);
 
                 //@formatter:off
@@ -214,6 +215,8 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                 .when()
                     .get(discoverablePassticketUrl)
                 .then()
+                    .header(ApimlConstants.AUTH_FAIL_HEADER, matcher)
+                    .log().all()
                     .statusCode(is(status));
                 //@formatter:on
             }
@@ -229,9 +232,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             void givenCorrectToken(String token, String cookie) {
                 given()
                     .cookie(cookie, token)
-                .when()
+                    .when()
                     .get(discoverablePassticketUrl)
-                .then()
+                    .then()
                     .statusCode(is(SC_OK));
             }
 
@@ -254,9 +257,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
 
                 given()
                     .cookie(cookie, token)
-                .when()
+                    .when()
                     .get(discoverablePassticketUrl)
-                .then()
+                    .then()
                     .statusCode(is(SC_INTERNAL_SERVER_ERROR))
                     .body("message", containsString(expectedMessage));
 
@@ -270,9 +273,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             void givenCustomHeader() {
                 given()
                     .cookie(COOKIE_NAME, jwt)
-                .when()
+                    .when()
                     .get(requestUrl)
-                .then()
+                    .then()
                     .body("headers.custompassticketheader", Matchers.notNullValue())
                     .body("headers.customuserheader", Matchers.notNullValue())
                     .statusCode(200);
@@ -291,9 +294,9 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             void givenJwt(String url, int responseCode, String description) {
                 given()
                     .cookie(COOKIE_NAME, jwt)
-                .when()
+                    .when()
                     .get(HttpRequestUtils.getUriFromGateway(url))
-                .then()
+                    .then()
                     .body("headers.authorization", Matchers.nullValue())
                     .statusCode(responseCode);
             }
