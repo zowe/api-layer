@@ -11,6 +11,7 @@
 package org.zowe.apiml.apicatalog.staticapi;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -23,9 +24,12 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Mono;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+
 /**
  * This class creates responses for exceptional behavior of the StaticAPIRefreshController
  */
+@Order(0)
 @ControllerAdvice(assignableTypes = {StaticAPIRefreshController.class})
 @RequiredArgsConstructor
 public class StaticAPIRefreshControllerExceptionHandler {
@@ -43,6 +47,7 @@ public class StaticAPIRefreshControllerExceptionHandler {
 
         return Mono.just(ResponseEntity
             .status(HttpStatus.SERVICE_UNAVAILABLE)
+            .contentType(APPLICATION_JSON)
             .body(message.mapToView()));
     }
 
@@ -59,6 +64,7 @@ public class StaticAPIRefreshControllerExceptionHandler {
 
         return Mono.just(ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .contentType(APPLICATION_JSON)
             .body(message.mapToView()));
     }
 }

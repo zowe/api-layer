@@ -12,6 +12,7 @@ package org.zowe.apiml.apicatalog.staticapi;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -24,10 +25,13 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+
 /**
  * This class creates responses for exceptional behavior of the StaticDefinitionController
  */
 @Slf4j
+@Order(0)
 @ControllerAdvice(assignableTypes = {StaticDefinitionController.class})
 @RequiredArgsConstructor
 public class StaticDefinitionControllerExceptionHandler {
@@ -47,6 +51,7 @@ public class StaticDefinitionControllerExceptionHandler {
 
         return Mono.just(ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .contentType(APPLICATION_JSON)
             .body(message.mapToView()));
     }
 
@@ -63,6 +68,7 @@ public class StaticDefinitionControllerExceptionHandler {
 
         return Mono.just(ResponseEntity
             .status(HttpStatus.CONFLICT)
+            .contentType(APPLICATION_JSON)
             .body(message.mapToView()));
     }
 }
