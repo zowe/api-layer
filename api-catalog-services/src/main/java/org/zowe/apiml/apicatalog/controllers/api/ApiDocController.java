@@ -33,6 +33,8 @@ import org.zowe.apiml.apicatalog.exceptions.ApiDiffNotAvailableException;
 import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
 import reactor.core.publisher.Mono;
 
+import static org.apache.hc.core5.http.HttpStatus.SC_OK;
+
 /**
  * Main API for handling requests from the API Catalog UI, routed through the gateway
  */
@@ -71,7 +73,11 @@ public class ApiDocController {
         @PathVariable(value = "serviceId") String serviceId,
         @Parameter(name = "apiId", description = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v1.0.0")
         @PathVariable(value = "apiId") String apiId) {
-        return Mono.fromSupplier(() -> ResponseEntity.ok(apiDocRetrievalService.retrieveApiDoc(serviceId, apiId)));
+        return Mono.fromRunnable(() -> ResponseEntity
+            .status(SC_OK)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(apiDocRetrievalService.retrieveApiDoc(serviceId, apiId))
+        );
     }
 
     /**
@@ -96,8 +102,11 @@ public class ApiDocController {
     public Mono<ResponseEntity<String>> getDefaultApiDocInfo(
         @Parameter(name = "serviceId", description = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "serviceId") String serviceId) {
-
-        return Mono.fromSupplier(() -> ResponseEntity.ok(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)));
+        return Mono.fromSupplier(() -> ResponseEntity
+            .status(SC_OK)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId))
+        );
     }
 
     @GetMapping(value = "/{serviceId}/{apiId1}/{apiId2}", produces = MediaType.TEXT_HTML_VALUE)
