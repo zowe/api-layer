@@ -12,8 +12,8 @@ package org.zowe.apiml.apicatalog.controllers.api;
 
 import org.springframework.context.annotation.Bean;
 import org.zowe.apiml.apicatalog.controllers.handlers.CatalogApiDocControllerExceptionHandler;
-import org.zowe.apiml.apicatalog.services.status.APIServiceStatusService;
-import org.zowe.apiml.apicatalog.services.status.model.ServiceNotFoundException;
+import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
+import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
@@ -22,18 +22,18 @@ import static org.mockito.Mockito.*;
 class CatalogApiDocControllerServiceNotFoundTestContextConfiguration {
 
     @Bean
-    public APIServiceStatusService apiServiceStatusService() {
-        return mock(APIServiceStatusService.class);
+    public ApiDocRetrievalService apiServiceStatusService() {
+        return mock(ApiDocRetrievalService.class);
     }
 
     @Bean
-    public CatalogApiDocController catalogApiDocController(APIServiceStatusService apiServiceStatusService) {
-        when(apiServiceStatusService.getServiceCachedApiDocInfo("service1", "v1"))
+    public ApiDocController catalogApiDocController(ApiDocRetrievalService apiServiceStatusService) {
+        when(apiServiceStatusService.retrieveApiDoc("service1", "v1"))
             .thenThrow(new ServiceNotFoundException("API Documentation not retrieved, The service is running."));
 
-        verify(apiServiceStatusService, never()).getServiceCachedApiDocInfo("service1", "v1");
+        verify(apiServiceStatusService, never()).retrieveApiDoc("service1", "v1");
 
-        return new CatalogApiDocController(apiServiceStatusService);
+        return new ApiDocController(apiServiceStatusService);
     }
 
     @Bean
@@ -45,4 +45,5 @@ class CatalogApiDocControllerServiceNotFoundTestContextConfiguration {
     public CatalogApiDocControllerExceptionHandler catalogApiDocControllerExceptionHandler() {
         return new CatalogApiDocControllerExceptionHandler(messageService());
     }
+
 }

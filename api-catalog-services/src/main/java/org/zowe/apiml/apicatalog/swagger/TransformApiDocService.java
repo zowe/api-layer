@@ -12,7 +12,6 @@ package org.zowe.apiml.apicatalog.swagger;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
 
 import jakarta.validation.UnexpectedTypeException;
@@ -24,6 +23,7 @@ import java.util.function.Function;
 @Service
 @RequiredArgsConstructor
 public class TransformApiDocService {
+
     private final Function<String, AbstractApiDocService<?, ?>> beanApiDocFactory;
 
     /**
@@ -44,4 +44,5 @@ public class TransformApiDocService {
 
         return abstractApiDocService.transformApiDoc(serviceId, apiDocInfo);
     }
+
 }

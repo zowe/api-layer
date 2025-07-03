@@ -10,8 +10,8 @@
 
 package org.zowe.apiml.apicatalog.controllers.handlers;
 
-import org.zowe.apiml.apicatalog.controllers.api.ApiCatalogController;
-import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalThrowable;
+import org.zowe.apiml.apicatalog.controllers.api.ServicesController;
+import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -24,9 +24,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 /**
  * This class creates responses for exceptional behavior of the ApiCatalogController
  */
-@ControllerAdvice(assignableTypes = {ApiCatalogController.class})
+@ControllerAdvice(assignableTypes = {ServicesController.class})
 @RequiredArgsConstructor
 public class ApiCatalogControllerExceptionHandler {
+
     private final MessageService messageService;
 
     /**
@@ -35,11 +36,12 @@ public class ApiCatalogControllerExceptionHandler {
      * @param exception ContainerStatusRetrievalThrowable
      * @return 500 and the message 'Could not retrieve container statuses, {optional text}'
      */
-    @ExceptionHandler(ContainerStatusRetrievalThrowable.class)
-    public ResponseEntity<ApiMessageView> handleServiceNotFoundException(ContainerStatusRetrievalThrowable exception) {
+    @ExceptionHandler(ContainerStatusRetrievalException.class)
+    public ResponseEntity<ApiMessageView> handleServiceNotFoundException(ContainerStatusRetrievalException exception) {
         Message message = messageService.createMessage("org.zowe.apiml.apicatalog.containerStatusRetrievalException", exception.getMessage());
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(message.mapToView());
     }
+
 }

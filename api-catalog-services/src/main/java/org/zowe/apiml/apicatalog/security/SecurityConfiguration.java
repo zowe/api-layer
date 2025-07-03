@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -69,8 +68,8 @@ import java.util.Set;
 @EnableApimlAuth
 @EnableMethodSecurity
 @EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
-@ConditionalOnProperty(value = "apiml.catalog.standalone.enabled", havingValue = "false", matchIfMissing = true)
 public class SecurityConfiguration {
+
     private static final String APIDOC_ROUTES = "/apidoc/**";
     private static final String STATIC_REFRESH_ROUTE = "/static-api/refresh";
 
@@ -86,6 +85,7 @@ public class SecurityConfiguration {
     private boolean isAttlsEnabled;
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
+
     /**
      * Filter chain for protecting /apidoc/** endpoints with MF credentials for client certificate.
      */
