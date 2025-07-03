@@ -197,7 +197,6 @@ management:
     endpoints:
         migrate-legacy-ids: true
         web:
-            base-path: /application
             exposure:
                 include: health,info,loggers,hystrixstream
 
@@ -223,7 +222,6 @@ management:
     endpoints:
         migrate-legacy-ids: true
         web:
-            base-path: /application
             exposure:
                 include: "*"
 ---

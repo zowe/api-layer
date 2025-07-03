@@ -39,11 +39,8 @@ import org.springframework.web.server.WebFilter;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.security.client.EnableApimlAuth;
-import org.zowe.apiml.security.client.login.GatewayLoginProvider;
 import org.zowe.apiml.security.client.service.GatewaySecurityService;
-import org.zowe.apiml.security.client.token.GatewayTokenProvider;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
@@ -80,20 +77,14 @@ import static org.zowe.apiml.security.common.token.TokenAuthentication.createAut
 @EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
 public class SecurityConfiguration {
 
-    private static final String APIDOC_ROUTES = "/apidoc/**";
-    private static final String STATIC_REFRESH_ROUTE = "/static-api/refresh";
+    private static final String APIDOC_ROUTES = "/apicatalog/apidoc/**";
+    private static final String STATIC_REFRESH_ROUTE = "/apicatalog/static-api/refresh";
 
-    private final ObjectMapper securityObjectMapper;
     private final AuthConfigurationProperties authConfigurationProperties;
-    private final HandlerInitializer handlerInitializer;
-    private final GatewayLoginProvider gatewayLoginProvider;
-    private final GatewayTokenProvider gatewayTokenProvider;
     private final CertificateValidator certificateValidator;
     private final AuthExceptionHandler authExceptionHandler;
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
 
@@ -156,12 +147,14 @@ public class SecurityConfiguration {
         public WebSecurityCustomizer webSecurityCustomizer() {
             String[] noSecurityAntMatchers = {
                 "/",
-                "/static/**",
-                "/favicon.ico",
-                "/v3/api-docs",
-                "/index.html",
-                "/application/info",
-                "/oidc/provider"
+                "/apicatalog",
+                "/apicatalog/",
+                "/apicatalog/static/**",
+                "/apicatalog/favicon.ico",
+                "/apicatalog/v3/api-docs",
+                "/apicatalog/index.html",
+                "/apicatalog/application/info",
+                "/apicatalog/oidc/provider"
             };
             return web -> web.ignoring().requestMatchers(noSecurityAntMatchers);
         }
@@ -172,14 +165,14 @@ public class SecurityConfiguration {
             @Qualifier("basicAuthenticationFilter") WebFilter basicAuthenticationFilter,
             @Qualifier("tokenAuthenticationFilter") WebFilter tokenAuthenticationFilter,
             @Qualifier("oidcAuthenticationFilter") WebFilter oidcAuthenticationFilter
-        ) throws Exception {
+        ) {
 
             if (isHealthEndpointProtected) {
                 http.authorizeExchange(exchange -> exchange
-                    .pathMatchers("/application/health").authenticated());
+                    .pathMatchers("/apicatalog/application/health").authenticated());
             } else {
                 http.authorizeExchange(exchange -> exchange
-                    .pathMatchers("/application/health").permitAll());
+                    .pathMatchers("/apicatalog/application/health").permitAll());
             }
 
             mainframeCredentialsConfiguration(
@@ -193,7 +186,7 @@ public class SecurityConfiguration {
         }
     }
 
-    private ServerHttpSecurity baseConfiguration(ServerHttpSecurity http) throws Exception {
+    private ServerHttpSecurity baseConfiguration(ServerHttpSecurity http) {
         var antMatcher = new AntPathMatcher();
         var mapper = new ObjectMapper();
 
@@ -213,7 +206,7 @@ public class SecurityConfiguration {
                     var addHeader = (BiConsumer<String, String>) response.getHeaders()::add;
 
                     if (Stream.of(
-                            "/application/**",
+                            "/apicatalog/application/**",
                             APIDOC_ROUTES,
                             STATIC_REFRESH_ROUTE
                         ).noneMatch(pattern -> antMatcher.match(pattern, requestedUri))
