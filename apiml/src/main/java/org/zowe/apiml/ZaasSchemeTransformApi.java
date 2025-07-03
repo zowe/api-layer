@@ -32,6 +32,7 @@ import org.zowe.apiml.zaas.ZaasTokenResponse;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.zaas.security.service.schema.source.PATAuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import reactor.core.publisher.Mono;
 
@@ -118,6 +119,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             if (authSource.isEmpty()) {
                 return createMissingAuthenticationErrorMessage();
             }
+            updateServiceId(authSource, request);
             if (!authSourceService.isValid(authSource.get())) {
                 return createInvalidAuthenticationErrorMessage();
             }
@@ -135,6 +137,14 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         }
     }
 
+    private void updateServiceId(Optional<AuthSource> authSource, RequestCredentialsHttpServletRequestAdapter request) {
+        authSource.ifPresent(as -> {
+            if (as instanceof PATAuthSource && ((PATAuthSource) as).getDefaultServiceId() == null) {
+                ((PATAuthSource) as).setDefaultServiceId(request.getServiceId());
+            }
+        });
+    }
+
     @Override
     public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> safIdt(RequestCredentials requestCredentials) {
         var applicationName = requestCredentials.getApplId();
@@ -148,6 +158,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             if (authSource.isEmpty()) {
                 return createMissingAuthenticationErrorMessage();
             }
+            updateServiceId(authSource, request);
             if (!authSourceService.isValid(authSource.get())) {
                 return createInvalidAuthenticationErrorMessage();
             }
@@ -170,6 +181,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             if (authSource.isEmpty()) {
                 return createMissingAuthenticationErrorMessage();
             }
+            updateServiceId(authSource, request);
             if (!authSourceService.isValid(authSource.get())) {
                 return createInvalidAuthenticationErrorMessage();
             }
@@ -191,6 +203,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             if (authSource.isEmpty()) {
                 return createMissingAuthenticationErrorMessage();
             }
+            updateServiceId(authSource, request);
             if (!authSourceService.isValid(authSource.get())) {
                 return createInvalidAuthenticationErrorMessage();
             }
@@ -210,6 +223,10 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
 
         @Delegate(excludes = Exclude.class)
         private HttpServletRequest request;
+
+        public String getServiceId() {
+            return requestCredentials.getServiceId();
+        }
 
         @Override
         public Cookie[] getCookies() {
