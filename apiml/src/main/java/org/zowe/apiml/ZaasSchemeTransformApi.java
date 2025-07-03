@@ -118,6 +118,9 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             if (authSource.isEmpty()) {
                 return createMissingAuthenticationErrorMessage();
             }
+            if (!authSourceService.isValid(authSource.get())) {
+                return createInvalidAuthenticationErrorMessage();
+            }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
             var ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
@@ -145,6 +148,9 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             if (authSource.isEmpty()) {
                 return createMissingAuthenticationErrorMessage();
             }
+            if (!authSourceService.isValid(authSource.get())) {
+                return createInvalidAuthenticationErrorMessage();
+            }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
             String safIdToken = tokenCreationService.createSafIdTokenWithoutCredentials(authSourceParsed.getUserId(), applicationName);
@@ -164,6 +170,9 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             if (authSource.isEmpty()) {
                 return createMissingAuthenticationErrorMessage();
             }
+            if (!authSourceService.isValid(authSource.get())) {
+                return createInvalidAuthenticationErrorMessage();
+            }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
             var response = zosmfService.exchangeAuthenticationForZosmfToken(authSource.get().getRawSource().toString(), authSourceParsed);
@@ -182,7 +191,9 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             if (authSource.isEmpty()) {
                 return createMissingAuthenticationErrorMessage();
             }
-
+            if (!authSourceService.isValid(authSource.get())) {
+                return createInvalidAuthenticationErrorMessage();
+            }
             var token = authSourceService.getJWT(authSource.get());
             var response = ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME).token(token).build();
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
