@@ -23,7 +23,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.zowe.apiml.constants.ApimlConstants;
-import org.zowe.apiml.gateway.filters.*;
+import org.zowe.apiml.gateway.filters.AbstractAuthSchemeFactory;
+import org.zowe.apiml.gateway.filters.ErrorHeaders;
+import org.zowe.apiml.gateway.filters.RequestCredentials;
+import org.zowe.apiml.gateway.filters.ZaasInternalErrorException;
+import org.zowe.apiml.gateway.filters.ZaasSchemeTransform;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
@@ -40,7 +44,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Optional;
 
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE;
@@ -138,11 +146,11 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
     }
 
     private void updateServiceId(Optional<AuthSource> authSource, RequestCredentialsHttpServletRequestAdapter request) {
-        authSource.ifPresent(as -> {
-            if (as instanceof PATAuthSource && ((PATAuthSource) as).getDefaultServiceId() == null) {
-                ((PATAuthSource) as).setDefaultServiceId(request.getServiceId());
-            }
-        });
+        authSource
+            .filter(PATAuthSource.class::isInstance)
+            .map(PATAuthSource.class::cast)
+            .filter(as -> as.getDefaultServiceId() == null)
+            .ifPresent(as -> as.setDefaultServiceId(request.getServiceId()));
     }
 
     @Override
