@@ -22,3 +22,10 @@ messages:
         text: "The request has not been applied because it lacks valid authentication credentials."
         reason: "The accessed resource requires authentication. The request is missing valid authentication credentials or the token expired."
         action: "Review the product documentation for more details about acceptable authentication. Verify that your credentials are valid and contact security administrator to obtain valid credentials."
+
+    - key: org.zowe.apiml.zaas.security.schema.missingAuthentication
+      number: ZWEAG160
+      type: ERROR
+      text: "No authentication provided in the request"
+      reason: "The JWT token or client certificate was not provided with the request"
+      action: "Configure your client to provide valid authentication."
