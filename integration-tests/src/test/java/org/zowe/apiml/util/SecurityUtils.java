@@ -572,7 +572,7 @@ public class SecurityUtils {
         given()
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .when()
-            .get(HttpRequestUtils.getUriFromGateway(gatewayHost, ROUTED_QUERY))
+            .get(HttpRequestUtils.getUriFromGateway(ROUTED_QUERY, gatewayHost))
         .then()
             .statusCode(status.value());
     }
