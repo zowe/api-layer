@@ -30,7 +30,7 @@ import reactor.core.publisher.Mono;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/apicatalog/api/v1/auth")
+@RequestMapping({"/apicatalog/auth", "/apicatalog/api/v1/auth"})
 @Slf4j
 @RequiredArgsConstructor
 public class TokenController {

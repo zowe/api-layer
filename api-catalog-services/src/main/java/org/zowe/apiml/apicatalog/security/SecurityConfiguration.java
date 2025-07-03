@@ -189,10 +189,6 @@ public class SecurityConfiguration {
                 .authorizeExchange(exchange -> exchange
                     .anyExchange().authenticated()
                 );
-            // it should be solved by org.zowe.apiml.filter.AttlsHttpHandler
-            //if (isAttlsEnabled) {
-            //    http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
-            //}
             return http.build();
         }
     }
