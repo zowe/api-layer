@@ -27,7 +27,7 @@ public class ApiCatalogProtectedEndpointTest extends ApiCatalogFunctionalTest {
     void requestSuccessWithBody() {
         // the method could return 200 or 503 depends on the state, but the aim is to check if it is accessible
         given().when()
-            .get(getCatalogUriWithPath("application/health"))
+            .get(getCatalogUriWithPath("apicatalog/application/health"))
         .then()
             .statusCode(not(HttpStatus.SC_UNAUTHORIZED))
             .body("status", not(nullValue()))

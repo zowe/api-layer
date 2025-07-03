@@ -30,7 +30,7 @@ import java.util.function.BiConsumer;
 @Slf4j
 @ControllerAdvice
 @RequiredArgsConstructor
-public class DefaultExcptionHandler {
+public class DefaultExceptionHandler {
 
     private final AuthExceptionHandler authExceptionHandler;
 
@@ -46,7 +46,7 @@ public class DefaultExcptionHandler {
         };
 
         try {
-            authExceptionHandler.handleException(exchange.getRequest().getURI().toString(), consumer, exchange.getResponse().getHeaders()::add, exception);
+            authExceptionHandler.handleException(exchange.getRequest().getPath().value(), consumer, exchange.getResponse().getHeaders()::add, exception);
             return MonoOperator.just(responseJson.get());
         } catch (ServletException e) {
             log.error("Cannot handle exception: {}", exception, e);

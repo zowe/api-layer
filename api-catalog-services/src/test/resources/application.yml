@@ -156,7 +156,7 @@ management:
     endpoints:
         migrate-legacy-ids: true
         web:
-            base-path: /application
+            base-path: /apicatalog/application
             exposure:
                 include: health,info
     health:

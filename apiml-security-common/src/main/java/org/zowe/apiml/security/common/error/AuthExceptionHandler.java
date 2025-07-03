@@ -23,6 +23,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.resource.NoResourceFoundException;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.api.ApiMessageView;
@@ -31,8 +32,6 @@ import org.zowe.apiml.security.common.token.*;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
-
-import static java.util.Map.entry;
 
 /**
  * Exception handler deals with exceptions (methods listed below) that are thrown during the authentication process
@@ -60,11 +59,15 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     }
 
     @FunctionalInterface
-    private interface ExceptionHandler {
-        void handle(RuntimeException ex, HandlerContext ctx);
+    private interface ExceptionHandler<E> {
+        void handle(E ex, HandlerContext ctx);
     }
 
-    private final Map<Class<? extends RuntimeException>, ExceptionHandler> exceptionHandlers = Map.ofEntries(
+    private <E extends Exception> Map.Entry<Class<E>, ExceptionHandler<E>> entry(Class<E> clazz, ExceptionHandler<E> handler) {
+        return Map.entry(clazz, handler);
+    }
+
+    private final Map<Class<? extends Exception>, ExceptionHandler> exceptionHandlers = Map.ofEntries(
         entry(InsufficientAuthenticationException.class,
             (ex, ctx) -> handleAuthenticationRequired(ctx.requestUri, ctx.function, ctx.addHeader, ex)),
         entry(BadCredentialsException.class,
@@ -76,7 +79,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         entry(TokenNotValidException.class,
             (ex, ctx) -> handleTokenNotValid(ctx.requestUri, ctx.function, ctx.addHeader, ex)),
         entry(NoMainframeIdentityException.class,
-            (ex, ctx) -> handleNoMainframeIdentity(ctx.requestUri, ctx.function, ctx.addHeader, (NoMainframeIdentityException) ex)),
+            (ex, ctx) -> handleNoMainframeIdentity(ctx.requestUri, ctx.function, ctx.addHeader, ex)),
         entry(TokenNotProvidedException.class,
             (ex, ctx) -> handleTokenNotProvided(ctx.requestUri, ctx.function, ex)),
         entry(TokenExpireException.class,
@@ -90,7 +93,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         entry(InvalidCertificateException.class,
             (ex, ctx) -> handleInvalidCertificate(ctx.function, ex)),
         entry(ZosAuthenticationException.class,
-            (ex, ctx) -> handleZosAuthenticationException(ctx.function, (ZosAuthenticationException) ex)),
+            (ex, ctx) -> handleZosAuthenticationException(ctx.function, ex)),
         entry(InvalidTokenTypeException.class,
             (ex, ctx) -> handleInvalidTokenTypeException(ctx.requestUri, ctx.function, ex)),
         entry(AuthenticationServiceException.class,
@@ -99,13 +102,15 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             (ex, ctx) -> handleAuthenticationException(ctx.requestUri, ctx.function, ex)),
         entry(ServiceNotAccessibleException.class,
             (ex, ctx) -> handleServiceNotAccessibleException(ctx.requestUri, ctx.function, ex)),
+        entry(NoResourceFoundException.class,
+            (ex, ctx) -> handleNoResourceFoundException(ctx.function, ex)),
         entry(RuntimeException.class,
             (ex, ctx) -> handleRuntimeException(ctx.requestUri, ctx.function, ex))
     );
 
     private ExceptionHandler resolveHandler(RuntimeException ex) {
         Class<?> exClass = ex.getClass();
-        while (exClass != null && RuntimeException.class.isAssignableFrom(exClass)) {
+        while (exClass != null) {
             ExceptionHandler handler = exceptionHandlers.get(exClass);
             if (handler != null) {
                 return handler;
@@ -233,6 +238,11 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         final HttpStatus status = HttpStatus.SERVICE_UNAVAILABLE;
         log.debug(MESSAGE_FORMAT, status.value(), ex.getMessage());
         function.accept(message, status);
+    }
+
+    private void handleNoResourceFoundException(BiConsumer<ApiMessageView, HttpStatus> function, NoResourceFoundException ex) {
+        log.debug(MESSAGE_FORMAT, HttpStatus.NOT_FOUND.value(), ex.getMessage());
+        writeErrorResponse("org.zowe.apiml.common.notFound", HttpStatus.NOT_FOUND, function);
     }
 
     private void handleRuntimeException(String uri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
