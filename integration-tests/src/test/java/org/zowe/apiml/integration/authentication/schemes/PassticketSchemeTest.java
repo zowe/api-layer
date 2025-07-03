@@ -201,7 +201,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
 
             }
 
-            @ParameterizedTest(name = "call passticket service with {0} to receive response code {2}")
+            @ParameterizedTest(name = "call passticket service with {0} to receive response code {1}")
             @MethodSource("org.zowe.apiml.integration.authentication.schemes.PassticketSchemeTest#getTokens")
             @InfinispanStorageTest
             @TestsNotMeantForZowe
