@@ -283,6 +283,7 @@ jobs:
                     name: CITestsChaoticModulithHA-${{ env.JOB_ID }}-${{ matrix.type }}
                     path: |
                         integration-tests/build/reports/**
+                        integration-tests/build/test-results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -407,7 +408,7 @@ jobs:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
-                    APIML_SECURITY_SAF_PROVIDER: saf
+                    APIML_SECURITY_AUTH_PROVIDER: saf
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
@@ -1102,6 +1103,86 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
+    DeterministicHALoadBalancingModulith:
+        needs: PublishJibContainers
+        container: ubuntu:latest
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        services:
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+            discoverable-client-2:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: discoverable-client-2
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+            apiml:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_HOSTNAME: apiml
+                    APIML_ROUTING_INSTANCEIDHEADER: true
+                    logbackService: ZWEAGW2
+            apiml-2:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_HOSTNAME: apiml-2
+                    APIML_ROUTING_INSTANCEIDHEADER: true
+                    logbackService: ZWEAGW2
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Setup Docker
+                if: ${{ false }} # Debug of containers
+                run: |
+                    apt update
+                    apt install -y apt-transport-https ca-certificates curl software-properties-common
+                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+                    apt update
+                    apt-cache policy docker-ce
+                    apt install -y docker-ce
+
+            -   name: Run HA Tests
+                run: >
+                    ./gradlew runStartUpCheck runDeterministicLbHaTests --info
+                    -Denvironment.config=-ha -Ddiscoverableclient.instances=2
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Get Container Logs
+                if: ${{ false }} # Debug of containers
+                run: |
+                    docker ps -a
+                    docker ps -q | xargs -L 1 docker logs
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+            # Coverage results are not stored in this job as it would not provide much additional data
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: DeterministicLbHaTestModulith-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/teardown
+
     StickySessionHALoadBalancing:
         needs: PublishJibContainers
         container: ubuntu:latest
@@ -1194,6 +1275,88 @@ jobs:
                 if: always()
                 with:
                     name: StickySessionLbHaTest-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/teardown
+
+    StickySessionHALoadBalancingModulith:
+        needs: PublishJibContainers
+        container: ubuntu:latest
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        services:
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
+            discoverable-client-2:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: discoverable-client-2
+                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+            apiml:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_HOSTNAME: apiml
+                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
+                    logbackService: ZWEAGW2
+            apiml-2:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_HOSTNAME: apiml-2
+                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
+                    logbackService: ZWEAGW2
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Setup Docker
+                if: ${{ false }} # Debug of containers
+                run: |
+                    apt update
+                    apt install -y apt-transport-https ca-certificates curl software-properties-common
+                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+                    apt update
+                    apt-cache policy docker-ce
+                    apt install -y docker-ce
+
+            -   name: Run HA Tests
+                run: >
+                    ./gradlew runStickySessionLbHaTests --info -Denvironment.config=-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Get Container Logs
+                if: ${{ false }} # Debug of containers
+                run: |
+                    docker ps -a
+                    docker ps -q | xargs -L 1 docker logs
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+            # Coverage results are not stored in this job as it would not provide much additional data
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: StickySessionLbHaTestModulith-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
