@@ -158,7 +158,7 @@ jobs:
                     path: |
                         integration-tests/build/reports/**
                         results/**
-                        integration-tests/build/test-results/runContainerModulithTests/binary/**
+                        integration-tests/build/test-results/runContainerSAFProviderTests/binary/**
                         integration-tests/build/test-results/runStartUpCheck/binary/**
 
             -   uses: ./.github/actions/teardown
@@ -228,7 +228,7 @@ jobs:
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -237,37 +237,37 @@ jobs:
                 if: ${{ 'normal' == matrix.type }}
                 run: >
                     ./gradlew runHATests --info -Denvironment.config=-docker-modulith-ha
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-            -   name: Run Gateway Service Chaotic HA Tests
+            -   name: Run Gateway Service Chaotic HA Tests in Modulith
                 if: ${{ 'gateway-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
                     --info -Denvironment.config=-ha
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-            -   name: Run Discoverable Client Chaotic HA Tests
+            -   name: Run Discoverable Client Chaotic HA Tests in Modulith
                 if: ${{ 'discoverableclient-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
                     --info -Denvironment.config=-ha
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
-            -   name: Run WebSocket Chaotic HA Tests
+            -   name: Run WebSocket Chaotic HA Tests in Modulith
                 if: ${{ 'websocket-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
                     --info -Denvironment.config=-ha
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -280,7 +280,7 @@ jobs:
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
-                    name: CITestsChaoticModulithHA-${{ env.JOB_ID }}-${{ matrix.type }}
+                    name: CITestsModulithHA-${{ env.JOB_ID }}-${{ matrix.type }}
                     path: |
                         integration-tests/build/reports/**
                         integration-tests/build/test-results/**
@@ -1159,8 +1159,8 @@ jobs:
             -   name: Run HA Tests
                 run: >
                     ./gradlew runStartUpCheck runDeterministicLbHaTests --info
-                    -Denvironment.config=-ha -Ddiscoverableclient.instances=2
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -1338,8 +1338,8 @@ jobs:
 
             -   name: Run HA Tests
                 run: >
-                    ./gradlew runStickySessionLbHaTests --info -Denvironment.config=-ha
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    ./gradlew runStickySessionLbHaTests --info -Denvironment.config=-docker-modulith-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -1784,7 +1784,7 @@ jobs:
                     key: my-cache-${{ runner.os }}-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
             -   name: Run startup check
                 run: >
-                    ./gradlew runStartUpCheck --info --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
+                    ./gradlew runStartUpCheck --info --scan -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1 -Denvironment.modulith=true
             -   name: Show status when APIML is not ready yet
                 if: failure()
                 shell: bash
