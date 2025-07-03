@@ -174,7 +174,6 @@ management:
     endpoints:
         migrate-legacy-ids: true
         web:
-            base-path: /application
             exposure:
                 include: health,info,loggers
 
@@ -195,7 +194,6 @@ management:
     endpoints:
         migrate-legacy-ids: true
         web:
-            base-path: /application
             exposure:
                 include: "*"
 
