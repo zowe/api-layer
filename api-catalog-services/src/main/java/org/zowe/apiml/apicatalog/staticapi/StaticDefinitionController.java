@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 
@@ -36,11 +37,11 @@ public class StaticDefinitionController {
      * @return the response entity
      */
     @PostMapping(value = "/generate", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> generateStaticDef(@RequestBody String payload, @RequestHeader(value = "Service-Id") String serviceId) throws IOException {
+    public Mono<ResponseEntity<String>> generateStaticDef(@RequestBody String payload, @RequestHeader(value = "Service-Id") String serviceId) throws IOException {
         StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.generateFile(payload, serviceId);
-        return ResponseEntity
+        return Mono.just(ResponseEntity
             .status(staticAPIResponse.getStatusCode())
-            .body(staticAPIResponse.getBody());
+            .body(staticAPIResponse.getBody()));
     }
 
     /**
@@ -50,17 +51,17 @@ public class StaticDefinitionController {
      * @return the response entity
      */
     @PostMapping(value = "/override", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> overrideStaticDef(@RequestBody String payload, @RequestHeader(value = "Service-Id") String serviceId) throws IOException {
+    public Mono<ResponseEntity<String>> overrideStaticDef(@RequestBody String payload, @RequestHeader(value = "Service-Id") String serviceId) throws IOException {
         StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.overrideFile(payload, serviceId);
-        return ResponseEntity
+        return Mono.just(ResponseEntity
             .status(staticAPIResponse.getStatusCode())
-            .body(staticAPIResponse.getBody());
+            .body(staticAPIResponse.getBody()));
     }
 
 
     @DeleteMapping(value = "/delete", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> deleteStaticDef(@RequestHeader(value = "Service-Id") String serviceId) throws IOException {
+    public Mono<ResponseEntity<String>> deleteStaticDef(@RequestHeader(value = "Service-Id") String serviceId) throws IOException {
         StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.deleteFile(serviceId);
-        return ResponseEntity.status(staticAPIResponse.getStatusCode()).body(staticAPIResponse.getBody());
+        return Mono.just(ResponseEntity.status(staticAPIResponse.getStatusCode()).body(staticAPIResponse.getBody()));
     }
 }

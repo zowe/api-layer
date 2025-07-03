@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping({"/apicatalog/static-api", "/apicatalog/api/v1/static-api"})
@@ -25,11 +26,11 @@ public class StaticAPIRefreshController {
     private final StaticAPIService staticAPIService;
 
     @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> refreshStaticApis() {
+    public Mono<ResponseEntity<String>> refreshStaticApis() {
         StaticAPIResponse staticAPIResponse = staticAPIService.refresh();
-        return ResponseEntity
+        return Mono.just(ResponseEntity
             .status(staticAPIResponse.getStatusCode())
-            .body(staticAPIResponse.getBody());
+            .body(staticAPIResponse.getBody()));
     }
 
 }
