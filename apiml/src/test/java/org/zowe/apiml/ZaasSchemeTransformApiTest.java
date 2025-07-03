@@ -26,17 +26,11 @@ import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
 import javax.management.ServiceNotFoundException;
-
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
@@ -54,7 +48,7 @@ class ZaasSchemeTransformApiTest {
         passTicketService = mock(PassTicketService.class);
         ZosmfService zosmfService = mock(ZosmfService.class);
         TokenCreationService tokenCreationService = mock(TokenCreationService.class);
-
+        when(authSourceService.isValid(any())).thenReturn(true);
         transformApi = new ZaasSchemeTransformApi(
             authSourceService,
             passTicketService,
@@ -175,7 +169,7 @@ class ZaasSchemeTransformApiTest {
         }
 
         @Test
-        void whenSafIdTokenCreationFails_returnsError() throws Exception {
+        void whenSafIdTokenCreationFails_returnsError() {
             RequestCredentials credentials = mockCredentials();
 
             var authSource = mock(AuthSource.class);
