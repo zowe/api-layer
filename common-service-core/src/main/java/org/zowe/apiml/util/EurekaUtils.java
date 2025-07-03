@@ -63,7 +63,7 @@ public class EurekaUtils {
             .map(instances -> instances.stream()
                 .filter(instance -> EurekaMetadataDefinition.RegistrationType.of(instance.getMetadata()).isPrimary())
                 .findFirst()
-                .get()
+                .orElse(null)
             );
     }
 
@@ -74,7 +74,7 @@ public class EurekaUtils {
                 .filter(instance -> EurekaMetadataDefinition.RegistrationType.of(instance.getMetadata()).isAdditional())
                 .filter(instance -> StringUtils.equals(apimlId, instance.getMetadata().get(APIML_ID)))
                 .findFirst()
-                .get()
+                .orElse(null)
             );
     }
 
