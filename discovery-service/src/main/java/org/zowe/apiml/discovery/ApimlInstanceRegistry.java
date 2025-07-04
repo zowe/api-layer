@@ -189,7 +189,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
             try {
                 register(instanceInfo, leaseDuration, isReplication);
                 if (peerReplicate) {
-                    replicateToPeersMethodHandle.invokeWithArguments(Action.Register, instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, isReplication);
+                    replicateToPeersMethodHandle.invokeWithArguments(this, Action.Register, instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, isReplication);
                 }
             } catch (Throwable e) {
                 throw new IllegalStateException(EXCEPTION_MESSAGE, e);
