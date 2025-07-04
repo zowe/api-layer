@@ -20,9 +20,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.bind.annotation.*;
-import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
+import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.message.core.Message;
@@ -282,7 +282,7 @@ public class CachingController {
             if (request.getSslInfo() != null) {
                 var certs = request.getSslInfo().getPeerCertificates();
                 if (certs != null && certs.length > 0) {
-                    certificateServiceId = Optional.of(certs[0].getSubjectDN().getName());
+                    certificateServiceId = Optional.of(certs[0].getSubjectX500Principal().getName());
                 }
             }
         } else {

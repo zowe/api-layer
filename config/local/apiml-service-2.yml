@@ -74,6 +74,7 @@ apiml:
             provider: zosmf
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
+        useDummyCNMapper: true
 caching:
     storage:
         mode: infinispan
