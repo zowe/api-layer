@@ -176,7 +176,9 @@ public class SecurityConfiguration {
             }
 
             mainframeCredentialsConfiguration(
-                    baseConfiguration(http.securityMatcher(ServerWebExchangeMatchers.pathMatchers("/static-api/**","/containers/**","/application/**","/services/**",APIDOC_ROUTES))),
+                    baseConfiguration(http.securityMatcher(ServerWebExchangeMatchers.pathMatchers(
+                        "/apicatalog/static-api/**", "/apicatalog/containers/**", "/apicatalog/application/**", "/apicatalog/services/**", APIDOC_ROUTES))
+                    ),
                     basicAuthenticationFilter, tokenAuthenticationFilter, oidcAuthenticationFilter
                 )
                 .authorizeExchange(exchange -> exchange
@@ -264,7 +266,7 @@ public class SecurityConfiguration {
             )
         );
 
-        Stream.of(webFiltersAuthorization).forEach(webFilter -> http.addFilterBefore(webFilter, SecurityWebFiltersOrder.AUTHORIZATION));
+        Stream.of(webFiltersAuthorization).forEach(webFilter -> http.addFilterBefore(webFilter, SecurityWebFiltersOrder.AUTHENTICATION));
 
         return http;
     }

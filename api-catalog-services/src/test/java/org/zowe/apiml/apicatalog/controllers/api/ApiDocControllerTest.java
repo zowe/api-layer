@@ -47,8 +47,10 @@ class ApiDocControllerTest {
 
     @Nested
     class GivenService {
+
         @Nested
         class WhenGetApiDocByVersion {
+
             @Test
             void givenApiDoc_thenReturnApiDoc() {
                 when(mockApiDocRetrievalService.retrieveApiDoc("service", "1.0.0")).thenReturn(API_DOC);
@@ -63,10 +65,12 @@ class ApiDocControllerTest {
                 when(mockApiDocRetrievalService.retrieveApiDoc("service", "1.0.0")).thenThrow(new ApiDocNotFoundException("error"));
                 assertThrows(ApiDocNotFoundException.class, () -> underTest.getApiDocInfo("service", "1.0.0").block());
             }
+
         }
 
         @Nested
         class WhenGetApiDocVersionDefault {
+
             @Test
             void givenApiDocExists_thenReturnIt() {
                 when(mockApiDocRetrievalService.retrieveDefaultApiDoc("service")).thenReturn(API_DOC);
@@ -81,6 +85,7 @@ class ApiDocControllerTest {
                 when(mockApiDocRetrievalService.retrieveDefaultApiDoc("service")).thenThrow(new ApiDocNotFoundException("error"));
                 assertThrows(ApiDocNotFoundException.class, () -> underTest.getDefaultApiDocInfo("service").block());
             }
+
         }
 
         @Test

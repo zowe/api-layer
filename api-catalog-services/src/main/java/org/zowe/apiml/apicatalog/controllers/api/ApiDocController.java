@@ -74,7 +74,7 @@ public class ApiDocController {
         @PathVariable(value = "serviceId") String serviceId,
         @Parameter(name = "apiId", description = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v1.0.0")
         @PathVariable(value = "apiId") String apiId) {
-        return Mono.fromRunnable(() -> ResponseEntity
+        return Mono.fromSupplier(() -> ResponseEntity
             .status(SC_OK)
             .contentType(MediaType.APPLICATION_JSON)
             .body(apiDocRetrievalService.retrieveApiDoc(serviceId, apiId))
