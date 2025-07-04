@@ -107,7 +107,7 @@ public class SecurityConfiguration {
             @Qualifier("basicAuthenticationFilter") WebFilter basicAuthenticationFilter,
             @Qualifier("tokenAuthenticationFilter") WebFilter tokenAuthenticationFilter,
             @Qualifier("oidcAuthenticationFilter") WebFilter oidcAuthenticationFilter
-        ) throws Exception {
+        ) {
             mainframeCredentialsConfiguration(
                 baseConfiguration(http.securityMatcher(ServerWebExchangeMatchers.pathMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE))),
                 basicAuthenticationFilter, tokenAuthenticationFilter, oidcAuthenticationFilter
@@ -124,16 +124,6 @@ public class SecurityConfiguration {
             return http.build();
         }
 
-        private UserDetailsService x509UserDetailsService() {
-            return username -> new User(username, "", Collections.emptyList());
-        }
-
-        private CategorizeCertsFilter reversedCategorizeCertFilter() {
-            CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator);
-            out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
-            out.setApimlCertificate(crt -> !out.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
-            return out;
-        }
     }
 
     /**
@@ -166,7 +156,6 @@ public class SecurityConfiguration {
             @Qualifier("tokenAuthenticationFilter") WebFilter tokenAuthenticationFilter,
             @Qualifier("oidcAuthenticationFilter") WebFilter oidcAuthenticationFilter
         ) {
-
             if (isHealthEndpointProtected) {
                 http.authorizeExchange(exchange -> exchange
                     .pathMatchers("/apicatalog/application/health").authenticated());

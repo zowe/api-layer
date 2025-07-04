@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.springframework.http.HttpCookie;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,8 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
+
+import static org.apache.hc.core5.http.HttpStatus.SC_NO_CONTENT;
 
 @RestController
 @RequestMapping({"/apicatalog/auth", "/apicatalog/api/v1/auth"})
@@ -66,7 +69,7 @@ public class TokenController {
                         .secure(cp.isCookieSecure())
                         .build()
                     );
-
+                    exchange.getResponse().setRawStatusCode(SC_NO_CONTENT);
                     return Mono.empty();
                 }).orElse(Mono.error(() -> new InsufficientAuthenticationException("No credentials provided.")))
             ).orElse(Mono.error(() -> new InsufficientAuthenticationException("No credentials provided.")));
