@@ -23,6 +23,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.reactive.resource.NoResourceFoundException;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.constants.ApimlConstants;
@@ -105,7 +106,9 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         entry(NoResourceFoundException.class,
             (ex, ctx) -> handleNoResourceFoundException(ctx.function, ex)),
         entry(RuntimeException.class,
-            (ex, ctx) -> handleRuntimeException(ctx.requestUri, ctx.function, ex))
+            (ex, ctx) -> handleRuntimeException(ctx.requestUri, ctx.function, ex)),
+        entry(WebClientResponseException.BadRequest.class,
+            (ex, ctx) -> handleBadRequest(ctx.requestUri, ctx.function, ex, "org.zowe.apiml.security.login.invalidInput"))
     );
 
     private ExceptionHandler resolveHandler(RuntimeException ex) {

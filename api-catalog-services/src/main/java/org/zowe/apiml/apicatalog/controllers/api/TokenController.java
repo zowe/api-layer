@@ -10,16 +10,19 @@
 
 package org.zowe.apiml.apicatalog.controllers.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpCookie;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.security.client.service.GatewaySecurityService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -28,8 +31,12 @@ import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+import static org.apache.hc.core5.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.hc.core5.http.HttpStatus.SC_NO_CONTENT;
 
 @RestController
@@ -38,6 +45,7 @@ import static org.apache.hc.core5.http.HttpStatus.SC_NO_CONTENT;
 @RequiredArgsConstructor
 public class TokenController {
 
+    private final ObjectMapper mapper = new ObjectMapper();
     private final GatewaySecurityService gatewaySecurityService;
     private final AuthConfigurationProperties authConfigurationProperties;
 
@@ -51,14 +59,26 @@ public class TokenController {
         }
     }
 
-    @PostMapping("/login")
+    @PostMapping(value = "/login")
     public Mono<Object> login(
-        @RequestBody(required = false) LoginRequest loginRequest,
         @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String requestHeader,
         ServerWebExchange exchange
     ) {
-        return Optional.ofNullable(loginRequest)
-            .or(() -> LoginFilter.getCredentialFromAuthorizationHeader(Optional.ofNullable(requestHeader)))
+        return DataBufferUtils.join(exchange.getRequest().getBody())
+            .map(buffer -> {
+                try (InputStream is = buffer.asInputStream()){
+                    return mapper.readValue(is, LoginRequest.class);
+                } catch (IOException e) {
+                    throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.", e);
+                } finally {
+                    DataBufferUtils.release(buffer);
+                }
+            })
+            .or(Mono.fromSupplier(() -> LoginFilter
+                .getCredentialFromAuthorizationHeader(Optional.ofNullable(requestHeader))
+                .orElse( null)
+            ))
+            .switchIfEmpty(Mono.error(() -> WebClientResponseException.create(SC_BAD_REQUEST, "bad request", exchange.getRequest().getHeaders(), new byte[0], StandardCharsets.UTF_8)))
             .map(login ->
                 gatewaySecurityService.login(login.getUsername(), login.getPassword(), null).map(token -> {
                     exchange.getResponse().addCookie(ResponseCookie.from(cp.getCookieName(), token)
@@ -72,7 +92,7 @@ public class TokenController {
                     exchange.getResponse().setRawStatusCode(SC_NO_CONTENT);
                     return Mono.empty();
                 }).orElse(Mono.error(() -> new InsufficientAuthenticationException("No credentials provided.")))
-            ).orElse(Mono.error(() -> new InsufficientAuthenticationException("No credentials provided.")));
+            );
     }
 
     @GetMapping("/query")
