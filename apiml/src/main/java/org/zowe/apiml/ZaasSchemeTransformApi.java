@@ -138,11 +138,11 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
     }
 
     private void updateServiceId(Optional<AuthSource> authSource, RequestCredentialsHttpServletRequestAdapter request) {
-        authSource.ifPresent(as -> {
-            if (as instanceof PATAuthSource && ((PATAuthSource) as).getDefaultServiceId() == null) {
-                ((PATAuthSource) as).setDefaultServiceId(request.getServiceId());
-            }
-        });
+        authSource
+            .filter(PATAuthSource.class::isInstance)
+            .map(PATAuthSource.class::cast)
+            .filter(as -> as.getDefaultServiceId() == null)
+            .ifPresent(as -> as.setDefaultServiceId(request.getServiceId()));
     }
 
     @Override
