@@ -145,7 +145,7 @@ jobs:
 
             -   name: Run Modulith CI Tests with SAF Provider in HA
                 run: >
-                    ENV_CONFIG=docker-modulith ./gradlew runStartUpCheck :integration-tests:runContainerSAFProviderTests --info
+                    ENV_CONFIG=docker-modulith-ha ./gradlew runStartUpCheck :integration-tests:runContainerSAFProviderTests --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
@@ -163,7 +163,7 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
-    CITestsModulithHA: #This is copied after CITestsHA (normal + chaotic using strategy)
+    CITestsModulithHA:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
@@ -421,7 +421,7 @@ jobs:
 
             -   name: Run CI Tests With SAF Provider
                 run: >
-                    ./gradlew runStartUpCheck :integration-tests:runContainerSAFProviderTests --info -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck :integration-tests:runContainerSAFProviderTests --info -Denvironment.config=-ha
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()

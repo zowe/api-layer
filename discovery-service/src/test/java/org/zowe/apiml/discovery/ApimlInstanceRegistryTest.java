@@ -298,7 +298,7 @@ class ApimlInstanceRegistryTest {
             Map<String, Lease<InstanceInfo>> leaseMap = new HashMap<>();
             when(registry.get(anyString())).thenReturn(leaseMap);
 
-            apimlInstanceRegistry.registerStatically(standardInstance, false);
+            apimlInstanceRegistry.registerStatically(standardInstance, false, false);
 
             assertFalse(currentStaticIds.isEmpty());
             assertFalse(leaseMap.isEmpty());
