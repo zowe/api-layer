@@ -42,7 +42,7 @@ public class RunningService {
     }
 
     public void start(String... envs) throws IOException {
-        log.info("Starting new Service with JAR file {} and ID {}", jarFile, id);
+        log.info("Starting new Service via shell command with JAR file {} and ID {}", jarFile, id);
         stop();
 
         ArrayList<String> shellCommand = new ArrayList<>();
@@ -76,7 +76,7 @@ public class RunningService {
     }
 
     public void startWithScript(String binPath, Map<String, String> env) {
-        log.info("Starting new Service with JAR file {} and ID {}", jarFile, id);
+        log.info("Starting new Service via start.sh script with JAR file {} and ID {}", jarFile, id);
         ProcessBuilder builder1 = new ProcessBuilder(binPath + "/start.sh");
         Map<String, String> envVariables = builder1.environment();
         envVariables.putAll(env);

@@ -10,22 +10,23 @@
 
 package org.zowe.apiml.caching;
 
+import jakarta.annotation.Nonnull;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.retry.annotation.EnableRetry;
 import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 
-import jakarta.annotation.Nonnull;
-
 @SpringBootApplication
 @EnableApiDiscovery
 @EnableRetry
 @EnableApimlLogger
+@ComponentScan(value = "org.zowe.apiml.filter")
 public class CachingService implements ApplicationListener<ApplicationReadyEvent> {
 
     public static void main(String[] args) {
