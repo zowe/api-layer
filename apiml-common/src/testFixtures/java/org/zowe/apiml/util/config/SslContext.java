@@ -38,6 +38,7 @@ public class SslContext {
     public static RestAssuredConfig selfSignedUntrusted;
     public static RestAssuredConfig tlsWithoutCert;
 
+    public static SSLContext sslClientCertValid;
     public static SSLContext sslClientCertApiml;
 
     private static AtomicBoolean isInitialized = new AtomicBoolean(false);
@@ -68,14 +69,14 @@ public class SslContext {
             log.info("SSLContext is constructing. This should happen only once.");
             TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
 
-            SSLContext sslContext = SSLContextBuilder
+            sslClientCertValid = SSLContextBuilder
                 .create()
                 .loadKeyMaterial(ResourceUtils.getFile(providedConfigurer.getKeystoreLocalhostJks()),
                     providedConfigurer.getKeystorePassword(), providedConfigurer.getKeystorePassword(),
                     (Map<String, PrivateKeyDetails> aliases, Socket socket) -> "apimtst")
                 .loadTrustMaterial(null, trustStrategy)
                 .build();
-            clientCertValid = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext, hostnameVerifier)));
+            clientCertValid = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslClientCertValid, hostnameVerifier)));
 
             log.debug("Loaded {}[apimtst]", providedConfigurer.getKeystoreLocalhostJks());
 

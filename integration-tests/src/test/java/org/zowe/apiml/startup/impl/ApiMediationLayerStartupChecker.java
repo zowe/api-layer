@@ -161,7 +161,7 @@ public class ApiMediationLayerStartupChecker {
 
     private void callEurekaApps() {
         HttpGet requestToEurekaApps = new HttpGet(HttpRequestUtils.getUriFromService(discoveryServiceConfiguration, "/eureka/apps"));
-        CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertApiml).build();
+        CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build();
         try (client) {
             var response = client.execute(requestToEurekaApps);
             var entity = response.getEntity();
