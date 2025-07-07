@@ -224,6 +224,9 @@ management:
             access: none
         health:
             showDetails: always
+    health:
+        diskspace:
+            enabled: false
     endpoints:
         web:
             base-path: /application

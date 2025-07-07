@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.Re
 import org.springframework.cloud.netflix.eureka.server.EurekaController;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
 
 @SpringBootApplication(
     exclude = { ReactiveOAuth2ClientAutoConfiguration.class },
@@ -35,6 +36,10 @@ import org.springframework.context.annotation.FilterType;
         @ComponentScan.Filter(
             type = FilterType.REGEX,
             pattern = ".*Application"
+        ),
+        @ComponentScan.Filter(
+            type = FilterType.ASSIGNABLE_TYPE,
+            value = GatewayHealthIndicator.class
         ),
         @ComponentScan.Filter(
             type = FilterType.ASSIGNABLE_TYPE,

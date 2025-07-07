@@ -29,11 +29,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.springframework.boot.actuate.health.Status.DOWN;
 import static org.springframework.boot.actuate.health.Status.UP;
 
+/**
+ * This class contributes the apiml component health indication to the main /application/health
+ * controlled by class {@link ApimlHealthCheckHandler} in the common package.
+ *
+ * This is a new structure in the /application/health response
+ */
 @Component
 @RequiredArgsConstructor
-public class ApimlHealthIndicator extends AbstractHealthIndicator {
+public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
-    private static final ApimlLogger apimlLog = ApimlLogger.of(ApimlHealthIndicator.class, YamlMessageServiceInstance.getInstance());
+    private static final ApimlLogger apimlLog = ApimlLogger.of(GatewayHealthIndicator.class, YamlMessageServiceInstance.getInstance());
     private final DiscoveryClient discoveryClient;
 
     @Value("${apiml.catalog.serviceId:}")
@@ -46,7 +52,6 @@ public class ApimlHealthIndicator extends AbstractHealthIndicator {
 
     @Override
     protected void doHealthCheck(Builder builder) throws Exception {
-        // TODO Update once other modules are integrated
         var anyCatalogIsAvailable = apiCatalogServiceId != null && !apiCatalogServiceId.isEmpty();
         var apiCatalogUp = !this.discoveryClient.getInstances(apiCatalogServiceId).isEmpty();
 
