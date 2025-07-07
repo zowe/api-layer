@@ -1280,7 +1280,7 @@ jobs:
 
             -   name: Build with Gradle
                 run: >
-                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runInfinispanServiceTests --info
+                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runModulithInfinispanServiceTests --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 

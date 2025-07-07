@@ -23,6 +23,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CachingServiceTest;
+import org.zowe.apiml.util.categories.NonModulithTest;
 import org.zowe.apiml.util.categories.NotAttlsTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
@@ -76,6 +77,7 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
     class WhenCalledWithInvalidAuthentication {
 
         // Candidates for parametrized test.
+        @NonModulithTest
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.functional.caching.CachingAuthenticationTest#publicUrls")
         void publicEndpointIsAccessible(String endpoint) {
@@ -108,6 +110,7 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
                 .statusCode(HttpStatus.FORBIDDEN.value());
         }
 
+        @NonModulithTest
         @Test
         void givenCertificateButNoHeader_cachingApiEndpointsAreInaccessible() {
 
