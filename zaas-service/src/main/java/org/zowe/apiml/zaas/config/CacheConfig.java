@@ -37,6 +37,7 @@ import org.springframework.cache.jcache.JCacheCacheManager;
 import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.cache.CompositeKeyGenerator;
@@ -93,6 +94,7 @@ public class CacheConfig {
         }
     }
 
+    @Primary
     @Bean("cacheManager")
     @ConditionalOnProperty(value = "apiml.caching.enabled", havingValue = "true", matchIfMissing = true)
     @ConditionalOnMissingBean(name = "modulithConfig")
