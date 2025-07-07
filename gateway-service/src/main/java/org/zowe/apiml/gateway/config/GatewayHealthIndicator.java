@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -27,6 +28,7 @@ import static org.springframework.boot.actuate.health.Status.UP;
  * Gateway health information (/application/health)
  */
 @Component
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private final DiscoveryClient discoveryClient;
     private String apiCatalogServiceId;
