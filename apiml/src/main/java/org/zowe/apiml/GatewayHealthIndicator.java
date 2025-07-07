@@ -33,7 +33,7 @@ import static org.springframework.boot.actuate.health.Status.UP;
  * This class contributes the apiml component health indication to the main /application/health
  * controlled by class {@link ApimlHealthCheckHandler} in the common package.
  *
- * This is a new structure in the /application/health response
+ * Note: Name is kept as GatewayHealthIndicator for backwards compatibility
  */
 @Component
 @RequiredArgsConstructor
@@ -55,12 +55,9 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         var anyCatalogIsAvailable = apiCatalogServiceId != null && !apiCatalogServiceId.isEmpty();
         var apiCatalogUp = !this.discoveryClient.getInstances(apiCatalogServiceId).isEmpty();
 
-        // When DS goes 'down' after it was already 'up', the new status is not shown. This is probably feature of
-        // Eureka client which caches the status of services. When DS is down the cache is not refreshed.
-
         // Keeping for backwards compatibility, in modulith the amount of gateways is the amount of authentication services available
         int gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
-        int zaasCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
+        int zaasCount = gatewayCount;
 
         builder.status(toStatus(discoveryAvailable.get()))
             .withDetail(CoreService.DISCOVERY.getServiceId(), toStatus(discoveryAvailable.get()).getCode())
