@@ -21,6 +21,12 @@
             "name": "apiml.security.oidc.registry",
             "type": "java.lang.String",
             "description": "Specifies the distributed identities registry that will be used for identity mapping."
+        },
+        {
+            "name": "logging.timezone",
+            "type": "java.lang.String",
+            "defaultValue": "UTC",
+            "description": "Specifies the timezone to be used for logging."
         }
     ]
 }

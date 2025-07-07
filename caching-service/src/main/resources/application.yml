@@ -39,6 +39,7 @@ logging:
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         javax.net.ssl: ERROR # For running with java 17
+    timezone: ${apiml.logging.timezone:UTC}
 eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1

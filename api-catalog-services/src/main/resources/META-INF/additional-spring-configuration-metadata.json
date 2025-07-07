@@ -10,6 +10,12 @@
             "type": "java.lang.Boolean",
             "defaultValue": "false",
             "description": "Specifies whether to enable standalone mode.\nStandalone mode allows displaying, without the need for authentication, services that are stored on the disk. API Catalog does not connect to any other service."
+        },
+        {
+            "name": "logging.timezone",
+            "type": "java.lang.String",
+            "defaultValue": "UTC",
+            "description": "Specifies the timezone to be used for logging."
         }
     ]
 }

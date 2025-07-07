@@ -17,6 +17,20 @@ messages:
       reason: "All key API Mediation Layer services started."
       action: "No action required."
 
+    - key: org.zowe.apiml.common.timezone.set
+      number: ZWEUT001
+      type: INFO
+      text: "API Mediation Layer timezone set to: %s"
+      reason: "The API ML components will use this timezone for logging timestamps."
+      action: "No action is required. This is an informational message indicating successful timezone configuration."
+
+    - key: org.zowe.apiml.common.timezone.invalid
+      number: ZWEUT002
+      type: WARN
+      text: "Invalid timezone configuration: %s, falling back to default"
+      reason: "The configured timezone ID is not valid according to the Java TimeZone database, or the TZ environment variable contains an invalid value."
+      action: "Verify that the timezone specified in zowe.yaml (zowe.logging.timezone) or TZ environment variable is a valid timezone ID from the IANA Time Zone database (e.g., 'America/New_York', 'Europe/London'). The system will use UTC as the default timezone."
+
     # General messages
     # 100-199
 

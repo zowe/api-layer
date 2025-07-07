@@ -264,6 +264,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
+    -Dlogging.timezone=${ZWE_zowe_logging_timezone:UTC} \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
     -Dspring.profiles.include=$LOG_LEVEL \

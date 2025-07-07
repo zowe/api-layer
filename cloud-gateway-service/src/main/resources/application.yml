@@ -86,6 +86,7 @@ logging:
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
         javax.net.ssl: ERROR # For running with java 17
+    timezone: ${apiml.logging.timezone:UTC}
 
 management:
     endpoint:

@@ -41,6 +41,7 @@ logging:
         org.eclipse.jetty: WARN
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         javax.net.ssl: ERROR # For running with java 17
+    timezone: ${apiml.logging.timezone:UTC}
 
 ##############################################################################################
 # APIML configuration section

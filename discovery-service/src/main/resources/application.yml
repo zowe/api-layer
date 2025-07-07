@@ -20,6 +20,7 @@ logging:
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         javax.net.ssl: ERROR # For running with java 17
     #    com.netflix.eureka.resources: WARN
+    timezone: ${apiml.logging.timezone:UTC}
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
