@@ -204,6 +204,10 @@ jobs:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_HOSTNAME: api-catalog-services
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
             api-catalog-services-2:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
@@ -211,6 +215,8 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: api-catalog-services-2
                     APIML_HEALTH_PROTECTED: false
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
@@ -1126,6 +1132,9 @@ jobs:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
