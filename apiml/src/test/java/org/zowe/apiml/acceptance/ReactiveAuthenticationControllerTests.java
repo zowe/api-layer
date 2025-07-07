@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.enable.register.RegisterToApiLayer;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
@@ -174,7 +173,6 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
     @TestConfiguration
     public static class MockRegisterToApiLayerConfig {
         @Bean
-        @Primary
         public RegisterToApiLayer registerToApiLayer() {
             return mock(RegisterToApiLayer.class);
         }
