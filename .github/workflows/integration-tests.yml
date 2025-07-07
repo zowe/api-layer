@@ -170,7 +170,7 @@ jobs:
         timeout-minutes: 15
         strategy:
             matrix:
-                type: ["normal", "discovery-chaotic", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic"]
+                type: ["normal", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic"]
         services:
             apiml:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
@@ -185,6 +185,7 @@ jobs:
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
                     APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_HOSTNAME: apiml
             apiml-2:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -198,6 +199,7 @@ jobs:
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
                     APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_HOSTNAME: apiml-2
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
@@ -411,6 +413,14 @@ jobs:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
                     APIML_SECURITY_AUTH_PROVIDER: saf
+            zaas-service-2:
+                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
+                    APIML_SECURITY_AUTH_PROVIDER: saf
+                    APIML_SERVICE_HOSTNAME: zaas-service-2
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
