@@ -26,7 +26,7 @@ messages:
 
     - key: org.zowe.apiml.common.timezone.invalid
       number: ZWEUT002
-      type: WARN
+      type: WARNING
       text: "Invalid timezone configuration: %s, falling back to default"
       reason: "The configured timezone ID is not valid according to the Java TimeZone database, or the TZ environment variable contains an invalid value."
       action: "Verify that the timezone specified in zowe.yaml (zowe.logging.timezone) or TZ environment variable is a valid timezone ID from the IANA Time Zone database (e.g., 'America/New_York', 'Europe/London'). The system will use UTC as the default timezone."
