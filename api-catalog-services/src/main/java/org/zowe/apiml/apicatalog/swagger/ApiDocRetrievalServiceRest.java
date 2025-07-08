@@ -10,8 +10,6 @@
 
 package org.zowe.apiml.apicatalog.swagger;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +18,8 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
@@ -56,7 +56,7 @@ public class ApiDocRetrievalServiceRest implements ApiDocRetrievalService {
     @Qualifier("secureHttpClientWithoutKeystore")
     private final CloseableHttpClient secureHttpClientWithoutKeystore;
 
-    private final EurekaClient eurekaClient;
+    private final DiscoveryClient discoveryClient;
     private final GatewayClient gatewayClient;
 
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
@@ -70,15 +70,15 @@ public class ApiDocRetrievalServiceRest implements ApiDocRetrievalService {
     @Override
     public List<String> retrieveApiVersions(@NonNull String serviceId) {
         log.debug("Retrieving API versions for service '{}'", serviceId);
-        InstanceInfo instanceInfo;
+        ServiceInstance serviceInstance;
 
         try {
-            instanceInfo = getInstanceInfo(serviceId);
+            serviceInstance = getInstanceInfo(serviceId);
         } catch (ApiDocNotFoundException e) {
             throw new ApiVersionNotFoundException(e.getMessage());
         }
 
-        List<String> apiVersions = retrieveApiVersions(instanceInfo.getMetadata());
+        List<String> apiVersions = retrieveApiVersions(serviceInstance.getMetadata());
         log.debug("For service '{}' found API versions '{}'", serviceId, apiVersions);
 
         return apiVersions;
@@ -97,15 +97,15 @@ public class ApiDocRetrievalServiceRest implements ApiDocRetrievalService {
     @Override
     public String retrieveDefaultApiVersion(@NonNull String serviceId) {
         log.debug("Retrieving default API version for service '{}'", serviceId);
-        InstanceInfo instanceInfo;
+        ServiceInstance serviceInstance;
 
         try {
-            instanceInfo = getInstanceInfo(serviceId);
+            serviceInstance = getInstanceInfo(serviceId);
         } catch (ApiDocNotFoundException e) {
             throw new ApiVersionNotFoundException(e.getMessage());
         }
 
-        String defaultVersion = retrieveDefaultApiVersion(instanceInfo.getMetadata());
+        String defaultVersion = retrieveDefaultApiVersion(serviceInstance.getMetadata());
         log.debug("For service '{}' found default API version '{}'", serviceId, defaultVersion);
 
         return defaultVersion;
@@ -125,22 +125,22 @@ public class ApiDocRetrievalServiceRest implements ApiDocRetrievalService {
     @Override
     public String retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
         log.debug("Retrieving API doc for '{} {}'", serviceId, apiVersion);
-        InstanceInfo instanceInfo = getInstanceInfo(serviceId);
+        ServiceInstance serviceInstance = getInstanceInfo(serviceId);
 
-        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
+        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(serviceInstance.getMetadata());
         ApiInfo apiInfo = findApi(apiInfoList, apiVersion);
 
-        return buildApiDocInfo(serviceId, apiInfo, instanceInfo);
+        return buildApiDocInfo(serviceId, apiInfo, serviceInstance);
     }
 
-    String buildApiDocInfo(String serviceId, ApiInfo apiInfo, InstanceInfo instanceInfo) {
-        RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
-        String apiDocUrl = getApiDocUrl(apiInfo, instanceInfo, routes);
+    String buildApiDocInfo(String serviceId, ApiInfo apiInfo, ServiceInstance serviceInstance) {
+        RoutedServices routes = metadataParser.parseRoutes(serviceInstance.getMetadata());
+        String apiDocUrl = getApiDocUrl(apiInfo, serviceInstance, routes);
 
         ApiDocInfo apiDocInfo;
         if (apiDocUrl == null) {
             log.warn("No api doc URL for '{} {} {}'", serviceId, apiInfo.getApiId(), apiInfo.getVersion());
-            apiDocInfo = getApiDocInfoBySubstituteSwagger(instanceInfo, routes, apiInfo);
+            apiDocInfo = getApiDocInfoBySubstituteSwagger(serviceInstance, routes, apiInfo);
         } else {
             String apiDocContent = "";
             try {
@@ -161,12 +161,12 @@ public class ApiDocRetrievalServiceRest implements ApiDocRetrievalService {
     @Override
     public String retrieveDefaultApiDoc(@NonNull String serviceId) {
         log.debug("Retrieving default API doc for service '{}'", serviceId);
-        InstanceInfo instanceInfo = getInstanceInfo(serviceId);
+        ServiceInstance serviceInstance = getInstanceInfo(serviceId);
 
-        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
+        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(serviceInstance.getMetadata());
         ApiInfo defaultApiInfo = getDefaultApiInfo(apiInfoList);
 
-        return buildApiDocInfo(serviceId, defaultApiInfo, instanceInfo);
+        return buildApiDocInfo(serviceId, defaultApiInfo, serviceInstance);
     }
 
     private ApiInfo getDefaultApiInfo(List<ApiInfo> apiInfoList) {
@@ -243,14 +243,14 @@ public class ApiDocRetrievalServiceRest implements ApiDocRetrievalService {
      * Get ApiDoc url
      *
      * @param apiInfo      the apiInfo of service instance
-     * @param instanceInfo the information about service instance
+     * @param serviceInstance the information about service instance
      * @param routes       the routes of service instance
      * @return the url of apidoc
      */
-    private String getApiDocUrl(ApiInfo apiInfo, InstanceInfo instanceInfo, RoutedServices routes) {
+    private String getApiDocUrl(ApiInfo apiInfo, ServiceInstance serviceInstance, RoutedServices routes) {
         String apiDocUrl = null;
         if (apiInfo == null) {
-            apiDocUrl = createApiDocUrlFromRouting(instanceInfo, routes);
+            apiDocUrl = createApiDocUrlFromRouting(serviceInstance, routes);
         } else if (apiInfo.getSwaggerUrl() != null) {
             apiDocUrl = apiInfo.getSwaggerUrl();
         }
@@ -290,17 +290,17 @@ public class ApiDocRetrievalServiceRest implements ApiDocRetrievalService {
     /**
      * Get ApiDocInfo by Substitute Swagger
      *
-     * @param instanceInfo the information about service instance
+     * @param serviceInstance the information about service instance
      * @param routes       the routes of service instance
      * @param apiInfo      the apiInfo of service instance
      * @return the information about APIDocInfo
      */
-    private ApiDocInfo getApiDocInfoBySubstituteSwagger(InstanceInfo instanceInfo,
+    private ApiDocInfo getApiDocInfoBySubstituteSwagger(ServiceInstance serviceInstance,
                                                         RoutedServices routes,
                                                         ApiInfo apiInfo) {
         ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String response = swaggerGenerator.generateSubstituteSwaggerForService(
-            instanceInfo,
+            serviceInstance,
             apiInfo,
             gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname());
@@ -338,8 +338,8 @@ public class ApiDocRetrievalServiceRest implements ApiDocRetrievalService {
                 return new ApiDocNotFoundException(errMessage);
             });
     }
-    private InstanceInfo getInstanceInfo(String serviceId) {
-        return EurekaUtils.getInstanceInfo(eurekaClient, serviceId)
+    private ServiceInstance getInstanceInfo(String serviceId) {
+        return EurekaUtils.getInstanceInfo(discoveryClient, serviceId)
             .orElseThrow(() -> new ApiDocNotFoundException("Could not load instance information for service " + serviceId + "."));
     }
 
@@ -347,23 +347,13 @@ public class ApiDocRetrievalServiceRest implements ApiDocRetrievalService {
      * Creates a URL from the routing metadata 'apiml.routes.api-doc.serviceUrl' when 'apiml.apiInfo.swaggerUrl' is
      * not present
      *
-     * @param instanceInfo the information about service instance
+     * @param serviceInstance the information about service instance
      * @return the URL of API doc endpoint
      * @deprecated Added to support services which were on-boarded before 'apiml.apiInfo.swaggerUrl' parameter was
      * introduced. It will be removed when all services will be using the new configuration style.
      */
     @Deprecated(forRemoval = false)
-    private String createApiDocUrlFromRouting(InstanceInfo instanceInfo, RoutedServices routes) {
-        String scheme;
-        int port;
-        if (instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE)) {
-            scheme = "https";
-            port = instanceInfo.getSecurePort();
-        } else {
-            scheme = "http";
-            port = instanceInfo.getPort();
-        }
-
+    private String createApiDocUrlFromRouting(ServiceInstance serviceInstance, RoutedServices routes) {
         String path = null;
         RoutedService route = routes.findServiceByGatewayUrl("api/v1/api-doc");
         if (route != null) {
@@ -371,14 +361,11 @@ public class ApiDocRetrievalServiceRest implements ApiDocRetrievalService {
         }
 
         if (path == null) {
-            throw new ApiDocNotFoundException("No API Documentation defined for service " + instanceInfo.getAppName().toLowerCase() + ".");
+            throw new ApiDocNotFoundException("No API Documentation defined for service " + serviceInstance.getServiceId().toLowerCase() + ".");
         }
 
-        UriComponents uri = UriComponentsBuilder
+        UriComponents uri = UriComponentsBuilder.fromUri(serviceInstance.getUri())
             .newInstance()
-            .scheme(scheme)
-            .host(instanceInfo.getHostName())
-            .port(port)
             .path(path)
             .build();
 

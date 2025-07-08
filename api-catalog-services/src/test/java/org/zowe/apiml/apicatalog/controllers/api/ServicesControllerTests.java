@@ -11,21 +11,22 @@
 package org.zowe.apiml.apicatalog.controllers.api;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
-import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.model.CustomStyleConfig;
 import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
+import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.transform.TransformService;
@@ -44,7 +45,7 @@ class ServicesControllerTests {
 
     private final String pathToContainers = "/containers";
 
-    private EurekaClient eurekaClient;
+    private DiscoveryClient discoveryClient;
     private ContainerService containerService;
     private ApiDocRetrievalService apiDocRetrievalService;
 
@@ -52,9 +53,9 @@ class ServicesControllerTests {
 
     @BeforeEach
     void setUp() {
-        eurekaClient = mock(EurekaClient.class);
+        discoveryClient = mock(DiscoveryClient.class);
         containerService = spy(new ContainerService(
-            eurekaClient,
+            discoveryClient,
             new TransformService(new GatewayClient(ServiceAddress.builder().scheme("https").hostname("localhost").build())),
             new CustomStyleConfig())
         );
@@ -104,19 +105,17 @@ class ServicesControllerTests {
 
         @BeforeEach
         void prepareApplications() {
-            service1 = new Application("service-1");
-            service1.addInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP));
-
-            service2 = new Application("service-2");
-            service1.addInstance(getStandardInstance("service2", InstanceInfo.InstanceStatus.DOWN));
-
             apiVersions = Arrays.asList("1.0.0", "2.0.0");
 
-            given(eurekaClient.getApplication("service1")).willReturn(service1);
+            given(discoveryClient.getInstances("service1")).willReturn(
+                Collections.singletonList(new EurekaServiceInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP)))
+            );
             given(apiDocRetrievalService.retrieveDefaultApiDoc("service1")).willReturn("service1");
             given(apiDocRetrievalService.retrieveApiVersions("service1")).willReturn(apiVersions);
 
-            given(eurekaClient.getApplication("service2")).willReturn(service2);
+            given(discoveryClient.getInstances("service2")).willReturn(
+                Collections.singletonList(new EurekaServiceInstance(getStandardInstance("service2", InstanceInfo.InstanceStatus.DOWN)))
+            );
             given(apiDocRetrievalService.retrieveDefaultApiDoc("service2")).willReturn("service2");
             given(apiDocRetrievalService.retrieveApiVersions("service2")).willReturn(apiVersions);
 
@@ -216,7 +215,7 @@ class ServicesControllerTests {
 
         @Test
         void thenReturnNotFound() {
-            given(eurekaClient.getApplications()).willReturn(null);
+            given(discoveryClient.getServices()).willReturn(Collections.emptyList());
 
             String pathToServices = "/services";
             RestAssuredMockMvc.given().

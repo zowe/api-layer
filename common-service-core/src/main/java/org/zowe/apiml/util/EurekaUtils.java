@@ -11,10 +11,10 @@
 package org.zowe.apiml.util;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 
 import java.util.Optional;
@@ -57,37 +57,35 @@ public class EurekaUtils {
         }
     }
 
-    private Optional<InstanceInfo> getPrimaryInstanceInfo(EurekaClient eurekaClient, String serviceId) {
-        return Optional.ofNullable(eurekaClient.getApplication(serviceId))
-            .map(Application::getInstances)
+    private Optional<ServiceInstance> getPrimaryInstanceInfo(DiscoveryClient discoveryClient, String serviceId) {
+        return Optional.ofNullable(discoveryClient.getInstances(serviceId))
             .map(instances -> instances.stream()
                 .filter(instance -> EurekaMetadataDefinition.RegistrationType.of(instance.getMetadata()).isPrimary())
                 .findFirst()
-                .get()
+                .orElse(null)
             );
     }
 
-    private Optional<InstanceInfo> getSecondaryInstanceInfo(EurekaClient eurekaClient, String apimlId) {
-        return Optional.ofNullable(eurekaClient.getApplication(GATEWAY.getServiceId()))
-            .map(Application::getInstances)
+    private Optional<ServiceInstance> getSecondaryInstanceInfo(DiscoveryClient discoveryClient, String apimlId) {
+        return Optional.ofNullable(discoveryClient.getInstances(GATEWAY.getServiceId()))
             .map(instances -> instances.stream()
                 .filter(instance -> EurekaMetadataDefinition.RegistrationType.of(instance.getMetadata()).isAdditional())
                 .filter(instance -> StringUtils.equals(apimlId, instance.getMetadata().get(APIML_ID)))
                 .findFirst()
-                .get()
+                .orElse(null)
             );
     }
 
     /**
      * It tries to find service with primary registration, if it does not exist it looks also
      * for a gateway with secondary registration and id is used as apimlId
-     * @param eurekaClient eureka client instance for look up
+     * @param discoveryClient eureka client instance for look up
      * @param id serviceId for primary or apimlId for secondary registration
      * @return instance or empty Optional object
      */
-    public Optional<InstanceInfo> getInstanceInfo(EurekaClient eurekaClient, String id) {
-        return getPrimaryInstanceInfo(eurekaClient, id)
-            .or(() -> getSecondaryInstanceInfo(eurekaClient, id));
+    public Optional<ServiceInstance> getInstanceInfo(DiscoveryClient discoveryClient, String id) {
+        return getPrimaryInstanceInfo(discoveryClient, id)
+            .or(() -> getSecondaryInstanceInfo(discoveryClient, id));
     }
 
 }

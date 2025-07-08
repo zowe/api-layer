@@ -13,6 +13,8 @@ package org.zowe.apiml.apicatalog.util;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
 import lombok.experimental.UtilityClass;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,10 +34,10 @@ public class ServicesBuilder {
         return application;
     }
 
-    public InstanceInfo createInstance(String serviceId,
+    public ServiceInstance createInstance(String serviceId,
                                              InstanceInfo.InstanceStatus status,
                                              Map<String, String> metadata) {
-        return InstanceInfo.Builder.newBuilder()
+        return new EurekaServiceInstance(InstanceInfo.Builder.newBuilder()
                 .setInstanceId(serviceId + (id++))
                 .setAppName(serviceId)
                 .setStatus(status)
@@ -43,14 +45,14 @@ public class ServicesBuilder {
                 .setHomePageUrl(null, "https://localhost:8080/")
                 .setVIPAddress(serviceId)
                 .setMetadata(metadata)
-                .build();
+                .build());
     }
 
-    public InstanceInfo createInstance(String serviceId, String catalogId, Map.Entry<String, String>...otherMetadata) {
+    public ServiceInstance createInstance(String serviceId, String catalogId, Map.Entry<String, String>...otherMetadata) {
         return createInstance(serviceId, catalogId, InstanceInfo.InstanceStatus.UP, otherMetadata);
     }
 
-    public InstanceInfo createInstance(
+    public ServiceInstance createInstance(
             String serviceId, String catalogId, InstanceInfo.InstanceStatus status,
             Map.Entry<String, String>...otherMetadata
     ) {
@@ -59,7 +61,7 @@ public class ServicesBuilder {
                 otherMetadata);
     }
 
-    public InstanceInfo createInstance(
+    public ServiceInstance createInstance(
             String serviceId, String catalogId, String catalogVersion, String title,
             Map.Entry<String, String>...otherMetadata
     ) {
@@ -68,7 +70,7 @@ public class ServicesBuilder {
                 otherMetadata);
     }
 
-    public InstanceInfo createInstance(String serviceId,
+    public ServiceInstance createInstance(String serviceId,
                                    String catalogId,
                                    String catalogTitle,
                                    String catalogDescription,

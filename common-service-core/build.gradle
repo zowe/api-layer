@@ -4,6 +4,7 @@ dependencies {
     implementation libs.eureka.jersey.client
     implementation libs.http.client5
     implementation libs.guava
+    implementation libs.spring.cloud.commons
 
     compileOnly libs.eh.cache
     compileOnly libs.spring.boot.starter.web
