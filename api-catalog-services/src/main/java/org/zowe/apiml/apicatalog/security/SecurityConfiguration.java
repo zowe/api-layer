@@ -318,6 +318,7 @@ public class SecurityConfiguration {
                     ))
                     .orElse(context)
             )
+            // TODO: only to mitigate breaking change, it should be removed and handled by a universal 401 message
             .onErrorResume(TokenNotValidException.class, context -> {
                 try {
                     ApiMessageView message = messageService.createMessage("org.zowe.apiml.common.unauthorized").mapToView();
