@@ -25,13 +25,11 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.gateway.GatewayClient;
-import org.zowe.apiml.product.routing.RoutedServices;
-import org.zowe.apiml.product.routing.ServiceType;
+import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
 import reactor.core.publisher.Mono;
 
-import java.util.Map;
 import java.util.stream.Stream;
 
 import static reactor.core.publisher.Mono.empty;
@@ -71,20 +69,17 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
             .findAny()
                 .map(ServiceInstance.class::cast)
                 .map(serviceInstance -> {
-                        Map<String, String> metadata = serviceInstance.getMetadata();
-                        RoutedServices routes = metadataParser.parseRoutes(metadata);
-                        try {
-                            String newUrl = transformService.transformURL(ServiceType.ALL, StringUtils.toRootLowerCase(config.serviceId), location, routes, false);
-                            if (isAttlsEnabled) {
-                                newUrl = UriComponentsBuilder.fromUriString(newUrl).scheme("https").build().toUriString();
-                            }
-                            return newUrl;
-                        } catch (URLTransformationException e) {
-                            log.debug("The URL for the redirect {} cannot be transformed: {}", location, e.getMessage());
-                            return "";
+                    try {
+                        String newUrl = transformService.transformURL(StringUtils.toRootLowerCase(config.serviceId), location, config.getRoutedService(), false);
+                        if (isAttlsEnabled) {
+                            newUrl = UriComponentsBuilder.fromUriString(newUrl).scheme("https").build().toUriString();
                         }
+                        return newUrl;
+                    } catch (URLTransformationException e) {
+                        log.debug("The URL for the redirect {} cannot be transformed: {}", location, e.getMessage());
+                        return "";
                     }
-                )
+                })
                 .orElse("");
     }
 
@@ -114,6 +109,13 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
         private String serviceId;
         private String instanceId;
+
+        private String gatewayUrl;
+        private String serviceUrl;
+
+        RoutedService getRoutedService() {
+            return new RoutedService("used", gatewayUrl, serviceUrl);
+        }
 
     }
 

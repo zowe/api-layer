@@ -71,14 +71,20 @@ public class TransformService {
             throw new URLTransformationException(message);
         }
 
-
         if (serviceUri.getQuery() != null) {
             serviceUriPath += "?" + serviceUri.getQuery();
         }
 
+        return transformURL(serviceId, serviceUriPath, route, httpsScheme);
+    }
+
+    public String transformURL(String serviceId,
+                               String serviceUriPath,
+                               RoutedService route,
+                               boolean httpsScheme) throws URLTransformationException {
         String endPoint = getShortEndPoint(route.getServiceUrl(), serviceUriPath);
         if (!endPoint.isEmpty() && !endPoint.startsWith("/")) {
-            throw new URLTransformationException("The path " + serviceUri.getPath() + " of the service URL " + serviceUri + " is not valid.");
+            throw new URLTransformationException("The path " + serviceUriPath + " of the service URL " + route.getServiceUrl() + " is not valid.");
         }
 
         ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
