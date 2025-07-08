@@ -67,6 +67,7 @@ public class ModulithConfig {
     private final ApplicationContext applicationContext;
     private final Map<String, InstanceInfo> instances = new HashMap<>();
     private final GatewayEurekaInstanceConfigBean eurekaInstanceGw;
+    private final CachingServiceEurekaInstanceConfigBean eurekaInstanceCaching;
 
     @Value("${server.ssl.enabled:true}")
     private boolean https;
@@ -103,6 +104,9 @@ public class ModulithConfig {
             case "gateway":
                 metadata = eurekaInstanceGw.getMetadataMap();
                 metadata.put("management.port", "10010");
+                break;
+            case "cachingservice":
+                metadata = eurekaInstanceCaching.getMetadataMap();
                 break;
             default:
         }

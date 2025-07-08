@@ -103,6 +103,25 @@ apiml:
         registry:
             enabled: false
             metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
+    caching:
+        eureka:
+            instance:
+                metadata-map:
+                    apiml.service.serviceId: cachingservice
+                    apiml.service.apiInfo.0.apiId: zowe.apiml.cachingservice
+                    apiml.service.apiInfo.0.version: 1.0.0
+                    apiml.service.apiInfo.0.gatewayUrl: api/v1
+                    apiml.service.apiInfo.0.swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/v3/api-docs/caching
+                    apiml.service.apiInfo.0.documentationUrl: https://zowe.github.io/docs-site/
+                    apiml.catalog.tile.id: zowe
+                    apiml.catalog.tile.title: Zowe Applications
+                    apiml.catalog.tile.description: Applications which are part of Zowe.
+                    apiml.catalog.tile.version: 1.0.0
+                    apiml.routes.api_v1.gatewayUrl: /
+                    apiml.routes.api_v1.serviceUrl: /cachingservice
+                    apiml.apiBasePath: /cachingservice/api/v1
+                    apiml.service.title: Caching service for internal usage.
+                    apiml.service.description: Service that provides caching API.
     connection:
         timeout: 60000
         idleConnectionTimeoutSeconds: 5
