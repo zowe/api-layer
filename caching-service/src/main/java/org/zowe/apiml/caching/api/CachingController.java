@@ -48,7 +48,7 @@ public class CachingController {
         description = "Values returned for the calling service")
     @ResponseBody
     public Mono<ResponseEntity<Object>> getAllValues(ServerHttpRequest request) {
-        return Mono.just(getServiceId(request).<ResponseEntity<Object>>map(
+        return Mono.fromCallable(() -> getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
                 try {
                     return new ResponseEntity<>(storage.readForService(s), HttpStatus.OK);
@@ -64,7 +64,7 @@ public class CachingController {
         description = "Will delete all key-value pairs for specific service")
     @ResponseBody
     public Mono<ResponseEntity<Object>> deleteAllValues(ServerHttpRequest request) {
-        return Mono.just(getServiceId(request).map(
+        return Mono.fromCallable(() -> getServiceId(request).map(
             s -> {
                 try {
                     storage.deleteForService(s);
@@ -87,7 +87,7 @@ public class CachingController {
         description = "Value returned is for the provided {key}")
     @ResponseBody
     public Mono<ResponseEntity<Object>> getValue(@PathVariable String key, ServerHttpRequest request) {
-        return Mono.just(keyRequest(storage::read,
+        return Mono.fromCallable(() -> keyRequest(storage::read,
             key, request, HttpStatus.OK));
     }
 
@@ -96,7 +96,7 @@ public class CachingController {
         description = "Will delete key-value pair for the provided {key}")
     @ResponseBody
     public Mono<ResponseEntity<Object>> delete(@PathVariable String key, ServerHttpRequest request) {
-        return Mono.just(keyRequest(storage::delete,
+        return Mono.fromCallable(() -> keyRequest(storage::delete,
             key, request, HttpStatus.NO_CONTENT));
     }
 
@@ -105,7 +105,7 @@ public class CachingController {
         description = "A new key-value pair will be added to the cache")
     @ResponseBody
     public Mono<ResponseEntity<Object>> createKey(@RequestBody KeyValue keyValue, ServerHttpRequest request) {
-        return Mono.just(keyValueRequest(storage::create,
+        return Mono.fromCallable(() -> keyValueRequest(storage::create,
             keyValue, request, HttpStatus.CREATED));
     }
 
@@ -114,7 +114,7 @@ public class CachingController {
         description = "A new key-value pair will be added to the specific cache map with given map key.")
     @ResponseBody
     public Mono<ResponseEntity<Object>> storeMapItem(@PathVariable String mapKey, @RequestBody KeyValue keyValue, ServerHttpRequest request) {
-        return Mono.just(mapKeyValueRequest(storage::storeMapItem,
+        return Mono.fromCallable(() -> mapKeyValueRequest(storage::storeMapItem,
             mapKey, keyValue, request, HttpStatus.CREATED));
     }
 
@@ -123,7 +123,7 @@ public class CachingController {
         description = "Values returned for the calling service and specific cache map.")
     @ResponseBody
     public Mono<ResponseEntity<Object>> getAllMapItems(@PathVariable String mapKey, ServerHttpRequest request) {
-        return Mono.just(getServiceId(request).<ResponseEntity<Object>>map(
+        return Mono.fromCallable(() -> getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
                 log.debug("Storing for serviceId: {}", s);
                 try {
@@ -140,7 +140,7 @@ public class CachingController {
         description = "Values returned for the calling service")
     @ResponseBody
     public Mono<ResponseEntity<Object>> getAllMaps(ServerHttpRequest request) {
-        return Mono.just(getServiceId(request).<ResponseEntity<Object>>map(
+        return Mono.fromCallable(() -> getServiceId(request).<ResponseEntity<Object>>map(
             s -> {
                 log.debug("Get all for serviceId: {}", s);
                 try {
@@ -157,7 +157,7 @@ public class CachingController {
         description = "Will delete a key-value pair from a specific rules map")
     @ResponseBody
     public Mono<ResponseEntity<Object>> evictRules(@PathVariable String mapKey, ServerHttpRequest request) {
-        return Mono.just(getServiceId(request).map(
+        return Mono.fromCallable(() -> getServiceId(request).map(
             s -> {
                 log.debug("Delete record for serviceId: {}", s);
                 try {
@@ -175,7 +175,7 @@ public class CachingController {
         description = "Will delete a key-value pair from a specific tokens map")
     @ResponseBody
     public Mono<ResponseEntity<Object>> evictTokens(@PathVariable String mapKey, ServerHttpRequest request) {
-        return Mono.just(getServiceId(request).map(
+        return Mono.fromCallable(() -> getServiceId(request).map(
             s -> {
                 log.debug("Evict tokens for serviceId: {}", s);
                 try {
@@ -193,7 +193,7 @@ public class CachingController {
         description = "Value at the key in the provided key-value pair will be updated to the provided value")
     @ResponseBody
     public Mono<ResponseEntity<Object>> update(@RequestBody KeyValue keyValue, ServerHttpRequest request) {
-        return Mono.just(keyValueRequest(storage::update,
+        return Mono.fromCallable(() -> keyValueRequest(storage::update,
             keyValue, request, HttpStatus.NO_CONTENT));
     }
 
