@@ -73,18 +73,18 @@ public class ReactivePATController {
         tags = {"Access token"},
         operationId = "access-token-generate-POST",
         description = """
-                Use the `/access-token/generate` API to authenticate mainframe user credentials and return personal access token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.
+            Use the `/access-token/generate` API to authenticate mainframe user credentials and return personal access token. It is also possible to authenticate using the x509 client certificate authentication, if enabled.
 
-                    **Request:**
+                **Request:**
 
-                        The generate request requires the user credentials in one of the following formats:
-                            * Basic access authentication
-                            * HTTP header containing the client certificate
+                    The generate request requires the user credentials in one of the following formats:
+                        * Basic access authentication
+                        * HTTP header containing the client certificate
 
-                    **Response:**
+                **Response:**
 
-                        The response contains a personal access token in the plain text.
-            """,
+                    The response contains a personal access token in the plain text.
+        """,
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(
                 schema = @Schema(implementation = AccessTokenRequest.class)
@@ -164,8 +164,8 @@ public class ReactivePATController {
      * <p>
      * Request body example:
      * {
-     * "token": "pat-token",
-     * "serviceId": "target-service"
+     *   "token": "pat-token",
+     *   "serviceId": "target-service"
      * }
      * <p>
      * Responses:
@@ -207,7 +207,7 @@ public class ReactivePATController {
      * <p>
      * Request body (optional):
      * {
-     * "timestamp": 1710000000000
+     *   "timestamp": 1710000000000
      * }
      * <p>
      * Responses:
@@ -262,7 +262,7 @@ public class ReactivePATController {
      * Invalidates a specific personal access token. Requires the token to be provided in the request body.
      * Request body:
      * {
-     * "token": "your_access_token"
+     *   "token": "your_access_token"
      * }
      * Responses:
      * - 204 No Content – Token successfully invalidated
@@ -318,14 +318,13 @@ public class ReactivePATController {
 
     //todo fix: if no body is passed at all, it currently returns
     // The service has encountered a situation it doesn't know how to handle. Please contact support for further assistance. More details are available in the log under the provided message instance ID.
-
     /**
      * Admin-only: Invalidates all PATs for a specific user ID. Requires SAF authorization and a valid userId in the request body.
      * <p>
      * Request body:
      * {
-     * "userId": "target_user",
-     * "timestamp": 1710000000000
+     *   "userId": "target_user",
+     *   "timestamp": 1710000000000
      * }
      * <p>
      * Responses:
@@ -379,8 +378,8 @@ public class ReactivePATController {
      * <p>
      * Request body:
      * {
-     * "serviceId": "target_service",
-     * "timestamp": 1710000000000 // optional
+     *   "serviceId": "target_service",
+     *   "timestamp": 1710000000000 // optional
      * }
      * <p>
      * Responses:
