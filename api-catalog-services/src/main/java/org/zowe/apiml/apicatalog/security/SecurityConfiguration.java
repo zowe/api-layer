@@ -49,6 +49,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
 
@@ -287,7 +288,9 @@ public class SecurityConfiguration {
     @Bean
     public WebFilter tokenAuthenticationFilter(
         GatewaySecurityService gatewaySecurityService,
-        AuthConfigurationProperties authConfigurationProperties
+        AuthConfigurationProperties authConfigurationProperties,
+        MessageService messageService,
+        ObjectMapper mapper
     ) {
         AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
 
@@ -303,6 +306,8 @@ public class SecurityConfiguration {
                     .map(token -> {
                         try {
                             return Map.entry(token, gatewaySecurityService.query(token));
+                        } catch (TokenNotValidException e) {
+                            throw e;
                         } catch (Exception e) {
                             log.debug("Cannot query token: {}", token, e);
                             return null;
@@ -312,7 +317,18 @@ public class SecurityConfiguration {
                         createAuthenticated(pair.getValue().getUserId(), pair.getKey(), TokenAuthentication.Type.JWT)
                     ))
                     .orElse(context)
-            );
+            )
+            .onErrorResume(TokenNotValidException.class, context -> {
+                try {
+                    ApiMessageView message = messageService.createMessage("org.zowe.apiml.common.unauthorized").mapToView();
+                    DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(mapper.writeValueAsBytes(message));
+                    exchange.getResponse().setRawStatusCode(SC_UNAUTHORIZED);
+                    exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+                    return exchange.getResponse().writeWith(Mono.just(buffer));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            });
     }
 
     @Bean
@@ -353,8 +369,7 @@ public class SecurityConfiguration {
                 DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(mapper.writeValueAsBytes(message));
                 exchange.getResponse().setRawStatusCode(SC_UNAUTHORIZED);
                 exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
-                return exchange.getResponse()
-                    .writeWith(Mono.just(buffer));
+                return exchange.getResponse().writeWith(Mono.just(buffer));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }

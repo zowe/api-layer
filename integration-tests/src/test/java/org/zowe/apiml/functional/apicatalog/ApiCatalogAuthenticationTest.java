@@ -215,6 +215,7 @@ class ApiCatalogAuthenticationTest {
                         endpoint
                     )
                     .then()
+                    .log().ifValidationFails()
                     .body(
                         "messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage)
                     ).statusCode(is(SC_UNAUTHORIZED));
