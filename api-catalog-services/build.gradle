@@ -71,7 +71,7 @@ dependencies {
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.webflux
     implementation libs.spring.cloud.starter.eureka.client
-    implementation libs.spring.doc
+    implementation libs.spring.doc.webflux.ui
     implementation libs.spring.retry
 
     implementation libs.apache.velocity
