@@ -12,7 +12,6 @@ package org.zowe.apiml.apicatalog;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.security.reactive.ReactiveUserDetailsServiceAutoConfiguration;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.retry.annotation.EnableRetry;
@@ -22,7 +21,7 @@ import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
 import org.zowe.apiml.product.version.BuildInfo;
 
-@SpringBootApplication(exclude = ReactiveUserDetailsServiceAutoConfiguration.class)
+@SpringBootApplication
 @EnableDiscoveryClient
 @ComponentScan(value = {
     "org.zowe.apiml.apicatalog",

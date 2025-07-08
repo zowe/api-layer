@@ -51,6 +51,7 @@ public class TokenController {
 
     private AuthConfigurationProperties.CookieProperties cp;
     private int cookieMaxAge = -1;
+
     @PostConstruct
     void initConstants() {
         cp = authConfigurationProperties.getCookieProperties();
@@ -65,16 +66,16 @@ public class TokenController {
         ServerWebExchange exchange
     ) {
         return DataBufferUtils.join(exchange.getRequest().getBody())
-            .map(buffer -> {
+            .<LoginRequest>handle((buffer, sink) -> {
                 try (InputStream is = buffer.asInputStream()){
-                    return mapper.readValue(is, LoginRequest.class);
+                    sink.next(mapper.readValue(is, LoginRequest.class));
                 } catch (IOException e) {
-                    throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.", e);
+                    sink.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format.", e));
                 } finally {
                     DataBufferUtils.release(buffer);
                 }
             })
-            .or(Mono.fromSupplier(() -> LoginFilter
+            .switchIfEmpty(Mono.fromSupplier(() -> LoginFilter
                 .getCredentialFromAuthorizationHeader(Optional.ofNullable(requestHeader))
                 .orElse( null)
             ))
