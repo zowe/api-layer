@@ -13,6 +13,7 @@ eureka:
     server:
         max-threads-for-peer-replication: 2
         useReadOnlyResponseCache: false
+        peer-node-read-timeout-ms: 1000
 spring:
     cloud:
         gateway:
