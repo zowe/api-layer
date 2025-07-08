@@ -83,9 +83,6 @@ public class SecurityConfiguration {
 
     private final AuthConfigurationProperties authConfigurationProperties;
 
-    @Value("${apiml.health.protected:true}")
-    private boolean isHealthEndpointProtected;
-
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
@@ -94,8 +91,8 @@ public class SecurityConfiguration {
 
     private String[] getFullUrls(String...baseUrl) {
         return Stream.of(
-                Arrays.stream(baseUrl).map(url -> "/apicatalog" + baseUrl),
-                Arrays.stream(baseUrl).map(url -> "/apicatalog/api/v1" + baseUrl)
+                Arrays.stream(baseUrl).map(url -> "/apicatalog" + url),
+                Arrays.stream(baseUrl).map(url -> "/apicatalog/api/v1" + url)
             )
             .flatMap(Function.identity())
             .toArray(String[]::new);
@@ -114,8 +111,8 @@ public class SecurityConfiguration {
 
     @Bean
     @Order(2)
-    public SecurityWebFilterChain logoutSecurityWebFilterChain(ServerHttpSecurity http) {
-        return http
+    public SecurityWebFilterChain logoutSecurityWebFilterChain(ServerHttpSecurity http, ServerAuthenticationEntryPoint serverAuthenticationEntryPoint) {
+        return baseConfiguration(http, serverAuthenticationEntryPoint)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, getFullUrls(authConfigurationProperties.getServiceLogoutEndpoint())))
             .logout(logout -> logout
                 .requiresLogout(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, getFullUrls(authConfigurationProperties.getServiceLogoutEndpoint())))
@@ -137,7 +134,7 @@ public class SecurityConfiguration {
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
     ) {
         baseConfiguration(
-            http.securityMatcher(ServerWebExchangeMatchers.pathMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE)),
+            http.securityMatcher(ServerWebExchangeMatchers.pathMatchers(getFullUrls(APIDOC_ROUTES, STATIC_REFRESH_ROUTE))),
             serverAuthenticationEntryPoint,
             basicAuthenticationFilter, tokenAuthenticationFilter, oidcAuthenticationFilter
         )
@@ -155,6 +152,33 @@ public class SecurityConfiguration {
 
     @Bean
     @Order(4)
+    public SecurityWebFilterChain healthEndpointSecurityWebFilterChain(
+        ServerHttpSecurity http,
+        @Value("${apiml.health.protected:true}") boolean isHealthEndpointProtected,
+        @Qualifier("basicAuthenticationFilter") WebFilter basicAuthenticationFilter,
+        @Qualifier("tokenAuthenticationFilter") WebFilter tokenAuthenticationFilter,
+        @Qualifier("oidcAuthenticationFilter") WebFilter oidcAuthenticationFilter,
+        ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
+    ) {
+        http = baseConfiguration(
+            http.securityMatcher(ServerWebExchangeMatchers.pathMatchers(getFullUrls("/application/health"))),
+            serverAuthenticationEntryPoint,
+            basicAuthenticationFilter, tokenAuthenticationFilter, oidcAuthenticationFilter
+        );
+
+        if (isHealthEndpointProtected) {
+            http.authorizeExchange(exchange -> exchange
+                .pathMatchers(getFullUrls("/application/health")).authenticated());
+        } else {
+            http.authorizeExchange(exchange -> exchange
+                .pathMatchers(getFullUrls("/application/health")).permitAll());
+        }
+
+        return http.build();
+    }
+
+    @Bean
+    @Order(5)
     public SecurityWebFilterChain basicAuthOrTokenAllEndpointsFilterChain(
         ServerHttpSecurity http,
         @Qualifier("basicAuthenticationFilter") WebFilter basicAuthenticationFilter,
@@ -162,27 +186,20 @@ public class SecurityConfiguration {
         @Qualifier("oidcAuthenticationFilter") WebFilter oidcAuthenticationFilter,
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
     ) {
-        if (isHealthEndpointProtected) {
-            http.authorizeExchange(exchange -> exchange
-                .pathMatchers(getFullUrls("/apicatalog/application/health")).authenticated());
-        } else {
-            http.authorizeExchange(exchange -> exchange
-                .pathMatchers(getFullUrls("/apicatalog/application/health")).permitAll());
-        }
-
-        baseConfiguration(http.securityMatcher(ServerWebExchangeMatchers.pathMatchers(
-            getFullUrls("/static-api/**", "/containers/**", "/application/**", "/services/**", APIDOC_ROUTES))),
-            serverAuthenticationEntryPoint,
-            basicAuthenticationFilter, tokenAuthenticationFilter, oidcAuthenticationFilter
-        );
-        return http.build();
+        return baseConfiguration(http.securityMatcher(ServerWebExchangeMatchers.pathMatchers(
+                getFullUrls("/static-api/**", "/containers/**", "/application/**", "/services/**", APIDOC_ROUTES))),
+                serverAuthenticationEntryPoint,
+                basicAuthenticationFilter, tokenAuthenticationFilter, oidcAuthenticationFilter
+            )
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .build();
     }
 
     /**
      * Default filter chain to protect all routes with MF credentials.
      */
     @Bean
-    @Order(5)
+    @Order(6)
     public SecurityWebFilterChain webSecurityCustomizer(
         ServerHttpSecurity http,
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
