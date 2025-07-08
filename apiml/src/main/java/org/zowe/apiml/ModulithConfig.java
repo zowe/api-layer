@@ -157,7 +157,7 @@ public class ModulithConfig {
     @EventListener
     public void onApplicationEvent(EurekaRegistryAvailableEvent event) {
         ApimlInstanceRegistry registry = getRegistry();
-        instances.forEach((key, value) -> registry.registerStatically(instances.get(key), false, CoreService.GATEWAY.getServiceId().equalsIgnoreCase(key)));
+        instances.forEach((key, value) -> registry.registerStatically(instances.get(key), CoreService.GATEWAY.getServiceId().equalsIgnoreCase(key), CoreService.GATEWAY.getServiceId().equalsIgnoreCase(key)));
 
         var jwtSec = applicationContext.getBean(JwtSecurity.class);
         if (!jwtSec.getZosmfListener().isZosmfReady()) {
