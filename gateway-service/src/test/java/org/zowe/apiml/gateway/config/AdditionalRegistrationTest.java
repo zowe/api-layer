@@ -37,6 +37,7 @@ import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -56,11 +57,13 @@ public class AdditionalRegistrationTest {
     @Mock
     private EurekaFactory eurekaFactory;
     @Mock
-    ApplicationContext context;
+    private ApplicationContext context;
+    @Mock
+    private HttpsFactoryConfig httpsFactoryConfig;
 
     @BeforeEach
     void setUp() {
-        connectionsConfig = new ConnectionsConfig(context);
+        connectionsConfig = new ConnectionsConfig(context, httpsFactoryConfig);
     }
 
     @ExtendWith(MockitoExtension.class)
@@ -87,9 +90,8 @@ public class AdditionalRegistrationTest {
         @BeforeEach
         public void setUp() throws Exception {
             ReflectionTestUtils.setField(connectionsConfig, "eurekaServerUrl", "https://host:2222");
-            ReflectionTestUtils.setField(connectionsConfig, "httpsFactory", httpsFactory);
             configSpy = Mockito.spy(connectionsConfig);
-            lenient().doReturn(httpsFactory).when(configSpy).factory();
+            lenient().when(httpsFactoryConfig.httpsFactory()).thenReturn(httpsFactory);
             lenient().when(httpsFactory.getSslContext()).thenReturn(SSLContexts.custom().build());
             lenient().when(httpsFactory.getHostnameVerifier()).thenReturn(new NoopHostnameVerifier());
             lenient().when(eurekaFactory.createCloudEurekaClient(any(), any(), clientConfigCaptor.capture(), any(), any(), any())).thenReturn(additionalClientOne, additionalClientTwo);
@@ -104,7 +106,7 @@ public class AdditionalRegistrationTest {
         @Test
         void shouldCreateEurekaClientForAdditionalDiscoveryUrl() {
 
-            AdditionalEurekaClientsHolder holder = configSpy.additionalEurekaClientsHolder(manager, clientConfig, singletonList(registration), eurekaFactory, healthCheckHandler);
+            AdditionalEurekaClientsHolder holder = configSpy.additionalEurekaClientsHolder(manager, clientConfig, singletonList(registration), eurekaFactory, healthCheckHandler, null, Optional.empty());
 
             assertThat(holder.getDiscoveryClients()).hasSize(1);
             EurekaClientConfigBean eurekaClientConfigBean = clientConfigCaptor.getValue();
@@ -114,7 +116,7 @@ public class AdditionalRegistrationTest {
         @Test
         void shouldCreateTwoAdditionalRegistrations() {
             AdditionalRegistration secondRegistration = AdditionalRegistration.builder().discoveryServiceUrls("https://another-eureka-2").build();
-            AdditionalEurekaClientsHolder holder = configSpy.additionalEurekaClientsHolder(manager, clientConfig, asList(registration, secondRegistration), eurekaFactory, healthCheckHandler);
+            AdditionalEurekaClientsHolder holder = configSpy.additionalEurekaClientsHolder(manager, clientConfig, asList(registration, secondRegistration), eurekaFactory, healthCheckHandler, null, Optional.empty());
 
             assertThat(holder.getDiscoveryClients()).hasSize(2);
             verify(additionalClientOne).registerHealthCheck(healthCheckHandler);

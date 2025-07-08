@@ -12,6 +12,15 @@ gatewayServiceConfiguration:
     instances: 1
     servicesEndpoint: gateway/api/v1/services
     bucketCapacity: 20
+domainGatewayServiceConfiguration:
+    scheme: https
+    host: gateway-service-2
+    port: 10010
+    internalPorts: 10010
+    externalPort: 10010
+    instances: 1
+    servicesEndpoint: gateway/api/v1/services
+    bucketCapacity: 20
 centralGatewayServiceConfiguration:
     scheme: https
     host: central-gateway-service
