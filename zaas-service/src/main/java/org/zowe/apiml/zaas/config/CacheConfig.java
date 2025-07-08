@@ -48,7 +48,7 @@ import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.zaas.cache.CachingClient;
 import org.zowe.apiml.zaas.cache.CachingServiceClient;
-import org.zowe.apiml.zaas.cache.InMemoryCachingClient;
+import org.zowe.apiml.zaas.cache.LocalCachingClient;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 
 import javax.cache.Caching;
@@ -97,7 +97,7 @@ public class CacheConfig {
     @Primary
     @Bean("cacheManager")
     @ConditionalOnProperty(value = "apiml.caching.enabled", havingValue = "true", matchIfMissing = true)
-    @ConditionalOnMissingBean(name = "modulithConfig")
+    @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "inMemory", matchIfMissing = true)
     public CacheManager cacheManager() {
         var caches = new HashMap<String, CacheConfiguration<?, ?>>();
 
@@ -210,7 +210,7 @@ public class CacheConfig {
     @Bean
     @ConditionalOnMissingBean
     public CachingClient cachingClient(Storage storage) {
-        return new InMemoryCachingClient(storage);
+        return new LocalCachingClient(storage);
     }
 
 }

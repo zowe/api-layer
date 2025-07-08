@@ -26,13 +26,13 @@ import static org.mockito.Mockito.*;
 class InMemoryCachingClientTest {
 
     private Storage storage;
-    private InMemoryCachingClient cachingClient;
+    private LocalCachingClient cachingClient;
 
     /**
      * Subclass that overrides getServiceId() to avoid certificate initialization.
      */
-    static class TestInMemoryCachingClient extends InMemoryCachingClient {
-        TestInMemoryCachingClient(Storage storage) {
+    static class TestLocalCachingClient extends LocalCachingClient {
+        TestLocalCachingClient(Storage storage) {
             super(storage);
         }
 
@@ -45,7 +45,7 @@ class InMemoryCachingClientTest {
     @BeforeEach
     void setUp() {
         storage = mock(Storage.class);
-        cachingClient = new TestInMemoryCachingClient(storage);
+        cachingClient = new TestLocalCachingClient(storage);
     }
 
     @Test

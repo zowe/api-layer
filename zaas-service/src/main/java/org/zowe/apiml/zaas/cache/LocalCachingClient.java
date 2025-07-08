@@ -26,7 +26,7 @@ import java.security.cert.X509Certificate;
 import java.util.Map;
 
 @RequiredArgsConstructor
-public class InMemoryCachingClient implements CachingClient {
+public class LocalCachingClient implements CachingClient {
     @Value("${server.ssl.keyAlias:#{null}}")
     private String keyAlias;
 
@@ -100,6 +100,6 @@ public class InMemoryCachingClient implements CachingClient {
     }
 
     String getServiceId() {
-        return certificate.getSubjectDN().getName();
+        return certificate.getSubjectX500Principal().getName();
     }
 }

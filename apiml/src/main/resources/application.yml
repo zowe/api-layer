@@ -125,7 +125,6 @@ apiml:
         nonSecurePortEnabled: false
         securePortEnabled: true
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
-        title: API ML
     security:
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         ssl:
@@ -225,6 +224,8 @@ logging:
         reactor.netty: WARN
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
+        org.infinispan: WARN
+        org.jgroups: WARN
 
 management:
     endpoint:
@@ -266,6 +267,8 @@ logging:
         reactor.netty.http.client: DEBUG
         reactor.netty.http.client.HttpClient: DEBUG
         reactor.netty.http.client.HttpClientConnect: DEBUG
+        org.jgroups: DEBUG
+        org.infinispan: DEBUG
 
 ---
 spring.config.activate.on-profile: attls

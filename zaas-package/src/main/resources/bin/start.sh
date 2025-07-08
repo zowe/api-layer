@@ -374,6 +374,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.oidc.userInfo.uri=${ZWE_configs_apiml_security_oidc_userInfo_uri:-${ZWE_components_gateway_apiml_security_oidc_userInfo_uri:-}} \
     -Dapiml.security.oidc.validationType=${ZWE_configs_apiml_security_oidc_validationType:-${ZWE_components_gateway_apiml_security_oidc_validationType:-"JWK"}} \
     -Dapiml.security.allowTokenRefresh=${ZWE_configs_apiml_security_allowtokenrefresh:-${ZWE_components_gateway_apiml_security_allowtokenrefresh:-false}} \
+    -Dcaching.storage.mode=${ZWE_components_caching_service_storage_mode:-inMemory} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Dloader.path=${ZAAS_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \

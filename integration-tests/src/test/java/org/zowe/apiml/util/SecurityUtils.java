@@ -386,7 +386,6 @@ public class SecurityUtils {
 
         SSLConfig originalConfig = RestAssured.config().getSSLConfig();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
-        System.out.println(gatewayGenerateAccessTokenEndpoint);
         try {
             return given()
                 .contentType(JSON).header("Authorization", "Basic " + Base64.encode(USERNAME + ":" + PASSWORD))
