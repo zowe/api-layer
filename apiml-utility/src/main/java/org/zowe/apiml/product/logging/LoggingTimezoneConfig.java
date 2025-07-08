@@ -28,7 +28,7 @@ import java.util.TimeZone;
 public class LoggingTimezoneConfig {
 
     private static final String UT_COMMON_TIMEZONE_SET_LOG_KEY = "org.zowe.apiml.common.timezone.set";
-    private static final String UT_COMMON_TIMEZONE_INVALID_LOG_KEY ="org.zowe.apiml.common.timezone.invalid";
+    private static final String UT_COMMON_TIMEZONE_INVALID_LOG_KEY = "org.zowe.apiml.common.timezone.invalid";
     private static final String UTC_TIMEZONE = "UTC";
     private static final String LOGGING_TIMEZONE = "LOGGING_TIMEZONE";
     private static final String LOCAL = "LOCAL";
