@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -108,7 +109,10 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         entry(RuntimeException.class,
             (ex, ctx) -> handleRuntimeException(ctx.requestUri, ctx.function, ex)),
         entry(WebClientResponseException.BadRequest.class,
-            (ex, ctx) -> handleBadRequest(ctx.requestUri, ctx.function, ex, "org.zowe.apiml.security.login.invalidInput"))
+            (ex, ctx) -> handleBadRequest(ctx.requestUri, ctx.function, ex, "org.zowe.apiml.security.login.invalidInput")),
+        entry(AccessDeniedException.class,
+            (ex, ctx) ->  handleForbidden(ctx.function, ex)
+        )
     );
 
     private ExceptionHandler resolveHandler(RuntimeException ex) {
@@ -251,6 +255,11 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     private void handleRuntimeException(String uri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.INTERNAL_SERVER_ERROR.value(), ex.getMessage());
         writeErrorResponse("org.zowe.apiml.common.internalRequestError", HttpStatus.INTERNAL_SERVER_ERROR, function, uri, ExceptionUtils.getMessage(ex), ExceptionUtils.getRootCauseMessage(ex));
+    }
+
+    private void handleForbidden(BiConsumer<ApiMessageView, HttpStatus> function, AccessDeniedException ex) {
+        log.debug(MESSAGE_FORMAT, HttpStatus.FORBIDDEN.value(), ex.getMessage());
+        writeErrorResponse("org.zowe.apiml.security.forbidden", HttpStatus.FORBIDDEN, function);
     }
 
 }
