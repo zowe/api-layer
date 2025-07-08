@@ -168,7 +168,7 @@ class ApiCatalogAuthenticationTest {
             @ParameterizedTest(name = "givenNoAuthentication {index} {0}")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
             void givenNoAuthentication(String endpoint, Request request) throws URISyntaxException {
-                String expectedMessage = "Authentication is required for URL '" + CATALOG_SERVICE_ID_PATH + new URIBuilder().setPath(endpoint).build() + "'";
+                String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID_PATH + new URIBuilder().setPath(endpoint).build() + "'";
 
                 request.execute(
                         given()
@@ -177,10 +177,11 @@ class ApiCatalogAuthenticationTest {
                         endpoint
                     )
                     .then()
+                    .log().ifValidationFails()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .header(HttpHeaders.WWW_AUTHENTICATE, BASIC_AUTHENTICATION_PREFIX)
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAS105E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == 'ZWEAS120E' }.messageContent", equalTo(expectedMessage)
                     );
             }
 
