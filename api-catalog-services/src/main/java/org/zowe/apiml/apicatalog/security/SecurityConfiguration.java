@@ -26,6 +26,7 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
@@ -348,9 +349,10 @@ public class SecurityConfiguration {
     ) {
         return (exchange, authenticationException) -> {
             try {
-                ApiMessageView message = messageService.createMessage("org.zowe.apiml.common.unauthorized").mapToView();
+                ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.login.invalidCredentials", exchange.getRequest().getPath().toString()).mapToView();
                 DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(mapper.writeValueAsBytes(message));
                 exchange.getResponse().setRawStatusCode(SC_UNAUTHORIZED);
+                exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
                 return exchange.getResponse()
                     .writeWith(Mono.just(buffer));
             } catch (JsonProcessingException e) {
