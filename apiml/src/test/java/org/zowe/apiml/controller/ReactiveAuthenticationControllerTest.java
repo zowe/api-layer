@@ -22,7 +22,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -86,17 +85,13 @@ class ReactiveAuthenticationControllerTest {
     @Test
     void invalidateJwtToken_success() {
         String jwtToInvalidate = "some.jwt.token";
-        String path = "/gateway/api/v1/auth/invalidate/" + jwtToInvalidate;
-        MockServerHttpRequest mockRequest = MockServerHttpRequest.delete(path).build();
-        MockServerWebExchange exchange = MockServerWebExchange.from(mockRequest);
-
         Applications mockApplications = mock(Applications.class);
         Application mockApplication = mock(Application.class);
         when(peerAwareInstanceRegistry.getApplications()).thenReturn(mockApplications);
         when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
         when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class))).thenReturn(true);
 
-        Mono<ResponseEntity<Void>> result = controller.invalidateJwtToken(exchange);
+        var result = controller.invalidateJwtToken(jwtToInvalidate);
 
         StepVerifier.create(result)
             .expectNextMatches(responseEntity -> HttpStatus.OK.equals(responseEntity.getStatusCode()))
@@ -106,17 +101,13 @@ class ReactiveAuthenticationControllerTest {
     @Test
     void invalidateJwtToken_serviceUnavailable() {
         String jwtToInvalidate = "some.jwt.token";
-        String path = "/gateway/api/v1/auth/invalidate/" + jwtToInvalidate;
-        MockServerHttpRequest mockRequest = MockServerHttpRequest.delete(path).build();
-        MockServerWebExchange exchange = MockServerWebExchange.from(mockRequest);
-
         Applications mockApplications = mock(Applications.class);
         Application mockApplication = mock(Application.class);
         when(peerAwareInstanceRegistry.getApplications()).thenReturn(mockApplications);
         when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
         when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class))).thenReturn(false);
 
-        Mono<ResponseEntity<Void>> result = controller.invalidateJwtToken(exchange);
+        var result = controller.invalidateJwtToken(jwtToInvalidate);
 
         StepVerifier.create(result)
             .expectNextMatches(responseEntity -> HttpStatus.SERVICE_UNAVAILABLE.equals(responseEntity.getStatusCode()))
@@ -126,10 +117,6 @@ class ReactiveAuthenticationControllerTest {
     @Test
     void invalidateJwtToken_tokenNotValidException() {
         String jwtToInvalidate = "invalid.jwt.token";
-        String path = "/gateway/api/v1/auth/invalidate/" + jwtToInvalidate;
-        MockServerHttpRequest mockRequest = MockServerHttpRequest.delete(path).build();
-        MockServerWebExchange exchange = MockServerWebExchange.from(mockRequest);
-
         Applications mockApplications = mock(Applications.class);
         Application mockApplication = mock(Application.class);
         when(peerAwareInstanceRegistry.getApplications()).thenReturn(mockApplications);
@@ -137,7 +124,7 @@ class ReactiveAuthenticationControllerTest {
         when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class)))
             .thenThrow(new TokenNotValidException("Token is not valid"));
 
-        Mono<ResponseEntity<Void>> result = controller.invalidateJwtToken(exchange);
+        var result = controller.invalidateJwtToken(jwtToInvalidate);
 
         StepVerifier.create(result)
             .expectNextMatches(responseEntity -> HttpStatus.BAD_REQUEST.equals(responseEntity.getStatusCode()))
