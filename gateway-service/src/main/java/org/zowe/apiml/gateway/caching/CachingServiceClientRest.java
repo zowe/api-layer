@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.caching;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,10 +32,11 @@ public class CachingServiceClientRest implements CachingServiceClient {
 
     private static final String CACHING_SERVICE_RETURNED = ". Caching service returned: ";
 
-    @Value("${apiml.cachingServiceClient.apiPath}")
-    private final static String CACHING_API_PATH = "/cachingservice/api/v1/cache"; //NOSONAR parametrization provided by @Value annotation
+    @Value("${apiml.cachingServiceClient.apiPath:/cachingservice/api/v1/cache}")
+    private String CACHING_API_PATH;
 
-    private final String cachingBalancerUrl;
+    private String cachingBalancerUrl;
+    private final GatewayClient gatewayClient;
 
     private static final MultiValueMap<String, String> defaultHeaders = new LinkedMultiValueMap<>();
 
@@ -48,8 +50,13 @@ public class CachingServiceClientRest implements CachingServiceClient {
         @Qualifier("webClientClientCert") WebClient webClientClientCert,
         GatewayClient gatewayClient
     ) {
-        this.cachingBalancerUrl = String.format("%s://%s/%s", gatewayClient.getGatewayConfigProperties().getScheme(), gatewayClient.getGatewayConfigProperties().getHostname(), CACHING_API_PATH);
+        this.gatewayClient = gatewayClient;
         this.webClient = webClientClientCert;
+    }
+
+    @PostConstruct
+    void updateUrl() {
+        this.cachingBalancerUrl = String.format("%s://%s/%s", gatewayClient.getGatewayConfigProperties().getScheme(), gatewayClient.getGatewayConfigProperties().getHostname(), CACHING_API_PATH);
     }
 
 

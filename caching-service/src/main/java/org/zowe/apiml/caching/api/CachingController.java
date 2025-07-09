@@ -94,7 +94,6 @@ public class CachingController {
     @DeleteMapping(value = "/cache/{key}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Delete key from the cache",
         description = "Will delete key-value pair for the provided {key}")
-    @ResponseBody
     public Mono<ResponseEntity<Object>> delete(@PathVariable String key, ServerHttpRequest request) {
         return Mono.fromCallable(() -> keyRequest(storage::delete,
             key, request, HttpStatus.NO_CONTENT));
@@ -155,7 +154,6 @@ public class CachingController {
     @DeleteMapping(value = "/cache-list/evict/rules/{mapKey}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Delete a record from a rules map in the cache",
         description = "Will delete a key-value pair from a specific rules map")
-    @ResponseBody
     public Mono<ResponseEntity<Object>> evictRules(@PathVariable String mapKey, ServerHttpRequest request) {
         return Mono.fromCallable(() -> getServiceId(request).map(
             s -> {
@@ -173,7 +171,6 @@ public class CachingController {
     @DeleteMapping(value = "/cache-list/evict/tokens/{mapKey}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Delete a record from an invalid tokens map in the cache",
         description = "Will delete a key-value pair from a specific tokens map")
-    @ResponseBody
     public Mono<ResponseEntity<Object>> evictTokens(@PathVariable String mapKey, ServerHttpRequest request) {
         return Mono.fromCallable(() -> getServiceId(request).map(
             s -> {
@@ -191,7 +188,6 @@ public class CachingController {
     @PutMapping(value = {"/cache", "/cache/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update key in the cache",
         description = "Value at the key in the provided key-value pair will be updated to the provided value")
-    @ResponseBody
     public Mono<ResponseEntity<Object>> update(@RequestBody KeyValue keyValue, ServerHttpRequest request) {
         return Mono.fromCallable(() -> keyValueRequest(storage::update,
             keyValue, request, HttpStatus.NO_CONTENT));

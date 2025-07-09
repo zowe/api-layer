@@ -39,10 +39,10 @@ public class CachingServiceClient implements CachingClient {
 
     private final GatewayClient gatewayClient;
     private final RestTemplate restTemplate;
-    @Value("${apiml.cachingServiceClient.apiPath}")
-    private static final String CACHING_API_PATH = "/cachingservice/api/v1/cache"; //NOSONAR parametrization provided by @Value annotation
-    @Value("${apiml.cachingServiceClient.list.apiPath}")
-    private static final String CACHING_LIST_API_PATH = "/cachingservice/api/v1/cache-list/"; //NOSONAR parametrization provided by @Value annotation
+    @Value("${apiml.cachingServiceClient.apiPath:/cachingservice/api/v1/cache}")
+    private String CACHING_API_PATH;
+    @Value("${apiml.cachingServiceClient.list.apiPath:/cachingservice/api/v1/cache-list/}")
+    private String CACHING_LIST_API_PATH;
 
     private static final HttpHeaders defaultHeaders = new HttpHeaders();
 

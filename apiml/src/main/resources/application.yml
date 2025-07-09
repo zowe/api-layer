@@ -11,6 +11,7 @@ eureka:
         healthcheck:
             enabled: true
     server:
+        myUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/eureka/
         max-threads-for-peer-replication: 2
         useReadOnlyResponseCache: false
 spring:
@@ -299,7 +300,7 @@ logging:
         org.springframework.security.web: TRACE
         # org.springframework.web.reactive: DEBUG
         # org.springframework.web.reactive.socket: DEBUG
-        org.zowe.apiml: INFO
+        org.zowe.apiml: DEBUG
         reactor.netty: DEBUG
         reactor.netty.http.client: DEBUG
         reactor.netty.http.client.HttpClient: DEBUG

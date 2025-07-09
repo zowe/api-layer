@@ -211,8 +211,7 @@ else
     externalProtocol="http"
 fi
 
-if [ -n "${ZWE_configs_storage_vsam_name}" ]
-then
+if [ -n "${ZWE_configs_storage_vsam_name}" ]; then
     VSAM_FILE_NAME=//\'${ZWE_configs_storage_vsam_name}\'
 fi
 
