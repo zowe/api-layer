@@ -1900,17 +1900,17 @@ jobs:
                 run: |
                     apt update
                     apt install -y apt-transport-https ca-certificates curl software-properties-common
-                    curl -k -s https://gateway-service:10010/application/health
-                    curl -k -s https://gateway-service-2:10010/application/health
+                    curl -k -s https://apiml:10010/application/health
+                    curl -k -s https://apiml-2:10010/application/health
             -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend
                     export CYPRESS_OKTA_USERNAME=${{ secrets.OKTA_WINNIE_USER }}
                     export CYPRESS_OKTA_PASSWORD=${{ secrets.OKTA_WINNIE_PASS }}
-                    npm run cy:e2e:ci
+                    npm run cy:e2e:ci:modulith
             -   name: Dump CGW jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address apiml --port 6300 --destfile ./results/gateway-service.exec
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
@@ -1926,7 +1926,7 @@ jobs:
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
-                    name: cypress-snapshots
+                    name: cypress-snapshots-modulith
                     path: api-catalog-ui/frontend/cypress/screenshots
             -   uses: ./.github/actions/teardown
 
