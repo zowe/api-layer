@@ -53,28 +53,28 @@ public class WebConfig implements WebFluxConfigurer {
     @Bean
     public RouterFunction<ServerResponse> redirectRoot() {
         return route(GET("/"), req ->
-            ServerResponse.temporaryRedirect(URI.create("/apicatalog"))
+            ServerResponse.permanentRedirect(URI.create("/apicatalog"))
                 .build());
     }
 
     @Bean
     public RouterFunction<ServerResponse> redirectCatalogRoot() {
         return route(GET("/apicatalog"), req ->
-            ServerResponse.temporaryRedirect(URI.create("/apicatalog/"))
+            ServerResponse.permanentRedirect(URI.create("/apicatalog/"))
                 .build());
     }
 
     @Bean
     public RouterFunction<ServerResponse> redirectApicatalogRoot() {
         return route(GET("/apicatalog/"), req ->
-            ServerResponse.temporaryRedirect(URI.create("/apicatalog/index.html"))
+            ServerResponse.permanentRedirect(URI.create("/apicatalog/index.html"))
                 .build());
     }
 
     @Bean
     public RouterFunction<ServerResponse> redirectApicatalogVersionRoot() {
         return route(GET("/apicatalog/api/v1"), req ->
-            ServerResponse.temporaryRedirect(URI.create("/apicatalog/api/v1/index.html"))
+            ServerResponse.permanentRedirect(URI.create("/apicatalog/api/v1/index.html"))
                 .build());
     }
 
