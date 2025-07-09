@@ -15,7 +15,6 @@ import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.InstanceRegistry;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
@@ -43,7 +42,6 @@ public class StaticServicesRegistrationService {
 
     private final List<InstanceInfo> staticInstances = new CopyOnWriteArrayList<>();
 
-    @Autowired
     public StaticServicesRegistrationService(ServiceDefinitionProcessor serviceDefinitionProcessor, MetadataDefaultsService metadataDefaultsService) {
         this.serviceDefinitionProcessor = serviceDefinitionProcessor;
         this.metadataDefaultsService = metadataDefaultsService;
@@ -52,7 +50,7 @@ public class StaticServicesRegistrationService {
     /**
      * Lists information about registered static service instances.
      */
-    public List<InstanceInfo> getStaticInstances() {
+    public List<InstanceInfo> getStaticInstances() { // TODO Get the static instances, plus gateway and send regular heartbeats, how often, what's the default?
         return staticInstances;
     }
 
@@ -99,7 +97,7 @@ public class StaticServicesRegistrationService {
         for (InstanceInfo instanceInfo : result.getInstances()) {
             result.getRegisteredServices().add(instanceInfo.getInstanceId());
             staticInstances.add(instanceInfo);
-            registry.registerStatically(instanceInfo, false, false);
+            registry.registerStatically(instanceInfo, false, true);
         }
 
         return result;

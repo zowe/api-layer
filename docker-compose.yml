@@ -7,7 +7,7 @@ services:
     ports:
       - "10010:10010" # External access
       - "10011:10011" # External access
-      - "5010:5130" # For Java remote debugging
+      - "5130:5130" # For Java remote debugging
     networks:
       - apiml_net
       - apiml_shared

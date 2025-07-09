@@ -14,6 +14,7 @@ import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.LeaseInfo;
 import com.netflix.discovery.CacheRefreshedEvent;
+import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
@@ -68,6 +69,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Timer;
+import java.util.TimerTask;
 
 @EnableScheduling
 @Configuration
@@ -79,6 +82,9 @@ public class ModulithConfig {
     private final ApplicationContext applicationContext;
     private final Map<String, InstanceInfo> instances = new HashMap<>();
     private final GatewayEurekaInstanceConfigBean eurekaInstanceGw;
+    private final EurekaClientConfig eurekaConfig;
+
+    private final Timer timer = new Timer("PeerReplicated-StaticServices");
 
     @Value("${server.ssl.enabled:true}")
     private boolean https;
@@ -163,6 +169,19 @@ public class ModulithConfig {
         if (!jwtSec.getZosmfListener().isZosmfReady()) {
             jwtSec.getZosmfListener().getZosmfRegisteredListener().onEvent(new CacheRefreshedEvent());
         }
+
+        log.info("Initialize timer for static services peer-replicated heartbeats");
+
+        // This timer calls Eureka registry's peerReplicate method to accumulate all heartbeats of statically-onboarded services once
+        timer.scheduleAtFixedRate(new TimerTask() {
+
+            @Override
+            public void run() {
+                registry.peerAwareHeartbeat(instances.get(CoreService.GATEWAY.getServiceId()));
+            }
+
+        }, (long)eurekaConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L, (long)eurekaConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L);
+
     }
 
     @Bean

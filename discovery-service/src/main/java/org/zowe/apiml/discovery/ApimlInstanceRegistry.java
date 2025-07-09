@@ -172,6 +172,14 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         }
     }
 
+    public void peerAwareHeartbeat(InstanceInfo instanceInfo) {
+        try {
+            replicateToPeersMethodHandle.invokeWithArguments(this, Action.Heartbeat, instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, false);
+        } catch (Throwable e) {
+            throw new IllegalStateException(EXCEPTION_MESSAGE, e);
+        }
+    }
+
     /**
      * Register a service statically
      *
