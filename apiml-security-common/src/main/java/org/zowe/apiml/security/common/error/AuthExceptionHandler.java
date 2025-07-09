@@ -61,7 +61,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     }
 
     @FunctionalInterface
-    private interface ExceptionHandler<E> {
+    private interface ExceptionHandler<E extends Exception> {
         void handle(E ex, HandlerContext ctx);
     }
 
@@ -118,6 +118,10 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     private ExceptionHandler resolveHandler(RuntimeException ex) {
         Class<?> exClass = ex.getClass();
         while (exClass != null) {
+            if (!applicationInfo.isModulith() && exClass == RuntimeException.class) {
+                return null;
+            }
+
             ExceptionHandler handler = exceptionHandlers.get(exClass);
             if (handler != null) {
                 return handler;

@@ -67,7 +67,7 @@ public class TokenController {
     ) {
         return DataBufferUtils.join(exchange.getRequest().getBody())
             .<LoginRequest>handle((buffer, sink) -> {
-                try (InputStream is = buffer.asInputStream()){
+                try (InputStream is = buffer.asInputStream()) {
                     sink.next(mapper.readValue(is, LoginRequest.class));
                 } catch (IOException e) {
                     sink.error(new AuthenticationCredentialsNotFoundException("Login object has wrong format.", e));

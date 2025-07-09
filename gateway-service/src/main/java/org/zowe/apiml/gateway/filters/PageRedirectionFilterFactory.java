@@ -13,24 +13,20 @@ package org.zowe.apiml.gateway.filters;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
 import reactor.core.publisher.Mono;
 
-import java.util.stream.Stream;
+import java.net.URI;
 
 import static reactor.core.publisher.Mono.empty;
 
@@ -46,17 +42,10 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
-    private final DiscoveryClient discoveryClient;
-    private final EurekaMetadataParser metadataParser;
     private TransformService transformService;
 
-    public PageRedirectionFilterFactory(
-            DiscoveryClient discoveryClient,
-            @Qualifier("getEurekaMetadataParser") EurekaMetadataParser metadataParser,
-            GatewayClient gatewayClient) {
+    public PageRedirectionFilterFactory(GatewayClient gatewayClient) {
         super(Config.class);
-        this.discoveryClient = discoveryClient;
-        this.metadataParser = metadataParser;
         this.transformService = new TransformService(gatewayClient);
     }
 
@@ -65,22 +54,19 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
             return "";
         }
 
-        return ((Stream<?>) discoveryClient.getInstances(config.serviceId).stream())
-            .findAny()
-                .map(ServiceInstance.class::cast)
-                .map(serviceInstance -> {
-                    try {
-                        String newUrl = transformService.transformURL(StringUtils.toRootLowerCase(config.serviceId), location, config.getRoutedService(), false);
-                        if (isAttlsEnabled) {
-                            newUrl = UriComponentsBuilder.fromUriString(newUrl).scheme("https").build().toUriString();
-                        }
-                        return newUrl;
-                    } catch (URLTransformationException e) {
-                        log.debug("The URL for the redirect {} cannot be transformed: {}", location, e.getMessage());
-                        return "";
-                    }
-                })
-                .orElse("");
+        try {
+            URI locationUri = URI.create(location);
+            // remove scheme, host, and port
+            URI pathUri = UriComponentsBuilder.fromPath(locationUri.getPath()).query(locationUri.getQuery()).build().toUri();
+            String newUrl = transformService.transformURL(StringUtils.toRootLowerCase(config.serviceId), pathUri.toString(), config.getRoutedService(), false, locationUri);
+            if (isAttlsEnabled) {
+                newUrl = UriComponentsBuilder.fromUriString(newUrl).scheme("https").build().toUriString();
+            }
+            return newUrl;
+        } catch (URLTransformationException e) {
+            log.debug("The URL for the redirect {} cannot be transformed: {}", location, e.getMessage());
+            return "";
+        }
     }
 
     @Override
