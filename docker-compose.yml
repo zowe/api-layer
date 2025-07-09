@@ -26,17 +26,34 @@ services:
       - apiml_net
     container_name: discoverable-client
     environment:
-      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka
+      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
       - APIML_SERVICE_HOSTNAME=discoverable-client
+  discoverable-client-2:
+    image: ghcr.io/zowe/discoverable-client:latest
+    networks:
+      - apiml2_net
+    container_name: discoverable-client-2
+    environment:
+      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
+      - APIML_SERVICE_HOSTNAME=discoverable-client-2
 
-  api-catalog:
+  api-catalog-services:
     image: ghcr.io/zowe/api-catalog-services:latest
     networks:
       - apiml_net
     container_name: api-catalog-services
     environment:
-      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka
+      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
       - APIML_SERVICE_HOSTNAME=api-catalog-services
+  api-catalog-services-2:
+    image: ghcr.io/zowe/api-catalog-services:latest
+    networks:
+      - apiml2_net
+    container_name: api-catalog-services-2
+    environment:
+      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
+      - APIML_SERVICE_HOSTNAME=api-catalog-services-2
+      - APIML_HEALTH_PROTECTED=false
 
   apiml-2:
     image: ghcr.io/zowe/apiml:latest
