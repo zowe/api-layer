@@ -30,6 +30,7 @@ import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
 import org.zowe.apiml.security.common.token.*;
 
 import java.util.Map;
@@ -112,6 +113,9 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             (ex, ctx) -> handleBadRequest(ctx.requestUri, ctx.function, ex, "org.zowe.apiml.security.login.invalidInput")),
         entry(AccessDeniedException.class,
             (ex, ctx) ->  handleForbidden(ctx.function, ex)
+        ),
+        entry(GatewayNotAvailableException.class,
+            (ex, ctx) -> handleGatewayNotAvailable(ctx.function, ex)
         )
     );
 
@@ -264,6 +268,12 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     private void handleForbidden(BiConsumer<ApiMessageView, HttpStatus> function, AccessDeniedException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.FORBIDDEN.value(), ex.getMessage());
         writeErrorResponse("org.zowe.apiml.security.forbidden", HttpStatus.FORBIDDEN, function);
+    }
+
+    private void handleGatewayNotAvailable(BiConsumer<ApiMessageView, HttpStatus> function, GatewayNotAvailableException ex) {
+        log.debug(MESSAGE_FORMAT, HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage());
+        writeErrorResponse("org.zowe.apiml.security.gatewayNotAvailable", HttpStatus.SERVICE_UNAVAILABLE, function);
+
     }
 
 }
