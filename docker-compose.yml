@@ -20,8 +20,17 @@ services:
       #- LOGGING_LEVEL_COM_NETFLIX_EUREKA=DEBUG
       #- LOGGING_LEVEL_COM_NETFLIX_EUREKA_DISCOVERYCLIENT=DEBUG
       # - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
+  discoverable-client:
+    image: ghcr.io/zowe/discoverable-client:latest
+    networks:
+      - apiml_net
+    container_name: discoverable-client
+    environment:
+      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka
+      - APIML_SERVICE_HOSTNAME=discoverable-client
+
   api-catalog:
-    image: ghcr.io/zowe/api-catalog-services
+    image: ghcr.io/zowe/api-catalog-services:latest
     networks:
       - apiml_net
     container_name: api-catalog-services

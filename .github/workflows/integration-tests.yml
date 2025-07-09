@@ -180,7 +180,7 @@ jobs:
 
             -   name: Run Modulith CI Tests with SAF Provider in HA
                 run: >
-                    ENV_CONFIG=docker-modulith-ha :integration-tests:runContainerSAFProviderTests --info
+                    ENV_CONFIG=docker-modulith-ha ./gradlew :integration-tests:runContainerSAFProviderTests --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
