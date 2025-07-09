@@ -11,7 +11,6 @@ eureka:
         healthcheck:
             enabled: true
     server:
-        myUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/eureka/
         max-threads-for-peer-replication: 2
         useReadOnlyResponseCache: false
 spring:
@@ -64,7 +63,7 @@ apiml:
         # The `apiml.discovery` node contains discovery-service only configuration
         userid: eureka  # Userid that Eureka server will use to check authentication of its clients (other services)
         password: password  # Password that Eureka server will use to check authentication of its clients (other services)
-        allPeersUrls: http://${apiml.discovery.userid}:${apiml.discovery.password}@${apiml.service.hostname}:${apiml.service.port}/eureka/
+        allPeersUrls: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/eureka/
 
     gateway:
         eureka:
@@ -236,6 +235,7 @@ logging:
         com.netflix.discovery: ERROR
         com.netflix.discovery.DiscoveryClient: OFF
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.netflix.eureka: ERROR
         com.sun.jersey.server.impl.application.WebApplicationImpl: WARN
         io.netty.resolver.dns: WARN
         io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
@@ -284,6 +284,7 @@ logging:
         com.netflix: INFO # Update to DEBUG
         com.netflix.discovery.shared.transport.decorator: DEBUG
         com.netflix.eureka.cluster: DEBUG
+        com.netflix.eureka: DEBUG
         com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
         javax.net.ssl: ERROR
         org.apache: INFO

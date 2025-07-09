@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
@@ -273,26 +274,29 @@ public class CachingController {
     }
 
     private Optional<String> getServiceId(ServerHttpRequest request) {
-        Optional<String> certificateServiceId = Optional.empty();
-        if (applicationInfo != null && applicationInfo.isModulith()) {
-            if (request.getSslInfo() != null) {
-                var certs = request.getSslInfo().getPeerCertificates();
-                if (certs != null && certs.length > 0) {
-                    certificateServiceId = Optional.of(certs[0].getSubjectX500Principal().getName());
-                }
-            }
-        } else {
-            certificateServiceId = getHeader(request, "X-Certificate-DistinguishedName");
-        }
+        Optional<String> certificateServiceId = getCertificateServiceId(request);
         Optional<String> specificServiceId = getHeader(request, "X-CS-Service-ID");
 
         if (certificateServiceId.isPresent() && specificServiceId.isPresent()) {
             return Optional.of(certificateServiceId.get() + ", SERVICE=" + specificServiceId.get());
-        } else if (specificServiceId.isEmpty()) {
-            return certificateServiceId;
-        } else {
-            return specificServiceId;
         }
+
+        return specificServiceId.or(() -> certificateServiceId);
+    }
+
+    private Optional<String> getCertificateServiceId(ServerHttpRequest request) {
+        if (applicationInfo != null && applicationInfo.isModulith()) {
+            return extractFromSslInfo(request);
+        } else {
+            return getHeader(request, "X-Certificate-DistinguishedName");
+        }
+    }
+
+    private Optional<String> extractFromSslInfo(ServerHttpRequest request) {
+        return Optional.ofNullable(request.getSslInfo())
+            .map(SslInfo::getPeerCertificates)
+            .filter(certs -> certs.length > 0)
+            .map(certs -> certs[0].getSubjectX500Principal().getName());
     }
 
     private Optional<String> getHeader(ServerHttpRequest request, String headerName) {

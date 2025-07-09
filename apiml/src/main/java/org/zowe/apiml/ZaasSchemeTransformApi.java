@@ -141,7 +141,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         authSource
             .filter(PATAuthSource.class::isInstance)
             .map(PATAuthSource.class::cast)
-            .filter(as -> as.getDefaultServiceId() == null)
+            .filter(as -> StringUtils.isBlank(as.getDefaultServiceId()))
             .ifPresent(as -> as.setDefaultServiceId(request.getServiceId()));
     }
 
