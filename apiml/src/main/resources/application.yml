@@ -43,9 +43,17 @@ spring:
 
 springdoc:
     api-docs:
-        path: /gateway/api-docs
+        path: /v3/api-docs
+        groups:
+            enabled: true
     writer-with-order-by-keys: true
-    pathsToMatch: /gateway/api/v1/**
+    group-configs:
+        - group: gateway
+          pathsToMatch: /gateway/api/v1/**
+        - group: cachingservice
+          paths-to-match: /cachingservice/api/v1/**
+
+
 apiml:
     catalog:
         serviceId: apicatalog
@@ -90,7 +98,7 @@ apiml:
                             - apiId: zowe.apiml.gateway
                               version: 1.0.0
                               gatewayUrl: api/v1
-                              swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/gateway/api-docs
+                              swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/v3/api-docs/gateway
                               documentationUrl: https://zowe.github.io/docs-site/
                         service:
                             title: API Gateway
@@ -107,21 +115,31 @@ apiml:
         eureka:
             instance:
                 metadata-map:
-                    apiml.service.serviceId: cachingservice
-                    apiml.service.apiInfo.0.apiId: zowe.apiml.cachingservice
-                    apiml.service.apiInfo.0.version: 1.0.0
-                    apiml.service.apiInfo.0.gatewayUrl: api/v1
-                    apiml.service.apiInfo.0.swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/v3/api-docs/caching
-                    apiml.service.apiInfo.0.documentationUrl: https://zowe.github.io/docs-site/
-                    apiml.catalog.tile.id: zowe
-                    apiml.catalog.tile.title: Zowe Applications
-                    apiml.catalog.tile.description: Applications which are part of Zowe.
-                    apiml.catalog.tile.version: 1.0.0
-                    apiml.routes.api_v1.gatewayUrl: /
-                    apiml.routes.api_v1.serviceUrl: /cachingservice
-                    apiml.apiBasePath: /cachingservice/api/v1
-                    apiml.service.title: Caching service for internal usage.
-                    apiml.service.description: Service that provides caching API.
+                    apiml:
+                        registrationType: primary
+                        apiBasePath: /cachingservice/api/v1
+                        catalog:
+                            tile:
+                                id: apimediationlayer
+                                title: API Mediation Layer API
+                                description: The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.
+                                version: 1.0.0
+                        routes:
+                            api_v1:
+                                gatewayUrl: /
+                                serviceUrl: /cachingservice
+                        apiInfo:
+                            -   apiId: zowe.apiml.cachingservice
+                                version: 1.0.0
+                                gatewayUrl: api/v1
+                                swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/v3/api-docs/cachingservice
+                                documentationUrl: https://zowe.github.io/docs-site/
+                        service:
+                            title: Caching service for internal usage.
+                            description: Service that provides caching API.
+                        authentication:
+                            sso: true
+
     connection:
         timeout: 60000
         idleConnectionTimeoutSeconds: 5
