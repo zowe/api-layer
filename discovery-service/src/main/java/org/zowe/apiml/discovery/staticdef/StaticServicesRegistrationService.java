@@ -97,7 +97,7 @@ public class StaticServicesRegistrationService {
         for (InstanceInfo instanceInfo : result.getInstances()) {
             result.getRegisteredServices().add(instanceInfo.getInstanceId());
             staticInstances.add(instanceInfo);
-            registry.registerStatically(instanceInfo, false, true);
+            registry.registerStatically(instanceInfo, false, false);
         }
 
         return result;
