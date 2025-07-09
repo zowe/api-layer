@@ -148,6 +148,8 @@ public class ApiMediationLayerStartupChecker {
                     var response = HttpClientUtils.client().execute(requestToGateway);
                     if (response.getStatusLine().getStatusCode() != 200) {
                         throw new IOException();
+                    } else {
+                        log.debug("Response from gateway at {} was: {}", requestToGateway.getURI(), response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : "undefined");
                     }
                 }
             }

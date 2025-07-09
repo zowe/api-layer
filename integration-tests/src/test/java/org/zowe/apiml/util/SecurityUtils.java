@@ -144,7 +144,9 @@ public class SecurityUtils {
     }
 
     public static String getGatewayUrl(String path, int port) {
-        return getGatewayUrl(GATEWAY_HOST, path, port);
+        // chose one if comma-splitted, HA tests should handle multi-valued hosts
+        var gatewayHost = GATEWAY_HOST.split(",")[0];
+        return getGatewayUrl(gatewayHost, path, port);
     }
 
     public static String getGatewayUrl(String host, String path, int port) {

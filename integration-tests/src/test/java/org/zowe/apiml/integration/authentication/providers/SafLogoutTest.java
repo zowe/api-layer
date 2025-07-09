@@ -23,9 +23,6 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
-/**
- * FIXME No integration test (Github Actions) sets up SAF authentication provider, they all test z/OSMF
- */
 @SAFAuthTest
 @Tag("SAFProviderTest")
 class SafLogoutTest implements TestWithStartedInstances {
@@ -39,8 +36,10 @@ class SafLogoutTest implements TestWithStartedInstances {
 
     @Nested
     class WhenUserLogsOutTwice {
+
         @Nested
         class SecondCallReturnUnauthorized {
+
             @ParameterizedTest(name = "givenValidToken {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LogoutTest#logoutUrlsSource")
             void givenValidToken(String logoutUrl) {
@@ -51,11 +50,14 @@ class SafLogoutTest implements TestWithStartedInstances {
                 assertLogout(logoutUrl, jwt, SC_NO_CONTENT);
                 assertLogout(logoutUrl, jwt, SC_UNAUTHORIZED);
             }
+
         }
+
     }
 
     @Nested
     class WhenUserLogsOutOnceWithMultipleTokens {
+
         @Nested
         class VerifySecondTokenIsValid {
             @ParameterizedTest(name = "givenTwoValidTokens {index} {0} ")
@@ -74,6 +76,9 @@ class SafLogoutTest implements TestWithStartedInstances {
 
                 logoutOnGateway(logoutUrl, jwt2);
             }
+
         }
+
     }
+
 }
