@@ -34,6 +34,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 /**
  * PageRedirectionFilterFactory is a Spring Cloud Gateway Filter Factory that adapts a response from a routed service
@@ -67,7 +68,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
             .filter(i -> StringUtils.equalsIgnoreCase(config.getInstanceId(), i.getInstanceId()))
             .findFirst();
         return (exchange, chain) -> chain.filter(exchange)
-            .then(processNewLocationUrl(exchange, config, instance));
+            .then(Mono.fromCallable(() -> processNewLocationUrl(exchange, config, instance)).flatMap(Function.identity()));
     }
 
     private URI getHostUri(ServiceInstance instance) {
@@ -101,6 +102,22 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
             .findFirst();
     }
 
+    private String normalizePath(String path) {
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+        if (!path.endsWith("/")) {
+            path = path + "/";
+        }
+        return path;
+    }
+
+    private boolean isMatching(RoutedService route, URI uri) {
+        var servicePath = normalizePath(route.getServiceUrl());
+        var locationPath = normalizePath(uri.getPath());
+        return locationPath.startsWith(servicePath);
+    }
+
     private Mono<Void> processNewLocationUrl(ServerWebExchange exchange, Config config, Optional<ServiceInstance> instance) {
         var response = exchange.getResponse();
         if (!response.getStatusCode().is3xxRedirection()) {
@@ -113,16 +130,17 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
         }
 
         var locationUri = URI.create(location);
-        Optional<ServiceInstance> targetInstance = getInstance(locationUri, instance);
+        var targetInstance = getInstance(locationUri, instance);
+        var defaultRoute = config.getRoutedService();
 
         AtomicReference<String> newUrl = new AtomicReference<>();
-        if (targetInstance == instance) {
+        if (targetInstance == instance && isMatching(defaultRoute, locationUri)) {
             // try the preferable route on the same instance (the same as in the original request)
             try {
                 newUrl.set(transformService.transformURL(
                     StringUtils.toRootLowerCase(config.serviceId),
                     UriComponentsBuilder.fromPath(locationUri.getPath()).query(locationUri.getQuery()).build().toUri().toString(),
-                    config.getRoutedService(),
+                    defaultRoute,
                     false,
                     locationUri
                 ));
