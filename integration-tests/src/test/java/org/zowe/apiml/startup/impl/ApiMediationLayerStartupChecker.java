@@ -147,14 +147,17 @@ public class ApiMediationLayerStartupChecker {
                     requestToGateway.addHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes()));
                     var response = HttpClientUtils.client().execute(requestToGateway);
                     if (response.getStatusLine().getStatusCode() != 200) {
-                        throw new IOException();
-                    } else {
                         log.debug("Response from gateway at {} was: {}", requestToGateway.getURI(), response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : "undefined");
+                        throw new IOException();
                     }
                 }
             }
 
-            return areAllServicesUp && isTestApplicationUp;
+            var result = areAllServicesUp && isTestApplicationUp;
+            if (!result) {
+                log.debug("API ML is not ready, check which services are missing in the above messages");
+            }
+            return result;
         } catch (PathNotFoundException | IOException e) {
             log.warn("Check failed on retrieving the information from document: {}", e.getMessage());
             return false;

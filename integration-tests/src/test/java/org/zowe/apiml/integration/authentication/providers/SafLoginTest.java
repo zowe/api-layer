@@ -91,7 +91,7 @@ class SafLoginTest implements TestWithStartedInstances {
             .then()
                 .statusCode(is(SC_UNAUTHORIZED))
                 .body(
-                    "messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", containsString("it lacks valid authentication credentials.")
+                    "messages.find { it.messageNumber == 'ZWEAT412E' }.messageContent", containsString("expire")
                 );
         }
 
