@@ -27,12 +27,15 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  */
 @ChaoticHATest
 public class GatewayChaoticTest {
+
     private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests();
 
     @Nested
     class GivenHASetUp {
+
         @Nested
         class whenOneGatewayIsNotAvailable {
+
             @Test
             void routeToInstanceThroughAliveGateway() {
                 assumeTrue(haGatewayRequests.existing() > 1);
@@ -42,7 +45,9 @@ public class GatewayChaoticTest {
                 JsonResponse result = haGatewayRequests.route(1, Endpoints.DISCOVERABLE_GREET);
                 assertThat(result.getStatus(), is(SC_OK));
             }
+
         }
+
     }
 
 }

@@ -29,9 +29,9 @@ import org.springframework.security.web.server.authentication.HttpStatusServerEn
 import org.springframework.security.web.server.authentication.logout.HttpStatusReturningServerLogoutSuccessHandler;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher;
+import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher.MatchResult;
-import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.zowe.apiml.filter.BasicLoginFilter;
 import org.zowe.apiml.filter.CategorizeCertsWebFilter;
 import org.zowe.apiml.filter.LogoutHandler;
@@ -53,6 +53,10 @@ import org.zowe.apiml.zaas.security.query.TokenAuthenticationProvider;
 import java.util.List;
 import java.util.Set;
 
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers.pathMatchers;
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_FULL_URL;
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_SHORT_URL;
 
@@ -103,13 +107,13 @@ public class WebSecurityConfig {
     "/favicon.ico");
 
     private final ServerWebExchangeMatcher discoveryPortMatcher = exchange -> exchange.getRequest().getURI().getPort() == internalDiscoveryPort ? MatchResult.match() : MatchResult.notMatch();
-    private final ServerWebExchangeMatcher isInUnauthenticatedPaths = ServerWebExchangeMatchers.pathMatchers(UNAUTHENTICATED_PATTERNS.toArray(new String[]{}));
+    private final ServerWebExchangeMatcher isInUnauthenticatedPaths = pathMatchers(UNAUTHENTICATED_PATTERNS.toArray(new String[]{}));
     private final ServerWebExchangeMatcher notInUnauthenticatedPaths = new NegatedServerWebExchangeMatcher(isInUnauthenticatedPaths);
 
     @Bean
     SecurityWebFilterChain errorFilterChain(ServerHttpSecurity http) {
         return http
-            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/error"))
+            .securityMatcher(pathMatchers("/error"))
             .authorizeExchange(exchanges -> exchanges.anyExchange().permitAll())
             .build();
     }
@@ -127,7 +131,7 @@ public class WebSecurityConfig {
         http
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
-                ServerWebExchangeMatchers.pathMatchers("/eureka/**"),
+                pathMatchers("/eureka/**"),
                 notInUnauthenticatedPaths,
                 exchange -> exchange.getRequest().getURI().getPath().startsWith("/eureka/") ? MatchResult.match() : MatchResult.notMatch() // Prevents matching /eureka (mapping for homepage in modulith)
             ))
@@ -167,7 +171,7 @@ public class WebSecurityConfig {
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
                 notInUnauthenticatedPaths,
-                ServerWebExchangeMatchers.pathMatchers("/discovery/**")
+                pathMatchers("/discovery/**")
             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
@@ -250,7 +254,7 @@ public class WebSecurityConfig {
                                                    AuthConfigurationProperties authConfigurationProperties,
                                                    AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         http
-            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(APPLICATION_HEALTH))
+            .securityMatcher(pathMatchers(APPLICATION_HEALTH))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchange -> {
                 if (!isHealthEndpointProtected) {
@@ -291,8 +295,8 @@ public class WebSecurityConfig {
                                                          AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         return http
             .securityMatcher(new AndServerWebExchangeMatcher(
-                ServerWebExchangeMatchers.pathMatchers("/application/**"),
-                new NegatedServerWebExchangeMatcher(ServerWebExchangeMatchers.pathMatchers(APPLICATION_HEALTH, APPLICATION_INFO, "/application/version"))
+                pathMatchers("/application/**"),
+                new NegatedServerWebExchangeMatcher(pathMatchers(APPLICATION_HEALTH, APPLICATION_INFO, "/application/version"))
             ))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
@@ -331,18 +335,18 @@ public class WebSecurityConfig {
      * @return
      */
     @Bean
-    SecurityWebFilterChain loginFilter(ServerHttpSecurity http, LogoutHandler logoutHandler) {
+    SecurityWebFilterChain loginAndLogoutSecurityWebFilterChain(ServerHttpSecurity http, LogoutHandler logoutHandler) {
         var man = new ProviderManager(x509AuthenticationProvider);
         var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
         return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
             .securityMatcher(new AndServerWebExchangeMatcher(
-                ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, "gateway/api/v1/auth/login", "gateway/api/v1/auth/logout")
+                pathMatchers(POST, "gateway/api/v1/auth/login", "gateway/api/v1/auth/logout")
             ))
             .authorizeExchange(exchange ->
-                exchange.matchers(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, "gateway/api/v1/auth/logout")).authenticated()
+                exchange.matchers(pathMatchers(POST, "gateway/api/v1/auth/logout")).authenticated()
             )
             .authorizeExchange(exchange ->
-                exchange.matchers(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, "gateway/api/v1/auth/login")).permitAll()
+                exchange.matchers(pathMatchers(POST, "gateway/api/v1/auth/login")).permitAll()
             )
             .logout(c -> c
                 .logoutUrl("/gateway/api/v1/auth/logout")
@@ -368,7 +372,7 @@ public class WebSecurityConfig {
 
         return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
             .securityMatcher(new AndServerWebExchangeMatcher(
-                ServerWebExchangeMatchers.pathMatchers("gateway/api/v1/auth/query")
+                pathMatchers("gateway/api/v1/auth/query")
             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
@@ -394,7 +398,7 @@ public class WebSecurityConfig {
         var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
         return http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
-            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, "/gateway/api/v1/auth/access-token/generate"))
+            .securityMatcher(pathMatchers(POST, "/gateway/api/v1/auth/access-token/generate"))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
@@ -422,7 +426,7 @@ public class WebSecurityConfig {
         var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
 
         return x509SecurityConfig(http)
-            .securityMatcher(ServerWebExchangeMatchers.pathMatchers("/gateway/api/v1/auth/access-token/revoke/tokens/**"))
+            .securityMatcher(pathMatchers("/gateway/api/v1/auth/access-token/revoke/tokens/**"))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
@@ -444,13 +448,35 @@ public class WebSecurityConfig {
         var reactiveTokenAuthProvider = new ReactiveAuthenticationManagerAdapter(man);
         return x509SecurityConfig(http)
             .securityMatcher(new AndServerWebExchangeMatcher(
-                ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, "gateway/api/v1/auth/refresh")
+                pathMatchers(POST, "gateway/api/v1/auth/refresh")
             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-            .addFilterAfter(new QueryWebFilter(failedAuthenticationWebHandler, HttpMethod.POST, true, reactiveTokenAuthProvider, httpUtils), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new QueryWebFilter(failedAuthenticationWebHandler, POST, true, reactiveTokenAuthProvider, httpUtils), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }
+
+    /**
+     * This security filter chain secures the auth/distribute/** and auth/invalidate/** endpoints
+     * They require only a trusted certificate
+     *
+     * @param http
+     * @return
+     */
+    @Bean
+    SecurityWebFilterChain gatewayInvalidateAndDistribute(ServerHttpSecurity http) {
+        return x509SecurityConfig(http)
+            .securityMatcher(
+                new OrServerWebExchangeMatcher(
+                    pathMatchers(DELETE, "gateway/api/v1/auth/invalidate/**"),
+                    pathMatchers(GET, "gateway/api/v1/auth/distribute/**")
+                )
+            )
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .build();
+    }
+
 
     /**
      * This security filter chain secures the /ticket endpoint
@@ -464,11 +490,11 @@ public class WebSecurityConfig {
         var reactiveTokenAuthProvider = new ReactiveAuthenticationManagerAdapter(man);
         return x509SecurityConfig(http)
             .securityMatcher(new AndServerWebExchangeMatcher(
-                ServerWebExchangeMatchers.pathMatchers("gateway/api/v1/auth/ticket")
+                pathMatchers("gateway/api/v1/auth/ticket")
             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-            .addFilterAfter(new QueryWebFilter(failedAuthenticationWebHandler, HttpMethod.POST, true, reactiveTokenAuthProvider, httpUtils), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new QueryWebFilter(failedAuthenticationWebHandler, POST, true, reactiveTokenAuthProvider, httpUtils), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }
 
@@ -489,7 +515,7 @@ public class WebSecurityConfig {
 
         return x509SecurityConfig(http)
             .securityMatcher(new AndServerWebExchangeMatcher(
-                ServerWebExchangeMatchers.pathMatchers("gateway/auth/check")
+                pathMatchers("gateway/auth/check")
             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
@@ -515,7 +541,7 @@ public class WebSecurityConfig {
     @Bean
     SecurityWebFilterChain gatewayAuthenticatedEndpoints(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         return x509SecurityConfig(http, false)
-            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
+            .securityMatcher(pathMatchers(
                 REGISTRY_PATH,
                 REGISTRY_PATH + "/**",
                 SERVICES_SHORT_URL,
