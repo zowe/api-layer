@@ -81,7 +81,6 @@ class XForwardHeadersProxyTest {
     @MethodSource("authenticationRequestSpecifications")
     void throughCGW_throughGW_noXForwardHeadersProvided_newXForwardHeadersCreated(RequestSpecification requestSpecs) {
         requestSpecs
-            .cookie(COOKIE_NAME, jwt)
             .header(HEADER_X_FORWARD_TO, FORWARD_TO_GATEWAY)
         .when()
             .get(cgwUrl)
@@ -100,7 +99,6 @@ class XForwardHeadersProxyTest {
     @MethodSource("authenticationRequestSpecifications")
     void fromUntrustedProxy_throughCGW_throughGW_xForwardHeadersProvided_untrustedXForwardHeadersNotForwarded(RequestSpecification requestSpecs) {
         requestSpecs
-            .cookie(COOKIE_NAME, jwt)
             .header(HEADER_X_FORWARD_TO, FORWARD_TO_GATEWAY)
             .header("x-forwarded-proto", "http")
             .header("x-forwarded-prefix", "/untrusted-proxy")
@@ -125,7 +123,6 @@ class XForwardHeadersProxyTest {
     @MethodSource("authenticationRequestSpecifications")
     void fromUntrustedProxy_throughGW_xForwardHeadersProvided_untrustedXForwardHeadersNotForwarded(RequestSpecification requestSpecs) {
         requestSpecs
-            .cookie(COOKIE_NAME, jwt)
             .header("x-forwarded-proto", "http")
             .header("x-forwarded-prefix", "/untrusted-proxy")
             .header("x-forwarded-port", "666")
