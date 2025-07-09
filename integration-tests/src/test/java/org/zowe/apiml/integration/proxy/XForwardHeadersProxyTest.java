@@ -11,15 +11,19 @@
 package org.zowe.apiml.integration.proxy;
 
 import io.restassured.RestAssured;
+import io.restassured.specification.RequestSpecification;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.config.*;
 
 import java.net.InetAddress;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.*;
@@ -61,20 +65,27 @@ class XForwardHeadersProxyTest {
         cgwIp = InetAddress.getByName(cgwConf.getHost()).getHostAddress();
         localIp = InetAddress.getLocalHost().getHostAddress();
 
-        log.info("CGW hostname and IP Address: {}: {}", cgwConf.getHost(), Arrays.toString(InetAddress.getAllByName(cgwConf.getHost())));
-        log.info("GW hostname and IP Address: {}: {}", gwConf.getHost(), Arrays.toString(InetAddress.getAllByName(gwConf.getHost())));
-        log.info("Local IP Address: {}", InetAddress.getLocalHost().getHostAddress());
+        log.debug("CGW hostname and IP Address: {}: {}", cgwConf.getHost(), Arrays.toString(InetAddress.getAllByName(cgwConf.getHost())));
+        log.debug("GW hostname and IP Address: {}: {}", gwConf.getHost(), Arrays.toString(InetAddress.getAllByName(gwConf.getHost())));
+        log.debug("Local IP Address: {}", InetAddress.getLocalHost().getHostAddress());
     }
 
-    @Test
-    void throughCGW_throughGW_noXForwardHeadersProvided_newXForwardHeadersCreated() {
-        given().log().all()
+    private static Stream<Arguments> authenticationRequestSpecifications() {
+        return Stream.of(
+            Arguments.of(given().config(SslContext.clientCertValid)),
+            Arguments.of(given().cookie(COOKIE_NAME, jwt))
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("authenticationRequestSpecifications")
+    void throughCGW_throughGW_noXForwardHeadersProvided_newXForwardHeadersCreated(RequestSpecification requestSpecs) {
+        requestSpecs
             .cookie(COOKIE_NAME, jwt)
             .header(HEADER_X_FORWARD_TO, FORWARD_TO_GATEWAY)
         .when()
             .get(cgwUrl)
         .then()
-            .log().all()
             .statusCode(HttpStatus.SC_OK)
             .body("headers.x-forwarded-proto", is("https,https"))
             .body("headers.x-forwarded-prefix", is("/dcpassticket/api/v1"))
@@ -85,9 +96,10 @@ class XForwardHeadersProxyTest {
             .body("headers.x-forwarded-host", containsString(gwConf.getHost()));
     }
 
-    @Test
-    void fromUntrustedProxy_throughCGW_throughGW_xForwardHeadersProvided_untrustedXForwardHeadersNotForwarded() {
-        given().log().all()
+    @ParameterizedTest
+    @MethodSource("authenticationRequestSpecifications")
+    void fromUntrustedProxy_throughCGW_throughGW_xForwardHeadersProvided_untrustedXForwardHeadersNotForwarded(RequestSpecification requestSpecs) {
+        requestSpecs
             .cookie(COOKIE_NAME, jwt)
             .header(HEADER_X_FORWARD_TO, FORWARD_TO_GATEWAY)
             .header("x-forwarded-proto", "http")
@@ -98,7 +110,6 @@ class XForwardHeadersProxyTest {
         .when()
             .get(cgwUrl)
         .then()
-            .log().all()
             .statusCode(HttpStatus.SC_OK)
             .body("headers.x-forwarded-proto", is("https,https"))
             .body("headers.x-forwarded-prefix", is("/dcpassticket/api/v1"))
@@ -110,9 +121,10 @@ class XForwardHeadersProxyTest {
             .body("headers.x-forwarded-host", containsString(gwConf.getHost()));
     }
 
-    @Test
-    void fromUntrustedProxy_throughGW_xForwardHeadersProvided_untrustedXForwardHeadersNotForwarded() {
-        given().log().all()
+    @ParameterizedTest
+    @MethodSource("authenticationRequestSpecifications")
+    void fromUntrustedProxy_throughGW_xForwardHeadersProvided_untrustedXForwardHeadersNotForwarded(RequestSpecification requestSpecs) {
+        requestSpecs
             .cookie(COOKIE_NAME, jwt)
             .header("x-forwarded-proto", "http")
             .header("x-forwarded-prefix", "/untrusted-proxy")
@@ -122,7 +134,6 @@ class XForwardHeadersProxyTest {
         .when()
             .get(gwUrl)
         .then()
-            .log().all()
             .statusCode(HttpStatus.SC_OK)
             .body("headers.x-forwarded-proto", is("https"))
             .body("headers.x-forwarded-prefix", is("/dcpassticket/api/v1"))
