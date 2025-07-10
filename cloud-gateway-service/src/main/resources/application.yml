@@ -27,6 +27,8 @@ spring:
                 registration:
                     okta:
                         redirectUri: "{baseUrl}/cloud-gateway/{action}/oauth2/code/{registrationId}"
+    main:
+        allow-bean-definition-overriding: true
 
 apiml:
     gateway:
