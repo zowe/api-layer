@@ -12,7 +12,7 @@ package org.zowe.apiml.zaas.security.login.dummy;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -32,13 +32,10 @@ import java.util.List;
 @Component
 @Qualifier("dummyService")
 @ConditionalOnProperty(value = "apiml.security.auth.provider", havingValue = "dummy")
+@RequiredArgsConstructor
 public class InMemoryUserDetailsService implements UserDetailsService {
-    private final BCryptPasswordEncoder passwordEncoder;
 
-    @Autowired
-    public InMemoryUserDetailsService(BCryptPasswordEncoder passwordEncoder) {
-        this.passwordEncoder = passwordEncoder;
-    }
+    private final BCryptPasswordEncoder passwordEncoder;
 
     private char[] toCharArray(String i) {
         if (i == null) return new char[0];
@@ -75,9 +72,11 @@ public class InMemoryUserDetailsService implements UserDetailsService {
     @Data
     @AllArgsConstructor
     private static class AppUser {
+
         private Integer id;
         private String username;
         private char[] password;
 
     }
+
 }

@@ -42,7 +42,6 @@ import static org.hamcrest.core.IsNot.not;
  * <p>
  * Also verify that the invalid credentials will be properly rejected.
  *
- * FIXME No integration test sets up anything other than z/OSMF provider
  */
 @SAFAuthTest
 @Tag("SAFProviderTest")
@@ -55,8 +54,10 @@ class SafLoginTest implements TestWithStartedInstances {
 
     @Nested
     class WhenUserAuthenticatesTwice {
+
         @Nested
         class ReturnTwoDifferentValidTokens {
+
             @ParameterizedTest(name = "givenValidCredentialsInBody {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenValidCredentialsInBody(URI loginUrl) {
@@ -65,7 +66,9 @@ class SafLoginTest implements TestWithStartedInstances {
 
                 assertThat(jwtToken1, is(not(jwtToken2)));
             }
+
         }
+
     }
 
     @Nested

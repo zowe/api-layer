@@ -19,11 +19,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.Credentials;
 import org.zowe.apiml.util.config.DiscoverableClientConfiguration;
+import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -44,6 +48,7 @@ public class ApiMediationLayerStartupChecker {
 
     private final GatewayServiceConfiguration gatewayConfiguration;
     private final DiscoverableClientConfiguration discoverableClientConfiguration;
+    private final DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private final Credentials credentials;
     private final List<Service> servicesToCheck = new ArrayList<>();
     private final String healthEndpoint = "/application/health";
@@ -53,6 +58,7 @@ public class ApiMediationLayerStartupChecker {
         gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         credentials = ConfigReader.environmentConfiguration().getCredentials();
         discoverableClientConfiguration = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration();
+        discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
 
         servicesToCheck.add(new Service("Gateway", "$.status"));
         if (!IS_MODULITH_ENABLED) {
@@ -128,6 +134,7 @@ public class ApiMediationLayerStartupChecker {
             log.debug("There are {} gateways", amountOfActiveGateways);
             if (!isValidAmountOfGatewaysUp) {
                 log.debug("Expecting at least {} gateways", gatewayConfiguration.getInstances());
+                callEurekaApps();
                 return false;
             }
             // Consider properly the case with multiple gateway services running on different ports.
@@ -140,15 +147,36 @@ public class ApiMediationLayerStartupChecker {
                     requestToGateway.addHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes()));
                     var response = HttpClientUtils.client().execute(requestToGateway);
                     if (response.getStatusLine().getStatusCode() != 200) {
+                        log.debug("Response from gateway at {} was: {}", requestToGateway.getURI(), response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : "undefined");
                         throw new IOException();
                     }
                 }
             }
 
-            return areAllServicesUp && isTestApplicationUp;
+            var result = areAllServicesUp && isTestApplicationUp;
+            if (!result) {
+                log.debug("API ML is not ready, check which services are missing in the above messages");
+            }
+            return result;
         } catch (PathNotFoundException | IOException e) {
             log.warn("Check failed on retrieving the information from document: {}", e.getMessage());
             return false;
+        }
+    }
+
+    private void callEurekaApps() {
+        HttpGet requestToEurekaApps = new HttpGet(HttpRequestUtils.getUriFromService(discoveryServiceConfiguration, "/eureka/apps"));
+        CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build();
+        try (client) {
+            var response = client.execute(requestToEurekaApps);
+            var entity = response.getEntity();
+            if (entity != null) {
+                log.debug("eureka/apps: {}", EntityUtils.toString(entity));
+            } else {
+                log.debug("eureka/apps entity is null");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

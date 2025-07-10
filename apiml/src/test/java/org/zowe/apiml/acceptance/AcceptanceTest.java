@@ -19,6 +19,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.result.view.freemarker.FreeMarkerConfigurer;
 import org.zowe.apiml.ApimlApplication;
+import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -27,15 +28,23 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@ComponentScan(basePackages = "org.zowe.apiml", excludeFilters = {
-    @ComponentScan.Filter(
-        type = FilterType.REGEX,
-        pattern = ".*Application"
-    ),
-    @ComponentScan.Filter(
-        type = FilterType.ASSIGNABLE_TYPE,
-        classes = EurekaController.class
-    )})
+@ComponentScan(
+    basePackages = "org.zowe.apiml",
+    excludeFilters = {
+        @ComponentScan.Filter(
+            type = FilterType.REGEX,
+            pattern = ".*Application"
+        ),
+        @ComponentScan.Filter(
+            type = FilterType.ASSIGNABLE_TYPE,
+            classes = EurekaController.class
+        ),
+        @ComponentScan.Filter(
+            type = FilterType.ASSIGNABLE_TYPE,
+            value = GatewayHealthIndicator.class
+        )
+    }
+)
 @SpringBootTest(classes = {
         ApimlApplication.class,
         FreeMarkerConfigurer.class,

@@ -12,6 +12,7 @@ package org.zowe.apiml.integration.ha;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.HATest;
 import org.zowe.apiml.util.requests.Apps;
@@ -28,6 +29,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  */
 @HATest
 class EurekaReplicationTest implements TestWithStartedInstances {
+
     private HADiscoveryRequests haDiscoveryRequests = new HADiscoveryRequests();
 
     /**
@@ -35,9 +37,16 @@ class EurekaReplicationTest implements TestWithStartedInstances {
      */
     @Nested
     class GivenMultipleEurekaInstances {
+
         @Nested
         class WhenLookingForEurekas {
+
             @Test
+            @DisabledIfSystemProperty(
+                disabledReason = "In Modulith, Discovery Service is only one in each API ML instance",
+                named = "environment.modulith",
+                matches = "true"
+            )
             void eurekaReplicasAreVisible() {
                 assumeTrue(haDiscoveryRequests.existing() > 1);
 
@@ -45,7 +54,11 @@ class EurekaReplicationTest implements TestWithStartedInstances {
                 for (Integer registeredToInstance : instances) {
                     assertThat(registeredToInstance, is(haDiscoveryRequests.existing()));
                 }
+
             }
+
         }
+
     }
+
 }
