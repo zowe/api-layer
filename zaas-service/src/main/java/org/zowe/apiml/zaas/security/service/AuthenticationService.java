@@ -318,11 +318,13 @@ public class AuthenticationService {
             default:
                 throw new TokenNotValidException("Unknown token type.");
         }
-
+        if(!isValid){
+            throw new TokenNotValidException("Token is not valid.");
+        }
         TokenAuthentication tokenAuthentication = new TokenAuthentication(queryResponse.getUserId(), jwtToken, TokenAuthentication.Type.JWT);
         // without a proxy cache aspect is not working, thus it is necessary get bean from application context
         final boolean authenticated = !meAsProxy.isInvalidated(jwtToken);
-        tokenAuthentication.setAuthenticated(authenticated && isValid);
+        tokenAuthentication.setAuthenticated(authenticated);
 
         return tokenAuthentication;
     }
