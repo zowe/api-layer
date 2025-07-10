@@ -1818,16 +1818,7 @@ jobs:
             apiml:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
-                    APIML_SECURITY_X509_ENABLED: true
-                    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
-                    SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
-                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
-                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka
                     APIML_SERVICE_HOSTNAME: apiml
                     SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
                     SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
@@ -1839,38 +1830,22 @@ jobs:
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_JWKSETURI: ${{ secrets.OKTA_JWKSET_URI }}
                     APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
                     APIML_HEALTH_PROTECTED: false
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
+                    logbackService: ZWEAGW1
             apiml-2:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
-                    APIML_SECURITY_X509_ENABLED: true
-                    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
-                    SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
-                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
-                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:10011/eureka
                     APIML_SERVICE_HOSTNAME: apiml-2
                     APIML_SERVICE_APIMLID: apiml2
-                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_ISSUER: ${{ secrets.OKTA_ISSUER }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_AUTHORIZATIONURI: ${{ secrets.OKTA_AUTH_URI }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_TOKENURI: ${{ secrets.OKTA_TOKEN_URI }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_USERINFOURI: ${{ secrets.OKTA_USER_INFO_URI }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_USERNAMEATTRIBUTE: sub
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_JWKSETURI: ${{ secrets.OKTA_JWKSET_URI }}
-                    APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
                     APIML_HEALTH_PROTECTED: false
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
+                    logbackService: ZWEAGW2
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://apiml-2:10010/gateway/certificates
+
         steps:
             -   uses: actions/checkout@v4
                 with:
