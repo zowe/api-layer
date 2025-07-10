@@ -47,7 +47,6 @@ class ZaasSchemeTransformApiTest {
     AuthSource authSource;
     private final MessageService messageService = new YamlMessageService("/apiml-log-messages.yml");
 
-    private final String INVALID_AUTH_MSG = "ZWEAO402E The request has not been applied because it lacks valid authentication credentials.";
     private final String MISSING_AUTH_MSG = "ZWEAG160E No authentication provided in the request";
 
     @BeforeEach
@@ -134,7 +133,7 @@ class ZaasSchemeTransformApiTest {
                 when(authSourceService.isValid(authSource)).thenReturn(false);
 
                 StepVerifier.create(transformApi.passticket(credentials)).assertNext(result -> {
-                    assertEquals(INVALID_AUTH_MSG, result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
+                    assertEquals(MISSING_AUTH_MSG, result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
                     assertNull(result.getBody());
                 }).verifyComplete();
             }
@@ -214,7 +213,7 @@ class ZaasSchemeTransformApiTest {
                 when(authSourceService.isValid(authSource)).thenReturn(false);
 
                 StepVerifier.create(transformApi.safIdt(credentials)).assertNext(result -> {
-                    assertEquals(INVALID_AUTH_MSG, result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
+                    assertEquals(MISSING_AUTH_MSG, result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
                     assertNull(result.getBody());
                 }).verifyComplete();
             }
@@ -268,7 +267,7 @@ class ZaasSchemeTransformApiTest {
                 when(authSourceService.getJWT(authSource)).thenThrow(new RuntimeException("boom"));
 
                 StepVerifier.create(transformApi.zoweJwt(credentials)).assertNext(result -> {
-                    assertEquals(INVALID_AUTH_MSG, result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
+                    assertEquals(MISSING_AUTH_MSG, result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
                     assertNull(result.getBody());
                 }).verifyComplete();
             }

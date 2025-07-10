@@ -121,7 +121,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             }
             updateServiceId(authSource, request);
             if (!authSourceService.isValid(authSource.get())) {
-                return createInvalidAuthenticationErrorMessage();
+                return createMissingAuthenticationErrorMessage();
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
@@ -160,7 +160,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             }
             updateServiceId(authSource, request);
             if (!authSourceService.isValid(authSource.get())) {
-                return createInvalidAuthenticationErrorMessage();
+                return createMissingAuthenticationErrorMessage();
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
@@ -183,7 +183,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             }
             updateServiceId(authSource, request);
             if (!authSourceService.isValid(authSource.get())) {
-                return createInvalidAuthenticationErrorMessage();
+                return createMissingAuthenticationErrorMessage();
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
@@ -205,14 +205,14 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             }
             updateServiceId(authSource, request);
             if (!authSourceService.isValid(authSource.get())) {
-                return createInvalidAuthenticationErrorMessage();
+                return createMissingAuthenticationErrorMessage();
             }
             var token = authSourceService.getJWT(authSource.get());
             var response = ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME).token(token).build();
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot obtain Zowe JWT token", e);
-            return createInvalidAuthenticationErrorMessage();
+            return createMissingAuthenticationErrorMessage();
         }
     }
 
