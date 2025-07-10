@@ -30,6 +30,8 @@ import org.zowe.apiml.security.common.error.AccessTokenMissingBodyException;
 import org.zowe.apiml.security.common.error.ZosAuthenticationException;
 import reactor.core.publisher.Mono;
 
+import java.util.Optional;
+
 import static org.apache.http.HttpStatus.*;
 
 @Slf4j
@@ -103,7 +105,7 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
     @ExceptionHandler(ZosAuthenticationException.class)
     public Mono<Void> handleZosAuthenticationException(ServerWebExchange exchange, ZosAuthenticationException ex) {
         log.debug("Zos Authentication Exception: {}", ex.getMessage());
-        return setBodyResponse(exchange, ex.getPlatformError().responseCode.value(), ex.getPlatformError().errorMessage, ex.getMessage());
+        return setBodyResponse(exchange, ex.getPlatformError().responseCode.value(), Optional.ofNullable(ex.getPlatformError()).map(e -> e.errorMessage).orElse(null), ex.getMessage());
     }
 
 }

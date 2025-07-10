@@ -30,7 +30,7 @@ apiml:
         storage:
             location: /tmp
     service:
-        discoveryServiceUrls: https://localhost:10011/eureka,https://usilca32.lvn.broadcom.net:10661/eureka
+        discoveryServiceUrls: https://localhost:10011/eureka,https://localhost:10021/eureka
     internal-discovery:
         port: 10011
     health:

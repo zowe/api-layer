@@ -50,7 +50,7 @@ public class StaticServicesRegistrationService {
     /**
      * Lists information about registered static service instances.
      */
-    public List<InstanceInfo> getStaticInstances() { // TODO Get the static instances, plus gateway and send regular heartbeats, how often, what's the default?
+    public List<InstanceInfo> getStaticInstances() {
         return staticInstances;
     }
 

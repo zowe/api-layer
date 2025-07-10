@@ -63,7 +63,7 @@ describe('>>> Dashboard test', () => {
     it('should keep session persistent by navigating to dashboard if valid token is provided', () => {
         const requestBody = {
             username: Cypress.env('username'),
-            password: Cypress.env('password')
+            password: Cypress.env('password'),
         };
 
         cy.request({
@@ -92,5 +92,4 @@ describe('>>> Dashboard test', () => {
             cy.contains('The service is running').should('exist');
         });
     });
-
 });
