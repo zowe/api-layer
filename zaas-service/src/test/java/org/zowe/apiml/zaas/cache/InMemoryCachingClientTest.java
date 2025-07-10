@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.security.HttpsConfig;
 
 import java.util.Map;
 
@@ -27,13 +28,14 @@ class InMemoryCachingClientTest {
 
     private Storage storage;
     private LocalCachingClient cachingClient;
+    private HttpsConfig httpsConfig;
 
     /**
      * Subclass that overrides getServiceId() to avoid certificate initialization.
      */
     static class TestLocalCachingClient extends LocalCachingClient {
-        TestLocalCachingClient(Storage storage) {
-            super(storage);
+        TestLocalCachingClient(Storage storage, HttpsConfig httpsConfig) {
+            super(storage, httpsConfig);
         }
 
         @Override
@@ -45,7 +47,8 @@ class InMemoryCachingClientTest {
     @BeforeEach
     void setUp() {
         storage = mock(Storage.class);
-        cachingClient = new TestLocalCachingClient(storage);
+        httpsConfig = mock(HttpsConfig.class);
+        cachingClient = new TestLocalCachingClient(storage, httpsConfig);
     }
 
     @Test

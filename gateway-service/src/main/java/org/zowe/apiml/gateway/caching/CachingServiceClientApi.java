@@ -15,12 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.cache.Storage;
-import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.model.KeyValue;
 import reactor.core.publisher.Mono;
 
 import static reactor.core.publisher.Mono.empty;
-import static reactor.core.publisher.Mono.error;
 
 /**
  * {@code CachingServiceClientApi} is the internal implementation of {@link CachingServiceClient}

@@ -44,6 +44,7 @@ import org.zowe.apiml.cache.CompositeKeyGenerator;
 import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.zaas.cache.CachingClient;
@@ -209,8 +210,8 @@ public class CacheConfig {
 
     @Bean
     @ConditionalOnMissingBean
-    public CachingClient cachingClient(Storage storage) {
-        return new LocalCachingClient(storage);
+    public CachingClient cachingClient(Storage storage, HttpsConfig httpsConfig) {
+        return new LocalCachingClient(storage, httpsConfig);
     }
 
 }

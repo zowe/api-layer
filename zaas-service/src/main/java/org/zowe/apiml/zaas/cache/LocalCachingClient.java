@@ -10,44 +10,19 @@
 
 package org.zowe.apiml.zaas.cache;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.caching.model.KeyValue;
-import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.HttpsConfig;
 
-import java.io.IOException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.Map;
 
 @RequiredArgsConstructor
 public class LocalCachingClient implements CachingClient {
-    @Value("${server.ssl.keyAlias:#{null}}")
-    private String keyAlias;
-
-    @Value("${server.ssl.keyStore:#{null}}")
-    private String keyStorePath;
-
-    @Value("${server.ssl.keyStorePassword:#{null}}")
-    private char[] keyStorePassword;
-
-    @Value("${server.ssl.keyStoreType:PKCS12}")
-    private String keyStoreType;
 
     private final Storage storage;
 
-    private X509Certificate certificate;
-
-    @PostConstruct
-    void setup() throws KeyStoreException, NoSuchAlgorithmException, IOException, CertificateException {
-        KeyStore keyStore = SecurityUtils.loadKeyStore(keyStoreType, keyStorePath, keyStorePassword);
-        certificate = (X509Certificate) keyStore.getCertificate(keyAlias);
-    }
+    private final HttpsConfig httpsConfig;
 
     @Override
     public void create(CachingServiceClient.KeyValue kv) {
@@ -100,6 +75,6 @@ public class LocalCachingClient implements CachingClient {
     }
 
     String getServiceId() {
-        return certificate.getSubjectX500Principal().getName();
+        return httpsConfig.getCertificate().getSubjectX500Principal().getName();
     }
 }

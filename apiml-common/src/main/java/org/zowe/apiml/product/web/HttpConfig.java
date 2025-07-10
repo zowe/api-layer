@@ -26,15 +26,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.security.ApimlPoolingHttpClientConnectionManager;
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.HttpsFactory;
-import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.*;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -128,6 +125,8 @@ public class HttpConfig {
         updateStorePaths();
 
         try {
+            KeyStore ks = SecurityUtils.loadKeyStore(keyStoreType, keyStore, keyStorePassword);
+            var certificate = (X509Certificate) ks.getCertificate(keyAlias);
             Supplier<HttpsConfig.HttpsConfigBuilder> httpsConfigSupplier = () ->
                 HttpsConfig.builder()
                     .protocol(protocol).enabledProtocols(supportedProtocols).cipherSuite(ciphers)
@@ -141,7 +140,7 @@ public class HttpConfig {
 
             httpsConfig = httpsConfigSupplier.get()
                 .keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
-                .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType)
+                .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).certificate(certificate)
                 .build();
 
             HttpsConfig httpsConfigWithoutKeystore = httpsConfigSupplier.get().build();
@@ -197,6 +196,11 @@ public class HttpConfig {
     @Bean
     public Set<String> publicKeyCertificatesBase64() {
         return publicKeyCertificatesBase64;
+    }
+
+    @Bean
+    public HttpsConfig httpsConfig() {
+        return httpsConfig;
     }
 
     /**
