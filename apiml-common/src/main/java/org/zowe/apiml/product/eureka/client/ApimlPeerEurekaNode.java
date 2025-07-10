@@ -299,16 +299,6 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
     }
 
     /**
-     * Get the service Url of the peer eureka node.
-     *
-     * @return the service Url of the peer eureka node.
-     */
-    @Override
-    public String getServiceUrl() {
-        return serviceUrl;
-    }
-
-    /**
      * Shuts down all resources used for peer replication.
      */
     @Override

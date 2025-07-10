@@ -151,7 +151,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
                     .when()
                     .get(URL)
                     .then()
-                    .header("x-zowe-auth-failure", is("ZWEAO402E The request has not been applied because it lacks valid authentication credentials."))
+                    .header("x-zowe-auth-failure", is("ZWEAG160E No authentication provided in the request"))
                     .statusCode(200);
             }
         }
