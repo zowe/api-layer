@@ -7,6 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
+/* eslint-disable no-undef */
+
 /// <reference types="Cypress" />
 
 // api-diff-form is now a floating window.

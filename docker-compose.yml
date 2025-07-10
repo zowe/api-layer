@@ -8,6 +8,8 @@ services:
       - "10010:10010" # External access
       - "10011:10011" # External access
       - "5130:5130" # For Java remote debugging
+    volumes:
+      - /Users/pc891986/Projects/api-layer-v3/config/docker/api-defs:/api-defs
     networks:
       - apiml_net
       - apiml_shared
@@ -16,7 +18,7 @@ services:
       - APIML_SECURITY_AUTH_PROVIDER=saf
       - APIML_SERVICE_HOSTNAME=apiml
       - APIML_DISCOVERY_ALLPEERSURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
-      - logbackService=ZWEAGW
+      - logbackService=ZWEAGW1
       #- LOGGING_LEVEL_COM_NETFLIX_EUREKA=DEBUG
       #- LOGGING_LEVEL_COM_NETFLIX_EUREKA_DISCOVERYCLIENT=DEBUG
       # - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
@@ -41,19 +43,23 @@ services:
     image: ghcr.io/zowe/api-catalog-services:latest
     networks:
       - apiml_net
+      - apiml_shared
     container_name: api-catalog-services
+    volumes:
+      - /Users/pc891986/Projects/api-layer-v3/config/docker/api-defs:/api-defs
     environment:
       - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
       - APIML_SERVICE_HOSTNAME=api-catalog-services
-  api-catalog-services-2:
-    image: ghcr.io/zowe/api-catalog-services:latest
-    networks:
-      - apiml2_net
-    container_name: api-catalog-services-2
-    environment:
-      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
-      - APIML_SERVICE_HOSTNAME=api-catalog-services-2
-      - APIML_HEALTH_PROTECTED=false
+#   api-catalog-services-2:
+#     image: ghcr.io/zowe/api-catalog-services:latest
+#     networks:
+#       - apiml2_net
+#       - apiml_shared
+#     container_name: api-catalog-services-2
+#     environment:
+#       - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
+#       - APIML_SERVICE_HOSTNAME=api-catalog-services-2
+#       - APIML_HEALTH_PROTECTED=false
 
   apiml-2:
     image: ghcr.io/zowe/apiml:latest
@@ -64,6 +70,8 @@ services:
     networks:
       - apiml2_net
       - apiml_shared
+    volumes:
+      - /Users/pc891986/Projects/api-layer-v3/config/docker/api-defs:/api-defs
     container_name: apiml-2
     environment:
       - APIML_SECURITY_AUTH_PROVIDER=saf
@@ -88,6 +96,14 @@ services:
     container_name: caching-service-2
     environment:
       - APIML_SERVICE_HOSTNAME=caching-service-2
+      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
+  mock-services:
+    image: ghcr.io/zowe/mock-services:latest
+    networks:
+      - apiml_net
+    container_name: mock-services
+    environment:
+      - APIML_SERVICE_HOSTNAME=mock-services
       - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
 networks:
   apiml_net:

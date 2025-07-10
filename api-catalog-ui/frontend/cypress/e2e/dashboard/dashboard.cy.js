@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-/* eslint-disable spaced-comment */
+/* eslint-disable no-undef */
 /// <reference types="Cypress" />
 
 describe('>>> Dashboard test', () => {
@@ -74,8 +74,11 @@ describe('>>> Dashboard test', () => {
             expect(resp.status).to.eq(204);
             expect(resp.headers).to.have.property('set-cookie');
 
-            const rawCookie = resp.headers['set-cookie'].find(cookie => cookie.startsWith('apimlAuthenticationToken='));
-            expect(rawCookie).to.exist;
+            const rawCookie = resp.headers['set-cookie'].find((cookie) =>
+                cookie.startsWith('apimlAuthenticationToken=')
+            );
+            // eslint-disable-next-line no-unused-expressions
+            expect(rawCookie).to.not.be.empty;
 
             const cookieValue = rawCookie.split(';')[0].split('=')[1];
 
