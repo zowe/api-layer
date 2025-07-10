@@ -64,7 +64,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
             Arguments.of("validJwt", SC_OK, Matchers.blankOrNullString()),
             Arguments.of("noSignJwt", SC_OK, startsWith("ZWEAO402E")),
             Arguments.of("publicKeySignedJwt", SC_OK, startsWith("ZWEAO402E")),
-            Arguments.of("changedRealmJwt", SC_OK, startsWith("Unknown token issued by: ThirdParty")),
+            Arguments.of("changedRealmJwt", SC_OK, startsWith("ZWEAO402E")),
             Arguments.of("changedUserJwt", SC_OK, startsWith("ZWEAO402E")),
             Arguments.of("personalAccessToken", SC_OK, Matchers.blankOrNullString())
         );

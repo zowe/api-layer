@@ -306,19 +306,15 @@ public class AuthenticationService {
     @Cacheable(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken", condition = "#jwtToken != null")
     public TokenAuthentication validateJwtToken(String jwtToken) {
         QueryResponse queryResponse = parseJwtToken(jwtToken);
-        boolean isValid;
-        switch (queryResponse.getSource()) {
-            case ZOWE:
+        boolean isValid = switch (queryResponse.getSource()) {
+            case ZOWE -> {
                 validateAndParseLocalJwtToken(jwtToken);
-                isValid = true;
-                break;
-            case ZOSMF:
-                isValid = zosmfService.validate(jwtToken);
-                break;
-            default:
-                throw new TokenNotValidException("Unknown token type.");
-        }
-        if(!isValid){
+                yield true;
+            }
+            case ZOSMF -> zosmfService.validate(jwtToken);
+            default -> throw new TokenNotValidException("Unknown token type.");
+        };
+        if (!isValid) {
             throw new TokenNotValidException("Token is not valid.");
         }
         TokenAuthentication tokenAuthentication = new TokenAuthentication(queryResponse.getUserId(), jwtToken, TokenAuthentication.Type.JWT);
