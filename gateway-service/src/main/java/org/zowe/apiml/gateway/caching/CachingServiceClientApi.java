@@ -43,50 +43,38 @@ public class CachingServiceClientApi implements CachingServiceClient {
 
     @Override
     public Mono<Void> create(ApiKeyValue keyValue) {
-        try {
-            String serviceId = extractServiceId(keyValue.getKey());
-            storage.create(serviceId, mapToApiKeyValue(keyValue));
-            return empty();
-        } catch (StorageException e) {
-            return error(e);
-        }
+        String serviceId = extractServiceId(keyValue.getKey());
+        storage.create(serviceId, mapToApiKeyValue(keyValue));
+        return empty();
     }
 
     @Override
     public Mono<Void> update(ApiKeyValue keyValue) {
-        try {
-            String serviceId = extractServiceId(keyValue.getKey());
-            storage.update(serviceId, mapToApiKeyValue(keyValue));
-            return empty();
-        } catch (StorageException e) {
-            return error(e);
-        }
+        String serviceId = extractServiceId(keyValue.getKey());
+        storage.update(serviceId, mapToApiKeyValue(keyValue));
+        return empty();
     }
 
     @Override
     public Mono<ApiKeyValue> read(String key) {
-        try {
-            String serviceId = extractServiceId(key);
-            KeyValue stored = storage.read(serviceId, key);
-            if (stored != null) {
-                return Mono.just(new ApiKeyValue(stored.getKey(), stored.getValue()));
-            } else {
-                return empty();
-            }
-        } catch (StorageException e) {
-            return error(e);
+
+        String serviceId = extractServiceId(key);
+        KeyValue stored = storage.read(serviceId, key);
+        if (stored != null) {
+            return Mono.just(new ApiKeyValue(stored.getKey(), stored.getValue()));
+        } else {
+            return empty();
         }
+
     }
 
     @Override
     public Mono<Void> delete(String key) {
-        try {
-            String serviceId = extractServiceId(key);
-            storage.delete(serviceId, key);
-            return empty();
-        } catch (StorageException e) {
-            return error(e);
-        }
+
+        String serviceId = extractServiceId(key);
+        storage.delete(serviceId, key);
+        return empty();
+
     }
 
     private KeyValue mapToApiKeyValue(ApiKeyValue apiValue) {
