@@ -14,6 +14,8 @@ import org.springframework.context.ApplicationEvent;
 
 public class ZaasServiceAvailableEvent extends ApplicationEvent {
 
+    private static final long serialVersionUID = -9115429019604153949L;
+
     public ZaasServiceAvailableEvent(Object source) {
         super(source);
     }

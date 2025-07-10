@@ -176,7 +176,7 @@ public class ApiMediationLayerStartupChecker {
                 log.debug("eureka/apps entity is null");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Cannot call Eureka apps", e);
         }
     }
 
