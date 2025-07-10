@@ -11,10 +11,12 @@
 package org.zowe.apiml.apicatalog.swagger.api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import jakarta.validation.UnexpectedTypeException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -22,9 +24,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.zowe.apiml.product.gateway.GatewayClient;
 
-import jakarta.validation.UnexpectedTypeException;
-
 import java.io.IOException;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Configuration
@@ -43,7 +44,14 @@ public class ApiTransformationConfig {
     @Bean
     @Scope(value = "prototype")
     public AbstractApiDocService<?, ?> abstractApiDocService(String content) {
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
+        JsonFactory jsonFactory;
+        if (Optional.ofNullable(content).map(String::trim).map(c -> c.startsWith("{")).orElse(false)) {
+            jsonFactory = new JsonFactory();
+        } else {
+            jsonFactory = new YAMLFactory();
+        }
+
+        ObjectMapper mapper = new ObjectMapper(jsonFactory)
             .setSerializationInclusion(JsonInclude.Include.NON_NULL);
         try {
             ObjectNode objectNode = mapper.readValue(content, ObjectNode.class);
@@ -58,7 +66,7 @@ public class ApiTransformationConfig {
             }
         } catch (IOException e) {
             log.debug("Could not convert response body to a Swagger/OpenAPI object.", e);
-            throw new UnexpectedTypeException("Response is not a Swagger or OpenAPI type object.");
+            throw new UnexpectedTypeException("Response is not a Swagger or OpenAPI type object.", e);
         }
 
         return null;
