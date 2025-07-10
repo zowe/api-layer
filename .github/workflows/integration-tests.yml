@@ -158,10 +158,6 @@ jobs:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -473,9 +469,6 @@ jobs:
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
                     APIML_SECURITY_AUTH_PROVIDER: saf
                     APIML_SERVICE_HOSTNAME: zaas-service-2
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-
         steps:
             -   uses: actions/checkout@v4
                 with:
