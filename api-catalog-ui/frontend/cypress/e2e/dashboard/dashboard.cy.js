@@ -10,6 +10,8 @@
 /* eslint-disable no-undef */
 /// <reference types="Cypress" />
 
+const isModulith = Cypress.env('modulith');
+
 describe('>>> Dashboard test', () => {
     it('dashboard test', () => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
@@ -46,7 +48,12 @@ describe('>>> Dashboard test', () => {
 
         cy.get('#search > div > div > input').as('search').type('API Gateway');
 
-        cy.get('.grid-tile').should('have.length', 2);
+        let expectedGatewaysCount = 2;
+        if (isModulith) {
+            expectedGatewaysCount = 1;
+        }
+
+        cy.get('.grid-tile').should('have.length', expectedGatewaysCount); // FIXME modulith does not support multitenancy yet
 
         cy.get('.clear-text-search').click();
 
