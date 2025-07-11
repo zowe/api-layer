@@ -68,7 +68,6 @@ public class CachingServiceClientApi implements CachingServiceClient {
 
     @Override
     public Mono<Void> delete(String key) {
-
         String serviceId = extractServiceId(key);
         storage.delete(serviceId, key);
         return empty();

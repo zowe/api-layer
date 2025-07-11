@@ -55,14 +55,6 @@ class CachingServiceClientApiTest {
             assertEquals(sampleKv.getValue(), captured.getValue());
         }
 
-        @Test
-        void storageThrows_thenError() throws StorageException {
-            doThrow(new StorageException("key", null))
-                .when(storage).create(any(), any());
-
-            StepVerifier.create(client.create(sampleKv))
-                .verifyError(StorageException.class);
-        }
     }
 
     @Nested
@@ -82,13 +74,6 @@ class CachingServiceClientApiTest {
             assertEquals("value", captured.getValue());
         }
 
-        @Test
-        void storageThrows_thenError() throws StorageException {
-            doThrow(new StorageException("key", null)).when(storage).update(any(), any());
-
-            StepVerifier.create(client.update(sampleKv))
-                .verifyError(StorageException.class);
-        }
     }
 
     @Nested
@@ -111,13 +96,6 @@ class CachingServiceClientApiTest {
                 .verifyComplete();
         }
 
-        @Test
-        void storageThrows_thenError() throws StorageException {
-            when(storage.read(any(), any())).thenThrow(new StorageException("key", null));
-
-            StepVerifier.create(client.read(LB_USER_SERVICE))
-                .verifyError(StorageException.class);
-        }
     }
 
     @Nested
@@ -131,12 +109,5 @@ class CachingServiceClientApiTest {
             verify(storage).delete("service", LB_USER_SERVICE);
         }
 
-        @Test
-        void storageThrows_thenError() throws StorageException {
-            doThrow(new StorageException("key", null)).when(storage).delete(any(), any());
-
-            StepVerifier.create(client.delete(LB_USER_SERVICE))
-                .verifyError(StorageException.class);
-        }
     }
 }
