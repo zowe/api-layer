@@ -1587,7 +1587,7 @@ jobs:
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
-                    name: CITestsChaoticHA-${{ env.JOB_ID }}-${{ matrix.type }}
+                    name: CITestsHA-${{ env.JOB_ID }}-${{ matrix.type }}
                     path: |
                         integration-tests/build/reports/**
 
