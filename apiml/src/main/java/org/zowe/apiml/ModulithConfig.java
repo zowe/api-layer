@@ -26,6 +26,7 @@ import org.apache.catalina.Host;
 import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
@@ -38,6 +39,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.TomcatHttpHandlerAdapter;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -147,12 +149,14 @@ public class ModulithConfig {
         EurekaServerContextHolder.initialize(applicationContext.getBean(EurekaServerContext.class));
     }
 
-
-    @Scheduled(fixedRate = 20_000) // TODO find better solution but DON'T JUST REMOVE!
-    public void onApplicationEvent() {
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationStart() {
         ApimlInstanceRegistry registry = getRegistry();
         instances.forEach((key, value) -> registry.registerStatically(instances.get(key), CoreService.GATEWAY.getServiceId().equals(key)));
+    }
 
+    @Scheduled(initialDelay = 3000, fixedRate = 20_000) // TODO find better solution but DON'T JUST REMOVE!
+    public void periodicJwtInit() {
         var jwtSec = applicationContext.getBean(JwtSecurity.class);
         if (!jwtSec.getZosmfListener().isZosmfReady()) {
             jwtSec.getZosmfListener().getZosmfRegisteredListener().onEvent(new CacheRefreshedEvent());
