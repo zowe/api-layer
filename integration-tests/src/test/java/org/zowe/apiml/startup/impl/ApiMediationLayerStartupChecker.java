@@ -46,13 +46,15 @@ import static org.awaitility.Awaitility.await;
 @Slf4j
 public class ApiMediationLayerStartupChecker {
 
+    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
+
     private final GatewayServiceConfiguration gatewayConfiguration;
     private final DiscoverableClientConfiguration discoverableClientConfiguration;
     private final DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private final Credentials credentials;
     private final List<Service> servicesToCheck = new ArrayList<>();
     private final String healthEndpoint = "/application/health";
-    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
+
 
     public ApiMediationLayerStartupChecker() {
         gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
@@ -129,8 +131,10 @@ public class ApiMediationLayerStartupChecker {
 
 
             Integer amountOfActiveGateways = context.read("$.components.gateway.details.gatewayCount");
+            var expectedGatewayCount = Integer.getInteger("environment.gwCount", gatewayConfiguration.getInstances());
+
             boolean isValidAmountOfGatewaysUp = amountOfActiveGateways != null &&
-                amountOfActiveGateways >= gatewayConfiguration.getInstances();
+                amountOfActiveGateways >= expectedGatewayCount;
             log.debug("There are {} gateways", amountOfActiveGateways);
             if (!isValidAmountOfGatewaysUp) {
                 log.debug("Expecting at least {} gateways", gatewayConfiguration.getInstances());
