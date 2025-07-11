@@ -22,7 +22,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.apicatalog.controllers.handlers.CatalogApiDocControllerExceptionHandler;
 import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
-import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
+import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
@@ -42,11 +42,11 @@ class ApiDocControllerServiceNotFoundTest {
     private WebTestClient webTestClient;
 
     @MockitoBean
-    private ApiDocRetrievalService apiServiceStatusService;
+    private ApiDocService apiDocService;
 
     @BeforeAll
     void initApiDocRetrievalService() {
-        when(apiServiceStatusService.retrieveApiDoc("service1", "v1"))
+        when(apiDocService.retrieveApiDoc("service1", "v1"))
             .thenThrow(new ServiceNotFoundException("API Documentation not retrieved, The service is running."));
     }
 

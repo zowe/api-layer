@@ -14,6 +14,7 @@ import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.HttpStatus;
@@ -43,12 +44,11 @@ public class ApiDocRetrievalServiceRest {
     @Qualifier("secureHttpClientWithoutKeystore")
     private final CloseableHttpClient secureHttpClientWithoutKeystore;
 
-
     @InjectApimlLogger
     private ApimlLogger apimlLogger = ApimlLogger.empty();
 
     public ApiDocInfo retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
-        String serviceId = instanceInfo.getAppName();
+        String serviceId = StringUtils.lowerCase(instanceInfo.getAppName());
         log.debug("Retrieving API doc for '{} {}'", serviceId, apiInfo.getVersion());
 
         String apiDocUrl = apiInfo.getSwaggerUrl();

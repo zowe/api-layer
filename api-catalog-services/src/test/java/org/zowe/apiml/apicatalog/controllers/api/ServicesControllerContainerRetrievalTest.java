@@ -21,7 +21,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.apicatalog.controllers.handlers.ApiCatalogControllerExceptionHandler;
-import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalServiceRest;
+import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
@@ -42,7 +42,7 @@ class ServicesControllerContainerRetrievalTest {
     private WebTestClient webTestClient;
 
     @MockitoBean
-    private ApiDocRetrievalServiceRest apiDocRetrievalService;
+    private ApiDocService apiDocService;
 
     @MockitoBean
     private ContainerService containerService;

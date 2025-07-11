@@ -227,7 +227,7 @@ public class ApiDocService {
         }
 
         if (path == null) {
-            throw new ApiDocNotFoundException("No API Documentation defined for service " + instanceInfo.getAppName().toLowerCase() + ".");
+            return null;
         }
 
         UriComponents uri = UriComponentsBuilder
@@ -275,8 +275,7 @@ public class ApiDocService {
      * @param instanceInfo the information about service instance
      * @return the information about APIDocInfo
      */
-    private ApiDocInfo getApiDocInfoBySubstituteSwagger(InstanceInfo instanceInfo) {
-        var apiInfo = ApiInfo.builder().gatewayUrl(getGatewayUrl()).build();
+    private ApiDocInfo getApiDocInfoBySubstituteSwagger(InstanceInfo instanceInfo, ApiInfo apiInfo) {
         ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String response = swaggerGenerator.generateSubstituteSwaggerForService(
             instanceInfo,
@@ -286,22 +285,24 @@ public class ApiDocService {
         return new ApiDocInfo(apiInfo, response, new RoutedServices());
     }
 
-    private String retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
+    String retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
         var routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
 
-        ApiDocInfo apiDocInfo;
         if (apiInfo == null) {
-            apiDocInfo = getApiDocInfoBySubstituteSwagger(instanceInfo);
-        } else {
-            if (apiInfo.getSwaggerUrl() == null) {
-                apiInfo.setSwaggerUrl(createApiDocUrlFromRouting(instanceInfo, routes));
-            }
+            apiInfo = ApiInfo.builder().gatewayUrl(getGatewayUrl()).build();
+        }
 
-            if (isServiceAccessibleInternally(instanceInfo)) {
-                apiDocInfo = apiDocRetrievalServiceLocal.retrieveApiDoc(instanceInfo, apiInfo);
-            } else {
-                apiDocInfo = apiDocRetrievalServiceRest.retrieveApiDoc(instanceInfo, apiInfo);
-            }
+        if (apiInfo.getSwaggerUrl() == null) {
+            apiInfo.setSwaggerUrl(createApiDocUrlFromRouting(instanceInfo, routes));
+        }
+
+        ApiDocInfo apiDocInfo;
+        if (apiInfo.getSwaggerUrl() == null) {
+            apiDocInfo = getApiDocInfoBySubstituteSwagger(instanceInfo, apiInfo);
+        } else if (isServiceAccessibleInternally(instanceInfo)) {
+            apiDocInfo = apiDocRetrievalServiceLocal.retrieveApiDoc(apiInfo);
+        } else {
+            apiDocInfo = apiDocRetrievalServiceRest.retrieveApiDoc(instanceInfo, apiInfo);
         }
 
         apiDocInfo.setRoutes(routes);

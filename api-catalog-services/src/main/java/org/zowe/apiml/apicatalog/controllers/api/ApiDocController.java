@@ -41,7 +41,7 @@ import static org.apache.hc.core5.http.HttpStatus.SC_OK;
  */
 @Slf4j
 @RestController
-@RequestMapping("/apidoc")
+@RequestMapping({"/apicatalog/apidoc", "/apicatalog/api/v1/apidoc"})
 @Tag(name = "API Documentation")
 @RequiredArgsConstructor
 public class ApiDocController {

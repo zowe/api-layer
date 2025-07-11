@@ -16,7 +16,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.netflix.appinfo.InstanceInfo;
 import io.swagger.v3.core.jackson.mixin.MediaTypeMixin;
 import io.swagger.v3.core.jackson.mixin.SchemaMixin;
 import io.swagger.v3.oas.models.media.MediaType;
@@ -64,7 +63,7 @@ public class ApiDocRetrievalServiceLocal extends OpenApiResource {
             .addMixIn(MediaType.class, MediaTypeMixin.class);
     }
 
-    public ApiDocInfo retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
+    public ApiDocInfo retrieveApiDoc(ApiInfo apiInfo) {
         var openApi = getOpenApi(getServerUrl(null, apiInfo.getSwaggerUrl()), Locale.getDefault());
 
         try {
