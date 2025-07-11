@@ -63,7 +63,6 @@ public class CachingController {
     @DeleteMapping(value = {"/cache", "/cache/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Delete all values for service from the cache",
         description = "Will delete all key-value pairs for specific service")
-    @ResponseBody
     public Mono<ResponseEntity<Object>> deleteAllValues(ServerHttpRequest request) {
         return Mono.fromCallable(() -> getServiceId(request).map(
             s -> {
