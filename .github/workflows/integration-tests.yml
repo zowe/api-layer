@@ -78,6 +78,7 @@ jobs:
             -   uses: ./.github/actions/setup
 
             -   name: Run Modulith CI Tests
+                timeout-minutes: 4
                 run: >
                     ENV_CONFIG=docker-modulith ./gradlew runStartUpCheck :integration-tests:runContainerModulithTests --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
@@ -167,6 +168,7 @@ jobs:
 
             -   name: Run Startup Check
                 if: always()
+                timeout-minutes: 4
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
@@ -278,6 +280,7 @@ jobs:
 
             -   name: Run Startup Check
                 if: always()
+                timeout-minutes: 4
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
@@ -397,6 +400,7 @@ jobs:
             -   uses: ./.github/actions/setup
 
             -   name: Run CI Tests
+                timeout-minutes: 4
                 run: >
                     ./gradlew runStartUpCheck :integration-tests:runContainerTests --info -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -478,6 +482,7 @@ jobs:
 
             -   name: Run Startup Check
                 if: always()
+                timeout-minutes: 4
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-ha -Ddiscoverableclient.instances=1
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -735,6 +740,7 @@ jobs:
             -   uses: ./.github/actions/setup
 
             -   name: Run CI Tests
+                timeout-minutes: 4
                 run: >
                     ./gradlew runStartUpCheck :integration-tests:runGatewayCentralRegistryTest --info
                     -Denvironment.config=-docker -Dgateway.instances=2 -Ddiscoverableclient.instances=0
@@ -1240,6 +1246,7 @@ jobs:
 
             -   name: Run Startup Check
                 if: always()
+                timeout-minutes: 4
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
@@ -1523,6 +1530,7 @@ jobs:
 
             -   name: Run Startup Check
                 if: always()
+                timeout-minutes: 4
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-ha -Ddiscoverableclient.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -1753,6 +1761,7 @@ jobs:
                         api-catalog-ui/frontend/node_modules
                     key: my-cache-${{ runner.os }}-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
             -   name: Run startup check
+                timeout-minutes: 4
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
             -   name: Show status when APIML is not ready yet
@@ -1864,6 +1873,7 @@ jobs:
                         api-catalog-ui/frontend/node_modules
                     key: my-cache-${{ runner.os }}-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
             -   name: Run startup check
+                timeout-minutes: 4
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1 -Denvironment.modulith=true -Denvironment.gwCount=1
                     -Dgateway.host=gateway-service,gateway-service-2 -Ddiscovery.host=gateway-service -Ddiscovery.additionalHost=gateway-service-2
