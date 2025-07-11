@@ -212,7 +212,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot obtain Zowe JWT token", e);
-            return createMissingAuthenticationErrorMessage();
+            return createInvalidAuthenticationErrorMessage();
         }
     }
 
