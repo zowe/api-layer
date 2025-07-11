@@ -116,7 +116,7 @@ describe('>>> GraphiQL Playground page test', () => {
 
         cy.contains('Discoverable client with GraphQL').click();
 
-        const query = `query {getAllBooks{${name} }`;
+        const query = 'query {' + 'getAllBooks{' + 'name' + ' }';
         cy.get(PATH_TO_PLAYGROUND_INPUT_TEXTAREA)
             .first()
             .focus()
