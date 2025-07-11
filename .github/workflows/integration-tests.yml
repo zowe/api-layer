@@ -1883,7 +1883,7 @@ jobs:
                     npm run cy:e2e:ci:modulith
             -   name: Dump CGW jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address apiml --port 6300 --destfile ./results/gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
