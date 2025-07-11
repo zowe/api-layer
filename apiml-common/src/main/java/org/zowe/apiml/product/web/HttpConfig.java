@@ -145,7 +145,7 @@ public class HttpConfig {
 
             HttpsConfig httpsConfigWithoutKeystore = httpsConfigSupplier.get().build();
 
-            log.info("Using HTTPS configuration: {}", httpsConfig.toString());
+            log.debug("Using HTTPS configuration: {}", httpsConfig.toString());
 
             HttpsFactory factory = new HttpsFactory(httpsConfig);
             ApimlPoolingHttpClientConnectionManager secureConnectionManager = getConnectionManager(factory);

@@ -285,8 +285,8 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         }
 
         @Override
-        public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException, ServletException {
-            return request.upgrade(handlerClass);
+        public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) {
+            throw new UnsupportedOperationException();
         }
 
         interface Exclude {

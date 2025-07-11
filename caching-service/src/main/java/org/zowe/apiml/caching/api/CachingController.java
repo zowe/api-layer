@@ -103,7 +103,6 @@ public class CachingController {
     @PostMapping(value = {"/cache", "/cache/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create a new key in the cache",
         description = "A new key-value pair will be added to the cache")
-    @ResponseBody
     public Mono<ResponseEntity<Object>> createKey(@RequestBody KeyValue keyValue, ServerHttpRequest request) {
         return Mono.fromCallable(() -> keyValueRequest(storage::create,
             keyValue, request, HttpStatus.CREATED));
@@ -112,7 +111,6 @@ public class CachingController {
     @PostMapping(value = "/cache-list/{mapKey}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Add a new item in the cache map",
         description = "A new key-value pair will be added to the specific cache map with given map key.")
-    @ResponseBody
     public Mono<ResponseEntity<Object>> storeMapItem(@PathVariable String mapKey, @RequestBody KeyValue keyValue, ServerHttpRequest request) {
         return Mono.fromCallable(() -> mapKeyValueRequest(storage::storeMapItem,
             mapKey, keyValue, request, HttpStatus.CREATED));

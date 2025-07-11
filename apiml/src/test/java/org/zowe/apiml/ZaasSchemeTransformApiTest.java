@@ -62,7 +62,7 @@ class ZaasSchemeTransformApiTest {
         transformApi = new ZaasSchemeTransformApi(
             authSourceService,
             passTicketService,
-            mock(ZosmfService.class),
+            zosmfService,
             tokenCreationService,
             messageService
         );

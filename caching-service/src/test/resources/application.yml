@@ -77,9 +77,6 @@ apiml:
 server:
     port: 10016
 
-    servlet:
-        contextPath: /
-
     ssl:
         enabled: true
         clientAuth: want
