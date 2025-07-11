@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
-import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
+import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -49,7 +49,7 @@ import java.util.stream.StreamSupport;
 public class ServicesController {
 
     private final ContainerService containerService;
-    private final ApiDocRetrievalService apiDocRetrievalService;
+    private final ApiDocService apiDocService;
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -129,7 +129,7 @@ public class ServicesController {
 
     private String getApiDoc(String serviceId) {
         try {
-            return apiDocRetrievalService.retrieveDefaultApiDoc(serviceId);
+            return apiDocService.retrieveDefaultApiDoc(serviceId);
         } catch (Exception e) {
             log.debug("Cannot download api doc", e);
         }
@@ -169,10 +169,10 @@ public class ServicesController {
             if (apiDoc != null) {
                 log.debug("API doc was retrieved");
                 service.setApiDoc(apiDoc);
-                List<String> apiVersions = apiDocRetrievalService.retrieveApiVersions(id);
+                List<String> apiVersions = apiDocService.retrieveApiVersions(id);
                 service.setApiVersions(apiVersions);
                 log.debug("Got API versions: {}", apiVersions != null ? apiVersions.size() : 0);
-                String defaultApiVersion = apiDocRetrievalService.retrieveDefaultApiVersion(id);
+                String defaultApiVersion = apiDocService.retrieveDefaultApiVersion(id);
                 log.debug("Default API version: {}", defaultApiVersion);
                 service.setDefaultApiVersion(defaultApiVersion);
             } else {
@@ -191,15 +191,15 @@ public class ServicesController {
             // it may or may not be null
             String serviceId = apiService.getServiceId();
             try {
-                String apiDoc = apiDocRetrievalService.retrieveDefaultApiDoc(serviceId);
+                String apiDoc = apiDocService.retrieveDefaultApiDoc(serviceId);
                 if (apiDoc != null) {
                     apiService.setApiDoc(apiDoc);
                 }
 
-                List<String> apiVersions = apiDocRetrievalService.retrieveApiVersions(serviceId);
+                List<String> apiVersions = apiDocService.retrieveApiVersions(serviceId);
                 apiService.setApiVersions(apiVersions);
 
-                String defaultApiVersion = apiDocRetrievalService.retrieveDefaultApiVersion(serviceId);
+                String defaultApiVersion = apiDocService.retrieveDefaultApiVersion(serviceId);
                 apiService.setDefaultApiVersion(defaultApiVersion);
             } catch (Exception e) {
                 log.debug("An error occurred when trying to fetch ApiDoc for service: {}, processing can continue but this service will not be able to display any Api Documentation.\nError:", serviceId, e);
