@@ -1866,6 +1866,7 @@ jobs:
             -   name: Run startup check
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1 -Denvironment.modulith=true -Denvironment.gwCount=1
+                    -Dgateway.host=gateway-service,gateway-service-2 -Ddiscovery.host=gateway-service -Ddiscovery.additionalHost=gateway-service-2
             -   name: Show status when APIML is not ready yet
                 if: failure()
                 shell: bash
