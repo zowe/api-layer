@@ -67,7 +67,7 @@ public class ApiDocRetrievalServiceLocal extends OpenApiResource {
         var openApi = getOpenApi(getServerUrl(null, apiInfo.getSwaggerUrl()), Locale.getDefault());
 
         try {
-            return new ApiDocInfo(apiInfo, mapper.writeValueAsString(openApi), null);
+            return ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(mapper.writeValueAsString(openApi)).build();
         } catch (JsonProcessingException e) {
             log.error("Could not serialize OpenAPI doc", e);
             return null;

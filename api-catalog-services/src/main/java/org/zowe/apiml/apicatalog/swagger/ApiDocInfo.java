@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.apicatalog.swagger;
 
+import lombok.Builder;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.routing.RoutedServices;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,7 @@ import lombok.ToString;
 @Data
 @AllArgsConstructor
 @ToString
+@Builder
 public class ApiDocInfo {
 
     ApiInfo apiInfo;

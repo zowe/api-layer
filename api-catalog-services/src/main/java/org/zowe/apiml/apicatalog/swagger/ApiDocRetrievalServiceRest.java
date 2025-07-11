@@ -55,8 +55,7 @@ public class ApiDocRetrievalServiceRest {
 
         try {
             String apiDocContent = getApiDocContentByUrl(serviceId, apiDocUrl);
-            // TODO: builder
-            return new ApiDocInfo(apiInfo, apiDocContent, null);
+            return ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(apiDocContent).build();
         } catch (IOException e) {
             apimlLogger.log("org.zowe.apiml.apicatalog.apiDocHostCommunication", serviceId, e.getMessage());
             log.debug("Error retrieving api doc for '{}'", serviceId, e);

@@ -282,7 +282,7 @@ public class ApiDocService {
             apiInfo,
             gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname());
-        return new ApiDocInfo(apiInfo, response, new RoutedServices());
+        return ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(response).routes(new RoutedServices()).build();
     }
 
     String retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
