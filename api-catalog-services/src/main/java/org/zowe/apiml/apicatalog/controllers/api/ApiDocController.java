@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.apicatalog.exceptions.ApiDiffNotAvailableException;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.ApiDocService;
+import reactor.core.publisher.Mono;
 
 import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 
@@ -68,15 +69,16 @@ public class ApiDocController {
         @ApiResponse(responseCode = "404", description = "URI not found"),
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred"),
     })
-    public ResponseEntity<String> getApiDocInfo(
+    public Mono<ResponseEntity<String>> getApiDocInfo(
         @Parameter(name = "serviceId", description = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "serviceId") String serviceId,
         @Parameter(name = "apiId", description = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v1.0.0")
         @PathVariable(value = "apiId") String apiId) {
-        return ResponseEntity
+        return Mono.fromSupplier(() -> ResponseEntity
             .status(SC_OK)
             .contentType(MediaType.APPLICATION_JSON)
-            .body(apiDocService.retrieveApiDoc(serviceId, apiId));
+            .body(apiDocService.retrieveApiDoc(serviceId, apiId))
+        );
     }
 
     /**
@@ -98,13 +100,14 @@ public class ApiDocController {
         @ApiResponse(responseCode = "404", description = "URI not found"),
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred"),
     })
-    public ResponseEntity<String> getDefaultApiDocInfo(
+    public Mono<ResponseEntity<String>> getDefaultApiDocInfo(
         @Parameter(name = "serviceId", description = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "serviceId") String serviceId) {
-        return ResponseEntity
+        return Mono.fromSupplier(() -> ResponseEntity
             .status(SC_OK)
             .contentType(MediaType.APPLICATION_JSON)
-            .body(apiDocService.retrieveDefaultApiDoc(serviceId));
+            .body(apiDocService.retrieveDefaultApiDoc(serviceId))
+        );
     }
 
     @GetMapping(value = "/{serviceId}/{apiId1}/{apiId2}", produces = MediaType.TEXT_HTML_VALUE)
@@ -120,7 +123,7 @@ public class ApiDocController {
         @ApiResponse(responseCode = "404", description = "URI not found"),
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
     })
-    public ResponseEntity<String> getApiDiff(
+    public Mono<ResponseEntity<String>> getApiDiff(
         @Parameter(name = "serviceId", description = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "serviceId") String serviceId,
         @Parameter(name = "apiId1", description = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v1.0.0")
@@ -136,10 +139,11 @@ public class ApiDocController {
             String result = render.render(diff);
             //Remove external stylesheet
             result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
-            return ResponseEntity
+            return Mono.just(ResponseEntity
                 .status(HttpStatus.SC_OK)
                 .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                .body(result);
+                .body(result)
+            );
         } catch (ApiDocNotFoundException adnfe) {
             throw adnfe;
         } catch (Exception e) {
