@@ -125,8 +125,11 @@ public class HttpConfig {
         updateStorePaths();
 
         try {
-            KeyStore ks = SecurityUtils.loadKeyStore(keyStoreType, keyStore, keyStorePassword);
-            var certificate = (X509Certificate) ks.getCertificate(keyAlias);
+            X509Certificate certificate = null;
+            if (keyStore != null) {
+                KeyStore ks = SecurityUtils.loadKeyStore(keyStoreType, keyStore, keyStorePassword);
+                certificate = (X509Certificate) ks.getCertificate(keyAlias);
+            }
             Supplier<HttpsConfig.HttpsConfigBuilder> httpsConfigSupplier = () ->
                 HttpsConfig.builder()
                     .protocol(protocol).enabledProtocols(supportedProtocols).cipherSuite(ciphers)
