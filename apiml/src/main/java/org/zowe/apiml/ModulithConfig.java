@@ -180,7 +180,7 @@ public class ModulithConfig {
                 registry.peerAwareHeartbeat(instances.get(CoreService.GATEWAY.getServiceId()));
             }
 
-        }, (long)eurekaConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L, (long)eurekaConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L);
+        }, eurekaConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L, eurekaConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L);
 
     }
 

@@ -49,7 +49,7 @@ public class ServiceCorsUpdater {
     @EventListener(RefreshRoutesEvent.class)
     public Mono<Void> onRefreshRoutesEvent(RefreshRoutesEvent event) {
         return discoveryClient.getServices()
-            .flatMap(service -> discoveryClient.getInstances(service))
+            .flatMap(discoveryClient::getInstances)
             .map(instance -> {
                     corsUtils.setCorsConfiguration(
                     instance.getServiceId().toLowerCase(),

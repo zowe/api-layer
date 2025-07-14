@@ -320,6 +320,8 @@ class ApimlInstanceRegistryTest {
             var instance = mock(InstanceInfo.class);
             doReturn(new Object()).when(methodHandle).invokeWithArguments(any(), any(), any(), any(), any(), any(), any());
             apimlInstanceRegistry.peerAwareHeartbeat(instance);
+
+            verify(methodHandle, times(1)).invokeWithArguments(any(), any(), any(), any(), any(), any(), any());
         }
 
     }

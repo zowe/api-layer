@@ -137,7 +137,7 @@ class GatewayHealthIndicatorTest {
             healthIndicator.doHealthCheck(builder);
 
             String code = (String) builder.build().getDetails().get(CoreService.API_CATALOG.getServiceId());
-            assertEquals(code, "UP");
+            assertEquals("UP", code);
         }
 
     }
