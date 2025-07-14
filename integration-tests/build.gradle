@@ -207,7 +207,7 @@ task runAllIntegrationTestsForZoweNonHaTestingOnZos(type: Test) {
             'SAFProviderTest',
             'CloudGatewayProxyTest',
             'CloudGatewayAuthTest',
-            'CloudGatewayCentralRegistryXForwardHeaders',
+            'CloudGatewayCentralRegistry',
             'SafIdTokenTest'
         )
     }
@@ -250,7 +250,7 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
             'SAFProviderTest',
             'CloudGatewayProxyTest',
             'CloudGatewayAuthTest',
-            'CloudGatewayCentralRegistryXForwardHeaders',
+            'CloudGatewayCentralRegistry',
             'SafIdTokenTest',
             'ChaoticHATest',
             'GraphQLTest'
@@ -346,7 +346,6 @@ task runContainerTests(type: Test) {
             'CloudGatewayProxyTest',
             'CloudGatewayServiceRouting',
             'CloudGatewayCentralRegistry',
-            'CloudGatewayCentralRegistryXForwardHeaders',
             'ZaasTest',
             'HealthEndpointProtectionDisabledTest'
         )
@@ -384,7 +383,6 @@ task runBaseTests(type: Test) {
             'CloudGatewayProxyTest',
             'CloudGatewayServiceRouting',
             'CloudGatewayCentralRegistry',
-            'CloudGatewayCentralRegistryXForwardHeaders',
             'MultipleRegistrationsTest',
             'HealthEndpointProtectionDisabledTest'
         )
@@ -442,8 +440,7 @@ task runCloudGatewayCentralRegistryTest(type: Test) {
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'CloudGatewayCentralRegistry',
-            'CloudGatewayCentralRegistryXForwardHeaders'
+            'CloudGatewayCentralRegistry'
         )
     }
 }
