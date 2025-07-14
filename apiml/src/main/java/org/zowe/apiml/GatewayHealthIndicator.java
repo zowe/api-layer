@@ -48,7 +48,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private AtomicBoolean discoveryAvailable = new AtomicBoolean(false);
     private AtomicBoolean zaasAvailable = new AtomicBoolean(false);
 
-    boolean startedInformationPublished = false;
+    private AtomicBoolean startedInformationPublished = new AtomicBoolean(false);
 
     @Override
     protected void doHealthCheck(Builder builder) throws Exception {
@@ -59,7 +59,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         int gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
         int zaasCount = gatewayCount;
 
-        builder.status(toStatus(discoveryAvailable.get()))
+        builder.status(toStatus(discoveryAvailable.get() && zaasAvailable.get()))
             .withDetail(CoreService.DISCOVERY.getServiceId(), toStatus(discoveryAvailable.get()).getCode())
             .withDetail(CoreService.ZAAS.getServiceId(), toStatus(zaasAvailable.get()).getCode())
             .withDetail("gatewayCount", gatewayCount)
@@ -69,9 +69,9 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
             builder.withDetail(CoreService.API_CATALOG.getServiceId(), toStatus(apiCatalogUp).getCode());
         }
 
-        if (!startedInformationPublished && discoveryAvailable.get() && apiCatalogUp && zaasAvailable.get()) {
+        if (!startedInformationPublished.get() && discoveryAvailable.get() && apiCatalogUp && zaasAvailable.get()) {
             apimlLog.log("org.zowe.apiml.common.mediationLayerStarted");
-            startedInformationPublished = true;
+            startedInformationPublished.set(true);
         }
     }
 
@@ -83,6 +83,10 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     @EventListener
     public void onApplicationEvent(EurekaRegistryAvailableEvent event) {
         discoveryAvailable.set(true);
+    }
+
+    boolean isStartedInformationPublished() {
+        return startedInformationPublished.get();
     }
 
     private Status toStatus(boolean up) {

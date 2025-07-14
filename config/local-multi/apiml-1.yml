@@ -39,7 +39,7 @@ apiml:
         servicesToLimitRequestRate: discoverableclient
         cookieNameForRateLimiter: apimlAuthenticationToken
     discovery:
-        allPeersUrls: https://localhost:10011/eureka,https://usilca32.lvn.broadcom.net:10661/eureka
+        allPeersUrls: https://localhost:10011/eureka,https://localhost:10021/eureka
     security:
         # ssl:
         #     verifySslCertificatesOfServices: false
