@@ -16,6 +16,7 @@ import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.security.HttpsConfig;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class LocalCachingClient implements CachingClient {
@@ -75,6 +76,8 @@ public class LocalCachingClient implements CachingClient {
     }
 
     String getServiceId() {
-        return httpsConfig.getCertificate().getSubjectX500Principal().getName();
+        return Optional.ofNullable(httpsConfig.getCertificate())
+            .map(certificate -> certificate.getSubjectX500Principal().getName())
+            .orElse("apiml service");
     }
 }
