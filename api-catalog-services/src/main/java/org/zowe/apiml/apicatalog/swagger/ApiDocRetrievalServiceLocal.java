@@ -10,73 +10,93 @@
 
 package org.zowe.apiml.apicatalog.swagger;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.swagger.v3.core.jackson.mixin.MediaTypeMixin;
-import io.swagger.v3.core.jackson.mixin.SchemaMixin;
-import io.swagger.v3.oas.models.media.MediaType;
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.security.SecurityScheme;
+import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springdoc.core.customizers.SpringDocCustomizers;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springdoc.core.properties.SpringDocConfigProperties;
 import org.springdoc.core.providers.SpringDocProviders;
 import org.springdoc.core.service.AbstractRequestService;
 import org.springdoc.core.service.GenericResponseService;
 import org.springdoc.core.service.OpenAPIService;
 import org.springdoc.core.service.OperationService;
-import org.springdoc.webflux.api.OpenApiResource;
+import org.springdoc.webflux.api.OpenApiWebfluxResource;
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.config.ApiInfo;
 
-import java.util.Locale;
+import java.util.*;
 
 @Slf4j
 @Service
-public class ApiDocRetrievalServiceLocal extends OpenApiResource {
+public class ApiDocRetrievalServiceLocal {
 
-    private ObjectMapper mapper = objectMapper();
+    private Map<String, OpenApiWebfluxResource> apiDocResource = new HashMap<>();
+    private Map<String, String> apiDoc = new HashMap<>();
 
     public ApiDocRetrievalServiceLocal(
-        ObjectFactory<OpenAPIService> openAPIBuilderObjectFactory, AbstractRequestService requestBuilder,
-        GenericResponseService responseBuilder, OperationService operationParser,
+        List<GroupedOpenApi> groupedOpenApis,
+        ObjectFactory<OpenAPIService> openAPIBuilderObjectFactory,
+        AbstractRequestService requestBuilder,
+        GenericResponseService responseBuilder,
+        OperationService operationParser,
         SpringDocConfigProperties springDocConfigProperties,
-        SpringDocProviders springDocProviders, SpringDocCustomizers springDocCustomizers
+        SpringDocProviders springDocProviders
     ) {
-        super(openAPIBuilderObjectFactory, requestBuilder, responseBuilder, operationParser, springDocConfigProperties, springDocProviders, springDocCustomizers);
-        this.mapper = objectMapper();
+        groupedOpenApis.stream()
+            .forEach(groupedOpenApi -> {
+                String group = groupedOpenApi.getGroup();
+
+                SpringDocConfigProperties.GroupConfig groupConfig = new SpringDocConfigProperties.GroupConfig(group, groupedOpenApi.getPathsToMatch(), groupedOpenApi.getPackagesToScan(), groupedOpenApi.getPackagesToExclude(), groupedOpenApi.getPathsToExclude(), groupedOpenApi.getProducesToMatch(), groupedOpenApi.getConsumesToMatch(), groupedOpenApi.getHeadersToMatch(), groupedOpenApi.getDisplayName());
+                springDocConfigProperties.addGroupConfig(groupConfig);
+
+                var openApiWebfluxResource = new OpenApiWebfluxResource(groupedOpenApi.getGroup(),
+                    openAPIBuilderObjectFactory,
+                    requestBuilder,
+                    responseBuilder,
+                    operationParser,
+                    springDocConfigProperties,
+                    springDocProviders, new SpringDocCustomizers(Optional.of(groupedOpenApi.getOpenApiCustomizers()), Optional.of(groupedOpenApi.getOperationCustomizers()),
+                    Optional.of(groupedOpenApi.getRouterOperationCustomizers()), Optional.of(groupedOpenApi.getOpenApiMethodFilters()))
+                ) {
+                    @Override
+                    protected String getServerUrl(ServerHttpRequest serverHttpRequest, String apiDocsUrl) {
+                        return "/";
+                    }
+                };
+
+                apiDocResource.put(group, openApiWebfluxResource);
+            });
     }
 
-    private ObjectMapper objectMapper() {
-        return new ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-            .registerModule(new SimpleModule().addSerializer(SecurityScheme.class, new SecuritySchemeSerializer()))
-            .registerModule(new JavaTimeModule())
-            .enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
-            .addMixIn(Schema.class, SchemaMixin.class)
-            .addMixIn(MediaType.class, MediaTypeMixin.class);
+    @EventListener
+    void onApplicationEvent(ApplicationReadyEvent event) {
+        apiDocResource.forEach((k, v) -> {
+            try {
+                v.openapiJson(null, "/", Locale.getDefault())
+                    .map(json -> {
+                        apiDoc.put(k, new String(json));
+                        return json;
+                    }).block();
+            } catch (JsonProcessingException jpe) {
+                throw new ApiDocNotFoundException("Cannot obtain API doc for + " + k, jpe);
+            }
+        });
     }
 
-    public ApiDocInfo retrieveApiDoc(ApiInfo apiInfo) {
-        var openApi = getOpenApi(getServerUrl(null, apiInfo.getSwaggerUrl()), Locale.getDefault());
-
-        try {
-            return ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(mapper.writeValueAsString(openApi)).build();
-        } catch (JsonProcessingException e) {
-            log.error("Could not serialize OpenAPI doc", e);
-            return null;
+    public ApiDocInfo retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
+        String serviceId = StringUtils.lowerCase(instanceInfo.getAppName());
+        var apiDocContent = apiDoc.get(serviceId);
+        if (apiDocContent == null) {
+            throw new ApiDocNotFoundException("Cannot obtain API doc for service " + serviceId);
         }
-    }
-
-    @Override
-    protected String getServerUrl(ServerHttpRequest serverHttpRequest, String apiDocsUrl) {
-        return apiDocsUrl;
+        return ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(apiDocContent).build();
     }
 
 }

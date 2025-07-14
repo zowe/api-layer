@@ -300,14 +300,14 @@ public class ApiDocService {
         if (apiInfo.getSwaggerUrl() == null) {
             apiDocInfo = getApiDocInfoBySubstituteSwagger(instanceInfo, apiInfo);
         } else if (isServiceAccessibleInternally(instanceInfo)) {
-            apiDocInfo = apiDocRetrievalServiceLocal.retrieveApiDoc(apiInfo);
+            apiDocInfo = apiDocRetrievalServiceLocal.retrieveApiDoc(instanceInfo, apiInfo);
         } else {
             apiDocInfo = apiDocRetrievalServiceRest.retrieveApiDoc(instanceInfo, apiInfo);
         }
 
         apiDocInfo.setRoutes(routes);
 
-        return transformApiDocService.transformApiDoc(instanceInfo.getAppName(), apiDocInfo);
+        return transformApiDocService.transformApiDoc(StringUtils.lowerCase(instanceInfo.getAppName()), apiDocInfo);
     }
 
     /**
@@ -361,7 +361,8 @@ public class ApiDocService {
     public String retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
         InstanceInfo instanceInfo = getInstanceInfo(serviceId);
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
-        return retrieveApiDoc(instanceInfo, findApi(apiInfoList, apiVersion));
+        var apiInfo = findApi(apiInfoList, apiVersion);
+        return retrieveApiDoc(instanceInfo, apiInfo);
     }
 
     /**
@@ -379,7 +380,6 @@ public class ApiDocService {
     public String retrieveDefaultApiDoc(@NonNull String serviceId) {
         InstanceInfo instanceInfo = getInstanceInfo(serviceId);
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
-
         var apiInfo = getDefaultApiInfo(apiInfoList);
         return retrieveApiDoc(instanceInfo, apiInfo);
     }
