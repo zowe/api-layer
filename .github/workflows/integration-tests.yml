@@ -1231,9 +1231,6 @@ jobs:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
-                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
                     APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
                     ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
                     JGROUPS_BIND_PORT: "7600"
@@ -1247,9 +1244,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
-                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
                     APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
                     ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
                     JGROUPS_BIND_PORT: "7600"
