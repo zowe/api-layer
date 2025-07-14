@@ -289,8 +289,8 @@ class ApimlInstanceRegistryTest {
 
         @Test
         @SuppressWarnings("unchecked")
-        void givenNoPeerReplicate_thenSuccessful() throws Throwable {
-            MethodHandle methodHandle = mock(MethodHandle.class);
+        void givenStaticRegistration_thenSuccessful() throws Throwable {
+            var methodHandle = mock(MethodHandle.class);
             ReflectionTestUtils.setField(apimlInstanceRegistry, "replicateToPeersMethodHandle", methodHandle);
             var currentStaticIds = (Set<String>) ReflectionTestUtils.getField(apimlInstanceRegistry, "staticRegistrationIds");
             assertTrue(currentStaticIds.isEmpty());
@@ -306,6 +306,20 @@ class ApimlInstanceRegistryTest {
 
             assertFalse(currentStaticIds.isEmpty());
             assertFalse(leaseMap.isEmpty());
+        }
+
+    }
+
+    @Nested
+    class HeartbeatPeerReplicate {
+
+        @Test
+        void givenPeerReplicaHeartbeat_thenSuccess() throws Throwable {
+            var methodHandle = mock(MethodHandle.class);
+            ReflectionTestUtils.setField(apimlInstanceRegistry, "replicateToPeersMethodHandle", methodHandle);
+            var instance = mock(InstanceInfo.class);
+            doReturn(new Object()).when(methodHandle).invokeWithArguments(any(), any(), any(), any(), any(), any(), any());
+            apimlInstanceRegistry.peerAwareHeartbeat(instance);
         }
 
     }
