@@ -32,7 +32,7 @@ import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
 
-@Tag("CloudGatewayCentralRegistry")
+@Tag("CloudGatewayCentralRegistryXForwardHeaders")
 @Slf4j
 class XForwardHeadersProxyTest {
 
