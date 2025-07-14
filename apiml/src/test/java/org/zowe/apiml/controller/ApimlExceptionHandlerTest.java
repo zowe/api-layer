@@ -14,13 +14,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.i18n.LocaleContextResolver;
-import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
 import org.zowe.apiml.security.common.error.ZosAuthenticationException;
 import reactor.core.publisher.Mono;
@@ -32,9 +29,6 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class ApimlExceptionHandlerTest {
-
-    private @Mock MessageService messageService;
-    private @Mock LocaleContextResolver localeContextResolver;
 
     private ApimlExceptionHandler exceptionHandler;
 

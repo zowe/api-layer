@@ -9,7 +9,7 @@ services:
       - "10011:10011" # External access
       - "5130:5130" # For Java remote debugging
     volumes:
-      - /Users/pc891986/Projects/api-layer-v3/config/docker/api-defs:/api-defs
+      - /api-defs:/api-defs # Update to an existing local directory
     networks:
       - apiml_net
       - apiml_shared
