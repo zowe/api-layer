@@ -19,16 +19,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.zaas.ZaasApplication;
-import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.utils.JWTUtils;
 
 import javax.net.ssl.SSLContext;
 
 import static io.restassured.RestAssured.config;
 import static io.restassured.RestAssured.given;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.apache.hc.core5.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
@@ -41,9 +40,6 @@ class ZaasTest {
 
     private static final String COOKIE = "apimlAuthenticationToken";
 
-    @MockitoBean(name = "x509Mapper")
-    private AuthenticationMapper x509Mapper;
-
     @Autowired
     private HttpConfig httpConfig;
 
@@ -53,7 +49,13 @@ class ZaasTest {
     @Value("${apiml.service.hostname:localhost}")
     private String hostname;
 
-    private RestAssuredConfig withClientCert;
+    private final String BODY = """
+        {
+          "resourceClass": "ZOWE",
+          "resourceName": "APIML.SERVICES",
+          "accessLevel": "READ"
+        }
+        """;
 
     @Test
     void givenZosmfCookieAndDummyAuthProvider_whenZoweJwtRequest_thenUnavailable() {
@@ -78,6 +80,8 @@ class ZaasTest {
         given().config(config().sslConfig(new SSLConfig().sslSocketFactory(
                 new SSLSocketFactory(httpConfig.getSecureSslContextWithoutKeystore(), ALLOW_ALL_HOSTNAME_VERIFIER)))
             )
+            .contentType(APPLICATION_JSON)
+            .body(BODY)
             .when()
             .post(String.format("https://%s:%d/zaas/auth/check", hostname, port))
             .then()
@@ -88,13 +92,17 @@ class ZaasTest {
     @Test
     void givenInvalidCert_whenCallingSafCheck_then401() {
         SSLContext sslContext = httpConfig.secureSslContext();
-        withClientCert = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER))); // NOSONAR
+
+        RestAssuredConfig configWithCert = RestAssuredConfig.newConfig()
+            .sslConfig(new SSLConfig().sslSocketFactory(
+                new SSLSocketFactory(sslContext, ALLOW_ALL_HOSTNAME_VERIFIER))
+            );
 
         //@formatter:off
-        given().config(config().sslConfig(new SSLConfig().sslSocketFactory(
-                new SSLSocketFactory(httpConfig.getSecureSslContextWithoutKeystore(), ALLOW_ALL_HOSTNAME_VERIFIER)))
-            )
-            .config(withClientCert)
+        given()
+            .config(configWithCert)
+            .contentType(APPLICATION_JSON)
+            .body(BODY)
             .when()
             .post(String.format("https://%s:%d/zaas/auth/check", hostname, port))
             .then()
