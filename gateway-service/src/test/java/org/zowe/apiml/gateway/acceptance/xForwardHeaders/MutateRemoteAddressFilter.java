@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class MutateRemoteAddressFilter {
 
     public AtomicReference<String> proxyAddressReference;
-    private String originalProxyAddressProperty;
+    private final String originalProxyAddressProperty;
 
     public MutateRemoteAddressFilter(@Value("${test.proxyAddress}") String value) {
         this.originalProxyAddressProperty = value;
