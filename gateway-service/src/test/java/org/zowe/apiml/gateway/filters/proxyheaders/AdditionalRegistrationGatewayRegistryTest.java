@@ -27,8 +27,7 @@ import org.zowe.apiml.product.constants.CoreService;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.is;
@@ -56,8 +55,7 @@ public class AdditionalRegistrationGatewayRegistryTest {
         .build();
 
     private final Application GW1_APPLICATION =
-        new Application(CoreService.GATEWAY.getServiceId(),
-            Arrays.asList(GW1_INSTANCE_INFO));
+        new Application(CoreService.GATEWAY.getServiceId(), List.of(GW1_INSTANCE_INFO));
 
     // Gateway resolved to multiple ip addresses
     private final String GW2_INSTANCE_ID = "gw2-instance-id";
@@ -74,13 +72,11 @@ public class AdditionalRegistrationGatewayRegistryTest {
             .build();
 
     private final Application GW2_APPLICATION =
-        new Application(CoreService.GATEWAY.getServiceId(),
-            Arrays.asList(GW2_INSTANCE_INFO));
+        new Application(CoreService.GATEWAY.getServiceId(), List.of(GW2_INSTANCE_INFO));
 
     // Application with both gateways
     private Application ALL_GW_APPLICATION =
-        new Application(CoreService.GATEWAY.getServiceId(),
-            Arrays.asList(GW1_INSTANCE_INFO, GW2_INSTANCE_INFO));
+        new Application(CoreService.GATEWAY.getServiceId(), List.of(GW1_INSTANCE_INFO, GW2_INSTANCE_INFO));
 
     @BeforeEach
     @SneakyThrows
@@ -96,7 +92,7 @@ public class AdditionalRegistrationGatewayRegistryTest {
         EurekaClientConfig mockEurekaClientConfig = Mockito.mock(EurekaClientConfig.class);
         when(discoveryClientMock.getEurekaClientConfig()).thenReturn(mockEurekaClientConfig);
         when(mockEurekaClientConfig.getEurekaServerServiceUrls(any()))
-            .thenReturn(Collections.singletonList("dummy"));
+            .thenReturn(List.of("dummy"));
 
         gatewayRegistry.registerCacheRefreshEventListener(discoveryClientMock);
 
@@ -114,7 +110,7 @@ public class AdditionalRegistrationGatewayRegistryTest {
         assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(GW1_INSTANCE_ID), is(List.of(GW1_IP_ADDRESS)));
 
         assertThat(gatewayRegistry.additionalGatewayIpAddressesReference.get().size(), is(1));
-        assertTrue(gatewayRegistry.additionalGatewayIpAddressesReference.get().containsAll(Arrays.asList(GW1_IP_ADDRESS)));
+        assertTrue(gatewayRegistry.additionalGatewayIpAddressesReference.get().contains(GW1_IP_ADDRESS));
     }
 
     @Test
@@ -134,10 +130,10 @@ public class AdditionalRegistrationGatewayRegistryTest {
 
         assertThat(gatewayRegistry.knownAdditionalGateways.asMap().size(), is(1));
         assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(GW2_INSTANCE_ID).size(), is(2));
-        assertTrue(gatewayRegistry.knownAdditionalGateways.asMap().get(GW2_INSTANCE_ID).containsAll(Arrays.asList(GW2_IP_ADDRESS, GW2_IP_ADDRESS_FROM_DNS)));
+        assertTrue(gatewayRegistry.knownAdditionalGateways.asMap().get(GW2_INSTANCE_ID).containsAll(List.of(GW2_IP_ADDRESS, GW2_IP_ADDRESS_FROM_DNS)));
 
         assertThat(gatewayRegistry.additionalGatewayIpAddressesReference.get().size(), is(2));
-        assertTrue(gatewayRegistry.additionalGatewayIpAddressesReference.get().containsAll(Arrays.asList(GW2_IP_ADDRESS, GW2_IP_ADDRESS_FROM_DNS)));
+        assertTrue(gatewayRegistry.additionalGatewayIpAddressesReference.get().containsAll(List.of(GW2_IP_ADDRESS, GW2_IP_ADDRESS_FROM_DNS)));
     }
 
     @Test
@@ -156,10 +152,10 @@ public class AdditionalRegistrationGatewayRegistryTest {
 
         assertThat(gatewayRegistry.knownAdditionalGateways.asMap().size(), is(1));
         assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(GW2_INSTANCE_ID).size(), is(1));
-        assertTrue(gatewayRegistry.knownAdditionalGateways.asMap().get(GW2_INSTANCE_ID).containsAll(Arrays.asList(GW2_IP_ADDRESS)));
+        assertTrue(gatewayRegistry.knownAdditionalGateways.asMap().get(GW2_INSTANCE_ID).contains(GW2_IP_ADDRESS));
 
         assertThat(gatewayRegistry.additionalGatewayIpAddressesReference.get().size(), is(1));
-        assertTrue(gatewayRegistry.additionalGatewayIpAddressesReference.get().containsAll(Arrays.asList(GW2_IP_ADDRESS)));
+        assertTrue(gatewayRegistry.additionalGatewayIpAddressesReference.get().contains(GW2_IP_ADDRESS));
     }
 
     @Test
@@ -169,11 +165,11 @@ public class AdditionalRegistrationGatewayRegistryTest {
         gatewayRegistry.cacheRefreshEventHandler(new CacheRefreshedEvent(), discoveryClientMock);
 
         assertThat(gatewayRegistry.knownAdditionalGateways.asMap().size(), is(2));
-        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(GW1_INSTANCE_ID), is(Arrays.asList(GW1_IP_ADDRESS)));
-        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(GW2_INSTANCE_ID), is(Arrays.asList(GW2_IP_ADDRESS)));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(GW1_INSTANCE_ID), is(List.of(GW1_IP_ADDRESS)));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(GW2_INSTANCE_ID), is(List.of(GW2_IP_ADDRESS)));
 
         assertThat(gatewayRegistry.additionalGatewayIpAddressesReference.get().size(), is(2));
-        assertTrue(gatewayRegistry.additionalGatewayIpAddressesReference.get().containsAll(Arrays.asList(GW1_IP_ADDRESS, GW2_IP_ADDRESS)));
+        assertTrue(gatewayRegistry.additionalGatewayIpAddressesReference.get().containsAll(List.of(GW1_IP_ADDRESS, GW2_IP_ADDRESS)));
     }
 
     @Test

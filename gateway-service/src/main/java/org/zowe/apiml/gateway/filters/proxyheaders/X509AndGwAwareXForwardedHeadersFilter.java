@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.filters.proxyheaders;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.cloud.gateway.filter.headers.XForwardedHeadersFilter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
@@ -53,7 +54,7 @@ import java.util.regex.Pattern;
  */
 
 @Slf4j
-public class X509AndGwAwareXForwardedHeadersFilter extends org.springframework.cloud.gateway.filter.headers.XForwardedHeadersFilter {
+public class X509AndGwAwareXForwardedHeadersFilter extends XForwardedHeadersFilter {
 
     // Generic all-in-one Forwarded header not handled by the default spring filter
     public static final String FORWARDED_HEADER = "Forwarded";
@@ -75,6 +76,9 @@ public class X509AndGwAwareXForwardedHeadersFilter extends org.springframework.c
         String trustedProxiesPattern,
         AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry)
         throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+        // Trustworthiness of a proxy is evaluated by this class,
+        // hence the spring filter must trust everything and not interfere
+        super(".*");
         certificateChainBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
         trustedProxiesRegex = trustedProxiesPattern;
         trustedAdditionalGateways = additionalRegistrationGatewayRegistry.getAdditionalGatewayIpAddressesReference();

@@ -29,9 +29,7 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
@@ -87,7 +85,6 @@ class XForwardHeadersProxyTest {
     @MethodSource("authenticationRequestSpecifications")
     void throughCGW_throughGW_noXForwardHeadersProvided_newXForwardHeadersCreated(RequestSpecification requestSpecs) {
         requestSpecs
-            .cookie(COOKIE_NAME, jwt)
             .header(HEADER_X_FORWARD_TO, FORWARD_TO_GATEWAY)
         .when()
             .get(cgwUrl)
@@ -106,7 +103,6 @@ class XForwardHeadersProxyTest {
     @MethodSource("authenticationRequestSpecifications")
     void fromUntrustedProxy_throughCGW_throughGW_xForwardHeadersProvided_untrustedXForwardHeadersNotForwarded(RequestSpecification requestSpecs) {
         requestSpecs
-            .cookie(COOKIE_NAME, jwt)
             .header(HEADER_X_FORWARD_TO, FORWARD_TO_GATEWAY)
             .header("x-forwarded-proto", "http")
             .header("x-forwarded-prefix", "/untrusted-proxy")
@@ -131,7 +127,6 @@ class XForwardHeadersProxyTest {
     @MethodSource("authenticationRequestSpecifications")
     void fromUntrustedProxy_throughGW_xForwardHeadersProvided_untrustedXForwardHeadersNotForwarded(RequestSpecification requestSpecs) {
         requestSpecs
-            .cookie(COOKIE_NAME, jwt)
             .header("x-forwarded-proto", "http")
             .header("x-forwarded-prefix", "/untrusted-proxy")
             .header("x-forwarded-port", "666")
