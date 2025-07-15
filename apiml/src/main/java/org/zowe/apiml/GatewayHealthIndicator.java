@@ -58,7 +58,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     @Override
     protected void doHealthCheck(Builder builder) throws Exception {
         var anyCatalogIsAvailable = StringUtils.isNotBlank(apiCatalogServiceId);
-        catalogAvailable.compareAndSet(false, anyCatalogIsAvailable && !this.discoveryClient.getInstances(apiCatalogServiceId).isEmpty());
+        catalogAvailable.set(anyCatalogIsAvailable && !this.discoveryClient.getInstances(apiCatalogServiceId).isEmpty());
 
         // Keeping for backwards compatibility, in modulith the amount of gateways is the amount of authentication services available
         var gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
