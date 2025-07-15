@@ -1,0 +1,102 @@
+# Docker compose for API ML modulith
+version: '3.8'
+
+services:
+  apiml:
+    image: ghcr.io/zowe/apiml:latest
+    ports:
+      - "10010:10010" # External access
+      - "10011:10011" # External access
+      - "5130:5130" # For Java remote debugging
+    volumes:
+      - /api-defs:/api-defs # Update to an existing local directory
+    networks:
+      - apiml_net
+      - apiml_shared
+    container_name: apiml
+    environment:
+      - APIML_SECURITY_AUTH_PROVIDER=saf
+      - APIML_SERVICE_HOSTNAME=apiml
+      - APIML_DISCOVERY_ALLPEERSURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
+      - logbackService=ZWEAGW1
+  discoverable-client:
+    image: ghcr.io/zowe/discoverable-client:latest
+    networks:
+      - apiml_net
+    container_name: discoverable-client
+    environment:
+      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
+      - APIML_SERVICE_HOSTNAME=discoverable-client
+  discoverable-client-2:
+    image: ghcr.io/zowe/discoverable-client:latest
+    networks:
+      - apiml2_net
+    container_name: discoverable-client-2
+    environment:
+      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
+      - APIML_SERVICE_HOSTNAME=discoverable-client-2
+
+  api-catalog-services:
+    image: ghcr.io/zowe/api-catalog-services:latest
+    networks:
+      - apiml_net
+      - apiml_shared
+    container_name: api-catalog-services
+    volumes:
+      - /Users/pc891986/Projects/api-layer-v3/config/docker/api-defs:/api-defs
+    environment:
+      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
+      - APIML_SERVICE_HOSTNAME=api-catalog-services
+
+  apiml-2:
+    image: ghcr.io/zowe/apiml:latest
+    ports:
+      - "10020:10010"
+      - "10021:10011"
+      - "5011:5130"
+    networks:
+      - apiml2_net
+      - apiml_shared
+    volumes:
+      - /Users/pc891986/Projects/api-layer-v3/config/docker/api-defs:/api-defs
+    container_name: apiml-2
+    environment:
+      - APIML_SECURITY_AUTH_PROVIDER=saf
+      - APIML_SERVICE_HOSTNAME=apiml-2
+      - APIML_DISCOVERY_ALLPEERSURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
+      - logbackService=ZWEAGW2
+  caching-service:
+    image: ghcr.io/zowe/caching-service:latest
+    networks:
+      - apiml_net
+      - apiml_shared
+    container_name: caching-service
+    environment:
+      - APIML_SERVICE_HOSTNAME=caching-service
+      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
+  caching-service-2:
+    image: ghcr.io/zowe/caching-service:latest
+    networks:
+      - apiml_net
+      - apiml_shared
+    container_name: caching-service-2
+    environment:
+      - APIML_SERVICE_HOSTNAME=caching-service-2
+      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
+  mock-services:
+    image: ghcr.io/zowe/mock-services:latest
+    networks:
+      - apiml_net
+    container_name: mock-services
+    environment:
+      - APIML_SERVICE_HOSTNAME=mock-services
+      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
+networks:
+  apiml_net:
+    driver: bridge
+
+  apiml2_net:
+    driver: bridge
+
+  apiml_shared:
+    driver: bridge

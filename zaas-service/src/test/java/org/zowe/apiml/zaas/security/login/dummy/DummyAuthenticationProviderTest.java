@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,7 +39,8 @@ class DummyAuthenticationProviderTest {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
         UserDetailsService userDetailsService = new InMemoryUserDetailsService(encoder);
         AuthenticationService authenticationService = mock(AuthenticationService.class);
-        dummyAuthenticationProvider = new DummyAuthenticationProvider(encoder, userDetailsService, authenticationService);
+        ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
+        dummyAuthenticationProvider = new DummyAuthenticationProvider(encoder, userDetailsService, authenticationService, publisher);
     }
 
 

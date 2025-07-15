@@ -10,12 +10,13 @@
 
 package org.zowe.apiml;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.filters.RequestCredentials;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.passticket.PassTicketException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.ticket.TicketResponse;
@@ -45,8 +46,7 @@ class ZaasSchemeTransformApiTest {
     ZosmfService zosmfService;
     RequestCredentials credentials;
     AuthSource authSource;
-    private final MessageService messageService = new YamlMessageService("/apiml-log-messages.yml");
-
+  
     private final String MISSING_AUTH_MSG = "ZWEAG160E No authentication provided in the request";
     private final String INVALID_AUTH_MSG = "ZWEAO402E The request has not been applied because it lacks valid authentication credentials.";
 
