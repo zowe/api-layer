@@ -29,9 +29,10 @@ import static org.zowe.apiml.util.requests.Endpoints.ROUTED_SERVICE;
 @Slf4j
 public class ConfigReader {
 
+    public static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
+
     private static final String PASSWORD = "password";
     private static String configurationFile;
-    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
 
     static {
         configurationFile = "environment-configuration" + System.getProperty("environment.config", "") + ".yml";

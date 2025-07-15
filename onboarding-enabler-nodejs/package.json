@@ -27,12 +27,12 @@
     "babel-core": "6.26.3",
     "babel-istanbul": "0.12.2",
     "babel-preset-env": "1.7.0",
-    "chai": "5.2.0",
+    "chai": "5.2.1",
     "coveralls": "3.1.1",
     "eslint": "2.13.1",
     "eslint-config-airbnb-base": "3.0.1",
     "eslint-plugin-import": "1.16.0",
-    "gulp": "5.0.0",
+    "gulp": "5.0.1",
     "gulp-babel": "7.0.1",
     "gulp-env": "0.4.0",
     "gulp-eslint": "6.0.0",
@@ -52,7 +52,7 @@
     ]
   },
   "engines": {
-    "npm": "=10.9.2",
-    "node": "=20.19.2"
+    "npm": "=10.9.3",
+    "node": "=20.19.3"
   }
 }

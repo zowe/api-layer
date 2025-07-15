@@ -13,6 +13,7 @@ eureka:
     server:
         max-threads-for-peer-replication: 2
         useReadOnlyResponseCache: false
+        peer-node-read-timeout-ms: 5000
 spring:
     cloud:
         gateway:
@@ -224,6 +225,9 @@ management:
             access: none
         health:
             showDetails: always
+    health:
+        diskspace:
+            enabled: false
     endpoints:
         web:
             base-path: /application
@@ -235,6 +239,7 @@ spring.config.activate.on-profile: debug
 logging:
     level:
         com.netflix: INFO # Update to DEBUG
+        com.netflix.eureka: DEBUG
         com.netflix.discovery.shared.transport.decorator: DEBUG
         com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
         javax.net.ssl: ERROR

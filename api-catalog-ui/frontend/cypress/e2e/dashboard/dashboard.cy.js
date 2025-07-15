@@ -7,8 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-/* eslint-disable spaced-comment */
+/* eslint-disable no-undef */
 /// <reference types="Cypress" />
+
+const isModulith = Cypress.env('modulith');
 
 describe('>>> Dashboard test', () => {
     it('dashboard test', () => {
@@ -46,7 +48,12 @@ describe('>>> Dashboard test', () => {
 
         cy.get('#search > div > div > input').as('search').type('API Gateway');
 
-        cy.get('.grid-tile').should('have.length', 2);
+        let expectedGatewaysCount = 2;
+        if (isModulith) {
+            expectedGatewaysCount = 1;
+        }
+
+        cy.get('.grid-tile').should('have.length', expectedGatewaysCount); // FIXME modulith does not support multitenancy yet
 
         cy.get('.clear-text-search').click();
 
@@ -63,7 +70,7 @@ describe('>>> Dashboard test', () => {
     it('should keep session persistent by navigating to dashboard if valid token is provided', () => {
         const requestBody = {
             username: Cypress.env('username'),
-            password: Cypress.env('password')
+            password: Cypress.env('password'),
         };
 
         cy.request({
@@ -74,8 +81,11 @@ describe('>>> Dashboard test', () => {
             expect(resp.status).to.eq(204);
             expect(resp.headers).to.have.property('set-cookie');
 
-            const rawCookie = resp.headers['set-cookie'].find(cookie => cookie.startsWith('apimlAuthenticationToken='));
-            expect(rawCookie).to.exist;
+            const rawCookie = resp.headers['set-cookie'].find((cookie) =>
+                cookie.startsWith('apimlAuthenticationToken=')
+            );
+            // eslint-disable-next-line no-unused-expressions
+            expect(rawCookie).to.not.be.empty;
 
             const cookieValue = rawCookie.split(';')[0].split('=')[1];
 
@@ -89,5 +99,4 @@ describe('>>> Dashboard test', () => {
             cy.contains('The service is running').should('exist');
         });
     });
-
 });

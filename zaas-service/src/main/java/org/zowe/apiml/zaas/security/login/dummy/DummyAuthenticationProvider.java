@@ -10,8 +10,10 @@
 
 package org.zowe.apiml.zaas.security.login.dummy;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,6 +23,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.zaas.ZaasServiceAvailableEvent;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
@@ -38,14 +41,22 @@ public class DummyAuthenticationProvider extends DaoAuthenticationProvider {
     private static final String DUMMY_PROVIDER = "Dummy provider";
 
     private final AuthenticationService authenticationService;
+    private final ApplicationEventPublisher publisher;
 
     public DummyAuthenticationProvider(BCryptPasswordEncoder encoder,
                                        @Qualifier("dummyService") UserDetailsService userDetailsService,
-                                       AuthenticationService authenticationService) {
+                                       AuthenticationService authenticationService,
+                                       ApplicationEventPublisher publisher) {
         super();
         this.setPasswordEncoder(encoder);
         this.setUserDetailsService(userDetailsService);
         this.authenticationService = authenticationService;
+        this.publisher = publisher;
+    }
+
+    @PostConstruct
+    void init() {
+        publisher.publishEvent(new ZaasServiceAvailableEvent("dummy"));
     }
 
     /**
