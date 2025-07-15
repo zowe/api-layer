@@ -1954,8 +1954,8 @@ jobs:
                 run: |
                     apt update
                     apt install -y apt-transport-https ca-certificates curl software-properties-common
-                    curl -k -s https://apiml:10010/application/health
-                    curl -k -s https://apiml-2:10010/application/health
+                    curl -k -s https://gateway-service:10010/application/health
+                    curl -k -s https://gateway-service-2:10010/application/health
             -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend
