@@ -10,9 +10,9 @@
 
 package org.zowe.apiml.acceptance;
 
-import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,10 +20,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.product.web.HttpConfig;
+import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.SslContextConfigurer;
 import org.zowe.apiml.zaas.ZaasApplication;
 import org.zowe.apiml.zaas.utils.JWTUtils;
-
-import javax.net.ssl.SSLContext;
 
 import static io.restassured.RestAssured.config;
 import static io.restassured.RestAssured.given;
@@ -56,6 +56,19 @@ class ZaasTest {
           "accessLevel": "READ"
         }
         """;
+
+    @Value("${server.ssl.keyPassword}")
+    char[] password;
+    @Value("${server.ssl.keyStore}")
+    String client_cert_keystore;
+    @Value("${server.ssl.keyStore}")
+    String keystore;
+
+    @BeforeEach
+    void setUp() throws Exception {
+        SslContextConfigurer configurer = new SslContextConfigurer(password, client_cert_keystore, keystore);
+        SslContext.prepareSslAuthentication(configurer);
+    }
 
     @Test
     void givenZosmfCookieAndDummyAuthProvider_whenZoweJwtRequest_thenUnavailable() {
@@ -91,16 +104,9 @@ class ZaasTest {
 
     @Test
     void givenInvalidCert_whenCallingSafCheck_then401() {
-        SSLContext sslContext = httpConfig.secureSslContext();
-
-        RestAssuredConfig configWithCert = RestAssuredConfig.newConfig()
-            .sslConfig(new SSLConfig().sslSocketFactory(
-                new SSLSocketFactory(sslContext, ALLOW_ALL_HOSTNAME_VERIFIER))
-            );
-
         //@formatter:off
         given()
-            .config(configWithCert)
+            .config(SslContext.clientCertUser)
             .contentType(APPLICATION_JSON)
             .body(BODY)
             .when()
