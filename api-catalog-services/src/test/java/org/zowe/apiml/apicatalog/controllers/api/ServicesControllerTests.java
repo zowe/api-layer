@@ -27,6 +27,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.zowe.apiml.apicatalog.config.BeanConfig;
 import org.zowe.apiml.apicatalog.controllers.handlers.ApiCatalogControllerExceptionHandler;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
 import org.zowe.apiml.apicatalog.model.APIContainer;
@@ -34,11 +35,8 @@ import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.model.CustomStyleConfig;
 import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
 import org.zowe.apiml.apicatalog.swagger.ContainerService;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
-import org.zowe.apiml.product.routing.transform.TransformService;
 
 import java.util.*;
 
@@ -52,7 +50,8 @@ import static org.mockito.BDDMockito.given;
     ServicesController.class,
     ApiCatalogControllerExceptionHandler.class,
     ContainerService.class,
-    ServicesControllerTests.Context.class
+    ServicesControllerTests.Context.class,
+    BeanConfig.class
 })
 class ServicesControllerTests {
 
@@ -313,13 +312,8 @@ class ServicesControllerTests {
     static class Context {
 
         @Bean
-        public TransformService transformService() {
-            return new TransformService(new GatewayClient(ServiceAddress.builder().scheme("https").hostname("localhost").build()));
-        }
-
-        @Bean
-        public MessageService messageService() {
-            return new YamlMessageService("/apicatalog-log-messages.yml");
+        public GatewayClient gatewayClient() {
+            return new GatewayClient(ServiceAddress.builder().scheme("https").hostname("localhost").build());
         }
 
     }

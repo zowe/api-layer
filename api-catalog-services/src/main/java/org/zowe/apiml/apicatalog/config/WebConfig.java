@@ -50,7 +50,7 @@ public class WebConfig implements WebFluxConfigurer {
             .addResourceLocations("/resources/", "/resources/static/", "/resources/templates/");
     }
 
-        @Bean
+    @Bean
     public RouterFunction<ServerResponse> redirectRoot() {
         return route(GET("/"), req ->
             ServerResponse.permanentRedirect(URI.create("/apicatalog"))
@@ -64,7 +64,6 @@ public class WebConfig implements WebFluxConfigurer {
             .and(route(GET("/apicatalog/api/v1"), req ->
                 ServerResponse.permanentRedirect(URI.create("/apicatalog/api/v1/index.html"))
                     .build()));
-    }
     }
 
 }

@@ -16,15 +16,13 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.zowe.apiml.apicatalog.config.BeanConfig;
 import org.zowe.apiml.apicatalog.controllers.handlers.CatalogApiDocControllerExceptionHandler;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import static org.hamcrest.Matchers.contains;
 import static org.mockito.Mockito.when;
@@ -32,7 +30,7 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = {
     ApiDocController.class,
     CatalogApiDocControllerExceptionHandler.class,
-    ApiDocControllerApiDocNotFoundTest.Context.class
+    BeanConfig.class
 })
 @WebFluxTest(controllers = ApiDocController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
 @TestInstance(TestInstance.Lifecycle. PER_CLASS)
@@ -59,15 +57,6 @@ class ApiDocControllerApiDocNotFoundTest {
             .expectStatus().isNotFound()
             .expectBody().jsonPath("$.messages[?(@.messageNumber == 'ZWEAC103E')].messageContent")
                 .value(contains("API Documentation not retrieved, Really bad stuff happened"));
-    }
-
-    static class Context {
-
-        @Bean
-        public MessageService messageService() {
-            return new YamlMessageService("/apicatalog-log-messages.yml");
-        }
-
     }
 
 }
