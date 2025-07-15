@@ -46,7 +46,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * {@code registerAdditionalRegistrationsGatewayRegistryRefresh} handler is registered with the
  * {@link DiscoveryClient} associated with the additional registration.
  * <p>
- * The primary purpose of this class is to retain the IP addresses of other APIML gateways so they
+ * The primary purpose of this class is to retain the IP addresses of other APIML gateways, so they
  * can be used to evaluate trusted proxy headers.
  */
 
