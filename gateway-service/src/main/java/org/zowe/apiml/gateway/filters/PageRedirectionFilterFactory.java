@@ -145,7 +145,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
                     locationUri
                 ));
             } catch (URLTransformationException e) {
-                log.debug("Cannot transform URL", e);
+                log.debug("Cannot transform URL on the same route", e);
                 return Mono.empty();
             }
         }
