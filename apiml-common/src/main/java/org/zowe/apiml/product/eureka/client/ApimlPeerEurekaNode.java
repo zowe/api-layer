@@ -358,8 +358,8 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
         return taskId(requestType, info.getAppName(), info.getId());
     }
 
-    private static int getLeaseRenewalOf(InstanceInfo info) {
-        return (info.getLeaseInfo() == null ? Lease.DEFAULT_DURATION_IN_SECS : info.getLeaseInfo().getRenewalIntervalInSecs()) * 1000;
+    private static long getLeaseRenewalOf(InstanceInfo info) {
+        return (info.getLeaseInfo() == null ? (long) Lease.DEFAULT_DURATION_IN_SECS : info.getLeaseInfo().getRenewalIntervalInSecs()) * 1000L;
     }
 
     @Slf4j

@@ -258,7 +258,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     }
 
     @Data
-    protected abstract static class AbstractConfig {
+    public abstract static class AbstractConfig {
 
         // service ID of the target service
         private String serviceId;

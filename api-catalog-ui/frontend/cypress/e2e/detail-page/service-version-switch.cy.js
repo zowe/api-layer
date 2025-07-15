@@ -7,6 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
+/* eslint-disable no-undef */
+
 describe('>>> Service version change Test', () => {
     beforeEach(() => {
         cy.login(Cypress.env('username'), Cypress.env('password'));

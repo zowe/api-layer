@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-/* eslint-disable spaced-comment */
+/* eslint-disable no-undef */
 /// <reference types="Cypress" />
 
 const expectedKeyWords = ['name', 'getAllBooks', 'Effective Java', "Hitchhiker's Guide to the Galaxy", 'Down Under'];
@@ -21,8 +21,6 @@ const PATH_TO_DEFAULT_QUERY =
     '#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-editor > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code > div > pre > span > span';
 const PATH_TO_RUN_QUERY_BUTTON =
     '#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-toolbar > button';
-const PATH_TO_ADD_TAB_BUTTON =
-    '#graphiql-container > div > div.graphiql-main > div.graphiql-sessions > div.graphiql-session-header > div > button';
 const PATH_TO_REMOVE_SPECIFIC_TAB_BUTTON =
     '#graphiql-container > div > div.graphiql-main > div.graphiql-sessions > div.graphiql-session-header > ul > li.graphiql-tab.graphiql-tab-active > button.graphiql-un-styled.graphiql-tab-close';
 const PATH_TO_VARIABLES_INPUT_TEXTAREA =

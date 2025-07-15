@@ -27,7 +27,10 @@ import org.zowe.apiml.passticket.UsernameNotProvidedException;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.AccessTokenInvalidBodyException;
 import org.zowe.apiml.security.common.error.AccessTokenMissingBodyException;
+import org.zowe.apiml.security.common.error.ZosAuthenticationException;
 import reactor.core.publisher.Mono;
+
+import java.util.Optional;
 
 import static org.apache.http.HttpStatus.*;
 
@@ -97,6 +100,12 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
     public Mono<Void> handleBadCredentialsException(ServerWebExchange exchange, BadCredentialsException ex) {
         log.debug("Bad credentials: {}", ex.getMessage());
         return setBodyResponse(exchange, SC_UNAUTHORIZED, "org.zowe.apiml.security.login.invalidCredentials");
+    }
+
+    @ExceptionHandler(ZosAuthenticationException.class)
+    public Mono<Void> handleZosAuthenticationException(ServerWebExchange exchange, ZosAuthenticationException ex) {
+        log.debug("Zos Authentication Exception: {}", ex.getMessage());
+        return setBodyResponse(exchange, ex.getPlatformError().responseCode.value(), Optional.ofNullable(ex.getPlatformError()).map(e -> e.errorMessage).orElse(null), ex.getMessage());
     }
 
 }
