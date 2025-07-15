@@ -73,14 +73,14 @@ dependencyResolutionManagement {
             // force version in build.gradle file - compatibility with Slf4j
             version('log4j', '2.25.1')
             version('lombok', '1.18.38')
-            version('netty', '4.2.2.Final')
+            version('netty', '4.2.3.Final')
             // netty reactor contains a bug: https://github.com/reactor/reactor-netty/issues/3559 > https://github.com/reactor/reactor-netty/pull/3581
             version('nettyReactor', '1.2.7')
             version('nimbusJoseJwt', '9.48')
             version('openApiDiff', '2.1.2')
             version('picocli', '4.7.7')
 
-            version('reactor', '3.7.7')
+            version('reactor', '3.7.8')
             version('restAssured', '5.5.5')
             version('rhino', '1.8.0')
             version('springDoc', '2.8.9')
