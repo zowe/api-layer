@@ -289,7 +289,6 @@ logging:
         com.netflix.eureka: DEBUG
         com.netflix.discovery.shared.transport.decorator: DEBUG
         com.netflix.eureka.cluster: DEBUG
-        com.netflix.eureka: DEBUG
         com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
         javax.net.ssl: ERROR
         org.apache: INFO
