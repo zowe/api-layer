@@ -37,6 +37,7 @@ public class StaticDefinitionController {
      * @return the response entity
      */
     @PostMapping(value = "/generate", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
     public Mono<ResponseEntity<String>> generateStaticDef(@RequestBody String payload, @RequestHeader(value = "Service-Id") String serviceId) throws IOException {
         StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.generateFile(payload, serviceId);
         return Mono.just(ResponseEntity
@@ -51,6 +52,7 @@ public class StaticDefinitionController {
      * @return the response entity
      */
     @PostMapping(value = "/override", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
     public Mono<ResponseEntity<String>> overrideStaticDef(@RequestBody String payload, @RequestHeader(value = "Service-Id") String serviceId) throws IOException {
         StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.overrideFile(payload, serviceId);
         return Mono.just(ResponseEntity
@@ -60,8 +62,10 @@ public class StaticDefinitionController {
 
 
     @DeleteMapping(value = "/delete", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
     public Mono<ResponseEntity<String>> deleteStaticDef(@RequestHeader(value = "Service-Id") String serviceId) throws IOException {
         StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.deleteFile(serviceId);
         return Mono.just(ResponseEntity.status(staticAPIResponse.getStatusCode()).body(staticAPIResponse.getBody()));
     }
+
 }
