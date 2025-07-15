@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
 import org.zowe.apiml.apicatalog.swagger.ApiDocService;
+import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 
@@ -54,7 +55,7 @@ class ApiDocControllerTest {
 
             @Test
             void givenApiDoc_thenReturnApiDoc() {
-                when(mockApiDocService.retrieveApiDoc("service", "1.0.0")).thenReturn(API_DOC);
+                when(mockApiDocService.retrieveApiDoc("service", "1.0.0")).thenReturn(Mono.just(API_DOC));
 
                 ResponseEntity<String> res = underTest.getApiDocInfo("service", "1.0.0").block();
                 assertNotNull(res);
@@ -74,7 +75,7 @@ class ApiDocControllerTest {
 
             @Test
             void givenApiDocExists_thenReturnIt() {
-                when(mockApiDocService.retrieveDefaultApiDoc("service")).thenReturn(API_DOC);
+                when(mockApiDocService.retrieveDefaultApiDoc("service")).thenReturn(Mono.just(API_DOC));
 
                 ResponseEntity<String> res = underTest.getDefaultApiDocInfo("service").block();
                 assertNotNull(res);
@@ -95,8 +96,8 @@ class ApiDocControllerTest {
             changedOpenApi.setChangedOperations(Collections.emptyList());
             changedOpenApi.setMissingEndpoints(Collections.emptyList());
             changedOpenApi.setNewEndpoints(Collections.emptyList());
-            doReturn("doc1").when(mockApiDocService).retrieveApiDoc("service", "v1");
-            doReturn("doc2").when(mockApiDocService).retrieveApiDoc("service", "v2");
+            doReturn(Mono.just("doc1")).when(mockApiDocService).retrieveApiDoc("service", "v1");
+            doReturn(Mono.just("doc2")).when(mockApiDocService).retrieveApiDoc("service", "v2");
 
             try (MockedStatic<OpenApiCompare> openApiCompare = Mockito.mockStatic(OpenApiCompare.class)) {
                 openApiCompare.when(() -> OpenApiCompare.fromContents("doc1", "doc2")).thenReturn(changedOpenApi);

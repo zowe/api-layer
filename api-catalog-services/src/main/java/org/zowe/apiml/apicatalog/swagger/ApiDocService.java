@@ -29,6 +29,7 @@ import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.util.EurekaUtils;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -193,7 +194,7 @@ public class ApiDocService {
         return defaultVersion;
     }
 
-    private boolean isServiceAccessibleInternally(InstanceInfo instanceInfo) {
+    boolean isServiceAccessibleInternally(InstanceInfo instanceInfo) {
         return StringUtils.equalsAnyIgnoreCase(instanceInfo.getAppName(),
             CoreService.API_CATALOG.getServiceId()
         );
@@ -275,17 +276,19 @@ public class ApiDocService {
      * @param instanceInfo the information about service instance
      * @return the information about APIDocInfo
      */
-    private ApiDocInfo getApiDocInfoBySubstituteSwagger(InstanceInfo instanceInfo, ApiInfo apiInfo) {
-        ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
-        String response = swaggerGenerator.generateSubstituteSwaggerForService(
-            instanceInfo,
-            apiInfo,
-            gatewayConfigProperties.getScheme(),
-            gatewayConfigProperties.getHostname());
-        return ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(response).routes(new RoutedServices()).build();
+    private Mono<ApiDocInfo> getApiDocInfoBySubstituteSwagger(InstanceInfo instanceInfo, ApiInfo apiInfo) {
+        return Mono.fromSupplier(gatewayClient::getGatewayConfigProperties)
+            .map(gw -> swaggerGenerator.generateSubstituteSwaggerForService(
+                instanceInfo,
+                apiInfo,
+                gw.getScheme(),
+                gw.getHostname())
+            )
+            .map(content -> ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(content).routes(new RoutedServices()).build());
     }
 
-    String retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
+    Mono<String> retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
+        String serviceId = StringUtils.lowerCase(instanceInfo.getAppName());
         var routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
 
         if (apiInfo == null) {
@@ -296,7 +299,7 @@ public class ApiDocService {
             apiInfo.setSwaggerUrl(createApiDocUrlFromRouting(instanceInfo, routes));
         }
 
-        ApiDocInfo apiDocInfo;
+        Mono<ApiDocInfo> apiDocInfo;
         if (apiInfo.getSwaggerUrl() == null) {
             apiDocInfo = getApiDocInfoBySubstituteSwagger(instanceInfo, apiInfo);
         } else if (isServiceAccessibleInternally(instanceInfo)) {
@@ -305,9 +308,11 @@ public class ApiDocService {
             apiDocInfo = apiDocRetrievalServiceRest.retrieveApiDoc(instanceInfo, apiInfo);
         }
 
-        apiDocInfo.setRoutes(routes);
-
-        return transformApiDocService.transformApiDoc(StringUtils.lowerCase(instanceInfo.getAppName()), apiDocInfo);
+        return apiDocInfo
+            .map(a -> {
+                a.setRoutes(routes);
+                return transformApiDocService.transformApiDoc(serviceId, a);
+            });
     }
 
     /**
@@ -358,7 +363,7 @@ public class ApiDocService {
      * @return the API doc
      * @throws ApiDocNotFoundException if the response is error
      */
-    public String retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
+    public Mono<String> retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
         InstanceInfo instanceInfo = getInstanceInfo(serviceId);
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
         var apiInfo = findApi(apiInfoList, apiVersion);
@@ -377,7 +382,7 @@ public class ApiDocService {
      * @return the default API doc
      * @throws ApiDocNotFoundException if the response is error
      */
-    public String retrieveDefaultApiDoc(@NonNull String serviceId) {
+    public Mono<String> retrieveDefaultApiDoc(@NonNull String serviceId) {
         InstanceInfo instanceInfo = getInstanceInfo(serviceId);
         List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
         var apiInfo = getDefaultApiInfo(apiInfoList);

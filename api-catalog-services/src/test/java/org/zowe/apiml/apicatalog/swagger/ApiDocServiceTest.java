@@ -33,6 +33,7 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.util.HttpClientMockHelper;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -47,7 +48,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class LocalApiDocServiceTest {
+class ApiDocServiceTest {
 
     private static final String SERVICE_ID = "service";
     private static final String SERVICE_HOST = "service";
@@ -97,9 +98,12 @@ class LocalApiDocServiceTest {
             apiDocRetrievalServiceRest
         ) {
             @Override
-            String retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
+            Mono<String> retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
                 lastApiInfo.set(apiInfo);
                 return super.retrieveApiDoc(instanceInfo, apiInfo);
+            }
+            boolean isServiceAccessibleInternally(InstanceInfo instanceInfo) {
+                return false;
             }
         };
 
@@ -117,7 +121,7 @@ class LocalApiDocServiceTest {
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-            String actualApiDoc = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
+            String actualApiDoc = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V).block();
 
             assertNotNull(lastApiInfo.get());
             assertEquals(API_ID, lastApiInfo.get().getApiId());
@@ -147,7 +151,8 @@ class LocalApiDocServiceTest {
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_INTERNAL_SERVER_ERROR, responseBody);
 
-                Exception exception = assertThrows(ApiDocNotFoundException.class, () -> apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V));
+                Mono<String> apiDocMono = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
+                Exception exception = assertThrows(ApiDocNotFoundException.class, apiDocMono::block);
                 assertEquals("No API Documentation was retrieved due to " + SERVICE_ID + " server error: '" + responseBody + "'.", exception.getMessage());
             }
 
@@ -193,7 +198,7 @@ class LocalApiDocServiceTest {
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-            String actualApiDoc = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
+            String actualApiDoc = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V).block();
 
             assertNotNull(lastApiInfo.get());
             assertEquals(API_ID, lastApiInfo.get().getApiId());
@@ -214,7 +219,7 @@ class LocalApiDocServiceTest {
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-            String actualApiDoc = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
+            String actualApiDoc = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V).block();
 
             assertNotNull(actualApiDoc);
             assertEquals(responseBody, actualApiDoc);
@@ -229,7 +234,7 @@ class LocalApiDocServiceTest {
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-            String actualApiDoc = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
+            String actualApiDoc = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V).block();
 
             assertNotNull(actualApiDoc);
             assertEquals(responseBody, actualApiDoc);
@@ -242,8 +247,8 @@ class LocalApiDocServiceTest {
 
             var exception = new IOException("Unable to reach the host");
             HttpClientMockHelper.whenExecuteThenThrow(httpClient, exception);
-
-            assertThrows(ApiDocNotFoundException.class,  () -> apiDocService.retrieveDefaultApiDoc(SERVICE_ID));
+            Mono<String> apiDocMono = apiDocService.retrieveDefaultApiDoc(SERVICE_ID);
+            assertThrows(ApiDocNotFoundException.class, apiDocMono::block);
 
             assertNotNull(lastApiInfo.get());
             assertEquals(API_ID, lastApiInfo.get().getApiId());
@@ -267,7 +272,7 @@ class LocalApiDocServiceTest {
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-            String actualApiDoc = apiDocService.retrieveDefaultApiDoc(SERVICE_ID);
+            String actualApiDoc = apiDocService.retrieveDefaultApiDoc(SERVICE_ID).block();
 
             assertNotNull(lastApiInfo.get());
             assertEquals(API_ID, lastApiInfo.get().getApiId());
@@ -290,7 +295,7 @@ class LocalApiDocServiceTest {
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-            String actualApiDoc = apiDocService.retrieveDefaultApiDoc(SERVICE_ID);
+            String actualApiDoc = apiDocService.retrieveDefaultApiDoc(SERVICE_ID).block();
 
             assertNotNull(lastApiInfo.get());
             assertEquals(API_ID, lastApiInfo.get().getApiId());
@@ -311,7 +316,7 @@ class LocalApiDocServiceTest {
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-            String actualApiDoc = apiDocService.retrieveDefaultApiDoc(SERVICE_ID);
+            String actualApiDoc = apiDocService.retrieveDefaultApiDoc(SERVICE_ID).block();
 
             assertNotNull(lastApiInfo.get());
             assertEquals(API_ID, lastApiInfo.get().getApiId());
@@ -332,7 +337,7 @@ class LocalApiDocServiceTest {
 
             HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-            String actualApiDoc = apiDocService.retrieveDefaultApiDoc(SERVICE_ID);
+            String actualApiDoc = apiDocService.retrieveDefaultApiDoc(SERVICE_ID).block();
 
             assertNotNull(actualApiDoc);
             assertEquals(responseBody, actualApiDoc);

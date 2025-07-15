@@ -24,12 +24,11 @@ import org.springdoc.core.service.OpenAPIService;
 import org.springdoc.core.service.OperationService;
 import org.springdoc.webflux.api.OpenApiWebfluxResource;
 import org.springframework.beans.factory.ObjectFactory;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.config.ApiInfo;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 
@@ -38,7 +37,6 @@ import java.util.*;
 public class ApiDocRetrievalServiceLocal {
 
     private Map<String, OpenApiWebfluxResource> apiDocResource = new HashMap<>();
-    private Map<String, String> apiDoc = new HashMap<>();
 
     public ApiDocRetrievalServiceLocal(
         List<GroupedOpenApi> groupedOpenApis,
@@ -75,28 +73,18 @@ public class ApiDocRetrievalServiceLocal {
             });
     }
 
-    @EventListener
-    void onApplicationEvent(ApplicationReadyEvent event) {
-        apiDocResource.forEach((k, v) -> {
-            try {
-                v.openapiJson(null, "/", Locale.getDefault())
-                    .map(json -> {
-                        apiDoc.put(k, new String(json));
-                        return json;
-                    }).block();
-            } catch (JsonProcessingException jpe) {
-                throw new ApiDocNotFoundException("Cannot obtain API doc for + " + k, jpe);
-            }
-        });
-    }
-
-    public ApiDocInfo retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
+    public Mono<ApiDocInfo> retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
         String serviceId = StringUtils.lowerCase(instanceInfo.getAppName());
-        var apiDocContent = apiDoc.get(serviceId);
-        if (apiDocContent == null) {
-            throw new ApiDocNotFoundException("Cannot obtain API doc for service " + serviceId);
+
+        try {
+            return Optional.ofNullable(apiDocResource.get(serviceId))
+                .orElseThrow(() -> new ApiDocNotFoundException("Cannot obtain API doc for service " + serviceId))
+                .openapiJson(null, "/", Locale.getDefault())
+                .map(String::new)
+                .map(content -> ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(content).build());
+        } catch (JsonProcessingException jpe) {
+            throw new ApiDocNotFoundException("Cannot obtain API doc for + " + serviceId, jpe);
         }
-        return ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(apiDocContent).build();
     }
 
 }

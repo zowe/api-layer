@@ -74,11 +74,12 @@ public class ApiDocController {
         @PathVariable(value = "serviceId") String serviceId,
         @Parameter(name = "apiId", description = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v1.0.0")
         @PathVariable(value = "apiId") String apiId) {
-        return Mono.fromSupplier(() -> ResponseEntity
-            .status(SC_OK)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(apiDocService.retrieveApiDoc(serviceId, apiId))
-        );
+        return apiDocService.retrieveApiDoc(serviceId, apiId)
+            .map(apiDoc -> ResponseEntity
+                .status(SC_OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(apiDoc)
+            );
     }
 
     /**
@@ -103,11 +104,12 @@ public class ApiDocController {
     public Mono<ResponseEntity<String>> getDefaultApiDocInfo(
         @Parameter(name = "serviceId", description = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "serviceId") String serviceId) {
-        return Mono.fromSupplier(() -> ResponseEntity
-            .status(SC_OK)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(apiDocService.retrieveDefaultApiDoc(serviceId))
-        );
+        return apiDocService.retrieveDefaultApiDoc(serviceId)
+            .map(apiDoc -> ResponseEntity
+                .status(SC_OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(apiDoc)
+            );
     }
 
     @GetMapping(value = "/{serviceId}/{apiId1}/{apiId2}", produces = MediaType.TEXT_HTML_VALUE)
@@ -131,26 +133,29 @@ public class ApiDocController {
         @Parameter(name = "apiId2", description = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v2.0.0")
         @PathVariable(value = "apiId2") String apiId2) {
 
-        try {
-            String doc1 = apiDocService.retrieveApiDoc(serviceId, apiId1);
-            String doc2 = apiDocService.retrieveApiDoc(serviceId, apiId2);
-            ChangedOpenApi diff = OpenApiCompare.fromContents(doc1, doc2);
-            HtmlRender render = new HtmlRender();
-            String result = render.render(diff);
-            //Remove external stylesheet
-            result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
-            return Mono.just(ResponseEntity
-                .status(HttpStatus.SC_OK)
-                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                .body(result)
-            );
-        } catch (ApiDocNotFoundException adnfe) {
-            throw adnfe;
-        } catch (Exception e) {
-            String errorMessage = String.format("Error retrieving API diff for '%s' with versions '%s' and '%s'", serviceId, apiId1, apiId2);
-            log.error(errorMessage, e);
-            throw new ApiDiffNotAvailableException(errorMessage);
-        }
+        return Mono.zip(
+            apiDocService.retrieveApiDoc(serviceId, apiId1),
+            apiDocService.retrieveApiDoc(serviceId, apiId2)
+        ).handle((tuple, sink) -> {
+            try {
+                ChangedOpenApi diff = OpenApiCompare.fromContents(tuple.getT1(), tuple.getT2());
+                HtmlRender render = new HtmlRender();
+                String result = render.render(diff);
+                // Remove external stylesheet
+                result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
+                sink.next(ResponseEntity
+                    .status(HttpStatus.SC_OK)
+                    .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                    .body(result)
+                );
+            } catch (ApiDocNotFoundException adnfe) {
+                sink.error(adnfe);
+            } catch (Exception e) {
+                String errorMessage = String.format("Error retrieving API diff for '%s' with versions '%s' and '%s'", serviceId, apiId1, apiId2);
+                log.error(errorMessage, e);
+                sink.error(new ApiDiffNotAvailableException(errorMessage));
+            }
+        });
     }
 
 }

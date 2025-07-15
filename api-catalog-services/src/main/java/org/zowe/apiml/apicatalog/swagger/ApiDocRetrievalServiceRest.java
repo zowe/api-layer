@@ -26,6 +26,8 @@ import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -47,22 +49,14 @@ public class ApiDocRetrievalServiceRest {
     @InjectApimlLogger
     private ApimlLogger apimlLogger = ApimlLogger.empty();
 
-    public ApiDocInfo retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
+    public Mono<ApiDocInfo> retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
         String serviceId = StringUtils.lowerCase(instanceInfo.getAppName());
         log.debug("Retrieving API doc for '{} {}'", serviceId, apiInfo.getVersion());
 
         String apiDocUrl = apiInfo.getSwaggerUrl();
 
-        try {
-            String apiDocContent = getApiDocContentByUrl(serviceId, apiDocUrl);
-            return ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(apiDocContent).build();
-        } catch (IOException e) {
-            apimlLogger.log("org.zowe.apiml.apicatalog.apiDocHostCommunication", serviceId, e.getMessage());
-            log.debug("Error retrieving api doc for '{}'", serviceId, e);
-            throw new ApiDocNotFoundException(
-                exceptionMessage.apply(serviceId) + " Root cause: " + e.getMessage(), e
-            );
-        }
+        return getApiDocContentByUrl(serviceId, apiDocUrl)
+            .map(content -> ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(content).build());
     }
 
     /**
@@ -73,25 +67,37 @@ public class ApiDocRetrievalServiceRest {
      * @return the information about ApiDoc content as application/json
      * @throws ApiDocNotFoundException if the response is error
      */
-    private String getApiDocContentByUrl(@NonNull String serviceId, String apiDocUrl) throws IOException {
+    private Mono<String> getApiDocContentByUrl(@NonNull String serviceId, String apiDocUrl) {
         HttpGet httpGet = new HttpGet(apiDocUrl);
         httpGet.setHeader(org.apache.http.HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 
-        return secureHttpClientWithoutKeystore.execute(httpGet, response -> {
-                String responseBody = "";
-                var responseEntity = response.getEntity();
-                if (responseEntity != null) {
-                    responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
-                }
+        // TODO: refactor with reactive client
+        return Mono.defer(() -> {
+            try {
+                return Mono.just(secureHttpClientWithoutKeystore.execute(httpGet, response -> {
+                        String responseBody = "";
+                        var responseEntity = response.getEntity();
+                        if (responseEntity != null) {
+                            responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+                        }
 
-            if (HttpStatus.SC_OK == response.getCode()) {
-                return responseBody;
-            } else {
-                    throw new ApiDocNotFoundException("No API Documentation was retrieved due to " + serviceId +
-                        " server error: '" + responseBody + "'.");
-                }
+                        if (HttpStatus.SC_OK == response.getCode()) {
+                            return responseBody;
+                        } else {
+                            throw new ApiDocNotFoundException("No API Documentation was retrieved due to " + serviceId +
+                                " server error: '" + responseBody + "'.");
+                        }
+                    }
+                ));
+            } catch (IOException e) {
+                apimlLogger.log("org.zowe.apiml.apicatalog.apiDocHostCommunication", serviceId, e.getMessage());
+                log.debug("Error retrieving api doc for '{}'", serviceId, e);
+                return Mono.error(new ApiDocNotFoundException(
+                    exceptionMessage.apply(serviceId) + " Root cause: " + e.getMessage(), e
+                ));
             }
-        );
+        })
+        .subscribeOn(Schedulers.boundedElastic());
     }
 
 }
