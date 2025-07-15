@@ -118,7 +118,7 @@ public class AdditionalRegistrationGatewayRegistryTest {
     }
 
     @Test
-    void whenGateway_andGatewayWithDNSResolution_thenAddIpToRegistry() throws UnknownHostException {
+    void whenGatewayWithDNSResolution_thenAddIpToRegistry() throws UnknownHostException {
         when(discoveryClientMock.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(GW2_APPLICATION);
 
         InetAddress[] resolvedGw2Hostname = new InetAddress[]{InetAddress.getByName(GW2_IP_ADDRESS_FROM_DNS)};
