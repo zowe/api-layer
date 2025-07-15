@@ -45,7 +45,7 @@ public class ApiTransformationConfig {
     @Scope(value = "prototype")
     public AbstractApiDocService<?, ?> abstractApiDocService(String content) {
         JsonFactory jsonFactory;
-        if (Optional.ofNullable(content).map(String::trim).map(c -> c.startsWith("{")).orElse(false)) {
+        if (String.valueOf(content).trim().startsWith("{"})) {
             jsonFactory = new JsonFactory();
         } else {
             jsonFactory = new YAMLFactory();
