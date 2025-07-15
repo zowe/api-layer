@@ -46,7 +46,14 @@ class ZaasSchemeTransformApiTest {
     ZosmfService zosmfService;
     RequestCredentials credentials;
     AuthSource authSource;
-  
+    private static MessageService messageService;
+
+    @BeforeAll
+    static void messageService() {
+        messageService = YamlMessageServiceInstance.getInstance();
+        messageService.loadMessages("/zaas-log-messages.yml");
+    }
+
     private final String MISSING_AUTH_MSG = "ZWEAG160E No authentication provided in the request";
     private final String INVALID_AUTH_MSG = "ZWEAO402E The request has not been applied because it lacks valid authentication credentials.";
 

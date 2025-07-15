@@ -156,7 +156,7 @@ public class ModulithConfig {
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationStart() {
         ApimlInstanceRegistry registry = getRegistry();
-        instances.forEach((key, value) -> registry.registerStatically(instances.get(key), CoreService.GATEWAY.getServiceId().equals(key)));
+        instances.forEach((key, value) -> registry.registerStatically(instances.get(key), false, CoreService.GATEWAY.getServiceId().equalsIgnoreCase(key)));
 
         log.info("Initialize timer for static services peer-replicated heartbeats");
 
