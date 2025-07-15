@@ -89,9 +89,9 @@ class XForwardHeadersProxyTest {
         requestSpecs
             .cookie(COOKIE_NAME, jwt)
             .header(HEADER_X_FORWARD_TO, FORWARD_TO_GATEWAY)
-            .when()
+        .when()
             .get(cgwUrl)
-            .then()
+        .then()
             .statusCode(HttpStatus.SC_OK)
             .body("headers.x-forwarded-proto", is("https,https"))
             .body("headers.x-forwarded-prefix", emptyOrNullString())
