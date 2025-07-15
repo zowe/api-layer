@@ -124,7 +124,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
             return Mono.empty();
         }
 
-        String location = response.getHeaders().getFirst(HttpHeaders.LOCATION);
+        var location = response.getHeaders().getFirst(HttpHeaders.LOCATION);
         if (StringUtils.isBlank(location)) {
             return Mono.empty();
         }
