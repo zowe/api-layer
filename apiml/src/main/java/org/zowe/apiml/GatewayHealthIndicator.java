@@ -10,13 +10,14 @@
 
 package org.zowe.apiml;
 
-import com.nimbusds.oauth2.sdk.util.StringUtils;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health.Builder;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -51,12 +52,13 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
     private AtomicBoolean discoveryAvailable = new AtomicBoolean(false);
     private AtomicBoolean zaasAvailable = new AtomicBoolean(false);
+    private AtomicBoolean catalogAvailable = new AtomicBoolean(false);
     private AtomicBoolean startedInformationPublished = new AtomicBoolean(false);
 
     @Override
     protected void doHealthCheck(Builder builder) throws Exception {
         var anyCatalogIsAvailable = StringUtils.isNotBlank(apiCatalogServiceId);
-        var apiCatalogUp = anyCatalogIsAvailable && !this.discoveryClient.getInstances(apiCatalogServiceId).isEmpty();
+        catalogAvailable.compareAndSet(false, anyCatalogIsAvailable && !this.discoveryClient.getInstances(apiCatalogServiceId).isEmpty());
 
         // Keeping for backwards compatibility, in modulith the amount of gateways is the amount of authentication services available
         var gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
@@ -69,29 +71,49 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
             .withDetail("zaasCount", zaasCount);
 
         if (anyCatalogIsAvailable) {
-            builder.withDetail(CoreService.API_CATALOG.getServiceId(), toStatus(apiCatalogUp).getCode());
+            builder.withDetail(CoreService.API_CATALOG.getServiceId(), toStatus(catalogAvailable.get()).getCode());
         }
 
-        if (!startedInformationPublished.get() && discoveryAvailable.get() && apiCatalogUp && zaasAvailable.get()) {
+        if (isFullyUp()) {
             onFullyUp();
         }
     }
 
+    private boolean isFullyUp() {
+        return !startedInformationPublished.get() && discoveryAvailable.get() && catalogAvailable.get() && zaasAvailable.get();
+    }
+
     private void onFullyUp() {
-        if (!startedInformationPublished.get()) {
+        if (startedInformationPublished.compareAndSet(false, true)) {
             apimlLog.log("org.zowe.apiml.common.mediationLayerStarted");
-            startedInformationPublished.set(true);
         }
     }
 
     @EventListener
     public void onApplicationEvent(ZaasServiceAvailableEvent event) {
         zaasAvailable.set(true);
+        if (isFullyUp()) {
+            onFullyUp();
+        }
     }
 
     @EventListener
     public void onApplicationEvent(EurekaRegistryAvailableEvent event) {
         discoveryAvailable.set(true);
+        if (isFullyUp()) {
+            onFullyUp();
+        }
+    }
+
+    @EventListener
+    public void onApplicationEvent(EurekaInstanceRegisteredEvent event) {
+        var instanceInfo = event.getInstanceInfo();
+        if (String.valueOf(instanceInfo.getAppName()).equalsIgnoreCase(apiCatalogServiceId)) {
+            catalogAvailable.set(true);
+        }
+        if (isFullyUp()) {
+            onFullyUp();
+        }
     }
 
     boolean isStartedInformationPublished() {

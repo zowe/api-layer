@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.gateway.config;
 
-import com.nimbusds.oauth2.sdk.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
@@ -79,10 +79,13 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     }
 
     private void onFullyUp() {
-        if (!startedInformationPublished.get()) {
+        if (startedInformationPublished.compareAndSet(false, true)) {
             apimlLog.log("org.zowe.apiml.common.mediationLayerStarted");
-            startedInformationPublished.set(true);
         }
+    }
+
+    boolean isStartedInformationPublished() {
+        return startedInformationPublished.get();
     }
 
     private Status toStatus(boolean up) {
