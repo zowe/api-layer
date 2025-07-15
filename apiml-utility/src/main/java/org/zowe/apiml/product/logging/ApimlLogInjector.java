@@ -14,7 +14,9 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
@@ -29,6 +31,8 @@ import jakarta.annotation.Nonnull;
 @RequiredArgsConstructor
 public class ApimlLogInjector implements BeanPostProcessor {
 
+    private final ApplicationContext applicationContext;
+
     @Override
     public Object postProcessAfterInitialization(@Nonnull Object bean, @Nonnull String beanName) {
         return bean;
@@ -41,7 +45,13 @@ public class ApimlLogInjector implements BeanPostProcessor {
                 // make the field accessible if defined private
                 ReflectionUtils.makeAccessible(field);
                 Class<?> clazz = getClass(bean);
-                ApimlLogger log = ApimlLogger.of(clazz, YamlMessageServiceInstance.getInstance());
+
+                ApimlLogger log;
+                try {
+                    log = applicationContext.getBean(ApimlLogger.class);
+                } catch (BeansException e) {
+                    log = ApimlLogger.of(clazz, YamlMessageServiceInstance.getInstance());
+                }
                 field.set(bean, log);
             }
         });
