@@ -78,6 +78,7 @@ jobs:
             -   uses: ./.github/actions/setup
 
             -   name: Run Modulith CI Tests
+                timeout-minutes: 4
                 run: >
                     ENV_CONFIG=docker-modulith ./gradlew runStartUpCheck :integration-tests:runContainerModulithTests --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
@@ -94,6 +95,250 @@ jobs:
                         results/**
                         integration-tests/build/test-results/runContainerModulithTests/binary/**
                         integration-tests/build/test-results/runStartUpCheck/binary/**
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsModulithSAFProviderHA:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 15
+
+        services:
+            apiml:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
+                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
+                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
+                    APIML_SECURITY_X509_ENABLED: true
+                    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
+                    SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
+                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+                    APIML_SECURITY_AUTH_PROVIDER: saf
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_HOSTNAME: apiml
+                    logbackService: ZWEAGW1
+            apiml-2:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
+                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
+                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
+                    APIML_SECURITY_X509_ENABLED: true
+                    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
+                    SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
+                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+                    APIML_SECURITY_AUTH_PROVIDER: saf
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_HOSTNAME: apiml-2
+                    logbackService: ZWEAGW2
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_HOSTNAME: api-catalog-services
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
+            api-catalog-services-2:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_HOSTNAME: api-catalog-services-2
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
+                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml-2:10010
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Run Startup Check
+                if: always()
+                timeout-minutes: 4
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Run Modulith CI Tests with SAF Provider in HA
+                run: >
+                    ENV_CONFIG=docker-modulith-ha ./gradlew :integration-tests:runContainerSAFProviderTests --info
+                    -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsModulithSAFProviderHA-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        results/**
+                        integration-tests/build/test-results/runContainerSAFProviderTests/binary/**
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsModulithHA:
+        needs: PublishJibContainers
+        container: ubuntu:latest
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        strategy:
+            matrix:
+                type: ["normal", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic"]
+        services:
+            apiml:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
+                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
+                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
+                    APIML_SECURITY_X509_ENABLED: true
+                    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
+                    SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
+                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_HOSTNAME: apiml
+                    logbackService: ZWEAGW1
+                    APIML_HEALTH_PROTECTED: false
+            apiml-2:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
+                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
+                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
+                    APIML_SECURITY_X509_ENABLED: true
+                    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
+                    SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
+                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_HOSTNAME: apiml-2
+                    logbackService: ZWEAGW2
+                    APIML_HEALTH_PROTECTED: false
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_HOSTNAME: api-catalog-services
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
+            api-catalog-services-2:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_HOSTNAME: api-catalog-services-2
+                    APIML_HEALTH_PROTECTED: false
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            discoverable-client-2:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: discoverable-client-2
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Run Startup Check
+                if: always()
+                timeout-minutes: 4
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Run Normal HA Tests in Modulith
+                if: ${{ 'normal' == matrix.type }}
+                run: >
+                    ./gradlew runHATests --info -Denvironment.config=-docker-modulith-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Run Gateway Service Chaotic HA Tests in Modulith
+                if: ${{ 'gateway-chaotic' == matrix.type }}
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
+                    --info -Denvironment.config=-docker-modulith-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Run Discoverable Client Chaotic HA Tests in Modulith
+                if: ${{ 'discoverableclient-chaotic' == matrix.type }}
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
+                    --info -Denvironment.config=-docker-modulith-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Run WebSocket Chaotic HA Tests in Modulith
+                if: ${{ 'websocket-chaotic' == matrix.type }}
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
+                    --info -Denvironment.config=-docker-modulith-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsModulithHA-${{ env.JOB_ID }}-${{ matrix.type }}
+                    path: |
+                        integration-tests/build/reports/**
+                        integration-tests/build/test-results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -155,6 +400,7 @@ jobs:
             -   uses: ./.github/actions/setup
 
             -   name: Run CI Tests
+                timeout-minutes: 4
                 run: >
                     ./gradlew runStartUpCheck :integration-tests:runContainerTests --info -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -165,6 +411,96 @@ jobs:
                 if: always()
                 with:
                     name: ContainerCITests-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsSAFProviderHA:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 15
+
+        services:
+            api-catalog-services-2:
+                image: ghcr.io/balhar-jakub/api-catalog-services-standalone:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_HOSTNAME: api-catalog-services-2
+                    APIML_HEALTH_PROTECTED: false
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+            discovery-service-2:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: discovery-service-2
+                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: gateway-service
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+                    logbackService: ZWEAGW1
+            gateway-service-2:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: gateway-service-2
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+                    logbackService: ZWEAGW2
+            zaas-service:
+                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
+                    APIML_SECURITY_AUTH_PROVIDER: saf
+            zaas-service-2:
+                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
+                    APIML_SECURITY_AUTH_PROVIDER: saf
+                    APIML_SERVICE_HOSTNAME: zaas-service-2
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Run Startup Check
+                if: always()
+                timeout-minutes: 4
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-ha -Ddiscoverableclient.instances=1
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Run CI Tests With SAF Provider
+                run: >
+                    ./gradlew :integration-tests:runContainerSAFProviderTests --info -Denvironment.config=-ha
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsSAFProviderHA-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
@@ -228,6 +564,7 @@ jobs:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SERVICE_FORWARDCLIENTCERTENABLED: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
+                    logbackService: ZWEAGW1
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -352,6 +689,7 @@ jobs:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
+                    logbackService: ZWEAAZ1
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -360,6 +698,7 @@ jobs:
                     APIML_SERVICE_EXTERNALURL: https://gateway-service:10010
                     APIML_GATEWAY_REGISTRY_ENABLED: true
                     APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
+                    logbackService: ZWEAGW1
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
@@ -378,6 +717,7 @@ jobs:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10031/eureka/
+                    logbackService: ZWEAAZ2
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -400,6 +740,7 @@ jobs:
             -   uses: ./.github/actions/setup
 
             -   name: Run CI Tests
+                timeout-minutes: 4
                 run: >
                     ./gradlew runStartUpCheck :integration-tests:runGatewayCentralRegistryTest --info
                     -Denvironment.config=-docker -Dgateway.instances=2 -Ddiscoverableclient.instances=0
@@ -743,92 +1084,6 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
-    CITestsHA:
-        needs: PublishJibContainers
-        container: ubuntu:latest
-        runs-on: ubuntu-latest
-        timeout-minutes: 15
-
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_HEALTH_PROTECTED: false
-            api-catalog-services-2:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: api-catalog-services-2
-                    APIML_HEALTH_PROTECTED: false
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-            discoverable-client-2:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discoverable-client-2
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
-            discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: discovery-service-2
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-            zaas-service-2:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-                    logbackService: ZWEAGW2
-        steps:
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Run HA Tests
-                run: >
-                    ./gradlew runHATests --info -Denvironment.config=-ha
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-
-            -   name: Correct Permisions
-                run: |
-                    chmod 755 -R .gradle
-            # Coverage results are not stored in this job as it would not provide much additional data
-            -   name: Store results
-                uses: actions/upload-artifact@v4
-                if: always()
-                with:
-                    name: CITestsHA-${{ env.JOB_ID }}
-                    path: |
-                        integration-tests/build/reports/**
-
-            -   uses: ./.github/actions/teardown
-
     DeterministicHALoadBalancing:
         needs: PublishJibContainers
         container: ubuntu:latest
@@ -919,6 +1174,108 @@ jobs:
                 if: always()
                 with:
                     name: DeterministicLbHaTest-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/teardown
+
+    DeterministicHALoadBalancingModulith:
+        needs: PublishJibContainers
+        container: ubuntu:latest
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        services:
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            discoverable-client-2:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: discoverable-client-2
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            apiml:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_HOSTNAME: apiml
+                    APIML_ROUTING_INSTANCEIDHEADER: true
+                    logbackService: ZWEAGW1
+            apiml-2:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_HOSTNAME: apiml-2
+                    APIML_ROUTING_INSTANCEIDHEADER: true
+                    logbackService: ZWEAGW2
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Setup Docker
+                if: ${{ false }} # Debug of containers
+                run: |
+                    apt update
+                    apt install -y apt-transport-https ca-certificates curl software-properties-common
+                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+                    apt update
+                    apt-cache policy docker-ce
+                    apt install -y docker-ce
+
+            -   name: Run Startup Check
+                if: always()
+                timeout-minutes: 4
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Run HA Tests
+                run: >
+                    ./gradlew runDeterministicLbHaTests --info
+                    -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Get Container Logs
+                if: ${{ false }} # Debug of containers
+                run: |
+                    docker ps -a
+                    docker ps -q | xargs -L 1 docker logs
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+            # Coverage results are not stored in this job as it would not provide much additional data
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: DeterministicLbHaTestModulith-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -1021,21 +1378,108 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
-    # CITestsChaoticHAModulith:
+    StickySessionHALoadBalancingModulith:
+        needs: PublishJibContainers
+        container: ubuntu:latest
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
 
-    CITestsChaoticHA:
+        services:
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
+            discoverable-client-2:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: discoverable-client-2
+                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+            apiml:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_HOSTNAME: apiml
+                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
+                    logbackService: ZWEAGW1
+            apiml-2:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_HOSTNAME: apiml-2
+                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
+                    logbackService: ZWEAGW2
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Setup Docker
+                if: ${{ false }} # Debug of containers
+                run: |
+                    apt update
+                    apt install -y apt-transport-https ca-certificates curl software-properties-common
+                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+                    apt update
+                    apt-cache policy docker-ce
+                    apt install -y docker-ce
+
+            -   name: Run HA Tests
+                run: >
+                    ./gradlew runStickySessionLbHaTests --info -Denvironment.config=-docker-modulith-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+            -   name: Get Container Logs
+                if: ${{ false }} # Debug of containers
+                run: |
+                    docker ps -a
+                    docker ps -q | xargs -L 1 docker logs
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+            # Coverage results are not stored in this job as it would not provide much additional data
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: StickySessionLbHaTestModulith-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsHA:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
         strategy:
             matrix:
-                type: ["discovery", "gateway", "discoverableclient", "websocket"]
+                type: ["normal", "discovery-chaotic", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic"]
         services:
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
+            api-catalog-services-2:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_HOSTNAME: api-catalog-services-2
+                    APIML_HEALTH_PROTECTED: false
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
@@ -1086,6 +1530,7 @@ jobs:
 
             -   name: Run Startup Check
                 if: always()
+                timeout-minutes: 4
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-ha -Ddiscoverableclient.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -1093,8 +1538,17 @@ jobs:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
+            -   name: Run Normal HA Tests
+                if: ${{ 'normal' == matrix.type }}
+                run: >
+                    ./gradlew runHATests --info -Denvironment.config=-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Run Discovery Service Chaotic HA Tests
-                if: ${{ 'discovery' == matrix.type }}
+                if: ${{ 'discovery-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
                     --info -Denvironment.config=-ha -Ddiscoverableclient.instances=1
@@ -1104,7 +1558,7 @@ jobs:
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Gateway Service Chaotic HA Tests
-                if: ${{ 'gateway' == matrix.type }}
+                if: ${{ 'gateway-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
                     --info -Denvironment.config=-ha
@@ -1114,7 +1568,7 @@ jobs:
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Discoverable Client Chaotic HA Tests
-                if: ${{ 'discoverableclient' == matrix.type }}
+                if: ${{ 'discoverableclient-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
                     --info -Denvironment.config=-ha
@@ -1124,7 +1578,7 @@ jobs:
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run WebSocket Chaotic HA Tests
-                if: ${{ 'websocket' == matrix.type }}
+                if: ${{ 'websocket-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
                     --info -Denvironment.config=-ha
@@ -1141,7 +1595,7 @@ jobs:
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
-                    name: CITestsChaoticHA-${{ env.JOB_ID }}-${{ matrix.type }}
+                    name: CITestsHA-${{ env.JOB_ID }}-${{ matrix.type }}
                     path: |
                         integration-tests/build/reports/**
 
@@ -1307,6 +1761,7 @@ jobs:
                         api-catalog-ui/frontend/node_modules
                     key: my-cache-${{ runner.os }}-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
             -   name: Run startup check
+                timeout-minutes: 4
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
             -   name: Show status when APIML is not ready yet
@@ -1342,6 +1797,121 @@ jobs:
                 if: always()
                 with:
                     name: cypress-snapshots
+                    path: api-catalog-ui/frontend/cypress/screenshots
+            -   uses: ./.github/actions/teardown
+
+    E2EUITestsModulith:
+        # This stage needs to use modulith with gateway-service hostname due to the current OIDC provider setup
+        # Where only gateway-service is an allowed hostname for redirects
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: cypress/browsers:node-20.11.0-chrome-121.0.6167.85-1-ff-120.0-edge-121.0.2277.83-1
+        timeout-minutes: 30
+
+        services:
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_HOSTNAME: api-catalog-services
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://gateway-service:10011/eureka
+                    APIML_SERVICE_GATEWAYHOSTNAME: https://gateway-service:10010
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://gateway-service:10011/eureka
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://gateway-service:10011/eureka
+
+            gateway-service: # To avoid updating Oauth provider admin settings
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_DISCOVERY_ALLPEERSURLS: https://gateway-service:10011/eureka
+                    APIML_SERVICE_HOSTNAME: gateway-service
+                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_ISSUER: ${{ secrets.OKTA_ISSUER }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_AUTHORIZATIONURI: ${{ secrets.OKTA_AUTH_URI }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_TOKENURI: ${{ secrets.OKTA_TOKEN_URI }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_USERINFOURI: ${{ secrets.OKTA_USER_INFO_URI }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_USERNAMEATTRIBUTE: sub
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_JWKSETURI: ${{ secrets.OKTA_JWKSET_URI }}
+                    APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
+                    APIML_HEALTH_PROTECTED: false
+                    logbackService: ZWEAGW1
+            gateway-service-2:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_DISCOVERY_ALLPEERSURLS: https://gateway-service-2:10011/eureka
+                    APIML_SERVICE_HOSTNAME: gateway-service-2
+                    APIML_SERVICE_APIMLID: apiml2
+                    APIML_HEALTH_PROTECTED: false
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://gateway-service:10011/eureka
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
+                    logbackService: ZWEAGW2
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+            -   uses: ./.github/actions/setup
+            -   name: Install npm dependencies API Catalog
+                uses: bahmutov/npm-install@v1
+                with:
+                    install-command: npm ci --legacy-peer-deps
+                    working-directory: api-catalog-ui/frontend
+            -   name: Cache NPM and Cypress 📦
+                uses: actions/cache@v4
+                with:
+                    path: |
+                        ~/.cache/Cypress
+                        api-catalog-ui/frontend/node_modules
+                    key: my-cache-${{ runner.os }}-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
+            -   name: Run startup check
+                timeout-minutes: 4
+                run: >
+                    ./gradlew runStartUpCheck --info --scan -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1 -Denvironment.modulith=true -Denvironment.gwCount=1
+                    -Dgateway.host=gateway-service,gateway-service-2 -Ddiscovery.host=gateway-service -Ddiscovery.additionalHost=gateway-service-2
+            -   name: Show status when APIML is not ready yet
+                if: failure()
+                shell: bash
+                run: |
+                    apt update
+                    apt install -y apt-transport-https ca-certificates curl software-properties-common
+                    curl -k -s https://apiml:10010/application/health
+                    curl -k -s https://apiml-2:10010/application/health
+            -   name: Cypress run API Catalog
+                run: |
+                    cd api-catalog-ui/frontend
+                    export CYPRESS_OKTA_USERNAME=${{ secrets.OKTA_WINNIE_USER }}
+                    export CYPRESS_OKTA_PASSWORD=${{ secrets.OKTA_WINNIE_PASS }}
+                    npm run cy:e2e:ci:modulith
+            -   name: Dump CGW jacoco data
+                run: >
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6310 --destfile ./results/gateway-service.exec
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: E2EUITestsModulith-${{ env.JOB_ID }}
+                    path: |
+                        results/**
+
+            -   name: Upload screenshots API Catalog
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: cypress-snapshots-modulith
                     path: api-catalog-ui/frontend/cypress/screenshots
             -   uses: ./.github/actions/teardown
 
@@ -1395,8 +1965,8 @@ jobs:
 
     PublishResults:
         needs: [
-            CITests,CITestsWithInfinispan,CITestsZaas,GatewayProxy,GatewayServiceRouting,CITestsChaoticHA,
-            CITestsModulith
+            CITests,CITestsWithInfinispan,CITestsZaas,GatewayProxy,GatewayServiceRouting,CITestsHA,
+            CITestsModulith,CITestsModulithHA
         ]
         runs-on: ubuntu-latest
         timeout-minutes: 20
@@ -1431,7 +2001,7 @@ jobs:
                     path: ContainerCITestsZaas
             -   uses: actions/download-artifact@v4
                 with:
-                    name: CITestsChaoticHA-${{ env.JOB_ID }}-websocket
+                    name: CITestsHA-${{ env.JOB_ID }}-websocket-chaotic
                     path: citestschaoticha
             -   uses: actions/download-artifact@v4
                 with:

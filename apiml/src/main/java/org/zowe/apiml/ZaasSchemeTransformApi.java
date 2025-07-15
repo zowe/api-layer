@@ -23,7 +23,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.zowe.apiml.constants.ApimlConstants;
-import org.zowe.apiml.gateway.filters.*;
+import org.zowe.apiml.gateway.filters.AbstractAuthSchemeFactory;
+import org.zowe.apiml.gateway.filters.ErrorHeaders;
+import org.zowe.apiml.gateway.filters.RequestCredentials;
+import org.zowe.apiml.gateway.filters.ZaasInternalErrorException;
+import org.zowe.apiml.gateway.filters.ZaasSchemeTransform;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
@@ -32,6 +36,7 @@ import org.zowe.apiml.zaas.ZaasTokenResponse;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.zaas.security.service.schema.source.PATAuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import reactor.core.publisher.Mono;
 
@@ -39,7 +44,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Optional;
 
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE;
@@ -118,6 +127,10 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             if (authSource.isEmpty()) {
                 return createMissingAuthenticationErrorMessage();
             }
+            updateServiceId(authSource, request);
+            if (!authSourceService.isValid(authSource.get())) {
+                return createInvalidAuthenticationErrorMessage();
+            }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
             var ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
@@ -132,6 +145,14 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         }
     }
 
+    private void updateServiceId(Optional<AuthSource> authSource, RequestCredentialsHttpServletRequestAdapter request) {
+        authSource
+            .filter(PATAuthSource.class::isInstance)
+            .map(PATAuthSource.class::cast)
+            .filter(as -> as.getDefaultServiceId() == null)
+            .ifPresent(as -> as.setDefaultServiceId(request.getServiceId()));
+    }
+
     @Override
     public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> safIdt(RequestCredentials requestCredentials) {
         var applicationName = requestCredentials.getApplId();
@@ -144,6 +165,10 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
             if (authSource.isEmpty()) {
                 return createMissingAuthenticationErrorMessage();
+            }
+            updateServiceId(authSource, request);
+            if (!authSourceService.isValid(authSource.get())) {
+                return createInvalidAuthenticationErrorMessage();
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
@@ -164,6 +189,10 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             if (authSource.isEmpty()) {
                 return createMissingAuthenticationErrorMessage();
             }
+            updateServiceId(authSource, request);
+            if (!authSourceService.isValid(authSource.get())) {
+                return createInvalidAuthenticationErrorMessage();
+            }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
             var response = zosmfService.exchangeAuthenticationForZosmfToken(authSource.get().getRawSource().toString(), authSourceParsed);
@@ -182,7 +211,10 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             if (authSource.isEmpty()) {
                 return createMissingAuthenticationErrorMessage();
             }
-
+            updateServiceId(authSource, request);
+            if (!authSourceService.isValid(authSource.get())) {
+                return createInvalidAuthenticationErrorMessage();
+            }
             var token = authSourceService.getJWT(authSource.get());
             var response = ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME).token(token).build();
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
@@ -199,6 +231,10 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
 
         @Delegate(excludes = Exclude.class)
         private HttpServletRequest request;
+
+        public String getServiceId() {
+            return requestCredentials.getServiceId();
+        }
 
         @Override
         public Cookie[] getCookies() {
