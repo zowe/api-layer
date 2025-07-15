@@ -10,6 +10,7 @@
 
 package org.zowe.apiml;
 
+import com.nimbusds.oauth2.sdk.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
@@ -20,8 +21,9 @@ import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvail
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.compatibility.ApimlHealthCheckHandler;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.zaas.ZaasServiceAvailableEvent;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -39,25 +41,26 @@ import static org.springframework.boot.actuate.health.Status.UP;
 @RequiredArgsConstructor
 public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
-    private static final ApimlLogger apimlLog = ApimlLogger.of(GatewayHealthIndicator.class, YamlMessageServiceInstance.getInstance());
     private final DiscoveryClient discoveryClient;
+
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Value("${apiml.catalog.serviceId:}")
     private String apiCatalogServiceId;
 
     private AtomicBoolean discoveryAvailable = new AtomicBoolean(false);
     private AtomicBoolean zaasAvailable = new AtomicBoolean(false);
-
     private AtomicBoolean startedInformationPublished = new AtomicBoolean(false);
 
     @Override
     protected void doHealthCheck(Builder builder) throws Exception {
-        var anyCatalogIsAvailable = apiCatalogServiceId != null && !apiCatalogServiceId.isEmpty();
-        var apiCatalogUp = !this.discoveryClient.getInstances(apiCatalogServiceId).isEmpty();
+        var anyCatalogIsAvailable = StringUtils.isNotBlank(apiCatalogServiceId);
+        var apiCatalogUp = anyCatalogIsAvailable && !this.discoveryClient.getInstances(apiCatalogServiceId).isEmpty();
 
         // Keeping for backwards compatibility, in modulith the amount of gateways is the amount of authentication services available
-        int gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
-        int zaasCount = gatewayCount;
+        var gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
+        var zaasCount = gatewayCount;
 
         builder.status(toStatus(discoveryAvailable.get() && zaasAvailable.get()))
             .withDetail(CoreService.DISCOVERY.getServiceId(), toStatus(discoveryAvailable.get()).getCode())
@@ -70,6 +73,12 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         }
 
         if (!startedInformationPublished.get() && discoveryAvailable.get() && apiCatalogUp && zaasAvailable.get()) {
+            onFullyUp();
+        }
+    }
+
+    private void onFullyUp() {
+        if (!startedInformationPublished.get()) {
             apimlLog.log("org.zowe.apiml.common.mediationLayerStarted");
             startedInformationPublished.set(true);
         }
