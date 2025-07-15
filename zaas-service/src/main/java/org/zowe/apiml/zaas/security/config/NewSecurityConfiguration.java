@@ -523,8 +523,7 @@ public class NewSecurityConfiguration {
                         // filter out API ML certificate
                         .addFilterBefore(reversedCategorizeCertFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
                 } else {
-                    http.x509(x509 -> x509.userDetailsService(x509UserDetailsService())) // default x509 filter, authenticates trusted cert
-                        .addFilterBefore(reversedCategorizeCertFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
+                    http.x509(x509 -> x509.userDetailsService(x509UserDetailsService())); // default x509 filter, authenticates trusted cert
                 }
 
                 return http.authenticationProvider(compoundAuthProvider) // for authenticating credentials
@@ -536,10 +535,12 @@ public class NewSecurityConfiguration {
 
             private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
                 @Override
-                public void configure(HttpSecurity http) throws Exception {
+                public void configure(HttpSecurity http) {
                     AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
                     // place the following filters before the x509 filter
                     http
+                        .addFilterAfter(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                        .addFilterAfter(x509ForwardingAwareAuthenticationFilter(),  CategorizeCertsFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
                         .addFilterBefore(basicFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                         .addFilterBefore(cookieFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                         .addFilterBefore(bearerContentFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
@@ -585,6 +586,12 @@ public class NewSecurityConfiguration {
                 out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
                 out.setApimlCertificate(crt -> !out.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
                 return out;
+            }
+
+            private X509ForwardingAwareAuthenticationFilter x509ForwardingAwareAuthenticationFilter() {
+                return new X509AuthAwareFilter("/**",
+                    handlerInitializer.getAuthenticationFailureHandler(),
+                    x509AuthenticationProvider);
             }
         }
 
