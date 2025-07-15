@@ -77,7 +77,7 @@ public class AdditionalRegistrationGatewayRegistryTest {
         new Application(CoreService.GATEWAY.getServiceId(),
             Arrays.asList(GW2_INSTANCE_INFO));
 
-    // Appplication with both gateways
+    // Application with both gateways
     private Application ALL_GW_APPLICATION =
         new Application(CoreService.GATEWAY.getServiceId(),
             Arrays.asList(GW1_INSTANCE_INFO, GW2_INSTANCE_INFO));
