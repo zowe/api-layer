@@ -29,6 +29,7 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
  */
 @HATest
 public class GatewayMultipleInstancesTest {
+
     private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests();
     private final HADiscoveryRequests haDiscoveryRequests = new HADiscoveryRequests();
 
@@ -39,8 +40,10 @@ public class GatewayMultipleInstancesTest {
 
     @Nested
     class GivenMultipleGatewayInstances {
+
         @Nested
         class WhenSendingRequest {
+
             @Test
             void gatewayInstancesAreUp() {
                 assumeTrue(haGatewayRequests.existing() > 1);
@@ -54,6 +57,9 @@ public class GatewayMultipleInstancesTest {
 
                 assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.GATEWAY), is(2));
             }
+
         }
+
     }
+
 }

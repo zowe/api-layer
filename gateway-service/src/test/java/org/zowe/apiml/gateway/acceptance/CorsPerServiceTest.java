@@ -12,8 +12,8 @@ package org.zowe.apiml.gateway.acceptance;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
+import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 
 import java.io.IOException;
 

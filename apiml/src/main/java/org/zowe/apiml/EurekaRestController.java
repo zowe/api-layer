@@ -277,7 +277,7 @@ public class EurekaRestController {
         return just(convertResponse(asgResource.statusUpdate(asgName, newStatus, isReplication)));
     }
 
-    @PostMapping
+    @PostMapping({ "/peerreplication/batch/", "/peerreplication/batch" })
     public Mono<ResponseEntity<?>> batchReplication(
         @RequestBody String replicationListString
     ) throws IOException {

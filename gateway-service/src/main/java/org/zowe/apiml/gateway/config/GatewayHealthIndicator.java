@@ -14,10 +14,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.compatibility.ApimlHealthCheckHandler;
 import org.zowe.apiml.product.constants.CoreService;
 
 import static org.springframework.boot.actuate.health.Status.DOWN;
@@ -25,10 +27,14 @@ import static org.springframework.boot.actuate.health.Status.UP;
 
 /**
  * Gateway health information (/application/health)
+ * This class contributes Gateway's information to {@link ApimlHealthCheckHandler}
+ *
  */
 @Component
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class GatewayHealthIndicator extends AbstractHealthIndicator {
-    private final DiscoveryClient discoveryClient;
+
+    protected final DiscoveryClient discoveryClient;
     private String apiCatalogServiceId;
 
     private final ApimlLogger apimlLog = ApimlLogger.of(GatewayHealthIndicator.class,
@@ -40,7 +46,6 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         this.discoveryClient = discoveryClient;
         this.apiCatalogServiceId = apiCatalogServiceId;
     }
-
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {
@@ -65,7 +70,13 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
             builder.withDetail(CoreService.API_CATALOG.getServiceId(), toStatus(apiCatalogUp).getCode());
         }
 
-        if (!startedInformationPublished && discoveryUp && apiCatalogUp && zaasUp) {
+        if (discoveryUp && apiCatalogUp && zaasUp) {
+            onFullyUp();
+        }
+    }
+
+    private void onFullyUp() {
+        if (!startedInformationPublished) {
             apimlLog.log("org.zowe.apiml.common.mediationLayerStarted");
             startedInformationPublished = true;
         }
