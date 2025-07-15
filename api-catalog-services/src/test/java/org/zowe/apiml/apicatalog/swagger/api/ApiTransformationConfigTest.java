@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.apicatalog.swagger.api;
 
-import com.fasterxml.jackson.dataformat.yaml.snakeyaml.error.MarkedYAMLException;
+import com.fasterxml.jackson.core.JsonParseException;
 import jakarta.validation.UnexpectedTypeException;
 import org.junit.jupiter.api.Test;
 
@@ -68,7 +68,7 @@ class ApiTransformationConfigTest {
     @Test
     void givenYamlWithTabs_whenGetApiDocService_thenItIsUnparseable() {
         var e = assertThrows(UnexpectedTypeException.class, () -> beanApiDocFactory.apply("\tswagger: 2.0"));
-        assertInstanceOf(MarkedYAMLException.class, e.getCause());
+        assertInstanceOf(JsonParseException.class, e.getCause());
         assertTrue(e.getCause().getMessage().contains("Do not use \\t(TAB) for indentation"));
     }
 

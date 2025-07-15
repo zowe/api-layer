@@ -25,7 +25,6 @@ import org.springframework.context.annotation.Scope;
 import org.zowe.apiml.product.gateway.GatewayClient;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.function.Function;
 
 @Configuration
@@ -45,7 +44,7 @@ public class ApiTransformationConfig {
     @Scope(value = "prototype")
     public AbstractApiDocService<?, ?> abstractApiDocService(String content) {
         JsonFactory jsonFactory;
-        if (String.valueOf(content).trim().startsWith("{"})) {
+        if (String.valueOf(content).trim().startsWith("{")) {
             jsonFactory = new JsonFactory();
         } else {
             jsonFactory = new YAMLFactory();
