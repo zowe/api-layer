@@ -131,7 +131,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             return Mono.error(new ZaasInternalErrorException(currentApimlId, e.getMessage()));
         } catch (Exception e) {
             log.debug("Token has expired", e);
-            return createErrorMessage(e.getMessage());
+            return createInvalidAuthenticationErrorMessage();
         }
     }
 

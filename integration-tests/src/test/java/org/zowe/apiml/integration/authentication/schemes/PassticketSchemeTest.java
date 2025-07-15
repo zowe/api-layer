@@ -230,7 +230,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
                     .get(discoverablePassticketUrl)
                 .then()
                     .header(ApimlConstants.AUTH_FAIL_HEADER, matcher)
-                    .log().all()
+                    .log().ifValidationFails()
                     .statusCode(is(status));
                 //@formatter:on
             }
