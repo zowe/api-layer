@@ -36,7 +36,7 @@ import java.util.*;
 @Service
 public class ApiDocRetrievalServiceLocal {
 
-    private Map<String, OpenApiWebfluxResource> apiDocResource = new HashMap<>();
+    private final Map<String, OpenApiWebfluxResource> apiDocResource = new HashMap<>();
 
     public ApiDocRetrievalServiceLocal(
         List<GroupedOpenApi> groupedOpenApis,
@@ -83,7 +83,7 @@ public class ApiDocRetrievalServiceLocal {
                 .map(String::new)
                 .map(content -> ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(content).build());
         } catch (JsonProcessingException jpe) {
-            throw new ApiDocNotFoundException("Cannot obtain API doc for + " + serviceId, jpe);
+            throw new ApiDocNotFoundException("Cannot obtain API doc for " + serviceId, jpe);
         }
     }
 
