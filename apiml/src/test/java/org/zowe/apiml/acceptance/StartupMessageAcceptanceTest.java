@@ -53,7 +53,7 @@ public class StartupMessageAcceptanceTest extends AcceptanceTestWithMockServices
     @Timeout(unit = TimeUnit.SECONDS, value = 30)
     void whenFullyStartedUp_thenEmitMessage() {
 
-        verify(logger, timeout(30 * 1000L)).log("org.zowe.apiml.common.mediationLayerStarted");
+        verify(logger, timeout(30_000)).log("org.zowe.apiml.common.mediationLayerStarted");
 
     }
 
