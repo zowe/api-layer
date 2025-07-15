@@ -50,32 +50,21 @@ public class WebConfig implements WebFluxConfigurer {
             .addResourceLocations("/resources/", "/resources/static/", "/resources/templates/");
     }
 
-    @Bean
+        @Bean
     public RouterFunction<ServerResponse> redirectRoot() {
         return route(GET("/"), req ->
             ServerResponse.permanentRedirect(URI.create("/apicatalog"))
-                .build());
+                .build())
+            .and(route(GET("/apicatalog"), req ->
+                ServerResponse.permanentRedirect(URI.create("/apicatalog/"))
+                    .build()))
+            .and(route(GET("/apicatalog/"), req ->
+                ServerResponse.permanentRedirect(URI.create("/apicatalog/index.html"))
+                    .build()))
+            .and(route(GET("/apicatalog/api/v1"), req ->
+                ServerResponse.permanentRedirect(URI.create("/apicatalog/api/v1/index.html"))
+                    .build()));
     }
-
-    @Bean
-    public RouterFunction<ServerResponse> redirectCatalogRoot() {
-        return route(GET("/apicatalog"), req ->
-            ServerResponse.permanentRedirect(URI.create("/apicatalog/"))
-                .build());
-    }
-
-    @Bean
-    public RouterFunction<ServerResponse> redirectApicatalogRoot() {
-        return route(GET("/apicatalog/"), req ->
-            ServerResponse.permanentRedirect(URI.create("/apicatalog/index.html"))
-                .build());
-    }
-
-    @Bean
-    public RouterFunction<ServerResponse> redirectApicatalogVersionRoot() {
-        return route(GET("/apicatalog/api/v1"), req ->
-            ServerResponse.permanentRedirect(URI.create("/apicatalog/api/v1/index.html"))
-                .build());
     }
 
 }
