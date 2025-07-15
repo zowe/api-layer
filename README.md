@@ -62,6 +62,26 @@ The following tools are required to build and develop the API Mediation Layer:
    npm run api-layer
    ```
 
+### Using docker
+
+These steps require docker or equivalent
+
+1. Build local Jib images:
+
+    Example:
+
+    ```shell
+        ./gradlew :apiml:jibDockerBuild :api-catalog-services:jibDockerBuild :caching-service:jibDockerBuild -Pzowe.docker.debug=true
+    ```
+
+    **Note:** zowe.docker.debug enables Java remote debugging port
+
+2. Use docker-compose:
+
+    ```shell
+        docker-compose up
+    ```
+
 ## Security
 
 By default, the API Mediation Layer for local development uses mock zOSMF as the authentication provider. For development purposes, log in using the default setting `USER` for the username, and `validPassword` as the password

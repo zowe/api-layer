@@ -135,12 +135,22 @@ public class SecurityUtils {
 
     //@formatter:off
 
+    public static String getGatewayUrl(String host, String path) {
+        return getGatewayUrl(host, path, GATEWAY_PORT);
+    }
+
     public static String getGatewayUrl(String path) {
         return getGatewayUrl(path, GATEWAY_PORT);
     }
 
     public static String getGatewayUrl(String path, int port) {
-        return String.format("%s://%s:%d%s", GATEWAY_SCHEME, GATEWAY_HOST, port, path);
+        // chose one if comma-splitted, HA tests should handle multi-valued hosts
+        var gatewayHost = GATEWAY_HOST.split(",")[0];
+        return getGatewayUrl(gatewayHost, path, port);
+    }
+
+    public static String getGatewayUrl(String host, String path, int port) {
+        return String.format("%s://%s:%d%s", GATEWAY_SCHEME, host, port, path);
     }
 
     public static String getGatewayLogoutUrl(String path) {
@@ -552,18 +562,29 @@ public class SecurityUtils {
 
         given()
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-            .when()
+        .when()
             .get(HttpRequestUtils.getUriFromGateway(ROUTED_QUERY))
-            .then()
+        .then()
+            .statusCode(status.value());
+    }
+
+    public static void assertIfLogged(String jwt, boolean logged, String gatewayHost) {
+        final HttpStatus status = logged ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
+
+        given()
+            .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+        .when()
+            .get(HttpRequestUtils.getUriFromGateway(ROUTED_QUERY, gatewayHost))
+        .then()
             .statusCode(status.value());
     }
 
     public static void assertLogout(String url, String jwtToken, int expectedStatusCode) {
         given()
             .cookie(COOKIE_NAME, jwtToken)
-            .when()
+        .when()
             .post(url)
-            .then()
+        .then()
             .statusCode(is(expectedStatusCode));
     }
 

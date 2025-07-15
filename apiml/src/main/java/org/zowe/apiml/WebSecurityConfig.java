@@ -135,20 +135,19 @@ public class WebSecurityConfig {
                 notInUnauthenticatedPaths,
                 exchange -> exchange.getRequest().getURI().getPath().startsWith("/eureka/") ? MatchResult.match() : MatchResult.notMatch() // Prevents matching /eureka (mapping for homepage in modulith)
             ))
-            .authorizeExchange(authorizeExchangeSpec ->
-                authorizeExchangeSpec
-                    .anyExchange().authenticated()
-            )
+            .authorizeExchange(authorizeExchangeSpec -> {
+                if (verifySslCertificatesOfServices) {
+                    authorizeExchangeSpec
+                        .anyExchange().authenticated();
+                } else {
+                    authorizeExchangeSpec.anyExchange().permitAll();
+                }
+            })
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable);
 
         if (verifySslCertificatesOfServices) {
             return x509SecurityConfig(http).build();
-        } else {
-            http
-                .authorizeExchange(exchange -> exchange
-                    .anyExchange().permitAll()
-                );
         }
 
         return http.build();
