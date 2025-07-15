@@ -49,7 +49,7 @@ public class ApiDocService {
     private final ApiDocRetrievalServiceLocal apiDocRetrievalServiceLocal;
     private final ApiDocRetrievalServiceRest apiDocRetrievalServiceRest;
 
-    private InstanceInfo getInstanceInfo(String serviceId) {
+    InstanceInfo getInstanceInfo(String serviceId) {
         return EurekaUtils.getInstanceInfo(eurekaClient, serviceId)
             .orElseThrow(() -> new ApiDocNotFoundException("Could not load instance information for service " + serviceId + "."));
     }
