@@ -111,7 +111,7 @@ public class AdditionalRegistrationGatewayRegistryTest {
         gatewayRegistry.cacheRefreshEventHandler(new CacheRefreshedEvent(), discoveryClientMock);
 
         assertThat(gatewayRegistry.knownAdditionalGateways.asMap().size(), is(1));
-        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(GW1_INSTANCE_ID), is(Arrays.asList(GW1_IP_ADDRESS)));
+        assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(GW1_INSTANCE_ID), is(List.of(GW1_IP_ADDRESS)));
 
         assertThat(gatewayRegistry.additionalGatewayIpAddressesReference.get().size(), is(1));
         assertTrue(gatewayRegistry.additionalGatewayIpAddressesReference.get().containsAll(Arrays.asList(GW1_IP_ADDRESS)));
