@@ -117,8 +117,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
 
             @Test
             void whenGetContainerByInvalidId() throws IOException {
-                final HttpResponse response = getResponse(GET_CONTAINER_BY_INVALID_ID_ENDPOINT, HttpStatus.SC_OK);
-                assertEquals("[]", EntityUtils.toString(response.getEntity()));
+                getResponse(GET_CONTAINER_BY_INVALID_ID_ENDPOINT, HttpStatus.SC_NOT_FOUND);
             }
         }
     }
