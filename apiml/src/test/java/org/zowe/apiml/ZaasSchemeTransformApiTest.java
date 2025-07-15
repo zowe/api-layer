@@ -112,7 +112,7 @@ class ZaasSchemeTransformApiTest {
                 when(passTicketService.generate("USER1", "app1")).thenThrow(new RuntimeException("boom"));
 
                 StepVerifier.create(transformApi.passticket(credentials)).assertNext(result -> {
-                    assertEquals("boom", result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
+                    assertEquals(INVALID_AUTH_MSG, result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
                 }).verifyComplete();
             }
         }
