@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.acceptance;
 
+import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.junit.jupiter.api.Test;
@@ -24,9 +25,12 @@ import org.zowe.apiml.zaas.ZaasApplication;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.utils.JWTUtils;
 
+import javax.net.ssl.SSLContext;
+
 import static io.restassured.RestAssured.config;
 import static io.restassured.RestAssured.given;
 import static org.apache.hc.core5.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
 
 @SpringBootTest(classes = ZaasApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -49,6 +53,8 @@ class ZaasTest {
     @Value("${apiml.service.hostname:localhost}")
     private String hostname;
 
+    private RestAssuredConfig withClientCert;
+
     @Test
     void givenZosmfCookieAndDummyAuthProvider_whenZoweJwtRequest_thenUnavailable() {
         String zosmfJwt = JWTUtils.createZosmfJwtToken("user", "z/OS", "Ltpa", httpConfig.getHttpsConfig());
@@ -62,6 +68,37 @@ class ZaasTest {
             .post(String.format("https://%s:%d/zaas/scheme/zoweJwt", hostname, port))
         .then()
             .statusCode(SC_SERVICE_UNAVAILABLE);
+        //@formatter:on
+    }
+
+    @Test
+    void givenNoCert_whenCallingSafCheck_then401() {
+
+        //@formatter:off
+        given().config(config().sslConfig(new SSLConfig().sslSocketFactory(
+                new SSLSocketFactory(httpConfig.getSecureSslContextWithoutKeystore(), ALLOW_ALL_HOSTNAME_VERIFIER)))
+            )
+            .when()
+            .post(String.format("https://%s:%d/zaas/auth/check", hostname, port))
+            .then()
+            .statusCode(SC_UNAUTHORIZED);
+        //@formatter:on
+    }
+
+    @Test
+    void givenInvalidCert_whenCallingSafCheck_then401() {
+        SSLContext sslContext = httpConfig.secureSslContext();
+        withClientCert = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER))); // NOSONAR
+
+        //@formatter:off
+        given().config(config().sslConfig(new SSLConfig().sslSocketFactory(
+                new SSLSocketFactory(httpConfig.getSecureSslContextWithoutKeystore(), ALLOW_ALL_HOSTNAME_VERIFIER)))
+            )
+            .config(withClientCert)
+            .when()
+            .post(String.format("https://%s:%d/zaas/auth/check", hostname, port))
+            .then()
+            .statusCode(SC_UNAUTHORIZED);
         //@formatter:on
     }
 
