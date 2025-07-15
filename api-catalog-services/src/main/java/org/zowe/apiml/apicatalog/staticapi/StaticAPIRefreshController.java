@@ -27,10 +27,11 @@ public class StaticAPIRefreshController {
 
     @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<String>> refreshStaticApis() {
-        StaticAPIResponse staticAPIResponse = staticAPIService.refresh();
-        return Mono.just(ResponseEntity
-            .status(staticAPIResponse.getStatusCode())
-            .body(staticAPIResponse.getBody()));
+        return Mono.fromSupplier(staticAPIService::refresh)
+            .map(staticAPIResponse -> ResponseEntity
+                .status(staticAPIResponse.getStatusCode())
+                .body(staticAPIResponse.getBody())
+            );
     }
 
 }
