@@ -51,19 +51,11 @@ public class WebConfig implements WebFluxConfigurer {
     }
 
     @Bean
-    public RouterFunction<ServerResponse> redirectRoot() {
-        return route(GET("/"), req ->
-            ServerResponse.permanentRedirect(URI.create("/apicatalog"))
-                .build())
-            .and(route(GET("/apicatalog"), req ->
-                ServerResponse.permanentRedirect(URI.create("/apicatalog/"))
-                    .build()))
-            .and(route(GET("/apicatalog/"), req ->
-                ServerResponse.permanentRedirect(URI.create("/apicatalog/index.html"))
-                    .build()))
-            .and(route(GET("/apicatalog/api/v1"), req ->
-                ServerResponse.permanentRedirect(URI.create("/apicatalog/api/v1/index.html"))
-                    .build()));
+    public RouterFunction<ServerResponse> redirectRoute() {
+        return route(GET("/"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog")).build())
+            .and(route(GET("/apicatalog"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/")).build()))
+            .and(route(GET("/apicatalog/"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/index.html")).build()))
+            .and(route(GET("/apicatalog/api/v1"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/api/v1/index.html")).build()));
     }
 
 }
