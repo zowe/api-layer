@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @RestController
 @RequestMapping({"/apicatalog/static-api", "/apicatalog/api/v1/static-api"})
@@ -31,7 +32,8 @@ public class StaticAPIRefreshController {
             .map(staticAPIResponse -> ResponseEntity
                 .status(staticAPIResponse.getStatusCode())
                 .body(staticAPIResponse.getBody())
-            );
+            )
+            .subscribeOn(Schedulers.boundedElastic());
     }
 
 }
