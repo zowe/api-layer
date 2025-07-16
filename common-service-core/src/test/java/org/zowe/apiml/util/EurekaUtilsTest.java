@@ -11,12 +11,21 @@
 package org.zowe.apiml.util;
 
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.util.Collections;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.REGISTRATION_TYPE;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.RegistrationType.ADDITIONAL;
+import static org.zowe.apiml.product.constants.CoreService.GATEWAY;
 
 class EurekaUtilsTest {
 
@@ -47,6 +56,59 @@ class EurekaUtilsTest {
 
         assertEquals("http://hostname1:80", EurekaUtils.getUrl(ii1));
         assertEquals("https://locahost:443", EurekaUtils.getUrl(ii2));
+    }
+
+    @Nested
+    class PrimaryAndSecondaryRegistration {
+
+        private static final String PRIMARY = "primary";
+        private static final String SECONDARY = "secondary";
+
+        private EurekaClient eurekaClient;
+
+        @BeforeEach
+        void init() {
+            eurekaClient = mock(EurekaClient.class);
+
+            InstanceInfo instanceInfoPrimary = InstanceInfo.Builder.newBuilder()
+                .setAppName(PRIMARY)
+                .setInstanceId(String.format("x:%s:1", PRIMARY))
+                .build();
+            Application applicationPrimary = new Application(PRIMARY, Collections.singletonList(instanceInfoPrimary));
+            doReturn(applicationPrimary).when(eurekaClient).getApplication(PRIMARY);
+
+            InstanceInfo instanceInfoSecondary = InstanceInfo.Builder.newBuilder()
+                .setAppName(GATEWAY.getServiceId())
+                .setInstanceId(String.format("x:%s:1", GATEWAY.getServiceId()))
+                .setMetadata(Map.of(
+                    APIML_ID, SECONDARY,
+                    REGISTRATION_TYPE, ADDITIONAL.getValue()
+                ))
+                .build();
+            Application applicationSecondary = new Application(GATEWAY.getServiceId(), Collections.singletonList(instanceInfoSecondary));
+            doReturn(applicationSecondary).when(eurekaClient).getApplication(GATEWAY.getServiceId());
+        }
+
+        @Test
+        void givenPrimaryRegistration_whenGetInstanceInfo_thenReturnInstanceInfo() {
+            var instance = EurekaUtils.getInstanceInfo(eurekaClient, PRIMARY);
+            assertTrue(instance.isPresent());
+            assertEquals(PRIMARY, instance.get().getAppName().toLowerCase());
+        }
+
+        @Test
+        void givenSecondaryRegistration_whenGetInstanceInfo_thenReturnInstanceInfo() {
+            var instance = EurekaUtils.getInstanceInfo(eurekaClient, SECONDARY);
+            assertTrue(instance.isPresent());
+            assertEquals(GATEWAY.getServiceId(), instance.get().getAppName().toLowerCase());
+        }
+
+        @Test
+        void givenUnknownServiceId_whenGetInstanceInfo_thenReturnEmptyOptional() {
+            var instance = EurekaUtils.getInstanceInfo(eurekaClient, "unknown");
+            assertTrue(instance.isEmpty());
+        }
+
     }
 
 }
