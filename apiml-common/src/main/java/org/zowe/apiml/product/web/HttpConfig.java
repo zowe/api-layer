@@ -112,6 +112,7 @@ public class HttpConfig {
     private CloseableHttpClient secureHttpClient;
     private CloseableHttpClient secureHttpClientWithoutKeystore;
     private SSLContext secureSslContext;
+    private SSLContext secureSslContextWithoutKeystore;
     private HostnameVerifier secureHostnameVerifier;
     private final Timer connectionManagerTimer = new Timer(
         "ApimlHttpClientConfiguration.connectionManagerTimer", true);
@@ -166,6 +167,7 @@ public class HttpConfig {
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
             ApimlPoolingHttpClientConnectionManager connectionManagerWithoutKeystore = getConnectionManager(factoryWithoutKeystore);
             secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient(connectionManagerWithoutKeystore);
+            secureSslContextWithoutKeystore = factoryWithoutKeystore.getSslContext();
 
             publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
         } catch (HttpsConfigError e) {
@@ -276,6 +278,11 @@ public class HttpConfig {
     @Bean
     public SSLContext secureSslContext() {
         return secureSslContext;
+    }
+
+    @Bean
+    public SSLContext secureSslContextWithoutKeystore() {
+        return secureSslContextWithoutKeystore;
     }
 
     @Bean
