@@ -42,11 +42,7 @@ import org.zowe.apiml.enable.register.RegisterToApiLayer;
         ),
         @ComponentScan.Filter(
             type = FilterType.ASSIGNABLE_TYPE,
-            value = GatewayHealthIndicator.class
-        ),
-        @ComponentScan.Filter(
-            type = FilterType.ASSIGNABLE_TYPE,
-            classes = { EnableApiDiscoveryConfig.class, EurekaController.class, RegisterToApiLayer.class }
+            classes = { EnableApiDiscoveryConfig.class, EurekaController.class, RegisterToApiLayer.class, GatewayHealthIndicator.class }
         ),
         @ComponentScan.Filter(
             type = FilterType.ANNOTATION,

@@ -12,6 +12,8 @@ package org.zowe.apiml.zaas.cache;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.security.HttpsConfig;
@@ -24,6 +26,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class InMemoryCachingClientTest {
 
     private Storage storage;

@@ -82,7 +82,7 @@ class ZaasSchemeTransformApiTest {
         class GivenValidAuth {
 
             @BeforeEach
-            public void setup() {
+            void setup() {
 
                 var parsed = mock(AuthSource.Parsed.class);
                 when(parsed.getUserId()).thenReturn("USER1");
@@ -177,7 +177,7 @@ class ZaasSchemeTransformApiTest {
         class GivenValidAuth {
 
             @BeforeEach
-            public void setup() {
+            void setup() {
 
                 var parsed = mock(AuthSource.Parsed.class);
                 when(parsed.getUserId()).thenReturn("USER1");
@@ -247,7 +247,7 @@ class ZaasSchemeTransformApiTest {
         class GivenValidAuth {
 
             @BeforeEach
-            public void setup() {
+            void setup() {
 
                 var parsed = mock(AuthSource.Parsed.class);
                 when(parsed.getUserId()).thenReturn("USER1");

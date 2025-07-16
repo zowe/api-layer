@@ -53,7 +53,10 @@ springdoc:
           pathsToMatch: /gateway/api/v1/**
         - group: cachingservice
           paths-to-match: /cachingservice/api/v1/**
-
+        - group: discovery
+          paths-to-match: /discovery/api/v1/**
+        - group: zaas
+          paths-to-match: /zaas/api/v1/**
 
 apiml:
     catalog:
