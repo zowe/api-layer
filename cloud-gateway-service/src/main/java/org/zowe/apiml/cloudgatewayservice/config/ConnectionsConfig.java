@@ -55,12 +55,14 @@ import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.pattern.PathPatternParser;
+import org.zowe.apiml.cloudgatewayservice.filters.X509awareXForwardedHeadersFilter;
 import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.config.AdditionalRegistrationCondition;
 import org.zowe.apiml.config.AdditionalRegistrationParser;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.gateway.AdditionalRegistrationGatewayRegistry;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.HttpsFactory;
@@ -73,10 +75,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.security.KeyStore;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
 
@@ -274,17 +273,24 @@ public class ConnectionsConfig {
     @Bean(destroyMethod = "shutdown")
     @Conditional(AdditionalRegistrationCondition.class)
     @RefreshScope
-    public AdditionalEurekaClientsHolder additionalEurekaClientsHolder(ApplicationInfoManager manager,
-                                                                       EurekaClientConfig config,
-                                                                       List<AdditionalRegistration> additionalRegistrations,
-                                                                       EurekaFactory eurekaFactory,
-                                                                       @Autowired(required = false) HealthCheckHandler healthCheckHandler
+    public AdditionalEurekaClientsHolder additionalEurekaClientsHolder(
+        ApplicationInfoManager manager,
+        EurekaClientConfig config,
+        List<AdditionalRegistration> additionalRegistrations,
+        EurekaFactory eurekaFactory,
+        @Autowired(required = false) HealthCheckHandler healthCheckHandler,
+        AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry,
+        Optional<X509awareXForwardedHeadersFilter> x509awareXForwardedHeadersFilter
     ) {
         List<CloudEurekaClient> additionalClients = new ArrayList<>(additionalRegistrations.size());
         for (AdditionalRegistration apimlRegistration : additionalRegistrations) {
             CloudEurekaClient cloudEurekaClient = registerInTheApimlInstance(config, apimlRegistration, manager, eurekaFactory);
             additionalClients.add(cloudEurekaClient);
             cloudEurekaClient.registerHealthCheck(healthCheckHandler);
+
+            x509awareXForwardedHeadersFilter
+                .ifPresent(__ ->
+                    additionalRegistrationGatewayRegistry.registerCacheRefreshEventListener(cloudEurekaClient));
         }
         return new AdditionalEurekaClientsHolder(additionalClients);
     }

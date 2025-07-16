@@ -41,6 +41,10 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
     @Value("${test.proxyAddress}")
     public String proxyAddress;
 
+    public String additionalGatewayAddress = "7.7.7.7";
+
+    public String clientAddress = "11.11.11.11";
+
     @Value("${server.ssl.keyStore}")
     private String apimlKeyStorePath;
 

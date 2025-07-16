@@ -32,6 +32,7 @@ import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.security.HttpsFactory;
 
 import java.util.AbstractMap;
+import java.util.Optional;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -92,7 +93,7 @@ public class AdditionalRegistrationTest {
         @Test
         void shouldCreateEurekaClientForAdditionalDiscoveryUrl() {
 
-            AdditionalEurekaClientsHolder holder = configSpy.additionalEurekaClientsHolder(manager, clientConfig, singletonList(registration), eurekaFactory, healthCheckHandler);
+            AdditionalEurekaClientsHolder holder = configSpy.additionalEurekaClientsHolder(manager, clientConfig, singletonList(registration), eurekaFactory, healthCheckHandler, null, Optional.empty());
 
             assertThat(holder.getDiscoveryClients()).hasSize(1);
             EurekaClientConfigBean eurekaClientConfigBean = clientConfigCaptor.getValue();
@@ -102,7 +103,7 @@ public class AdditionalRegistrationTest {
         @Test
         void shouldCreateTwoAdditionalRegistrations() {
             AdditionalRegistration secondRegistration = AdditionalRegistration.builder().discoveryServiceUrls("https://another-eureka-2").build();
-            AdditionalEurekaClientsHolder holder = configSpy.additionalEurekaClientsHolder(manager, clientConfig, asList(registration, secondRegistration), eurekaFactory, healthCheckHandler);
+            AdditionalEurekaClientsHolder holder = configSpy.additionalEurekaClientsHolder(manager, clientConfig, asList(registration, secondRegistration), eurekaFactory, healthCheckHandler, null, Optional.empty());
 
             assertThat(holder.getDiscoveryClients()).hasSize(2);
             verify(additionalClientOne).registerHealthCheck(healthCheckHandler);
