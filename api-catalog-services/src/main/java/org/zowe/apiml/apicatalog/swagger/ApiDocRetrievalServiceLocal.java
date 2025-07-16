@@ -73,6 +73,10 @@ public class ApiDocRetrievalServiceLocal {
             });
     }
 
+    public boolean isSupported(String serviceId) {
+        return apiDocResource.containsKey(StringUtils.lowerCase(serviceId));
+    }
+
     public Mono<ApiDocInfo> retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
         String serviceId = StringUtils.lowerCase(instanceInfo.getAppName());
 

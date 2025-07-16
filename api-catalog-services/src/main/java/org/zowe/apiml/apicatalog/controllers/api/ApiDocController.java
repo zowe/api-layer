@@ -23,6 +23,8 @@ import org.apache.http.HttpStatus;
 import org.openapitools.openapidiff.core.OpenApiCompare;
 import org.openapitools.openapidiff.core.model.ChangedOpenApi;
 import org.openapitools.openapidiff.core.output.HtmlRender;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,8 +42,6 @@ import static org.apache.hc.core5.http.HttpStatus.SC_OK;
  * Main API for handling requests from the API Catalog UI, routed through the gateway
  */
 @Slf4j
-@RestController
-@RequestMapping({"/apicatalog/apidoc", "/apicatalog/api/v1/apidoc"})
 @Tag(name = "API Documentation")
 @RequiredArgsConstructor
 public class ApiDocController {
@@ -156,6 +156,28 @@ public class ApiDocController {
                 sink.error(new ApiDiffNotAvailableException(errorMessage));
             }
         });
+    }
+
+}
+
+@RestController
+@RequestMapping("/apicatalog/api/v1/apidoc")
+@ConditionalOnBean(name = "modulithConfig")
+class ApiDocControllerModulith extends ApiDocController {
+
+    public ApiDocControllerModulith(ApiDocService apiDocService) {
+        super(apiDocService);
+    }
+
+}
+
+@RestController
+@RequestMapping("/apicatalog/api/v1/apidoc")
+@ConditionalOnMissingBean(name = "modulithConfig")
+class ApiDocControllerMicroservice extends ApiDocController {
+
+    public ApiDocControllerMicroservice(ApiDocService apiDocService) {
+        super(apiDocService);
     }
 
 }

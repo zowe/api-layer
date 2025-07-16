@@ -23,7 +23,6 @@ import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.exceptions.ApiVersionNotFoundException;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
-import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedService;
@@ -194,12 +193,6 @@ public class ApiDocService {
         return defaultVersion;
     }
 
-    boolean isServiceAccessibleInternally(InstanceInfo instanceInfo) {
-        return StringUtils.equalsAnyIgnoreCase(instanceInfo.getAppName(),
-            CoreService.API_CATALOG.getServiceId()
-        );
-    }
-
     /**
      * Creates a URL from the routing metadata 'apiml.routes.api-doc.serviceUrl' when 'apiml.apiInfo.swaggerUrl' is
      * not present
@@ -302,7 +295,7 @@ public class ApiDocService {
         Mono<ApiDocInfo> apiDocInfo;
         if (apiInfo.getSwaggerUrl() == null) {
             apiDocInfo = getApiDocInfoBySubstituteSwagger(instanceInfo, apiInfo);
-        } else if (isServiceAccessibleInternally(instanceInfo)) {
+        } else if (apiDocRetrievalServiceLocal.isSupported(serviceId)) {
             apiDocInfo = apiDocRetrievalServiceLocal.retrieveApiDoc(instanceInfo, apiInfo);
         } else {
             apiDocInfo = apiDocRetrievalServiceRest.retrieveApiDoc(instanceInfo, apiInfo);

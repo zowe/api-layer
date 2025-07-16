@@ -11,6 +11,8 @@
 package org.zowe.apiml.apicatalog.staticapi;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-@RestController
-@RequestMapping({"/apicatalog/static-api", "/apicatalog/api/v1/static-api"})
 @RequiredArgsConstructor
 public class StaticAPIRefreshController {
 
@@ -31,6 +31,28 @@ public class StaticAPIRefreshController {
         return Mono.just(ResponseEntity
             .status(staticAPIResponse.getStatusCode())
             .body(staticAPIResponse.getBody()));
+    }
+
+}
+
+@RestController
+@RequestMapping("/apicatalog/api/v1/static-api")
+@ConditionalOnBean(name = "modulithConfig")
+class StaticAPIRefreshControllerModulith extends StaticAPIRefreshController {
+
+    public StaticAPIRefreshControllerModulith(StaticAPIService staticAPIService) {
+        super(staticAPIService);
+    }
+
+}
+
+@RestController
+@RequestMapping("/apicatalog/static-api")
+@ConditionalOnMissingBean(name = "modulithConfig")
+class StaticAPIRefreshControllerMicroservice extends StaticAPIRefreshController {
+
+    public StaticAPIRefreshControllerMicroservice(StaticAPIService staticAPIService) {
+        super(staticAPIService);
     }
 
 }

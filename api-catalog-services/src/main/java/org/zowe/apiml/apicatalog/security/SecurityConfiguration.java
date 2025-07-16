@@ -40,6 +40,7 @@ import org.springframework.security.web.server.context.NoOpServerSecurityContext
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.WebFilter;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
@@ -53,11 +54,9 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.apache.hc.core5.http.HttpStatus.SC_UNAUTHORIZED;
@@ -84,6 +83,7 @@ public class SecurityConfiguration {
     private static final String STATIC_REFRESH_ROUTE = "/static-api/refresh";
 
     private final AuthConfigurationProperties authConfigurationProperties;
+    private final ApplicationInfo applicationInfo;
 
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
@@ -92,12 +92,11 @@ public class SecurityConfiguration {
     private boolean nonStrictVerifySslCertificatesOfServices;
 
     private String[] getFullUrls(String...baseUrl) {
-        return Stream.of(
-                Arrays.stream(baseUrl).map(url -> "/apicatalog" + url),
-                Arrays.stream(baseUrl).map(url -> "/apicatalog/api/v1" + url)
-            )
-            .flatMap(Function.identity())
-            .toArray(String[]::new);
+        String prefix = applicationInfo.isModulith() ? "/apicatalog/api/v1" : "/apicatalog";
+        for (int i = 0; i < baseUrl.length; i++) {
+            baseUrl[i] = prefix + baseUrl[i];
+        }
+        return baseUrl;
     }
 
     @Bean

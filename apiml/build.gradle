@@ -58,6 +58,7 @@ dependencies {
     api project(":gateway-service")
     api project(":discovery-service")
     api project(":zaas-service")
+    api project(":api-catalog-services")
 
     implementation libs.bundles.modulith
     implementation libs.spring.boot.starter.web

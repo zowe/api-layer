@@ -12,6 +12,8 @@ package org.zowe.apiml.apicatalog.controllers.api;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,8 +30,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * Endpoints related to the OIDC integration
  */
 @Slf4j
-@RestController
-@RequestMapping({"/apicatalog/oidc", "/apicatalog/api/v1/oidc"})
 @Tag(name = "OIDC integration")
 public class OidcController {
 
@@ -43,5 +43,19 @@ public class OidcController {
 
         return Mono.just(new ResponseEntity<>(oidcProviderCache.get(), oidcProviderCache.get().isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK));
     }
+
+}
+
+@RestController
+@RequestMapping({"/apicatalog/oidc", "/apicatalog/api/v1/oidc"})
+@ConditionalOnBean(name = "modulithConfig")
+class OidcControllerModulith extends  OidcController {
+
+}
+
+@RestController
+@RequestMapping({"/apicatalog/oidc", "/apicatalog/api/v1/oidc"})
+@ConditionalOnMissingBean(name = "modulithConfig")
+class OidcControllerMicroservice extends  OidcController {
 
 }

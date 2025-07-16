@@ -10,6 +10,9 @@
 
 package org.zowe.apiml.apicatalog.config;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -18,21 +21,28 @@ import org.springframework.web.reactive.config.ResourceHandlerRegistry;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import org.zowe.apiml.config.ApplicationInfo;
 
 import java.net.URI;
 import java.time.Duration;
 
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
+import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
-@Configuration
+@Configuration("catalogWebConfig")
 @ComponentScan("org.zowe.apiml.product.web")
+@RequiredArgsConstructor
 public class WebConfig implements WebFluxConfigurer {
+
+    private final ApplicationInfo applicationInfo;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String prefix = applicationInfo.isModulith() ? "/apicatalog/ui/v1" : "/apicatalog";
+
         registry
-            .addResourceHandler("/apicatalog/*", "/apicatalog/api/ui/*")
+            .addResourceHandler(prefix + "/*")
             .setCacheControl(CacheControl
                 .noStore()
                 .cachePrivate()
@@ -40,42 +50,34 @@ public class WebConfig implements WebFluxConfigurer {
             .addResourceLocations("/static/", "classpath:/static/");
 
         registry
-            .addResourceHandler("/apicatalog/static/**", "/apicatalog/api/ui/static/**")
+            .addResourceHandler(prefix + "/static/**")
             .setCacheControl(CacheControl.maxAge(Duration.ofDays(365L)))
             .addResourceLocations("classpath:/META-INF/resources/", "classpath:/resources/", "classpath:/static/", "classpath:/public/", "classpath:/static/static/");
 
         registry
-            .addResourceHandler("/apicatalog/resources/**", "/apicatalog/api/ui/resources/**")
+            .addResourceHandler(prefix + "/resources/**")
             .setCacheControl(CacheControl.maxAge(Duration.ofDays(365L)))
             .addResourceLocations("/resources/", "/resources/static/", "/resources/templates/");
     }
 
     @Bean
-    public RouterFunction<ServerResponse> redirectRoot() {
-        return route(GET("/"), req ->
-            ServerResponse.permanentRedirect(URI.create("/apicatalog"))
-                .build());
+    @ConditionalOnMissingBean(name = "modulithConfig")
+    public RouterFunction<ServerResponse> redirectRouteMicroservice() {
+        return route(GET("/"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog")).build())
+            .and(route(GET("/apicatalog"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/")).build()))
+            .and(route(GET("/apicatalog/"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/index.html")).build()));
     }
 
     @Bean
-    public RouterFunction<ServerResponse> redirectCatalogRoot() {
-        return route(GET("/apicatalog"), req ->
-            ServerResponse.permanentRedirect(URI.create("/apicatalog/"))
-                .build());
-    }
+    @ConditionalOnBean(name = "modulithConfig")
+    public RouterFunction<ServerResponse> redirectRouteModulith() {
+        return route(GET("/apicatalog/api/v1"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/api/v1/")).build())
+            .and(route(GET("/apicatalog/api/v1/"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/api/v1/index.html")).build()))
+            .and(route(GET("/apicatalog/ui/v1"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/ui/v1/")).build()))
+            .and(route(GET("/apicatalog/ui/v1/"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/ui/v1/index.html")).build()))
 
-    @Bean
-    public RouterFunction<ServerResponse> redirectApicatalogRoot() {
-        return route(GET("/apicatalog/"), req ->
-            ServerResponse.permanentRedirect(URI.create("/apicatalog/index.html"))
-                .build());
-    }
-
-    @Bean
-    public RouterFunction<ServerResponse> redirectApicatalogVersionRoot() {
-        return route(GET("/apicatalog/api/v1"), req ->
-            ServerResponse.permanentRedirect(URI.create("/apicatalog/api/v1/index.html"))
-                .build());
+            .and(route(POST("/apicatalog/api/v1/auth/login"), req -> ServerResponse.permanentRedirect(URI.create("/gateway/api/v1/auth/login")).build()))
+            .and(route(GET("/apicatalog/api/v1/auth/query"), req -> ServerResponse.permanentRedirect(URI.create("/gateway/api/v1/auth/query")).build()));
     }
 
 }
