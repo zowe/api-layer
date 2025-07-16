@@ -16,10 +16,15 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
+import org.zowe.apiml.acceptance.config.MutateRemoteAddressFilter;
+import org.zowe.apiml.product.gateway.AdditionalRegistrationGatewayRegistry;
+
+import java.util.Collections;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -40,6 +45,12 @@ class ForwardedHeadersProxyTest extends AcceptanceTestWithTwoServices {
 
     String serviceUrl;
 
+    @Autowired
+    AdditionalRegistrationGatewayRegistry additionalGatewayRegistry;
+
+    @Autowired
+    MutateRemoteAddressFilter mutateRemoteAddressFilter;
+
     @BeforeEach
     @SneakyThrows
     void setup() {
@@ -48,10 +59,12 @@ class ForwardedHeadersProxyTest extends AcceptanceTestWithTwoServices {
         // Tell the infrastructure to work with the request for serviceid
         applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
         mockValid200HttpResponse();
+
+        doReturn(false).when(mockCertificateValidator).isTrusted(any());
     }
 
     @Test
-    void whenNoXForwardHeadersInRequest_ThenXForwardHeadersCreated() {
+    void whenNoXForwardHeadersInRequest_thenXForwardHeadersCreated() {
         given()
             .log().all()
         .when()
@@ -67,7 +80,7 @@ class ForwardedHeadersProxyTest extends AcceptanceTestWithTwoServices {
     }
 
     @Test
-    void whenXForwardHeadersInRequest_ThenNoXForwardHeadersForwarded() {
+    void whenXForwardHeadersInRequest_thenNoXForwardHeadersForwarded() {
         given()
             .log().all()
             .header("x-Forwarded-for", OTHER_PROXY_ADDRESS)
@@ -80,7 +93,7 @@ class ForwardedHeadersProxyTest extends AcceptanceTestWithTwoServices {
 
         HttpUriRequest toVerify = getCaptorToEvaluate();
 
-        assertHeaderEqualsValue(toVerify, "X-Forwarded-Prefix",  "/" + serviceWithDefaultConfiguration.getId());
+        assertHeaderEqualsValue(toVerify, "X-Forwarded-Prefix", "/" + serviceWithDefaultConfiguration.getId());
         //Zuul does not validate the content of headers, hence the value with null is passed to the mockClient
         assertHeaderNullValue(toVerify, "X-Forwarded-For");
         assertHeaderEqualsValue(toVerify, "X-Forwarded-Host", "localhost:" + port);
@@ -88,7 +101,7 @@ class ForwardedHeadersProxyTest extends AcceptanceTestWithTwoServices {
     }
 
     @Test
-    void whenXForwardHeadersInRequestFromGW_ThenXForwardHeadersForwarded() {
+    void whenXForwardHeadersInRequestFromGW_thenXForwardHeadersForwarded() {
         doReturn(true).when(mockCertificateValidator).isTrusted(any());
         given()
             .header("x-forwarded-For", OTHER_PROXY_ADDRESS)
@@ -98,11 +111,35 @@ class ForwardedHeadersProxyTest extends AcceptanceTestWithTwoServices {
         .then()
             .statusCode(Matchers.is(SC_OK));
 
+        assertHeadersForwarded(proxyAddress);
+    }
+
+    @Test
+    void whenXForwardHeadersInRequestFromAdditionalGW_thenXForwardHeadersForwarded() {
+        mutateRemoteAddressFilter.proxyAddressReference.set(additionalGatewayAddress);
+        additionalGatewayRegistry.getAdditionalGatewayIpAddressesReference()
+            .set(Collections.singleton(additionalGatewayAddress));
+
+        given()
+            .header("x-forwarded-For", OTHER_PROXY_ADDRESS)
+            .header("X-forwarded-Prefix", OTHER_PROXY_PREFIX)
+        .when()
+            .get(serviceUrl)
+        .then()
+            .statusCode(Matchers.is(SC_OK));
+
+        assertHeadersForwarded(additionalGatewayAddress);
+
+        mutateRemoteAddressFilter.reset();
+        additionalGatewayRegistry.getAdditionalGatewayIpAddressesReference().set(Collections.emptySet());
+    }
+
+    private void assertHeadersForwarded(String address) {
         HttpUriRequest toVerify = getCaptorToEvaluate();
 
         assertHeaderEqualsValue(toVerify, "X-Forwarded-Prefix", OTHER_PROXY_PREFIX + "/" + serviceWithDefaultConfiguration.getId());
         assertHeaderContainsValue(toVerify, "X-Forwarded-For", OTHER_PROXY_ADDRESS);
-        assertHeaderContainsValue(toVerify, "X-Forwarded-For", proxyAddress);
+        assertHeaderContainsValue(toVerify, "X-Forwarded-For", address);
 
         assertHeaderEqualsValue(toVerify, "X-Forwarded-Host", "localhost:" + port);
     }

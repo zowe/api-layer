@@ -18,6 +18,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.product.gateway.AdditionalRegistrationGatewayRegistry;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.SecurityUtils;
 
@@ -29,6 +30,7 @@ import java.security.cert.CertificateException;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -41,16 +43,15 @@ import java.util.regex.Pattern;
  * the case when multiple APIML Gateways routes each other. The http context cannot be compromised when the request
  * is signed by a trusted certificate, so the content of headers is considered valid, and it is not necessary to verify
  * the host against the list. Otherwise, if the request is not signed, the client address should be validated against configuration.
- *
+ * <p>
  * The implementation supports empty configuration value. The empty value means when the request is signed, the
  * content of headers is accepted otherwise the headers are considered vulnerable and are removed from the request.
- *
+ * <p>
  * Signed / defined pattern | empty list of trusted proxies | a trusted proxy is defined
  * -------------------------+-------------------------------+---------------------------
  * untrusted signature/no   |        headers removed        |   check against the list
  * -------------------------+-------------------------------+---------------------------
  * trusted signature        |        forward headers        |      forward headers
- *
  */
 
 @Slf4j
@@ -60,28 +61,40 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
     public static final String FORWARDED_HEADER = "Forwarded";
 
     final Set<String> certificateChainBase64;
-    final Predicate<String> isTrusted;
-    final String trustedProxies;
+    final Predicate<String> isProxyTrusted;
+    final String trustedProxiesRegex;
+    final AtomicReference<Set<String>> trustedAdditionalGateways;
 
     /*
      *
      * @param httpsConfig gateway certificate configuration
-     * @param trustedProxies configuration value of a pattern on how validate proxy
+     * @param trustedProxiesPattern configuration value of a pattern on how validate proxy
+     * @param additionalRegistrationGatewayRegistry cache of apiml gateway ip addresses from additional registrations
      *
      */
-    public X509awareXForwardedHeadersFilter(HttpsConfig httpsConfig, String trustedProxiesPattern) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+    public X509awareXForwardedHeadersFilter(
+        HttpsConfig httpsConfig,
+        String trustedProxiesPattern,
+        AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry)
+        throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         certificateChainBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
-        trustedProxies = trustedProxiesPattern;
-        if (StringUtils.isEmpty(trustedProxies)) {
-            isTrusted = host -> false;
+        trustedProxiesRegex = trustedProxiesPattern;
+        trustedAdditionalGateways = additionalRegistrationGatewayRegistry.getAdditionalGatewayIpAddressesReference();
+
+        Predicate<String> isTrusted = host -> trustedAdditionalGateways.get().contains(host);
+        if (StringUtils.isEmpty(trustedProxiesRegex)) {
+            isTrusted = isTrusted.or(host -> false);
         } else {
-            Pattern pattern = Pattern.compile(trustedProxies);
-            isTrusted = host -> host != null && pattern.matcher(host).matches();
+            Pattern pattern = Pattern.compile(trustedProxiesRegex);
+            isTrusted = isTrusted.or(host -> host != null && pattern.matcher(host).matches());
         }
+        this.isProxyTrusted = isTrusted;
     }
 
     @Override
     public HttpHeaders filter(HttpHeaders input, ServerWebExchange exchange) {
+        if (!hasXForwardedHeader(input)) return super.filter(input, exchange);
+
         boolean trustedSourceByX509 = Optional.ofNullable(exchange.getRequest().getSslInfo())
             .map(SslInfo::getPeerCertificates)
             .filter(certs -> certs.length > 0)
@@ -98,7 +111,7 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
                 log.trace("Remote address is null and cannot be evaluated for trusted proxy.");
                 return super.filter(removeXForwardHttpHeaders(input), exchange);
             }
-            if (!isTrusted.test(remoteAddress.getHostString())) {
+            if (!isProxyTrusted.test(remoteAddress.getHostString())) {
                 //Mask the address if it is not trusted so it cannot be used to build the forward headers
                 ServerWebExchange sanitizedExchange = exchange.mutate().request(
                     new ServerHttpRequestDecorator(request) {
@@ -108,7 +121,7 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
                         }
                     }
                 ).build();
-                log.trace("Remote address not trusted. Trusted proxies pattern: {}, remote address: {}", trustedProxies, remoteAddress);
+                log.trace("Remote address not trusted. Trusted proxies pattern: {}, remote address: {}", trustedProxiesRegex, remoteAddress);
                 return super.filter(removeXForwardHttpHeaders(input), sanitizedExchange);
             }
         }
@@ -117,7 +130,7 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
 
     private HttpHeaders removeXForwardHttpHeaders(HttpHeaders input) {
         HttpHeaders h = new HttpHeaders();
-        input.forEach( (header, values) -> {
+        input.forEach((header, values) -> {
             if (!isXForwardedHeader(header)) {
                 h.put(header, values);
             }
@@ -134,4 +147,8 @@ public class X509awareXForwardedHeadersFilter extends XForwardedHeadersFilter {
             header.equalsIgnoreCase(FORWARDED_HEADER);
     }
 
+    private boolean hasXForwardedHeader(HttpHeaders headers) {
+        return headers.keySet().stream()
+            .anyMatch(this::isXForwardedHeader);
+    }
 }

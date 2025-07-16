@@ -46,7 +46,6 @@ class ForwardedProxyHeadersTest extends AcceptanceTestWithTwoServices {
         assertHeaderEqualsValue(toVerify, "X-Forwarded-Host", "localhost:" + port);
         assertHeaderEqualsValue(toVerify, "X-Forwarded-Prefix", "/serviceid2");
         assertHeaderEqualsValue(toVerify, "X-Forwarded-Port", String.valueOf(port));
-        //x-forwarded-proxy is not present because no proxy is not trusted by default
-        assertHeaderNullValue(toVerify, "X-Forwarded-For");
+        assertHeaderEqualsValue(toVerify, "X-Forwarded-For", "127.0.0.1");
     }
 }

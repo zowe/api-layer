@@ -24,7 +24,7 @@ dependencyResolutionManagement {
             version('springWebTestClient', '5.5.5')
 
             version('aopalliance', '3.0.3') // >=3.0.4 compiled on Java major 55 (J11)
-            version('zosUtils', '2.0.6')
+            version('zosUtils', '2.0.7')
             version('archaius', '0.7.12')
             version('awaitility', '4.2.2')
             version('awsJavaSdk', '1.12.787')
@@ -127,7 +127,7 @@ dependencyResolutionManagement {
                 prefer '1.6.15'
             }
             version('swagger3Core', '2.2.34')
-            version('swagger3Parser', '2.1.30')
+            version('swagger3Parser', '2.1.31')
             version('swaggerCore', '1.6.16')
             version('swaggerInflector', '2.0.13')
             version('swaggerJaxrs2', '2.2.34')
