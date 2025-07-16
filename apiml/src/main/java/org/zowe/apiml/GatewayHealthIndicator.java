@@ -11,6 +11,7 @@
 package org.zowe.apiml;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
@@ -40,6 +41,7 @@ import static org.springframework.boot.actuate.health.Status.UP;
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
     private final DiscoveryClient discoveryClient;
@@ -91,6 +93,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
     @EventListener
     public void onApplicationEvent(ZaasServiceAvailableEvent event) {
+        log.debug("Zaas is available");
         zaasAvailable.set(true);
         if (isFullyUp()) {
             onFullyUp();

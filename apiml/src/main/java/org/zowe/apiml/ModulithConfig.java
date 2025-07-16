@@ -176,7 +176,9 @@ public class ModulithConfig {
     @Scheduled(initialDelay = 3000, fixedRate = 20_000) // TODO find better solution but DON'T JUST REMOVE!
     public void periodicJwtInit() {
         var jwtSec = applicationContext.getBean(JwtSecurity.class);
+        log.debug("Periodic jwt init started");
         if (!jwtSec.getZosmfListener().isZosmfReady()) {
+            log.debug("Zosmf is available and event is being sent");
             jwtSec.getZosmfListener().getZosmfRegisteredListener().onEvent(new CacheRefreshedEvent());
             ZaasStartupListener listener = applicationContext.getBean(ZaasStartupListener.class);
             listener.notifyStartup();
