@@ -49,7 +49,7 @@ class ZaasTest {
     @Value("${apiml.service.hostname:localhost}")
     private String hostname;
 
-    private final String BODY = """
+    private static final String BODY = """
         {
           "resourceClass": "ZOWE",
           "resourceName": "APIML.SERVICES",
@@ -58,11 +58,13 @@ class ZaasTest {
         """;
 
     @Value("${server.ssl.keyPassword}")
-    char[] password;
+    private char[] password;
+
     @Value("${server.ssl.keyStore}")
-    String client_cert_keystore;
+    private String client_cert_keystore;
+
     @Value("${server.ssl.keyStore}")
-    String keystore;
+    private String keystore;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -90,14 +92,13 @@ class ZaasTest {
     void givenNoCert_whenCallingSafCheck_then401() {
 
         //@formatter:off
-        given().config(config().sslConfig(new SSLConfig().sslSocketFactory(
-                new SSLSocketFactory(httpConfig.getSecureSslContextWithoutKeystore(), ALLOW_ALL_HOSTNAME_VERIFIER)))
-            )
+        given()
+            .config(SslContext.tlsWithoutCert)
             .contentType(APPLICATION_JSON)
             .body(BODY)
-            .when()
+        .when()
             .post(String.format("https://%s:%d/zaas/auth/check", hostname, port))
-            .then()
+        .then()
             .statusCode(SC_UNAUTHORIZED);
         //@formatter:on
     }
@@ -109,9 +110,9 @@ class ZaasTest {
             .config(SslContext.clientCertUnknownUser)
             .contentType(APPLICATION_JSON)
             .body(BODY)
-            .when()
+        .when()
             .post(String.format("https://%s:%d/zaas/auth/check", hostname, port))
-            .then()
+        .then()
             .statusCode(SC_UNAUTHORIZED);
         //@formatter:on
     }
