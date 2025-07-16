@@ -51,7 +51,7 @@ public class ZaasStartupListener implements ApplicationListener<ApplicationReady
         }
     }
 
-    private void notifyStartup() {
+    public void notifyStartup() {
         new ServiceStartupEventHandler().onServiceStartup("ZAAS",
             ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
         publisher.publishEvent(new ZaasServiceAvailableEvent(providers.isZosfmUsed() ? "zosmf" : "saf"));
