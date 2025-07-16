@@ -10,12 +10,11 @@
 
 package org.zowe.apiml.startup;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.zowe.apiml.startup.impl.ApiMediationLayerStartupChecker;
-import org.zowe.apiml.util.categories.StartupCheck;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
+//import org.junit.jupiter.api.BeforeEach;
+//import org.junit.jupiter.api.Test;
+//import org.zowe.apiml.startup.impl.ApiMediationLayerStartupChecker;
+//import org.zowe.apiml.util.categories.StartupCheck;
+//import static org.junit.jupiter.api.Assertions.assertTrue;
 
 //@StartupCheck
 class ApiMediationLayerStartTest {
