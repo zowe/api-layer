@@ -61,14 +61,14 @@ class ZaasTest {
     private char[] password;
 
     @Value("${server.ssl.keyStore}")
-    private String client_cert_keystore;
+    private String clientCertKeystore;
 
     @Value("${server.ssl.keyStore}")
     private String keystore;
 
     @BeforeEach
     void setUp() throws Exception {
-        SslContextConfigurer configurer = new SslContextConfigurer(password, client_cert_keystore, keystore);
+        SslContextConfigurer configurer = new SslContextConfigurer(password, clientCertKeystore, keystore);
         SslContext.prepareSslAuthentication(configurer);
     }
 
