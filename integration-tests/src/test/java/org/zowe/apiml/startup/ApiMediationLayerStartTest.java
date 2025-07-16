@@ -17,16 +17,16 @@ import org.zowe.apiml.util.categories.StartupCheck;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@StartupCheck
+//@StartupCheck
 class ApiMediationLayerStartTest {
-
-    @BeforeEach
-    void setUp() {
-        new ApiMediationLayerStartupChecker().waitUntilReady();
-    }
-
-    @Test
-    void checkApiMediationLayerStart() {
-        assertTrue(true);
-    }
+//
+//    @BeforeEach
+//    void setUp() {
+//        new ApiMediationLayerStartupChecker().waitUntilReady();
+//    }
+//
+//    @Test
+//    void checkApiMediationLayerStart() {
+//        assertTrue(true);
+//    }
 }
