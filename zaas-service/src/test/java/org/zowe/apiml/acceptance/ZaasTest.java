@@ -106,7 +106,7 @@ class ZaasTest {
     void givenInvalidCert_whenCallingSafCheck_then401() {
         //@formatter:off
         given()
-            .config(SslContext.clientCertUser)
+            .config(SslContext.clientCertUnknownUser)
             .contentType(APPLICATION_JSON)
             .body(BODY)
             .when()

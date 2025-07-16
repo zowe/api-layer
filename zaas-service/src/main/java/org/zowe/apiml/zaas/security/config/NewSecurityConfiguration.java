@@ -522,8 +522,6 @@ public class NewSecurityConfiguration {
                     http.x509(withDefaults())
                         // filter out API ML certificate
                         .addFilterBefore(reversedCategorizeCertFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
-                } else {
-                    http.x509(x509 -> x509.userDetailsService(x509UserDetailsService())); // default x509 filter, authenticates trusted cert
                 }
 
                 return http.authenticationProvider(compoundAuthProvider) // for authenticating credentials
