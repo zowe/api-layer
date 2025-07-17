@@ -102,7 +102,9 @@ spring:
             ipAddress: ${apiml.service.ipAddress}
         gateway:
             mvc.enabled: false
-            enabled: false
+            server:
+                webflux:
+                    enabled: false
     mvc:
         log-resolved-exception: false # Suppress useless logs from AbstractHandlerExceptionResolver
     output:

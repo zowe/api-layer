@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.config.GeneralConfig;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.RejectStrategy;
-import org.zowe.apiml.caching.service.StorageException;
+import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.service.Strategies;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.message.log.ApimlLogger;

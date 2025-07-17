@@ -42,9 +42,6 @@ describe('>>> Service version compare Test', () => {
 
         // FIXME modulith mode does not support multi tenancy yet
         let expectedServicesCount = 16;
-        if (isModulith) {
-            expectedServicesCount = 15;
-        }
 
         cy.get('div.MuiTabs-flexContainer.MuiTabs-flexContainerVertical') // Select the parent div
             .find('a.MuiTab-root') // Find all the anchor elements within the div

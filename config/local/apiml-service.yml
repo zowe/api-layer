@@ -54,5 +54,13 @@ apiml:
             provider: zosmf
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
-
+caching:
+    storage:
+        mode: infinispan
+        infinispan:
+            initialHosts: localhost[7601]
+jgroups:
+    bind:
+        port: 7600
+        address: localhost
 
