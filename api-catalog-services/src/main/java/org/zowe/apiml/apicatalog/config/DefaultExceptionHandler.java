@@ -22,7 +22,6 @@ import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.MonoOperator;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -35,7 +34,7 @@ public class DefaultExceptionHandler {
     private final AuthExceptionHandler authExceptionHandler;
 
     @ExceptionHandler(Exception.class)
-    public Mono<ResponseEntity<ApiMessageView>> handleException(ServerWebExchange exchange, RuntimeException exception) {
+    public Mono<ResponseEntity<ApiMessageView>> handleException(ServerWebExchange exchange, Exception exception) {
         AtomicReference<ResponseEntity<ApiMessageView>> responseJson = new AtomicReference<>();
         BiConsumer<ApiMessageView, HttpStatus> consumer = (message, status) -> {
             responseJson.set(ResponseEntity
@@ -47,7 +46,7 @@ public class DefaultExceptionHandler {
 
         try {
             authExceptionHandler.handleException(exchange.getRequest().getPath().value(), consumer, exchange.getResponse().getHeaders()::add, exception);
-            return MonoOperator.just(responseJson.get());
+            return Mono.just(responseJson.get());
         } catch (ServletException e) {
             log.error("Cannot handle exception: {}", exception, e);
             return Mono.error(() -> new RuntimeException(e));

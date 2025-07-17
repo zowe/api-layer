@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.AuthenticationException;
@@ -99,8 +98,6 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             (ex, ctx) -> handleZosAuthenticationException(ctx.function, ex)),
         entry(InvalidTokenTypeException.class,
             (ex, ctx) -> handleInvalidTokenTypeException(ctx.requestUri, ctx.function, ex)),
-        entry(AuthenticationServiceException.class,
-            (ex, ctx) -> handleAuthenticationException(ctx.requestUri, ctx.function, ex)),
         entry(AuthenticationException.class,
             (ex, ctx) -> handleAuthenticationException(ctx.requestUri, ctx.function, ex)),
         entry(ServiceNotAccessibleException.class,
@@ -119,7 +116,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         )
     );
 
-    private ExceptionHandler resolveHandler(RuntimeException ex) {
+    private ExceptionHandler resolveHandler(Exception ex) {
         Class<?> exClass = ex.getClass();
         while (exClass != null) {
             if (!applicationInfo.isModulith() && exClass == RuntimeException.class) {
@@ -150,7 +147,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     public void handleException(String requestUri,
                                 BiConsumer<ApiMessageView, HttpStatus> function,
                                 BiConsumer<String, String> addHeader,
-                                RuntimeException ex) throws ServletException {
+                                Exception ex) throws ServletException {
 
         HandlerContext ctx = new HandlerContext(requestUri, function, addHeader);
         ExceptionHandler handler = resolveHandler(ex);
@@ -164,7 +161,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             throw new ServletException(ex);
         }
 
-        handleAuthenticationException(requestUri, function, ex);
+        handleUnknownHandler(requestUri, function, ex);
     }
 
     private void handleZosAuthenticationException(BiConsumer<ApiMessageView, HttpStatus> function, ZosAuthenticationException ex) {
@@ -241,7 +238,15 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         writeErrorResponse(messageKey, HttpStatus.BAD_REQUEST, function, requestUri);
     }
 
-    private void handleAuthenticationException(String uri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
+    private void handleAuthenticationException(String uri, BiConsumer<ApiMessageView, HttpStatus> function, AuthenticationException ex) {
+        final ApiMessageView message = messageService.createMessage(ErrorType.AUTH_GENERAL.getErrorMessageKey(), ex.getMessage(), uri).mapToView();
+        final HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        log.debug(MESSAGE_FORMAT, status.value(), ex.getMessage());
+        function.accept(message, status);
+    }
+
+    private void handleUnknownHandler(String uri, BiConsumer<ApiMessageView, HttpStatus> function, Exception ex) {
+        // TODO: it should be a general message, this is just for back-compatibility
         final ApiMessageView message = messageService.createMessage(ErrorType.AUTH_GENERAL.getErrorMessageKey(), ex.getMessage(), uri).mapToView();
         final HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         log.debug(MESSAGE_FORMAT, status.value(), ex.getMessage());
