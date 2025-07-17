@@ -64,8 +64,6 @@ public class ConfigReader {
                         Credentials credentials = new Credentials("user", "user");
                         GatewayServiceConfiguration gatewayServiceConfiguration
                             = new GatewayServiceConfiguration("https", "localhost", null, 10010, 10010, 1, "10010", ROUTED_SERVICE, 20);
-                        GatewayServiceConfiguration domainGatewayServiceConfiguration
-                            = new GatewayServiceConfiguration("https", "localhost", null, 10010, 10010, 1, "10010", ROUTED_SERVICE, 20);
                         CentralGatewayServiceConfiguration centralGatewayServiceConfiguration = new CentralGatewayServiceConfiguration("https", "localhost", 10010);
                         ZaasConfiguration zaasConfiguration = new ZaasConfiguration("https", "localhost", 10023, 1);
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost","localhost", 10011,10021, 1);
@@ -92,7 +90,6 @@ public class ConfigReader {
                         configuration = new EnvironmentConfiguration(
                             credentials,
                             gatewayServiceConfiguration,
-                            domainGatewayServiceConfiguration,
                             centralGatewayServiceConfiguration,
                             zaasConfiguration,
                             discoveryServiceConfiguration,
@@ -121,15 +118,6 @@ public class ConfigReader {
                     configuration.getGatewayServiceConfiguration().setInstances(parseInt(System.getProperty("gateway.instances", String.valueOf(configuration.getGatewayServiceConfiguration().getInstances()))));
                     configuration.getGatewayServiceConfiguration().setServicesEndpoint(System.getProperty("gateway.servicesEndpoint", configuration.getGatewayServiceConfiguration().getServicesEndpoint()));
                     configuration.getGatewayServiceConfiguration().setBucketCapacity(parseInt(System.getProperty("gateway.bucketCapacity", String.valueOf(configuration.getGatewayServiceConfiguration().getBucketCapacity()))));
-
-                    configuration.getDomainGatewayServiceConfiguration().setScheme(System.getProperty("domainGateway.scheme", configuration.getDomainGatewayServiceConfiguration().getScheme()));
-                    configuration.getDomainGatewayServiceConfiguration().setHost(System.getProperty("domainGateway.host", configuration.getDomainGatewayServiceConfiguration().getHost()));
-                    configuration.getDomainGatewayServiceConfiguration().setDvipaHost(System.getProperty("domainGateway.dvipaHost", configuration.getDomainGatewayServiceConfiguration().getDvipaHost()));
-                    configuration.getDomainGatewayServiceConfiguration().setPort(parseInt(System.getProperty("domainGateway.port", String.valueOf(configuration.getDomainGatewayServiceConfiguration().getPort()))));
-                    configuration.getDomainGatewayServiceConfiguration().setExternalPort(parseInt(System.getProperty("domainGateway.externalPort", String.valueOf(configuration.getDomainGatewayServiceConfiguration().getExternalPort()))));
-                    configuration.getDomainGatewayServiceConfiguration().setInstances(parseInt(System.getProperty("domainGateway.instances", String.valueOf(configuration.getDomainGatewayServiceConfiguration().getInstances()))));
-                    configuration.getDomainGatewayServiceConfiguration().setServicesEndpoint(System.getProperty("domainGateway.servicesEndpoint", configuration.getDomainGatewayServiceConfiguration().getServicesEndpoint()));
-                    configuration.getDomainGatewayServiceConfiguration().setBucketCapacity(parseInt(System.getProperty("domainGateway.bucketCapacity", String.valueOf(configuration.getDomainGatewayServiceConfiguration().getBucketCapacity()))));
 
                     CentralGatewayServiceConfiguration config = configuration.getCentralGatewayServiceConfiguration();
                     Optional.ofNullable(config).ifPresent(c -> {

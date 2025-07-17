@@ -67,6 +67,12 @@ public class HttpsFactoryConfig {
     @Value("${server.ssl.trustStoreRequired:false}")
     private boolean trustStoreRequired;
 
+    @Value("${apiml.connection.idleConnectionTimeoutSeconds:#{5}}")
+    private int idleConnTimeoutSeconds;
+
+    @Value("${apiml.connection.timeout:60000}")
+    private int requestTimeout;
+
     private final ApplicationContext context;
 
     @PostConstruct
@@ -93,7 +99,9 @@ public class HttpsFactoryConfig {
             .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
             .trustStore(trustStorePath).trustStoreType(trustStoreType)
             .keyAlias(keyAlias).keyStore(keyStorePath).keyPassword(keyPassword)
-            .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
+            .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType)
+            .idleConnTimeoutSeconds(idleConnTimeoutSeconds)
+            .requestConnectionTimeout(requestTimeout).build();
         log.info("Using HTTPS configuration: {}", config.toString());
         return config;
     }

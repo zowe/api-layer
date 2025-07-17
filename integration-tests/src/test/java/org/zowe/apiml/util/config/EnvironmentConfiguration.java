@@ -23,7 +23,6 @@ import java.util.Map;
 public class EnvironmentConfiguration {
     private Credentials credentials;
     private GatewayServiceConfiguration gatewayServiceConfiguration;
-    private GatewayServiceConfiguration domainGatewayServiceConfiguration = new GatewayServiceConfiguration();
     private CentralGatewayServiceConfiguration centralGatewayServiceConfiguration;
     private ZaasConfiguration zaasConfiguration;
     private DiscoveryServiceConfiguration discoveryServiceConfiguration;

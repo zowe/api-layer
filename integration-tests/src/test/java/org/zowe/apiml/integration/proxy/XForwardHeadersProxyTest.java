@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.zowe.apiml.util.config.CentralGatewayServiceConfiguration;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
@@ -42,7 +43,7 @@ class XForwardHeadersProxyTest {
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
     private static final String FORWARD_TO_GATEWAY = "domain-apiml";
 
-    static GatewayServiceConfiguration cgwConf;
+    static CentralGatewayServiceConfiguration cgwConf;
     static GatewayServiceConfiguration dgwConf;
 
     static String cgwUrl;
@@ -58,8 +59,8 @@ class XForwardHeadersProxyTest {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
 
-        cgwConf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        dgwConf = ConfigReader.environmentConfiguration().getDomainGatewayServiceConfiguration();
+        cgwConf = ConfigReader.environmentConfiguration().getCentralGatewayServiceConfiguration();
+        dgwConf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
         cgwUrl = String.format("%s://%s:%s%s", cgwConf.getScheme(), cgwConf.getHost(), cgwConf.getPort(), REQUEST_INFO_ENDPOINT);
         dgwUrl = String.format("%s://%s:%s%s", dgwConf.getScheme(), dgwConf.getHost(), dgwConf.getPort(), REQUEST_INFO_ENDPOINT);
