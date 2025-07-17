@@ -4,16 +4,16 @@ eureka:
     client:
         fetchRegistry: false
         registerWithEureka: false
-        instanceInfoReplicationIntervalSeconds: 1
+        instanceInfoReplicationIntervalSeconds: 30
         region: default
         serviceUrl:
             defaultZone: ${apiml.discovery.allPeersUrls}
         healthcheck:
             enabled: true
     server:
-        max-threads-for-peer-replication: 2
+        max-threads-for-peer-replication: 6
         useReadOnlyResponseCache: false
-        peer-node-read-timeout-ms: 10000
+        peer-node-read-timeout-ms: 8000
 spring:
     cloud:
         gateway:

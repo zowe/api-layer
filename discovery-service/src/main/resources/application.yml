@@ -89,7 +89,7 @@ eureka:
         serviceUrl:
             defaultZone: ${apiml.discovery.allPeersUrls}
     server:
-        max-threads-for-peer-replication: 2
+        max-threads-for-peer-replication: 6
         useReadOnlyResponseCache: false
 
 management:

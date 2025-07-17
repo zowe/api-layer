@@ -52,7 +52,6 @@ import org.zowe.apiml.filter.PreFluxFilter;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.zaas.ZaasStartupListener;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import reactor.core.publisher.Flux;
 
@@ -178,8 +177,6 @@ public class ModulithConfig {
         var jwtSec = applicationContext.getBean(JwtSecurity.class);
         if (!jwtSec.getZosmfListener().isZosmfReady()) {
             jwtSec.getZosmfListener().getZosmfRegisteredListener().onEvent(new CacheRefreshedEvent());
-            ZaasStartupListener listener = applicationContext.getBean(ZaasStartupListener.class);
-            listener.notifyStartup();
         }
     }
 
