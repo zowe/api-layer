@@ -335,7 +335,8 @@ task runContainerModulithTests(type: Test) {
             'GatewayServiceRouting',
             'GatewayCentralRegistry',
             'ZaasTest',
-            'ApiCatalogStandaloneTest'
+            'ApiCatalogStandaloneTest',
+            'NonModulithTest'
         )
     }
 }
@@ -566,6 +567,24 @@ task runInfinispanServiceTests(type: Test) {
         includeTags(
             'CachingServiceTest',
             'InfinispanStorageTest'
+        )
+    }
+}
+
+task runModulithInfinispanServiceTests(type: Test) {
+    group "integration tests"
+    description "Run APIML(modulith) with infinispan storage tests"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'CachingServiceTest',
+            'InfinispanStorageTest'
+        )
+        excludeTags(
+            'NonModulithTest'
         )
     }
 }

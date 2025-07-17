@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.caching.service;
+package org.zowe.apiml.cache;
 
 import org.zowe.apiml.caching.model.KeyValue;
 

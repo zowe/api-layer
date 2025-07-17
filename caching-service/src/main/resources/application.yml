@@ -115,23 +115,19 @@ spring:
             enabled: false
     application:
         name: Caching service
-    mvc:
-        pathmatch:
-            matchingStrategy: ant-path-matcher # used to resolve spring fox path matching issue
     output.ansi.enabled: always
     main:
         allow-circular-references: true
         banner-mode: ${apiml.banner:"off"}
-        web-application-type: servlet
-
+        web-application-type: reactive
+        allow-bean-definition-overriding: true
 springdoc:
     pathsToMatch: /api/v1/**
+    api-docs:
+        path: /cachingservice/v3/api-docs
 
 server:
     port: ${apiml.service.port}
-
-    servlet:
-        contextPath: /${apiml.service.serviceId}
 
     ssl:
         enabled: true
@@ -153,7 +149,7 @@ management:
     endpoints:
         migrate-legacy-ids: true
         web:
-            base-path: /application
+            base-path: /cachingservice/application
             exposure:
                 include: health,info
     health:
@@ -179,7 +175,7 @@ logging:
         org.springframework.web.servlet.PageNotFound: WARN
         org.ehcache: INFO
         org.apache.tomcat.util.net: DEBUG
-        org.springframework.security.web: INFO
+        org.springframework.security.web: DEBUG
         javax.net.ssl: ERROR
 
 spring.config.activate.on-profile: dev

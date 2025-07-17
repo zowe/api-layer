@@ -24,7 +24,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.gateway.caching.CachingServiceClient.KeyValue;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache.LoadBalancerCacheRecord;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -34,18 +33,15 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static reactor.core.publisher.Mono.empty;
-import static reactor.core.publisher.Mono.error;
-import static reactor.core.publisher.Mono.just;
+import static org.mockito.Mockito.*;
+import static reactor.core.publisher.Mono.*;
 
 @ExtendWith(MockitoExtension.class)
 class LoadBalancerCacheTest {
 
     @Mock
-    private CachingServiceClient cachingServiceClient;
+    private CachingServiceClientRest cachingServiceClient;
 
     @Mock
     private Map<String, LoadBalancerCacheRecord> map;
@@ -88,7 +84,7 @@ class LoadBalancerCacheTest {
                 @Test
                 void andSuccess_thenSuccess() throws JsonProcessingException {
                     var cacheRecord = new LoadBalancerCacheRecord("instance1");
-                    when(cachingServiceClient.create(new KeyValue("lb.anuser:aserviceid", mapper.writeValueAsString(cacheRecord))))
+                    when(cachingServiceClient.create(new CachingServiceClient.ApiKeyValue("lb.anuser:aserviceid", mapper.writeValueAsString(cacheRecord))))
                         .thenReturn(empty());
 
                     StepVerifier.create(loadBalancerCache.store("anuser", "aserviceid", cacheRecord))
@@ -99,7 +95,7 @@ class LoadBalancerCacheTest {
                 @Test
                 void andGenericError_thenError() throws JsonProcessingException {
                     var cacheRecord = new LoadBalancerCacheRecord("instance1");
-                    when(cachingServiceClient.create(new KeyValue("lb.anuser:aserviceid", mapper.writeValueAsString(cacheRecord))))
+                    when(cachingServiceClient.create(new CachingServiceClient.ApiKeyValue("lb.anuser:aserviceid", mapper.writeValueAsString(cacheRecord))))
                         .thenReturn(error(new CachingServiceClientException(500, "error")));
 
                         StepVerifier.create(loadBalancerCache.store("anuser", "aserviceid", cacheRecord))
@@ -110,7 +106,7 @@ class LoadBalancerCacheTest {
                 @Test
                 void andErrorCacheConflict_thenError() throws JsonProcessingException {
                     var cacheRecord = new LoadBalancerCacheRecord("instance1");
-                    var keyValue = new KeyValue("lb.anuser:aserviceid", mapper.writeValueAsString(cacheRecord));
+                    var keyValue = new CachingServiceClient.ApiKeyValue("lb.anuser:aserviceid", mapper.writeValueAsString(cacheRecord));
                     when(cachingServiceClient.create(keyValue))
                         .thenReturn(error(new CachingServiceClientException(409, "error")));
 
@@ -154,7 +150,7 @@ class LoadBalancerCacheTest {
                 void andSuccess_thenReturnValue() throws JsonProcessingException {
                     var key = "lb.anuser:aserviceid";
                     var cacheRecord = new LoadBalancerCacheRecord("instanceId");
-                    var keyValue = new KeyValue(key, mapper.writeValueAsString(cacheRecord));
+                    var keyValue = new CachingServiceClient.ApiKeyValue(key, mapper.writeValueAsString(cacheRecord));
                     when(cachingServiceClient.read(key)).thenReturn(just(keyValue));
 
                     StepVerifier.create(loadBalancerCache.retrieve("anuser", "aserviceid"))

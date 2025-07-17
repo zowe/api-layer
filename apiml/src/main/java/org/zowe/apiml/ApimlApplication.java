@@ -17,6 +17,9 @@ import org.springframework.cloud.netflix.eureka.server.EurekaController;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
+import org.zowe.apiml.enable.EnableApiDiscovery;
+import org.zowe.apiml.enable.config.EnableApiDiscoveryConfig;
+import org.zowe.apiml.enable.register.RegisterToApiLayer;
 
 @SpringBootApplication(
     exclude = { ReactiveOAuth2ClientAutoConfiguration.class },
@@ -39,11 +42,11 @@ import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
         ),
         @ComponentScan.Filter(
             type = FilterType.ASSIGNABLE_TYPE,
-            value = GatewayHealthIndicator.class
+            classes = { EnableApiDiscoveryConfig.class, EurekaController.class, RegisterToApiLayer.class, GatewayHealthIndicator.class }
         ),
         @ComponentScan.Filter(
-            type = FilterType.ASSIGNABLE_TYPE,
-            classes = EurekaController.class
+            type = FilterType.ANNOTATION,
+            classes = EnableApiDiscovery.class
         )
     }
 )

@@ -256,7 +256,7 @@ public class ServiceDefinitionProcessor {
                 setInstanceAttributes(builder, service, instanceId, instanceBaseUrl, url, ipAddress, tile);
 
                 setPort(builder, service, instanceBaseUrl, url);
-                log.info("Adding static instance {} for service ID {} mapped to URL {}", instanceId, serviceId,
+                log.debug("Adding static instance {} for service ID {} mapped to URL {}", instanceId, serviceId,
                     url);
 
                 final InstanceInfo instance = builder.build();

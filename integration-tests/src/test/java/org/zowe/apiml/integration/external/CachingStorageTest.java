@@ -317,7 +317,7 @@ class CachingStorageTest implements TestWithStartedInstances {
                         .contentType(JSON)
                         .when()
                         .get(CACHING_PATH)
-                        .then().log().all()
+                        .then().log().ifValidationFails()
                         .body("testKey3", is(not(is(emptyString()))),
                             "testKey4", is(not(is(emptyString()))),
                             "testKey1", is(emptyOrNullString()),
@@ -433,7 +433,7 @@ class CachingStorageTest implements TestWithStartedInstances {
                     .when()
                     .delete(CACHING_PATH)
                     .then()
-                    .log().all()
+                    .log().ifValidationFails()
                     .statusCode(is(SC_OK));
 
                 given().config(clientCert)
