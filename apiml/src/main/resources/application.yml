@@ -11,7 +11,7 @@ eureka:
         healthcheck:
             enabled: true
     server:
-        max-threads-for-peer-replication: 2
+        max-threads-for-peer-replication: 8
         useReadOnlyResponseCache: false
         peer-node-read-timeout-ms: 10000
 spring:
