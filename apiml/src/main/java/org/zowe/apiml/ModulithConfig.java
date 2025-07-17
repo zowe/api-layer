@@ -19,13 +19,7 @@ import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import jakarta.annotation.PostConstruct;
-import jakarta.servlet.Filter;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.Servlet;
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
+import jakarta.servlet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
@@ -33,6 +27,7 @@ import org.apache.catalina.Host;
 import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
@@ -40,7 +35,6 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
-import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -50,6 +44,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.TomcatHttpHandlerAdapter;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.context.ServletContextAware;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
@@ -57,20 +52,14 @@ import org.zowe.apiml.filter.PreFluxFilter;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.zaas.ZaasStartupListener;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 @EnableScheduling
 @Configuration
@@ -83,6 +72,7 @@ public class ModulithConfig {
     private final Map<String, InstanceInfo> instances = new HashMap<>();
     private final GatewayEurekaInstanceConfigBean eurekaInstanceGw;
     private final EurekaClientConfig eurekaConfig;
+    private final CachingServiceEurekaInstanceConfigBean eurekaInstanceCaching;
 
     private final Timer timer = new Timer("PeerReplicated-StaticServices");
 
@@ -101,8 +91,8 @@ public class ModulithConfig {
     @Bean
     ApplicationInfo applicationInfo() {
         return ApplicationInfo.builder()
-                .isModulith(true)
-                .authServiceId(CoreService.GATEWAY.getServiceId()).build();
+            .isModulith(true)
+            .authServiceId(CoreService.GATEWAY.getServiceId()).build();
     }
 
     private InstanceInfo getInstanceInfo(String serviceId) {
@@ -121,6 +111,9 @@ public class ModulithConfig {
             case "gateway":
                 metadata = eurekaInstanceGw.getMetadataMap();
                 metadata.put("management.port", "10010");
+                break;
+            case "cachingservice":
+                metadata = eurekaInstanceCaching.getMetadataMap();
                 break;
             default:
         }
@@ -157,18 +150,14 @@ public class ModulithConfig {
     void createLocalInstances() {
         instances.put(CoreService.GATEWAY.getServiceId(), getInstanceInfo(CoreService.GATEWAY.getServiceId()));
         instances.put(CoreService.DISCOVERY.getServiceId(), getInstanceInfo(CoreService.DISCOVERY.getServiceId()));
+        instances.put(CoreService.CACHING.getServiceId(), getInstanceInfo(CoreService.CACHING.getServiceId()));
         EurekaServerContextHolder.initialize(applicationContext.getBean(EurekaServerContext.class));
     }
 
-    @EventListener
-    public void onApplicationEvent(EurekaRegistryAvailableEvent event) {
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationStart() {
         ApimlInstanceRegistry registry = getRegistry();
         instances.forEach((key, value) -> registry.registerStatically(instances.get(key), false, CoreService.GATEWAY.getServiceId().equalsIgnoreCase(key)));
-
-        var jwtSec = applicationContext.getBean(JwtSecurity.class);
-        if (!jwtSec.getZosmfListener().isZosmfReady()) {
-            jwtSec.getZosmfListener().getZosmfRegisteredListener().onEvent(new CacheRefreshedEvent());
-        }
 
         log.info("Initialize timer for static services peer-replicated heartbeats");
 
@@ -183,6 +172,17 @@ public class ModulithConfig {
         }, eurekaConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L, eurekaConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L);
 
     }
+
+    @Scheduled(initialDelay = 3000, fixedRate = 20_000) // TODO find better solution but DON'T JUST REMOVE!
+    public void periodicJwtInit() {
+        var jwtSec = applicationContext.getBean(JwtSecurity.class);
+        if (!jwtSec.getZosmfListener().isZosmfReady()) {
+            jwtSec.getZosmfListener().getZosmfRegisteredListener().onEvent(new CacheRefreshedEvent());
+            ZaasStartupListener listener = applicationContext.getBean(ZaasStartupListener.class);
+            listener.notifyStartup();
+        }
+    }
+
 
     @Bean
     ReactiveDiscoveryClient registryReactiveDiscoveryClient(DiscoveryClient registryDiscoveryClient) {
@@ -257,6 +257,8 @@ public class ModulithConfig {
         messageService.loadMessages("/gateway-log-messages.yml");
 
         messageService.loadMessages("/zaas-log-messages.yml");
+
+        messageService.loadMessages("/caching-log-messages.yml");
         return messageService;
     }
 

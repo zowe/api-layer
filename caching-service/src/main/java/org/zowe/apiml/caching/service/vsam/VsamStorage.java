@@ -15,8 +15,8 @@ import org.springframework.retry.annotation.Retryable;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.EvictionStrategy;
 import org.zowe.apiml.caching.service.Messages;
-import org.zowe.apiml.caching.service.Storage;
-import org.zowe.apiml.caching.service.StorageException;
+import org.zowe.apiml.cache.Storage;
+import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.message.log.ApimlLogger;
 

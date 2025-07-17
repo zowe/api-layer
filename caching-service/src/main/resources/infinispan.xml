@@ -86,6 +86,8 @@
         <serialization marshaller="org.infinispan.jboss.marshalling.commons.GenericJBossMarshaller">
             <allow-list>
                 <class>org.zowe.apiml.caching.model.KeyValue</class>
+                <class>org.zowe.apiml.security.common.token.TokenAuthentication</class>
+                <class>org.zowe.apiml.security.common.token.TokenAuthentication$Type</class>
                 <class>java.util.HashMap</class>
                 <class>java.util.Arrays$ArrayList</class>
             </allow-list>

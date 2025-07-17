@@ -58,10 +58,6 @@ jobs:
                     APIML_SERVICE_HOSTNAME: api-catalog-services
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
                     APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -78,7 +74,7 @@ jobs:
             -   uses: ./.github/actions/setup
 
             -   name: Run Modulith CI Tests
-                timeout-minutes: 4
+                timeout-minutes: 6
                 run: >
                     ENV_CONFIG=docker-modulith ./gradlew runStartUpCheck :integration-tests:runContainerModulithTests --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
@@ -151,10 +147,6 @@ jobs:
                     APIML_SERVICE_HOSTNAME: api-catalog-services-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
                     APIML_SERVICE_GATEWAYHOSTNAME: https://apiml-2:10010
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -168,7 +160,7 @@ jobs:
 
             -   name: Run Startup Check
                 if: always()
-                timeout-minutes: 4
+                timeout-minutes: 6
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
@@ -254,10 +246,6 @@ jobs:
                     APIML_HEALTH_PROTECTED: false
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
                     APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -280,7 +268,7 @@ jobs:
 
             -   name: Run Startup Check
                 if: always()
-                timeout-minutes: 4
+                timeout-minutes: 6
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
@@ -400,7 +388,7 @@ jobs:
             -   uses: ./.github/actions/setup
 
             -   name: Run CI Tests
-                timeout-minutes: 4
+                timeout-minutes: 6
                 run: >
                     ./gradlew runStartUpCheck :integration-tests:runContainerTests --info -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -482,7 +470,7 @@ jobs:
 
             -   name: Run Startup Check
                 if: always()
-                timeout-minutes: 4
+                timeout-minutes: 6
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-ha -Ddiscoverableclient.instances=1
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -740,7 +728,7 @@ jobs:
             -   uses: ./.github/actions/setup
 
             -   name: Run CI Tests
-                timeout-minutes: 4
+                timeout-minutes: 6
                 run: >
                     ./gradlew runStartUpCheck :integration-tests:runGatewayCentralRegistryTest --info
                     -Denvironment.config=-docker -Dgateway.instances=2 -Ddiscoverableclient.instances=0
@@ -1193,10 +1181,6 @@ jobs:
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
                     APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1246,7 +1230,7 @@ jobs:
 
             -   name: Run Startup Check
                 if: always()
-                timeout-minutes: 4
+                timeout-minutes: 6
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
@@ -1389,8 +1373,6 @@ jobs:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1530,7 +1512,7 @@ jobs:
 
             -   name: Run Startup Check
                 if: always()
-                timeout-minutes: 4
+                timeout-minutes: 6
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-ha -Ddiscoverableclient.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -1678,6 +1660,79 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
+    CITestsModulithWithInfinispan:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 15
+
+        services:
+            apiml:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
+                    ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
+                    JGROUPS_BIND_PORT: "7600"
+                    SERVER_SSL_KEYSTORETYPE: "PKCS12"
+                    CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data_replica"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml-2[7600]"
+                    CACHING_STORAGE_MODE: "infinispan"
+                    JGROUPS_BIND_ADDRESS: "apiml"
+
+            apiml-2:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+                    APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
+                    ZWE_CACHING_SERVICE_PERSISTENT: 'infinispan'
+                    JGROUPS_BIND_PORT: "7600"
+                    SERVER_SSL_KEYSTORETYPE: "PKCS12"
+                    CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600]"
+                    CACHING_STORAGE_MODE: "infinispan"
+                    JGROUPS_BIND_ADDRESS: "apiml-2"
+                    APIML_SERVICE_HOSTNAME: "apiml-2"
+
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka/
+
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Build with Gradle
+                run: >
+                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runModulithInfinispanServiceTests --info
+                    -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsModulithWithInfinispan-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/teardown
+
     E2EUITests:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
@@ -1761,7 +1816,7 @@ jobs:
                         api-catalog-ui/frontend/node_modules
                     key: my-cache-${{ runner.os }}-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
             -   name: Run startup check
-                timeout-minutes: 4
+                timeout-minutes: 6
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
             -   name: Show status when APIML is not ready yet
@@ -1875,7 +1930,7 @@ jobs:
                         api-catalog-ui/frontend/node_modules
                     key: my-cache-${{ runner.os }}-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
             -   name: Run startup check
-                timeout-minutes: 4
+                timeout-minutes: 6
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1 -Denvironment.modulith=true -Denvironment.gwCount=1
                     -Dgateway.host=gateway-service,gateway-service-2 -Ddiscovery.host=gateway-service -Ddiscovery.additionalHost=gateway-service-2
@@ -1885,8 +1940,8 @@ jobs:
                 run: |
                     apt update
                     apt install -y apt-transport-https ca-certificates curl software-properties-common
-                    curl -k -s https://apiml:10010/application/health
-                    curl -k -s https://apiml-2:10010/application/health
+                    curl -k -s https://gateway-service:10010/application/health
+                    curl -k -s https://gateway-service-2:10010/application/health
             -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend

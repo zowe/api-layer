@@ -101,6 +101,15 @@ apiml:
             urls:
                 authenticate: https://mock-services:10013/zss/saf/authenticate
                 verify: https://localhost:10013/zss/saf/verify
+caching:
+    storage:
+        mode: infinispan
+        infinispan:
+            initialHosts: localhost[7099]
+jgroups:
+    bind:
+        port: 7600
+        address: localhost
 
 server:
     port: ${apiml.service.port}

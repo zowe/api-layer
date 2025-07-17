@@ -58,9 +58,12 @@ dependencies {
     api project(":gateway-service")
     api project(":discovery-service")
     api project(":zaas-service")
+    api project(":caching-service")
 
     implementation libs.bundles.modulith
     implementation libs.spring.boot.starter.web
+    implementation libs.swagger2.parser
+    implementation libs.swagger3.parser
     implementation libs.bundles.jaxb
     implementation libs.spring.cloud.starter.eureka.client
     implementation libs.spring.cloud.starter.eureka.server

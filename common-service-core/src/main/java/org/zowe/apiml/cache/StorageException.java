@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.caching.service;
+package org.zowe.apiml.cache;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

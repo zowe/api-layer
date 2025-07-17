@@ -13,7 +13,7 @@ eureka:
     server:
         max-threads-for-peer-replication: 2
         useReadOnlyResponseCache: false
-        peer-node-read-timeout-ms: 5000
+        peer-node-read-timeout-ms: 10000
 spring:
     cloud:
         gateway:
@@ -44,9 +44,20 @@ spring:
 
 springdoc:
     api-docs:
-        path: /gateway/api-docs
+        path: /v3/api-docs
+        groups:
+            enabled: true
     writer-with-order-by-keys: true
-    pathsToMatch: /gateway/api/v1/**
+    group-configs:
+        - group: gateway
+          pathsToMatch: /gateway/api/v1/**
+        - group: cachingservice
+          paths-to-match: /cachingservice/api/v1/**
+        - group: discovery
+          paths-to-match: /discovery/api/v1/**
+        - group: zaas
+          paths-to-match: /zaas/api/v1/**
+
 apiml:
     catalog:
         serviceId: apicatalog
@@ -56,7 +67,7 @@ apiml:
         # The `apiml.discovery` node contains discovery-service only configuration
         userid: eureka  # Userid that Eureka server will use to check authentication of its clients (other services)
         password: password  # Password that Eureka server will use to check authentication of its clients (other services)
-        allPeersUrls: http://${apiml.discovery.userid}:${apiml.discovery.password}@${apiml.service.hostname}:${apiml.service.port}/eureka/
+        allPeersUrls: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/eureka/
 
     gateway:
         eureka:
@@ -91,7 +102,7 @@ apiml:
                             - apiId: zowe.apiml.gateway
                               version: 1.0.0
                               gatewayUrl: api/v1
-                              swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/gateway/api-docs
+                              swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/v3/api-docs/gateway
                               documentationUrl: https://zowe.github.io/docs-site/
                         service:
                             title: API Gateway
@@ -104,6 +115,35 @@ apiml:
         registry:
             enabled: false
             metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
+    caching:
+        eureka:
+            instance:
+                metadata-map:
+                    apiml:
+                        registrationType: primary
+                        apiBasePath: /cachingservice/api/v1
+                        catalog:
+                            tile:
+                                id: apimediationlayer
+                                title: API Mediation Layer API
+                                description: The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.
+                                version: 1.0.0
+                        routes:
+                            api_v1:
+                                gatewayUrl: /
+                                serviceUrl: /cachingservice
+                        apiInfo:
+                            -   apiId: zowe.apiml.cachingservice
+                                version: 1.0.0
+                                gatewayUrl: api/v1
+                                swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/v3/api-docs/cachingservice
+                                documentationUrl: https://zowe.github.io/docs-site/
+                        service:
+                            title: Caching service for internal usage.
+                            description: Service that provides caching API.
+                        authentication:
+                            sso: true
+
     connection:
         timeout: 60000
         idleConnectionTimeoutSeconds: 5
@@ -179,7 +219,15 @@ server:
         trustStorePassword: password
         trustStoreType: PKCS12
 
-
+caching:
+    storage:
+        mode: infinispan
+        infinispan:
+            initialHosts: localhost[7099]
+jgroups:
+    bind:
+        port: 7600
+        address: localhost
 logbackServiceName: ZWEAGW1
 
 logging:
@@ -191,12 +239,13 @@ logging:
         com.netflix.discovery: ERROR
         com.netflix.discovery.DiscoveryClient: OFF
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.netflix.eureka: ERROR
         com.sun.jersey.server.impl.application.WebApplicationImpl: WARN
         io.netty.resolver.dns: WARN
         io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
         javax.net.ssl: ERROR
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
-        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: WARN #logs only SSLException
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.eclipse.jetty: WARN
         org.ehcache: WARN
@@ -211,13 +260,14 @@ logging:
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
         org.springframework.http.server.reactive: INFO
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
-        org.springframework.security.web: INFO
-        org.springframework.web.reactive: INFO
+        org.springframework.security.web: WARN
+        org.springframework.web.reactive: WARN
         org.zowe.apiml: INFO
-        reactor.netty: DEBUG
+        reactor.netty: WARN
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
-        org.springframework.security: TRACE
+        org.infinispan: WARN
+        org.jgroups: WARN
 
 management:
     endpoint:
@@ -241,6 +291,7 @@ logging:
         com.netflix: INFO # Update to DEBUG
         com.netflix.eureka: DEBUG
         com.netflix.discovery.shared.transport.decorator: DEBUG
+        com.netflix.eureka.cluster: DEBUG
         com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
         javax.net.ssl: ERROR
         org.apache: INFO
@@ -248,7 +299,7 @@ logging:
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.ehcache: INFO
-        org.springframework: INFO
+        org.springframework: DEBUG
         # org.springframework.cloud.gateway: TRACE
         # org.springframework.cloud.gateway.filter: TRACE
         # org.springframework.cloud.gateway.route: TRACE
@@ -258,9 +309,12 @@ logging:
         # org.springframework.web.reactive: DEBUG
         # org.springframework.web.reactive.socket: DEBUG
         org.zowe.apiml: DEBUG
+        reactor.netty: DEBUG
         reactor.netty.http.client: DEBUG
         reactor.netty.http.client.HttpClient: DEBUG
         reactor.netty.http.client.HttpClientConnect: DEBUG
+        org.jgroups: DEBUG
+        org.infinispan: DEBUG
 
 ---
 spring.config.activate.on-profile: attls

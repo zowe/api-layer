@@ -100,6 +100,10 @@
 # - ZWE_zowe_logDirectory
 # - ZWE_zowe_network_server_tls_attls
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
+# - ZWE_configs_storage_evictionStrategy
+# - ZWE_configs_storage_mode
+# - ZWE_configs_storage_size
+# - ZWE_configs_storage_vsam_name
 # Optional variables:
 
 if [ -n "${LAUNCH_COMPONENT}" ]; then
@@ -205,6 +209,10 @@ if [ "${ZWE_configs_server_ssl_enabled:-${ZWE_components_gateway_server_ssl_enab
     externalProtocol="https"
 else
     externalProtocol="http"
+fi
+
+if [ -n "${ZWE_configs_storage_vsam_name}" ]; then
+    VSAM_FILE_NAME=//\'${ZWE_configs_storage_vsam_name}\'
 fi
 
 LIBPATH="$LIBPATH":"/lib"
@@ -387,6 +395,15 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.webSocket.maxIdleTimeout=${ZWE_configs_server_webSocket_maxIdleTimeout:-${ZWE_components_gateway_server_webSocket_maxIdleTimeout:-3600000}} \
     -Dserver.webSocket.requestBufferSize=${ZWE_configs_server_webSocket_requestBufferSize:-${ZWE_components_gateway_server_webSocket_requestBufferSize:-8192}} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
+    -Dcaching.storage.evictionStrategy=${ZWE_configs_storage_evictionStrategy:-reject} \
+    -Dcaching.storage.size=${ZWE_configs_storage_size:-10000} \
+    -Dcaching.storage.mode=${ZWE_configs_storage_mode:-infinispan} \
+    -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
+    -Djgroups.bind.address=${ZWE_configs_storage_infinispan_jgroups_host:-${ZWE_haInstance_hostname:-localhost}} \
+    -Djgroups.bind.port=${ZWE_configs_storage_infinispan_jgroups_port:-7600} \
+    -Djgroups.keyExchange.port=${ZWE_configs_storage_infinispan_jgroups_keyExchange_port:-7601} \
+    -Djgroups.tcp.diag.enabled=${ZWE_configs_storage_infinispan_jgroups_tcp_diag_enabled:-false} \
+    -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-localhost[7600]} \
     -jar "${JAR_FILE}" &
 
 pid=$!
