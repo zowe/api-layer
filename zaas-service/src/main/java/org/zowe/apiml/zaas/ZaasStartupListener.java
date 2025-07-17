@@ -16,8 +16,8 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
+import org.zowe.apiml.zaas.security.login.Providers;
 
 import java.time.Duration;
 import java.util.Timer;
