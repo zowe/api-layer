@@ -17,7 +17,7 @@ apiml:
 
 eureka:
     client:
-        initialInstanceInfoReplicationIntervalSeconds: 1
+        initialinstanceInfoReplicationIntervalSeconds: 30
         registryFetchIntervalSeconds: 1
 server:
     ssl:
