@@ -371,6 +371,8 @@ jobs:
                     SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+                    EUREKA_CLIENT_INSTANCEINFOREPLICATIONINTERVALSECONDS: 1
+                    EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS: 1
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
