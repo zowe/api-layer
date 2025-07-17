@@ -13,7 +13,6 @@ package org.zowe.apiml.apicatalog.controllers.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -41,7 +40,6 @@ import static org.apache.hc.core5.http.HttpStatus.SC_NO_CONTENT;
 
 @RestController
 @RequestMapping({"/apicatalog/auth", "/apicatalog/api/v1/auth"})
-@Slf4j
 @RequiredArgsConstructor
 public class TokenController {
 
