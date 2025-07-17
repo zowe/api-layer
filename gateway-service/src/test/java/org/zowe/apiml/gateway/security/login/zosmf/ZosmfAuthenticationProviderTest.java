@@ -114,7 +114,8 @@ class ZosmfAuthenticationProviderTest {
             applicationContext,
             authenticationService,
             tokenCreationService,
-            new ArrayList<>());
+            new ArrayList<>(),
+            null);
         ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
 
         return spy(zosmfService);
