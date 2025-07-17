@@ -75,7 +75,7 @@ import static reactor.core.publisher.Mono.just;
 @SuppressWarnings("java:S1452") // Generic type wildcard needed due to legacy code usage
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = "/eureka", produces = { "application/xml", "application/json" })
+@RequestMapping(path = "/eureka", produces = {"application/xml", "application/json"})
 @DependsOn("modulithConfig")
 @Slf4j
 public class EurekaRestController {
@@ -103,7 +103,7 @@ public class EurekaRestController {
             .body(response.getEntity());
     }
 
-    @GetMapping(value = {"/apps", "/apps/"}, produces = { "application/xml", "application/json" })
+    @GetMapping(value = {"/apps", "/apps/"}, produces = {"application/xml", "application/json"})
     public Mono<ResponseEntity<?>> getContainers(
         ServerWebExchange serverWebExchange,
         @Nullable @RequestHeader(ACCEPT) String acceptHeader,
@@ -277,12 +277,12 @@ public class EurekaRestController {
         return just(convertResponse(asgResource.statusUpdate(asgName, newStatus, isReplication)));
     }
 
-    @PostMapping({ "/peerreplication/batch/", "/peerreplication/batch" })
+    @PostMapping({"/peerreplication/batch/", "/peerreplication/batch"})
     public Mono<ResponseEntity<?>> batchReplication(
         @RequestBody String replicationListString
     ) throws IOException {
         var replicationList = JACKSON_JSON.decode(replicationListString, ReplicationList.class);
-        return just(convertResponse(peerReplicationResource.batchReplication(replicationList)));
+        return Mono.fromCallable(() -> convertResponse(peerReplicationResource.batchReplication(replicationList)));
     }
 
     @RequiredArgsConstructor
@@ -303,20 +303,20 @@ public class EurekaRestController {
         @Override
         public List<PathSegment> getPathSegments() {
             return request.getPath().contextPath().elements().stream().map(
-                e -> new PathSegment() {
-                    @Override
-                    public String getPath() {
-                        return e.value();
-                    }
+                    e -> new PathSegment() {
+                        @Override
+                        public String getPath() {
+                            return e.value();
+                        }
 
-                    @Override
-                    public MultivaluedMap<String, String> getMatrixParameters() {
-                        return new MultivaluedHashMap<>();
+                        @Override
+                        public MultivaluedMap<String, String> getMatrixParameters() {
+                            return new MultivaluedHashMap<>();
+                        }
                     }
-                }
-            )
-            .map(PathSegment.class::cast)
-            .toList();
+                )
+                .map(PathSegment.class::cast)
+                .toList();
         }
 
         @Override
