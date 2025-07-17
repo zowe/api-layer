@@ -178,8 +178,6 @@ public class ModulithConfig {
         var jwtSec = applicationContext.getBean(JwtSecurity.class);
         if (!jwtSec.getZosmfListener().isZosmfReady()) {
             jwtSec.getZosmfListener().getZosmfRegisteredListener().onEvent(new CacheRefreshedEvent());
-            ZaasStartupListener listener = applicationContext.getBean(ZaasStartupListener.class);
-            listener.notifyStartup();
         }
     }
 
