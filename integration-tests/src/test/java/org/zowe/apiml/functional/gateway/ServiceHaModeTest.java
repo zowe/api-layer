@@ -95,7 +95,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
                 service1 = new VirtualService("testHaModeService1", ports.get(0));
                 service2 = new VirtualService("testHaModeService1", ports.get(1));
 
-                service1.start();
+                service1.start().waitForGatewayRegistration(TIMEOUT);
                 service2.start().waitForGatewayRegistration(TIMEOUT);
 
                 service2.zombie();
