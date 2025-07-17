@@ -388,10 +388,19 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Run Startup Check
+                if: always()
+                timeout-minutes: 4
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Run CI Tests
                 timeout-minutes: 4
                 run: >
-                    ./gradlew runStartUpCheck :integration-tests:runContainerTests --info -Denvironment.config=-docker
+                    ./gradlew :integration-tests:runContainerTests --info -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
