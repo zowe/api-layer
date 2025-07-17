@@ -194,6 +194,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
         strategy:
+            fail-fast: false
             matrix:
                 type: ["normal", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic"]
         services:
@@ -1460,6 +1461,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
         strategy:
+            fail-fast: false
             matrix:
                 type: ["normal", "discovery-chaotic", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic"]
         services:
