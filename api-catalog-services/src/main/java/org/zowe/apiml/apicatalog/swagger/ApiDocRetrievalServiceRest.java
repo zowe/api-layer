@@ -22,7 +22,6 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.exceptions.ApiVersionNotFoundException;
@@ -364,12 +363,10 @@ public class ApiDocRetrievalServiceRest implements ApiDocRetrievalService {
             throw new ApiDocNotFoundException("No API Documentation defined for service " + serviceInstance.getServiceId().toLowerCase() + ".");
         }
 
-        UriComponents uri = UriComponentsBuilder.fromUri(serviceInstance.getUri())
-            .newInstance()
+        return UriComponentsBuilder.fromUri(serviceInstance.getUri())
             .path(path)
-            .build();
-
-        return uri.toUriString();
+            .build()
+            .toUriString();
     }
 
 }
