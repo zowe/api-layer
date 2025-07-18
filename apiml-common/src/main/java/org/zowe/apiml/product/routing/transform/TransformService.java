@@ -11,7 +11,7 @@
 package org.zowe.apiml.product.routing.transform;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.util.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
@@ -148,9 +148,10 @@ public class TransformService {
      */
     private String getShortEndPoint(String routeServiceUrl, String endPoint) {
         String shortEndPoint = endPoint;
-        if (!SEPARATOR.equals(routeServiceUrl) && !Strings.isBlank(routeServiceUrl)) {
+        if (!SEPARATOR.equals(routeServiceUrl) && StringUtils.isNotBlank(routeServiceUrl)) {
             shortEndPoint = shortEndPoint.replaceFirst(UrlUtils.removeLastSlash(routeServiceUrl), "");
         }
         return shortEndPoint;
     }
+
 }

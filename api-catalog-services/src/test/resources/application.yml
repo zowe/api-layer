@@ -145,7 +145,7 @@ eureka:
                     - apiId: zowe.apiml.apicatalog
                       version: 1.0.0
                       gatewayUrl: api/v1
-                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/v3/api-docs
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/apicatalog/v3/api-docs
 
                 service:
                     title: API Catalog
@@ -221,7 +221,7 @@ eureka:
         securePort: 0
         nonSecurePortEnabled: true
         securePortEnabled: false
-        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/health
+        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}/apicatalog/application/health
         metadata-map:
             apiml:
                 corsEnabled: true
@@ -229,7 +229,7 @@ eureka:
                     - apiId: zowe.apiml.apicatalog
                       version: 1.0.0
                       gatewayUrl: api/v1
-                      swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/v3/api-docs
+                      swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/apicatalog/v3/api-docs
 apiml:
     service:
         scheme: http

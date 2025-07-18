@@ -20,10 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
@@ -34,7 +31,6 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.StreamSupport;
@@ -75,6 +71,7 @@ public class ServicesController {
         @ApiResponse(responseCode = "404", description = "URI not found"),
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
     })
+    @ResponseBody
     public Mono<ResponseEntity<List<APIContainer>>> getAllAPIContainers() throws ContainerStatusRetrievalException {
         try {
             Iterable<APIContainer> allContainers = containerService.getAllContainers();
@@ -108,6 +105,7 @@ public class ServicesController {
         @ApiResponse(responseCode = "404", description = "URI not found"),
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
     })
+    @ResponseBody
     public Mono<ResponseEntity<List<APIContainer>>> getAPIContainerById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalException {
         APIContainer containerById;
         try {
@@ -179,6 +177,7 @@ public class ServicesController {
         @ApiResponse(responseCode = "404", description = "URI not found"),
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
     })
+    @ResponseBody
     public Mono<ResponseEntity<APIService>> getAPIServicesById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalException {
 
         var service = containerService.getService(id);

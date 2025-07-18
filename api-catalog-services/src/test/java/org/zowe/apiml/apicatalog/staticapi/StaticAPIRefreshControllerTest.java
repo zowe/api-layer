@@ -15,14 +15,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.client.RestClientException;
+import org.zowe.apiml.apicatalog.config.BeanConfig;
 import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -33,7 +31,7 @@ import static org.mockito.Mockito.when;
     StaticDefinitionController.class,
     StaticAPIRefreshControllerExceptionHandler.class,
     StaticDefinitionControllerExceptionHandler.class,
-    StaticAPIRefreshControllerTest.Context.class
+    BeanConfig.class
 })
 @WebFluxTest(controllers = {StaticAPIRefreshController.class, StaticDefinitionController.class}, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
 class StaticAPIRefreshControllerTest {
@@ -50,7 +48,7 @@ class StaticAPIRefreshControllerTest {
     private StaticDefinitionGenerator staticDefinitionGenerator;
 
     @Test
-    void givenServiceNotFoundException_whenCallRefreshAPI_thenResponseShouldBe503WithSpecificMessage() throws Exception {
+    void givenServiceNotFoundException_whenCallRefreshAPI_thenResponseShouldBe503WithSpecificMessage() {
         when(staticAPIService.refresh()).thenThrow(
             new ServiceNotFoundException("Exception")
         );
@@ -66,7 +64,7 @@ class StaticAPIRefreshControllerTest {
     }
 
     @Test
-    void givenRestClientException_whenCallRefreshAPI_thenResponseShouldBe500WithSpecificMessage() throws Exception {
+    void givenRestClientException_whenCallRefreshAPI_thenResponseShouldBe500WithSpecificMessage() {
         when(staticAPIService.refresh()).thenThrow(
             new RestClientException("Exception")
         );
@@ -82,22 +80,13 @@ class StaticAPIRefreshControllerTest {
     }
 
     @Test
-    void givenSuccessStaticResponse_whenCallRefreshAPI_thenResponseCodeShouldBe200() throws Exception {
+    void givenSuccessStaticResponse_whenCallRefreshAPI_thenResponseCodeShouldBe200() {
         when(staticAPIService.refresh()).thenReturn(
             new StaticAPIResponse(200, "This is body")
         );
 
         webTestClient.post().uri(API_REFRESH_ENDPOINT).exchange()
             .expectStatus().isOk();
-    }
-
-    static class Context {
-
-        @Bean
-        public MessageService messageService() {
-            return new YamlMessageService("/apicatalog-log-messages.yml");
-        }
-
     }
 
 }

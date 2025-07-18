@@ -13,7 +13,6 @@ package org.zowe.apiml.apicatalog.controllers.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -41,11 +40,10 @@ import static org.apache.hc.core5.http.HttpStatus.SC_NO_CONTENT;
 
 @RestController
 @RequestMapping({"/apicatalog/auth", "/apicatalog/api/v1/auth"})
-@Slf4j
 @RequiredArgsConstructor
 public class TokenController {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
     private final GatewaySecurityService gatewaySecurityService;
     private final AuthConfigurationProperties authConfigurationProperties;
 
@@ -80,7 +78,7 @@ public class TokenController {
                 .orElse( null)
             ))
             .switchIfEmpty(Mono.error(() -> WebClientResponseException.create(SC_BAD_REQUEST, "bad request", exchange.getRequest().getHeaders(), new byte[0], StandardCharsets.UTF_8)))
-            .map(login ->
+            .flatMap(login ->
                 gatewaySecurityService.login(login.getUsername(), login.getPassword(), null).map(token -> {
                     exchange.getResponse().addCookie(ResponseCookie.from(cp.getCookieName(), token)
                         .path(cp.getCookiePath())

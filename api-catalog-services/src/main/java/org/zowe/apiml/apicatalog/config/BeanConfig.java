@@ -12,6 +12,7 @@ package org.zowe.apiml.apicatalog.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
@@ -37,6 +38,7 @@ public class BeanConfig {
     }
 
     @Bean
+    @Lazy
     public TransformService transformService(GatewayClient gatewayClient) {
         return new TransformService(gatewayClient);
     }
