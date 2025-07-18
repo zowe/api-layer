@@ -8,6 +8,9 @@ apiml:
         hostname: localhost
         port: 10010
     banner: console
+    security:
+        x509:
+            enabled: true
 eureka:
     client:
         serviceUrl:
