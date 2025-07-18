@@ -221,7 +221,6 @@ public class HttpConfig {
         return httpsFactory;
     }
 
-
     /**
      * Returns RestTemplate with keystore. This RestTemplate makes calls to other systems with a certificate to sign to
      * other systems by certificate. It is necessary to call systems like DiscoverySystem etc.
