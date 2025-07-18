@@ -53,4 +53,5 @@ public abstract class ApiCatalogFunctionalTest {
     protected String getCatalogUriWithPath(String scheme, String path) {
         return String.format("%s://%s:%d/%s", scheme, hostname, port, path);
     }
+
 }

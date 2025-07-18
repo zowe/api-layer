@@ -38,7 +38,7 @@ public abstract class AbstractExceptionHandler {
      * @param ex         Exception to be handled
      * @throws ServletException Fallback exception if exception cannot be handled
      */
-    public abstract void handleException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, RuntimeException ex) throws ServletException;
+    public abstract void handleException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, Exception ex) throws ServletException;
 
     /**
      * Write message (by message key) to http response

@@ -10,50 +10,59 @@
 
 package org.zowe.apiml.apicatalog.security;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.HttpCookie;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.zowe.apiml.filter.AttlsFilter;
-import org.zowe.apiml.filter.SecureConnectionFilter;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.web.server.WebFilter;
+import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.client.EnableApimlAuth;
-import org.zowe.apiml.security.client.login.GatewayLoginProvider;
-import org.zowe.apiml.security.client.token.GatewayTokenProvider;
+import org.zowe.apiml.security.client.service.GatewaySecurityService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.config.CertificateAuthenticationProvider;
-import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
-import org.zowe.apiml.security.common.content.BasicContentFilter;
-import org.zowe.apiml.security.common.content.BearerContentFilter;
-import org.zowe.apiml.security.common.content.CookieContentFilter;
-import org.zowe.apiml.security.common.content.OidcContentFilter;
-import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import org.zowe.apiml.security.common.login.LoginFilter;
-import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
-import org.zowe.apiml.security.common.verify.CertificateValidator;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.util.X509Util;
+import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.Set;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
+import static org.apache.hc.core5.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.zowe.apiml.constants.ApimlConstants.HEADER_OIDC_TOKEN;
+import static org.zowe.apiml.security.common.token.TokenAuthentication.createAuthenticated;
 
 /**
  * Main configuration class of Spring web security for Api Catalog
@@ -62,244 +71,310 @@ import java.util.Set;
  * adds endpoints and secures them
  * adds security filters
  */
+@Slf4j
 @Configuration
-@EnableWebSecurity
+@EnableWebFluxSecurity
 @RequiredArgsConstructor
 @EnableApimlAuth
-@EnableMethodSecurity
+@EnableReactiveMethodSecurity
 @EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
 public class SecurityConfiguration {
 
     private static final String APIDOC_ROUTES = "/apidoc/**";
     private static final String STATIC_REFRESH_ROUTE = "/static-api/refresh";
 
-    private final ObjectMapper securityObjectMapper;
     private final AuthConfigurationProperties authConfigurationProperties;
-    private final HandlerInitializer handlerInitializer;
-    private final GatewayLoginProvider gatewayLoginProvider;
-    private final GatewayTokenProvider gatewayTokenProvider;
-    private final CertificateValidator certificateValidator;
-    @Qualifier("publicKeyCertificatesBase64")
-    private final Set<String> publicKeyCertificatesBase64;
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
-    @Value("${apiml.health.protected:true}")
-    private boolean isHealthEndpointProtected;
+
+    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
+    private boolean verifySslCertificatesOfServices;
+
+    @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
+    private boolean nonStrictVerifySslCertificatesOfServices;
+
+    private String[] getFullUrls(String...baseUrl) {
+        return Stream.of(
+                Arrays.stream(baseUrl).map(url -> "/apicatalog" + url),
+                Arrays.stream(baseUrl).map(url -> "/apicatalog/api/v1" + url)
+            )
+            .flatMap(Function.identity())
+            .toArray(String[]::new);
+    }
+
+    @Bean
+    @Order(1)
+    public SecurityWebFilterChain loginSecurityWebFilterChain(ServerHttpSecurity http, ServerAuthenticationEntryPoint serverAuthenticationEntryPoint) {
+        return baseConfiguration(http, serverAuthenticationEntryPoint)
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, getFullUrls(authConfigurationProperties.getServiceLoginEndpoint())))
+            .authorizeExchange(exchange -> exchange
+                .pathMatchers(HttpMethod.POST, getFullUrls(authConfigurationProperties.getServiceLoginEndpoint())).permitAll()
+            )
+            .build();
+    }
+
+    @Bean
+    @Order(2)
+    public SecurityWebFilterChain logoutSecurityWebFilterChain(ServerHttpSecurity http, ServerAuthenticationEntryPoint serverAuthenticationEntryPoint) {
+        return baseConfiguration(http, serverAuthenticationEntryPoint)
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, getFullUrls(authConfigurationProperties.getServiceLogoutEndpoint())))
+            .logout(logout -> logout
+                .requiresLogout(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, getFullUrls(authConfigurationProperties.getServiceLogoutEndpoint())))
+                .logoutSuccessHandler(new ApiCatalogLogoutSuccessHandler(authConfigurationProperties))
+            )
+            .build();
+    }
 
     /**
      * Filter chain for protecting /apidoc/** endpoints with MF credentials for client certificate.
      */
-    @Configuration
-    @Order(1)
-    public class FilterChainBasicAuthOrTokenOrCertForApiDoc {
+    @Bean
+    @Order(3)
+    public SecurityWebFilterChain basicAuthOrTokenOrCertApiDocFilterChain(
+        ServerHttpSecurity http,
+        @Qualifier("basicAuthenticationFilter") WebFilter basicAuthenticationFilter,
+        @Qualifier("tokenAuthenticationFilter") WebFilter tokenAuthenticationFilter,
+        @Qualifier("oidcAuthenticationFilter") WebFilter oidcAuthenticationFilter,
+        ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
+    ) {
+        baseConfiguration(
+            http.securityMatcher(ServerWebExchangeMatchers.pathMatchers(getFullUrls(APIDOC_ROUTES, STATIC_REFRESH_ROUTE))),
+            serverAuthenticationEntryPoint,
+            basicAuthenticationFilter, tokenAuthenticationFilter, oidcAuthenticationFilter
+        )
+        .authorizeExchange(exchange -> exchange.anyExchange().authenticated());
 
-        @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
-        private boolean verifySslCertificatesOfServices;
+        if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
+            http.x509(x509 -> x509
+                .principalExtractor(X509Util.x509PrincipalExtractor())
+                .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
+            );
+        }
 
-        @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
-        private boolean nonStrictVerifySslCertificatesOfServices;
+        return http.build();
+    }
 
-        @Bean
-        public SecurityFilterChain basicAuthOrTokenOrCertApiDocFilterChain(HttpSecurity http) throws Exception {
-            mainframeCredentialsConfiguration(
-                baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE)))
+    @Bean
+    @Order(4)
+    public SecurityWebFilterChain healthEndpointSecurityWebFilterChain(
+        ServerHttpSecurity http,
+        @Value("${apiml.health.protected:true}") boolean isHealthEndpointProtected,
+        @Qualifier("basicAuthenticationFilter") WebFilter basicAuthenticationFilter,
+        @Qualifier("tokenAuthenticationFilter") WebFilter tokenAuthenticationFilter,
+        @Qualifier("oidcAuthenticationFilter") WebFilter oidcAuthenticationFilter,
+        ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
+    ) {
+        http = baseConfiguration(
+            http.securityMatcher(ServerWebExchangeMatchers.pathMatchers(getFullUrls("/application/health"))),
+            serverAuthenticationEntryPoint,
+            basicAuthenticationFilter, tokenAuthenticationFilter, oidcAuthenticationFilter
+        );
+
+        if (isHealthEndpointProtected) {
+            http.authorizeExchange(exchange -> exchange
+                .pathMatchers(getFullUrls("/application/health")).authenticated());
+        } else {
+            http.authorizeExchange(exchange -> exchange
+                .pathMatchers(getFullUrls("/application/health")).permitAll());
+        }
+
+        return http.build();
+    }
+
+    @Bean
+    @Order(5)
+    public SecurityWebFilterChain basicAuthOrTokenAllEndpointsFilterChain(
+        ServerHttpSecurity http,
+        @Qualifier("basicAuthenticationFilter") WebFilter basicAuthenticationFilter,
+        @Qualifier("tokenAuthenticationFilter") WebFilter tokenAuthenticationFilter,
+        @Qualifier("oidcAuthenticationFilter") WebFilter oidcAuthenticationFilter,
+        ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
+    ) {
+        return baseConfiguration(http.securityMatcher(ServerWebExchangeMatchers.pathMatchers(
+                getFullUrls("/static-api/**", "/containers/**", "/application/**", "/services/**", APIDOC_ROUTES))),
+                serverAuthenticationEntryPoint,
+                basicAuthenticationFilter, tokenAuthenticationFilter, oidcAuthenticationFilter
             )
-            .authorizeHttpRequests(requests -> requests
-                .anyRequest()
-                    .authenticated())
-            .authenticationProvider(gatewayLoginProvider)
-            .authenticationProvider(gatewayTokenProvider)
-            .authenticationProvider(new CertificateAuthenticationProvider());
-
-            if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
-                if (isAttlsEnabled) {
-                    http.x509(x509 -> x509
-                            .userDetailsService(x509UserDetailsService()))
-                        .addFilterBefore(reversedCategorizeCertFilter(), X509AuthenticationFilter.class)
-                        .addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class)
-                        .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-                } else {
-                    http.x509(x509 -> x509
-                        .userDetailsService(x509UserDetailsService()));
-                }
-            }
-
-            return http.build();
-        }
-
-        private UserDetailsService x509UserDetailsService() {
-            return username -> new User(username, "", Collections.emptyList());
-        }
-
-        private CategorizeCertsFilter reversedCategorizeCertFilter() {
-            CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator);
-            out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
-            out.setApimlCertificate(crt -> !out.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
-            return out;
-        }
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .build();
     }
 
     /**
      * Default filter chain to protect all routes with MF credentials.
      */
-    @Configuration
-    @Order(2)
-    public class FilterChainBasicAuthOrTokenAllEndpoints {
-
-        @Bean
-        public WebSecurityCustomizer webSecurityCustomizer() {
-            String[] noSecurityAntMatchers = {
-                "/",
-                "/static/**",
-                "/favicon.ico",
-                "/v3/api-docs",
-                "/index.html",
-                "/application/info",
-                "/oidc/provider"
-            };
-            return web -> web.ignoring().requestMatchers(noSecurityAntMatchers);
-        }
-
-        @Bean
-        public SecurityFilterChain basicAuthOrTokenAllEndpointsFilterChain(HttpSecurity http) throws Exception {
-
-            if (isHealthEndpointProtected) {
-                http.authorizeHttpRequests(requests -> requests
-                    .requestMatchers("/application/health").authenticated());
-            } else {
-                http.authorizeHttpRequests(requests -> requests
-                    .requestMatchers("/application/health").permitAll());
-            }
-
-            mainframeCredentialsConfiguration(baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers("/static-api/**","/containers/**","/application/**","/services/**",APIDOC_ROUTES))))
-                .authorizeHttpRequests(requests -> requests
-                    .anyRequest().authenticated()
-                )
-                .authenticationProvider(gatewayLoginProvider)
-                .authenticationProvider(gatewayTokenProvider);
-            if (isAttlsEnabled) {
-                http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
-            }
-            return http.build();
-        }
+    @Bean
+    @Order(6)
+    public SecurityWebFilterChain webSecurityCustomizer(
+        ServerHttpSecurity http,
+        ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
+    ) {
+        return baseConfiguration(http, serverAuthenticationEntryPoint)
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET,
+                ArrayUtils.addAll(getFullUrls(
+                    "",
+                    "/",
+                    "/static/**",
+                    "/favicon.ico",
+                    "/v3/api-docs",
+                    "/index.html",
+                    "/application/info",
+                    "/oidc/provider"
+                ), "/")))
+            .authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec.anyExchange().permitAll())
+            .build();
     }
 
-    private HttpSecurity baseConfiguration(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable) // NOSONAR
+    private ServerHttpSecurity baseConfiguration(
+        ServerHttpSecurity http,
+        ServerAuthenticationEntryPoint serverAuthenticationEntryPoint,
+        WebFilter...webFiltersAuthorization
+    ) {
+        var antMatcher = new AntPathMatcher();
+
+        http
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+
+            .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+            .formLogin(formLoginSpec -> formLoginSpec.disable())
+            .httpBasic(httpBasicSpec -> httpBasicSpec.disable())
 
             .headers(httpSecurityHeadersConfigurer ->
-                httpSecurityHeadersConfigurer.httpStrictTransportSecurity(HeadersConfigurer.HstsConfig::disable)
-                    .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
+                httpSecurityHeadersConfigurer.hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
+                    .frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
 
-            .exceptionHandling(handling -> handling
+            .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec
+                .authenticationEntryPoint((exchange, exception) -> {
+                    String requestedUri = exchange.getRequest().getURI().toString();
+                    log.debug("Unauthorized access to '{}' endpoint", requestedUri);
 
-                .defaultAuthenticationEntryPointFor(
-                    handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher("/application/**")
-                )
-                .defaultAuthenticationEntryPointFor(
-                    handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher(APIDOC_ROUTES)
-                )
-                .defaultAuthenticationEntryPointFor(
-                    handlerInitializer.getBasicAuthUnauthorizedHandler(), new AntPathRequestMatcher(STATIC_REFRESH_ROUTE)
-                )
-                .defaultAuthenticationEntryPointFor(
-                    handlerInitializer.getUnAuthorizedHandler(), new AntPathRequestMatcher("/**")
-                ))
-            .sessionManagement(management -> management
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                    if (Stream.of(getFullUrls(
+                            "/application/**",
+                            APIDOC_ROUTES,
+                            STATIC_REFRESH_ROUTE
+                        )).noneMatch(pattern -> antMatcher.match(pattern, requestedUri))
+                    ) {
+                        exchange.getResponse().getHeaders().add(HttpHeaders.WWW_AUTHENTICATE, ApimlConstants.BASIC_AUTHENTICATION_PREFIX);
+                    }
+
+                    return serverAuthenticationEntryPoint.commence(exchange, exception);
+                })
+            );
+
+            Stream.of(webFiltersAuthorization).forEach(webFilter -> http.addFilterBefore(webFilter, SecurityWebFiltersOrder.AUTHENTICATION));
 
         return http;
-    }
-
-    private HttpSecurity mainframeCredentialsConfiguration(HttpSecurity http) throws Exception {
-        http.securityMatchers(matcher -> matcher.requestMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()))
-        // login endpoint
-            .authorizeHttpRequests(requests -> requests
-                .requestMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll());
-
-        http.securityMatchers(matcher -> matcher.requestMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLogoutEndpoint()))
-        // logout endpoint
-            .logout(logout -> logout
-            .logoutUrl(authConfigurationProperties.getServiceLogoutEndpoint())
-            .logoutSuccessHandler(logoutSuccessHandler())
-        ).with(new CustomSecurityFilters(), c -> { });
-
-        return http;
-    }
-
-    private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
-        @Override
-        public void configure(HttpSecurity http) throws Exception {
-            AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
-
-            http.addFilterBefore(new ShouldBeAlreadyAuthenticatedFilter(authConfigurationProperties.getServiceLoginEndpoint(), handlerInitializer.getAuthenticationFailureHandler()), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(loginFilter(authConfigurationProperties.getServiceLoginEndpoint(), authenticationManager), ShouldBeAlreadyAuthenticatedFilter.class)
-                .addFilterBefore(basicFilter(authenticationManager), UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(cookieFilter(authenticationManager), BasicContentFilter.class)
-                .addFilterAfter(bearerContentFilter(authenticationManager), CookieContentFilter.class)
-                .addFilterAfter(oidcFilter(authenticationManager), BearerContentFilter.class);
-        }
-
-        private LoginFilter loginFilter(String loginEndpoint, AuthenticationManager authenticationManager) {
-            return new LoginFilter(
-                loginEndpoint,
-                handlerInitializer.getSuccessfulLoginHandler(),
-                handlerInitializer.getAuthenticationFailureHandler(),
-                securityObjectMapper,
-                authenticationManager,
-                handlerInitializer.getResourceAccessExceptionHandler()
-            );
-        }
-
-        /**
-         * Secures content with a basic authentication
-         */
-        private BasicContentFilter basicFilter(AuthenticationManager authenticationManager) {
-            return new BasicContentFilter(
-                authenticationManager,
-                handlerInitializer.getAuthenticationFailureHandler(),
-                handlerInitializer.getResourceAccessExceptionHandler()
-            );
-        }
-
-        /**
-         * Secures content with a token stored in a cookie
-         */
-        private CookieContentFilter cookieFilter(AuthenticationManager authenticationManager) {
-            return new CookieContentFilter(
-                authenticationManager,
-                handlerInitializer.getAuthenticationFailureHandler(),
-                handlerInitializer.getResourceAccessExceptionHandler(),
-                authConfigurationProperties);
-        }
-
-        /**
-         * Secures content with a Bearer token
-         */
-        private BearerContentFilter bearerContentFilter(AuthenticationManager authenticationManager) {
-            return new BearerContentFilter(
-                authenticationManager,
-                handlerInitializer.getAuthenticationFailureHandler(),
-                handlerInitializer.getResourceAccessExceptionHandler()
-            );
-        }
-
-        /**
-         * Secures content with a OIDC token
-         */
-        private OidcContentFilter oidcFilter(AuthenticationManager authenticationManager) {
-            return new OidcContentFilter(
-                authenticationManager,
-                handlerInitializer.getAuthenticationFailureHandler(),
-                handlerInitializer.getResourceAccessExceptionHandler()
-            );
-        }
-
     }
 
     @Bean
-    public LogoutSuccessHandler logoutSuccessHandler() {
-        return new ApiCatalogLogoutSuccessHandler(authConfigurationProperties);
+    public WebFilter basicAuthenticationFilter(
+        GatewaySecurityService gatewaySecurityService
+    ) {
+        return (exchange, chain) -> chain.filter(exchange)
+            .contextWrite(context -> {
+                var authorizationHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+                return LoginFilter.getCredentialFromAuthorizationHeader(Optional.ofNullable(authorizationHeader)).map(login -> {
+                    try {
+                        return gatewaySecurityService.login(login.getUsername(), login.getPassword(), null).map(token ->
+                            ReactiveSecurityContextHolder.withAuthentication(
+                                new UsernamePasswordAuthenticationToken(login.getUsername(), login.getPassword(), Collections.emptyList())
+                            )
+                        ).orElse(context);
+                    } catch (Exception e) {
+                        log.debug("Cannot verify basic auth", e);
+                        return context;
+                    }
+                }).orElse(context);
+            });
+    }
+
+    @Bean
+    public WebFilter tokenAuthenticationFilter(
+        GatewaySecurityService gatewaySecurityService,
+        AuthConfigurationProperties authConfigurationProperties,
+        MessageService messageService,
+        ObjectMapper mapper
+    ) {
+        AuthConfigurationProperties.CookieProperties cp = authConfigurationProperties.getCookieProperties();
+
+        return (exchange, chain) -> chain.filter(exchange)
+            .contextWrite(context ->
+                Optional.ofNullable(exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
+                    .filter(header -> StringUtils.startsWith(header, "Bearer "))
+                    .map(header -> header.substring("Bearer ".length()))
+                    .map(String::trim)
+                    .or(() -> Optional.ofNullable(exchange.getRequest().getCookies().getFirst(cp.getCookieName()))
+                        .map(HttpCookie::getValue)
+                    )
+                    .map(token -> {
+                        try {
+                            return Map.entry(token, gatewaySecurityService.query(token));
+                        } catch (TokenNotValidException e) {
+                            throw e;
+                        } catch (Exception e) {
+                            log.debug("Cannot query token: {}", token, e);
+                            return null;
+                        }
+                    })
+                    .map(pair -> ReactiveSecurityContextHolder.withAuthentication(
+                        createAuthenticated(pair.getValue().getUserId(), pair.getKey(), TokenAuthentication.Type.JWT)
+                    ))
+                    .orElse(context)
+            )
+            // TODO: only to mitigate breaking change, it should be removed and handled by a universal 401 message
+            .onErrorResume(TokenNotValidException.class, context -> {
+                try {
+                    ApiMessageView message = messageService.createMessage("org.zowe.apiml.common.unauthorized").mapToView();
+                    DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(mapper.writeValueAsBytes(message));
+                    exchange.getResponse().setRawStatusCode(SC_UNAUTHORIZED);
+                    exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+                    return exchange.getResponse().writeWith(Mono.just(buffer));
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+    }
+
+    @Bean
+    public WebFilter oidcAuthenticationFilter(
+        GatewaySecurityService gatewaySecurityService
+    ) {
+        return (exchange, chain) -> chain.filter(exchange)
+            .contextWrite(context ->
+                Optional.ofNullable(exchange.getRequest().getHeaders().getFirst(HEADER_OIDC_TOKEN))
+                    .map(token -> {
+                        try {
+                            return Map.entry(token, gatewaySecurityService.verifyOidc(token));
+                        } catch (Exception e) {
+                            log.debug("Cannot verify OIDC token: {}", token, e);
+                            return null;
+                        }
+                    })
+                    .map(pair -> ReactiveSecurityContextHolder.withAuthentication(
+                        createAuthenticated(pair.getValue().getUserId(), pair.getKey(), TokenAuthentication.Type.OIDC)
+                    ))
+                    .orElse(context)
+            );
+    }
+
+    @Bean
+    public ReactiveAuthenticationManager reactiveAuthenticationManager() {
+        return Mono::just;
+    }
+
+    @Bean
+    public ServerAuthenticationEntryPoint serverAuthenticationEntryPoint(
+        MessageService messageService,
+        ObjectMapper mapper
+    ) {
+        return (exchange, authenticationException) -> {
+            try {
+                ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.login.invalidCredentials", exchange.getRequest().getPath().toString()).mapToView();
+                DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(mapper.writeValueAsBytes(message));
+                exchange.getResponse().setRawStatusCode(SC_UNAUTHORIZED);
+                exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+                return exchange.getResponse().writeWith(Mono.just(buffer));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        };
     }
 
 }

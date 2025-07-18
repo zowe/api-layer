@@ -10,44 +10,46 @@
 
 package org.zowe.apiml.apicatalog.security;
 
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
+import org.springframework.mock.web.server.MockServerWebExchange;
+import org.springframework.security.web.server.WebFilterExchange;
+import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.mock.web.MockHttpSession;
-
-import jakarta.servlet.http.Cookie;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 class ApiCatalogLogoutSuccessHandlerTest {
 
     @Test
     void testOnLogoutSuccess() {
-        MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-        MockHttpSession mockHttpSession = new MockHttpSession();
-        httpServletRequest.setSession(mockHttpSession);
-
-        MockHttpServletResponse httpServletResponse = new MockHttpServletResponse();
+        var request = MockServerHttpRequest.get("/logout")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer token123")
+            .build();
+        var exchange = MockServerWebExchange.from(request);
+        WebFilterChain mockChain = mock(WebFilterChain.class);
+        var webFilterExchange = new WebFilterExchange(exchange, mockChain);
 
         AuthConfigurationProperties securityConfigurationProperties = new AuthConfigurationProperties();
         ApiCatalogLogoutSuccessHandler apiCatalogLogoutSuccessHandler = new ApiCatalogLogoutSuccessHandler(securityConfigurationProperties);
 
         apiCatalogLogoutSuccessHandler.onLogoutSuccess(
-            httpServletRequest,
-            httpServletResponse,
+            webFilterExchange,
             new TokenAuthentication("TEST_TOKEN_STRING")
-        );
+        ).block();
 
-        assertTrue(mockHttpSession.isInvalid());
-        assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
+        assertFalse(exchange.getSession().block().isStarted());
+        assertEquals(HttpStatus.OK.value(), exchange.getResponse().getStatusCode().value());
 
-        Cookie cookie = httpServletResponse.getCookie(
+        var cookie = exchange.getResponse().getCookies().getFirst(
             securityConfigurationProperties.getCookieProperties().getCookieName());
         assertNotNull(cookie);
-        assertTrue(cookie.getSecure());
+        assertTrue(cookie.isSecure());
         assertTrue(cookie.isHttpOnly());
     }
+
 }

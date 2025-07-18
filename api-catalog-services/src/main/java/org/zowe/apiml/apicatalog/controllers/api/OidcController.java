@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.apicatalog.security.OidcUtils;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -28,19 +29,19 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 @Slf4j
 @RestController
-@RequestMapping("/oidc")
+@RequestMapping({"/apicatalog/oidc", "/apicatalog/api/v1/oidc"})
 @Tag(name = "OIDC integration")
 public class OidcController {
 
     private AtomicReference<List<String>> oidcProviderCache = new AtomicReference<>();
 
     @GetMapping(value = "/provider", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<String>> getOidcProvider() {
+    public Mono<ResponseEntity<List<String>>> getOidcProvider() {
         if (oidcProviderCache.get() == null) {
             oidcProviderCache.set(OidcUtils.getOidcProvider());
         }
 
-        return new ResponseEntity<>(oidcProviderCache.get(), oidcProviderCache.get().isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK);
+        return Mono.just(new ResponseEntity<>(oidcProviderCache.get(), oidcProviderCache.get().isEmpty() ? HttpStatus.NO_CONTENT : HttpStatus.OK));
     }
 
 }

@@ -16,20 +16,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @RestController
-@RequestMapping("/static-api")
+@RequestMapping({"/apicatalog/static-api", "/apicatalog/api/v1/static-api"})
 @RequiredArgsConstructor
 public class StaticAPIRefreshController {
 
     private final StaticAPIService staticAPIService;
 
     @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> refreshStaticApis() {
-        StaticAPIResponse staticAPIResponse = staticAPIService.refresh();
-        return ResponseEntity
-            .status(staticAPIResponse.getStatusCode())
-            .body(staticAPIResponse.getBody());
+    public Mono<ResponseEntity<String>> refreshStaticApis() {
+        return Mono.fromCallable(staticAPIService::refresh)
+            .map(staticAPIResponse -> ResponseEntity
+                .status(staticAPIResponse.getStatusCode())
+                .body(staticAPIResponse.getBody())
+            )
+            .subscribeOn(Schedulers.boundedElastic());
     }
 
 }
