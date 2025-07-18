@@ -22,6 +22,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 @TestPropertySource( properties = {"apiml.health.protected=false"} )
 @DirtiesContext
 public class ApiCatalogProtectedEndpointTest extends ApiCatalogFunctionalTest {
+
     @Test
     void requestSuccessWithBody() {
         // the method could return 200 or 503 depends on the state, but the aim is to check if it is accessible
@@ -32,4 +33,5 @@ public class ApiCatalogProtectedEndpointTest extends ApiCatalogFunctionalTest {
             .body("status", not(nullValue()))
             .body("components.apiCatalog.status", not(nullValue()));
     }
+
 }

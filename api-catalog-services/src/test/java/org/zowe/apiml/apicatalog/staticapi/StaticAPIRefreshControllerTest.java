@@ -10,84 +10,83 @@
 
 package org.zowe.apiml.apicatalog.staticapi;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.FilterType;
-import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
+import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.client.RestClientException;
+import org.zowe.apiml.apicatalog.config.BeanConfig;
 import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = {StaticAPIRefreshController.class},
-    excludeFilters = { @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = WebSecurityConfigurer.class) },
-    excludeAutoConfiguration = { SecurityAutoConfiguration.class}
-)
-@ContextConfiguration(classes = StaticApiContextConfiguration.class)
+@ContextConfiguration(classes = {
+    StaticAPIRefreshController.class,
+    StaticDefinitionController.class,
+    StaticAPIRefreshControllerExceptionHandler.class,
+    StaticDefinitionControllerExceptionHandler.class,
+    BeanConfig.class
+})
+@WebFluxTest(controllers = {StaticAPIRefreshController.class, StaticDefinitionController.class}, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
 class StaticAPIRefreshControllerTest {
 
-    private static final String API_REFRESH_ENDPOINT = "/static-api/refresh";
+    private static final String API_REFRESH_ENDPOINT = "/apicatalog/static-api/refresh";
 
     @Autowired
-    private MockMvc mockMvc;
+    private WebTestClient webTestClient;
 
-    @Autowired
+    @MockitoBean
     private StaticAPIService staticAPIService;
 
-    @BeforeEach
-    void setUp() {
-        reset(staticAPIService);
-    }
+    @MockitoBean
+    private StaticDefinitionGenerator staticDefinitionGenerator;
 
     @Test
-    void givenServiceNotFoundException_whenCallRefreshAPI_thenResponseShouldBe503WithSpecificMessage() throws Exception {
+    void givenServiceNotFoundException_whenCallRefreshAPI_thenResponseShouldBe503WithSpecificMessage() {
         when(staticAPIService.refresh()).thenThrow(
             new ServiceNotFoundException("Exception")
         );
 
-        mockMvc.perform(post(API_REFRESH_ENDPOINT))
-            .andExpect(jsonPath("$.messages", hasSize(1)))
-            .andExpect(jsonPath("$.messages[0].messageType").value("ERROR"))
-            .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAC706E"))
-            .andExpect(jsonPath("$.messages[0].messageContent").value("Service not located, discovery"))
-            .andExpect(jsonPath("$.messages[0].messageKey").value("org.zowe.apiml.apicatalog.serviceNotFound"))
-            .andExpect(status().isServiceUnavailable());
+        webTestClient.post().uri(API_REFRESH_ENDPOINT).exchange()
+            .expectStatus().isEqualTo(HttpStatus.SC_SERVICE_UNAVAILABLE)
+            .expectBody()
+                .jsonPath("$.messages").value(hasSize(1))
+                .jsonPath("$.messages[0].messageType").value(equalTo("ERROR"))
+                .jsonPath("$.messages[0].messageNumber").value(equalTo("ZWEAC706E"))
+                .jsonPath("$.messages[0].messageContent").value(equalTo("Service not located, discovery"))
+                .jsonPath("$.messages[0].messageKey").value(equalTo("org.zowe.apiml.apicatalog.serviceNotFound"));
     }
 
     @Test
-    void givenRestClientException_whenCallRefreshAPI_thenResponseShouldBe500WithSpecificMessage() throws Exception {
+    void givenRestClientException_whenCallRefreshAPI_thenResponseShouldBe500WithSpecificMessage() {
         when(staticAPIService.refresh()).thenThrow(
             new RestClientException("Exception")
         );
 
-        mockMvc.perform(post(API_REFRESH_ENDPOINT))
-            .andExpect(jsonPath("$.messages", hasSize(1)))
-            .andExpect(jsonPath("$.messages[0].messageType").value("ERROR"))
-            .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAC707E"))
-            .andExpect(jsonPath("$.messages[0].messageContent").value("Static API refresh failed, caused by exception: org.springframework.web.client.RestClientException: Exception"))
-            .andExpect(jsonPath("$.messages[0].messageKey").value("org.zowe.apiml.apicatalog.StaticApiRefreshFailed"))
-            .andExpect(status().isInternalServerError());
+        webTestClient.post().uri(API_REFRESH_ENDPOINT).exchange()
+            .expectStatus().isEqualTo(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+            .expectBody()
+                .jsonPath("$.messages").value(hasSize(1))
+                .jsonPath("$.messages[0].messageType").value(equalTo("ERROR"))
+                .jsonPath("$.messages[0].messageNumber").value(equalTo("ZWEAC707E"))
+                .jsonPath("$.messages[0].messageContent").value(equalTo("Static API refresh failed, caused by exception: org.springframework.web.client.RestClientException: Exception"))
+                .jsonPath("$.messages[0].messageKey").value(equalTo("org.zowe.apiml.apicatalog.StaticApiRefreshFailed"));
     }
 
     @Test
-    void givenSuccessStaticResponse_whenCallRefreshAPI_thenResponseCodeShouldBe200() throws Exception {
+    void givenSuccessStaticResponse_whenCallRefreshAPI_thenResponseCodeShouldBe200() {
         when(staticAPIService.refresh()).thenReturn(
             new StaticAPIResponse(200, "This is body")
         );
 
-        mockMvc.perform(post(API_REFRESH_ENDPOINT))
-            .andExpect(status().isOk());
+        webTestClient.post().uri(API_REFRESH_ENDPOINT).exchange()
+            .expectStatus().isOk();
     }
 
 }
