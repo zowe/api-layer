@@ -145,7 +145,7 @@ public class ContainerService {
             }
         }
 
-        log.debug("Homepage URL for {} service is: {}", serviceInstance.getInstanceId(), instanceHomePage);
+        log.debug("Homepage URL for {} service is: {}", serviceInstance.getServiceId(), instanceHomePage);
         return instanceHomePage;
     }
 

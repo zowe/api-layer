@@ -37,7 +37,7 @@ public class SubstituteSwaggerGenerator {
     public String generateSubstituteSwaggerForService(ServiceInstance serviceInstance,
                                                       ApiInfo api,
                                                       String gatewayScheme, String gatewayHost) {
-        log.warn("Generating substitute swagger for serviceInstance instance '{}' API '{} {}'", serviceInstance.getInstanceId(), api.getApiId(), api.getVersion());
+        log.warn("Generating substitute swagger for serviceInstance '{}' API '{} {}'", serviceInstance.getInstanceId(), api.getApiId(), api.getVersion());
         String title = serviceInstance.getMetadata().get(SERVICE_TITLE);
         String description = serviceInstance.getMetadata().get(SERVICE_DESCRIPTION);
         String basePath = (api.getGatewayUrl().startsWith("/") ? "" : "/") + serviceInstance.getServiceId().toLowerCase()
