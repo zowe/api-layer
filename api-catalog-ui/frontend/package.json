@@ -51,7 +51,7 @@
         "rxjs": "7.8.2",
         "sass": "1.89.2",
         "stream": "0.0.3",
-        "swagger-ui-react": "5.26.2",
+        "swagger-ui-react": "5.27.0",
         "url": "0.11.4",
         "util": "0.12.5",
         "uuid": "10.0.0"
@@ -165,7 +165,7 @@
     },
     "engines": {
         "npm": "=10.9.3",
-        "node": "=20.19.3"
+        "node": "=20.19.4"
     },
     "browserslist": [
         ">0.2%",
