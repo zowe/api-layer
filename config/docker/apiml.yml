@@ -53,6 +53,8 @@ management:
     endpoint:
         shutdown:
             access: unrestricted
+        loggers:
+            enabled: true
 
 server:
     address: 0.0.0.0
