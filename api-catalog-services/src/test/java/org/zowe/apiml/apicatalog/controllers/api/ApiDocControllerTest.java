@@ -20,7 +20,6 @@ import org.openapitools.openapidiff.core.compare.OpenApiDiffOptions;
 import org.openapitools.openapidiff.core.model.ChangedOpenApi;
 import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
-import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
 import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 import reactor.core.publisher.Mono;
 
