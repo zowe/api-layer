@@ -11,7 +11,6 @@
 package org.zowe.apiml.apicatalog.controllers.api;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +19,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,7 +65,7 @@ class ServicesControllerTests {
     private ServicesController underTest;
 
     @MockitoBean
-    private EurekaClient eurekaClient;
+    private DiscoveryClient discoveryClient;
 
     @MockitoBean
     private CustomStyleConfig customStyleConfig;
@@ -116,19 +117,17 @@ class ServicesControllerTests {
 
         @BeforeEach
         void prepareApplications() {
-            service1 = new Application("service-1");
-            service1.addInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP));
-
-            service2 = new Application("service-2");
-            service1.addInstance(getStandardInstance("service2", InstanceInfo.InstanceStatus.DOWN));
-
             apiVersions = Arrays.asList("1.0.0", "2.0.0");
 
-            given(eurekaClient.getApplication("service1")).willReturn(service1);
+            given(discoveryClient.getInstances("service1")).willReturn(
+                Collections.singletonList(new EurekaServiceInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP)))
+            );
             given(apiDocRetrievalService.retrieveDefaultApiDoc("service1")).willReturn("service1");
             given(apiDocRetrievalService.retrieveApiVersions("service1")).willReturn(apiVersions);
 
-            given(eurekaClient.getApplication("service2")).willReturn(service2);
+            given(discoveryClient.getInstances("service2")).willReturn(
+                Collections.singletonList(new EurekaServiceInstance(getStandardInstance("service2", InstanceInfo.InstanceStatus.DOWN)))
+            );
             given(apiDocRetrievalService.retrieveDefaultApiDoc("service2")).willReturn("service2");
             given(apiDocRetrievalService.retrieveApiVersions("service2")).willReturn(apiVersions);
 
@@ -230,7 +229,7 @@ class ServicesControllerTests {
 
         @Test
         void thenReturnNotFound() {
-            given(eurekaClient.getApplications()).willReturn(null);
+            given(discoveryClient.getServices()).willReturn(Collections.emptyList());
 
             String pathToServices = "/apicatalog/services";
             webTestClient.get().uri(pathToServices + "/" + serviceId).exchange()

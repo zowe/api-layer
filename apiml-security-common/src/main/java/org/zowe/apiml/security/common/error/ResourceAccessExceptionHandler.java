@@ -47,7 +47,7 @@ public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
             errorType = ErrorType.GATEWAY_NOT_AVAILABLE;
         } else if (ex instanceof ServiceNotAccessibleException) {
             errorType = ErrorType.SERVICE_UNAVAILABLE;
-        } else if (ex instanceof RuntimeException re){
+        } else if (ex instanceof RuntimeException re) {
             throw re;
         } else {
             throw new RuntimeException(ex);

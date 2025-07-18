@@ -10,15 +10,15 @@
 
 package org.zowe.apiml.apicatalog.swagger;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
-import com.netflix.discovery.shared.Applications;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
@@ -37,8 +37,8 @@ import org.zowe.apiml.util.EurekaUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+import static com.netflix.appinfo.InstanceInfo.InstanceStatus.UP;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 import static org.zowe.apiml.product.constants.CoreService.GATEWAY;
 
@@ -55,7 +55,7 @@ public class ContainerService {
     private final AuthenticationSchemes schemes = new AuthenticationSchemes();
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
 
-    private final EurekaClient eurekaClient;
+    private final DiscoveryClient discoveryClient;
     private final TransformService transformService;
     private final CustomStyleConfig customStyleConfig;
 
@@ -69,12 +69,10 @@ public class ContainerService {
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     private Set<String> getProductIds() {
-        return Optional.ofNullable(eurekaClient.getApplications())
-            .map(Applications::getRegisteredApplications)
-            .map(List::stream).orElse(Stream.empty())
-            .map(Application::getInstances)
-            .flatMap(Collection::stream)
-            .map(InstanceInfo::getMetadata)
+        return discoveryClient.getServices().stream()
+            .map(discoveryClient::getInstances)
+            .flatMap(List::stream)
+            .map(ServiceInstance::getMetadata)
             .map(metadata -> metadata.get(CATALOG_ID))
             .collect(Collectors.toSet());
     }
@@ -90,8 +88,8 @@ public class ContainerService {
             .toList();
     }
 
-    private boolean isSso(InstanceInfo instanceInfo) {
-        Map<String, String> eurekaMetadata = instanceInfo.getMetadata();
+    private boolean isSso(ServiceInstance serviceInstance) {
+        Map<String, String> eurekaMetadata = serviceInstance.getMetadata();
         return Authentication.builder()
             .scheme(schemes.map(eurekaMetadata.get(AUTHENTICATION_SCHEME)))
             .supportsSso(BooleanUtils.toBooleanObject(eurekaMetadata.get(AUTHENTICATION_SSO)))
@@ -99,8 +97,24 @@ public class ContainerService {
             .supportsSso();
     }
 
-    private boolean hasHomePage(InstanceInfo instanceInfo) {
-        String instanceHomePage = instanceInfo.getHomePageUrl();
+    private String getHomePageUrl(ServiceInstance serviceInstance) {
+        if (serviceInstance instanceof EurekaServiceInstance eurekaServiceInstance) {
+            return eurekaServiceInstance.getInstanceInfo().getHomePageUrl();
+        }
+
+        return serviceInstance.getUri().toString();
+    }
+
+    private boolean isUp(ServiceInstance serviceInstance) {
+        if (serviceInstance instanceof EurekaServiceInstance eurekaServiceInstance) {
+            return eurekaServiceInstance.getInstanceInfo().getStatus() == UP;
+        }
+
+        return true;
+    }
+
+    private boolean hasHomePage(ServiceInstance serviceInstance) {
+        String instanceHomePage = getHomePageUrl(serviceInstance);
         return instanceHomePage != null
             && !instanceHomePage.isEmpty();
     }
@@ -109,53 +123,54 @@ public class ContainerService {
      * Try to transform the service homepage url and return it. If it fails,
      * return the original homepage url
      *
-     * @param instanceInfo the service instance
+     * @param serviceInstance the service instance
      * @return the transformed homepage url
      */
-    private String getInstanceHomePageUrl(InstanceInfo instanceInfo) {
-        String instanceHomePage = instanceInfo.getHomePageUrl();
+    private String getInstanceHomePageUrl(ServiceInstance serviceInstance) {
+        String serviceId = StringUtils.lowerCase(serviceInstance.getServiceId());
+        String instanceHomePage = getHomePageUrl(serviceInstance);
 
         //Gateway homePage is used to hold DVIPA address and must not be modified
-        if (hasHomePage(instanceInfo) && !StringUtils.equalsIgnoreCase(GATEWAY.getServiceId(), instanceInfo.getAppName())) {
+        if (hasHomePage(serviceInstance) && !StringUtils.equalsIgnoreCase(GATEWAY.getServiceId(), serviceId)) {
             instanceHomePage = instanceHomePage.trim();
-            RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
+            RoutedServices routes = metadataParser.parseRoutes(serviceInstance.getMetadata());
             try {
                 instanceHomePage = transformService.transformURL(
                     ServiceType.UI,
-                    instanceInfo.getVIPAddress(),
+                    serviceId,
                     instanceHomePage,
                     routes,
                     isAttlsEnabled);
             } catch (URLTransformationException | IllegalArgumentException e) {
-                apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", instanceInfo.getAppName(), e.getMessage());
+                apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", serviceId, e.getMessage());
             }
         }
 
-        log.debug("Homepage URL for {} service is: {}", instanceInfo.getVIPAddress(), instanceHomePage);
+        log.debug("Homepage URL for {} service is: {}", serviceId, instanceHomePage);
         return instanceHomePage;
     }
 
     /**
      * Get the base path for the service.
      *
-     * @param instanceInfo the service instance
+     * @param serviceInstance the service instance
      * @return the base URL
      */
-    private String getApiBasePath(InstanceInfo instanceInfo) {
-        if (hasHomePage(instanceInfo)) {
+    private String getApiBasePath(ServiceInstance serviceInstance) {
+        if (hasHomePage(serviceInstance)) {
             try {
-                String apiBasePath = instanceInfo.getMetadata().get("apiml.apiBasePath");
+                String apiBasePath = serviceInstance.getMetadata().get("apiml.apiBasePath");
                 if (apiBasePath != null) {
                     return apiBasePath;
                 }
 
-                RoutedServices routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
+                RoutedServices routes = metadataParser.parseRoutes(serviceInstance.getMetadata());
                 return transformService.retrieveApiBasePath(
-                    instanceInfo.getVIPAddress(),
-                    instanceInfo.getHomePageUrl(),
+                    StringUtils.lowerCase(serviceInstance.getServiceId()),
+                    getHomePageUrl(serviceInstance),
                     routes);
             } catch (URLTransformationException e) {
-                apimlLog.log("org.zowe.apiml.apicatalog.getApiBasePathFailed", instanceInfo.getAppName(), e.getMessage());
+                apimlLog.log("org.zowe.apiml.apicatalog.getApiBasePathFailed", serviceInstance.getServiceId(), e.getMessage());
             }
         }
         return "";
@@ -164,18 +179,18 @@ public class ContainerService {
     /**
      * Create a APIService object using the instances metadata
      *
-     * @param instanceInfo the service instance
+     * @param serviceInstance the service instance
      * @return a APIService object
      */
-    APIService createAPIServiceFromInstance(InstanceInfo instanceInfo) {
-        boolean secureEnabled = instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE);
+    APIService createAPIServiceFromInstance(ServiceInstance serviceInstance) {
+        boolean secureEnabled = serviceInstance.isSecure();
 
-        String instanceHomePage = getInstanceHomePageUrl(instanceInfo);
-        String apiBasePath = getApiBasePath(instanceInfo);
+        String instanceHomePage = getInstanceHomePageUrl(serviceInstance);
+        String apiBasePath = getApiBasePath(serviceInstance);
         Map<String, ApiInfo> apiInfoById = new HashMap<>();
 
         try {
-            List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
+            List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(serviceInstance.getMetadata());
             apiInfoList.stream().filter(apiInfo -> apiInfo.getApiId() != null).forEach(apiInfo -> {
                 String id = (apiInfo.getMajorVersion() < 0) ? DEFAULT_APIINFO_KEY : apiInfo.getApiId() + " v" + apiInfo.getVersion();
                 apiInfoById.put(id, apiInfo);
@@ -188,15 +203,15 @@ public class ContainerService {
             log.info("createApiServiceFromInstance#incorrectVersions {}", ex.getMessage());
         }
 
-        String serviceId = instanceInfo.getAppName();
-        String title = instanceInfo.getMetadata().get(SERVICE_TITLE);
+        String serviceId = StringUtils.lowerCase(serviceInstance.getServiceId());
+        String title = serviceInstance.getMetadata().get(SERVICE_TITLE);
         if (StringUtils.equalsIgnoreCase(GATEWAY.getServiceId(), serviceId)) {
-            if (RegistrationType.of(instanceInfo.getMetadata()).isAdditional()) {
+            if (RegistrationType.of(serviceInstance.getMetadata()).isAdditional()) {
                 // additional registration for GW means domain one, update serviceId and basePath with the ApimlId
-                String apimlId = instanceInfo.getMetadata().get(APIML_ID);
+                String apimlId = serviceInstance.getMetadata().get(APIML_ID);
                 if (apimlId != null) {
-                    serviceId = apimlId;
-                    apiBasePath = String.join("/", "", serviceId.toLowerCase());
+                    serviceId = StringUtils.lowerCase(apimlId);
+                    apiBasePath = String.join("/", "", serviceId);
                     title += " (" + apimlId + ")";
                 }
             } else {
@@ -204,17 +219,17 @@ public class ContainerService {
             }
         }
 
-        return new APIService.Builder(StringUtils.lowerCase(serviceId))
+        return new APIService.Builder(serviceId)
             .title(title)
-            .description(instanceInfo.getMetadata().get(SERVICE_DESCRIPTION))
-            .tileDescription(instanceInfo.getMetadata().get(CATALOG_DESCRIPTION))
+            .description(serviceInstance.getMetadata().get(SERVICE_DESCRIPTION))
+            .tileDescription(serviceInstance.getMetadata().get(CATALOG_DESCRIPTION))
             .secured(secureEnabled)
-            .baseUrl(instanceInfo.getHomePageUrl())
+            .baseUrl(getHomePageUrl(serviceInstance))
             .homePageUrl(instanceHomePage)
             .basePath(apiBasePath)
-            .sso(isSso(instanceInfo))
+            .sso(isSso(serviceInstance))
             .apis(apiInfoById)
-            .instanceId(instanceInfo.getInstanceId())
+            .instanceId(serviceInstance.getInstanceId())
             .build();
     }
 
@@ -222,15 +237,15 @@ public class ContainerService {
      * Create a new container based on information in a new instance
      *
      * @param productFamilyId parent id
-     * @param instanceInfos   all instances
+     * @param serviceInstances   all instances
      * @return a new container
      */
-    private APIContainer createNewContainerFromService(String productFamilyId, InstanceInfo...instanceInfos) {
-        if (instanceInfos.length == 0) {
+    private APIContainer createNewContainerFromService(String productFamilyId, ServiceInstance...serviceInstances) {
+        if (serviceInstances.length == 0) {
             return null;
         }
 
-        Map<String, String> instanceInfoMetadata = instanceInfos[0].getMetadata();
+        Map<String, String> instanceInfoMetadata = serviceInstances[0].getMetadata();
         String title = instanceInfoMetadata.get(CATALOG_TITLE);
         String description = instanceInfoMetadata.get(CATALOG_DESCRIPTION);
         String version = instanceInfoMetadata.get(CATALOG_VERSION);
@@ -243,20 +258,17 @@ public class ContainerService {
         log.debug("updated Container cache with product family: " + productFamilyId + ": " + title);
 
         // create API Service from instance and update container last changed date
-        for (InstanceInfo instanceInfo : instanceInfos) {
-            container.addService(createAPIServiceFromInstance(instanceInfo));
+        for (ServiceInstance serviceInstance : serviceInstances) {
+            container.addService(createAPIServiceFromInstance(serviceInstance));
         }
         return container;
     }
 
     private boolean update(APIService apiService) {
-        Application application = eurekaClient.getApplication(apiService.getServiceId());
-        // service has not cached yet, but count as alive
-        if (application == null) return true;
+        List<ServiceInstance> instances = discoveryClient.getInstances(apiService.getServiceId());
 
-        List<InstanceInfo> instancies = application.getInstances();
-        boolean isUp = instancies.stream().anyMatch(i -> InstanceInfo.InstanceStatus.UP.equals(i.getStatus()));
-        boolean isSso = instancies.stream().allMatch(this::isSso);
+        boolean isUp = instances.stream().anyMatch(this::isUp);
+        boolean isSso = instances.stream().allMatch(this::isSso);
 
         apiService.setStatus(isUp ? "UP" : "DOWN");
         apiService.setSsoAllInstances(isSso);
@@ -325,25 +337,23 @@ public class ContainerService {
      * @return {@link APIContainer}
      */
     public APIContainer getContainerById(String id) {
-        List<InstanceInfo> instances = Optional.ofNullable(eurekaClient.getApplications())
-            .map(Applications::getRegisteredApplications)
-            .map(List::stream).orElse(Stream.empty())
-            .map(Application::getInstances)
-            .flatMap(Collection::stream)
+        var instances = discoveryClient.getServices().stream()
+            .map(discoveryClient::getInstances)
+            .flatMap(List::stream)
             .filter(instance -> StringUtils.equals(id, instance.getMetadata().get(CATALOG_ID)))
-            .toList();
+            .toArray(ServiceInstance[]::new);
 
-        if (instances.isEmpty()) {
+        if (ArrayUtils.isEmpty(instances)) {
             return null;
         }
 
-        var container = createNewContainerFromService(id, instances.toArray(new InstanceInfo[0]));
+        var container = createNewContainerFromService(id, instances);
         calculateContainerServiceValues(container);
         return container;
     }
 
     public APIService getService(String serviceId) {
-        return EurekaUtils.getInstanceInfo(eurekaClient, serviceId)
+        return EurekaUtils.getInstanceInfo(discoveryClient, serviceId)
             .map(this::createAPIServiceFromInstance)
             .orElse(null);
     }
