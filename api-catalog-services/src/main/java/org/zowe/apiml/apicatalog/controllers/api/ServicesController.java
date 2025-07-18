@@ -224,7 +224,7 @@ public class ServicesController {
 }
 
 @RestController
-@RequestMapping({"/apicatalog/", "/apicatalog/api/v1/"})
+@RequestMapping("/apicatalog/api/v1/")
 @ConditionalOnBean(name = "modulithConfig")
 class ServicesControllerModulith extends ServicesController {
 
@@ -235,7 +235,7 @@ class ServicesControllerModulith extends ServicesController {
 }
 
 @RestController
-@RequestMapping({"/apicatalog/", "/apicatalog/api/v1/"})
+@RequestMapping("/apicatalog/")
 @ConditionalOnMissingBean(name = "modulithConfig")
 class ServicesControllerMicroservice extends ServicesController {
 

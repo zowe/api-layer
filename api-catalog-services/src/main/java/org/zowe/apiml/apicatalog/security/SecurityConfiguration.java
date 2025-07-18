@@ -45,7 +45,7 @@ import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.client.EnableApimlAuth;
-import org.zowe.apiml.security.client.service.GatewaySecurityService;
+import org.zowe.apiml.security.client.service.GatewaySecurity;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 import org.zowe.apiml.security.common.login.LoginFilter;
@@ -264,14 +264,14 @@ public class SecurityConfiguration {
 
     @Bean
     public WebFilter basicAuthenticationFilter(
-        GatewaySecurityService gatewaySecurityService
+        GatewaySecurity gatewaySecurity
     ) {
         return (exchange, chain) -> chain.filter(exchange)
             .contextWrite(context -> {
                 var authorizationHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
                 return LoginFilter.getCredentialFromAuthorizationHeader(Optional.ofNullable(authorizationHeader)).map(login -> {
                     try {
-                        return gatewaySecurityService.login(login.getUsername(), login.getPassword(), null).map(token ->
+                        return gatewaySecurity.login(login.getUsername(), login.getPassword(), null).map(token ->
                             ReactiveSecurityContextHolder.withAuthentication(
                                 new UsernamePasswordAuthenticationToken(login.getUsername(), login.getPassword(), Collections.emptyList())
                             )
@@ -286,7 +286,7 @@ public class SecurityConfiguration {
 
     @Bean
     public WebFilter tokenAuthenticationFilter(
-        GatewaySecurityService gatewaySecurityService,
+        GatewaySecurity gatewaySecurity,
         AuthConfigurationProperties authConfigurationProperties,
         MessageService messageService,
         ObjectMapper mapper
@@ -304,7 +304,7 @@ public class SecurityConfiguration {
                     )
                     .map(token -> {
                         try {
-                            return Map.entry(token, gatewaySecurityService.query(token));
+                            return Map.entry(token, gatewaySecurity.query(token));
                         } catch (TokenNotValidException e) {
                             throw e;
                         } catch (Exception e) {
@@ -333,14 +333,14 @@ public class SecurityConfiguration {
 
     @Bean
     public WebFilter oidcAuthenticationFilter(
-        GatewaySecurityService gatewaySecurityService
+        GatewaySecurity gatewaySecurity
     ) {
         return (exchange, chain) -> chain.filter(exchange)
             .contextWrite(context ->
                 Optional.ofNullable(exchange.getRequest().getHeaders().getFirst(HEADER_OIDC_TOKEN))
                     .map(token -> {
                         try {
-                            return Map.entry(token, gatewaySecurityService.verifyOidc(token));
+                            return Map.entry(token, gatewaySecurity.verifyOidc(token));
                         } catch (Exception e) {
                             log.debug("Cannot verify OIDC token: {}", token, e);
                             return null;

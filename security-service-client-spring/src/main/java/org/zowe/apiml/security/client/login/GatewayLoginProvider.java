@@ -17,7 +17,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.security.client.service.GatewaySecurityService;
+import org.zowe.apiml.security.client.service.GatewaySecurity;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
@@ -33,7 +33,8 @@ import static org.zowe.apiml.security.SecurityUtils.readPassword;
 @RequiredArgsConstructor
 @ConditionalOnMissingBean(name = "modulithConfig")
 public class GatewayLoginProvider implements AuthenticationProvider {
-    private final GatewaySecurityService gatewaySecurityService;
+
+    private final GatewaySecurity gatewaySecurity;
 
     /**
      * Authenticate the credentials
@@ -57,7 +58,7 @@ public class GatewayLoginProvider implements AuthenticationProvider {
                 cleanup = !(authentication.getCredentials() instanceof char[]);
             }
 
-            Optional<String> token = gatewaySecurityService.login(username, password, newPassword);
+            Optional<String> token = gatewaySecurity.login(username, password, newPassword);
 
             if (!token.isPresent()) {
                 throw new BadCredentialsException("Invalid Credentials");
