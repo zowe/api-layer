@@ -127,25 +127,26 @@ public class ContainerService {
      * @return the transformed homepage url
      */
     private String getInstanceHomePageUrl(ServiceInstance serviceInstance) {
+        String serviceId = StringUtils.lowerCase(serviceInstance.getServiceId());
         String instanceHomePage = getHomePageUrl(serviceInstance);
 
         //Gateway homePage is used to hold DVIPA address and must not be modified
-        if (hasHomePage(serviceInstance) && !StringUtils.equalsIgnoreCase(GATEWAY.getServiceId(), serviceInstance.getServiceId())) {
+        if (hasHomePage(serviceInstance) && !StringUtils.equalsIgnoreCase(GATEWAY.getServiceId(), serviceId)) {
             instanceHomePage = instanceHomePage.trim();
             RoutedServices routes = metadataParser.parseRoutes(serviceInstance.getMetadata());
             try {
                 instanceHomePage = transformService.transformURL(
                     ServiceType.UI,
-                    serviceInstance.getServiceId(),
+                    serviceId,
                     instanceHomePage,
                     routes,
                     isAttlsEnabled);
             } catch (URLTransformationException | IllegalArgumentException e) {
-                apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", serviceInstance.getServiceId(), e.getMessage());
+                apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", serviceId, e.getMessage());
             }
         }
 
-        log.debug("Homepage URL for {} service is: {}", serviceInstance.getServiceId(), instanceHomePage);
+        log.debug("Homepage URL for {} service is: {}", serviceId, instanceHomePage);
         return instanceHomePage;
     }
 
@@ -209,7 +210,7 @@ public class ContainerService {
                 // additional registration for GW means domain one, update serviceId and basePath with the ApimlId
                 String apimlId = serviceInstance.getMetadata().get(APIML_ID);
                 if (apimlId != null) {
-                    serviceId = apimlId;
+                    serviceId = StringUtils.lowerCase(apimlId);
                     apiBasePath = String.join("/", "", serviceId);
                     title += " (" + apimlId + ")";
                 }
