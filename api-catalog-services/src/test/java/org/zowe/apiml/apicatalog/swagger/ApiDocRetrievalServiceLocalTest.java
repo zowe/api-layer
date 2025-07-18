@@ -15,6 +15,7 @@ import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springdoc.webflux.api.OpenApiWebfluxResource;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.config.ApiInfo;
@@ -43,7 +44,7 @@ class ApiDocRetrievalServiceLocalTest {
     void givenUnknownServiceId_whenGetApiDoc_thenThrowException() {
         var instance = InstanceInfo.Builder.newBuilder().setAppName("unknownService").build();
         var apiInfo = ApiInfo.builder().build();
-        var exception = assertThrows(ApiDocNotFoundException.class, () -> service.retrieveApiDoc(instance, apiInfo));
+        var exception = assertThrows(ApiDocNotFoundException.class, () -> service.retrieveApiDoc(new EurekaServiceInstance(instance), apiInfo));
 
         assertEquals("Cannot obtain API doc for service unknownservice", exception.getMessage());
     }
@@ -62,7 +63,7 @@ class ApiDocRetrievalServiceLocalTest {
         var instance = InstanceInfo.Builder.newBuilder().setAppName("service").build();
         var apiInfo = ApiInfo.builder().build();
 
-        var exception = assertThrows(ApiDocNotFoundException.class, () -> service.retrieveApiDoc(instance, apiInfo));
+        var exception = assertThrows(ApiDocNotFoundException.class, () -> service.retrieveApiDoc(new EurekaServiceInstance(instance), apiInfo));
         assertEquals("Cannot obtain API doc for service", exception.getMessage());
         assertInstanceOf(JsonProcessingException.class, exception.getCause());
         assertEquals("an error", exception.getCause().getMessage());
@@ -76,7 +77,7 @@ class ApiDocRetrievalServiceLocalTest {
         var instance = InstanceInfo.Builder.newBuilder().setAppName("service").build();
         var apiInfo = ApiInfo.builder().build();
 
-        StepVerifier.create(service.retrieveApiDoc(instance, apiInfo))
+        StepVerifier.create(service.retrieveApiDoc(new EurekaServiceInstance(instance), apiInfo))
             .expectNextMatches(apiDocInfo -> {
                 assertEquals("Api doc", apiDocInfo.getApiDocContent());
                 assertSame(apiInfo, apiDocInfo.getApiInfo());

@@ -12,7 +12,6 @@ package org.zowe.apiml.apicatalog.controllers.api;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
-import com.netflix.discovery.shared.Applications;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -103,27 +102,24 @@ class ServicesControllerTests {
         @Nested
         class WhenSpecificContainerRequested {
 
+            private static final String serviceId = "service1";
+
             @Test
             void ifExistingInstanceThenReturnOk() {
-                String containerId = "service1";
+                var instance = InstanceInfo.Builder.newBuilder().setAppName(serviceId).setInstanceId("instance1").setMetadata(Map.of(CATALOG_ID, "service1")).build();
+                doReturn(Collections.singletonList(new EurekaServiceInstance(instance))).when(discoveryClient).getInstances(serviceId);
+                doReturn(Collections.singletonList(serviceId)).when(discoveryClient).getServices();
+                doReturn(Mono.empty()).when(apiDocService).retrieveDefaultApiDoc(serviceId);
 
-                var instance = InstanceInfo.Builder.newBuilder().setAppName("service1").setInstanceId("instance1").setMetadata(Map.of(CATALOG_ID, "service1")).build();
-                var application = new Application("service1");
-                application.addInstance(instance);
-                var applications = new Applications("hash", 0L, Collections.singletonList(application));
-                doReturn(applications).when(eurekaClient).getApplications();
-                doReturn(Mono.empty()).when(apiDocService).retrieveDefaultApiDoc("service1");
-
-                webTestClient.get().uri(pathToContainers + "/" + containerId).exchange()
+                webTestClient.get().uri(pathToContainers + "/" + serviceId).exchange()
                     .expectStatus().isOk();
             }
 
             @Test
             void ifNonExistingInstanceThenReturnNotFound() {
-                String containerId = "service1";
-                given(containerService.getContainerById(containerId)).willReturn(null);
+                given(containerService.getContainerById(serviceId)).willReturn(null);
 
-                webTestClient.get().uri(pathToContainers + "/" + containerId).exchange()
+                webTestClient.get().uri(pathToContainers + "/" + serviceId).exchange()
                     .expectStatus().isNotFound();
             }
 
@@ -145,14 +141,14 @@ class ServicesControllerTests {
             given(discoveryClient.getInstances("service1")).willReturn(
                 Collections.singletonList(new EurekaServiceInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP)))
             );
-            given(apiDocRetrievalService.retrieveDefaultApiDoc("service1")).willReturn(Mono.just("service1"));
-            given(apiDocRetrievalService.retrieveApiVersions("service1")).willReturn(apiVersions);
+            given(apiDocService.retrieveDefaultApiDoc("service1")).willReturn(Mono.just("service1"));
+            given(apiDocService.retrieveApiVersions("service1")).willReturn(apiVersions);
 
             given(discoveryClient.getInstances("service2")).willReturn(
                 Collections.singletonList(new EurekaServiceInstance(getStandardInstance("service2", InstanceInfo.InstanceStatus.DOWN)))
             );
-            given(apiDocRetrievalService.retrieveDefaultApiDoc("service2")).willReturn(Mono.just("service2"));
-            given(apiDocRetrievalService.retrieveApiVersions("service2")).willReturn(apiVersions);
+            given(apiDocService.retrieveDefaultApiDoc("service2")).willReturn(Mono.just("service2"));
+            given(apiDocService.retrieveApiVersions("service2")).willReturn(apiVersions);
 
             given(containerService.getContainerById("api-one")).willReturn(createContainers().get(0));
         }

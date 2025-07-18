@@ -24,6 +24,7 @@ import org.springdoc.core.service.OpenAPIService;
 import org.springdoc.core.service.OperationService;
 import org.springdoc.webflux.api.OpenApiWebfluxResource;
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
@@ -73,8 +74,8 @@ public class ApiDocRetrievalServiceLocal {
             });
     }
 
-    public Mono<ApiDocInfo> retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
-        String serviceId = StringUtils.lowerCase(instanceInfo.getAppName());
+    public Mono<ApiDocInfo> retrieveApiDoc(ServiceInstance serviceInstance, ApiInfo apiInfo) {
+        String serviceId = StringUtils.lowerCase(serviceInstance.getServiceId());
 
         try {
             return Optional.ofNullable(apiDocResource.get(serviceId))
