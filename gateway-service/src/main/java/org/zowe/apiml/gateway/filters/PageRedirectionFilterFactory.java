@@ -19,6 +19,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -34,7 +35,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 
 /**
  * PageRedirectionFilterFactory is a Spring Cloud Gateway Filter Factory that adapts a response from a routed service
@@ -68,7 +68,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
             .filter(i -> StringUtils.equalsIgnoreCase(config.getInstanceId(), i.getInstanceId()))
             .findFirst();
         return (exchange, chain) -> chain.filter(exchange)
-            .then(Mono.fromCallable(() -> processNewLocationUrl(exchange, config, instance)).flatMap(Function.identity()));
+            .then(Mono.defer(() -> processNewLocationUrl(exchange, config, instance)));
     }
 
     private URI getHostUri(ServiceInstance instance) {
@@ -120,7 +120,8 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
     private Mono<Void> processNewLocationUrl(ServerWebExchange exchange, Config config, Optional<ServiceInstance> instance) {
         var response = exchange.getResponse();
-        if (!response.getStatusCode().is3xxRedirection()) {
+        var isRedirect = Optional.ofNullable(response.getStatusCode()).map(HttpStatusCode::is3xxRedirection).orElse(false);
+        if (!isRedirect) {
             return Mono.empty();
         }
 

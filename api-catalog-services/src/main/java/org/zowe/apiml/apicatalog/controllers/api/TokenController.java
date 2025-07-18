@@ -43,7 +43,7 @@ import static org.apache.hc.core5.http.HttpStatus.SC_NO_CONTENT;
 @RequiredArgsConstructor
 public class TokenController {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
     private final GatewaySecurityService gatewaySecurityService;
     private final AuthConfigurationProperties authConfigurationProperties;
 
