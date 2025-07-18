@@ -28,6 +28,7 @@ public class BeanConfig {
 
     @Bean
     @Primary
+    @ConditionalOnMissingBean(name = "modulithConfig")
     public MessageService messageServiceCatalog() {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/security-client-log-messages.yml");

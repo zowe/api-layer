@@ -76,8 +76,7 @@ public class WebConfig implements WebFluxConfigurer {
             .and(route(GET("/apicatalog/ui/v1"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/ui/v1/")).build()))
             .and(route(GET("/apicatalog/ui/v1/"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/ui/v1/index.html")).build()))
 
-            .and(route(POST("/apicatalog/api/v1/auth/login"), req -> ServerResponse.permanentRedirect(URI.create("/gateway/api/v1/auth/login")).build()))
-            .and(route(GET("/apicatalog/api/v1/auth/query"), req -> ServerResponse.permanentRedirect(URI.create("/gateway/api/v1/auth/query")).build()));
+            .and(route(POST("/apicatalog/api/v1/auth/login"), req -> ServerResponse.permanentRedirect(URI.create("/gateway/api/v1/auth/login")).build()));
     }
 
 }
