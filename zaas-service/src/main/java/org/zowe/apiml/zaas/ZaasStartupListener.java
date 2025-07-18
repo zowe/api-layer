@@ -13,10 +13,11 @@ package org.zowe.apiml.zaas;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
+import org.zowe.apiml.zaas.security.login.Providers;
 
 import java.time.Duration;
 import java.util.Timer;
@@ -30,6 +31,7 @@ public class ZaasStartupListener implements ApplicationListener<ApplicationReady
     private int interval;
 
     private final Providers providers;
+    private final ApplicationEventPublisher publisher;
 
     public void onApplicationEvent(ApplicationReadyEvent event) {
         if (providers.isZosfmUsed()) {
@@ -49,8 +51,9 @@ public class ZaasStartupListener implements ApplicationListener<ApplicationReady
         }
     }
 
-    private void notifyStartup() {
+    public void notifyStartup() {
         new ServiceStartupEventHandler().onServiceStartup("ZAAS",
             ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
+        publisher.publishEvent(new ZaasServiceAvailableEvent(providers.isZosfmUsed() ? "zosmf" : "saf"));
     }
 }

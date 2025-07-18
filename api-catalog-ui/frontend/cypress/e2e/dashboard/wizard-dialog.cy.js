@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-/* eslint-disable spaced-comment */
+/* eslint-disable no-undef */
 /// <reference types="Cypress" />
 
 describe('>>> Wizard Dialog test', () => {

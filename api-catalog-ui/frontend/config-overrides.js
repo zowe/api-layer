@@ -49,6 +49,10 @@ module.exports = {
                 '<rootDir>/node_modules/@swagger-api/apidom-reference/src/resolve/strategies/openapi-3-1/index.cjs',
             '@swagger-api/apidom-reference/dereference/strategies/openapi-3-1':
                 '<rootDir>/node_modules/@swagger-api/apidom-reference/src/dereference/strategies/openapi-3-1/index.cjs',
+            '@swagger-api/apidom-json-pointer/modern':
+                '<rootDir>/node_modules/@swagger-api/apidom-json-pointer/src/index.cjs',
+            '@swaggerexpert/json-pointer/evaluate/realms/apidom':
+                '<rootDir>/node_modules/@swaggerexpert/json-pointer/cjs/evaluate/realms/apidom/index.cjs',
             'cheerio/lib/utils': '<rootDir>/node_modules/cheerio',
         };
         config.setupFiles = ['./jest.polyfills.js'];

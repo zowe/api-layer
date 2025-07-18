@@ -153,7 +153,7 @@ class StaticServicesRegistrationServiceTest {
         StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
         registrationService.registerServices(directory);
 
-        verify(mockRegistry, times(1)).registerStatically(instance, false);
+        verify(mockRegistry, times(1)).registerStatically(instance, false, false);
     }
 
 }

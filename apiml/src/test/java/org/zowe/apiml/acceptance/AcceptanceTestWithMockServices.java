@@ -28,7 +28,7 @@ import org.zowe.apiml.gateway.MockService;
 public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
 
     @Autowired
-    private ApplicationEventPublisher applicationEventPublisher;
+    protected ApplicationEventPublisher applicationEventPublisher;
 
     @Autowired
     @Qualifier("applicationRegistry")

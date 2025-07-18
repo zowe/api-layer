@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.util.service;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.startup.impl.ApiMediationLayerStartupChecker;
@@ -43,23 +44,21 @@ public class FullApiMediationLayer {
     private boolean firstCheck = true;
     private final Map<String, String> env;
     private static final boolean attlsEnabled = "true".equals(System.getProperty("environment.attls"));
-    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
 
+    @Getter
     private static final FullApiMediationLayer instance = new FullApiMediationLayer();
 
 
     private FullApiMediationLayer() {
         env = ConfigReader.environmentConfiguration().getInstanceEnv();
 
-        prepareCaching();
         prepareCatalog();
         prepareDiscoverableClient();
         prepareGateway();
         prepareMockServices();
         prepareDiscovery();
-        if (!IS_MODULITH_ENABLED) {
-            prepareZaas();
-        }
+        prepareCaching();
+        prepareZaas();
         prepareApiml();
         if (!attlsEnabled) {
             prepareNodeJsSampleApp();
@@ -129,10 +128,6 @@ public class FullApiMediationLayer {
         discoverableClientService = new RunningService("discoverableclient", "discoverable-client/build/libs/discoverable-client.jar", before, after);
     }
 
-    public static FullApiMediationLayer getInstance() {
-        return instance;
-    }
-
     public void start() {
         try {
             var discoveryEnv = new HashMap<>(env);
@@ -162,7 +157,7 @@ public class FullApiMediationLayer {
             mockZosmfService.start();
             log.info("Services started");
         } catch (IOException ex) {
-            log.error("error while starting services: " + ex.getMessage(), ex.getCause());
+            log.error("error while starting services: {}", ex.getMessage(), ex.getCause());
         }
     }
 

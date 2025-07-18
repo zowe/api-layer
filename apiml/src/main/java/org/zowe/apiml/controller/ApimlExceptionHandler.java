@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.i18n.LocaleContextResolver;
+import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.gateway.controllers.GatewayExceptionHandler;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -27,7 +28,10 @@ import org.zowe.apiml.passticket.UsernameNotProvidedException;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.AccessTokenInvalidBodyException;
 import org.zowe.apiml.security.common.error.AccessTokenMissingBodyException;
+import org.zowe.apiml.security.common.error.ZosAuthenticationException;
 import reactor.core.publisher.Mono;
+
+import java.util.Optional;
 
 import static org.apache.http.HttpStatus.*;
 
@@ -97,6 +101,18 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
     public Mono<Void> handleBadCredentialsException(ServerWebExchange exchange, BadCredentialsException ex) {
         log.debug("Bad credentials: {}", ex.getMessage());
         return setBodyResponse(exchange, SC_UNAUTHORIZED, "org.zowe.apiml.security.login.invalidCredentials");
+    }
+
+    @ExceptionHandler(StorageException.class)
+    public Mono<Void> handleStorageException(ServerWebExchange exchange, StorageException ex) {
+        log.debug("Incompatible storage option: {}", ex.getMessage());
+        return setBodyResponse(exchange, ex.getStatus().value(), ex.getKey(), (Object[]) ex.getParameters());
+    }
+
+    @ExceptionHandler(ZosAuthenticationException.class)
+    public Mono<Void> handleZosAuthenticationException(ServerWebExchange exchange, ZosAuthenticationException ex) {
+        log.debug("Zos Authentication Exception: {}", ex.getMessage());
+        return setBodyResponse(exchange, ex.getPlatformError().responseCode.value(), Optional.ofNullable(ex.getPlatformError()).map(e -> e.errorMessage).orElse(null), ex.getMessage());
     }
 
 }

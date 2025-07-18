@@ -25,7 +25,7 @@ import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.zowe.apiml.gateway.caching.CachingServiceClient.KeyValue;
+import org.zowe.apiml.gateway.caching.CachingServiceClient.ApiKeyValue;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache.LoadBalancerCacheRecord;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
@@ -34,14 +34,11 @@ import reactor.test.StepVerifier;
 import java.util.function.Predicate;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static reactor.core.publisher.Mono.empty;
 import static reactor.core.publisher.Mono.just;
-
 @ExtendWith(MockitoExtension.class)
-class CachingServiceClientTest {
+class CachingServiceClientRestTest {
 
     @Mock
     private ExchangeFunction exchangeFunction;
@@ -49,7 +46,7 @@ class CachingServiceClientTest {
     @Mock
     private ClientResponse clientResponse;
 
-    private CachingServiceClient client;
+    private CachingServiceClientRest client;
     private WebClient webClient;
 
     private ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
@@ -57,7 +54,7 @@ class CachingServiceClientTest {
     @BeforeEach
     void setUp() {
         webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
-        client = new CachingServiceClient(webClient, new GatewayClient(ServiceAddress.builder().build()));
+        client = new CachingServiceClientRest(webClient, new GatewayClient(ServiceAddress.builder().build()));
         lenient().when(clientResponse.releaseBody()).thenReturn(empty());
     }
 
@@ -85,7 +82,7 @@ class CachingServiceClientTest {
             @Test
             void andServerSuccess_thenSuccess() throws JsonProcessingException {
                 var cacheRecord = new LoadBalancerCacheRecord("instanceId");
-                var kv = new KeyValue("lb.anuser:aservice", mapper.writeValueAsString(cacheRecord));
+                var kv = new ApiKeyValue("lb.anuser:aservice", mapper.writeValueAsString(cacheRecord));
 
                 mockResponse(200);
 
@@ -97,7 +94,7 @@ class CachingServiceClientTest {
             @Test
             void andServerError_thenError() throws JsonProcessingException {
                 var cacheRecord = new LoadBalancerCacheRecord("instanceId");
-                var kv = new KeyValue("lb.anuser:aservice", mapper.writeValueAsString(cacheRecord));
+                var kv = new ApiKeyValue("lb.anuser:aservice", mapper.writeValueAsString(cacheRecord));
 
                 mockResponse(500);
 
@@ -108,7 +105,7 @@ class CachingServiceClientTest {
             @Test
             void andClientError_thenError() throws JsonProcessingException {
                 var cacheRecord = new LoadBalancerCacheRecord("instanceId");
-                var kv = new KeyValue("lb.anuser:aservice", mapper.writeValueAsString(cacheRecord));
+                var kv = new ApiKeyValue("lb.anuser:aservice", mapper.writeValueAsString(cacheRecord));
 
                 mockResponse(404);
 
@@ -156,8 +153,8 @@ class CachingServiceClientTest {
             @Test
             void andServerSuccess_thenSuccessAndContent() {
                 mockResponse(200);
-                var kv = new KeyValue("key", "value");
-                when(clientResponse.bodyToMono(KeyValue.class)).thenReturn(just(kv));
+                var kv = new ApiKeyValue("key", "value");
+                when(clientResponse.bodyToMono(ApiKeyValue.class)).thenReturn(just(kv));
 
                 StepVerifier.create(client.read("key"))
                     .expectNext(kv)
@@ -198,7 +195,7 @@ class CachingServiceClientTest {
             @Test
             void andServerSuccess_thenSucess() {
                 mockResponse(200);
-                var kv = new KeyValue("key", "value");
+                var kv = new ApiKeyValue("key", "value");
 
                 StepVerifier.create(client.update(kv))
                     .expectComplete()
@@ -208,7 +205,7 @@ class CachingServiceClientTest {
             @Test
             void andServerError_thenError() {
                 mockResponse(500);
-                var kv = new KeyValue("key", "value");
+                var kv = new ApiKeyValue("key", "value");
 
                 StepVerifier.create(client.update(kv))
                     .verifyErrorMatches(assertCachingServiceClientException(500));
@@ -217,7 +214,7 @@ class CachingServiceClientTest {
             @Test
             void andClientError_thenError() {
                 mockResponse(404);
-                var kv = new KeyValue("key", "value");
+                var kv = new ApiKeyValue("key", "value");
 
                 StepVerifier.create(client.update(kv))
                     .verifyErrorMatches(assertCachingServiceClientException(404));

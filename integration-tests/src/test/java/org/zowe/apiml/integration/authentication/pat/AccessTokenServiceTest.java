@@ -69,7 +69,7 @@ public class AccessTokenServiceTest {
                 .body(bodyContent)
             .when()
                 .delete(REVOKE_ENDPOINT)
-            .then()
+            .then().log().ifValidationFails()
                 .statusCode(204);
             IntStream.range(0, 3).forEach(x -> {
                 given()
@@ -89,7 +89,7 @@ public class AccessTokenServiceTest {
                 .body(bodyContent)
             .when()
                 .delete(REVOKE_ENDPOINT)
-                .then()
+                .then().log().ifValidationFails()
             .statusCode(204);
             IntStream.range(0, 3).forEach(x -> {
                 given()
@@ -97,7 +97,7 @@ public class AccessTokenServiceTest {
                     .body(bodyContent)
                 .when()
                     .delete(REVOKE_ENDPOINT)
-                .then()
+                .then().log().ifValidationFails()
                     .statusCode(401);
             });
         }
