@@ -16,10 +16,6 @@ centralGatewayServiceConfiguration:
     scheme: https
     host: central-gateway-service
     port: 10010
-zaasConfiguration:
-    scheme: https
-    host: zaas-service
-    port: 10023
 discoveryServiceConfiguration:
     scheme: https
     user: user

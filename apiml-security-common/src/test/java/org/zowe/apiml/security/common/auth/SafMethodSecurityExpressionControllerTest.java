@@ -42,8 +42,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.product.config.NonModulithApplicationInfoConfig;
 import org.zowe.apiml.security.common.auth.saf.SafMethodSecurityExpressionRoot;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessDummy;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
@@ -62,6 +64,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = SafMethodSecurityExpressionControllerTest.TestController.class)
 @ContextConfiguration(classes = {
+    NonModulithApplicationInfoConfig.class,
     SecurityControllerExceptionHandler.class,
     SafMethodSecurityExpressionControllerTest.SecurityConfiguration.class,
     SafSecurityConfigurationProperties.class,
@@ -114,46 +117,51 @@ class SafMethodSecurityExpressionControllerTest {
     @Profile("SafMethodSecurityExpressionControllerTest")
     public static class SecurityConfiguration {
 
+
         @Bean
-        public SafResourceAccessVerifying safResourceAccessVerifying() throws IOException {
+        SafResourceAccessVerifying safResourceAccessVerifying() throws IOException {
             return new SafResourceAccessDummy();
         }
 
         @Bean
-        public ObjectMapper objectMapper() {
+        ObjectMapper objectMapper() {
             return new ObjectMapper();
         }
 
         @Bean
-        public MessageService messageService() {
+        MessageService messageService() {
             return new YamlMessageService("/security-service-messages.yml");
         }
 
         @Bean
-        public ResourceAccessExceptionHandler resourceAccessExceptionHandler() {
+        ResourceAccessExceptionHandler resourceAccessExceptionHandler() {
             return new ResourceAccessExceptionHandler(messageService(), objectMapper());
         }
 
         @Bean
-        public AuthExceptionHandler authExceptionHandler() {
-            return new AuthExceptionHandler(messageService(), objectMapper());
+        AuthExceptionHandler authExceptionHandler(ApplicationInfo applicationInfo) {
+            return new AuthExceptionHandler(messageService(), objectMapper(), applicationInfo);
         }
 
         @Bean
-        public FailedAuthenticationHandler failedAuthenticationHandler() {
-            return new FailedAuthenticationHandler(authExceptionHandler());
+        FailedAuthenticationHandler failedAuthenticationHandler(AuthExceptionHandler authExceptionHandler) {
+            return new FailedAuthenticationHandler(authExceptionHandler);
         }
 
         @Bean
-        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        SecurityFilterChain filterChain(
+            HttpSecurity http,
+            FailedAuthenticationHandler failedAuthenticationHandler,
+            ResourceAccessExceptionHandler resourceAccessExceptionHandler
+        ) throws Exception {
             return http
-                    .authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
-                    .with(new CustomSecurityFilters(), Customizer.withDefaults())
-                    .build();
+                .authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
+                .with(new CustomSecurityFilters(failedAuthenticationHandler, resourceAccessExceptionHandler), Customizer.withDefaults())
+                .build();
         }
 
         @Bean
-        public SafMethodSecurityExpressionRoot safMethodSecurityExpressionRoot(
+        SafMethodSecurityExpressionRoot safMethodSecurityExpressionRoot(
             SafSecurityConfigurationProperties safSecurityConfigurationProperties,
             SafResourceAccessVerifying safResourceAccessVerifying
         ) {
@@ -161,14 +169,25 @@ class SafMethodSecurityExpressionControllerTest {
         }
 
         private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
+            private final FailedAuthenticationHandler failedAuthenticationHandler;
+            private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
+
+            public CustomSecurityFilters(
+                FailedAuthenticationHandler failedAuthenticationHandler,
+                ResourceAccessExceptionHandler resourceAccessExceptionHandler
+            ) {
+                this.failedAuthenticationHandler = failedAuthenticationHandler;
+                this.resourceAccessExceptionHandler = resourceAccessExceptionHandler;
+            }
+
             @Override
             public void configure(HttpSecurity http) {
                 AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
 
                 http.addFilterBefore(new BasicContentFilter(
                     authenticationManager,
-                    failedAuthenticationHandler(),
-                    resourceAccessExceptionHandler()
+                    failedAuthenticationHandler,
+                    resourceAccessExceptionHandler
                 ) {
                     // test provider does not support char[] as credentials. This replaces it with a String
                     public Optional<AbstractAuthenticationToken> extractContent(HttpServletRequest request) {

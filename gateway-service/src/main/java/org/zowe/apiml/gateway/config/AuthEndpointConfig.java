@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.config;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
 import org.springframework.cloud.client.loadbalancer.reactive.ReactorLoadBalancerExchangeFilterFunction;
@@ -24,7 +25,7 @@ import org.springframework.web.reactive.function.server.HandlerFunction;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
-import org.zowe.apiml.gateway.x509.X509Util;
+import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
 
 import java.security.cert.CertificateEncodingException;
@@ -49,6 +50,7 @@ import static org.zowe.apiml.gateway.x509.ForwardClientCertFilterFactory.CLIENT_
  */
 @Slf4j
 @Configuration
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class AuthEndpointConfig {
 
     private String[] HEADERS_TO_RESEND = {
@@ -124,7 +126,7 @@ public class AuthEndpointConfig {
     }
 
     @Bean
-    public RouterFunction<ServerResponse> routes() {
+    RouterFunction<ServerResponse> routes() {
         return route(path("/gateway/api/v1/auth/login"), resendTo("/api/v1/auth/login"))
             .andRoute(path("/gateway/api/v1/auth/logout"), resendTo("/api/v1/auth/logout"))
             .andRoute(path("/gateway/api/v1/auth/query"), resendTo("/api/v1/auth/query"))

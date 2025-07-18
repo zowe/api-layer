@@ -10,17 +10,20 @@
 
 package org.zowe.apiml.security.common.handler;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
-import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.util.function.BiConsumer;
 
 /**
  * Handles unauthorized access
@@ -31,6 +34,9 @@ import jakarta.servlet.http.HttpServletResponse;
 @Getter
 public class UnauthorizedHandler implements AuthenticationEntryPoint {
     private final AuthExceptionHandler handler;
+
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     /**
      * Creates unauthorized response with the appropriate message and http status
@@ -43,6 +49,10 @@ public class UnauthorizedHandler implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws ServletException {
         log.debug("Unauthorized access to '{}' endpoint", request.getRequestURI());
-        handler.handleException(request, response, authException);
+
+        var consumer = ServletErrorUtils.createApiErrorWriter(response, apimlLog);
+        var addHeader = (BiConsumer<String, String>) response::addHeader;
+
+        handler.handleException(request.getRequestURI(), consumer, addHeader, authException);
     }
 }

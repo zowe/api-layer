@@ -44,6 +44,7 @@ class RequestAttributesProviderTest {
         RequestFacade requestFacade = new RequestFacade(new Request(null));
 
         MockServerHttpRequest request = spy(MockServerHttpRequest.get("/").build());
+
         doReturn(requestFacade).when(request).getNativeRequest();
         MockServerWebExchange exchange = MockServerWebExchange.from(request);
 

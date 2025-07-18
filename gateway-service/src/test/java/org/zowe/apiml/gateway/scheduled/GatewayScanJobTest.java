@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.scheduled;
 
 
+import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,6 @@ import reactor.test.StepVerifier;
 
 import java.util.List;
 
-import static java.util.Arrays.asList;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -66,7 +66,7 @@ class GatewayScanJobTest {
     public void setUp() {
         ReflectionTestUtils.setField(gatewayScanJob, "maxSimultaneousRequests", 3);
 
-        lenient().when(instanceInfoService.getServiceInstance(CoreService.GATEWAY.getServiceId())).thenReturn(Mono.just(asList(instanceOne, instanceTwo)));
+        lenient().when(instanceInfoService.getServiceInstances(CoreService.GATEWAY.getServiceId())).thenReturn(Flux.just(Arrays.array(instanceOne, instanceTwo)));
 
         lenient().when(gatewayIndexerService.indexGatewayServices(instanceOne)).thenReturn(Mono.just(apimlServicesOne));
         lenient().when(gatewayIndexerService.indexGatewayServices(instanceTwo)).thenReturn(Mono.just(apimlServicesTwo));

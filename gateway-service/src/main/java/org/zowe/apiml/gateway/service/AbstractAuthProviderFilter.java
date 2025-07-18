@@ -15,7 +15,9 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.gateway.filters.RobinRoundIterator;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Iterator;
@@ -34,8 +36,8 @@ public abstract class AbstractAuthProviderFilter<T> {
 
     protected abstract String getEndpointPath();
 
-    protected Mono<List<ServiceInstance>> getZaasInstances() {
-        return instanceInfoService.getServiceInstance("zaas");
+    protected Flux<ServiceInstance> getZaasInstances() {
+        return instanceInfoService.getServiceInstances(CoreService.ZAAS.getServiceId());
     }
 
     private Mono<T> requestWithHa(

@@ -24,6 +24,7 @@ import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Slf4j
@@ -42,12 +43,12 @@ public class JWTLogoutHandler implements LogoutHandler {
             } else {
                 failure.onAuthenticationFailure(request, response, new TokenNotProvidedException("The token you are trying to logout is not present in the header"));
             }
-        } catch (ServletException e) {
+        } catch (Exception e) {
             log.error("The response cannot be written during the logout exception handler: {}", e.getMessage());
         }
     }
 
-    private void invalidateJwtToken(FailedAuthenticationHandler failure, HttpServletRequest request, HttpServletResponse response, String token) throws ServletException {
+    private void invalidateJwtToken(FailedAuthenticationHandler failure, HttpServletRequest request, HttpServletResponse response, String token) throws ServletException, IOException {
         if (Boolean.TRUE.equals(authenticationService.isInvalidated(token))) {
             failure.onAuthenticationFailure(request, response, new TokenNotValidException("The token you are trying to logout is not valid"));
         } else {

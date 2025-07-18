@@ -18,8 +18,19 @@ spring:
 
 eureka:
     client:
-        initialInstanceInfoReplicationIntervalSeconds: 1
-        registryFetchIntervalSeconds: 1
+        instanceInfoReplicationIntervalSeconds: 30
+        registryFetchIntervalSeconds: 30
+
+management:
+    endpoints:
+        migrate-legacy-ids: true
+        web:
+            exposure:
+                include: "*"
+    endpoint:
+        shutdown:
+            access: unrestricted
+
 ---
 spring.config.activate.on-profile: https
 

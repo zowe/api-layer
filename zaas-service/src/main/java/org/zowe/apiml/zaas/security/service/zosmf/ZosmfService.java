@@ -14,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.util.DefaultResourceRetriever;
+import com.nimbusds.jose.util.Resource;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,7 +30,12 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -50,6 +57,7 @@ import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 
 import javax.management.ServiceNotFoundException;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -120,6 +128,7 @@ public class ZosmfService extends AbstractZosmfService {
 
     private ZosmfService meAsProxy;
     private TokenCreationService tokenCreationService;
+    private final DefaultResourceRetriever resourceRetriever;
 
     public ZosmfService(
             final AuthConfigurationProperties authConfigurationProperties,
@@ -127,7 +136,8 @@ public class ZosmfService extends AbstractZosmfService {
             final ObjectMapper securityObjectMapper,
             final ApplicationContext applicationContext,
             final AuthenticationService authenticationService,
-            List<TokenValidationStrategy> tokenValidationStrategy
+            List<TokenValidationStrategy> tokenValidationStrategy,
+            DefaultResourceRetriever resourceRetriever
     ) {
         super(
                 applicationContext,
@@ -137,6 +147,7 @@ public class ZosmfService extends AbstractZosmfService {
         );
         this.tokenValidationStrategy = tokenValidationStrategy;
         this.authenticationService = authenticationService;
+        this.resourceRetriever = resourceRetriever;
     }
 
     private final AuthenticationService authenticationService;
@@ -258,7 +269,7 @@ public class ZosmfService extends AbstractZosmfService {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(ZOSMF_CSRF_HEADER, "");
 
-        String infoURIEndpoint = "";
+        String infoURIEndpoint;
         try {
             infoURIEndpoint = getURI(getZosmfServiceId(), ZOSMF_INFO_END_POINT);
         } catch (ServiceNotAccessibleException e) {
@@ -278,7 +289,7 @@ public class ZosmfService extends AbstractZosmfService {
 
             if (info.getStatusCode() != HttpStatus.OK) {
                 log.error("Unexpected status code {} from z/OSMF accessing URI {}\n"
-                        + "Response from z/OSMF was \"{}\"", info.getStatusCodeValue(), infoURIEndpoint, info.getBody());
+                        + "Response from z/OSMF was \"{}\"", info.getStatusCode(), infoURIEndpoint, info.getBody());
             }
 
             return info.getStatusCode() == HttpStatus.OK;
@@ -347,7 +358,7 @@ public class ZosmfService extends AbstractZosmfService {
             throw new ServiceNotAccessibleException("Change password endpoint is not available in z/OSMF", e);
         } catch (HttpClientErrorException e) {
             // TODO https://github.com/zowe/api-layer/issues/2995 - API ML will return 401 in these cases now, the message is still not accurate
-            log.debug("Request to {} failed with status {}: {}", url, e.getRawStatusCode(), e.getMessage());
+            log.debug("Request to {} failed with status {}: {}", url, e.getStatusCode(), e.getMessage());
             throw new BadCredentialsException("Client error in change password: " + e.getResponseBodyAsString(), e);
         } catch (RuntimeException re) {
             throw handleExceptionOnCall(url, re);
@@ -379,7 +390,7 @@ public class ZosmfService extends AbstractZosmfService {
      */
     @Cacheable(value = "zosmfAuthenticationEndpoint", key = "#httpMethod.name()")
     public boolean authenticationEndpointExists(HttpMethod httpMethod, HttpHeaders headers) {
-        String url = "";
+        String url;
         try {
             url = getURI(getZosmfServiceId(), ZOSMF_AUTHENTICATE_END_POINT);
         } catch (ServiceNotAccessibleException e) {
@@ -396,8 +407,7 @@ public class ZosmfService extends AbstractZosmfService {
                 apimlLog.log("org.zowe.apiml.security.auth.zosmf.jwtNotFound");
                 return false;
             } else {
-                log.warn("z/OSMF authentication endpoint with HTTP method " + httpMethod.name() +
-                        " has failed with status code: " + hce.getStatusCode(), hce);
+                log.warn("z/OSMF authentication endpoint with HTTP method {} has failed with status code: {}", httpMethod.name(), hce.getStatusCode(), hce);
                 return false;
             }
         } catch (HttpServerErrorException serverError) {
@@ -413,7 +423,7 @@ public class ZosmfService extends AbstractZosmfService {
      */
     @Cacheable(value = "zosmfJwtEndpoint")
     public boolean jwtEndpointExists(HttpHeaders headers) {
-        String url = "";
+        String url;
         try {
             url = getURI(getZosmfServiceId(), authConfigurationProperties.getZosmf().getJwtEndpoint());
         } catch (ServiceNotAccessibleException e) {
@@ -523,7 +533,7 @@ public class ZosmfService extends AbstractZosmfService {
 
                 if (re.getStatusCode().is2xxSuccessful())
                     return;
-                apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getStatusCodeValue());
+                apimlLog.log("org.zowe.apiml.security.serviceUnavailable", url, re.getStatusCode());
                 throw new ServiceNotAccessibleException("Could not get an access to z/OSMF service.");
             } catch (RuntimeException re) {
                 throw handleExceptionOnCall(url, re);
@@ -555,13 +565,14 @@ public class ZosmfService extends AbstractZosmfService {
         final String url = getURI(getZosmfServiceId(), authConfigurationProperties.getZosmf().getJwtEndpoint());
 
         try {
-            return JWKSet.load(new URL(url));
+            Resource resource = resourceRetriever.retrieveResource(new URL(url));
+            return JWKSet.parse(resource.getContent());
         } catch (ParseException pe) {
             log.debug("Invalid format of public keys from z/OSMF", pe);
         } catch (HttpClientErrorException.NotFound nf) {
             log.debug("Cannot get public keys from z/OSMF", nf);
         } catch (IOException me) {
-            log.debug("Can't read JWK due to the exception " + me.getMessage(), me.getCause());
+            log.debug("Can't read JWK due to the exception {}", me.getMessage(), me.getCause());
         }
         return new JWKSet();
     }

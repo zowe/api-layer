@@ -23,6 +23,8 @@ import org.zowe.apiml.security.common.token.X509AuthenticationToken;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 
+import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE;
+
 @Slf4j
 public class X509ForwardingAwareAuthenticationFilter extends NonCompulsoryAuthenticationProcessingFilter {
 
@@ -41,7 +43,7 @@ public class X509ForwardingAwareAuthenticationFilter extends NonCompulsoryAuthen
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
-        X509Certificate[] certs = (X509Certificate[]) request.getAttribute("client.auth.X509Certificate");
+        X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
         if (certs != null && certs.length > 0) {
             log.debug("One or more X509 certificate found in request.");
             return this.authenticationProvider.authenticate(new X509AuthenticationToken(certs));

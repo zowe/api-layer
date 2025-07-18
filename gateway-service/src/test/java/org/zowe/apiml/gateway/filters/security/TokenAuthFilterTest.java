@@ -17,7 +17,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.gateway.service.TokenProvider;
@@ -131,9 +133,12 @@ class TokenAuthFilterTest {
             @Test
             void givenTokenIsInvalidError_thenCompletesWithCorrectHandler() {
                 mockTokenInCookie();
+                var webEx = mock(WebClientResponseException.class);
+                when(webEx.getStatusCode()).thenReturn(HttpStatus.SERVICE_UNAVAILABLE);
+                when(tokenProvider.validateToken("token")).thenReturn(Mono.error(webEx));
+
                 when(authExceptionHandlerReactive.handleServiceUnavailable(any()))
                     .thenReturn(Mono.empty());
-                when(tokenProvider.validateToken("token")).thenReturn(Mono.error(new RuntimeException("error in validation")));
                 StepVerifier.create(tokenAuthFilter.filter(serverWebExchange, chain))
                     .verifyComplete();
                 verify(authExceptionHandlerReactive, times(1)).handleServiceUnavailable(any());
@@ -156,7 +161,7 @@ class TokenAuthFilterTest {
             void givenTokenIsInvalidEmptyUser_thenHandleException() {
                 mockTokenInCookie();
                 when(tokenProvider.validateToken("token")).thenReturn(Mono.just(new QueryResponse()));
-                when(authExceptionHandlerReactive.handleServiceUnavailable(any()))
+                when(authExceptionHandlerReactive.handleTokenNotValid(any()))
                     .thenReturn(Mono.error(new TokenNotValidException("Invalid token")));
 
                 StepVerifier.create(tokenAuthFilter.filter(serverWebExchange, chain))

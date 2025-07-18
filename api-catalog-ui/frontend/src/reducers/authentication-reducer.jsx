@@ -10,20 +10,31 @@
 
 import userConstants from '../constants/user-constants';
 
-const sessionDefaultState = {
+const initialState = {
     sessionOn: false,
+    user: null,
+    error: null,
+    showHeader: false,
+    loginSuccess: false,
+    authenticationFailed: false,
+    showUpdatePassSuccess: false,
+    expired: false,
+    expiredWarning: false,
+    matches: false,
 };
 
-function authenticationReducer(state = sessionDefaultState, action = {}) {
+function authenticationReducer(state = initialState, action = {}) {
     switch (action.type) {
         case userConstants.USERS_LOGIN_REQUEST:
             return {
                 ...state,
                 user: action.user,
+                authenticationFailed: false,
             };
         case userConstants.USERS_LOGIN_SUCCESS:
-            sessionDefaultState.sessionOn = true;
+            initialState.sessionOn = true;
             return {
+                ...state,
                 error: null,
                 user: action.user,
                 showHeader: true,
@@ -39,9 +50,9 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
             return {
                 error: action.error,
                 authenticationFailed: true,
-                sessionOn: sessionDefaultState.sessionOn,
+                sessionOn: initialState.sessionOn,
                 onCompleteHandling: () => {
-                    sessionDefaultState.sessionOn = false;
+                    initialState.sessionOn = false;
                 },
             };
         case userConstants.USERS_LOGIN_INVALIDPASSWORD:
@@ -52,6 +63,7 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
             };
         case userConstants.USERS_LOGIN_EXPIREDPASSWORD:
             return {
+                ...state,
                 error: action.error,
                 expired: true,
                 expiredWarning: true,
@@ -64,16 +76,23 @@ function authenticationReducer(state = sessionDefaultState, action = {}) {
                 matches: action.credentials.newPassword === action.credentials.repeatNewPassword,
             };
         case userConstants.USERS_LOGOUT_REQUEST:
+            return {
+                ...state,
+            };
         case userConstants.USERS_LOGOUT_SUCCESS:
             return {
+                user: null,
                 error: null,
                 showHeader: false,
+                loginSuccess: false,
+                authenticationFailed: false,
                 onCompleteHandling: () => {
-                    sessionDefaultState.sessionOn = false;
+                    initialState.sessionOn = false;
                 },
             };
         case userConstants.USERS_LOGOUT_FAILURE:
             return {
+                ...state,
                 error: action.error,
                 showHeader: false,
             };

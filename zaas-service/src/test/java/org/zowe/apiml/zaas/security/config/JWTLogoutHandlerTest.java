@@ -25,6 +25,8 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -65,35 +67,35 @@ class JWTLogoutHandlerTest {
     }
 
     @Test
-    void givenNoToken_whenLogout_thenHandleFailure() throws ServletException {
+    void givenNoToken_whenLogout_thenHandleFailure() throws ServletException, IOException {
         when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.empty());
         handler.logout(request, response, authentication);
         verify(failedAuthenticationHandler, times(1)).onAuthenticationFailure(any(), any(), any());
     }
 
     @Test
-    void givenInvalidToken_formatExceptionIsThrown_thenItsCorrectlyHandled() throws ServletException {
+    void givenInvalidToken_formatExceptionIsThrown_thenItsCorrectlyHandled() throws ServletException, IOException {
         when(authenticationService.invalidateJwtToken(TOKEN, true)).thenThrow(new TokenFormatNotValidException("msg"));
         handler.logout(request, response, authentication);
         verify(failedAuthenticationHandler, times(1)).onAuthenticationFailure(any(), any(), any());
     }
 
     @Test
-    void givenInvalidToken_validityExceptionIsThrown_thenItsCorrectlyHandled() throws ServletException {
+    void givenInvalidToken_validityExceptionIsThrown_thenItsCorrectlyHandled() throws ServletException, IOException {
         when(authenticationService.invalidateJwtToken(TOKEN, true)).thenThrow(new TokenNotValidException("msg"));
         handler.logout(request, response, authentication);
         verify(failedAuthenticationHandler, times(1)).onAuthenticationFailure(any(), any(), any());
     }
 
     @Test
-    void givenAlreadyInvalidatedToken_whenLogout_thenHandleFailure() throws ServletException {
+    void givenAlreadyInvalidatedToken_whenLogout_thenHandleFailure() throws ServletException, IOException {
         when(authenticationService.isInvalidated(TOKEN)).thenReturn(true);
         handler.logout(request, response, authentication);
         verify(failedAuthenticationHandler, times(1)).onAuthenticationFailure(any(), any(), any());
     }
 
     @Test
-    void givenInvalidatedToken_whenTokenNotValidFailureThrowsError_thenErrorThrown() throws ServletException {
+    void givenInvalidatedToken_whenTokenNotValidFailureThrowsError_thenErrorThrown() throws ServletException, IOException {
         when(authenticationService.invalidateJwtToken(TOKEN, true)).thenThrow(new TokenNotValidException("msg"));
 
         handler.logout(request, response, authentication);
@@ -102,7 +104,7 @@ class JWTLogoutHandlerTest {
     }
 
     @Test
-    void givenInvalidatedToken_whenGenericAuthenticationFailure_thenHandleFailure() throws ServletException {
+    void givenInvalidatedToken_whenGenericAuthenticationFailure_thenHandleFailure() throws ServletException, IOException {
         when(authenticationService.invalidateJwtToken(TOKEN, true)).thenThrow(new TokenNotProvidedException("msg"));
 
         handler.logout(request, response, authentication);
@@ -110,7 +112,7 @@ class JWTLogoutHandlerTest {
     }
 
     @Test
-    void givenLogoutRequest_whenGenericFailure_thenHandleFailure() throws ServletException {
+    void givenLogoutRequest_whenGenericFailure_thenHandleFailure() throws ServletException, IOException {
         when(authenticationService.invalidateJwtToken(TOKEN, true)).thenThrow(new RuntimeException("msg"));
 
         handler.logout(request, response, authentication);
@@ -119,7 +121,7 @@ class JWTLogoutHandlerTest {
     }
 
     @Test
-    void givenLogoutRequest_whenFailureHandlingError_thenLogError() throws ServletException {
+    void givenLogoutRequest_whenFailureHandlingError_thenLogError() throws ServletException, IOException {
         logMessageTracker.startTracking();
         when(authenticationService.getJwtTokenFromRequest(request)).thenReturn(Optional.empty());
         Mockito.doThrow(new ServletException("msg")).when(failedAuthenticationHandler).onAuthenticationFailure(any(), any(), any());

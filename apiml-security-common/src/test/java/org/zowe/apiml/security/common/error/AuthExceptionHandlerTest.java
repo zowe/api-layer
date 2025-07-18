@@ -11,6 +11,7 @@
 package org.zowe.apiml.security.common.error;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,26 +20,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
-import org.zowe.apiml.security.common.token.*;
+import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
+import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
+import org.zowe.apiml.security.common.token.TokenNotProvidedException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 
-import jakarta.servlet.ServletException;
+import java.util.function.BiConsumer;
 
-import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(SpringExtension.class)
@@ -52,198 +56,182 @@ class AuthExceptionHandlerTest {
 
     private AuthExceptionHandler authExceptionHandler;
     private MockHttpServletRequest httpServletRequest;
-    private MockHttpServletResponse httpServletResponse;
-
+    private final BiConsumer function = mock(BiConsumer.class);
+    private final BiConsumer addHeader = mock(BiConsumer.class);
 
     @BeforeEach
     void setup() {
-        authExceptionHandler = new AuthExceptionHandler(messageService, objectMapper);
+        authExceptionHandler = new AuthExceptionHandler(messageService, objectMapper, ApplicationInfo.builder().isModulith(false).build());
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setRequestURI("URI");
 
-        httpServletResponse = new MockHttpServletResponse();
     }
 
     @Test
-    void testAuthenticationFailure_whenExceptionIsInsufficientAuthenticationException() throws IOException, ServletException {
+    void testAuthenticationFailure_whenExceptionIsInsufficientAuthenticationException() throws ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(), function, addHeader,
             new InsufficientAuthenticationException("ERROR"));
 
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
-
         Message message = messageService.createMessage(ErrorType.AUTH_REQUIRED.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+
+        verify(function).accept(message.mapToView(), HttpStatus.UNAUTHORIZED);
     }
 
     @Test
-    void testAuthenticationFailure_whenExceptionIsBadCredentialsException() throws IOException, ServletException {
+    void testAuthenticationFailure_whenExceptionIsBadCredentialsException() throws ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(),
+            function, addHeader,
             new BadCredentialsException("ERROR"));
 
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
-
         Message message = messageService.createMessage(ErrorType.BAD_CREDENTIALS.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+
+        verify(function).accept(message.mapToView(), HttpStatus.UNAUTHORIZED);
     }
 
     @Test
-    void testAuthenticationFailure_whenExceptionIsAuthenticationCredentialsNotFoundException() throws IOException, ServletException {
+    void testAuthenticationFailure_whenExceptionIsAuthenticationCredentialsNotFoundException() throws ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(),
+            function, addHeader,
             new AuthenticationCredentialsNotFoundException("ERROR"));
 
-        assertEquals(HttpStatus.BAD_REQUEST.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
-
         Message message = messageService.createMessage(ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+
+        verify(function).accept(message.mapToView(), HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    void testAuthenticationFailure_whenExceptionIsAuthMethodNotSupportedException() throws IOException, ServletException {
+    void testAuthenticationFailure_whenExceptionIsAuthMethodNotSupportedException() throws ServletException {
         AuthMethodNotSupportedException authMethodNotSupportedException = new AuthMethodNotSupportedException("ERROR");
-        authExceptionHandler.handleException(httpServletRequest, httpServletResponse, authMethodNotSupportedException);
+        authExceptionHandler.handleException(httpServletRequest.getRequestURI(),
+            function, addHeader, authMethodNotSupportedException);
 
-        assertEquals(HttpStatus.METHOD_NOT_ALLOWED.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
+        Message message = messageService.createMessage(ErrorType.METHOD_NOT_ALLOWED.getErrorMessageKey(), authMethodNotSupportedException.getMessage(), httpServletRequest.getRequestURI());
 
-        Message message = messageService.createMessage(ErrorType.AUTH_METHOD_NOT_SUPPORTED.getErrorMessageKey(), authMethodNotSupportedException.getMessage(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+        verify(function).accept(message.mapToView(), HttpStatus.METHOD_NOT_ALLOWED);
     }
 
     @Test
-    void testAuthenticationFailure_whenExceptionIsTokenNotValidException() throws IOException, ServletException {
+    void testAuthenticationFailure_whenExceptionIsTokenNotValidException() throws ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(),
+            function, addHeader,
             new TokenNotValidException("ERROR"));
 
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
-
         Message message = messageService.createMessage(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+
+        verify(function).accept(message.mapToView(), HttpStatus.UNAUTHORIZED);
     }
 
     @Test
-    void testAuthenticationFailure_whenExceptionIsNoMainframeIdException() throws IOException, ServletException {
+    void testAuthenticationFailure_whenExceptionIsNoMainframeIdException() throws ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(),
+            function, addHeader,
             new NoMainframeIdentityException("ERROR"));
 
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
-
         Message message = messageService.createMessage(ErrorType.IDENTITY_MAPPING_FAILED.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+
+        verify(function).accept(message.mapToView(), HttpStatus.UNAUTHORIZED);
     }
 
     @Test
-    void testAuthenticationFailure_whenExceptionIsTokenNotProvidedException() throws IOException, ServletException {
+    void testAuthenticationFailure_whenExceptionIsTokenNotProvidedException() throws ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(),
+            function, addHeader,
             new TokenNotProvidedException("ERROR"));
 
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
-
         Message message = messageService.createMessage(ErrorType.TOKEN_NOT_PROVIDED.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+
+        verify(function).accept(message.mapToView(), HttpStatus.UNAUTHORIZED);
     }
 
     @Test
-    void testAuthenticationFailure_whenExceptionIsTokenFormatNotValidException() throws IOException, ServletException {
+    void testAuthenticationFailure_whenExceptionIsTokenFormatNotValidException() throws ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(),
+            function, addHeader,
             new TokenFormatNotValidException("ERROR"));
 
-        assertEquals(HttpStatus.BAD_REQUEST.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
-
         Message message = messageService.createMessage(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+
+        verify(function).accept(message.mapToView(), HttpStatus.BAD_REQUEST);
     }
 
 
     @Test
-    void testAuthenticationFailure_whenExceptionIsAuthenticationException() throws IOException, ServletException {
+    void testAuthenticationFailure_whenExceptionIsAuthenticationException() throws ServletException {
         AuthenticationServiceException serviceException = new AuthenticationServiceException("ERROR");
-        authExceptionHandler.handleException(httpServletRequest, httpServletResponse, serviceException);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
+        authExceptionHandler.handleException(httpServletRequest.getRequestURI(),
+            function, addHeader, serviceException);
 
         Message message = messageService.createMessage(ErrorType.AUTH_GENERAL.getErrorMessageKey(), serviceException.getMessage(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+
+        verify(function).accept(message.mapToView(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Test
     void testInvalidCertificateException() throws ServletException {
-        authExceptionHandler.handleException(httpServletRequest, httpServletResponse, new InvalidCertificateException("method"));
-        assertEquals(HttpStatus.FORBIDDEN.value(), httpServletResponse.getStatus());
+        authExceptionHandler.handleException(httpServletRequest.getRequestURI(),
+            function, addHeader, new InvalidCertificateException("method"));
+
+        verify(function).accept(any(), eq(HttpStatus.FORBIDDEN));
     }
 
     @Test
     void testZosAuthenticationExceptionException() throws ServletException {
         PlatformReturned platformReturned = PlatformReturned.builder().success(false).errno(PlatformPwdErrno.EACCES.errno).build();
-        authExceptionHandler.handleException(httpServletRequest, httpServletResponse, new ZosAuthenticationException(platformReturned));
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
+        authExceptionHandler.handleException(httpServletRequest.getRequestURI(),
+            function, addHeader, new ZosAuthenticationException(platformReturned));
+
+        verify(function).accept(any(), eq(HttpStatus.UNAUTHORIZED));
     }
 
     @Test
-    void testTokenNotInResponseException() throws IOException, ServletException {
+    void testTokenNotInResponseException() throws ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(),
+            function, addHeader,
             new InvalidTokenTypeException("ERROR"));
 
-        assertEquals(HttpStatus.UNAUTHORIZED.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
-
         Message message = messageService.createMessage(ErrorType.INVALID_TOKEN_TYPE.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+
+        verify(function).accept(message.mapToView(), HttpStatus.UNAUTHORIZED);
     }
 
     @Test
-    void testAuthenticationFailure_whenOccurUnexpectedException() throws ServletException {
+    void testAuthenticationFailure_whenOccurUnexpectedException() {
         assertThrows(ServletException.class, () -> {
             authExceptionHandler.handleException(
-                httpServletRequest,
-                httpServletResponse,
+                httpServletRequest.getRequestURI(),
+                function, addHeader,
                 new RuntimeException("unexpectedException"));
         });
     }
 
     @Test
-    void testAuthServiceUnavailable() throws ServletException, IOException {
+    void testAuthServiceUnavailable() throws ServletException {
         authExceptionHandler.handleException(
-            httpServletRequest,
-            httpServletResponse,
+            httpServletRequest.getRequestURI(),
+            function, addHeader,
             new ServiceNotAccessibleException("URI"));
 
-        assertEquals(HttpStatus.SERVICE_UNAVAILABLE.value(), httpServletResponse.getStatus());
-        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
-
         Message message = messageService.createMessage(ErrorType.SERVICE_UNAVAILABLE.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+
+        verify(function).accept(message.mapToView(), HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @TestConfiguration
     static class ContextConfiguration {
+
         @Bean
-        public MessageService messageService() {
+        MessageService messageService() {
             return new YamlMessageService("/security-service-messages.yml");
         }
+
     }
 
 }

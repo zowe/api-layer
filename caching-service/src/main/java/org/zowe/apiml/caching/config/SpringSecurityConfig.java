@@ -13,23 +13,26 @@ package org.zowe.apiml.caching.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
-import org.zowe.apiml.filter.AttlsFilter;
-import org.zowe.apiml.filter.SecureConnectionFilter;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
+import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
+import org.zowe.apiml.security.common.util.X509Util;
+import reactor.core.publisher.Mono;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebFluxSecurity
 public class SpringSecurityConfig {
 
     @Value("${apiml.service.ssl.verifySslCertificatesOfServices:true}")
@@ -38,49 +41,51 @@ public class SpringSecurityConfig {
     @Value("${apiml.service.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifyCerts;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
-
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
 
     @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        String[] noSecurityAntMatchers = {
-            "/application/info",
-            "/v3/api-docs"
-        };
+    @Order(1)
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
 
-        return web -> {
-            if (!isHealthEndpointProtected) {
-                web.ignoring().requestMatchers("/application/health");
-            }
-            web.ignoring().requestMatchers(noSecurityAntMatchers);
-        };
-    }
+        var antMatchersToIgnore = new ArrayList<String>();
+        antMatchersToIgnore.add("/cachingservice/application/info");
+        antMatchersToIgnore.add("/cachingservice/v3/api-docs");
+        if (!isHealthEndpointProtected) {
+            antMatchersToIgnore.add("/cachingservice/application/health");
+        }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)   // NOSONAR
-            .headers(httpSecurityHeadersConfigurer ->
-                httpSecurityHeadersConfigurer.httpStrictTransportSecurity(HeadersConfigurer.HstsConfig::disable))
-            .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .headers(headers -> headers.hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable))
+            .securityMatcher(new AndServerWebExchangeMatcher(
+                ServerWebExchangeMatchers.pathMatchers("/cachingservice/**")
+            ))
+            .authorizeExchange(exchange -> exchange
+                .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
+                .anyExchange().authenticated()
+            ).exceptionHandling(exceptionHandlingSpec ->
+                exceptionHandlingSpec.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.FORBIDDEN))
+            );
 
         if (verifyCertificates || !nonStrictVerifyCerts) {
-            http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
-                .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
-            if (isAttlsEnabled) {
-                http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
-                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-            }
+            http.x509(x509spec -> x509spec.principalExtractor(X509Util.x509PrincipalExtractor())
+                .authenticationManager(X509Util.x509ReactiveAuthenticationManager()));
         } else {
-            http.authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
+            http.authorizeExchange(exchange -> exchange.anyExchange().permitAll());
         }
 
         return http.build();
     }
 
-    private UserDetailsService x509UserDetailsService() {
-        return username -> new User("cachingUser", "", Collections.emptyList());
+
+    @Bean
+    ReactiveUserDetailsService userDetailsService() {
+
+        return username -> {
+            List<GrantedAuthority> authorities = new ArrayList<>();
+            UserDetails userDetails = User.withUsername(username).authorities(authorities).password("").build();
+            return Mono.just(userDetails);
+        };
     }
 }

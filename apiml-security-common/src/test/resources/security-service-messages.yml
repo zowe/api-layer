@@ -6,11 +6,6 @@ messages:
       type: ERROR
       text: "Authentication exception: '%s' for URL '%s'"
 
-    - key: org.zowe.apiml.security.invalidMethod
-      number: ZWEAS101
-      type: ERROR
-      text: "Authentication method '%s' is not supported for URL '%s'"
-
     - key: org.zowe.apiml.security.expiredToken
       number: ZWEAS102
       type: ERROR

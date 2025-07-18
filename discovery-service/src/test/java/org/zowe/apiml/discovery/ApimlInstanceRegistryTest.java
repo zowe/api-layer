@@ -47,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -288,7 +289,9 @@ class ApimlInstanceRegistryTest {
 
         @Test
         @SuppressWarnings("unchecked")
-        void test() throws Throwable {
+        void givenStaticRegistration_thenSuccessful() throws Throwable {
+            var methodHandle = mock(MethodHandle.class);
+            ReflectionTestUtils.setField(apimlInstanceRegistry, "replicateToPeersMethodHandle", methodHandle);
             var currentStaticIds = (Set<String>) ReflectionTestUtils.getField(apimlInstanceRegistry, "staticRegistrationIds");
             assertTrue(currentStaticIds.isEmpty());
 
@@ -297,11 +300,28 @@ class ApimlInstanceRegistryTest {
 
             Map<String, Lease<InstanceInfo>> leaseMap = new HashMap<>();
             when(registry.get(anyString())).thenReturn(leaseMap);
+            doReturn(new Object()).when(methodHandle).invokeWithArguments(any(), any(), any(), any(), any(), any(), any());
 
-            apimlInstanceRegistry.registerStatically(standardInstance, false);
+            apimlInstanceRegistry.registerStatically(standardInstance, false, true);
 
             assertFalse(currentStaticIds.isEmpty());
             assertFalse(leaseMap.isEmpty());
+        }
+
+    }
+
+    @Nested
+    class HeartbeatPeerReplicate {
+
+        @Test
+        void givenPeerReplicaHeartbeat_thenSuccess() throws Throwable {
+            var methodHandle = mock(MethodHandle.class);
+            ReflectionTestUtils.setField(apimlInstanceRegistry, "replicateToPeersMethodHandle", methodHandle);
+            var instance = mock(InstanceInfo.class);
+            doReturn(new Object()).when(methodHandle).invokeWithArguments(any(), any(), any(), any(), any(), any(), any());
+            apimlInstanceRegistry.peerAwareHeartbeat(instance);
+
+            verify(methodHandle, times(1)).invokeWithArguments(any(), any(), any(), any(), any(), any(), any());
         }
 
     }

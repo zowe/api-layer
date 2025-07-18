@@ -42,10 +42,10 @@ import java.util.function.Predicate;
 @Slf4j
 public class CategorizeCertsFilter extends OncePerRequestFilter {
 
-    private static final String ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE = "client.auth.X509Certificate";
-    private static final String ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE = "jakarta.servlet.request.X509Certificate";
-    private static final String LOG_FORMAT_FILTERING_CERTIFICATES = "Filtering certificates: {} -> {}";
-    private static final String CLIENT_CERT_HEADER = "Client-Cert";
+    public static final String ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE = "client.auth.X509Certificate";
+    public static final String ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE = "jakarta.servlet.request.X509Certificate";
+    public static final String LOG_FORMAT_FILTERING_CERTIFICATES = "Filtering certificates: {} -> {}";
+    public static final String CLIENT_CERT_HEADER = "Client-Cert";
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -66,21 +66,21 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      * @param request Request to filter certificates
      */
     private void categorizeCerts(ServletRequest request) {
-        X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
-        if (certs != null && certs.length > 0 && certs[0] != null) {
+        X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
+        if (certs != null && certs.length > 0) {
             Optional<Certificate> clientCert = getClientCertFromHeader((HttpServletRequest) request);
             if (certificateValidator.isForwardingEnabled() && certificateValidator.hasGatewayChain(certs) && clientCert.isPresent()) {
                 certificateValidator.updateAPIMLPublicKeyCertificates(certs);
                 // add the client certificate to the certs array
                 String subjectDN = ((X509Certificate) clientCert.get()).getSubjectX500Principal().getName();
                 log.debug("Found client certificate in header, adding it to the request. Subject DN: {}", subjectDN);
-                request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(new X509Certificate[]{(X509Certificate) clientCert.get()}, certificateForClientAuth));
+                request.setAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(new X509Certificate[]{(X509Certificate) clientCert.get()}, certificateForClientAuth));
             } else {
-                request.setAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth));
-                request.setAttribute(ATTRNAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, apimlCertificate));
+                request.setAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth));
+                request.setAttribute(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, apimlCertificate));
             }
 
-            log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE, request.getAttribute(ATTRNAME_CLIENT_AUTH_X509_CERTIFICATE));
+            log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, request.getAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE));
         }
     }
 
@@ -142,11 +142,24 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
         filterChain.doFilter(mutate(request), response);
     }
 
-    private X509Certificate[] selectCerts(X509Certificate[] certs, Predicate<X509Certificate> test) {
-        if (test.test(certs[0])) {
-            return certs;
-        }
-        return new X509Certificate[0];
+    /**
+     * Selects certificates from an array based on a predicate.
+     * Only certificates that match the predicate will be included in the result array.
+     * IMPORTANT: This method replicates the original filter's logic.
+     * <p>
+     * Null certificates are automatically excluded.
+     *
+     * @param certs The array of X.509 certificates to be filtered.
+     * @param test  The predicate to test each certificate against.
+     * @return A new array containing only the certificates that match the predicate.
+     */
+    public static X509Certificate[] selectCerts(X509Certificate[] certs, Predicate<X509Certificate> test) {
+        return Optional.ofNullable(certs)
+            .stream()
+            .flatMap(Arrays::stream)
+            .filter(Objects::nonNull)
+            .filter(test)
+            .toArray(X509Certificate[]::new);
     }
 
     public static String base64EncodePublicKey(X509Certificate cert) {

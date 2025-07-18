@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.zowe.apiml.product.web.HttpConfig;
 
-@AcceptanceTest
+@MicroservicesAcceptanceTest
 public class AcceptanceTestWithBasePath {
 
     protected String basePath;

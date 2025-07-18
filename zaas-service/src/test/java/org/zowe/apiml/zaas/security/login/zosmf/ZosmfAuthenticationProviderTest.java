@@ -71,20 +71,15 @@ class ZosmfAuthenticationProviderTest {
     private static final String DOMAIN = "realm";
     private static final String INVALID_RESPONSE = "{\"saf_realm\": \"" + DOMAIN + "\"}";
 
-    @Mock
-    private EurekaClientConfig clientConfig;
+    @Mock private EurekaClientConfig clientConfig;
 
-    @Mock
-    private EurekaClient eurekaClient;
+    @Mock private EurekaClient eurekaClient;
 
-    @Mock
-    private AuthenticationService authenticationService;
+    @Mock private AuthenticationService authenticationService;
 
-    @Mock
-    private RestTemplate restTemplate;
+    @Mock private RestTemplate restTemplate;
 
-    @Mock
-    private TokenCreationService tokenCreationService;
+    @Mock private TokenCreationService tokenCreationService;
 
     private UsernamePasswordAuthenticationToken usernamePasswordAuthentication;
     private AuthConfigurationProperties authConfigurationProperties;
@@ -112,7 +107,8 @@ class ZosmfAuthenticationProviderTest {
             securityObjectMapper,
             applicationContext,
             authenticationService,
-            new ArrayList<>());
+            new ArrayList<>(),
+            null);
         ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
         ReflectionTestUtils.setField(zosmfService, "discovery", new CompositeDiscoveryClient(Collections.singletonList(new EurekaDiscoveryClient(eurekaClient, clientConfig))));
         ReflectionTestUtils.setField(zosmfService, "tokenCreationService", tokenCreationService);

@@ -47,16 +47,20 @@ function Dashboard({
                    }) {
     const navigate = useNavigate();
     useEffect(() => {
-        clearService();
-        fetchTilesStart();
         if (!authentication.user) {
             navigate('/login');
+            return;
         }
+        clearService();
+        fetchTilesStart();
         return function cleanup () {
             clear();
         }
-    }, []);
+    }, [authentication.user, navigate]);
 
+        if (!authentication.user) {
+            return null;
+        }
         const hasSearchCriteria =
             typeof searchCriteria !== 'undefined' &&
             searchCriteria !== undefined &&
@@ -76,7 +80,6 @@ function Dashboard({
         if (hasTiles) {
             allServices = sortServices(tiles);
         }
-
         return (
             <div className="main-content dashboard-content">
                 <div id="dash-buttons">

@@ -10,7 +10,10 @@
 
 package org.zowe.apiml.security.common.content;
 
-import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -20,24 +23,28 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
+import org.zowe.apiml.security.common.handler.ServletErrorUtils;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 /**
  * Filter base abstract class to secure application content
  */
 @RequiredArgsConstructor
 public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
+
     private final AuthenticationManager authenticationManager;
     private final AuthenticationFailureHandler failureHandler;
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
     private final String[] endpoints;
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -80,7 +87,9 @@ public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
             } catch (AuthenticationException authenticationException) {
                 failureHandler.onAuthenticationFailure(request, response, authenticationException);
             } catch (RuntimeException e) {
-                resourceAccessExceptionHandler.handleException(request, response, e);
+                var consumer = ServletErrorUtils.createApiErrorWriter(response, apimlLog);
+                var addHeader = (BiConsumer<String, String>) response::addHeader;
+                resourceAccessExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, e);
             } finally {
                 // TODO: remove once fixed directly in Spring - org.springframework.security.core.CredentialsContainer#eraseCredentials
                 if (authentication != null) {

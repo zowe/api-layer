@@ -31,13 +31,13 @@ import java.security.cert.X509Certificate;
 )
 public class X509CommonNameUserMapper implements AuthenticationMapper {
 
-
     /**
      * Maps certificate to user id
      *
      * @param authSource X509 certificate as a source of authentication
      * @return the user
      */
+    @Override
     public String mapToMainframeUserId(AuthSource authSource) {
         if (authSource instanceof X509AuthSource) {
             X509Certificate certificate = (X509Certificate) authSource.getRawSource();
@@ -52,7 +52,6 @@ public class X509CommonNameUserMapper implements AuthenticationMapper {
         return null;
     }
 
-
     /**
      * Return the LDAP name from the given distinguished name
      *
@@ -65,5 +64,7 @@ public class X509CommonNameUserMapper implements AuthenticationMapper {
         } catch (InvalidNameException e) {
             throw new AuthenticationServiceException("Not able to create ldap name from certificate. Cause: " + e.getMessage(), e);
         }
+
     }
+
 }

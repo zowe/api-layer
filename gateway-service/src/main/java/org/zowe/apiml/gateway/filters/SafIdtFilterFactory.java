@@ -10,54 +10,42 @@
 
 package org.zowe.apiml.gateway.filters;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.apache.http.HttpHeaders;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
-import org.springframework.http.MediaType;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.ticket.TicketRequest;
+import org.zowe.apiml.zaas.ZaasTokenResponse;
+import reactor.core.publisher.Mono;
+
+import java.util.function.Function;
 
 @Service
-public class SafIdtFilterFactory extends AbstractTokenFilterFactory<SafIdtFilterFactory.Config, String> {
-    private static final ObjectWriter WRITER = new ObjectMapper().writer();
+public class SafIdtFilterFactory extends AbstractTokenFilterFactory<SafIdtFilterFactory.Config> {
 
-    public SafIdtFilterFactory(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
-        super(SafIdtFilterFactory.Config.class, webClient, instanceInfoService, messageService);
+    private final ZaasSchemeTransform zaasSchemeTransform;
+
+    public SafIdtFilterFactory(ZaasSchemeTransform zaasSchemeTransform, InstanceInfoService instanceInfoService, MessageService messageService) {
+        super(SafIdtFilterFactory.Config.class, instanceInfoService, messageService);
+        this.zaasSchemeTransform = zaasSchemeTransform;
     }
 
     @Override
-    public String getEndpointUrl(ServiceInstance instance) {
-        return String.format("%s://%s:%d/%s/scheme/safIdt", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
-    }
-
-    @Override
-    protected WebClient.RequestHeadersSpec<?> createRequest(ServiceInstance instance, String requestBody) {
-        String url = getEndpointUrl(instance);
-        return webClient.post()
-            .uri(url).header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .bodyValue(requestBody);
+    protected Function<RequestCredentials, Mono<AuthorizationResponse<ZaasTokenResponse>>> getAuthorizationResponseTransformer() {
+        return zaasSchemeTransform::safIdt;
     }
 
     @Override
     public GatewayFilter apply(Config config) {
-        try {
-            return createGatewayFilter(config, WRITER.writeValueAsString(new TicketRequest(config.getApplicationName())));
-        } catch (JsonProcessingException e) {
-            return ((exchange, chain) -> {
-                ServerHttpRequest request = updateHeadersForError(exchange, e.getMessage());
-                return chain.filter(exchange.mutate().request(request).build());
-            });
-        }
+        return createGatewayFilter(config);
+    }
+
+    @Override
+    protected RequestCredentials.RequestCredentialsBuilder createRequestCredentials(ServerWebExchange exchange, Config config) {
+        return super.createRequestCredentials(exchange, config)
+            .applId(config.getApplicationName());
     }
 
     @Data
@@ -65,4 +53,5 @@ public class SafIdtFilterFactory extends AbstractTokenFilterFactory<SafIdtFilter
     public static class Config extends AbstractTokenFilterFactory.Config {
         private String applicationName;
     }
+
 }

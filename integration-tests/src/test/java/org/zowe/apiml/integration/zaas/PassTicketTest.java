@@ -193,7 +193,7 @@ class PassTicketTest {
 
         @Test
         void givenIncorrectHTTPMethod_thenReturnNotAllowed() {
-            String expectedMessage = "Authentication method 'GET' is not supported for URL '/zaas/scheme/ticket'";
+            String expectedMessage = "The request method has been disabled and cannot be used for the requested resource.";
 
             //@formatter:off
             given()
@@ -204,7 +204,7 @@ class PassTicketTest {
                 .get(ZAAS_TICKET_URI)
             .then()
                 .statusCode(is(SC_METHOD_NOT_ALLOWED))
-                .body("messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage));
+                .body("messages.find { it.messageNumber == 'ZWEAO405E' }.messageContent", equalTo(expectedMessage));
             //@formatter:on
         }
 

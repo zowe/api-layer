@@ -8,13 +8,6 @@ messages:
       reason: "A generic failure occurred while authenticating."
       action: "Refer to the specific message to troubleshoot."
 
-    - key: org.zowe.apiml.security.invalidMethod
-      number: ZWEAS101
-      type: ERROR
-      text: "Authentication method '%s' is not supported for URL '%s'"
-      reason: "The HTTP request method is not supported for the URL."
-      action: "Use the correct HTTP request method that is supported for the URL."
-
     - key: org.zowe.apiml.security.gatewayNotAvailable
       number: ZWEAS103
       type: ERROR

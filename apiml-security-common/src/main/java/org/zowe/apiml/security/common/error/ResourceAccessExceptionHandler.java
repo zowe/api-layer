@@ -14,12 +14,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.util.function.BiConsumer;
 
 /**
  * Exception handler that deals with exceptions related to accessing other services/resources
@@ -36,30 +35,24 @@ public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
     /**
      * Entry method that takes care of an exception passed to it
      *
-     * @param request  Http request
-     * @param response Http response
-     * @param ex       Exception to be handled
-     * @throws ServletException Fallback exception if exception cannot be handled
+     * @param requestUri Http request URI
+     * @param addHeader Consumer to add response headers. This implementation does not use it
+     * @param ex         Exception to be handled
+     * @throws RuntimeException Fallback exception if exception cannot be handled
      */
     @Override
-    public void handleException(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
+    public void handleException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, RuntimeException ex) {
+        ErrorType errorType;
         if (ex instanceof GatewayNotAvailableException) {
-            handleGatewayNotAvailable(request, response, ex);
+            errorType = ErrorType.GATEWAY_NOT_AVAILABLE;
         } else if (ex instanceof ServiceNotAccessibleException) {
-            handleServiceNotAccessible(request, response, ex);
+            errorType = ErrorType.SERVICE_UNAVAILABLE;
         } else {
             throw ex;
         }
+
+        log.debug(MESSAGE_FORMAT, HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage());
+        writeErrorResponse(errorType.getErrorMessageKey(), HttpStatus.SERVICE_UNAVAILABLE, function, requestUri);
     }
 
-    //500
-    private void handleGatewayNotAvailable(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(MESSAGE_FORMAT, HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage());
-        writeErrorResponse(ErrorType.GATEWAY_NOT_AVAILABLE.getErrorMessageKey(), HttpStatus.SERVICE_UNAVAILABLE, request, response);
-    }
-
-    private void handleServiceNotAccessible(HttpServletRequest request, HttpServletResponse response, RuntimeException ex) throws ServletException {
-        log.debug(MESSAGE_FORMAT, HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage());
-        writeErrorResponse(ErrorType.SERVICE_UNAVAILABLE.getErrorMessageKey(), HttpStatus.SERVICE_UNAVAILABLE, request, response);
-    }
 }

@@ -49,7 +49,7 @@ public abstract class ExternalMapper {
     private final CloseableHttpClient secureHttpClientWithoutKeystore;
     private final TokenCreationService tokenCreationService;
     private final AuthConfigurationProperties authConfigurationProperties;
-    protected static final ObjectMapper objectMapper = new ObjectMapper();
+    protected static ObjectMapper objectMapper = new ObjectMapper();
 
     @InjectApimlLogger
     protected ApimlLogger apimlLog = ApimlLogger.empty();

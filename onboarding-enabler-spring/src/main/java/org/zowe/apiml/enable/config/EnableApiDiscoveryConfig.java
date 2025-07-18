@@ -33,6 +33,7 @@ import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 public class EnableApiDiscoveryConfig {
 
     @Bean
+    @ConditionalOnMissingBean
     public MessageService messageServiceDiscovery() {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/onboarding-enabler-spring-messages.yml");

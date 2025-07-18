@@ -10,33 +10,47 @@
 
 package org.zowe.apiml.acceptance;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.sun.net.httpserver.Headers;
+import freemarker.template.TemplateException;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.zowe.apiml.EurekaDashboardController;
 import org.zowe.apiml.gateway.MockService;
-import org.zowe.apiml.zaas.ZaasTokenResponse;
+import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @AcceptanceTest
-@ActiveProfiles("EurekaEndpointsTests")
 public class EurekaEndpointsTests extends AcceptanceTestWithMockServices {
 
     private static final String USER_ID = "user";
-    private static final String COOKIE_NAME = "apimlAuthenticationToken";
-    private static final String JWT = "jwt";
+
+    @MockitoBean
+    EurekaDashboardController eurekaDashboardController;
 
     @Test
-    void testEurekaHomePage() throws JsonProcessingException {
-        var response = ZaasTokenResponse.builder().cookieName(COOKIE_NAME).token(JWT).build();
+    void testEurekaHomePage() throws TemplateException, IOException {
+        var headers = new Headers();
+        headers.add("Set-Cookie", "jwtToken=jwt");
+        headers.add("Set-Cookie", "LtpaToken2=ltpatoken");
 
-        mockService("zaas").scope(MockService.Scope.TEST)
-            .addEndpoint("/zaas/scheme/zosmf")
-            .responseCode(201)
-            .bodyJson(response)
-            .and().start();
+        when(eurekaDashboardController.status(any(), any())).thenReturn(Mono.just("status page"));
+
+        mockService("zosmf").scope(MockService.Scope.TEST)
+            .addEndpoint("/zosmf/info")
+                .responseCode(200)
+                .contentType("application/json")
+                .headers(headers)
+                .bodyJson("{\"zosmf_version\":\"29\",\"zosmf_saf_realm\":\"SAFRealm\",\"zosmf_full_version\":\"29.0\"}")
+        .and()
+            .start();
 
         given()
         .when()
@@ -44,6 +58,22 @@ public class EurekaEndpointsTests extends AcceptanceTestWithMockServices {
             .get(URI.create("https://localhost:10011"))
         .then()
             .statusCode(200);
+    }
+
+    @Test
+    void testEurekaPeerNodeReplica() {
+        given()
+            .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .body(
+                """
+                    {"replicationList":[{"appName":"GATEWAY","id":"apiml-2:gateway:10010","lastDirtyTimestamp":1751961556383,"status":"UP","instanceInfo":{"instanceId":"apiml-2:gateway:10010","hostName":"apiml-2","app":"GATEWAY","ipAddr":"127.0.0.1","status":"UP","overriddenStatus":"UNKNOWN","port":{"$":10010,"@enabled":"false"},"securePort":{"$":10010,"@enabled":"true"},"countryId":1,"dataCenterInfo":{"@class":"com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo","name":"MyOwn"}
+                """
+            )
+        .when()
+            .post(URI.create("https://localhost:10011/eureka/peerreplication/batch/"))
+        .then()
+            .statusCode(403);
     }
 
 }

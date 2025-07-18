@@ -30,6 +30,7 @@ public class PassTicketService {
 
     private final IRRPassTicket irrPassTicket;
 
+    @SuppressWarnings("unchecked")
     public PassTicketService() {
         this.irrPassTicket = ClassOrDefaultProxyUtils.createProxy(IRRPassTicket.class,
             "com.ibm.eserver.zos.racf.IRRPassTicket", DefaultPassTicketImpl::new,
@@ -52,7 +53,7 @@ public class PassTicketService {
         try {
             validateUserIdAndApplId(userId, applId);
             return irrPassTicket.generate(userId.toUpperCase(), applId.toUpperCase());
-        } catch (PassTicketException | RuntimeException e) {
+        } catch (RuntimeException e) {
             log.debug("Error during pass ticket generation, userId={}, applid={}, exception={}", userId, applId, e);
             throw e;
         }

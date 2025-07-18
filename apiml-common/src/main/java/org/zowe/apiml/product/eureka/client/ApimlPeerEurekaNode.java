@@ -46,8 +46,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.net.ssl.SSLException;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -301,16 +299,6 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
     }
 
     /**
-     * Get the service Url of the peer eureka node.
-     *
-     * @return the service Url of the peer eureka node.
-     */
-    @Override
-    public String getServiceUrl() {
-        return serviceUrl;
-    }
-
-    /**
      * Shuts down all resources used for peer replication.
      */
     @Override
@@ -339,17 +327,6 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
         }
     }
 
-    @Override
-    public String getBatcherName() {
-        String batcherName;
-        try {
-            batcherName = new URL(serviceUrl).getHost();
-        } catch (MalformedURLException e1) {
-            batcherName = serviceUrl;
-        }
-        return "target_" + batcherName;
-    }
-
     private static String taskId(String requestType, String appName, String id) {
         return requestType + '#' + appName + '/' + id;
     }
@@ -358,8 +335,8 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
         return taskId(requestType, info.getAppName(), info.getId());
     }
 
-    private static int getLeaseRenewalOf(InstanceInfo info) {
-        return (info.getLeaseInfo() == null ? Lease.DEFAULT_DURATION_IN_SECS : info.getLeaseInfo().getRenewalIntervalInSecs()) * 1000;
+    private static long getLeaseRenewalOf(InstanceInfo info) {
+        return (info.getLeaseInfo() == null ? (long) Lease.DEFAULT_DURATION_IN_SECS : info.getLeaseInfo().getRenewalIntervalInSecs()) * 1000L;
     }
 
     @Slf4j

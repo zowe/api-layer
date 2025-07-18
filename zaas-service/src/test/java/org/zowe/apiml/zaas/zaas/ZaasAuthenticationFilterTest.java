@@ -108,16 +108,33 @@ class ZaasAuthenticationFilterTest {
             request.setAttribute(AUTH_SOURCE_ATTR, authSource);
             when(authSourceService.isValid(authSource)).thenThrow(new TokenExpireException("Expired"));
 
+
             underTest.doFilterInternal(request, response, filterChain);
 
-            assertException(TokenExpireException.class);
+            ArgumentCaptor<RuntimeException> exceptionCaptor = ArgumentCaptor.forClass(RuntimeException.class);
+            verify(authExceptionHandler).handleException(
+                eq(request.getRequestURI()),
+                any(),
+                any(),
+                exceptionCaptor.capture()
+            );
+
+            assertEquals(TokenExpireException.class, exceptionCaptor.getValue().getClass());
         }
 
         private void assertException(Class<? extends RuntimeException> exceptionClass) throws ServletException {
             ArgumentCaptor<RuntimeException> exceptionCaptor = ArgumentCaptor.forClass(RuntimeException.class);
-            verify(authExceptionHandler, times(1)).handleException(eq(request), eq(response), exceptionCaptor.capture());
+
+            verify(authExceptionHandler).handleException(
+                eq(request.getRequestURI()),
+                any(), // BiConsumer<ApiMessageView, HttpStatus>
+                any(), // BiConsumer<String, String>
+                exceptionCaptor.capture()
+            );
+
             assertEquals(exceptionClass, exceptionCaptor.getValue().getClass());
         }
+
 
     }
 

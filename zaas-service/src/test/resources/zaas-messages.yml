@@ -47,13 +47,6 @@ messages:
       reason: "A generic failure occurred during authentication."
       action: "Refer to the specific authentication exception details for troubleshooting."
 
-    - key: org.zowe.apiml.security.invalidMethod
-      number: ZWEAG101
-      type: ERROR
-      text: "Authentication method '%s' is not supported for URL '%s'"
-      reason: "The HTTP request method is not supported by the URL."
-      action: "Use the correct HTTP request method supported by the URL."
-
     - key: org.zowe.apiml.zaas.security.invalidToken
       number: ZWEAG102
       type: ERROR
@@ -67,6 +60,11 @@ messages:
       text: "The request has not been applied because it lacks valid authentication credentials."
       reason: "The accessed resource requires authentication. The request is missing valid authentication credentials or the token expired."
       action: "Review the product documentation for more details about acceptable authentication. Verify that your credentials are valid and contact security administrator to obtain valid credentials."
+
+    - key: org.zowe.apiml.common.methodNotAllowed
+      number: ZWEAO405
+      type: ERROR
+      text: "The request method has been disabled and cannot be used for the requested resource."
 
     - key: org.zowe.apiml.zaas.security.expiredToken
       number: ZWEAG103

@@ -182,10 +182,10 @@ class GatewaySecurityServiceTest {
 
                 @Test
                 void givenValidMessageKey_thenHandleErrorTypeForThatMessageKey() {
-                    String errorMessage = MESSAGE_KEY_STRING + "org.zowe.apiml.security.login.invalidCredentials\"";
+                    String errorMessage = MESSAGE_KEY_STRING + "org.zowe.apiml.security.login.invalidInput\"";
                     HttpClientMockHelper.mockResponse(response, HttpStatus.SC_UNAUTHORIZED, errorMessage);
                     assertThrows(BadCredentialsException.class, () -> securityService.login(USERNAME, PASSWORD, null));
-                    verify(responseHandler).handleErrorType(response, ErrorType.BAD_CREDENTIALS, LOG_PARAMETER_STRING, uri);
+                    verify(responseHandler).handleErrorType(response, ErrorType.AUTH_CREDENTIALS_NOT_FOUND, LOG_PARAMETER_STRING, uri);
                 }
             }
         }

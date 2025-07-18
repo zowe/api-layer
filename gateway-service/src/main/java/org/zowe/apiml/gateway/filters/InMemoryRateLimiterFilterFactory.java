@@ -72,7 +72,7 @@ public class InMemoryRateLimiterFilterFactory extends AbstractGatewayFilterFacto
                         try {
                             return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(mapper.writeValueAsBytes(message.mapToView()))));
                         } catch (JsonProcessingException e) {
-                            apimlLog.log("org.zowe.apiml.security.errorWritingResponse", e.getMessage());
+                            apimlLog.log("org.zowe.apiml.security.errorWrittingResponse", e.getMessage());
                             return Mono.error(e);
                         }
                     }

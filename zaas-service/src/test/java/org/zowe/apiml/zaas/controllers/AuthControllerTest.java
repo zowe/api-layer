@@ -221,6 +221,28 @@ class AuthControllerTest {
             }
 
             @Test
+            void whenToPublicKeyThrowsException_thenReturnsInternalServerError() throws Exception {
+                byte[] badModulus = new byte[]{0};
+                com.nimbusds.jose.jwk.RSAKey badKey = new com.nimbusds.jose.jwk.RSAKey.Builder(
+                    new java.security.interfaces.RSAPublicKey() {
+                        public java.math.BigInteger getModulus() { return new java.math.BigInteger(badModulus); }
+                        public java.math.BigInteger getPublicExponent() { return java.math.BigInteger.ONE; }
+                        public String getAlgorithm() { return "RSA"; }
+                        public String getFormat() { return null; }
+                        public byte[] getEncoded() { return new byte[0]; }
+                    })
+                    .keyID("broken")
+                    .build();
+
+                when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
+                when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JWKSet(List.of(badKey)));
+
+                mockMvc.perform(get("/zaas/api/v1/auth/keys/public"))
+                    .andExpect(status().isInternalServerError())
+                    .andExpect(jsonPath("$.messageNumber").value("ZWEAG717E"));
+            }
+
+                @Test
             void whenNotReady_returnInternalServerError() throws Exception {
                 when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.UNKNOWN);
 

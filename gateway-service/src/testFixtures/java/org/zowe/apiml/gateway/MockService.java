@@ -500,6 +500,8 @@ public class MockService implements AutoCloseable {
             public EndpointBuilder bodyJson(Object body) throws JsonProcessingException {
                 if (body == null) {
                     return body(null);
+                } else if (body instanceof String b) {
+                    return body(b);
                 } else {
                     ObjectWriter writer = new ObjectMapper().writer();
                     contentType(MediaType.APPLICATION_JSON_VALUE);

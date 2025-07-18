@@ -57,4 +57,5 @@ public class BearerContentFilter extends AbstractSecureContentFilter {
             }
         );
     }
+
 }

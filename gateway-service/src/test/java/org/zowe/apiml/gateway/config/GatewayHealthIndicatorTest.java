@@ -106,7 +106,7 @@ class GatewayHealthIndicatorTest {
             Health.Builder builder = new Health.Builder();
             healthIndicator.doHealthCheck(builder);
 
-            assertThat(healthIndicator.startedInformationPublished, is(true));
+            assertThat(healthIndicator.isStartedInformationPublished(), is(true));
         }
     }
 }

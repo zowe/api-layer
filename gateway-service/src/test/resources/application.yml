@@ -36,10 +36,12 @@ spring:
         allow-circular-references: true
     cloud:
         gateway:
-            discovery:
-                locator:
-                    enabled: false
-                    lowerCaseServiceId: true
+            server:
+                webflux:
+                    discovery:
+                        locator:
+                            enabled: false
+                            lower-case-service-id: true
     application:
         name: gateway
 
@@ -54,7 +56,7 @@ logging:
 management:
     endpoint:
       gateway:
-          enabled: true
+          access: unrestricted
     endpoints:
         web:
             base-path: /application

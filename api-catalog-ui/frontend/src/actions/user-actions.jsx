@@ -56,6 +56,12 @@ function login(credentials) {
     };
 }
 
+export function forceLogout() {
+    return (dispatch) => {
+        dispatch({ type: userConstants.USERS_LOGOUT_SUCCESS });
+    };
+}
+
 export function query(user) {
     const success = { showUpdatePassSuccess: true };
     return { type: userConstants.USERS_LOGIN_SUCCESS, user, success };
@@ -77,6 +83,9 @@ function logout() {
         userService.logout().then(
             () => {
                 dispatch(success());
+                const channel = new BroadcastChannel('auth_channel');
+                channel.postMessage('logout');
+                channel.close();
             },
             (error) => {
                 dispatch(failure(error));
@@ -123,4 +132,5 @@ export const userActions = {
     validateInput,
     closeAlert,
     query,
+    forceLogout,
 };

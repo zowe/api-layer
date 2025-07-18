@@ -17,8 +17,12 @@ import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.message.core.MessageType;
 
 import jakarta.servlet.http.HttpServletRequest;
+
 import java.security.cert.X509Certificate;
 import java.util.Optional;
+
+import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE;
+import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE;
 
 /**
  * Custom implementation of AuthSourceService interface which uses client certificate as an authentication source.
@@ -33,19 +37,20 @@ public class X509CNAuthSourceService extends X509AuthSourceService {
     /**
      * Gets client certificate from request.
      * <p>
-     * First try to get certificate from custom attribute "client.auth.X509Certificate".
-     * If certificate not found - try to get it from standard attribute "javax.servlet.request.X509Certificate".
+     * First try to get certificate from custom attribute.
+     * If certificate not found - try to get it from standard attribute.
      * In case of multiple certificates only the first one will be used.
      * <p>
+     *
      * @return Optional<AuthSource> with client certificate of Optional.empty()
      */
     @Override
     public Optional<AuthSource> getAuthSourceFromRequest(HttpServletRequest request) {
-        logger.log(MessageType.DEBUG, "Getting X509 client certificate from custom attribute 'client.auth.X509Certificate'.");
-        X509Certificate clientCert = super.getCertificateFromRequest(request, "client.auth.X509Certificate");
+        logger.log(MessageType.DEBUG, "Getting X509 client certificate from custom attribute '" + ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE + "'.");
+        X509Certificate clientCert = super.getCertificateFromRequest(request, ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
         if (clientCert == null) {
-            logger.log(MessageType.DEBUG, "Getting X509 client certificate from standard attribute 'javax.servlet.request.X509Certificate'.");
-            clientCert = super.getCertificateFromRequest(request, "javax.servlet.request.X509Certificate");
+            logger.log(MessageType.DEBUG, "Getting X509 client certificate from standard attribute '" + ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE + "'.");
+            clientCert = super.getCertificateFromRequest(request, ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
         }
         clientCert = isValid(clientCert) ? clientCert : null;
         return clientCert == null ? Optional.empty() : Optional.of(new X509AuthSource(clientCert));

@@ -20,7 +20,7 @@ logging:
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         javax.net.ssl: ERROR
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
-    #    com.netflix.eureka.resources: WARN
+        com.netflix.eureka: ERROR
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
@@ -89,7 +89,7 @@ eureka:
         serviceUrl:
             defaultZone: ${apiml.discovery.allPeersUrls}
     server:
-        max-threads-for-peer-replication: 2
+        max-threads-for-peer-replication: 6
         useReadOnlyResponseCache: false
 
 management:
@@ -98,13 +98,11 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,shutdown,hystrixstream
+                include: health,info,hystrixstream
     health:
         defaults:
             enabled: false
     endpoint:
-        shutdown:
-            enabled: true
         health:
             show-details: always
 
@@ -155,10 +153,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,loggers,shutdown
-    endpoint:
-        shutdown:
-            enabled: true
+                include: health,info,loggers
 
 logging:
     level:
@@ -175,6 +170,7 @@ logging:
         org.ehcache: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
         javax.net.ssl: ERROR
+        com.netflix.eureka: DEBUG
 
 ---
 spring.config.activate.on-profile: diag

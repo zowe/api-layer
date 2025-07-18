@@ -9,6 +9,7 @@ spring:
             matchingStrategy: ant-path-matcher # used to resolve spring fox path matching issue
     main:
         allow-circular-references: true
+        web-application-type: reactive
 
 caching:
     storage:
@@ -75,9 +76,6 @@ apiml:
 
 server:
     port: 10016
-
-    servlet:
-        contextPath: /
 
     ssl:
         enabled: true

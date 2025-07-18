@@ -18,6 +18,8 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 
+import java.io.IOException;
+
 @Component
 public class FailedAccessTokenHandler extends FailedAuthenticationHandler {
 
@@ -37,7 +39,7 @@ public class FailedAccessTokenHandler extends FailedAuthenticationHandler {
      * @throws ServletException when the response cannot be written
      */
     @Override
-    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws ServletException {
+    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws ServletException, IOException {
         rauditxService.builder()
             .messageSegment("Authentication failed. Cannot generate PAT")
             .alwaysLogSuccesses()

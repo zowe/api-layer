@@ -225,7 +225,7 @@ class LoginTest implements TestWithStartedInstances {
             @ParameterizedTest(name = "givenValidCredentialsInJsonBody {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenValidCredentialsInJsonBody(URI loginUrl) {
-                String expectedMessage = "Authentication method 'GET' is not supported for URL '" + getPath(loginUrl) + "'";
+                String expectedMessage = "The request method has been disabled and cannot be used for the requested resource.";
 
                 LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword().toCharArray());
 
@@ -237,7 +237,7 @@ class LoginTest implements TestWithStartedInstances {
                 .then()
                     .statusCode(is(SC_METHOD_NOT_ALLOWED))
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == 'ZWEAO405E' }.messageContent", equalTo(expectedMessage)
                     );
             }
         }

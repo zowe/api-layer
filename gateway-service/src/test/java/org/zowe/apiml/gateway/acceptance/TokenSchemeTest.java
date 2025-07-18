@@ -16,7 +16,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.http.HttpHeaders;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.MockService;
-import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
+import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 
@@ -59,7 +59,7 @@ public abstract class TokenSchemeTest {
     }
 
     @Nested
-    @AcceptanceTest
+    @MicroservicesAcceptanceTest
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class HighAvailability extends AcceptanceTestWithMockServices {
 
@@ -168,7 +168,7 @@ public abstract class TokenSchemeTest {
     }
 
     @Nested
-    @AcceptanceTest
+    @MicroservicesAcceptanceTest
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class InvalidAuthentication extends AcceptanceTestWithMockServices {
 
@@ -203,7 +203,7 @@ public abstract class TokenSchemeTest {
     }
 
     @Nested
-    @AcceptanceTest
+    @MicroservicesAcceptanceTest
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class ResponseWithoutToken extends AcceptanceTestWithMockServices {
 
@@ -252,7 +252,7 @@ public abstract class TokenSchemeTest {
     }
 
     @Nested
-    @AcceptanceTest
+    @MicroservicesAcceptanceTest
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class ZaasCommunication extends AcceptanceTestWithMockServices {
 

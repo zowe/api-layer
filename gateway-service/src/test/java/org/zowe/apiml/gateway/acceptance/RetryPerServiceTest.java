@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.zowe.apiml.gateway.MockService;
-import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
+import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 
 import java.io.IOException;
@@ -26,7 +26,7 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@AcceptanceTest
+@MicroservicesAcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RetryPerServiceTest extends AcceptanceTestWithMockServices {
 

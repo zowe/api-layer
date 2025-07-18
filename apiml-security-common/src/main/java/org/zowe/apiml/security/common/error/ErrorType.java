@@ -14,6 +14,7 @@ package org.zowe.apiml.security.common.error;
  * Enum of error types
  * binding error keys and default error messages
  */
+// TODO Find better message for BAD_CREDENTIALS. For now we make the response consistent with the non-modulith
 public enum ErrorType {
     BAD_CREDENTIALS("org.zowe.apiml.security.login.invalidCredentials", "Invalid Credentials", "Provide a valid username and password."),
     TOKEN_NOT_VALID("org.zowe.apiml.common.unauthorized", "The request has not been applied because it lacks valid authentication credentials.", "The accessed resource requires authentication. The request is missing valid authentication credentials or the token expired."),
@@ -22,7 +23,7 @@ public enum ErrorType {
     TOKEN_NOT_PROVIDED("org.zowe.apiml.security.query.tokenNotProvided", "No authorization token provided.", "Provide a valid authorization token."),
     TOKEN_EXPIRED("org.zowe.apiml.security.expiredToken", "Token is expired.", "Obtain a new token by performing an authentication request."),
     AUTH_CREDENTIALS_NOT_FOUND("org.zowe.apiml.security.login.invalidInput", "Authorization header is missing, or request body is missing or invalid.", "Provide valid authentication."),
-    AUTH_METHOD_NOT_SUPPORTED("org.zowe.apiml.security.invalidMethod", "Authentication method is not supported.", "Use the correct HTTP request method that is supported for the URL."),
+    METHOD_NOT_ALLOWED("org.zowe.apiml.common.methodNotAllowed", "The request method has been disabled and cannot be used for the requested resource.", "Use the correct HTTP request method that is supported for the URL."),
     AUTH_REQUIRED("org.zowe.apiml.security.authRequired", "Authentication is required.", "Provide valid authentication."),
     AUTH_GENERAL("org.zowe.apiml.security.generic", "A failure occurred when authenticating.", "Refer to the specific authentication exception details for troubleshooting."),
     SERVICE_UNAVAILABLE("org.zowe.apiml.security.serviceUnavailable", "Authentication service not available.", "Make sure that the Authentication service is running and is accessible by the URL provided in the message."),

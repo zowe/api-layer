@@ -91,6 +91,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                 Cookie cookie =
                     given()
                         .config(SslContext.clientCertValid)
+                        .noContentType()
                     .when()
                         .post(loginUrl)
                     .then()
@@ -110,6 +111,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                     given()
                         .config(SslContext.clientCertValid)
                         .auth().basic("Bob", "The Builder")
+                        .noContentType()
                     .when()
                         .post(loginUrl)
                     .then()

@@ -66,13 +66,6 @@ messages:
 
     # Legacy messages
 
-    - key: org.zowe.apiml.security.invalidMethod
-      number: ZWEAG101
-      type: ERROR
-      text: "Authentication method '%s' is not supported for URL '%s'"
-      reason: "The HTTP request method is not supported by the URL."
-      action: "Use the correct HTTP request method supported by the URL."
-
     - key: org.zowe.apiml.security.authRequired
       number: ZWEAG105
       type: ERROR

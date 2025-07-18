@@ -36,7 +36,7 @@ import org.zowe.apiml.gateway.ApplicationRegistry;
 import reactor.core.publisher.Flux;
 
 @TestConfiguration
-@Profile("EurekaEndpointsTests")
+@Profile("ApimlModulithAcceptanceTest")
 @RequiredArgsConstructor
 public class TestConfig {
 

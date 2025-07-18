@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.security.common.content;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
@@ -23,11 +25,10 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -75,7 +76,7 @@ class BasicContentFilterTest {
         assertTrue(called.get());
         verify(filterChain).doFilter(request, response);
         verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any(), any());
     }
 
     @Test
@@ -93,7 +94,7 @@ class BasicContentFilterTest {
 
         verify(authenticationManager, never()).authenticate(any());
         verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any() , any());
     }
 
 
@@ -109,12 +110,13 @@ class BasicContentFilterTest {
         verify(authenticationManager).authenticate(any());
         verify(filterChain, never()).doFilter(any(), any());
         verify(authenticationFailureHandler).onAuthenticationFailure(request, response, exception);
-        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any() , any());
     }
 
     @Test
     void shouldNotAuthenticateWithNoGateway() throws ServletException, IOException {
         request.addHeader(HttpHeaders.AUTHORIZATION, BASIC_AUTH);
+
         RuntimeException exception = new RuntimeException("No Gateway");
 
         when(authenticationManager.authenticate(any())).thenThrow(exception);
@@ -124,7 +126,12 @@ class BasicContentFilterTest {
         verify(authenticationManager).authenticate(any());
         verify(filterChain, never()).doFilter(any(), any());
         verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(resourceAccessExceptionHandler).handleException(request, response, exception);
+        verify(resourceAccessExceptionHandler).handleException(
+            eq(request.getRequestURI()),
+            any(BiConsumer.class),
+            any(BiConsumer.class),
+            eq(exception)
+        );
     }
 
     @Test
@@ -134,7 +141,7 @@ class BasicContentFilterTest {
         verify(authenticationManager, never()).authenticate(any());
         verify(filterChain).doFilter(request, response);
         verify(authenticationFailureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any() , any());
     }
 
     @Test

@@ -33,6 +33,12 @@ describe('App Container', () => {
         );
     });
 
+    beforeAll(() => {
+        global.BroadcastChannel = class {
+            close() {}
+        };
+    });
+
     it('should render the container', () => {
         expect(container).not.toBeNull();
     });

@@ -69,7 +69,6 @@ public class SchemeController {
             .body(zaasTokenResponse);
     }
 
-
     @PostMapping(path = "zoweJwt", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Provides zoweJwt for authenticated user.")
     public ResponseEntity<ZaasTokenResponse> getZoweJwt(@RequestAttribute(AUTH_SOURCE_ATTR) AuthSource authSource) {

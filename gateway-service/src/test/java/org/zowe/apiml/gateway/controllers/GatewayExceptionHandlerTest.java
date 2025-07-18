@@ -32,7 +32,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.gateway.GatewayServiceApplication;
 import org.zowe.apiml.gateway.MockService;
-import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
+import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.filters.ForbidCharacterException;
 import org.zowe.apiml.gateway.filters.ForbidSlashException;
@@ -54,7 +54,7 @@ import static org.mockito.Mockito.verify;
 class GatewayExceptionHandlerTest {
 
     @Nested
-    @AcceptanceTest
+    @MicroservicesAcceptanceTest
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @ActiveProfiles("gatewayExceptionHandlerTest")
     @SpringBootTest(classes = GatewayServiceApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

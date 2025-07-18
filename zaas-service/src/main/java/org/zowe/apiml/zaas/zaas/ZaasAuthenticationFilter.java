@@ -19,12 +19,16 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
+import org.zowe.apiml.security.common.handler.ServletErrorUtils;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
 import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
@@ -34,6 +38,8 @@ public class ZaasAuthenticationFilter extends OncePerRequestFilter {
 
     private final AuthSourceService authSourceService;
     private final AuthExceptionHandler authExceptionHandler;
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
@@ -50,7 +56,9 @@ public class ZaasAuthenticationFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
         } catch (RuntimeException e) {
-            authExceptionHandler.handleException(request, response, e);
+            var consumer = ServletErrorUtils.createApiErrorWriter(response, apimlLog);
+            var addHeader = (BiConsumer<String, String>) response::addHeader;
+            authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, e);
         }
     }
 

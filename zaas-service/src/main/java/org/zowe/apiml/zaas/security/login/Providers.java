@@ -43,7 +43,7 @@ public class Providers {
      * @throws AuthenticationServiceException if the z/OSMF service id is not configured
      */
     public boolean isZosmfAvailable() {
-        String  zosmfServiceId = authConfigurationProperties.validatedZosmfServiceId();
+        String zosmfServiceId = authConfigurationProperties.validatedZosmfServiceId();
 
         try {
             this.discoveryClient.probe();

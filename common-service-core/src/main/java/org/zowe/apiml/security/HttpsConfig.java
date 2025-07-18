@@ -14,6 +14,8 @@ import lombok.Builder;
 import lombok.ToString;
 import lombok.Value;
 
+import java.security.cert.X509Certificate;
+
 @Builder
 @Value
 @ToString(exclude = {"trustStorePassword", "keyStorePassword", "keyPassword"})
@@ -51,4 +53,5 @@ public class HttpsConfig {
     int requestConnectionTimeout = 10_000;
     @Builder.Default
     int timeToLive = 10_000;
+    X509Certificate certificate;
 }
