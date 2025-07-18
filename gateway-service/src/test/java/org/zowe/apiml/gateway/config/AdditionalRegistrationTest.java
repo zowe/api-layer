@@ -31,6 +31,7 @@ import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.config.AdditionalRegistration;
+import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsFactory;
 
 import java.util.AbstractMap;
@@ -43,7 +44,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,11 +63,11 @@ public class AdditionalRegistrationTest {
     @Mock
     private ApplicationContext context;
     @Mock
-    private HttpsFactoryConfig httpsFactoryConfig;
+    private HttpConfig config;
 
     @BeforeEach
     void setUp() {
-        connectionsConfig = new ConnectionsConfig(context, httpsFactoryConfig);
+        connectionsConfig = new ConnectionsConfig(context, config);
     }
 
     @ExtendWith(MockitoExtension.class)
@@ -91,7 +95,7 @@ public class AdditionalRegistrationTest {
         public void setUp() throws Exception {
             ReflectionTestUtils.setField(connectionsConfig, "eurekaServerUrl", "https://host:2222");
             configSpy = Mockito.spy(connectionsConfig);
-            lenient().when(httpsFactoryConfig.httpsFactory()).thenReturn(httpsFactory);
+            lenient().when(config.httpsFactory()).thenReturn(httpsFactory);
             lenient().when(httpsFactory.getSslContext()).thenReturn(SSLContexts.custom().build());
             lenient().when(httpsFactory.getHostnameVerifier()).thenReturn(new NoopHostnameVerifier());
             lenient().when(eurekaFactory.createCloudEurekaClient(any(), any(), clientConfigCaptor.capture(), any(), any(), any())).thenReturn(additionalClientOne, additionalClientTwo);

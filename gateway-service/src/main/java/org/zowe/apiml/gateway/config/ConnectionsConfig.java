@@ -73,6 +73,7 @@ import org.zowe.apiml.gateway.filters.proxyheaders.AdditionalRegistrationGateway
 import org.zowe.apiml.gateway.filters.proxyheaders.X509AndGwAwareXForwardedHeadersFilter;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.util.CorsUtils;
@@ -117,7 +118,7 @@ public class ConnectionsConfig {
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
     private final ApplicationContext context;
-    private final HttpsFactoryConfig config;
+    private final HttpConfig config;
     private static final ApimlLogger apimlLog = ApimlLogger.of(ConnectionsConfig.class, YamlMessageServiceInstance.getInstance());
 
     @Value("${apiml.service.externalUrl:}")
@@ -331,7 +332,11 @@ public class ConnectionsConfig {
     @Bean
     Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {
         return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
-            .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()).timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofMillis(config.getRequestTimeout())).build()).build());
+            .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+            .timeLimiterConfig(
+                TimeLimiterConfig.custom()
+                    .timeoutDuration(Duration.ofMillis(config.getRequestConnectionTimeout()))
+                .build()).build());
     }
 
     @Bean

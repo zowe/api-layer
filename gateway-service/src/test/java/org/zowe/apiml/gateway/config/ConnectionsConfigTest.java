@@ -33,6 +33,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.WebFilter;
 import org.zowe.apiml.gateway.GatewayServiceApplication;
+import org.zowe.apiml.product.web.HttpConfig;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.SslProvider;
 
@@ -48,8 +49,23 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ConnectionsConfigTest {
 
@@ -143,11 +159,11 @@ class ConnectionsConfigTest {
             @Autowired
             private ConnectionsConfig connectionsConfig;
             @MockitoSpyBean
-            private HttpsFactoryConfig httpsFactoryConfig;
+            private HttpConfig httpConfig;
 
             @Test
             void whenAliasIsInvalid_thenNoCertificateProvided() {
-                when(httpsFactoryConfig.getKeyAlias()).thenReturn("invalid");
+                when(httpConfig.getKeyAlias()).thenReturn("invalid");
 
                 var sslContext = connectionsConfig.getSslContext(true);
                 var sslProvider = SslProvider.builder().sslContext(sslContext).build();
