@@ -215,10 +215,10 @@ class AttlsHttpHandlerTest {
 
             @BeforeEach
             void init() {
-                lenient().doReturn(createMessage("org.zowe.apiml.gateway.internalServerError", "InternalError"))
-                    .when(messageService).createMessage("org.zowe.apiml.gateway.internalServerError");
-                lenient().doReturn(createMessage("org.zowe.apiml.gateway.security.attls.notSecure", "Unsecured"))
-                    .when(messageService).createMessage("org.zowe.apiml.gateway.security.attls.notSecure");
+                lenient().doReturn(createMessage("org.zowe.apiml.common.internalServerError", "InternalError"))
+                    .when(messageService).createMessage("org.zowe.apiml.common.internalServerError");
+                lenient().doReturn(createMessage("org.zowe.apiml.security.common.attls.notSecure", "Unsecured"))
+                    .when(messageService).createMessage("org.zowe.apiml.security.common.attls.notSecure");
             }
 
             @Test

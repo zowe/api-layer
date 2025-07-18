@@ -47,13 +47,15 @@ class ApiDocControllerTest {
 
     @Nested
     class GivenService {
+
         @Nested
         class WhenGetApiDocByVersion {
+
             @Test
             void givenApiDoc_thenReturnApiDoc() {
                 when(mockApiDocRetrievalService.retrieveApiDoc("service", "1.0.0")).thenReturn(API_DOC);
 
-                ResponseEntity<String> res = underTest.getApiDocInfo("service", "1.0.0");
+                ResponseEntity<String> res = underTest.getApiDocInfo("service", "1.0.0").block();
                 assertNotNull(res);
                 assertEquals(API_DOC, res.getBody());
             }
@@ -61,17 +63,19 @@ class ApiDocControllerTest {
             @Test
             void givenNoApiDoc_thenThrowException() {
                 when(mockApiDocRetrievalService.retrieveApiDoc("service", "1.0.0")).thenThrow(new ApiDocNotFoundException("error"));
-                assertThrows(ApiDocNotFoundException.class, () -> underTest.getApiDocInfo("service", "1.0.0"));
+                assertThrows(ApiDocNotFoundException.class, () -> underTest.getApiDocInfo("service", "1.0.0").block());
             }
+
         }
 
         @Nested
         class WhenGetApiDocVersionDefault {
+
             @Test
             void givenApiDocExists_thenReturnIt() {
                 when(mockApiDocRetrievalService.retrieveDefaultApiDoc("service")).thenReturn(API_DOC);
 
-                ResponseEntity<String> res = underTest.getDefaultApiDocInfo("service");
+                ResponseEntity<String> res = underTest.getDefaultApiDocInfo("service").block();
                 assertNotNull(res);
                 assertEquals(API_DOC, res.getBody());
             }
@@ -79,8 +83,9 @@ class ApiDocControllerTest {
             @Test
             void givenNoApiDocExists_thenThrowException() {
                 when(mockApiDocRetrievalService.retrieveDefaultApiDoc("service")).thenThrow(new ApiDocNotFoundException("error"));
-                assertThrows(ApiDocNotFoundException.class, () -> underTest.getDefaultApiDocInfo("service"));
+                assertThrows(ApiDocNotFoundException.class, () -> underTest.getDefaultApiDocInfo("service").block());
             }
+
         }
 
         @Test
@@ -94,7 +99,7 @@ class ApiDocControllerTest {
 
             try (MockedStatic<OpenApiCompare> openApiCompare = Mockito.mockStatic(OpenApiCompare.class)) {
                 openApiCompare.when(() -> OpenApiCompare.fromContents("doc1", "doc2")).thenReturn(changedOpenApi);
-                ResponseEntity<String> res = underTest.getApiDiff("service", "v1", "v2");
+                ResponseEntity<String> res = underTest.getApiDiff("service", "v1", "v2").block();
                 assertNotNull(res);
                 assertTrue(res.getBody().contains("<title>Api Change Log</title>"));
             }
