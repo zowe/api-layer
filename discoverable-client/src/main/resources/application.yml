@@ -128,7 +128,10 @@ apiml:
             trustStore: ${server.ssl.trustStore}
             trustStorePassword: ${server.ssl.trustStorePassword}
         customMetadata:
+
             apiml:
+                responseTimeout: 10000
+                connectTimeout: 6500
                 enableUrlEncodedCharacters: true
                 gatewayPort: 10010
                 gatewayAuthEndpoint: /gateway/api/v1/auth
