@@ -10,18 +10,19 @@
 
 package org.zowe.apiml.apicatalog.swagger;
 
-import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
-import org.zowe.apiml.config.ApiInfo;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.PortType;
 import org.junit.jupiter.api.Test;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 class SubstituteSwaggerGeneratorTest {
     private static final String GATEWAY_SCHEME = "https";
@@ -43,7 +44,7 @@ class SubstituteSwaggerGeneratorTest {
         InstanceInfo service = InstanceInfo.Builder.newBuilder().setAppName(APP_NAME).setHostName(HOST_NAME)
             .setSecurePort(8080).enablePort(PortType.SECURE, true).setMetadata(metadata).build();
 
-        String result = swaggerGenerator.generateSubstituteSwaggerForService(service,
+        String result = swaggerGenerator.generateSubstituteSwaggerForService(new EurekaServiceInstance(service),
             info.get(0), GATEWAY_SCHEME, GATEWAY_HOST);
         assertTrue(result.contains(DOC_URL));
     }
@@ -59,7 +60,7 @@ class SubstituteSwaggerGeneratorTest {
         InstanceInfo service = InstanceInfo.Builder.newBuilder().setAppName(APP_NAME).setHostName(HOST_NAME)
             .setSecurePort(8080).enablePort(PortType.SECURE, true).setMetadata(metadata).build();
 
-        String result = swaggerGenerator.generateSubstituteSwaggerForService(service,
+        String result = swaggerGenerator.generateSubstituteSwaggerForService(new EurekaServiceInstance(service),
             info.get(0), GATEWAY_SCHEME, GATEWAY_HOST);
         assertTrue(result.contains(DOC_URL));
     }
