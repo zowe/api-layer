@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.security.client.token;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.zowe.apiml.security.client.service.GatewaySecurityService;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class GatewayTokenProvider implements AuthenticationProvider {
     private final GatewaySecurityService gatewaySecurityService;
 

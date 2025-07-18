@@ -11,6 +11,7 @@
 package org.zowe.apiml.security.client.login;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,6 +31,7 @@ import static org.zowe.apiml.security.SecurityUtils.readPassword;
  */
 @Component
 @RequiredArgsConstructor
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class GatewayLoginProvider implements AuthenticationProvider {
     private final GatewaySecurityService gatewaySecurityService;
 
