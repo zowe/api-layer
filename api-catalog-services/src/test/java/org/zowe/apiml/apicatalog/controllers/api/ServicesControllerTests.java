@@ -39,7 +39,6 @@ import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
-import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import reactor.core.publisher.Mono;
 
@@ -336,16 +335,9 @@ class ServicesControllerTests {
     static class Context {
 
         @Bean
-        public TransformService transformService() {
-            return new TransformService(new GatewayClient(ServiceAddress.builder().scheme("https").hostname("localhost").build()));
-        }
-
-/*
-        @Bean
         public GatewayClient gatewayClient() {
             return new GatewayClient(ServiceAddress.builder().scheme("https").hostname("localhost").build());
         }
- */
 
     }
 
