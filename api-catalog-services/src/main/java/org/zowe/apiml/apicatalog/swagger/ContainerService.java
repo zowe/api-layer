@@ -165,7 +165,7 @@ public class ContainerService {
 
                 RoutedServices routes = metadataParser.parseRoutes(serviceInstance.getMetadata());
                 return transformService.retrieveApiBasePath(
-                    serviceInstance.getServiceId(),
+                    StringUtils.lowerCase(serviceInstance.getServiceId()),
                     getHomePageUrl(serviceInstance),
                     routes);
             } catch (URLTransformationException e) {
@@ -202,7 +202,7 @@ public class ContainerService {
             log.info("createApiServiceFromInstance#incorrectVersions {}", ex.getMessage());
         }
 
-        String serviceId = serviceInstance.getServiceId();
+        String serviceId = StringUtils.lowerCase(serviceInstance.getServiceId());
         String title = serviceInstance.getMetadata().get(SERVICE_TITLE);
         if (StringUtils.equalsIgnoreCase(GATEWAY.getServiceId(), serviceId)) {
             if (RegistrationType.of(serviceInstance.getMetadata()).isAdditional()) {
@@ -210,7 +210,7 @@ public class ContainerService {
                 String apimlId = serviceInstance.getMetadata().get(APIML_ID);
                 if (apimlId != null) {
                     serviceId = apimlId;
-                    apiBasePath = String.join("/", "", serviceId.toLowerCase());
+                    apiBasePath = String.join("/", "", serviceId);
                     title += " (" + apimlId + ")";
                 }
             } else {
@@ -218,7 +218,7 @@ public class ContainerService {
             }
         }
 
-        return new APIService.Builder(StringUtils.lowerCase(serviceId))
+        return new APIService.Builder(serviceId)
             .title(title)
             .description(serviceInstance.getMetadata().get(SERVICE_DESCRIPTION))
             .tileDescription(serviceInstance.getMetadata().get(CATALOG_DESCRIPTION))
