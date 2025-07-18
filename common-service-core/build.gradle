@@ -12,6 +12,7 @@ dependencies {
     testImplementation libs.eh.cache
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.spring.boot.starter.web
+    testImplementation libs.spring.cloud.starter.eureka.client
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

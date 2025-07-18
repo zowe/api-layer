@@ -11,11 +11,12 @@
 package org.zowe.apiml.util;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 
 import java.util.Collections;
 import java.util.Map;
@@ -64,18 +65,18 @@ class EurekaUtilsTest {
         private static final String PRIMARY = "primary";
         private static final String SECONDARY = "secondary";
 
-        private EurekaClient eurekaClient;
+        private DiscoveryClient discoveryClient;
 
         @BeforeEach
         void init() {
-            eurekaClient = mock(EurekaClient.class);
+            discoveryClient = mock(DiscoveryClient.class);
 
             InstanceInfo instanceInfoPrimary = InstanceInfo.Builder.newBuilder()
                 .setAppName(PRIMARY)
                 .setInstanceId(String.format("x:%s:1", PRIMARY))
                 .build();
-            Application applicationPrimary = new Application(PRIMARY, Collections.singletonList(instanceInfoPrimary));
-            doReturn(applicationPrimary).when(eurekaClient).getApplication(PRIMARY);
+            ServiceInstance serviceInstancePrimary = new EurekaServiceInstance(instanceInfoPrimary);
+            doReturn(Collections.singletonList(serviceInstancePrimary)).when(discoveryClient).getInstances(PRIMARY);
 
             InstanceInfo instanceInfoSecondary = InstanceInfo.Builder.newBuilder()
                 .setAppName(GATEWAY.getServiceId())
@@ -85,27 +86,27 @@ class EurekaUtilsTest {
                     REGISTRATION_TYPE, ADDITIONAL.getValue()
                 ))
                 .build();
-            Application applicationSecondary = new Application(GATEWAY.getServiceId(), Collections.singletonList(instanceInfoSecondary));
-            doReturn(applicationSecondary).when(eurekaClient).getApplication(GATEWAY.getServiceId());
+            ServiceInstance serviceInstanceSecondary = new EurekaServiceInstance(instanceInfoSecondary);
+            doReturn(Collections.singletonList(serviceInstanceSecondary)).when(discoveryClient).getInstances(GATEWAY.getServiceId());
         }
 
         @Test
         void givenPrimaryRegistration_whenGetInstanceInfo_thenReturnInstanceInfo() {
-            var instance = EurekaUtils.getInstanceInfo(eurekaClient, PRIMARY);
+            var instance = EurekaUtils.getInstanceInfo(discoveryClient, PRIMARY);
             assertTrue(instance.isPresent());
-            assertEquals(PRIMARY, instance.get().getAppName().toLowerCase());
+            assertEquals(PRIMARY, instance.get().getServiceId().toLowerCase());
         }
 
         @Test
         void givenSecondaryRegistration_whenGetInstanceInfo_thenReturnInstanceInfo() {
-            var instance = EurekaUtils.getInstanceInfo(eurekaClient, SECONDARY);
+            var instance = EurekaUtils.getInstanceInfo(discoveryClient, SECONDARY);
             assertTrue(instance.isPresent());
-            assertEquals(GATEWAY.getServiceId(), instance.get().getAppName().toLowerCase());
+            assertEquals(GATEWAY.getServiceId(), instance.get().getServiceId().toLowerCase());
         }
 
         @Test
         void givenUnknownServiceId_whenGetInstanceInfo_thenReturnEmptyOptional() {
-            var instance = EurekaUtils.getInstanceInfo(eurekaClient, "unknown");
+            var instance = EurekaUtils.getInstanceInfo(discoveryClient, "unknown");
             assertTrue(instance.isEmpty());
         }
 
