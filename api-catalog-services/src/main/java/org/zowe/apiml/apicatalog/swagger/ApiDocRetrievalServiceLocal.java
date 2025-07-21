@@ -11,7 +11,6 @@
 package org.zowe.apiml.apicatalog.swagger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springdoc.core.customizers.SpringDocCustomizers;
@@ -48,7 +47,7 @@ public class ApiDocRetrievalServiceLocal {
         SpringDocConfigProperties springDocConfigProperties,
         SpringDocProviders springDocProviders
     ) {
-        groupedOpenApis.stream()
+        groupedOpenApis
             .forEach(groupedOpenApi -> {
                 String group = groupedOpenApi.getGroup();
 
@@ -84,6 +83,7 @@ public class ApiDocRetrievalServiceLocal {
                 .map(String::new)
                 .map(content -> ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(content).build());
         } catch (JsonProcessingException jpe) {
+            log.debug("Cannot process API doc", jpe);
             throw new ApiDocNotFoundException("Cannot obtain API doc for " + serviceId, jpe);
         }
     }

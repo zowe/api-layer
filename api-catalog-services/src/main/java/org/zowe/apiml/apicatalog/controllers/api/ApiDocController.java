@@ -18,8 +18,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
 import org.openapitools.openapidiff.core.OpenApiCompare;
 import org.openapitools.openapidiff.core.model.ChangedOpenApi;
 import org.openapitools.openapidiff.core.output.HtmlRender;
@@ -136,25 +134,25 @@ public class ApiDocController {
         return Mono.zip(
             apiDocService.retrieveApiDoc(serviceId, apiId1),
             apiDocService.retrieveApiDoc(serviceId, apiId2)
-        ).handle((tuple, sink) -> {
-            try {
-                ChangedOpenApi diff = OpenApiCompare.fromContents(tuple.getT1(), tuple.getT2());
-                HtmlRender render = new HtmlRender();
-                String result = render.render(diff);
-                // Remove external stylesheet
-                result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
-                sink.next(ResponseEntity
-                    .status(HttpStatus.SC_OK)
-                    .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                    .body(result)
-                );
-            } catch (ApiDocNotFoundException adnfe) {
-                sink.error(adnfe);
-            } catch (Exception e) {
-                String errorMessage = String.format("Error retrieving API diff for '%s' with versions '%s' and '%s'", serviceId, apiId1, apiId2);
-                log.error(errorMessage, e);
-                sink.error(new ApiDiffNotAvailableException(errorMessage));
+        ).flatMap(tuple -> Mono.fromCallable(() -> {
+            ChangedOpenApi diff = OpenApiCompare.fromContents(tuple.getT1(), tuple.getT2());
+            HtmlRender render = new HtmlRender();
+            String result = render.render(diff);
+            // Remove external stylesheet
+            result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
+            return ResponseEntity
+                .ok()
+                .contentType(MediaType.TEXT_HTML)
+                .body(result);
+        }))
+        .onErrorMap(e -> {
+            if (e instanceof ApiDocNotFoundException) {
+                return e;
             }
+            return new ApiDiffNotAvailableException(
+                String.format("Error retrieving API diff for '%s' with versions '%s' and '%s'", serviceId, apiId1, apiId2),
+                e
+            );
         });
     }
 

@@ -247,7 +247,7 @@ public class ApiDocService {
         String apiDocUrl = null;
         if (apiInfo == null) {
             apiDocUrl = createApiDocUrlFromRouting(serviceInstance, routes);
-        } else if (apiInfo.getSwaggerUrl() != null) {
+        } else if (StringUtils.isNotBlank(apiInfo.getSwaggerUrl())) {
             apiDocUrl = apiInfo.getSwaggerUrl();
         }
 

@@ -84,8 +84,9 @@ public class ApiDocRetrievalServiceRest {
                         if (HttpStatus.SC_OK == response.getCode()) {
                             return responseBody;
                         } else {
-                            throw new ApiDocNotFoundException("No API Documentation was retrieved due to " + serviceId +
-                                " server error: '" + responseBody + "'.");
+                            throw new ApiDocNotFoundException(
+                                String.format("No API Documentation was retrieved due to %s server error: %d %s", serviceId, response.getCode(), responseBody)
+                            );
                         }
                     }
                 ));
