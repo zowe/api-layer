@@ -13,7 +13,6 @@ package org.zowe.apiml.apicatalog.controllers.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -118,8 +117,8 @@ public class TokenController {
 @ConditionalOnBean(name = "modulithConfig")
 class TokenControllerModulith extends TokenController {
 
-    public TokenControllerModulith(GatewaySecurity gatewaySecurity, AuthConfigurationProperties authConfigurationProperties) {
-        super(gatewaySecurity, authConfigurationProperties);
+    public TokenControllerModulith(ObjectMapper mapper, GatewaySecurity gatewaySecurity, AuthConfigurationProperties authConfigurationProperties) {
+        super(mapper, gatewaySecurity, authConfigurationProperties);
     }
 
 }
@@ -129,8 +128,8 @@ class TokenControllerModulith extends TokenController {
 @ConditionalOnMissingBean(name = "modulithConfig")
 class TokenControllerMicroservice extends TokenController {
 
-    public TokenControllerMicroservice(GatewaySecurity gatewaySecurity, AuthConfigurationProperties authConfigurationProperties) {
-        super(gatewaySecurity, authConfigurationProperties);
+    public TokenControllerMicroservice(ObjectMapper mapper, GatewaySecurity gatewaySecurity, AuthConfigurationProperties authConfigurationProperties) {
+        super(mapper, gatewaySecurity, authConfigurationProperties);
     }
 
 }

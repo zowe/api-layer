@@ -12,15 +12,10 @@ package org.zowe.apiml.apicatalog.controllers.api;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.shared.Application;
-import com.netflix.discovery.shared.Applications;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
@@ -33,13 +28,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.zowe.apiml.apicatalog.config.DefaultExceptionHandler;
-import org.zowe.apiml.apicatalog.controllers.handlers.ApiCatalogControllerExceptionHandler;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.apicatalog.config.BeanConfig;
+import org.zowe.apiml.apicatalog.config.DefaultExceptionHandler;
 import org.zowe.apiml.apicatalog.controllers.handlers.ApiCatalogControllerExceptionHandler;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
 import org.zowe.apiml.apicatalog.model.APIContainer;
@@ -47,13 +37,8 @@ import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.model.CustomStyleConfig;
 import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 import org.zowe.apiml.apicatalog.swagger.ContainerService;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
-import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
-import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
-import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import reactor.core.publisher.Mono;
 
@@ -66,13 +51,14 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_ID;
 
-@WebFluxTest(controllers = ServicesController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@WebFluxTest(controllers = ServicesControllerMicroservice.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
 @ContextConfiguration(classes = {
-    ServicesController.class,
+    ServicesControllerMicroservice.class,
     ApiCatalogControllerExceptionHandler.class,
     ContainerService.class,
     DefaultExceptionHandler.class,
-    AuthExceptionHandler.class
+    AuthExceptionHandler.class,
+    ServicesControllerTests.Context.class,
     BeanConfig.class
 })
 class ServicesControllerTests {
@@ -116,27 +102,24 @@ class ServicesControllerTests {
         @Nested
         class WhenSpecificContainerRequested {
 
+            private static final String SERVICE_ID = "service1";
+
             @Test
             void ifExistingInstanceThenReturnOk() {
-                String containerId = "service1";
+                var instance = InstanceInfo.Builder.newBuilder().setAppName(SERVICE_ID).setInstanceId("instance1").setMetadata(Map.of(CATALOG_ID, SERVICE_ID)).build();
+                doReturn(Collections.singletonList(SERVICE_ID)).when(discoveryClient).getServices();
+                doReturn(Collections.singletonList(new EurekaServiceInstance(instance))).when(discoveryClient).getInstances(SERVICE_ID);
+                doReturn(Mono.empty()).when(apiDocService).retrieveDefaultApiDoc(SERVICE_ID);
 
-                var instance = InstanceInfo.Builder.newBuilder().setAppName("service1").setInstanceId("instance1").setMetadata(Map.of(CATALOG_ID, "service1")).build();
-                var application = new Application("service1");
-                application.addInstance(instance);
-                var applications = new Applications("hash", 0L, Collections.singletonList(application));
-                doReturn(applications).when(eurekaClient).getApplications();
-                doReturn(Mono.empty()).when(apiDocService).retrieveDefaultApiDoc("service1");
-
-                webTestClient.get().uri(pathToContainers + "/" + containerId).exchange()
+                webTestClient.get().uri(pathToContainers + "/" + SERVICE_ID).exchange()
                     .expectStatus().isOk();
             }
 
             @Test
             void ifNonExistingInstanceThenReturnNotFound() {
-                String containerId = "service1";
-                given(containerService.getContainerById(containerId)).willReturn(null);
+                given(containerService.getContainerById(SERVICE_ID)).willReturn(null);
 
-                webTestClient.get().uri(pathToContainers + "/" + containerId).exchange()
+                webTestClient.get().uri(pathToContainers + "/" + SERVICE_ID).exchange()
                     .expectStatus().isNotFound();
             }
 
@@ -158,14 +141,14 @@ class ServicesControllerTests {
             given(discoveryClient.getInstances("service1")).willReturn(
                 Collections.singletonList(new EurekaServiceInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP)))
             );
-            given(apiDocRetrievalService.retrieveDefaultApiDoc("service1")).willReturn("service1");
-            given(apiDocRetrievalService.retrieveApiVersions("service1")).willReturn(apiVersions);
+            given(apiDocService.retrieveDefaultApiDoc("service1")).willReturn(Mono.just("service1"));
+            given(apiDocService.retrieveApiVersions("service1")).willReturn(apiVersions);
 
             given(discoveryClient.getInstances("service2")).willReturn(
                 Collections.singletonList(new EurekaServiceInstance(getStandardInstance("service2", InstanceInfo.InstanceStatus.DOWN)))
             );
-            given(apiDocRetrievalService.retrieveDefaultApiDoc("service2")).willReturn("service2");
-            given(apiDocRetrievalService.retrieveApiVersions("service2")).willReturn(apiVersions);
+            given(apiDocService.retrieveDefaultApiDoc("service2")).willReturn(Mono.just("service2"));
+            given(apiDocService.retrieveApiVersions("service2")).willReturn(apiVersions);
 
             given(containerService.getContainerById("api-one")).willReturn(createContainers().get(0));
         }

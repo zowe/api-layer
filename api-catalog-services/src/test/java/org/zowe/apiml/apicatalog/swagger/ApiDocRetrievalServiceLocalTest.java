@@ -15,6 +15,7 @@ import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springdoc.webflux.api.OpenApiWebfluxResource;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.config.ApiInfo;
@@ -41,7 +42,7 @@ class ApiDocRetrievalServiceLocalTest {
 
     @Test
     void givenUnknownServiceId_whenGetApiDoc_thenThrowException() {
-        var instance = InstanceInfo.Builder.newBuilder().setAppName("unknownService").build();
+        var instance = new EurekaServiceInstance(InstanceInfo.Builder.newBuilder().setAppName("unknownService").build());
         var apiInfo = ApiInfo.builder().build();
         var exception = assertThrows(ApiDocNotFoundException.class, () -> service.retrieveApiDoc(instance, apiInfo));
 
@@ -59,7 +60,7 @@ class ApiDocRetrievalServiceLocalTest {
         var apiDocResource = mockApiDocResource("service");
         doThrow(new JsonProcessingException("an error") {}).when(apiDocResource).openapiJson(any(), eq("/"), any());
 
-        var instance = InstanceInfo.Builder.newBuilder().setAppName("service").build();
+        var instance = new EurekaServiceInstance(InstanceInfo.Builder.newBuilder().setAppName("service").build());
         var apiInfo = ApiInfo.builder().build();
 
         var exception = assertThrows(ApiDocNotFoundException.class, () -> service.retrieveApiDoc(instance, apiInfo));
@@ -73,7 +74,7 @@ class ApiDocRetrievalServiceLocalTest {
         var apiDocResource = mockApiDocResource("service");
         doReturn(Mono.just("Api doc".getBytes(StandardCharsets.UTF_8))).when(apiDocResource).openapiJson(any(), eq("/"), any());
 
-        var instance = InstanceInfo.Builder.newBuilder().setAppName("service").build();
+        var instance = new EurekaServiceInstance(InstanceInfo.Builder.newBuilder().setAppName("service").build());
         var apiInfo = ApiInfo.builder().build();
 
         StepVerifier.create(service.retrieveApiDoc(instance, apiInfo))

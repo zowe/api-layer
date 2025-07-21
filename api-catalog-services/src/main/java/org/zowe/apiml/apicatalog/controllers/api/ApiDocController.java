@@ -30,11 +30,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.apicatalog.exceptions.ApiDiffNotAvailableException;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
-import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
-import reactor.core.publisher.Mono;
-
-import static org.apache.hc.core5.http.HttpStatus.SC_OK;
-import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 import reactor.core.publisher.Mono;
 

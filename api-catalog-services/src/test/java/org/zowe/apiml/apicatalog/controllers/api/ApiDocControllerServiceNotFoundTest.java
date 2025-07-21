@@ -16,23 +16,13 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.apicatalog.config.BeanConfig;
 import org.zowe.apiml.apicatalog.controllers.handlers.CatalogApiDocControllerExceptionHandler;
 import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
-import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import org.zowe.apiml.apicatalog.controllers.handlers.CatalogApiDocControllerExceptionHandler;
-import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.ApiDocService;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import static org.hamcrest.Matchers.contains;
 import static org.mockito.Mockito.when;
@@ -50,7 +40,7 @@ class ApiDocControllerServiceNotFoundTest {
     private WebTestClient webTestClient;
 
     @MockitoBean
-    private ApiDocRetrievalService apiServiceStatusService;
+    private ApiDocService apiServiceStatusService;
 
     @BeforeAll
     void initApiDocRetrievalService() {

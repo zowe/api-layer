@@ -11,8 +11,6 @@
 package org.zowe.apiml.apicatalog.swagger;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
@@ -25,11 +23,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.exceptions.ApiVersionNotFoundException;
-import org.zowe.apiml.apicatalog.util.ServicesBuilder;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.constants.CoreService;
@@ -71,7 +71,7 @@ class ApiDocServiceTest {
     class ViaRestCall {
 
         @Mock
-        private EurekaClient eurekaClient;
+        private DiscoveryClient discoveryClient;
 
         private ApiDocService apiDocService;
 
@@ -93,7 +93,7 @@ class ApiDocServiceTest {
             HttpClientMockHelper.mockExecuteWithResponse(httpClient, response);
             var apiDocRetrievalServiceRest = new ApiDocRetrievalServiceRest(httpClient);
             apiDocService = new ApiDocService(
-                eurekaClient,
+                discoveryClient,
                 new GatewayClient(ServiceAddress.builder().scheme(GATEWAY_SCHEME).hostname(GATEWAY_HOST).build()),
                 new TransformApiDocService(null) {
                     @Override
@@ -105,9 +105,9 @@ class ApiDocServiceTest {
                 apiDocRetrievalServiceRest
             ) {
                 @Override
-                Mono<String> retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
+                Mono<String> retrieveApiDoc(ServiceInstance serviceInstance, ApiInfo apiInfo) {
                     lastApiInfo.set(apiInfo);
-                    return super.retrieveApiDoc(instanceInfo, apiInfo);
+                    return super.retrieveApiDoc(serviceInstance, apiInfo);
                 }
 
                 boolean isServiceAccessibleInternally(InstanceInfo instanceInfo) {
@@ -124,8 +124,8 @@ class ApiDocServiceTest {
             void givenValidApiInfo_thenReturnApiDoc() {
                 String responseBody = "api-doc body";
 
-                when(eurekaClient.getApplication(SERVICE_ID))
-                    .thenReturn(getStandardInstance(getStandardMetadata(), true));
+                when(discoveryClient.getInstances(SERVICE_ID))
+                    .thenReturn(Collections.singletonList(getStandardInstance(getStandardMetadata(), true)));
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
@@ -154,8 +154,8 @@ class ApiDocServiceTest {
                 void givenServerErrorWhenRequestingSwaggerUrl() {
                     String responseBody = "Server not found";
 
-                    when(eurekaClient.getApplication(SERVICE_ID))
-                        .thenReturn(getStandardInstance(getStandardMetadata(), true));
+                    when(discoveryClient.getInstances(SERVICE_ID))
+                        .thenReturn(Collections.singletonList(getStandardInstance(getStandardMetadata(), true)));
 
                     HttpClientMockHelper.mockResponse(response, HttpStatus.SC_INTERNAL_SERVER_ERROR, responseBody);
 
@@ -201,8 +201,8 @@ class ApiDocServiceTest {
                     """.replaceAll("\\s+", "");
                 String responseBody = "api-doc body";
 
-                when(eurekaClient.getApplication(SERVICE_ID))
-                    .thenReturn(getStandardInstance(getMetadataWithoutSwaggerUrl(), true));
+                when(discoveryClient.getInstances(SERVICE_ID))
+                    .thenReturn(Collections.singletonList(getStandardInstance(getMetadataWithoutSwaggerUrl(), true)));
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
@@ -222,8 +222,8 @@ class ApiDocServiceTest {
             void givenApiDocUrlInRouting_thenCreateApiDocUrlFromRoutingAndReturnApiDoc() {
                 String responseBody = "api-doc body";
 
-                when(eurekaClient.getApplication(SERVICE_ID))
-                    .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), true));
+                when(discoveryClient.getInstances(SERVICE_ID))
+                    .thenReturn(Collections.singletonList(getStandardInstance(getMetadataWithoutApiInfo(), true)));
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
@@ -237,8 +237,8 @@ class ApiDocServiceTest {
             void shouldCreateApiDocUrlFromRoutingAndUseHttp() {
                 String responseBody = "api-doc body";
 
-                when(eurekaClient.getApplication(SERVICE_ID))
-                    .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), false));
+                when(discoveryClient.getInstances(SERVICE_ID))
+                    .thenReturn(Collections.singletonList(getStandardInstance(getMetadataWithoutApiInfo(), false)));
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
@@ -250,8 +250,8 @@ class ApiDocServiceTest {
 
             @Test
             void givenServerCommunicationErrorWhenRequestingSwaggerUrl_thenLogCustomError() {
-                when(eurekaClient.getApplication(SERVICE_ID))
-                    .thenReturn(getStandardInstance(getStandardMetadata(), true));
+                when(discoveryClient.getInstances(SERVICE_ID))
+                    .thenReturn(Collections.singletonList(getStandardInstance(getStandardMetadata(), true)));
 
                 var exception = new IOException("Unable to reach the host");
                 HttpClientMockHelper.whenExecuteThenThrow(httpClient, exception);
@@ -275,8 +275,8 @@ class ApiDocServiceTest {
                 String responseBody = "api-doc body";
                 Map<String, String> metadata = getMetadataWithMultipleApiInfo();
 
-                when(eurekaClient.getApplication(SERVICE_ID))
-                    .thenReturn(getStandardInstance(metadata, true));
+                when(discoveryClient.getInstances(SERVICE_ID))
+                    .thenReturn(Collections.singletonList(getStandardInstance(metadata, true)));
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
@@ -298,8 +298,8 @@ class ApiDocServiceTest {
                 Map<String, String> metadata = getMetadataWithMultipleApiInfo();
                 metadata.remove(API_INFO + ".1." + API_INFO_IS_DEFAULT); // unset default API, so higher version becomes default
 
-                when(eurekaClient.getApplication(SERVICE_ID))
-                    .thenReturn(getStandardInstance(metadata, true));
+                when(discoveryClient.getInstances(SERVICE_ID))
+                    .thenReturn(Collections.singletonList(getStandardInstance(metadata, true)));
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
@@ -319,8 +319,8 @@ class ApiDocServiceTest {
             void givenNoDefaultApiDocAndDifferentVersionFormat_thenReturnHighestVersion() {
                 String responseBody = "api-doc body";
 
-                when(eurekaClient.getApplication(SERVICE_ID))
-                    .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfoWithDifferentVersionFormat(), true));
+                when(discoveryClient.getInstances(SERVICE_ID))
+                    .thenReturn(Collections.singletonList(getStandardInstance(getMetadataWithMultipleApiInfoWithDifferentVersionFormat(), true)));
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
@@ -340,8 +340,8 @@ class ApiDocServiceTest {
             void givenNoApiDocs_thenReturnNull() {
                 String responseBody = "api-doc body";
 
-                when(eurekaClient.getApplication(SERVICE_ID))
-                    .thenReturn(getStandardInstance(getMetadataWithoutApiInfo(), true));
+                when(discoveryClient.getInstances(SERVICE_ID))
+                    .thenReturn(Collections.singletonList(getStandardInstance(getMetadataWithoutApiInfo(), true)));
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
@@ -356,8 +356,8 @@ class ApiDocServiceTest {
         class WhenGetApiVersions {
             @Test
             void givenApiVersions_thenReturnThem() {
-                when(eurekaClient.getApplication(SERVICE_ID))
-                    .thenReturn(getStandardInstance(getStandardMetadata(), false));
+                when(discoveryClient.getInstances(SERVICE_ID))
+                    .thenReturn(Collections.singletonList(getStandardInstance(getStandardMetadata(), false)));
 
                 List<String> actualVersions = apiDocService.retrieveApiVersions(SERVICE_ID);
                 assertEquals(Collections.singletonList(SERVICE_VERSION_V), actualVersions);
@@ -365,7 +365,7 @@ class ApiDocServiceTest {
 
             @Test
             void givenNoApiVersions_thenThrowException() {
-                when(eurekaClient.getApplication(SERVICE_ID)).thenReturn(null);
+                when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.emptyList());
 
                 Exception exception = assertThrows(ApiVersionNotFoundException.class, () ->
                     apiDocService.retrieveApiVersions(SERVICE_ID)
@@ -378,8 +378,8 @@ class ApiDocServiceTest {
         class WhenGetDefaultApiVersion {
             @Test
             void givenDefaultApiVersion_thenReturnIt() {
-                when(eurekaClient.getApplication(SERVICE_ID))
-                    .thenReturn(getStandardInstance(getMetadataWithMultipleApiInfo(), false));
+                when(discoveryClient.getInstances(SERVICE_ID))
+                    .thenReturn(Collections.singletonList(getStandardInstance(getMetadataWithMultipleApiInfo(), false)));
 
                 String defaultVersion = apiDocService.retrieveDefaultApiVersion(SERVICE_ID);
                 assertEquals(SERVICE_VERSION_V, defaultVersion);
@@ -390,8 +390,8 @@ class ApiDocServiceTest {
                 Map<String, String> metadata = getMetadataWithMultipleApiInfo();
                 metadata.remove(API_INFO + ".1." + API_INFO_IS_DEFAULT); // unset default API, so higher version becomes default
 
-                when(eurekaClient.getApplication(SERVICE_ID))
-                    .thenReturn(getStandardInstance(metadata, false));
+                when(discoveryClient.getInstances(SERVICE_ID))
+                    .thenReturn(Collections.singletonList(getStandardInstance(metadata, false)));
 
                 String defaultVersion = apiDocService.retrieveDefaultApiVersion(SERVICE_ID);
                 assertEquals(HIGHER_SERVICE_VERSION_V, defaultVersion);
@@ -399,7 +399,7 @@ class ApiDocServiceTest {
 
             @Test
             void givenNoApiInfo_thenThrowException() {
-                when(eurekaClient.getApplication(SERVICE_ID)).thenReturn(null);
+                when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.emptyList());
 
                 Exception exception = assertThrows(ApiVersionNotFoundException.class, () ->
                     apiDocService.retrieveDefaultApiVersion(SERVICE_ID)
@@ -408,7 +408,7 @@ class ApiDocServiceTest {
             }
         }
 
-        private Application getStandardInstance(Map<String, String> metadata, Boolean isPortSecure) {
+        private ServiceInstance getStandardInstance(Map<String, String> metadata, Boolean isPortSecure) {
             InstanceInfo instance = InstanceInfo.Builder.newBuilder()
                 .setAppName(SERVICE_ID)
                 .setHostName(SERVICE_HOST)
@@ -418,7 +418,7 @@ class ApiDocServiceTest {
                 .setStatus(InstanceInfo.InstanceStatus.UP)
                 .setMetadata(metadata)
                 .build();
-            return ServicesBuilder.createApp(SERVICE_ID, instance);
+            return new EurekaServiceInstance(instance);
         }
 
         private Map<String, String> getStandardMetadata() {

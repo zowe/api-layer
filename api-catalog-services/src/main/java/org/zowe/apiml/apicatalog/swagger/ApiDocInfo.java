@@ -10,12 +10,12 @@
 
 package org.zowe.apiml.apicatalog.swagger;
 
-import lombok.Builder;
-import org.zowe.apiml.config.ApiInfo;
-import org.zowe.apiml.product.routing.RoutedServices;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.ToString;
+import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.product.routing.RoutedServices;
 
 /**
  * Contains all necessary information to create API Documentation

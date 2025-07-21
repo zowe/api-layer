@@ -11,7 +11,6 @@
 package org.zowe.apiml.apicatalog.swagger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springdoc.core.customizers.SpringDocCustomizers;
@@ -24,6 +23,7 @@ import org.springdoc.core.service.OpenAPIService;
 import org.springdoc.core.service.OperationService;
 import org.springdoc.webflux.api.OpenApiWebfluxResource;
 import org.springframework.beans.factory.ObjectFactory;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
@@ -77,8 +77,8 @@ public class ApiDocRetrievalServiceLocal {
         return apiDocResource.containsKey(StringUtils.lowerCase(serviceId));
     }
 
-    public Mono<ApiDocInfo> retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
-        String serviceId = StringUtils.lowerCase(instanceInfo.getAppName());
+    public Mono<ApiDocInfo> retrieveApiDoc(ServiceInstance serviceInstance, ApiInfo apiInfo) {
+        String serviceId = StringUtils.lowerCase(serviceInstance.getServiceId());
 
         try {
             return Optional.ofNullable(apiDocResource.get(serviceId))

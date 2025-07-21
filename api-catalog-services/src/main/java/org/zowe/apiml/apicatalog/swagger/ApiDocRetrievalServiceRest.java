@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.apicatalog.swagger;
 
-import com.netflix.appinfo.InstanceInfo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +20,8 @@ import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -52,8 +49,8 @@ public class ApiDocRetrievalServiceRest {
     @InjectApimlLogger
     private ApimlLogger apimlLogger = ApimlLogger.empty();
 
-    public Mono<ApiDocInfo> retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
-        String serviceId = StringUtils.lowerCase(instanceInfo.getAppName());
+    public Mono<ApiDocInfo> retrieveApiDoc(ServiceInstance serviceInstance, ApiInfo apiInfo) {
+        String serviceId = StringUtils.lowerCase(serviceInstance.getServiceId());
         log.debug("Retrieving API doc for '{} {}'", serviceId, apiInfo.getVersion());
 
         String apiDocUrl = apiInfo.getSwaggerUrl();

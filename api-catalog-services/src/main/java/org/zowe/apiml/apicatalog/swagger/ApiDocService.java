@@ -10,12 +10,12 @@
 
 package org.zowe.apiml.apicatalog.swagger;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -42,14 +42,14 @@ public class ApiDocService {
     private static final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
     private static final SubstituteSwaggerGenerator swaggerGenerator = new SubstituteSwaggerGenerator();
 
-    private final EurekaClient eurekaClient;
+    private final DiscoveryClient discoveryClient;
     private final GatewayClient gatewayClient;
     private final TransformApiDocService transformApiDocService;
     private final ApiDocRetrievalServiceLocal apiDocRetrievalServiceLocal;
     private final ApiDocRetrievalServiceRest apiDocRetrievalServiceRest;
 
-    InstanceInfo getInstanceInfo(String serviceId) {
-        return EurekaUtils.getInstanceInfo(eurekaClient, serviceId)
+    ServiceInstance getInstanceInfo(String serviceId) {
+        return EurekaUtils.getInstanceInfo(discoveryClient, serviceId)
             .orElseThrow(() -> new ApiDocNotFoundException("Could not load instance information for service " + serviceId + "."));
     }
 
@@ -154,15 +154,15 @@ public class ApiDocService {
      */
     public List<String> retrieveApiVersions(@NonNull String serviceId) {
         log.debug("Retrieving API versions for service '{}'", serviceId);
-        InstanceInfo instanceInfo;
+        ServiceInstance serviceInstance;
 
         try {
-            instanceInfo = getInstanceInfo(serviceId);
+            serviceInstance = getInstanceInfo(serviceId);
         } catch (ApiDocNotFoundException e) {
             throw new ApiVersionNotFoundException(e.getMessage());
         }
 
-        List<String> apiVersions = retrieveApiVersions(instanceInfo.getMetadata());
+        List<String> apiVersions = retrieveApiVersions(serviceInstance.getMetadata());
         log.debug("For service '{}' found API versions '{}'", serviceId, apiVersions);
 
         return apiVersions;
@@ -179,15 +179,15 @@ public class ApiDocService {
      */
     public String retrieveDefaultApiVersion(@NonNull String serviceId) {
         log.debug("Retrieving default API version for service '{}'", serviceId);
-        InstanceInfo instanceInfo;
+        ServiceInstance serviceInstance;
 
         try {
-            instanceInfo = getInstanceInfo(serviceId);
+            serviceInstance = getInstanceInfo(serviceId);
         } catch (ApiDocNotFoundException e) {
             throw new ApiVersionNotFoundException(e.getMessage());
         }
 
-        String defaultVersion = retrieveDefaultApiVersion(instanceInfo.getMetadata());
+        String defaultVersion = retrieveDefaultApiVersion(serviceInstance.getMetadata());
         log.debug("For service '{}' found default API version '{}'", serviceId, defaultVersion);
 
         return defaultVersion;
@@ -197,22 +197,15 @@ public class ApiDocService {
      * Creates a URL from the routing metadata 'apiml.routes.api-doc.serviceUrl' when 'apiml.apiInfo.swaggerUrl' is
      * not present
      *
-     * @param instanceInfo the information about service instance
+     * @param serviceInstance the information about service instance
      * @return the URL of API doc endpoint
      * @deprecated Added to support services which were on-boarded before 'apiml.apiInfo.swaggerUrl' parameter was
      * introduced. It will be removed when all services will be using the new configuration style.
      */
     @Deprecated(forRemoval = false)
-    private String createApiDocUrlFromRouting(InstanceInfo instanceInfo, RoutedServices routes) {
-        String scheme;
-        int port;
-        if (instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE)) {
-            scheme = "https";
-            port = instanceInfo.getSecurePort();
-        } else {
-            scheme = "http";
-            port = instanceInfo.getPort();
-        }
+    private String createApiDocUrlFromRouting(ServiceInstance serviceInstance, RoutedServices routes) {
+        String scheme = serviceInstance.isSecure() ? "https" : "http";
+        int port = serviceInstance.getPort();
 
         String path = null;
         RoutedService route = routes.findServiceByGatewayUrl("api/v1/api-doc");
@@ -227,7 +220,7 @@ public class ApiDocService {
         UriComponents uri = UriComponentsBuilder
             .newInstance()
             .scheme(scheme)
-            .host(instanceInfo.getHostName())
+            .host(serviceInstance.getHost())
             .port(port)
             .path(path)
             .build();
@@ -239,14 +232,14 @@ public class ApiDocService {
      * Get ApiDoc url
      *
      * @param apiInfo      the apiInfo of service instance
-     * @param instanceInfo the information about service instance
+     * @param serviceInstance the information about service instance
      * @param routes       the routes of service instance
      * @return the url of apidoc
      */
-    private String getApiDocUrl(ApiInfo apiInfo, InstanceInfo instanceInfo, RoutedServices routes) {
+    private String getApiDocUrl(ApiInfo apiInfo, ServiceInstance serviceInstance, RoutedServices routes) {
         String apiDocUrl = null;
         if (apiInfo == null) {
-            apiDocUrl = createApiDocUrlFromRouting(instanceInfo, routes);
+            apiDocUrl = createApiDocUrlFromRouting(serviceInstance, routes);
         } else if (apiInfo.getSwaggerUrl() != null) {
             apiDocUrl = apiInfo.getSwaggerUrl();
         }
@@ -266,13 +259,13 @@ public class ApiDocService {
     /**
      * Get ApiDocInfo by Substitute Swagger
      *
-     * @param instanceInfo the information about service instance
+     * @param serviceInstance the information about service instance
      * @return the information about APIDocInfo
      */
-    private Mono<ApiDocInfo> getApiDocInfoBySubstituteSwagger(InstanceInfo instanceInfo, ApiInfo apiInfo) {
+    private Mono<ApiDocInfo> getApiDocInfoBySubstituteSwagger(ServiceInstance serviceInstance, ApiInfo apiInfo) {
         return Mono.fromSupplier(gatewayClient::getGatewayConfigProperties)
             .map(gw -> swaggerGenerator.generateSubstituteSwaggerForService(
-                instanceInfo,
+                serviceInstance,
                 apiInfo,
                 gw.getScheme(),
                 gw.getHostname())
@@ -280,25 +273,25 @@ public class ApiDocService {
             .map(content -> ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(content).routes(new RoutedServices()).build());
     }
 
-    Mono<String> retrieveApiDoc(InstanceInfo instanceInfo, ApiInfo apiInfo) {
-        String serviceId = StringUtils.lowerCase(instanceInfo.getAppName());
-        var routes = metadataParser.parseRoutes(instanceInfo.getMetadata());
+    Mono<String> retrieveApiDoc(ServiceInstance serviceInstance, ApiInfo apiInfo) {
+        String serviceId = StringUtils.lowerCase(serviceInstance.getServiceId());
+        var routes = metadataParser.parseRoutes(serviceInstance.getMetadata());
 
         if (apiInfo == null) {
             apiInfo = ApiInfo.builder().gatewayUrl(getGatewayUrl()).build();
         }
 
         if (apiInfo.getSwaggerUrl() == null) {
-            apiInfo.setSwaggerUrl(createApiDocUrlFromRouting(instanceInfo, routes));
+            apiInfo.setSwaggerUrl(createApiDocUrlFromRouting(serviceInstance, routes));
         }
 
         Mono<ApiDocInfo> apiDocInfo;
         if (apiInfo.getSwaggerUrl() == null) {
-            apiDocInfo = getApiDocInfoBySubstituteSwagger(instanceInfo, apiInfo);
+            apiDocInfo = getApiDocInfoBySubstituteSwagger(serviceInstance, apiInfo);
         } else if (apiDocRetrievalServiceLocal.isSupported(serviceId)) {
-            apiDocInfo = apiDocRetrievalServiceLocal.retrieveApiDoc(instanceInfo, apiInfo);
+            apiDocInfo = apiDocRetrievalServiceLocal.retrieveApiDoc(serviceInstance, apiInfo);
         } else {
-            apiDocInfo = apiDocRetrievalServiceRest.retrieveApiDoc(instanceInfo, apiInfo);
+            apiDocInfo = apiDocRetrievalServiceRest.retrieveApiDoc(serviceInstance, apiInfo);
         }
 
         return apiDocInfo
@@ -357,10 +350,10 @@ public class ApiDocService {
      * @throws ApiDocNotFoundException if the response is error
      */
     public Mono<String> retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
-        InstanceInfo instanceInfo = getInstanceInfo(serviceId);
-        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
+        ServiceInstance serviceInstance = getInstanceInfo(serviceId);
+        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(serviceInstance.getMetadata());
         var apiInfo = findApi(apiInfoList, apiVersion);
-        return retrieveApiDoc(instanceInfo, apiInfo);
+        return retrieveApiDoc(serviceInstance, apiInfo);
     }
 
     /**
@@ -376,10 +369,10 @@ public class ApiDocService {
      * @throws ApiDocNotFoundException if the response is error
      */
     public Mono<String> retrieveDefaultApiDoc(@NonNull String serviceId) {
-        InstanceInfo instanceInfo = getInstanceInfo(serviceId);
-        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(instanceInfo.getMetadata());
+        ServiceInstance serviceInstance = getInstanceInfo(serviceId);
+        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(serviceInstance.getMetadata());
         var apiInfo = getDefaultApiInfo(apiInfoList);
-        return retrieveApiDoc(instanceInfo, apiInfo);
+        return retrieveApiDoc(serviceInstance, apiInfo);
     }
 
 }

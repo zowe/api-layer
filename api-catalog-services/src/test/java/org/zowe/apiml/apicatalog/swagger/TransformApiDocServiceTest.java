@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.apicatalog.swagger;
 
+import jakarta.validation.UnexpectedTypeException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,6 @@ import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
 import org.zowe.apiml.apicatalog.swagger.api.ApiDocV2Service;
 import org.zowe.apiml.apicatalog.swagger.api.ApiDocV3Service;
 
-import jakarta.validation.UnexpectedTypeException;
 import java.util.function.Function;
 
 import static org.mockito.Mockito.*;
