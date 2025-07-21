@@ -27,13 +27,13 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {
-    StaticAPIRefreshController.class,
-    StaticDefinitionController.class,
+    StaticAPIRefreshControllerMicroservice.class,
+    StaticDefinitionControllerMicroservice.class,
     StaticAPIRefreshControllerExceptionHandler.class,
     StaticDefinitionControllerExceptionHandler.class,
     BeanConfig.class
 })
-@WebFluxTest(controllers = {StaticAPIRefreshController.class, StaticDefinitionController.class}, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@WebFluxTest(controllers = {StaticAPIRefreshControllerMicroservice.class, StaticDefinitionControllerMicroservice.class}, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
 class StaticAPIRefreshControllerTest {
 
     private static final String API_REFRESH_ENDPOINT = "/apicatalog/static-api/refresh";

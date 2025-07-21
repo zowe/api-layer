@@ -29,11 +29,11 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {
-    StaticDefinitionController.class,
+    StaticDefinitionControllerMicroservice.class,
     StaticDefinitionControllerExceptionHandler.class,
     BeanConfig.class
 })
-@WebFluxTest(controllers = StaticDefinitionController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@WebFluxTest(controllers = StaticDefinitionControllerMicroservice.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
 class StaticDefinitionControllerTest {
 
     private static final String STATIC_DEF_GENERATE_ENDPOINT = "/apicatalog/static-api/generate";

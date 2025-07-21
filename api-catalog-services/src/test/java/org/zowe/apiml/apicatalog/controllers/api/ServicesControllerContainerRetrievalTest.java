@@ -28,11 +28,11 @@ import static org.hamcrest.Matchers.contains;
 import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {
-    ServicesController.class,
+    ServicesControllerMicroservice.class,
     ApiCatalogControllerExceptionHandler.class,
     BeanConfig.class
 })
-@WebFluxTest(controllers = ServicesController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@WebFluxTest(controllers = ServicesControllerMicroservice.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServicesControllerContainerRetrievalTest {
 

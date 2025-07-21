@@ -27,9 +27,9 @@ import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 import static org.hamcrest.Matchers.contains;
 import static org.mockito.Mockito.when;
 
-@WebFluxTest(controllers = ApiDocController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@WebFluxTest(controllers = ApiDocControllerMicroservice.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
 @ContextConfiguration(classes = {
-    ApiDocController.class,
+    ApiDocControllerMicroservice.class,
     CatalogApiDocControllerExceptionHandler.class,
     BeanConfig.class
 })

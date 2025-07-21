@@ -101,17 +101,13 @@ class ApiDocServiceTest {
                         return apiDocInfo.getApiDocContent();
                     }
                 },
-                null,
+                mock(ApiDocRetrievalServiceLocal.class),
                 apiDocRetrievalServiceRest
             ) {
                 @Override
                 Mono<String> retrieveApiDoc(ServiceInstance serviceInstance, ApiInfo apiInfo) {
                     lastApiInfo.set(apiInfo);
                     return super.retrieveApiDoc(serviceInstance, apiInfo);
-                }
-
-                boolean isServiceAccessibleInternally(InstanceInfo instanceInfo) {
-                    return false;
                 }
             };
 
@@ -524,7 +520,7 @@ class ApiDocServiceTest {
                     "apiml.apiInfo.0.version", "1.0.0"
                 ))
                 .build();
-            doReturn(instanceInfo).when(apiDocService).getInstanceInfo("apicatalog");
+            doReturn(new EurekaServiceInstance(instanceInfo)).when(apiDocService).getInstanceInfo("apicatalog");
         }
 
         @Test
