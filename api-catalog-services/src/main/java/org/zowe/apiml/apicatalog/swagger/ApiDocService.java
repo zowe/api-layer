@@ -206,10 +206,7 @@ public class ApiDocService {
      *
      * @param serviceInstance the information about service instance
      * @return the URL of API doc endpoint
-     * @deprecated Added to support services which were on-boarded before 'apiml.apiInfo.swaggerUrl' parameter was
-     * introduced. It will be removed when all services will be using the new configuration style.
      */
-    @Deprecated(forRemoval = false)
     private String createApiDocUrlFromRouting(ServiceInstance serviceInstance, RoutedServices routes) {
         String scheme = serviceInstance.isSecure() ? "https" : "http";
         int port = serviceInstance.getPort();
