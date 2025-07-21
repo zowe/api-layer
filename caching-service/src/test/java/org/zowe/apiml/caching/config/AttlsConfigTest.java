@@ -26,13 +26,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.caching.CachingServiceApplication;
-import org.zowe.apiml.caching.TestConfig;
 import org.zowe.apiml.filter.AttlsHttpHandler;
 import org.zowe.apiml.util.config.SslContext;
 
@@ -60,7 +58,6 @@ import static org.mockito.Mockito.verify;
 )
 @DirtiesContext
 @TestInstance(Lifecycle.PER_CLASS)
-@Import(TestConfig.class)
 class AttlsConfigTest {
 
     @Value("${apiml.service.hostname:localhost}")

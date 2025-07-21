@@ -16,12 +16,7 @@ import org.springframework.retry.annotation.EnableRetry;
 import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 
-@SpringBootApplication(
-    scanBasePackages = {
-        "org.zowe.apiml.caching",
-        "org.zowe.apiml.product"
-    }
-)
+@SpringBootApplication
 @EnableApiDiscovery
 @EnableRetry
 @EnableApimlLogger

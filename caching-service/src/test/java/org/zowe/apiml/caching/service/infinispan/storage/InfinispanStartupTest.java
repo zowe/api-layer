@@ -14,14 +14,11 @@ import org.infinispan.manager.DefaultCacheManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-import org.zowe.apiml.caching.TestConfig;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(properties = {"caching.storage.mode=infinispan",
     "jgroups.bind.port=7600", "jgroups.bind.address=localhost", "apiml.enabled=false"})
-@Import(TestConfig.class)
 class InfinispanStartupTest {
 
     @Autowired
