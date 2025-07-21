@@ -29,6 +29,16 @@ server:
         trustStore: ../keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
+        # Custom properties for tests only
+        clientKeyStore: ../keystore/client_cert/client-certs.p12
+        clientCN: apimtst # case-sensitive
+        clientKeyStorePassword: password
+
+#For testing forwarded headers with (un)trusted proxies
+test:
+    proxyAddress: 6.6.6.6
+    trustedProxiesPattern: 6\.6\.6\.6
+
 
 spring:
     main:
