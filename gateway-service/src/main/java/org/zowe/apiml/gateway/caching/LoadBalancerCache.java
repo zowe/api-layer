@@ -19,18 +19,14 @@ import com.netflix.discovery.EurekaClient;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.core5.http.HttpStatus;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.gateway.caching.CachingServiceClient.KeyValue;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static reactor.core.publisher.Mono.empty;
-import static reactor.core.publisher.Mono.error;
-import static reactor.core.publisher.Mono.just;
+import static reactor.core.publisher.Mono.*;
 
 @Component
 @Slf4j
@@ -54,8 +50,7 @@ public class LoadBalancerCache {
         mapper.registerModule(new JavaTimeModule());
     }
 
-    @Cacheable
-    private Mono<Boolean> cachingServiceAvailavility() {
+    private Mono<Boolean> cachingServiceAvailability() {
         return Mono.fromCallable(() -> eurekaClient.getApplication(CACHING_SERVICE_ID))
             .map(app -> !app.getInstances().isEmpty())
             .switchIfEmpty(Mono.just(false));
@@ -71,7 +66,7 @@ public class LoadBalancerCache {
      * @return Mono success / error
      */
     public Mono<Void> store(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
-        return cachingServiceAvailavility()
+        return cachingServiceAvailability()
             .flatMap(available -> {
                 if (Boolean.TRUE.equals(available)) {
                     return storeToRemoteCache(user, service, loadBalancerCacheRecord);
@@ -86,31 +81,31 @@ public class LoadBalancerCache {
     private Mono<Void> storeToRemoteCache(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
         try {
             String serializedRecord = mapper.writeValueAsString(loadBalancerCacheRecord);
-            CachingServiceClient.KeyValue toStore = new KeyValue(getKey(user, service), serializedRecord);
+            CachingServiceClient.ApiKeyValue toStore = new CachingServiceClient.ApiKeyValue(getKey(user, service), serializedRecord);
             return createToRemoteCache(user, service, loadBalancerCacheRecord, toStore);
         } catch (JsonProcessingException e) {
-            log.debug("Failed to serialize record for user: {}, service: {}, record {},  with exception: {}", user, service, loadBalancerCacheRecord, e);
+            log.debug("Failed to serialize record for user: {}, service: {}, record {},  with exception: ", user, service, loadBalancerCacheRecord, e);
             return error(e);
         }
     }
 
-    private Mono<Void> createToRemoteCache(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord, CachingServiceClient.KeyValue toStore) {
+    private Mono<Void> createToRemoteCache(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord, CachingServiceClient.ApiKeyValue toStore) {
         return remoteCache.create(toStore)
             .onErrorResume(createException -> {
                 if (isCausedByCacheConflict(createException)) {
                     return updateToRemoteCache(user, service, loadBalancerCacheRecord, toStore);
                 } else {
-                    log.debug("Failed to create record for user: {}, service: {}, record {}, with exception: {}", user, service, loadBalancerCacheRecord, createException);
+                    log.debug("Failed to create record for user: {}, service: {}, record {}, with exception: ", user, service, loadBalancerCacheRecord, createException);
                     return error(createException);
                 }
             })
             .doOnSuccess(v -> log.debug("Created record to remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord));
     }
 
-    private Mono<Void> updateToRemoteCache(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord, CachingServiceClient.KeyValue toStore) {
+    private Mono<Void> updateToRemoteCache(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord, CachingServiceClient.ApiKeyValue toStore) {
         return remoteCache.update(toStore)
             .doOnSuccess(v -> log.debug("Updated record to remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord))
-            .doOnError(updateException -> log.debug("Failed to update record for user: {}, service: {}, record {}, with exception: {}", user, service, loadBalancerCacheRecord, updateException));
+            .doOnError(updateException -> log.debug("Failed to update record for user: {}, service: {}, record {}, with exception: ", user, service, loadBalancerCacheRecord, updateException));
     }
 
     private boolean isCausedByCacheConflict(Throwable e) {
@@ -125,20 +120,21 @@ public class LoadBalancerCache {
      * @return Retrieved record containing the instance to use for this user and its creation time.
      */
     public Mono<LoadBalancerCacheRecord> retrieve(String user, String service) {
-        return cachingServiceAvailavility()
+        return cachingServiceAvailability()
             .flatMap(available -> {
                 if (Boolean.TRUE.equals(available)) {
                     return remoteCache.read(getKey(user, service))
-                    .map(kv -> {
-                        LoadBalancerCacheRecord loadBalancerCacheRecord;
-                        try {
-                            loadBalancerCacheRecord = mapper.readValue(kv.getValue(), LoadBalancerCacheRecord.class);
-                        } catch (JsonProcessingException e) {
-                            throw new LoadBalancerCacheException(e);
-                        }
-                        log.debug("Retrieved record from remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
-                        return loadBalancerCacheRecord;
-                    });
+                        .handle((kv, sink) -> {
+                            LoadBalancerCacheRecord loadBalancerCacheRecord;
+                            try {
+                                loadBalancerCacheRecord = mapper.readValue(kv.getValue(), LoadBalancerCacheRecord.class);
+                            } catch (JsonProcessingException e) {
+                                sink.error(new LoadBalancerCacheException(e));
+                                return;
+                            }
+                            log.debug("Retrieved record from remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
+                            sink.next(loadBalancerCacheRecord);
+                        });
                 } else {
                     LoadBalancerCacheRecord loadBalancerCacheRecord = localCache.get(getKey(user, service));
                     log.debug("Retrieved record from local cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
@@ -154,7 +150,7 @@ public class LoadBalancerCache {
      * @param service Service towards which is the user routed
      */
     public Mono<Void> delete(String user, String service) {
-        return cachingServiceAvailavility()
+        return cachingServiceAvailability()
             .flatMap(available -> {
                 if (Boolean.TRUE.equals(available)) {
                     return remoteCache.delete(getKey(user, service))

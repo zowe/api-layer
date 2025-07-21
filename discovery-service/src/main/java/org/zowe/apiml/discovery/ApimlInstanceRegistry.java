@@ -11,6 +11,7 @@
 package org.zowe.apiml.discovery;
 
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.InstanceInfo.InstanceStatus;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.eureka.EurekaServerConfig;
@@ -62,6 +63,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     private MethodHandle register2ArgsMethodHandle;
     private MethodHandle register3ArgsMethodHandle;
     private MethodHandle cancelMethodHandle;
+    private MethodHandle replicateToPeersMethodHandle;
 
     private final ApplicationContext appCntx;
     private final EurekaConfig.Tuple tuple;
@@ -148,6 +150,11 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
             Field registryField = AbstractInstanceRegistry.class.getDeclaredField("registry");
             registryField.setAccessible(true);
             this.registry = (ConcurrentHashMap<String, Map<String, Lease<InstanceInfo>>>) registryField.get(this);
+
+            Method replicateToPeers = PeerAwareInstanceRegistryImpl.class.getDeclaredMethod("replicateToPeers", Action.class, String.class, String.class, InstanceInfo.class, InstanceStatus.class, boolean.class);
+            replicateToPeers.setAccessible(true);
+
+            replicateToPeersMethodHandle = MethodHandles.lookup().unreflect(replicateToPeers);
         } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
             throw new IllegalArgumentException(EXCEPTION_MESSAGE, e);
         }
@@ -165,7 +172,22 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         }
     }
 
-    public void registerStatically(InstanceInfo instanceInfo, boolean isReplication) {
+    public void peerAwareHeartbeat(InstanceInfo instanceInfo) {
+        try {
+            replicateToPeersMethodHandle.invokeWithArguments(this, Action.Heartbeat, instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, false);
+        } catch (Throwable e) {
+            throw new IllegalStateException(EXCEPTION_MESSAGE, e);
+        }
+    }
+
+    /**
+     * Register a service statically
+     *
+     * @param instanceInfo InstanceInfo of the registered instance
+     * @param isReplication Whether the registration information source is a replication event
+     * @param peerReplicate Whether to peer replicate the newly registered instance
+     */
+    public void registerStatically(InstanceInfo instanceInfo, boolean isReplication, boolean peerReplicate) {
         // the maximum lease duration time (Eureka bug: overflow of int during conversion to ms)
         int leaseDuration = Integer.MAX_VALUE / 1000;
 
@@ -174,6 +196,11 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
             int backup = expectedNumberOfClientsSendingRenews;
             try {
                 register(instanceInfo, leaseDuration, isReplication);
+                if (peerReplicate) {
+                    replicateToPeersMethodHandle.invokeWithArguments(this, Action.Register, instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, isReplication);
+                }
+            } catch (Throwable e) {
+                throw new IllegalStateException(EXCEPTION_MESSAGE, e);
             } finally {
                 expectedNumberOfClientsSendingRenews = backup;
             }
@@ -197,6 +224,9 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         staticRegistrationIds.add(instanceInfo.getInstanceId());
     }
 
+    /**
+     * Does not do peer replica
+     */
     @Override
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
             info = changeServiceId(info);

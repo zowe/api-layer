@@ -22,7 +22,8 @@ public enum CoreService {
     ZAAS("zaas"),
     DISCOVERY("discovery"),
     API_CATALOG("apicatalog"),
-    AUTH("auth");
+    AUTH("auth"),
+    CACHING("cachingservice");
 
     private final String serviceId;
 

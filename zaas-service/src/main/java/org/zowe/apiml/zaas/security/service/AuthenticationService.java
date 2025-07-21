@@ -42,27 +42,14 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 import org.zowe.apiml.zaas.controllers.AuthController;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static org.zowe.apiml.zaas.security.service.JwtUtils.getJwtClaims;
 import static org.zowe.apiml.zaas.security.service.JwtUtils.handleJwtParserException;
@@ -144,7 +131,8 @@ public class AuthenticationService {
             .signWith(jwtSecurityInitializer.getJwtSecret(), jwtSecurityInitializer.getSignatureAlgorithm()).compact();
     }
 
-    @SuppressWarnings("java:S5659") // It is checking the signature securely - https://github.com/zowe/api-layer/issues/3191
+    @SuppressWarnings("java:S5659")
+    // It is checking the signature securely - https://github.com/zowe/api-layer/issues/3191
     public QueryResponse parseJwtWithSignature(String jwt) throws SignatureException {
         try {
             Jwt<JwsHeader, Claims> parsedJwt = (Jwt<JwsHeader, Claims>) Jwts.parser()
@@ -162,7 +150,7 @@ public class AuthenticationService {
      * Method will invalidate jwtToken. It could be called from two reasons:
      * - on logout phase (distribute = true)
      * - from another ZAAS instance to notify about change (distribute = false)
-     *
+     * <p>
      * Note: This method should not be called from modulith-mode
      *
      * @param jwtToken   token to invalidate
@@ -234,7 +222,7 @@ public class AuthenticationService {
      * Obtain URL to use to invalidate a JWT
      *
      * @param instanceInfo Registration data for the authentication service used
-     * @param jwtToken JWT token to invalidate
+     * @param jwtToken     JWT token to invalidate
      * @return
      */
     protected String getInvalidateUrl(InstanceInfo instanceInfo, String jwtToken) {
@@ -306,19 +294,14 @@ public class AuthenticationService {
     @Cacheable(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken", condition = "#jwtToken != null")
     public TokenAuthentication validateJwtToken(String jwtToken) {
         QueryResponse queryResponse = parseJwtToken(jwtToken);
-        boolean isValid;
-        switch (queryResponse.getSource()) {
-            case ZOWE:
+        boolean isValid = switch (queryResponse.getSource()) {
+            case ZOWE -> {
                 validateAndParseLocalJwtToken(jwtToken);
-                isValid = true;
-                break;
-            case ZOSMF:
-                isValid = zosmfService.validate(jwtToken);
-                break;
-            default:
-                throw new TokenNotValidException("Unknown token type.");
-        }
-
+                yield true;
+            }
+            case ZOSMF -> zosmfService.validate(jwtToken);
+            default -> throw new TokenNotValidException("Unknown token type.");
+        };
         TokenAuthentication tokenAuthentication = new TokenAuthentication(queryResponse.getUserId(), jwtToken, TokenAuthentication.Type.JWT);
         // without a proxy cache aspect is not working, thus it is necessary get bean from application context
         final boolean authenticated = !meAsProxy.isInvalidated(jwtToken);
@@ -348,7 +331,7 @@ public class AuthenticationService {
      * This method get all invalidated JWT token in the cache and distributes them to instance of ZAAS with name
      * in argument toInstanceId. If instance cannot be find it return false. A notification can throw an runtime
      * exception. In all other cases all invalidated token are distributed and method returns true.
-     *
+     * <p>
      * Node: This method should not be used in modulith-mode
      *
      * @param toInstanceId instanceId of ZAAS where invalidated JWT token should be sent
@@ -419,6 +402,7 @@ public class AuthenticationService {
 
     /**
      * This method resolves the token origin directly by decoding token claims.
+     *
      * @param jwtToken the JWT token
      * @return AuthSource.Origin value based on the iss token claim.
      */

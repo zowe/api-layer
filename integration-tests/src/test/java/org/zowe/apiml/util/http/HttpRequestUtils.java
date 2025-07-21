@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.function.Function;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -94,19 +95,30 @@ public class HttpRequestUtils {
     }
 
     public static URI getUriFromService(ServiceConfiguration serviceConfiguration, String endpoint, NameValuePair...arguments) {
-        String scheme = serviceConfiguration.getScheme();
-        var host = serviceConfiguration.getHost();
-        var hostnameTokenizer = new StringTokenizer(host, ",");
-        host = hostnameTokenizer.nextToken();
-        if (serviceConfiguration instanceof GatewayServiceConfiguration s && StringUtils.isNotBlank(s.getDvipaHost())) {
-            host = s.getDvipaHost();
-        }
+        return getUriFromService(serviceConfiguration, endpoint, sc -> {
+            var host = sc.getHost();
+            var hostnameTokenizer = new StringTokenizer(host, ",");
+            host = hostnameTokenizer.nextToken(); // take first
+            if (sc instanceof GatewayServiceConfiguration s && StringUtils.isNotBlank(s.getDvipaHost())) {
+                host = s.getDvipaHost();
+            }
+            return host;
+        }, arguments);
+    }
+
+    public static URI getUriFromService(ServiceConfiguration serviceConfiguration, String endpoint, Function<ServiceConfiguration, String> hostSelector, NameValuePair...arguments) {
+        var scheme = serviceConfiguration.getScheme();
+        var host = hostSelector.apply(serviceConfiguration);
         int port = serviceConfiguration.getPort();
         return getUri(scheme, host, port, endpoint, arguments);
     }
 
     public static URI getUriFromGateway(String endpoint, NameValuePair...arguments) {
         return getUriFromService(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration(), endpoint, arguments);
+    }
+
+    public static URI getUriFromGateway(String endpoint, String gatewayHostname, NameValuePair...arguments) {
+        return getUriFromService(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration(), endpoint, s -> gatewayHostname, arguments);
     }
 
     public static URI getUriFromZaas(String endpoint, NameValuePair...arguments) {

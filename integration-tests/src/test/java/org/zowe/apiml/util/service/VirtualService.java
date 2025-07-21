@@ -219,7 +219,7 @@ public class VirtualService implements AutoCloseable {
      * Register servlet to get instance information
      *
      * @param name under which the servlet is registered to Tomcat
-     * @param url where it will be exposed
+     * @param url  where it will be exposed
      * @return this instance to next command
      */
     public VirtualService addInstanceServlet(String name, String url) {
@@ -272,7 +272,7 @@ public class VirtualService implements AutoCloseable {
      * The check means make serviceCount calls. There is a preposition that load balancer is based on cyclic queue and
      * if it will call multiple times (same to count of instances of same service), it should call all instances.
      *
-     * @param timeoutSec    Timeout in secs to break waiting
+     * @param timeoutSec Timeout in secs to break waiting
      */
     public VirtualService waitForGatewayRegistration(int timeoutSec) {
         final long time0 = System.currentTimeMillis();
@@ -300,7 +300,7 @@ public class VirtualService implements AutoCloseable {
         }
 
         if (slept) {
-            log.info("Slept for waiting for gateways took {}s", (System.currentTimeMillis() - time0) / 1000);
+            log.info("Service registration check slept {}s while waiting for gateways ", (System.currentTimeMillis() - time0) / 1000);
         }
 
         return this;
@@ -339,7 +339,7 @@ public class VirtualService implements AutoCloseable {
         }
 
         if (slept) {
-            log.info("Slept for waiting for gateways took {}s", (System.currentTimeMillis() - time0) / 1000);
+            log.info("Service un-registration slept {}s while waiting for gateways", (System.currentTimeMillis() - time0) / 1000);
         }
 
         return this;
@@ -411,7 +411,7 @@ public class VirtualService implements AutoCloseable {
     }
 
     public Response postRegistration(String status) throws UnknownHostException, JSONException {
-        return given().when()
+        return given().log().all().when()
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .body(new JSONObject()
                 .put("instance", new JSONObject()
@@ -559,7 +559,7 @@ public class VirtualService implements AutoCloseable {
      */
     public List<String> getGatewayUrls() {
         return DiscoveryUtils.getGatewayUrls().stream()
-                .map(x -> String.format("%s/%s%s", x, serviceId.toLowerCase(), gatewayPath))
+            .map(x -> String.format("%s/%s%s", x, serviceId.toLowerCase(), gatewayPath))
             .toList();
     }
 

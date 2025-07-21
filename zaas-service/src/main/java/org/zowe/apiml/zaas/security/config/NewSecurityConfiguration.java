@@ -158,7 +158,7 @@ public class NewSecurityConfiguration {
 
         private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
             @Override
-            public void configure(HttpSecurity http) throws Exception {
+            public void configure(HttpSecurity http) {
                 AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
                 //drive filter order this way
                 http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
@@ -193,7 +193,7 @@ public class NewSecurityConfiguration {
     /**
      * Secures endpoints:
      *   - /auth/access-token/generate
-     *
+     * <p>
      * Requires authentication by a client certificate forwarded form Gateway or basic authentication, supports credentials in header and body.
      * The request is fulfilled by the filter chain only, there is no controller to handle it.
      * Order of custom filters:
@@ -228,7 +228,7 @@ public class NewSecurityConfiguration {
 
         private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
             @Override
-            public void configure(HttpSecurity http) throws Exception {
+            public void configure(HttpSecurity http) {
                 AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
                 //drive filter order this way
                 http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
@@ -361,7 +361,7 @@ public class NewSecurityConfiguration {
 
             private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
                 @Override
-                public void configure(HttpSecurity http) throws Exception {
+                public void configure(HttpSecurity http) {
                     AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
                     http.addFilterBefore(queryFilter("/**", authenticationManager), UsernamePasswordAuthenticationFilter.class);
                 }
@@ -406,7 +406,7 @@ public class NewSecurityConfiguration {
 
             private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
                 @Override
-                public void configure(HttpSecurity http) throws Exception {
+                public void configure(HttpSecurity http) {
                     AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
                     http.addFilterBefore(ticketFilter("/**", authenticationManager), UsernamePasswordAuthenticationFilter.class);
                 }
@@ -444,7 +444,7 @@ public class NewSecurityConfiguration {
                 ))).authorizeHttpRequests(requests -> requests
                         .anyRequest().authenticated())
                     .authenticationProvider(tokenAuthenticationProvider)
-                    .logout(logout -> logout.disable()) // logout filter in this chain not needed
+                    .logout(AbstractHttpConfigurer::disable) // logout filter in this chain not needed
                     .x509(x509 -> x509 //default x509 filter, authenticates trusted cert, refreshFilter(..) depends on this
                         .userDetailsService(new SimpleUserDetailService()))
                     .with(new CustomSecurityFilters(), Customizer.withDefaults());
@@ -454,7 +454,7 @@ public class NewSecurityConfiguration {
 
             private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
                 @Override
-                public void configure(HttpSecurity http) throws Exception {
+                public void configure(HttpSecurity http) {
                     AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
                     http.addFilterBefore(refreshFilter("/**", authenticationManager), UsernamePasswordAuthenticationFilter.class);
                 }
@@ -519,11 +519,9 @@ public class NewSecurityConfiguration {
                     .logout(AbstractHttpConfigurer::disable);  // logout filter in this chain not needed
 
                 if (isAttlsEnabled) {
-                    http.x509(withDefaults())
+                    http
                         // filter out API ML certificate
                         .addFilterBefore(reversedCategorizeCertFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
-                } else {
-                    http.x509(x509 -> x509.userDetailsService(x509UserDetailsService())); // default x509 filter, authenticates trusted cert
                 }
 
                 return http.authenticationProvider(compoundAuthProvider) // for authenticating credentials
@@ -535,10 +533,12 @@ public class NewSecurityConfiguration {
 
             private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
                 @Override
-                public void configure(HttpSecurity http) throws Exception {
+                public void configure(HttpSecurity http) {
                     AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
                     // place the following filters before the x509 filter
                     http
+                        .addFilterAfter(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                        .addFilterAfter(x509ForwardingAwareAuthenticationFilter(),  CategorizeCertsFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
                         .addFilterBefore(basicFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                         .addFilterBefore(cookieFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                         .addFilterBefore(bearerContentFilter(authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
@@ -576,6 +576,12 @@ public class NewSecurityConfiguration {
                         handlerInitializer.getAuthenticationFailureHandler(),
                         handlerInitializer.getResourceAccessExceptionHandler(),
                         new String[] {"/"});
+                }
+
+                private X509ForwardingAwareAuthenticationFilter x509ForwardingAwareAuthenticationFilter() {
+                    return new X509AuthAwareFilter("/**",
+                        handlerInitializer.getAuthenticationFailureHandler(),
+                        x509AuthenticationProvider);
                 }
             }
 

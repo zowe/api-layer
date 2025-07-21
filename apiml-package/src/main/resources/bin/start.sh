@@ -100,6 +100,10 @@
 # - ZWE_zowe_logDirectory
 # - ZWE_zowe_network_server_tls_attls
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
+# - ZWE_configs_storage_evictionStrategy
+# - ZWE_configs_storage_mode
+# - ZWE_configs_storage_size
+# - ZWE_configs_storage_vsam_name
 # Optional variables:
 
 if [ -n "${LAUNCH_COMPONENT}" ]; then
@@ -205,6 +209,10 @@ if [ "${ZWE_configs_server_ssl_enabled:-${ZWE_components_gateway_server_ssl_enab
     externalProtocol="https"
 else
     externalProtocol="http"
+fi
+
+if [ -n "${ZWE_configs_storage_vsam_name}" ]; then
+    VSAM_FILE_NAME=//\'${ZWE_configs_storage_vsam_name:-${ZWE_components_caching_service_storage_vsam_name}}\'
 fi
 
 LIBPATH="$LIBPATH":"/lib"
@@ -357,6 +365,11 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-${ZWE_components_gateway_port:-7554}} \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
+    -Dcaching.storage.evictionStrategy=${ZWE_configs_storage_evictionStrategy:-${ZWE_components_caching_service_storage_evictionStrategy:-reject}} \
+    -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-${ZWE_components_caching_service_storage_infinispan_initialHosts:-"localhost[7600]"}} \
+    -Dcaching.storage.mode=${ZWE_configs_storage_mode:-${ZWE_components_caching_service_storage_mode:-infinispan}} \
+    -Dcaching.storage.size=${ZWE_configs_storage_size:${ZWE_components_caching_service_storage_size:-10000}} \
+    -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
     -Deureka.client.serviceUrl.defaultZone=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dfile.encoding=UTF-8 \
     -Dibm.serversocket.recover=true \
@@ -365,6 +378,10 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-${ZWE_components_gateway_sslDebug:-${ZWE_components_discovery_sslDebug:-""}}} \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
+    -Djgroups.bind.address=${ZWE_configs_storage_infinispan_jgroups_host:-${ZWE_components_caching_service_storage_infinispan_jgroups_host:-${ZWE_haInstance_hostname:-localhost}}} \
+    -Djgroups.bind.port=${ZWE_configs_storage_infinispan_jgroups_port:-${ZWE_components_caching_service_storage_infinispan_jgroups_port:-7600}} \
+    -Djgroups.keyExchange.port=${ZWE_configs_storage_infinispan_jgroups_keyExchange_port:-${ZWE_components_caching_service_storage_infinispan_jgroups_keyExchange_port:-7601}} \
+    -Djgroups.tcp.diag.enabled=${ZWE_configs_storage_infinispan_jgroups_tcp_diag_enabled:-${ZWE_components_caching_service_storage_infinispan_jgroups_tcp_diag_enabled:-false}} \
     -Dloader.path=${APIML_LOADER_PATH} \
     -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
     -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \

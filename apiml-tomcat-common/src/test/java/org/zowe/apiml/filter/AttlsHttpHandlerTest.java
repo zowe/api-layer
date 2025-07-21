@@ -153,7 +153,7 @@ class AttlsHttpHandlerTest {
         }
 
         void mockAttlsContext(AttlsContext attlsContext) {
-            ThreadLocal<AttlsContext> contexts = (ThreadLocal<AttlsContext>) ReflectionTestUtils.getField(InboundAttls.class,"contexts");
+            ThreadLocal<AttlsContext> contexts = (ThreadLocal<AttlsContext>) ReflectionTestUtils.getField(InboundAttls.class, "contexts");
             if (attlsContext == null) {
                 contexts.remove();
             } else {
@@ -162,7 +162,7 @@ class AttlsHttpHandlerTest {
         }
 
         AttlsContext createAttlsContext(StatConn statConn) {
-            return  new AttlsContext(0, false) {
+            return new AttlsContext(0, false) {
                 @Override
                 public StatConn getStatConn() {
                     return statConn;
@@ -210,7 +210,7 @@ class AttlsHttpHandlerTest {
 
             private Message createMessage(String key, String message) {
                 MessageTemplate messageTemplate = new MessageTemplate(key, "0", MessageType.ERROR, message);
-                return Message.of("org.zowe.apiml.gateway.internalServerError", messageTemplate, new Object[0]);
+                return Message.of("org.zowe.apiml.common.internalServerError", messageTemplate, new Object[0]);
             }
 
             @BeforeEach

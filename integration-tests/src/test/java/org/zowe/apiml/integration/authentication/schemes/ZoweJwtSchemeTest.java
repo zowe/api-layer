@@ -31,7 +31,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
@@ -126,7 +127,7 @@ class ZoweJwtSchemeTest implements TestWithStartedInstances {
         @Test
         void preserveCookies() {
             String jwt = gatewayToken();
-            Cookie.Builder builder = new Cookie.Builder("XSRF-TOKEN","another-token-in-cookies");
+            Cookie.Builder builder = new Cookie.Builder("XSRF-TOKEN", "another-token-in-cookies");
             Cookies cookies = new Cookies(builder.build());
             given()
                 .config(SslContext.tlsWithoutCert)

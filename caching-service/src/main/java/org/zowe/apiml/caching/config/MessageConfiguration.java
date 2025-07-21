@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.caching.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.message.core.MessageService;
@@ -18,6 +19,7 @@ import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 @Configuration
 public class MessageConfiguration {
     @Bean
+    @ConditionalOnMissingBean(name = "modulithConfig")
     public MessageService messageService() {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/utility-log-messages.yml");
