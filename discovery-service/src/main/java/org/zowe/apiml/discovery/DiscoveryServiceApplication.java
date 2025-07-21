@@ -10,18 +10,14 @@
 
 package org.zowe.apiml.discovery;
 
-import jakarta.annotation.Nonnull;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
-import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 
@@ -35,7 +31,7 @@ import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 @EnableApimlLogger
 @EnableWebSecurity
 @EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
-public class DiscoveryServiceApplication implements ApplicationListener<ApplicationReadyEvent> {
+public class DiscoveryServiceApplication {
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(DiscoveryServiceApplication.class);
@@ -45,8 +41,4 @@ public class DiscoveryServiceApplication implements ApplicationListener<Applicat
         app.run(args);
     }
 
-    @Override
-    public void onApplicationEvent(@Nonnull final ApplicationReadyEvent event) {
-        new ServiceStartupEventHandler().onServiceStartup("Discovery Service", ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
-    }
 }
