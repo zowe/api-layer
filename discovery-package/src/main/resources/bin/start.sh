@@ -61,9 +61,10 @@ if [ -z "${LIBRARY_PATH}" ]; then
 fi
 
 if [ "${ZWE_configs_debug}" = "true" ]; then
-    if [ -n "${ZWE_configs_spring_profiles_active}" ];
-    then
-        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+    if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},https,"
+    else
+        ZWE_configs_spring_profiles_active="https,"
     fi
     ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}debug"
 fi
@@ -131,6 +132,10 @@ if [ "${ATTLS_ENABLED}" = "true" ]; then
     ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
   fi
   ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}attls"
+fi
+
+if [ "$ZWE_configs_server_ssl_enabled" = "false" ]; then
+    ZWE_configs_spring_profiles_active=$(echo "${ZWE_configs_spring_profiles_active}" | sed -e 's|https|diag|g')
 fi
 
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
@@ -293,7 +298,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.ssl.trustStore="${truststore_location}" \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
     -Dserver.ssl.trustStoreType="${truststore_type}" \
-    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
+    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active} \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"
