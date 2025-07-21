@@ -25,6 +25,7 @@ import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.apicatalog.config.BeanConfig;
 
 import static org.hamcrest.Matchers.contains;
 import static org.mockito.Mockito.when;
@@ -32,10 +33,10 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = {
     ServicesController.class,
     ApiCatalogControllerExceptionHandler.class,
-    ServicesControllerContainerRetrievalTest.Context.class
+    BeanConfig.class
 })
 @WebFluxTest(controllers = ServicesController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
-@TestInstance(TestInstance.Lifecycle. PER_CLASS)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServicesControllerContainerRetrievalTest {
 
     @Autowired
@@ -59,15 +60,6 @@ class ServicesControllerContainerRetrievalTest {
             .expectStatus().is5xxServerError()
             .expectBody().jsonPath("$.messages[?(@.messageNumber == 'ZWEAC104E')].messageContent")
                 .value(contains("Could not retrieve container statuses, java.lang.NullPointerException"));
-    }
-
-    static class Context {
-
-        @Bean
-        public MessageService messageService() {
-            return new YamlMessageService("/apicatalog-log-messages.yml");
-        }
-
     }
 
 }

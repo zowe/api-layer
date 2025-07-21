@@ -41,11 +41,10 @@ import java.util.Optional;
 import static org.apache.hc.core5.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.hc.core5.http.HttpStatus.SC_NO_CONTENT;
 
-@Slf4j
 @RequiredArgsConstructor
 public class TokenController {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
     private final GatewaySecurity gatewaySecurity;
     private final AuthConfigurationProperties authConfigurationProperties;
 

@@ -27,7 +27,12 @@ import org.springframework.http.HttpStatus;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
-import org.zowe.apiml.util.config.*;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
+import org.zowe.apiml.util.config.ServiceConfiguration;
+import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.SslContextConfigurer;
+import org.zowe.apiml.util.config.TlsConfiguration;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -42,7 +47,9 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.with;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.zowe.apiml.util.SecurityUtils.GATEWAY_TOKEN_COOKIE_NAME;
@@ -56,7 +63,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
     public static final String DOMAIN_APIML = "domain-apiml";
     public static final String CENTRAL_APIML = "central-apiml";
 
-    static ServiceConfiguration conf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    static ServiceConfiguration conf = ConfigReader.environmentConfiguration().getCentralGatewayServiceConfiguration();
     static DiscoveryServiceConfiguration discoveryConf = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
 
     @BeforeAll

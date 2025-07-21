@@ -16,8 +16,16 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import org.zowe.apiml.apicatalog.config.BeanConfig;
+import org.zowe.apiml.apicatalog.controllers.handlers.CatalogApiDocControllerExceptionHandler;
+import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
+import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.apicatalog.controllers.handlers.CatalogApiDocControllerExceptionHandler;
@@ -33,7 +41,7 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = {
     ApiDocController.class,
     CatalogApiDocControllerExceptionHandler.class,
-    ApiDocControllerServiceNotFoundTest.Context.class
+    BeanConfig.class
 })
 @TestInstance(TestInstance.Lifecycle. PER_CLASS)
 class ApiDocControllerServiceNotFoundTest {
@@ -42,11 +50,11 @@ class ApiDocControllerServiceNotFoundTest {
     private WebTestClient webTestClient;
 
     @MockitoBean
-    private ApiDocService apiDocService;
+    private ApiDocRetrievalService apiServiceStatusService;
 
     @BeforeAll
     void initApiDocRetrievalService() {
-        when(apiDocService.retrieveApiDoc("service1", "v1"))
+        when(apiServiceStatusService.retrieveApiDoc("service1", "v1"))
             .thenThrow(new ServiceNotFoundException("API Documentation not retrieved, The service is running."));
     }
 
@@ -56,15 +64,6 @@ class ApiDocControllerServiceNotFoundTest {
             .expectStatus().isNotFound()
             .expectBody().jsonPath("$.messages[?(@.messageNumber == 'ZWEAC706E')].messageContent")
                 .value(contains("Service not located, API Documentation not retrieved, The service is running."));
-    }
-
-    static class Context {
-
-        @Bean
-        public MessageService messageService() {
-            return new YamlMessageService("/apicatalog-log-messages.yml");
-        }
-
     }
 
 }

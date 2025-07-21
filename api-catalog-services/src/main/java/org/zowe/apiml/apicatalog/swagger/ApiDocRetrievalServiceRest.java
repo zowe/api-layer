@@ -20,8 +20,11 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -96,8 +99,8 @@ public class ApiDocRetrievalServiceRest {
                     exceptionMessage.apply(serviceId) + " Root cause: " + e.getMessage(), e
                 ));
             }
-        })
-        .subscribeOn(Schedulers.boundedElastic());
+            })
+            .subscribeOn(Schedulers.boundedElastic());
     }
 
 }

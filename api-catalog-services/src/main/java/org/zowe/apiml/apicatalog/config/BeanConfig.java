@@ -13,6 +13,7 @@ package org.zowe.apiml.apicatalog.config;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.message.core.MessageService;
@@ -40,6 +41,7 @@ public class BeanConfig {
     }
 
     @Bean
+    @Lazy
     public TransformService transformService(GatewayClient gatewayClient) {
         return new TransformService(gatewayClient);
     }

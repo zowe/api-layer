@@ -11,15 +11,15 @@
 package org.zowe.apiml.apicatalog.swagger;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
-import com.netflix.discovery.shared.Applications;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
@@ -47,26 +47,24 @@ class ContainerServiceTest {
 
         private static final String SERVICE_ID = "service_test_id";
 
-        private EurekaClient eurekaClient = mock(EurekaClient.class);
+        private DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
         private TransformService transformService = new TransformService(new GatewayClient(ServiceAddress.builder().scheme("https").hostname("localhost").build()));
         private CustomStyleConfig customStyleConfig = new CustomStyleConfig();
 
-        private InstanceInfo instance1;
-        private InstanceInfo instance2;
+        private ServiceInstance serviceInstance1;
+        private ServiceInstance serviceInstance2;
         private ContainerService containerService;
 
         @BeforeEach
         void prepareApplications() {
-            instance1 = ServicesBuilder.createInstance("service1", "demoapp");
-            instance2 = ServicesBuilder.createInstance("service2", "demoapp");
-            Application application1 = new Application("service1", Collections.singletonList(instance1));
-            Application application2 = new Application("service2", Collections.singletonList(instance2));
+            serviceInstance1 = ServicesBuilder.createInstance("service1", "demoapp");
+            serviceInstance2 = ServicesBuilder.createInstance("service2", "demoapp");
 
-            when(eurekaClient.getApplication("service1")).thenReturn(application1);
-            when(eurekaClient.getApplication("service2")).thenReturn(application2);
-            when(eurekaClient.getApplications()).thenReturn(new Applications("hash", 0L, Arrays.asList(application1, application2)));
+            when(discoveryClient.getInstances("service1")).thenReturn(Collections.singletonList(serviceInstance1));
+            when(discoveryClient.getInstances("service2")).thenReturn(Collections.singletonList(serviceInstance2));
+            when(discoveryClient.getServices()).thenReturn(Arrays.asList("service1", "service2"));
             containerService = new ContainerService(
-                eurekaClient,
+                discoveryClient,
                 transformService,
                 customStyleConfig
             );
@@ -101,8 +99,8 @@ class ContainerServiceTest {
 
                 @Test
                 void containerStatusIsDown() {
-                    instance1.setStatus(InstanceInfo.InstanceStatus.DOWN);
-                    instance2.setStatus(InstanceInfo.InstanceStatus.DOWN);
+                    ((EurekaServiceInstance) serviceInstance1).getInstanceInfo().setStatus(InstanceInfo.InstanceStatus.DOWN);
+                    ((EurekaServiceInstance) serviceInstance2).getInstanceInfo().setStatus(InstanceInfo.InstanceStatus.DOWN);
 
                     APIContainer container = containerService.getContainerById("demoapp");
                     assertNotNull(container);
@@ -116,7 +114,7 @@ class ContainerServiceTest {
             class GivenSomeServicesAreDown {
                 @Test
                 void containerStatusIsWarning() {
-                    instance2.setStatus(InstanceInfo.InstanceStatus.DOWN);
+                    ((EurekaServiceInstance) serviceInstance2).getInstanceInfo().setStatus(InstanceInfo.InstanceStatus.DOWN);
 
                     APIContainer container = containerService.getContainerById("demoapp");
                     assertNotNull(container);
@@ -132,17 +130,14 @@ class ContainerServiceTest {
 
             @Test
             void groupThem() {
-                Application application = ServicesBuilder.createApp(
-                    SERVICE_ID,
-                    ServicesBuilder.createInstance(SERVICE_ID, SERVICE_ID,
+                var serviceInstance = ServicesBuilder.createInstance(SERVICE_ID, SERVICE_ID,
                         Pair.of("apiml.apiInfo.api-v1.apiId", "api1"),
                         Pair.of("apiml.apiInfo.api-v1.version", "1.0.0"),
                         Pair.of("apiml.apiInfo.api-v2.apiId", "api2"),
                         Pair.of("apiml.apiInfo.api-v2.version", "2"),
-                        Pair.of("apiml.apiInfo.api-v3.apiId", "api3")));
-                Applications applications = new Applications("hash", 0L, Collections.singletonList(application));
-                doReturn(application).when(eurekaClient).getApplication(SERVICE_ID);
-                doReturn(applications).when(eurekaClient).getApplications();
+                        Pair.of("apiml.apiInfo.api-v3.apiId", "api3"));
+                doReturn(Collections.singletonList(serviceInstance)).when(discoveryClient).getInstances(SERVICE_ID);
+                doReturn(Collections.singletonList(SERVICE_ID)).when(discoveryClient).getServices();
                 APIContainer apiContainer = containerService.getContainerById(SERVICE_ID);
 
                 APIService apiService = apiContainer.getServices().iterator().next();
@@ -163,14 +158,11 @@ class ContainerServiceTest {
 
                 @Test
                 void returnNonSso() {
-                    Application application = ServicesBuilder.createApp(
-                        SERVICE_ID,
+                    doReturn(Arrays.asList(
                         ServicesBuilder.createInstance(SERVICE_ID, SERVICE_ID, Pair.of(AUTHENTICATION_SCHEME, "bypass")),
                         ServicesBuilder.createInstance(SERVICE_ID, SERVICE_ID, Pair.of(AUTHENTICATION_SCHEME, "zoweJwt"))
-                    );
-                    Applications applications = new Applications("hash", 0L, Collections.singletonList(application));
-                    doReturn(application).when(eurekaClient).getApplication(SERVICE_ID);
-                    doReturn(applications).when(eurekaClient).getApplications();
+                    )).when(discoveryClient).getInstances(SERVICE_ID);
+                    doReturn(Collections.singletonList(SERVICE_ID)).when(discoveryClient).getServices();
 
                     APIContainer apiContainer = containerService.getContainerById(SERVICE_ID);
 
@@ -187,11 +179,9 @@ class ContainerServiceTest {
 
                 @Test
                 void returnSso() {
-                    InstanceInfo instanceInfo = ServicesBuilder.createInstance(SERVICE_ID, SERVICE_ID, Pair.of(AUTHENTICATION_SCHEME, "zoweJwt"));
-                    Application application = ServicesBuilder.createApp(SERVICE_ID, instanceInfo);
-                    Applications applications = new Applications("hash", 0L, Collections.singletonList(application));
-                    doReturn(application).when(eurekaClient).getApplication(SERVICE_ID);
-                    doReturn(applications).when(eurekaClient).getApplications();
+                    ServiceInstance serviceInstance = ServicesBuilder.createInstance(SERVICE_ID, SERVICE_ID, Pair.of(AUTHENTICATION_SCHEME, "zoweJwt"));
+                    doReturn(Collections.singletonList(serviceInstance)).when(discoveryClient).getInstances(SERVICE_ID);
+                    doReturn(Collections.singletonList(SERVICE_ID)).when(discoveryClient).getServices();
                     APIContainer apiContainer = containerService.getContainerById(SERVICE_ID);
 
                     assertTrue(apiContainer.isSso());
@@ -209,10 +199,9 @@ class ContainerServiceTest {
 
             @Test
             void thenSetToApiService() {
-                InstanceInfo instanceInfo = ServicesBuilder.createInstance(SERVICE_ID, SERVICE_ID, Pair.of(AUTHENTICATION_SCHEME, "zoweJwt"));
-                Application application = ServicesBuilder.createApp(SERVICE_ID, instanceInfo);
-                Applications applications = new Applications("hash", 0L, Collections.singletonList(application));
-                doReturn(applications).when(eurekaClient).getApplications();
+                ServiceInstance serviceInstance = ServicesBuilder.createInstance(SERVICE_ID, SERVICE_ID, Pair.of(AUTHENTICATION_SCHEME, "zoweJwt"));
+                doReturn(Collections.singletonList(SERVICE_ID)).when(discoveryClient).getServices();
+                doReturn(Collections.singletonList(serviceInstance)).when(discoveryClient).getInstances(SERVICE_ID);
                 ReflectionTestUtils.setField(containerService, "hideServiceInfo", true);
                 APIContainer apiContainer = containerService.getContainerById(SERVICE_ID);
                 assertTrue(apiContainer.isHideServiceInfo());
@@ -230,7 +219,7 @@ class ContainerServiceTest {
         @BeforeEach
         void init() {
             containerService = new ContainerService(
-                mock(EurekaClient.class),
+                mock(DiscoveryClient.class),
                 new TransformService(new GatewayClient(ServiceAddress.builder().scheme("https").hostname("localhost").build())),
                 new CustomStyleConfig()
             );
@@ -241,10 +230,11 @@ class ContainerServiceTest {
             metadata.put(APIML_ID, "apimlId");
             metadata.put(SERVICE_TITLE, "title");
             metadata.put(REGISTRATION_TYPE, registrationType.getValue());
-            var service = InstanceInfo.Builder.newBuilder()
+            var service = new EurekaServiceInstance(InstanceInfo.Builder.newBuilder()
                 .setAppName(CoreService.GATEWAY.getServiceId())
                 .setMetadata(metadata)
-                .build();
+                .build()
+            );
             return containerService.createAPIServiceFromInstance(service);
         }
 

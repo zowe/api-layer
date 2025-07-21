@@ -28,13 +28,13 @@ import org.zowe.apiml.ticket.TicketResponse;
 import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLException;
+import java.time.Duration;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.cloud.gateway.support.RouteMetadataUtils.CONNECT_TIMEOUT_ATTR;
 import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
 
 class NettyRoutingFilterApimlTest {
@@ -92,10 +92,13 @@ class NettyRoutingFilterApimlTest {
 
             NettyRoutingFilterApiml nettyRoutingFilterApiml;
             private final Route ROUTE_NO_TIMEOUT = Route.async()
-                    .id("1").uri("http://localhost/").predicate(__ -> true)
+                .id("1").uri("http://localhost/").predicate(__ -> true)
                 .build();
             private final Route ROUTE_TIMEOUT = Route.async()
-                    .id("2").uri("http://localhost/").predicate(__ -> true).metadata(CONNECT_TIMEOUT_ATTR, "100")
+                .id("2").uri("http://localhost/").predicate(__ -> true).metadata("apiml.connectTimeout", "100")
+                .build();
+            private final Route ROUTE_RESPONSE_TIMEOUT = Route.async()
+                .id("3").uri("http://localhost/").predicate(__ -> true).metadata("apiml.responseTimeout", "23")
                 .build();
             MockServerWebExchange serverWebExchange;
 
@@ -141,6 +144,14 @@ class NettyRoutingFilterApimlTest {
                 serverWebExchange.getAttributes().put(HTTP_CLIENT_USE_CLIENT_CERTIFICATE, Boolean.TRUE);
                 nettyRoutingFilterApiml.getHttpClient(ROUTE_TIMEOUT, serverWebExchange);
                 verify(httpClientWithCert).option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 100);
+            }
+
+            @Test
+            void givenTimeoutAndRequirementsForClientCert_whenGetHttpClient_thenCallWithoutClientCertWithCorrectTimeout() {
+                setUpClient(httpClientWithCert);
+                serverWebExchange.getAttributes().put(HTTP_CLIENT_USE_CLIENT_CERTIFICATE, Boolean.TRUE);
+                nettyRoutingFilterApiml.getHttpClient(ROUTE_RESPONSE_TIMEOUT, serverWebExchange);
+                verify(httpClientWithCert).responseTimeout(Duration.ofMillis(23));
             }
 
         }

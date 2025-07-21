@@ -16,12 +16,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.apicatalog.config.BeanConfig;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -33,7 +31,7 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = {
     StaticDefinitionController.class,
     StaticDefinitionControllerExceptionHandler.class,
-    StaticDefinitionControllerTest.Context.class
+    BeanConfig.class
 })
 @WebFluxTest(controllers = StaticDefinitionController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
 class StaticDefinitionControllerTest {
@@ -182,15 +180,6 @@ class StaticDefinitionControllerTest {
                     .expectStatus().is2xxSuccessful();
             }
 
-        }
-
-    }
-
-    static class Context {
-
-        @Bean
-        public MessageService messageService() {
-            return new YamlMessageService("/apicatalog-log-messages.yml");
         }
 
     }
