@@ -102,24 +102,24 @@ class ServicesControllerTests {
         @Nested
         class WhenSpecificContainerRequested {
 
-            private static final String serviceId = "service1";
+            private static final String SERVICE_ID = "service1";
 
             @Test
             void ifExistingInstanceThenReturnOk() {
-                var instance = InstanceInfo.Builder.newBuilder().setAppName(serviceId).setInstanceId("instance1").setMetadata(Map.of(CATALOG_ID, "service1")).build();
-                doReturn(Collections.singletonList(new EurekaServiceInstance(instance))).when(discoveryClient).getInstances(serviceId);
-                doReturn(Collections.singletonList(serviceId)).when(discoveryClient).getServices();
-                doReturn(Mono.empty()).when(apiDocService).retrieveDefaultApiDoc(serviceId);
+                var instance = InstanceInfo.Builder.newBuilder().setAppName(SERVICE_ID).setInstanceId("instance1").setMetadata(Map.of(CATALOG_ID, "service1")).build();
+                doReturn(Collections.singletonList(new EurekaServiceInstance(instance))).when(discoveryClient).getInstances(SERVICE_ID);
+                doReturn(Collections.singletonList(SERVICE_ID)).when(discoveryClient).getServices();
+                doReturn(Mono.empty()).when(apiDocService).retrieveDefaultApiDoc(SERVICE_ID);
 
-                webTestClient.get().uri(pathToContainers + "/" + serviceId).exchange()
+                webTestClient.get().uri(pathToContainers + "/" + SERVICE_ID).exchange()
                     .expectStatus().isOk();
             }
 
             @Test
             void ifNonExistingInstanceThenReturnNotFound() {
-                given(containerService.getContainerById(serviceId)).willReturn(null);
+                given(containerService.getContainerById(SERVICE_ID)).willReturn(null);
 
-                webTestClient.get().uri(pathToContainers + "/" + serviceId).exchange()
+                webTestClient.get().uri(pathToContainers + "/" + SERVICE_ID).exchange()
                     .expectStatus().isNotFound();
             }
 
