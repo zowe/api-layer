@@ -164,7 +164,7 @@ class ApiDocServiceTest {
 
                     Mono<String> apiDocMono = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
                     Exception exception = assertThrows(ApiDocNotFoundException.class, apiDocMono::block);
-                    assertEquals("No API Documentation was retrieved due to " + SERVICE_ID + " server error: '" + responseBody + "'.", exception.getMessage());
+                    assertEquals("No API Documentation was retrieved due to " + SERVICE_ID + " server error: 500 " + responseBody, exception.getMessage());
                 }
 
             }
