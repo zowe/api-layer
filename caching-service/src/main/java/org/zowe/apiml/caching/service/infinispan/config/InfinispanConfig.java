@@ -28,13 +28,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
-import org.zowe.apiml.caching.service.Storage;
+import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.caching.service.infinispan.exception.InfinispanConfigException;
 import org.zowe.apiml.caching.service.infinispan.storage.InfinispanStorage;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
 import static org.zowe.apiml.security.SecurityUtils.isKeyring;
@@ -117,12 +118,12 @@ public class InfinispanConfig {
         builder.persistence().passivation(true)
             .addSoftIndexFileStore()
             .shared(false);
-        cacheManager.administration()
+
+        var caches = Arrays.asList("zoweCache", "zoweInvalidatedTokenCache", "zosmfAuthenticationEndpoint", "invalidatedJwtTokens", "validationJwtToken", "zosmfInfo", "zosmfJwtEndpoint", "trustedCertificates", "parseOIDCToken", "validationOIDCToken");
+        caches.forEach(cacheName -> cacheManager.administration()
             .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
-            .getOrCreateCache("zoweCache", builder.build());
-        cacheManager.administration()
-            .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
-            .getOrCreateCache("zoweInvalidatedTokenCache", builder.build());
+            .getOrCreateCache(cacheName, builder.build()));
+
         return cacheManager;
     }
 

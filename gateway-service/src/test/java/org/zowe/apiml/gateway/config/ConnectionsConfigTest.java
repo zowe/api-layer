@@ -16,7 +16,6 @@ import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClientConfig;
 import io.netty.handler.ssl.util.KeyManagerFactoryWrapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,11 +23,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.boot.web.server.Ssl;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +33,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.WebFilter;
 import org.zowe.apiml.gateway.GatewayServiceApplication;
+import org.zowe.apiml.product.web.HttpConfig;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.SslProvider;
 
@@ -52,8 +49,23 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ConnectionsConfigTest {
 
@@ -97,55 +109,10 @@ class ConnectionsConfigTest {
     }
 
     @Nested
-    @SpringBootTest
-    @ComponentScan(basePackages = "org.zowe.apiml.gateway")
-    class KeyringFormatAndPasswordUpdate {
-
-        ApplicationContext context;
-
-        ConnectionsConfig noContextConnectionsConfig = new ConnectionsConfig(null);
-
-        @BeforeEach
-        void setup() {
-            context = mock(ApplicationContext.class);
-            ServerProperties properties = new ServerProperties();
-            properties.setSsl(new Ssl());
-            when(context.getBean(ServerProperties.class)).thenReturn(properties);
-        }
-
-        @Test
-        void whenKeyringHasWrongFormatAndMissingPasswords_thenFixIt() {
-            ReflectionTestUtils.setField(noContextConnectionsConfig, "keyStorePath", "safkeyring:///userId/ringId1");
-            ReflectionTestUtils.setField(noContextConnectionsConfig, "trustStorePath", "safkeyring:////userId/ringId2");
-            ReflectionTestUtils.setField(noContextConnectionsConfig, "context", context);
-            noContextConnectionsConfig.updateConfigParameters();
-
-            assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "keyStorePath")).isEqualTo("safkeyring://userId/ringId1");
-            assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "trustStorePath")).isEqualTo("safkeyring://userId/ringId2");
-            assertThat((char[]) ReflectionTestUtils.getField(noContextConnectionsConfig, "keyStorePassword")).isEqualTo("password".toCharArray());
-            assertThat((char[]) ReflectionTestUtils.getField(noContextConnectionsConfig, "trustStorePassword")).isEqualTo("password".toCharArray());
-        }
-
-        @Test
-        void whenKeystore_thenDoNothing() {
-            ReflectionTestUtils.setField(noContextConnectionsConfig, "keyStorePath", "/path1");
-            ReflectionTestUtils.setField(noContextConnectionsConfig, "trustStorePath", "/path2");
-            ReflectionTestUtils.setField(noContextConnectionsConfig, "context", context);
-            noContextConnectionsConfig.updateConfigParameters();
-
-            assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "keyStorePath")).isEqualTo("/path1");
-            assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "trustStorePath")).isEqualTo("/path2");
-            assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "keyStorePassword")).isNull();
-            assertThat(ReflectionTestUtils.getField(noContextConnectionsConfig, "trustStorePassword")).isNull();
-        }
-
-    }
-
-    @Nested
     @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = { "management.port=-1" },
-        classes = { GatewayServiceApplication.class, ConnectionsConfigTest.SslDetectorConfig.class }
+        properties = {"management.port=-1"},
+        classes = {GatewayServiceApplication.class, ConnectionsConfigTest.SslDetectorConfig.class}
     )
     class ChooseAlias {
 
@@ -191,10 +158,12 @@ class ConnectionsConfigTest {
 
             @Autowired
             private ConnectionsConfig connectionsConfig;
+            @MockitoSpyBean
+            private HttpConfig httpConfig;
 
             @Test
             void whenAliasIsInvalid_thenNoCertificateProvided() {
-                ReflectionTestUtils.setField(connectionsConfig, "keyAlias", "invalid");
+                when(httpConfig.getKeyAlias()).thenReturn("invalid");
 
                 var sslContext = connectionsConfig.getSslContext(true);
                 var sslProvider = SslProvider.builder().sslContext(sslContext).build();
@@ -213,9 +182,9 @@ class ConnectionsConfigTest {
 
             private static final String CONFIG_ALIAS = "configAlias";
             private static final String ALIAS = "alias";
-            private static final String[] ALIASES = new String[] { "alias" };
+            private static final String[] ALIASES = new String[]{"alias"};
             private static final String KEY_TYPE = "keyType";
-            private static final String[] KEY_TYPES = new String[] { KEY_TYPE };
+            private static final String[] KEY_TYPES = new String[]{KEY_TYPE};
             private static final Principal[] ISSUERS = new Principal[0];
             private static final Socket SOCKET = mock(Socket.class);
             private static final X509Certificate[] CERTIFICATES = new X509Certificate[0];
@@ -328,7 +297,7 @@ class ConnectionsConfigTest {
 
         @Test
         void givenInvalidUrl_whenCreate_thenThrowAnException() {
-            var connectionsConfig = new ConnectionsConfig(null);
+            var connectionsConfig = new ConnectionsConfig(null, null);
             ReflectionTestUtils.setField(connectionsConfig, "externalUrl", "invalidUrl");
             var e = assertThrows(RuntimeException.class, () -> connectionsConfig.create(createConfig()));
             assertInstanceOf(MalformedURLException.class, e.getCause());
@@ -337,7 +306,7 @@ class ConnectionsConfigTest {
         @Test
         void givenValidInputs_whenCreate_thenCreateIt() {
             var config = createConfig();
-            var connectionsConfig = new ConnectionsConfig(null);
+            var connectionsConfig = new ConnectionsConfig(null, null);
             ReflectionTestUtils.setField(connectionsConfig, "externalUrl", "https://domain:1234/");
 
             InstanceInfo instanceInfo = connectionsConfig.create(config);
@@ -357,7 +326,7 @@ class ConnectionsConfigTest {
             var config = createConfig();
             doReturn(metadata).when(config).getMetadataMap();
 
-            var connectionsConfig = new ConnectionsConfig(null);
+            var connectionsConfig = new ConnectionsConfig(null, null);
             ReflectionTestUtils.setField(connectionsConfig, "externalUrl", "https://domain:1234/");
 
             InstanceInfo instanceInfo = connectionsConfig.create(config);

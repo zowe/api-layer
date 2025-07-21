@@ -8,6 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+/* eslint-disable no-undef */
+
 describe('>>> Swagger Try Out and Code Snippets Test', () => {
     beforeEach(() => {
         cy.login(Cypress.env('username'), Cypress.env('password'));

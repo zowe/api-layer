@@ -10,7 +10,6 @@
 
 package org.zowe.apiml;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpUpgradeHandler;
@@ -32,11 +31,11 @@ import org.zowe.apiml.zaas.ZaasTokenResponse;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.zaas.security.service.schema.source.PATAuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import reactor.core.publisher.Mono;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -118,6 +117,10 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             if (authSource.isEmpty()) {
                 return createMissingAuthenticationErrorMessage();
             }
+            updateServiceId(authSource, request);
+            if (!authSourceService.isValid(authSource.get())) {
+                return createMissingAuthenticationErrorMessage();
+            }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
             var ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
@@ -128,8 +131,16 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             return Mono.error(new ZaasInternalErrorException(currentApimlId, e.getMessage()));
         } catch (Exception e) {
             log.debug("Token has expired", e);
-            return createErrorMessage(e.getMessage());
+            return createInvalidAuthenticationErrorMessage();
         }
+    }
+
+    private void updateServiceId(Optional<AuthSource> authSource, RequestCredentialsHttpServletRequestAdapter request) {
+        authSource
+            .filter(PATAuthSource.class::isInstance)
+            .map(PATAuthSource.class::cast)
+            .filter(as -> StringUtils.isBlank(as.getDefaultServiceId()))
+            .ifPresent(as -> as.setDefaultServiceId(request.getServiceId()));
     }
 
     @Override
@@ -143,6 +154,10 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
             if (authSource.isEmpty()) {
+                return createMissingAuthenticationErrorMessage();
+            }
+            updateServiceId(authSource, request);
+            if (!authSourceService.isValid(authSource.get())) {
                 return createMissingAuthenticationErrorMessage();
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
@@ -164,6 +179,10 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             if (authSource.isEmpty()) {
                 return createMissingAuthenticationErrorMessage();
             }
+            updateServiceId(authSource, request);
+            if (!authSourceService.isValid(authSource.get())) {
+                return createMissingAuthenticationErrorMessage();
+            }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
             var response = zosmfService.exchangeAuthenticationForZosmfToken(authSource.get().getRawSource().toString(), authSourceParsed);
@@ -182,7 +201,10 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             if (authSource.isEmpty()) {
                 return createMissingAuthenticationErrorMessage();
             }
-
+            updateServiceId(authSource, request);
+            if (!authSourceService.isValid(authSource.get())) {
+                return createMissingAuthenticationErrorMessage();
+            }
             var token = authSourceService.getJWT(authSource.get());
             var response = ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME).token(token).build();
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
@@ -199,6 +221,10 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
 
         @Delegate(excludes = Exclude.class)
         private HttpServletRequest request;
+
+        public String getServiceId() {
+            return requestCredentials.getServiceId();
+        }
 
         @Override
         public Cookie[] getCookies() {
@@ -257,8 +283,8 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         }
 
         @Override
-        public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException, ServletException {
-            return request.upgrade(handlerClass);
+        public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) {
+            throw new UnsupportedOperationException();
         }
 
         interface Exclude {

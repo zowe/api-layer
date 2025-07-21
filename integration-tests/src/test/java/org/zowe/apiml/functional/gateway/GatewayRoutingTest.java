@@ -56,7 +56,10 @@ class GatewayRoutingTest implements TestWithStartedInstances {
     })
     void testRoutingWithBasePath(String basePath) throws URISyntaxException {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath);
-        given().get(new URI(scgUrl)).then().statusCode(200);
+        given()
+            .get(new URI(scgUrl))
+        .then()
+            .statusCode(200);
     }
 
     @ParameterizedTest(name = "When header X-Forward-To is set to {0} should return 200")
@@ -66,8 +69,11 @@ class GatewayRoutingTest implements TestWithStartedInstances {
     })
     void testRoutingWithHeader(String forwardTo) throws URISyntaxException {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), DISCOVERABLE_GREET);
-        given().header(HEADER_X_FORWARD_TO, forwardTo)
-            .get(new URI(scgUrl)).then().statusCode(200);
+        given()
+            .header(HEADER_X_FORWARD_TO, forwardTo)
+            .get(new URI(scgUrl))
+        .then()
+            .statusCode(200);
     }
 
     @ParameterizedTest(name = "When base path is {0} should return 404")
@@ -77,7 +83,10 @@ class GatewayRoutingTest implements TestWithStartedInstances {
     })
     void testRoutingWithIncorrectServiceInBasePath(String basePath) throws URISyntaxException {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath);
-        given().get(new URI(scgUrl)).then().statusCode(404);
+        given()
+            .get(new URI(scgUrl))
+        .then()
+            .statusCode(404);
     }
 
     @ParameterizedTest(name = "When header X-Forward-To is set to {0} should return 404")
@@ -87,8 +96,11 @@ class GatewayRoutingTest implements TestWithStartedInstances {
     })
     void testRoutingWithIncorrectServiceInHeader(String forwardTo) throws URISyntaxException {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), NON_EXISTING_SERVICE_ENDPOINT);
-        given().header(HEADER_X_FORWARD_TO, forwardTo)
-            .get(new URI(scgUrl)).then().statusCode(404);
+        given()
+            .header(HEADER_X_FORWARD_TO, forwardTo)
+            .get(new URI(scgUrl))
+        .then()
+            .statusCode(404);
     }
 
     @ParameterizedTest(name = "When header X-Forward-To is set to {0} and base path is {1} should return 200 - loopback")
@@ -97,8 +109,11 @@ class GatewayRoutingTest implements TestWithStartedInstances {
     })
     void testWrongRoutingWithHeader(String forwardTo, String endpoint) throws URISyntaxException {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), endpoint);
-        given().header(HEADER_X_FORWARD_TO, forwardTo)
-            .get(new URI(scgUrl)).then().statusCode(200);
+        given()
+            .header(HEADER_X_FORWARD_TO, forwardTo)
+            .get(new URI(scgUrl))
+        .then()
+            .statusCode(200);
     }
 
     @ParameterizedTest(name = "When base path is {0} should return 404")
@@ -108,13 +123,19 @@ class GatewayRoutingTest implements TestWithStartedInstances {
     })
     void testWrongRoutingWithBasePath(String basePath) throws URISyntaxException {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath);
-        given().get(new URI(scgUrl)).then().statusCode(404);
+        given()
+            .get(new URI(scgUrl))
+        .then()
+            .statusCode(404);
     }
 
     @Test
     void givenEndpointDoesNotExistOnRegisteredService() throws URISyntaxException {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "/dcpassticket/api/v1/unknown");
-        given().get(new URI(scgUrl)).then().statusCode(404);
+        given()
+            .get(new URI(scgUrl))
+        .then()
+            .statusCode(404);
     }
 
     @ParameterizedTest

@@ -22,8 +22,8 @@ spring:
 spring.profiles: https
 eureka:
     client:
-        initialInstanceInfoReplicationIntervalSeconds: 1
-        registryFetchIntervalSeconds: 1
+        instanceInfoReplicationIntervalSeconds: 30
+        registryFetchIntervalSeconds: 30
 
 server:
     ssl:

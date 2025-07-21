@@ -13,7 +13,10 @@ package org.zowe.apiml.gateway.config;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.gateway.config.GlobalCorsProperties;
@@ -25,6 +28,7 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,15 +37,20 @@ import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
+@ExtendWith(MockitoExtension.class)
 class ServiceCorsUpdaterTest {
 
     private static final String SERVICE_ID = "myserviceid";
     private static final String APIML_ID = "apimlid";
 
     private CorsUtils corsUtils = spy(new CorsUtils(true, Collections.emptyList()));
-    private ReactiveDiscoveryClient discoveryClient = mock(ReactiveDiscoveryClient.class);
+
+    @Mock private ReactiveDiscoveryClient discoveryClient;
 
     private ServiceCorsUpdater serviceCorsUpdater;
 
@@ -70,13 +79,15 @@ class ServiceCorsUpdaterTest {
         return serviceInstance;
     }
 
+    @SuppressWarnings("unchecked")
     private TriConsumer<String, String, CorsConfiguration> getCorsLambda(Consumer<Map<String, String>> metadataProcessor) {
-        ServiceInstance serviceInstance = createServiceInstance(SERVICE_ID);
+        var serviceInstance = createServiceInstance(SERVICE_ID);
         metadataProcessor.accept(serviceInstance.getMetadata());
 
         doReturn(Flux.just(SERVICE_ID)).when(discoveryClient).getServices();
 
-        serviceCorsUpdater.onRefreshRoutesEvent(new RefreshRoutesEvent(this));
+        StepVerifier.create(serviceCorsUpdater.onRefreshRoutesEvent(new RefreshRoutesEvent(this)))
+            .verifyComplete();
         ArgumentCaptor<TriConsumer<String, String, CorsConfiguration>> lambdaCaptor = ArgumentCaptor.forClass(TriConsumer.class);
         verify(corsUtils).setCorsConfiguration(anyString(), any(), lambdaCaptor.capture());
 

@@ -61,8 +61,11 @@ export function refreshedStaticApi() {
                 return res.json();
             })
             .then((data) => {
-                fetchHandler(data);
-                dispatch(refreshStaticApisSuccess());
+                fetchHandler(data)
+                    .catch((errors) => {
+                        console.log(`refresh static apis returned warnings: ${JSON.stringify(errors)}`)
+                    })
+                    .then(_ => dispatch(refreshStaticApisSuccess()));
             })
             .catch((error) => {
                 console.error("Error refreshing static APIs:", error);
@@ -89,7 +92,8 @@ export function clearError() {
 function fetchHandler(res) {
     const errors = [];
     if (res && !res.errors) {
-        return Promise.reject(res.messages[0]);
+        errors.push(res.messages[0])
+        return Promise.reject(errors);
     }
     if (res && res.errors && res.errors.length !== 0) {
         res.errors.forEach((item) => {
@@ -97,5 +101,5 @@ function fetchHandler(res) {
         });
         return Promise.reject(errors);
     }
-    return res;
+    return Promise.resolve();
 }

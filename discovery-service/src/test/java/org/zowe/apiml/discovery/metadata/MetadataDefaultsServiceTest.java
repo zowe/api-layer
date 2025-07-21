@@ -72,7 +72,7 @@ class MetadataDefaultsServiceTest {
             when(event.getInstanceInfo()).thenReturn(x.getArgument(0));
             eurekaInstanceRegisteredListener.listen(event);
             return mockRegistry;
-        }).when(mockRegistry).registerStatically(any(), anyBoolean());
+        }).when(mockRegistry).registerStatically(any(), anyBoolean(), anyBoolean());
 
         EurekaServerContext mockEurekaServerContext = mock(EurekaServerContext.class);
         when(mockEurekaServerContext.getRegistry()).thenReturn(mockRegistry);

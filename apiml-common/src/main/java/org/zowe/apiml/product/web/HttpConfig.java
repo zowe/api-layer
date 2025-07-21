@@ -12,6 +12,7 @@ package org.zowe.apiml.product.web;
 
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -21,6 +22,8 @@ import org.apache.hc.core5.http.config.Registry;
 import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.apache.hc.core5.util.Timeout;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -34,7 +37,8 @@ import org.zowe.apiml.security.SecurityUtils;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -42,6 +46,8 @@ import java.util.function.Supplier;
 
 @Slf4j
 @Configuration
+@RequiredArgsConstructor
+@Getter
 public class HttpConfig {
 
     private static final char[] KEYRING_PASSWORD = "password".toCharArray();
@@ -54,7 +60,7 @@ public class HttpConfig {
     private String[] ciphers;
 
     @Value("${server.ssl.trustStore:#{null}}")
-    private String trustStore;
+    private String trustStorePath;
 
     @Value("${server.ssl.trustStorePassword:#{null}}")
     private char[] trustStorePassword;
@@ -66,7 +72,7 @@ public class HttpConfig {
     private String keyAlias;
 
     @Value("${server.ssl.keyStore:#{null}}")
-    private String keyStore;
+    private String keyStorePath;
 
     @Value("${server.ssl.keyStorePassword:#{null}}")
     private char[] keyStorePassword;
@@ -102,23 +108,24 @@ public class HttpConfig {
         "ApimlHttpClientConfiguration.connectionManagerTimer", true);
     private CloseableHttpClient secureHttpClient;
     private CloseableHttpClient secureHttpClientWithoutKeystore;
-    @Getter
     private HttpsConfig httpsConfig;
-    @Getter
+    private HttpsFactory httpsFactory;
     private SSLContext secureSslContext;
-    @Getter
     private SSLContext secureSslContextWithoutKeystore;
-    @Getter
     private HostnameVerifier secureHostnameVerifier;
     private Set<String> publicKeyCertificatesBase64;
+    private final ApplicationContext context;
 
     void updateStorePaths() {
-        if (SecurityUtils.isKeyring(keyStore)) {
-            keyStore = SecurityUtils.formatKeyringUrl(keyStore);
+        ServerProperties serverProperties = context.getBean(ServerProperties.class);
+        if (SecurityUtils.isKeyring(keyStorePath)) {
+            keyStorePath = SecurityUtils.formatKeyringUrl(keyStorePath);
+            serverProperties.getSsl().setKeyStore(keyStorePath);
             if (keyStorePassword == null) keyStorePassword = KEYRING_PASSWORD;
         }
-        if (SecurityUtils.isKeyring(trustStore)) {
-            trustStore = SecurityUtils.formatKeyringUrl(trustStore);
+        if (SecurityUtils.isKeyring(trustStorePath)) {
+            trustStorePath = SecurityUtils.formatKeyringUrl(trustStorePath);
+            serverProperties.getSsl().setTrustStore(trustStorePath);
             if (trustStorePassword == null) trustStorePassword = KEYRING_PASSWORD;
         }
     }
@@ -128,10 +135,15 @@ public class HttpConfig {
         updateStorePaths();
 
         try {
+            X509Certificate certificate = null;
+            if (keyStorePath != null) {
+                KeyStore ks = SecurityUtils.loadKeyStore(keyStoreType, keyStorePath, keyStorePassword);
+                certificate = (X509Certificate) ks.getCertificate(keyAlias);
+            }
             Supplier<HttpsConfig.HttpsConfigBuilder> httpsConfigSupplier = () ->
                 HttpsConfig.builder()
                     .protocol(protocol).enabledProtocols(supportedProtocols).cipherSuite(ciphers)
-                    .trustStore(trustStore).trustStoreType(trustStoreType)
+                    .trustStore(trustStorePath).trustStoreType(trustStoreType)
                     .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
                     .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
                     .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
@@ -140,19 +152,19 @@ public class HttpConfig {
                     .timeToLive(timeToLive);
 
             httpsConfig = httpsConfigSupplier.get()
-                .keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
-                .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType)
+                .keyAlias(keyAlias).keyStore(keyStorePath).keyPassword(keyPassword)
+                .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).certificate(certificate)
                 .build();
 
             HttpsConfig httpsConfigWithoutKeystore = httpsConfigSupplier.get().build();
 
-            log.info("Using HTTPS configuration: {}", httpsConfig.toString());
+            log.debug("Using HTTPS configuration: {}", httpsConfig.toString());
 
-            HttpsFactory factory = new HttpsFactory(httpsConfig);
-            ApimlPoolingHttpClientConnectionManager secureConnectionManager = getConnectionManager(factory);
-            secureHttpClient = factory.buildHttpClient(secureConnectionManager);
-            secureSslContext = factory.getSslContext();
-            secureHostnameVerifier = factory.getHostnameVerifier();
+            httpsFactory = new HttpsFactory(httpsConfig);
+            ApimlPoolingHttpClientConnectionManager secureConnectionManager = getConnectionManager(httpsFactory);
+            secureHttpClient = httpsFactory.buildHttpClient(secureConnectionManager);
+            secureSslContext = httpsFactory.getSslContext();
+            secureHostnameVerifier = httpsFactory.getHostnameVerifier();
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
             ApimlPoolingHttpClientConnectionManager connectionManagerWithoutKeystore = getConnectionManager(factoryWithoutKeystore);
             secureHttpClientWithoutKeystore = factoryWithoutKeystore.buildHttpClient(connectionManagerWithoutKeystore);
@@ -197,6 +209,16 @@ public class HttpConfig {
     @Bean
     public Set<String> publicKeyCertificatesBase64() {
         return publicKeyCertificatesBase64;
+    }
+
+    @Bean
+    public HttpsConfig httpsConfig() {
+        return httpsConfig;
+    }
+
+    @Bean
+    public HttpsFactory httpsFactory() {
+        return httpsFactory;
     }
 
     /**

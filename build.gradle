@@ -261,6 +261,10 @@ task runInfinispanServiceTests(dependsOn: ":integration-tests:runInfinispanServi
     description "Run tests for caching service with infinispan storage option"
     group "Integration tests"
 }
+task runModulithInfinispanServiceTests(dependsOn: ":integration-tests:runModulithInfinispanServiceTests") {
+    description "Run tests for APIML with infinispan storage option"
+    group "Integration tests"
+}
 task runHATests(dependsOn: ":integration-tests:runHATests") {
     description "Run HA tests only"
     group "Integration tests"

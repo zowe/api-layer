@@ -41,8 +41,8 @@ spring:
 
 eureka:
     client:
-        initialInstanceInfoReplicationIntervalSeconds: 1
-        registryFetchIntervalSeconds: 1
+        instanceInfoReplicationIntervalSeconds: 30
+        registryFetchIntervalSeconds: 30
 
 management:
     endpoints:
@@ -53,6 +53,8 @@ management:
     endpoint:
         shutdown:
             access: unrestricted
+        loggers:
+            enabled: true
 
 server:
     address: 0.0.0.0

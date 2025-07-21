@@ -7,8 +7,10 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-/// <reference types="Cypress" />
 
+/* eslint-disable no-undef */
+
+/// <reference types="Cypress" />
 
 describe('>>> Multi-tenancy deployment test', () => {
     it('Detail page test', () => {
