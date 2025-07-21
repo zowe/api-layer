@@ -53,6 +53,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private AtomicBoolean discoveryAvailable = new AtomicBoolean(false);
     private AtomicBoolean zaasAvailable = new AtomicBoolean(false);
     private AtomicBoolean catalogAvailable = new AtomicBoolean(false);
+
     private AtomicBoolean startedInformationPublished = new AtomicBoolean(false);
 
     @Override
