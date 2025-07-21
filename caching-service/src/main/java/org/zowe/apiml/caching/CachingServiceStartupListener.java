@@ -11,17 +11,21 @@
 package org.zowe.apiml.caching;
 
 import jakarta.annotation.Nonnull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 
 @Component
+@RequiredArgsConstructor
 public class CachingServiceStartupListener implements ApplicationListener<ApplicationReadyEvent> {
+
+    private final ServiceStartupEventHandler handler;
 
     @Override
     public void onApplicationEvent(@Nonnull final ApplicationReadyEvent event) {
-        new ServiceStartupEventHandler().onServiceStartup("Caching Service",
+        handler.onServiceStartup("Caching Service",
             ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
 

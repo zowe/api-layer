@@ -34,13 +34,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class StandaloneInitializer {
 
     private final StandaloneLoaderService standaloneLoaderService;
+    private final ServiceStartupEventHandler handler;
     private final AtomicBoolean hasRun = new AtomicBoolean(false);
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationEvent(ApplicationReadyEvent event) {
         if (isStandalone(event.getApplicationContext()) && hasRun.compareAndSet(false, true)) {
             standaloneLoaderService.initializeCache();
-            new ServiceStartupEventHandler().onServiceStartup("API Catalog Service Standalone",
+            handler.onServiceStartup("API Catalog Service Standalone",
                 ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
         }
     }

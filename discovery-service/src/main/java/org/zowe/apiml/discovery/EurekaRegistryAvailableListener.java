@@ -29,13 +29,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class EurekaRegistryAvailableListener implements ApplicationListener<EurekaRegistryAvailableEvent> {
 
     private final StaticServicesRegistrationService registrationService;
+    private final ServiceStartupEventHandler handler;
     private final AtomicBoolean startUpInfoPublished = new AtomicBoolean(false);
 
     @Override
     public void onApplicationEvent(EurekaRegistryAvailableEvent event) {
         registrationService.registerServices();
         if (startUpInfoPublished.compareAndSet(false, true)) {
-            new ServiceStartupEventHandler().onServiceStartup("Discovery Service", ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
+            handler.onServiceStartup("Discovery Service", ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
         }
     }
 

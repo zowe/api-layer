@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 
 import static org.mockito.Mockito.*;
 
@@ -78,13 +79,13 @@ class StandaloneInitializerTest {
     public static class TestConfiguration {
 
         @Bean
-        public StandaloneLoaderService standaloneLoaderService() {
+        StandaloneLoaderService standaloneLoaderService() {
             return mock(StandaloneLoaderService.class);
         }
 
         @Bean
-        public StandaloneInitializer getStandaloneInitializer(StandaloneLoaderService standaloneLoaderService) {
-            return new StandaloneInitializer(standaloneLoaderService);
+        StandaloneInitializer getStandaloneInitializer(StandaloneLoaderService standaloneLoaderService) {
+            return new StandaloneInitializer(standaloneLoaderService, mock(ServiceStartupEventHandler.class));
         }
 
     }

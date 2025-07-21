@@ -22,7 +22,9 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.zowe.apiml.caching.TestConfig;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
@@ -34,6 +36,7 @@ import static org.hamcrest.Matchers.is;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @TestInstance(Lifecycle.PER_CLASS)
+@Import(TestConfig.class)
 public class InMemoryFunctionalTest {
 
     @Value("${server.ssl.keyPassword}")

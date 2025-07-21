@@ -26,7 +26,8 @@ import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 @ComponentScan({
     "org.zowe.apiml.discovery",
     "org.zowe.apiml.product.security",
-    "org.zowe.apiml.product.web"
+    "org.zowe.apiml.product.web",
+    "org.zowe.apiml.product.service",
 })
 @EnableApimlLogger
 @EnableWebSecurity

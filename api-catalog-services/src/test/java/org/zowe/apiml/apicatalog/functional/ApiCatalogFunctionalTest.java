@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.zowe.apiml.apicatalog.ApiCatalogApplication;
 import org.zowe.apiml.product.web.HttpConfig;
@@ -27,6 +28,7 @@ import org.zowe.apiml.product.web.HttpConfig;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @ContextConfiguration
+@Import(TestConfig.class)
 public abstract class ApiCatalogFunctionalTest {
 
     @LocalServerPort

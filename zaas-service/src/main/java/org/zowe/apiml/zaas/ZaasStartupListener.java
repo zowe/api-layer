@@ -32,6 +32,7 @@ public class ZaasStartupListener implements ApplicationListener<ApplicationReady
 
     private final Providers providers;
     private final ApplicationEventPublisher publisher;
+    private final ServiceStartupEventHandler handler;
 
     public void onApplicationEvent(ApplicationReadyEvent event) {
         if (providers.isZosfmUsed()) {
@@ -52,7 +53,7 @@ public class ZaasStartupListener implements ApplicationListener<ApplicationReady
     }
 
     public void notifyStartup() {
-        new ServiceStartupEventHandler().onServiceStartup("ZAAS",
+        handler.onServiceStartup("ZAAS",
             ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
         publisher.publishEvent(new ZaasServiceAvailableEvent(providers.isZosfmUsed() ? "zosmf" : "saf"));
     }
