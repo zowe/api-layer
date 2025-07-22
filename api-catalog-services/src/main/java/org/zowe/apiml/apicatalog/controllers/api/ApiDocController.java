@@ -18,8 +18,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
 import org.openapitools.openapidiff.core.OpenApiCompare;
 import org.openapitools.openapidiff.core.model.ChangedOpenApi;
 import org.openapitools.openapidiff.core.output.HtmlRender;
@@ -28,7 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.apicatalog.exceptions.ApiDiffNotAvailableException;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
-import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
+import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 import reactor.core.publisher.Mono;
 
 import static org.apache.hc.core5.http.HttpStatus.SC_OK;
@@ -43,7 +41,7 @@ import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 @RequiredArgsConstructor
 public class ApiDocController {
 
-    private final ApiDocRetrievalService apiDocRetrievalService;
+    private final ApiDocService apiDocService;
 
     /**
      * Retrieve the api-doc info for this service
@@ -72,11 +70,12 @@ public class ApiDocController {
         @PathVariable(value = "serviceId") String serviceId,
         @Parameter(name = "apiId", description = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v1.0.0")
         @PathVariable(value = "apiId") String apiId) {
-        return Mono.fromSupplier(() -> ResponseEntity
-            .status(SC_OK)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(apiDocRetrievalService.retrieveApiDoc(serviceId, apiId))
-        );
+        return apiDocService.retrieveApiDoc(serviceId, apiId)
+            .map(apiDoc -> ResponseEntity
+                .status(SC_OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(apiDoc)
+            );
     }
 
     /**
@@ -102,11 +101,12 @@ public class ApiDocController {
     public Mono<ResponseEntity<String>> getDefaultApiDocInfo(
         @Parameter(name = "serviceId", description = "The unique identifier of the registered service", required = true, example = "apicatalog")
         @PathVariable(value = "serviceId") String serviceId) {
-        return Mono.fromSupplier(() -> ResponseEntity
-            .status(SC_OK)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId))
-        );
+        return apiDocService.retrieveDefaultApiDoc(serviceId)
+            .map(apiDoc -> ResponseEntity
+                .status(SC_OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(apiDoc)
+            );
     }
 
     @GetMapping(value = "/{serviceId}/{apiId1}/{apiId2}", produces = MediaType.TEXT_HTML_VALUE)
@@ -131,26 +131,29 @@ public class ApiDocController {
         @Parameter(name = "apiId2", description = "The API ID and version, separated by a space, of the API documentation", required = true, example = "zowe.apiml.apicatalog v2.0.0")
         @PathVariable(value = "apiId2") String apiId2) {
 
-        try {
-            String doc1 = apiDocRetrievalService.retrieveApiDoc(serviceId, apiId1);
-            String doc2 = apiDocRetrievalService.retrieveApiDoc(serviceId, apiId2);
-            ChangedOpenApi diff = OpenApiCompare.fromContents(doc1, doc2);
+        return Mono.zip(
+            apiDocService.retrieveApiDoc(serviceId, apiId1),
+            apiDocService.retrieveApiDoc(serviceId, apiId2)
+        ).flatMap(tuple -> Mono.fromCallable(() -> {
+            ChangedOpenApi diff = OpenApiCompare.fromContents(tuple.getT1(), tuple.getT2());
             HtmlRender render = new HtmlRender();
             String result = render.render(diff);
-            //Remove external stylesheet
+            // Remove external stylesheet
             result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
-            return Mono.just(ResponseEntity
-                .status(HttpStatus.SC_OK)
-                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
-                .body(result)
+            return ResponseEntity
+                .ok()
+                .contentType(MediaType.TEXT_HTML)
+                .body(result);
+        }))
+        .onErrorMap(e -> {
+            if (e instanceof ApiDocNotFoundException) {
+                return e;
+            }
+            return new ApiDiffNotAvailableException(
+                String.format("Error retrieving API diff for '%s' with versions '%s' and '%s'", serviceId, apiId1, apiId2),
+                e
             );
-        } catch (ApiDocNotFoundException adnfe) {
-            throw adnfe;
-        } catch (Exception e) {
-            String errorMessage = String.format("Error retrieving API diff for '%s' with versions '%s' and '%s'", serviceId, apiId1, apiId2);
-            log.error(errorMessage, e);
-            throw new ApiDiffNotAvailableException(errorMessage);
-        }
+        });
     }
 
 }

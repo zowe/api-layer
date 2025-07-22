@@ -340,7 +340,7 @@ public class ContainerService {
         var instances = discoveryClient.getServices().stream()
             .map(discoveryClient::getInstances)
             .flatMap(List::stream)
-            .filter(instance -> StringUtils.equals(id, instance.getMetadata().get(CATALOG_ID)))
+            .filter(instance -> StringUtils.equalsIgnoreCase(id, instance.getMetadata().get(CATALOG_ID)))
             .toArray(ServiceInstance[]::new);
 
         if (ArrayUtils.isEmpty(instances)) {

@@ -24,13 +24,13 @@ import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
-import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
+import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.StreamSupport;
@@ -46,7 +46,7 @@ import java.util.stream.StreamSupport;
 public class ServicesController {
 
     private final ContainerService containerService;
-    private final ApiDocRetrievalService apiDocRetrievalService;
+    private final ApiDocService apiDocService;
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -77,9 +77,10 @@ public class ServicesController {
             Iterable<APIContainer> allContainers = containerService.getAllContainers();
             List<APIContainer> apiContainers = toList(allContainers);
             if (apiContainers.isEmpty()) {
-                return Mono.just(new ResponseEntity<>(apiContainers, HttpStatus.NO_CONTENT));
+                // TODO: replace with 404
+                return Mono.just(ResponseEntity.status(HttpStatus.NO_CONTENT).build());
             }
-            return Mono.just(new ResponseEntity<>(apiContainers, HttpStatus.OK));
+            return Mono.just(ResponseEntity.ok(apiContainers));
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalException(e);
@@ -107,32 +108,45 @@ public class ServicesController {
     })
     @ResponseBody
     public Mono<ResponseEntity<List<APIContainer>>> getAPIContainerById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalException {
+        APIContainer containerById;
         try {
-            List<APIContainer> apiContainers = new ArrayList<>();
-            APIContainer containerById = containerService.getContainerById(id);
-            if (containerById != null) {
-                apiContainers.add(containerById);
+            containerById = containerService.getContainerById(id);
+            if (containerById == null) {
+                return Mono.just(new ResponseEntity<>(Collections.emptyList(), HttpStatus.NOT_FOUND));
             }
-            if (!apiContainers.isEmpty()) {
-                apiContainers.forEach(
-                    // add API Doc to the services to improve UI performance
-                    this::setApiDocToService
-                );
-            }
-            return Mono.just(new ResponseEntity<>(apiContainers, HttpStatus.OK));
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalException(e);
         }
-    }
 
-    private String getApiDoc(String serviceId) {
-        try {
-            return apiDocRetrievalService.retrieveDefaultApiDoc(serviceId);
-        } catch (Exception e) {
-            log.debug("Cannot download api doc", e);
-        }
-        return null;
+        return Flux.fromIterable(containerById.getServices())
+            .map(s -> {
+                try {
+                    s.setApiVersions(apiDocService.retrieveApiVersions(s.getServiceId()));
+                    s.setDefaultApiVersion(apiDocService.retrieveDefaultApiVersion(s.getServiceId()));
+                } catch (Exception e) {
+                    log.debug("An error occurred when trying to fetch ApiDoc for service: {}, processing can continue but this service will not be able to display any Api Documentation.\nError:", s.getServiceId(), e);
+                    s.setApiDocErrorMessage("Failed to fetch API documentation: " + e.getMessage());
+                }
+                return s;
+            })
+            .log()
+            .flatMap(s ->
+                Mono.zip(Mono.just(s), apiDocService.retrieveDefaultApiDoc(s.getServiceId())
+                    .onErrorResume(Exception.class, e -> {
+                        log.debug("An error occurred when trying to fetch ApiDoc for service: {}, processing can continue but this service will not be able to display any Api Documentation.\nError:", s.getServiceId(), e);
+                        s.setApiDocErrorMessage("Failed to fetch API documentation: " + e.getMessage());
+                        return Mono.empty();
+                    })
+                )
+            )
+            .map(x -> {
+                x.getT1().setApiDoc(x.getT2());
+                return x;
+            })
+            .then(Mono.just(containerById))
+            .map(Collections::singletonList)
+            .map(c -> new ResponseEntity<>(c, HttpStatus.OK));
     }
 
     /**
@@ -156,56 +170,35 @@ public class ServicesController {
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
     })
     @ResponseBody
-    public Mono<ResponseEntity<APIService>> getAPIServicesById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalException {
-        try {
-            var service = containerService.getService(id);
-            if (service == null) {
-                return Mono.just(new ResponseEntity<>(HttpStatus.NOT_FOUND));
-            }
-            log.debug("Getting service api doc by id {}", id);
-            String apiDoc = getApiDoc(id);
+    public Mono<ResponseEntity<APIService>> getAPIServicesById(@PathVariable(value = "id") String id) {
 
-            log.debug("Getting service: {} with status {}", service.getServiceId(), service.getStatus());
-            if (apiDoc != null) {
+        var service = containerService.getService(id);
+        if (service == null) {
+            return Mono.just(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        }
+        log.debug("Getting service api doc by id {}", id);
+        return apiDocService.retrieveDefaultApiDoc(id)
+            .onErrorResume(e -> {
+                log.debug("Cannot download api doc", e);
+                return Mono.empty();
+            })
+            .map(apiDoc -> {
                 log.debug("API doc was retrieved");
                 service.setApiDoc(apiDoc);
-                List<String> apiVersions = apiDocRetrievalService.retrieveApiVersions(id);
+                List<String> apiVersions = apiDocService.retrieveApiVersions(id);
                 service.setApiVersions(apiVersions);
                 log.debug("Got API versions: {}", apiVersions != null ? apiVersions.size() : 0);
-                String defaultApiVersion = apiDocRetrievalService.retrieveDefaultApiVersion(id);
+                String defaultApiVersion = apiDocService.retrieveDefaultApiVersion(id);
                 log.debug("Default API version: {}", defaultApiVersion);
                 service.setDefaultApiVersion(defaultApiVersion);
-            } else {
-                log.debug("No API doc was retrieved for service with id {}", id);
-            }
-            return Mono.just(new ResponseEntity<>(service, HttpStatus.OK));
-        } catch (Exception e) {
-            apimlLog.log("org.zowe.apiml.apicatalog.serviceCouldNotBeRetrieved", e.getMessage());
-            throw new ContainerStatusRetrievalException(e);
-        }
-    }
-
-    private void setApiDocToService(APIContainer apiContainer) {
-        apiContainer.getServices().forEach(apiService -> {
-            // try the get the Api Doc for this service, if it fails for any reason then do not change the existing value
-            // it may or may not be null
-            String serviceId = apiService.getServiceId();
-            try {
-                String apiDoc = apiDocRetrievalService.retrieveDefaultApiDoc(serviceId);
-                if (apiDoc != null) {
-                    apiService.setApiDoc(apiDoc);
-                }
-
-                List<String> apiVersions = apiDocRetrievalService.retrieveApiVersions(serviceId);
-                apiService.setApiVersions(apiVersions);
-
-                String defaultApiVersion = apiDocRetrievalService.retrieveDefaultApiVersion(serviceId);
-                apiService.setDefaultApiVersion(defaultApiVersion);
-            } catch (Exception e) {
-                log.debug("An error occurred when trying to fetch ApiDoc for service: {}, processing can continue but this service will not be able to display any Api Documentation.\nError:", serviceId, e);
-                apiService.setApiDocErrorMessage("Failed to fetch API documentation: " + e.getMessage());
-            }
-        });
+                return service;
+            })
+            .switchIfEmpty(Mono.just(service))
+            .map(s -> new ResponseEntity<>(s, HttpStatus.OK))
+            .onErrorMap(Exception.class, e -> {
+                apimlLog.log("org.zowe.apiml.apicatalog.serviceCouldNotBeRetrieved", e.getMessage());
+                return new ContainerStatusRetrievalException(e);
+            });
     }
 
     /**

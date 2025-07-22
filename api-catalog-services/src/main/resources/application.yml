@@ -24,7 +24,9 @@ springdoc:
     packagesToScan: org.zowe.apiml.apicatalog.controllers.api
     api-docs:
         path: /apicatalog/v3/api-docs
-
+    group-configs:
+        - group: apicatalog
+          pathsToMatch: /apicatalog/**
 logging:
     level:
         ROOT: INFO

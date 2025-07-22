@@ -29,15 +29,18 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.apicatalog.config.BeanConfig;
+import org.zowe.apiml.apicatalog.config.DefaultExceptionHandler;
 import org.zowe.apiml.apicatalog.controllers.handlers.ApiCatalogControllerExceptionHandler;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.model.CustomStyleConfig;
-import org.zowe.apiml.apicatalog.swagger.ApiDocRetrievalService;
+import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 import org.zowe.apiml.apicatalog.swagger.ContainerService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
+import org.zowe.apiml.security.common.error.AuthExceptionHandler;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 
@@ -45,6 +48,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doReturn;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_ID;
 
 @WebFluxTest(controllers = ServicesController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
 @ContextConfiguration(classes = {
@@ -52,6 +57,8 @@ import static org.mockito.BDDMockito.given;
     ApiCatalogControllerExceptionHandler.class,
     ContainerService.class,
     ServicesControllerTests.Context.class,
+    DefaultExceptionHandler.class,
+    AuthExceptionHandler.class,
     BeanConfig.class
 })
 class ServicesControllerTests {
@@ -74,7 +81,7 @@ class ServicesControllerTests {
     private ContainerService containerService;
 
     @MockitoBean
-    private ApiDocRetrievalService apiDocRetrievalService;
+    private ApiDocService apiDocService;
 
     @Nested
     class GivenThereAreNoValidContainers {
@@ -95,13 +102,25 @@ class ServicesControllerTests {
         @Nested
         class WhenSpecificContainerRequested {
 
-            @Test
-            void thenReturnOk() {
-                String containerId = "service1";
-                given(containerService.getContainerById(containerId)).willReturn(null);
+            private static final String SERVICE_ID = "service1";
 
-                webTestClient.get().uri(pathToContainers + "/" + containerId).exchange()
+            @Test
+            void ifExistingInstanceThenReturnOk() {
+                var instance = InstanceInfo.Builder.newBuilder().setAppName(SERVICE_ID).setInstanceId("instance1").setMetadata(Map.of(CATALOG_ID, "service1")).build();
+                doReturn(Collections.singletonList(new EurekaServiceInstance(instance))).when(discoveryClient).getInstances(SERVICE_ID);
+                doReturn(Collections.singletonList(SERVICE_ID)).when(discoveryClient).getServices();
+                doReturn(Mono.empty()).when(apiDocService).retrieveDefaultApiDoc(SERVICE_ID);
+
+                webTestClient.get().uri(pathToContainers + "/" + SERVICE_ID).exchange()
                     .expectStatus().isOk();
+            }
+
+            @Test
+            void ifNonExistingInstanceThenReturnNotFound() {
+                given(containerService.getContainerById(SERVICE_ID)).willReturn(null);
+
+                webTestClient.get().uri(pathToContainers + "/" + SERVICE_ID).exchange()
+                    .expectStatus().isNotFound();
             }
 
         }
@@ -122,14 +141,14 @@ class ServicesControllerTests {
             given(discoveryClient.getInstances("service1")).willReturn(
                 Collections.singletonList(new EurekaServiceInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP)))
             );
-            given(apiDocRetrievalService.retrieveDefaultApiDoc("service1")).willReturn("service1");
-            given(apiDocRetrievalService.retrieveApiVersions("service1")).willReturn(apiVersions);
+            given(apiDocService.retrieveDefaultApiDoc("service1")).willReturn(Mono.just("service1"));
+            given(apiDocService.retrieveApiVersions("service1")).willReturn(apiVersions);
 
             given(discoveryClient.getInstances("service2")).willReturn(
                 Collections.singletonList(new EurekaServiceInstance(getStandardInstance("service2", InstanceInfo.InstanceStatus.DOWN)))
             );
-            given(apiDocRetrievalService.retrieveDefaultApiDoc("service2")).willReturn("service2");
-            given(apiDocRetrievalService.retrieveApiVersions("service2")).willReturn(apiVersions);
+            given(apiDocService.retrieveDefaultApiDoc("service2")).willReturn(Mono.just("service2"));
+            given(apiDocService.retrieveApiVersions("service2")).willReturn(apiVersions);
 
             given(containerService.getContainerById("api-one")).willReturn(createContainers().get(0));
         }
@@ -154,8 +173,8 @@ class ServicesControllerTests {
             void thenPopulateApiDocForServices() throws ContainerStatusRetrievalException {
                 String defaultApiVersion = "v1";
 
-                given(apiDocRetrievalService.retrieveDefaultApiVersion("service1")).willReturn(defaultApiVersion);
-                given(apiDocRetrievalService.retrieveDefaultApiVersion("service2")).willReturn(defaultApiVersion);
+                given(apiDocService.retrieveDefaultApiVersion("service1")).willReturn(defaultApiVersion);
+                given(apiDocService.retrieveDefaultApiVersion("service2")).willReturn(defaultApiVersion);
 
                 ResponseEntity<List<APIContainer>> containers = underTest.getAPIContainerById("api-one").block();
 
@@ -169,7 +188,7 @@ class ServicesControllerTests {
 
             @Test
             void thenPopulateApiDocForServicesExceptOneWhichFails() throws ContainerStatusRetrievalException {
-                given(apiDocRetrievalService.retrieveDefaultApiDoc("service2")).willThrow(new RuntimeException());
+                given(apiDocService.retrieveDefaultApiDoc("service2")).willReturn(Mono.error(new RuntimeException()));
 
                 ResponseEntity<List<APIContainer>> containers = underTest.getAPIContainerById("api-one").block();
                 assertThereIsOneContainer(containers);
@@ -188,7 +207,7 @@ class ServicesControllerTests {
 
             @Test
             void thenPopulateApiVersionsForServicesExceptOneWhichFails() throws ContainerStatusRetrievalException {
-                given(apiDocRetrievalService.retrieveApiVersions("service2")).willThrow(new RuntimeException());
+                given(apiDocService.retrieveApiVersions("service2")).willThrow(new RuntimeException());
 
                 ResponseEntity<List<APIContainer>> containers = underTest.getAPIContainerById("api-one").block();
                 assertThereIsOneContainer(containers);
@@ -241,8 +260,8 @@ class ServicesControllerTests {
             String defaultApiVersion = "v1";
 
             given(containerService.getService(serviceId)).willReturn(service);
-            given(apiDocRetrievalService.retrieveDefaultApiVersion(serviceId)).willReturn(defaultApiVersion);
-            given(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)).willReturn("mockApiDoc");
+            given(apiDocService.retrieveDefaultApiVersion(serviceId)).willReturn(defaultApiVersion);
+            given(apiDocService.retrieveDefaultApiDoc(serviceId)).willReturn(Mono.just("mockApiDoc"));
 
             ResponseEntity<APIService> apiServicesById = underTest.getAPIServicesById(serviceId).block();
             assertEquals(HttpStatus.OK, apiServicesById.getStatusCode());
@@ -252,12 +271,12 @@ class ServicesControllerTests {
         }
 
         @Test
-        void thenReturnOkWithApiDocNull() throws ContainerStatusRetrievalException {
+        void thenReturnOkWithoutApiDoc() throws ContainerStatusRetrievalException {
             String defaultApiVersion = "v1";
 
             given(containerService.getService(serviceId)).willReturn(service);
-            given(apiDocRetrievalService.retrieveDefaultApiVersion(serviceId)).willReturn(defaultApiVersion);
-            given(apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)).willReturn(null);
+            given(apiDocService.retrieveDefaultApiVersion(serviceId)).willReturn(defaultApiVersion);
+            given(apiDocService.retrieveDefaultApiDoc(serviceId)).willReturn(Mono.empty());
 
             ResponseEntity<APIService> apiServicesById = underTest.getAPIServicesById(serviceId).block();
             assertEquals(HttpStatus.OK, apiServicesById.getStatusCode());

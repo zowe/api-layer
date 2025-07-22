@@ -28,6 +28,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
 public class StaticDefinitionController {
+
     private final StaticDefinitionGenerator staticDefinitionGenerator;
 
     /**
@@ -59,7 +60,6 @@ public class StaticDefinitionController {
             .status(staticAPIResponse.getStatusCode())
             .body(staticAPIResponse.getBody()));
     }
-
 
     @DeleteMapping(value = "/delete", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
