@@ -170,7 +170,7 @@ class ApiDocControllerModulith extends ApiDocController {
 }
 
 @RestController
-@RequestMapping("/apicatalog/api/v1/apidoc")
+@RequestMapping("/apicatalog/apidoc")
 @ConditionalOnMissingBean(name = "modulithConfig")
 class ApiDocControllerMicroservice extends ApiDocController {
 
