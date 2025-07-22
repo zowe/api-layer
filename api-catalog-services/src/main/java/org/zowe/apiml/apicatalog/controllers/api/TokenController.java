@@ -15,7 +15,6 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpCookie;
@@ -40,6 +39,9 @@ import java.util.Optional;
 import static org.apache.hc.core5.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.hc.core5.http.HttpStatus.SC_NO_CONTENT;
 
+@RestController
+@RequestMapping("/apicatalog/auth")
+@ConditionalOnMissingBean(name = "modulithConfig")
 @RequiredArgsConstructor
 public class TokenController {
 
@@ -108,28 +110,6 @@ public class TokenController {
             .map(gatewaySecurity::query)
             .map(Mono::just)
             .orElse(Mono.error(() -> new InsufficientAuthenticationException("No credentials provided.")));
-    }
-
-}
-
-@RestController
-@RequestMapping("/apicatalog/api/v1/auth")
-@ConditionalOnBean(name = "modulithConfig")
-class TokenControllerModulith extends TokenController {
-
-    public TokenControllerModulith(ObjectMapper mapper, GatewaySecurity gatewaySecurity, AuthConfigurationProperties authConfigurationProperties) {
-        super(mapper, gatewaySecurity, authConfigurationProperties);
-    }
-
-}
-
-@RestController
-@RequestMapping("/apicatalog/auth")
-@ConditionalOnMissingBean(name = "modulithConfig")
-class TokenControllerMicroservice extends TokenController {
-
-    public TokenControllerMicroservice(ObjectMapper mapper, GatewaySecurity gatewaySecurity, AuthConfigurationProperties authConfigurationProperties) {
-        super(mapper, gatewaySecurity, authConfigurationProperties);
     }
 
 }

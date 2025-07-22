@@ -18,6 +18,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -101,6 +102,7 @@ public class SecurityConfiguration {
 
     @Bean
     @Order(1)
+    @ConditionalOnMissingBean(name = "modulithConfig")
     public SecurityWebFilterChain loginSecurityWebFilterChain(ServerHttpSecurity http, ServerAuthenticationEntryPoint serverAuthenticationEntryPoint) {
         return baseConfiguration(http, serverAuthenticationEntryPoint)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, getFullUrls(authConfigurationProperties.getServiceLoginEndpoint())))
@@ -112,6 +114,7 @@ public class SecurityConfiguration {
 
     @Bean
     @Order(2)
+    @ConditionalOnMissingBean(name = "modulithConfig")
     public SecurityWebFilterChain logoutSecurityWebFilterChain(ServerHttpSecurity http, ServerAuthenticationEntryPoint serverAuthenticationEntryPoint) {
         return baseConfiguration(http, serverAuthenticationEntryPoint)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, getFullUrls(authConfigurationProperties.getServiceLogoutEndpoint())))
