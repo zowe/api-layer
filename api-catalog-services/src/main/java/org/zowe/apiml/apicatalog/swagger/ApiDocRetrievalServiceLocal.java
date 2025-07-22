@@ -47,7 +47,7 @@ public class ApiDocRetrievalServiceLocal {
         SpringDocConfigProperties springDocConfigProperties,
         SpringDocProviders springDocProviders
     ) {
-        groupedOpenApis.stream()
+        groupedOpenApis
             .forEach(groupedOpenApi -> {
                 String group = groupedOpenApi.getGroup();
 
@@ -87,6 +87,7 @@ public class ApiDocRetrievalServiceLocal {
                 .map(String::new)
                 .map(content -> ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(content).build());
         } catch (JsonProcessingException jpe) {
+            log.debug("Cannot process API doc", jpe);
             throw new ApiDocNotFoundException("Cannot obtain API doc for " + serviceId, jpe);
         }
     }

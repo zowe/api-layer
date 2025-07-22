@@ -22,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -65,6 +66,8 @@ class ApiDocServiceTest {
     private static final String API_ID = "test.app";
     private static final String SWAGGER_URL = "https://service:8080/service/api-doc";
 
+    private static final ServiceAddress GW_SERVICE_ADDRESS = ServiceAddress.builder().scheme(GATEWAY_SCHEME).hostname(GATEWAY_HOST).build();
+
     @Nested
     @ExtendWith(MockitoExtension.class)
     @MockitoSettings(strictness = Strictness.LENIENT)
@@ -94,7 +97,7 @@ class ApiDocServiceTest {
             var apiDocRetrievalServiceRest = new ApiDocRetrievalServiceRest(httpClient);
             apiDocService = new ApiDocService(
                 discoveryClient,
-                new GatewayClient(ServiceAddress.builder().scheme(GATEWAY_SCHEME).hostname(GATEWAY_HOST).build()),
+                new GatewayClient(GW_SERVICE_ADDRESS),
                 new TransformApiDocService(null) {
                     @Override
                     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
@@ -157,7 +160,7 @@ class ApiDocServiceTest {
 
                     Mono<String> apiDocMono = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
                     Exception exception = assertThrows(ApiDocNotFoundException.class, apiDocMono::block);
-                    assertEquals("No API Documentation was retrieved due to " + SERVICE_ID + " server error: '" + responseBody + "'.", exception.getMessage());
+                    assertEquals("No API Documentation was retrieved due to " + SERVICE_ID + " server error: 500 " + responseBody, exception.getMessage());
                 }
 
             }
@@ -509,6 +512,9 @@ class ApiDocServiceTest {
         @MockitoSpyBean
         private ApiDocRetrievalServiceLocal apiDocRetrievalServiceLocal;
 
+        @Autowired
+        private GatewayClient gatewayClient;
+
         @BeforeEach
         void onboardCatalog() {
             InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
@@ -521,6 +527,8 @@ class ApiDocServiceTest {
                 ))
                 .build();
             doReturn(new EurekaServiceInstance(instanceInfo)).when(apiDocService).getInstanceInfo("apicatalog");
+
+            gatewayClient.setGatewayConfigProperties(GW_SERVICE_ADDRESS);
         }
 
         @Test

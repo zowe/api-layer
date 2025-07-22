@@ -77,9 +77,10 @@ public class ServicesController {
             Iterable<APIContainer> allContainers = containerService.getAllContainers();
             List<APIContainer> apiContainers = toList(allContainers);
             if (apiContainers.isEmpty()) {
-                return Mono.just(new ResponseEntity<>(apiContainers, HttpStatus.NO_CONTENT));
+                // TODO: replace with 404
+                return Mono.just(ResponseEntity.status(HttpStatus.NO_CONTENT).build());
             }
-            return Mono.just(new ResponseEntity<>(apiContainers, HttpStatus.OK));
+            return Mono.just(ResponseEntity.ok(apiContainers));
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.apicatalog.containerCouldNotBeRetrieved", e.getMessage());
             throw new ContainerStatusRetrievalException(e);
@@ -148,15 +149,6 @@ public class ServicesController {
             .map(c -> new ResponseEntity<>(c, HttpStatus.OK));
     }
 
-    private Mono<String> getApiDoc(String serviceId) {
-        try {
-            return apiDocService.retrieveDefaultApiDoc(serviceId);
-        } catch (Exception e) {
-            log.debug("Cannot download api doc", e);
-        }
-        return Mono.empty();
-    }
-
     /**
      * Get a specific service by id
      *
@@ -178,14 +170,18 @@ public class ServicesController {
         @ApiResponse(responseCode = "500", description = "An unexpected condition occurred")
     })
     @ResponseBody
-    public Mono<ResponseEntity<APIService>> getAPIServicesById(@PathVariable(value = "id") String id) throws ContainerStatusRetrievalException {
+    public Mono<ResponseEntity<APIService>> getAPIServicesById(@PathVariable(value = "id") String id) {
 
         var service = containerService.getService(id);
         if (service == null) {
             return Mono.just(new ResponseEntity<>(HttpStatus.NOT_FOUND));
         }
         log.debug("Getting service api doc by id {}", id);
-        return getApiDoc(id)
+        return apiDocService.retrieveDefaultApiDoc(id)
+            .onErrorResume(e -> {
+                log.debug("Cannot download api doc", e);
+                return Mono.empty();
+            })
             .map(apiDoc -> {
                 log.debug("API doc was retrieved");
                 service.setApiDoc(apiDoc);

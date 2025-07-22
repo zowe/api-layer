@@ -40,11 +40,11 @@ class ApiDocControllerServiceNotFoundTest {
     private WebTestClient webTestClient;
 
     @MockitoBean
-    private ApiDocService apiServiceStatusService;
+    private ApiDocService apiDocService;
 
     @BeforeAll
     void initApiDocRetrievalService() {
-        when(apiServiceStatusService.retrieveApiDoc("service1", "v1"))
+        when(apiDocService.retrieveApiDoc("service1", "v1"))
             .thenThrow(new ServiceNotFoundException("API Documentation not retrieved, The service is running."));
     }
 

@@ -107,8 +107,8 @@ class ServicesControllerTests {
             @Test
             void ifExistingInstanceThenReturnOk() {
                 var instance = InstanceInfo.Builder.newBuilder().setAppName(SERVICE_ID).setInstanceId("instance1").setMetadata(Map.of(CATALOG_ID, SERVICE_ID)).build();
-                doReturn(Collections.singletonList(SERVICE_ID)).when(discoveryClient).getServices();
                 doReturn(Collections.singletonList(new EurekaServiceInstance(instance))).when(discoveryClient).getInstances(SERVICE_ID);
+                doReturn(Collections.singletonList(SERVICE_ID)).when(discoveryClient).getServices();
                 doReturn(Mono.empty()).when(apiDocService).retrieveDefaultApiDoc(SERVICE_ID);
 
                 webTestClient.get().uri(pathToContainers + "/" + SERVICE_ID).exchange()

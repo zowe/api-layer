@@ -49,7 +49,7 @@ class ApiDocRetrievalServiceLocalTest {
         assertEquals("Cannot obtain API doc for service unknownservice", exception.getMessage());
     }
 
-    private OpenApiWebfluxResource mockApiDocResource(String serviceId) {
+    private OpenApiWebfluxResource mockApiDocResource() {
         var apiDocResource = mock(OpenApiWebfluxResource.class);
         ((Map<String, OpenApiWebfluxResource>) ReflectionTestUtils.getField(service, "apiDocResource")).put("service", apiDocResource);
         return apiDocResource;
@@ -57,7 +57,7 @@ class ApiDocRetrievalServiceLocalTest {
 
     @Test
     void givenInvalidApiDoc_whenGetApiDoc_thenThrowException() throws JsonProcessingException {
-        var apiDocResource = mockApiDocResource("service");
+        var apiDocResource = mockApiDocResource();
         doThrow(new JsonProcessingException("an error") {}).when(apiDocResource).openapiJson(any(), eq("/"), any());
 
         var instance = new EurekaServiceInstance(InstanceInfo.Builder.newBuilder().setAppName("service").build());
@@ -71,7 +71,7 @@ class ApiDocRetrievalServiceLocalTest {
 
     @Test
     void givenValidApiDoc_whenGetApiDoc_thenReturnApiDoc() throws JsonProcessingException {
-        var apiDocResource = mockApiDocResource("service");
+        var apiDocResource = mockApiDocResource();
         doReturn(Mono.just("Api doc".getBytes(StandardCharsets.UTF_8))).when(apiDocResource).openapiJson(any(), eq("/"), any());
 
         var instance = new EurekaServiceInstance(InstanceInfo.Builder.newBuilder().setAppName("service").build());
