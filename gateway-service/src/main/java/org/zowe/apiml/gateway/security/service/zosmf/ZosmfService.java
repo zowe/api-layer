@@ -15,6 +15,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
 import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.util.DefaultResourceRetriever;
+import com.nimbusds.jose.util.Resource;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -124,6 +126,7 @@ public class ZosmfService extends AbstractZosmfService {
 
     private final ApplicationContext applicationContext;
     private final List<TokenValidationStrategy> tokenValidationStrategy;
+    private DefaultResourceRetriever resourceRetriever;
 
     public ZosmfService(
         final AuthConfigurationProperties authConfigurationProperties,
@@ -133,7 +136,8 @@ public class ZosmfService extends AbstractZosmfService {
         final ApplicationContext applicationContext,
         final AuthenticationService authenticationService,
         final TokenCreationService tokenCreationService,
-        List<TokenValidationStrategy> tokenValidationStrategy
+        List<TokenValidationStrategy> tokenValidationStrategy,
+        DefaultResourceRetriever resourceRetriever
     ) {
         super(
             authConfigurationProperties,
@@ -145,6 +149,7 @@ public class ZosmfService extends AbstractZosmfService {
         this.tokenValidationStrategy = tokenValidationStrategy;
         this.authenticationService = authenticationService;
         this.tokenCreationService = tokenCreationService;
+        this.resourceRetriever = resourceRetriever;
     }
 
     private ZosmfService meAsProxy;
@@ -562,7 +567,8 @@ public class ZosmfService extends AbstractZosmfService {
         final String url = getURI(getZosmfServiceId(), authConfigurationProperties.getZosmf().getJwtEndpoint());
 
         try {
-            return JWKSet.load(new URL(url));
+            Resource resource = resourceRetriever.retrieveResource(new URL(url));
+            return JWKSet.parse(resource.getContent());
         } catch (ParseException pe) {
             log.debug("Invalid format of public keys from z/OSMF", pe);
         } catch (HttpClientErrorException.NotFound nf) {

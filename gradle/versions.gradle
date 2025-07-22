@@ -27,7 +27,7 @@ dependencyResolutionManagement {
             version('zosUtils', '2.0.7')
             version('archaius', '0.7.12')
             version('awaitility', '4.2.2')
-            version('awsJavaSdk', '1.12.787')
+            version('awsJavaSdk', '1.12.788')
             version('bouncyCastle', '1.78.1')
             // forced version in root gradle.build file. Version 3.x requieres Java 11
             version('caffeine', '2.9.3')
@@ -41,7 +41,7 @@ dependencyResolutionManagement {
             version('ehCache', '3.10.8')
             version('eureka', '1.10.18')
             version('findBugs', '3.0.2')
-            version('githubClassgraph', '4.8.180')
+            version('githubClassgraph', '4.8.181')
             version('gradleGitProperties', '2.3.1') // Used in classpath dependencies
             version('gradleNode', '3.6.0') // Used in classpath dependencies
             version('gson', '2.11.0')
@@ -103,7 +103,7 @@ dependencyResolutionManagement {
             version('netflixServo', '0.13.2')
             version('netty', '4.1.119.Final')
             version('nettyReactor', '1.1.23')
-            version('nimbusJoseJwt', '9.40')
+            version('nimbusJoseJwt', '10.0.2')
             version('openApiDiff', '2.0.1')
             version('ow2asm', '9.7.1')
             version('picocli', '4.7.7')
