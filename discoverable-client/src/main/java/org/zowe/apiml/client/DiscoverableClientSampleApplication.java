@@ -22,12 +22,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
-@SpringBootApplication(
-    scanBasePackages = {
-        "org.zowe.apiml.client",
-        "org.zowe.apiml.product"
-    }
-)
+@SpringBootApplication
 @EnableApiDiscovery
 @EnableWebSocket
 @EnableApimlLogger
