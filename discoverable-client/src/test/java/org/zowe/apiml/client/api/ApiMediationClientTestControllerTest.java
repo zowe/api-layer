@@ -16,9 +16,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.zowe.apiml.client.TestConfig;
 import org.zowe.apiml.client.configuration.SecurityConfiguration;
 import org.zowe.apiml.client.service.ApiMediationClientService;
+import org.zowe.apiml.util.config.TestConfig;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;

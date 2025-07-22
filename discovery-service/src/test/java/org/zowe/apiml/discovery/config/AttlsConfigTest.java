@@ -19,7 +19,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.zowe.apiml.discovery.TestConfig;
+import org.zowe.apiml.util.config.TestConfig;
 import org.zowe.apiml.discovery.functional.DiscoveryFunctionalTest;
 
 import java.io.IOException;

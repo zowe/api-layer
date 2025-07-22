@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.zowe.apiml.apicatalog.ApiCatalogApplication;
 import org.zowe.apiml.product.web.HttpConfig;
+import org.zowe.apiml.util.config.TestConfig;
 
 @SpringBootTest(
     classes = ApiCatalogApplication.class,

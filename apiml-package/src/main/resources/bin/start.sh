@@ -431,7 +431,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.webSocket.connectTimeout=${ZWE_configs_server_webSocket_connectTimeout:-${ZWE_components_gateway_server_webSocket_connectTimeout:-45000}} \
     -Dserver.webSocket.maxIdleTimeout=${ZWE_configs_server_webSocket_maxIdleTimeout:-${ZWE_components_gateway_server_webSocket_maxIdleTimeout:-3600000}} \
     -Dserver.webSocket.requestBufferSize=${ZWE_configs_server_webSocket_requestBufferSize:-${ZWE_components_gateway_server_webSocket_requestBufferSize:-8192}} \
-    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active} \
+    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -jar "${JAR_FILE}" &
 
 pid=$!

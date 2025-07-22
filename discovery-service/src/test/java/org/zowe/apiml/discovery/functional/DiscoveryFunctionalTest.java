@@ -18,7 +18,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.zowe.apiml.discovery.DiscoveryServiceApplication;
-import org.zowe.apiml.discovery.TestConfig;
+import org.zowe.apiml.util.config.TestConfig;
 
 @SpringBootTest(
     classes = DiscoveryServiceApplication.class,

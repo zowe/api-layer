@@ -80,6 +80,7 @@ dependencies {
     implementation libs.spring.boot.starter.graphql
 
     testImplementation libs.spring.boot.starter.test
+    testImplementation(testFixtures(project(":apiml-common")))
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
