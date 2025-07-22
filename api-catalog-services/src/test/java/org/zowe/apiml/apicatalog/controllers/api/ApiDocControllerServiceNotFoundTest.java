@@ -49,7 +49,7 @@ class ApiDocControllerServiceNotFoundTest {
     }
 
     @Test
-    void getApiDocForServiceDown() throws Exception {
+    void getApiDocForServiceDown() {
         webTestClient.get().uri("/apicatalog/apidoc/service1/v1").exchange()
             .expectStatus().isNotFound()
             .expectBody().jsonPath("$.messages[?(@.messageNumber == 'ZWEAC706E')].messageContent")

@@ -225,25 +225,6 @@ public class ApiDocService {
         return uri.toUriString();
     }
 
-    /**
-     * Get ApiDoc url
-     *
-     * @param apiInfo      the apiInfo of service instance
-     * @param serviceInstance the information about service instance
-     * @param routes       the routes of service instance
-     * @return the url of apidoc
-     */
-    private String getApiDocUrl(ApiInfo apiInfo, ServiceInstance serviceInstance, RoutedServices routes) {
-        String apiDocUrl = null;
-        if (apiInfo == null) {
-            apiDocUrl = createApiDocUrlFromRouting(serviceInstance, routes);
-        } else if (StringUtils.isNotBlank(apiInfo.getSwaggerUrl())) {
-            apiDocUrl = apiInfo.getSwaggerUrl();
-        }
-
-        return apiDocUrl;
-    }
-
     private String getGatewayUrl() {
         ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
 

@@ -82,7 +82,7 @@ class StaticDefinitionControllerTest {
         class whenCallStaticGenerationAPI {
 
             @Test
-            void thenResponseIs400() throws Exception {
+            void thenResponseIs400() {
                 webTestClient.post().uri(STATIC_DEF_GENERATE_ENDPOINT).exchange()
                     .expectStatus().isBadRequest();
             }

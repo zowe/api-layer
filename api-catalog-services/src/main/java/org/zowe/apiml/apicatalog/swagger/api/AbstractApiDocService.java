@@ -37,7 +37,7 @@ public abstract class AbstractApiDocService<T, N> {
 
     protected abstract void updateExternalDoc(T swaggerAPI, ApiDocInfo apiDocInfo);
 
-    protected String getHostname(String serviceId) {
+    protected String getHostname() {
         return gatewayClient.getGatewayConfigProperties().getHostname();
     }
 

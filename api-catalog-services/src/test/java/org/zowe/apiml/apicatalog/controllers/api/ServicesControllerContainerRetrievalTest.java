@@ -52,7 +52,7 @@ class ServicesControllerContainerRetrievalTest {
     }
 
     @Test
-    void getContainers() throws Exception {
+    void getContainers() {
         webTestClient.get().uri("/apicatalog/containers").exchange()
             .expectStatus().is5xxServerError()
             .expectBody().jsonPath("$.messages[?(@.messageNumber == 'ZWEAC104E')].messageContent")

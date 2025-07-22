@@ -256,7 +256,7 @@ class ServicesControllerTests {
         }
 
         @Test
-        void thenReturnOk() throws ContainerStatusRetrievalException {
+        void thenReturnOk() {
             String defaultApiVersion = "v1";
 
             given(containerService.getService(serviceId)).willReturn(service);
@@ -271,7 +271,7 @@ class ServicesControllerTests {
         }
 
         @Test
-        void thenReturnOkWithoutApiDoc() throws ContainerStatusRetrievalException {
+        void thenReturnOkWithoutApiDoc() {
             String defaultApiVersion = "v1";
 
             given(containerService.getService(serviceId)).willReturn(service);

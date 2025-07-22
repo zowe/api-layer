@@ -74,7 +74,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
 
         if (!isDefinedOnlyBypassRoutes(apiDocInfo)) {
             updatePaths(openAPI, serviceId, apiDocInfo, hidden);
-            updateServer(openAPI, serviceId);
+            updateServer(openAPI);
         }
         updateSwaggerUrl(openAPI, serviceId, apiDocInfo.getApiInfo(), hidden, scheme);
         updateExternalDoc(openAPI, apiDocInfo);
@@ -87,11 +87,11 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         }
     }
 
-    private void updateServer(OpenAPI openAPI, String serviceId) {
+    private void updateServer(OpenAPI openAPI) {
         if (openAPI.getServers() != null) {
             openAPI.getServers()
                 .forEach(server -> server.setUrl(
-                    String.format("%s://%s/%s", scheme, getHostname(serviceId), server.getUrl())));
+                    String.format("%s://%s/%s", scheme, getHostname(), server.getUrl())));
         }
     }
 

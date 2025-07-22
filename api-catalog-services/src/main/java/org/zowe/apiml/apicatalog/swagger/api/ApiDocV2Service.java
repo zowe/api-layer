@@ -70,9 +70,9 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
      * @param serviceId the unique service id
      */
     private void updateSchemeHost(Swagger swagger, String serviceId) {
-        log.debug("Updating host for service with id: " + serviceId + " to: " + getHostname(serviceId));
+        log.debug("Updating host for service with id: " + serviceId + " to: " + getHostname());
         swagger.setSchemes(Collections.singletonList(Scheme.forValue(scheme)));
-        swagger.setHost(getHostname(serviceId));
+        swagger.setHost(getHostname());
     }
 
     private void updateSwaggerUrl(Swagger swagger, String serviceId, ApiInfo apiInfo, boolean hidden, String scheme) {

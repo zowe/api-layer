@@ -13,7 +13,6 @@ package org.zowe.apiml.apicatalog.controllers.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.core.io.buffer.DataBufferUtils;
@@ -101,7 +100,7 @@ public class TokenController {
         ServerWebExchange exchange
     ) {
         return Optional.ofNullable(exchange.getRequest().getHeaders().getFirst(org.springframework.http.HttpHeaders.AUTHORIZATION))
-            .filter(header -> StringUtils.startsWith(header, "Bearer "))
+            .filter(header -> header.startsWith("Bearer "))
             .map(header -> header.substring("Bearer ".length()))
             .map(String::trim)
             .or(() -> Optional.ofNullable(exchange.getRequest().getCookies().getFirst(cp.getCookieName()))

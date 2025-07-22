@@ -16,7 +16,6 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -82,6 +81,7 @@ public class SecurityConfiguration {
 
     private static final String APIDOC_ROUTES = "/apidoc/**";
     private static final String STATIC_REFRESH_ROUTE = "/static-api/refresh";
+    private static final String APPLICATION_HEALTH = "/application/health";
 
     private final ApplicationInfo applicationInfo;
     private final GatewaySecurity gatewaySecurity;
@@ -173,17 +173,17 @@ public class SecurityConfiguration {
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
     ) {
         http = baseConfiguration(
-            http.securityMatcher(ServerWebExchangeMatchers.pathMatchers(getFullUrls("/application/health"))),
+            http.securityMatcher(ServerWebExchangeMatchers.pathMatchers(getFullUrls(APPLICATION_HEALTH))),
             serverAuthenticationEntryPoint,
             basicAuthenticationFilter, tokenAuthenticationFilter, oidcAuthenticationFilter
         );
 
         if (isHealthEndpointProtected) {
             http.authorizeExchange(exchange -> exchange
-                .pathMatchers(getFullUrls("/application/health")).authenticated());
+                .pathMatchers(getFullUrls(APPLICATION_HEALTH)).authenticated());
         } else {
             http.authorizeExchange(exchange -> exchange
-                .pathMatchers(getFullUrls("/application/health")).permitAll());
+                .pathMatchers(getFullUrls(APPLICATION_HEALTH)).permitAll());
         }
 
         return http.build();
@@ -240,8 +240,8 @@ public class SecurityConfiguration {
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
 
             .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
-            .formLogin(formLoginSpec -> formLoginSpec.disable())
-            .httpBasic(httpBasicSpec -> httpBasicSpec.disable())
+            .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
 
             .headers(httpSecurityHeadersConfigurer ->
                 httpSecurityHeadersConfigurer.hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
@@ -302,7 +302,7 @@ public class SecurityConfiguration {
         return (exchange, chain) -> chain.filter(exchange)
             .contextWrite(context ->
                 Optional.ofNullable(exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
-                    .filter(header -> StringUtils.startsWith(header, "Bearer "))
+                    .filter(header -> header.startsWith("Bearer "))
                     .map(header -> header.substring("Bearer ".length()))
                     .map(String::trim)
                     .or(() -> Optional.ofNullable(exchange.getRequest().getCookies().getFirst(cp.getCookieName()))
