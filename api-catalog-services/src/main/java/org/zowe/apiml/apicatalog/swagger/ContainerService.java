@@ -85,6 +85,7 @@ public class ContainerService {
     public Collection<APIContainer> getAllContainers() {
         return getProductIds().stream()
             .map(this::getContainerById)
+            .filter(Objects::nonNull)
             .toList();
     }
 

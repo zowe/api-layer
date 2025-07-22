@@ -80,10 +80,10 @@ apiml:
                     apiml:
                         catalog:
                             tile:
-                                id: ${apiml.catalog.id}
-                                title: ${apiml.catalog.title}
-                                description: ${apiml.catalog.description}
-                                version: ${apiml.catalog.version}
+                                id: apimediationlayer
+                                title: API Mediation Layer API
+                                description: The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.
+                                version: 1.0.0
 
                         routes:
                             ui-v1:
@@ -97,7 +97,7 @@ apiml:
                             -   apiId: zowe.apiml.apicatalog
                                 version: 1.0.0
                                 gatewayUrl: api/v1
-                                swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/apicatalog/v3/api-docs
+                                swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/v3/api-docs/apicatalog
 
                         service:
                             title: API Catalog
