@@ -80,7 +80,7 @@ public class TokenController {
                 .orElse( null)
             ))
             .switchIfEmpty(Mono.error(() -> WebClientResponseException.create(SC_BAD_REQUEST, "bad request", exchange.getRequest().getHeaders(), new byte[0], StandardCharsets.UTF_8)))
-            .map(login ->
+            .flatMap(login ->
                 gatewaySecurity.login(login.getUsername(), login.getPassword(), null).map(token -> {
                     exchange.getResponse().addCookie(ResponseCookie.from(cp.getCookieName(), token)
                         .path(cp.getCookiePath())

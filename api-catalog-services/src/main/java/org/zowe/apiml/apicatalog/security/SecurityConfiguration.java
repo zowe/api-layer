@@ -12,11 +12,11 @@ package org.zowe.apiml.apicatalog.security;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -83,14 +83,28 @@ public class SecurityConfiguration {
     private static final String APIDOC_ROUTES = "/apidoc/**";
     private static final String STATIC_REFRESH_ROUTE = "/static-api/refresh";
 
-    private final AuthConfigurationProperties authConfigurationProperties;
     private final ApplicationInfo applicationInfo;
+    private final GatewaySecurity gatewaySecurity;
+    private final AuthConfigurationProperties authConfigurationProperties;
+    private final MessageService messageService;
+    private final ObjectMapper objectMapper;
 
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
     @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifySslCertificatesOfServices;
+
+    private WebFilter basicAuthenticationFilter;
+    private WebFilter tokenAuthenticationFilter;
+    private WebFilter oidcAuthenticationFilter;
+
+    @PostConstruct
+    void initFilters() {
+        basicAuthenticationFilter = basicAuthenticationFilter(gatewaySecurity);
+        tokenAuthenticationFilter = tokenAuthenticationFilter(gatewaySecurity, authConfigurationProperties, messageService, objectMapper);
+        oidcAuthenticationFilter = oidcAuthenticationFilter(gatewaySecurity);
+    }
 
     private String[] getFullUrls(String...baseUrl) {
         String prefix = applicationInfo.isModulith() ? "/apicatalog/api/v1" : "/apicatalog";
@@ -132,9 +146,6 @@ public class SecurityConfiguration {
     @Order(3)
     public SecurityWebFilterChain basicAuthOrTokenOrCertApiDocFilterChain(
         ServerHttpSecurity http,
-        @Qualifier("basicAuthenticationFilter") WebFilter basicAuthenticationFilter,
-        @Qualifier("tokenAuthenticationFilter") WebFilter tokenAuthenticationFilter,
-        @Qualifier("oidcAuthenticationFilter") WebFilter oidcAuthenticationFilter,
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
     ) {
         baseConfiguration(
@@ -159,9 +170,6 @@ public class SecurityConfiguration {
     public SecurityWebFilterChain healthEndpointSecurityWebFilterChain(
         ServerHttpSecurity http,
         @Value("${apiml.health.protected:true}") boolean isHealthEndpointProtected,
-        @Qualifier("basicAuthenticationFilter") WebFilter basicAuthenticationFilter,
-        @Qualifier("tokenAuthenticationFilter") WebFilter tokenAuthenticationFilter,
-        @Qualifier("oidcAuthenticationFilter") WebFilter oidcAuthenticationFilter,
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
     ) {
         http = baseConfiguration(
@@ -185,9 +193,6 @@ public class SecurityConfiguration {
     @Order(5)
     public SecurityWebFilterChain basicAuthOrTokenAllEndpointsFilterChain(
         ServerHttpSecurity http,
-        @Qualifier("basicAuthenticationFilter") WebFilter basicAuthenticationFilter,
-        @Qualifier("tokenAuthenticationFilter") WebFilter tokenAuthenticationFilter,
-        @Qualifier("oidcAuthenticationFilter") WebFilter oidcAuthenticationFilter,
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
     ) {
         return baseConfiguration(http.securityMatcher(ServerWebExchangeMatchers.pathMatchers(
@@ -265,8 +270,7 @@ public class SecurityConfiguration {
         return http;
     }
 
-    @Bean
-    public WebFilter basicAuthenticationFilter(
+    WebFilter basicAuthenticationFilter(
         GatewaySecurity gatewaySecurity
     ) {
         return (exchange, chain) -> chain.filter(exchange)
@@ -287,8 +291,7 @@ public class SecurityConfiguration {
             });
     }
 
-    @Bean
-    public WebFilter tokenAuthenticationFilter(
+    WebFilter tokenAuthenticationFilter(
         GatewaySecurity gatewaySecurity,
         AuthConfigurationProperties authConfigurationProperties,
         MessageService messageService,
@@ -334,8 +337,7 @@ public class SecurityConfiguration {
             });
     }
 
-    @Bean
-    public WebFilter oidcAuthenticationFilter(
+    WebFilter oidcAuthenticationFilter(
         GatewaySecurity gatewaySecurity
     ) {
         return (exchange, chain) -> chain.filter(exchange)
