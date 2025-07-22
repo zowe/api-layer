@@ -189,7 +189,7 @@ public class RouteLocator implements RouteDefinitionLocator {
     }
 
     private boolean filterIgnored(String serviceId) {
-        return !PatternMatchUtils.simpleMatch(ignoredServices, serviceId);
+        return !PatternMatchUtils.simpleMatch(ignoredServices, serviceId.toLowerCase());
     }
 
 }
