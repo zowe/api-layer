@@ -151,9 +151,9 @@ else
 fi
 
 ZOWE_CONSOLE_LOG_CHARSET=UTF-8
-APIML_LOADER_PATH=${COMMON_LIB}
 if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
+    APIML_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
 
     JAVA_VERSION=$(${JAVA_HOME}/bin/javap -J-Xms4m -J-Xmx16m -verbose java.lang.String \
         | grep "major version" \
@@ -162,6 +162,8 @@ if [ "$(uname)" = "OS/390" ]; then
     if [ $JAVA_VERSION -ge 65 ]; then # Java 21
         ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
     fi
+else
+    APIML_LOADER_PATH=${COMMON_LIB}
 fi
 
 # Check if the directory containing the ZAAS shared JARs was set and append it to the ZAAS loader path
