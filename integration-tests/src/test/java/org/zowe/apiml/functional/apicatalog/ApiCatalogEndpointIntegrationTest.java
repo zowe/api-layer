@@ -55,6 +55,8 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 @TestInstance(Lifecycle.PER_CLASS)
 class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
 
+    private static final boolean IS_MODULITH_ENABLED = true || Boolean.parseBoolean(System.getProperty("environment.modulith"));
+
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/api/v1/containers";
     private static final String GET_CONTAINER_BY_ID_ENDPOINT = "/apicatalog/api/v1/containers/apimediationlayer";
     private static final String GET_CONTAINER_BY_INVALID_ID_ENDPOINT = "/apicatalog/api/v1/containers/bad";
@@ -124,8 +126,12 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
 
     @Nested
     class ApiDoc {
+
         @Nested
         class ThenResponseOk {
+
+            private static final String BASE_PATH = IS_MODULITH_ENABLED ? "/api/v1" : "";
+
             @Test
                 // Functional
             void whenSpecificCatalogApiDoc() throws Exception {
@@ -152,13 +158,13 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
                 assertThat(apiCatalogSwagger, baseHosts.stream()
                     .map(host -> "https://" + host + "/apicatalog/api/v1")
                     .toList(), hasItem(equalTo(swaggerServer)));
-                assertNull(paths.get("/status/updates"), apiCatalogSwagger);
-                assertNotNull(paths.get("/containers/{id}"), apiCatalogSwagger);
-                assertNotNull(paths.get("/containers"), apiCatalogSwagger);
-                assertNotNull(paths.get("/apidoc/{serviceId}/{apiId}"), apiCatalogSwagger);
+                assertNull(paths.get(BASE_PATH + "/status/updates"), apiCatalogSwagger);
+                assertNotNull(paths.get(BASE_PATH + "/containers/{id}"), apiCatalogSwagger);
+                assertNotNull(paths.get(BASE_PATH + "/containers"), apiCatalogSwagger);
+                assertNotNull(paths.get(BASE_PATH + "/apidoc/{serviceId}/{apiId}"), apiCatalogSwagger);
                 assertNotNull(componentSchemas.get("APIContainer"), apiCatalogSwagger);
                 assertNotNull(componentSchemas.get("APIService"), apiCatalogSwagger);
-                assertNotNull(securitySchemes.get("BasicAuthorization"), apiCatalogSwagger);
+                assertNotNull(securitySchemes.get("LoginBasicAuth"), apiCatalogSwagger);
                 assertNotNull(securitySchemes.get("CookieAuth"), apiCatalogSwagger);
             }
 
@@ -187,13 +193,13 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
                 assertThat(apiCatalogSwagger, baseHosts.stream()
                     .map(host -> "https://" + host + "/apicatalog/api/v1")
                     .toList(), hasItem(equalTo(swaggerServer)));
-                assertNull(paths.get("/status/updates"), apiCatalogSwagger);
-                assertNotNull(paths.get("/containers/{id}"), apiCatalogSwagger);
-                assertNotNull(paths.get("/containers"), apiCatalogSwagger);
-                assertNotNull(paths.get("/apidoc/{serviceId}/{apiId}"), apiCatalogSwagger);
+                assertNull(paths.get(BASE_PATH + "/status/updates"), apiCatalogSwagger);
+                assertNotNull(paths.get(BASE_PATH + "/containers/{id}"), apiCatalogSwagger);
+                assertNotNull(paths.get(BASE_PATH + "/containers"), apiCatalogSwagger);
+                assertNotNull(paths.get(BASE_PATH + "/apidoc/{serviceId}/{apiId}"), apiCatalogSwagger);
                 assertNotNull(componentSchemas.get("APIContainer"), apiCatalogSwagger);
                 assertNotNull(componentSchemas.get("APIService"), apiCatalogSwagger);
-                assertNotNull(securitySchemes.get("BasicAuthorization"), apiCatalogSwagger);
+                assertNotNull(securitySchemes.get("LoginBasicAuth"), apiCatalogSwagger);
                 assertNotNull(securitySchemes.get("CookieAuth"), apiCatalogSwagger);
             }
         }

@@ -57,10 +57,55 @@ springdoc:
           paths-to-match: /discovery/api/v1/**
         - group: zaas
           paths-to-match: /zaas/api/v1/**
+        - group: apicatalog
+          paths-to-match: /apicatalog/api/v1/**
+
 
 apiml:
     catalog:
         serviceId: apicatalog
+        eureka:
+            instance:
+                instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
+                hostname: ${apiml.service.hostname}
+                statusPageUrlPath: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/apicatalog/application/info
+                healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/apicatalog/application/health
+                secureHealthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}/apicatalog/application/health
+                homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/apicatalog
+                port: ${apiml.service.port}
+                securePort: ${apiml.service.port}
+                nonSecurePortEnabled: ${apiml.service.nonSecurePortEnabled}
+                securePortEnabled: ${apiml.service.securePortEnabled}
+                metadata-map:
+                    apiml:
+                        catalog:
+                            tile:
+                                id: ${apiml.catalog.id}
+                                title: ${apiml.catalog.title}
+                                description: ${apiml.catalog.description}
+                                version: ${apiml.catalog.version}
+
+                        routes:
+                            ui-v1:
+                                gatewayUrl: "/ui/v1"
+                                serviceUrl: /apicatalog
+                            api-v1:
+                                gatewayUrl: "/api/v1"
+                                serviceUrl: /apicatalog
+
+                        apiInfo:
+                            -   apiId: zowe.apiml.apicatalog
+                                version: 1.0.0
+                                gatewayUrl: api/v1
+                                swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/apicatalog/v3/api-docs
+
+                        service:
+                            title: API Catalog
+                            description: API Catalog service to display service details and API documentation for discovered API services.
+
+                        authentication:
+                            sso: true
+                            scheme: zoweJwt
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
         # Not used in HTTPS mode and not applicable for Zowe

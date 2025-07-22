@@ -70,6 +70,7 @@ public class ModulithConfig {
     private final ApplicationContext applicationContext;
     private final Map<String, InstanceInfo> instances = new HashMap<>();
     private final GatewayEurekaInstanceConfigBean eurekaInstanceGw;
+    private final CatalogEurekaInstanceConfigBean catalogEurekaInstanceConfigBean;
     private final EurekaClientConfig eurekaConfig;
     private final CachingServiceEurekaInstanceConfigBean eurekaInstanceCaching;
 
@@ -113,6 +114,9 @@ public class ModulithConfig {
                 break;
             case "cachingservice":
                 metadata = eurekaInstanceCaching.getMetadataMap();
+                break;
+            case "apicatalog":
+                metadata = catalogEurekaInstanceConfigBean.getMetadataMap();
                 break;
             default:
         }
