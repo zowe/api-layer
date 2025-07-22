@@ -55,7 +55,7 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 @TestInstance(Lifecycle.PER_CLASS)
 class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
 
-    private static final boolean IS_MODULITH_ENABLED = true || Boolean.parseBoolean(System.getProperty("environment.modulith"));
+    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
 
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/api/v1/containers";
     private static final String GET_CONTAINER_BY_ID_ENDPOINT = "/apicatalog/api/v1/containers/apimediationlayer";

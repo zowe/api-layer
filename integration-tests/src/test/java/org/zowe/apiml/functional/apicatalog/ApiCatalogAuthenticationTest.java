@@ -17,11 +17,7 @@ import io.restassured.response.Validatable;
 import io.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -35,6 +31,7 @@ import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import java.net.URISyntaxException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -49,6 +46,8 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 @GeneralAuthenticationTest
 @Slf4j
 class ApiCatalogAuthenticationTest {
+
+    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
 
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
@@ -74,14 +73,24 @@ class ApiCatalogAuthenticationTest {
     }
 
     static Stream<Arguments> requestsToTest() {
-        return Stream.of(
+        var arguments = new LinkedList<Arguments>();
+        arguments.add(
             Arguments.of(CATALOG_APIDOC_ENDPOINT, (Request) (when, endpoint) ->
                 when.urlEncodingEnabled(false) // space in URL gets encoded by getUriFromGateway
                     .get(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint))
-            ),
-            Arguments.of(CATALOG_STATIC_REFRESH_ENDPOINT, (Request) (when, endpoint) -> when.post(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint))),
-            Arguments.of(CATALOG_ACTUATOR_ENDPOINT, (Request) (when, endpoint) -> when.get(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint)))
+            )
         );
+        arguments.add(
+            Arguments.of(CATALOG_STATIC_REFRESH_ENDPOINT, (Request) (when, endpoint) -> when.post(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint)))
+        );
+
+        if (!IS_MODULITH_ENABLED) {
+            arguments.add(
+                Arguments.of(CATALOG_ACTUATOR_ENDPOINT, (Request) (when, endpoint) -> when.get(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint)))
+            );
+        }
+
+        return arguments.stream();
     }
 
     static Stream<Arguments> requestsToTestWithCertificate() {
