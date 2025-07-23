@@ -50,6 +50,16 @@ public class HttpUtils {
             .build();
     }
 
+    public ResponseCookie createResponseCookieRemoval() {
+        return ResponseCookie.from(cp.getCookieName())
+            .path(cp.getCookiePath())
+            .sameSite(cp.getCookieSameSite().getValue())
+            .maxAge(0L)
+            .httpOnly(true)
+            .secure(cp.isCookieSecure())
+            .build();
+    }
+
     public Mono<String> getTokenFromRequest(ServerWebExchange exchange) {
         return getCookieValue(exchange, COOKIE_AUTH_NAME)
             .switchIfEmpty(getBearerTokenFromHeaderReactive(exchange));
