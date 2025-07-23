@@ -1871,6 +1871,8 @@ jobs:
 
             gateway-service: # To avoid updating Oauth provider admin settings
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://gateway-service:10011/eureka
                     APIML_SERVICE_HOSTNAME: gateway-service
@@ -1885,8 +1887,11 @@ jobs:
                     APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
                     APIML_HEALTH_PROTECTED: false
                     logbackService: ZWEAGW1
+                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://gateway-service-2:10011/eureka
                     APIML_SERVICE_HOSTNAME: gateway-service-2
@@ -1899,6 +1904,7 @@ jobs:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
+                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
 
         steps:
             -   uses: actions/checkout@v4
