@@ -72,7 +72,7 @@ public class ModulithConfig {
     private final GatewayEurekaInstanceConfigBean eurekaInstanceGw;
     private final CatalogEurekaInstanceConfigBean catalogEurekaInstanceConfigBean;
     private final EurekaClientConfig eurekaConfig;
-    private final CachingServiceEurekaInstanceConfigBean eurekaInstanceCaching;
+    private final CachingServiceEurekaInstanceConfigBean cachingServiceEurekaInstanceConfigBean;
 
     private final Timer timer = new Timer("PeerReplicated-StaticServices");
 
@@ -113,7 +113,7 @@ public class ModulithConfig {
                 metadata.put("management.port", "10010");
                 break;
             case "cachingservice":
-                metadata = eurekaInstanceCaching.getMetadataMap();
+                metadata = cachingServiceEurekaInstanceConfigBean.getMetadataMap();
                 break;
             case "apicatalog":
                 metadata = catalogEurekaInstanceConfigBean.getMetadataMap();

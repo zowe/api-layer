@@ -78,6 +78,7 @@ apiml:
                 securePortEnabled: ${apiml.service.securePortEnabled}
                 metadata-map:
                     apiml:
+                        apiBasePath: /apicatalog/api/v1
                         catalog:
                             tile:
                                 id: apimediationlayer
