@@ -95,7 +95,7 @@ public class ApiCatalogRequests {
             .setScheme(scheme)
             .setHost(host)
             .setPort(port)
-            .setPath((IS_MODULITH_ENABLED ? "/apicatalog/api/v1" : "") + path)
+            .setPath((IS_MODULITH_ENABLED ? "/apicatalog/api/v1" : "/apicatalog") + path)
             .build();
     }
 
