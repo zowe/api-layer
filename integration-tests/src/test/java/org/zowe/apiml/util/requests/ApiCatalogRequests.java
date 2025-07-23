@@ -60,9 +60,10 @@ public class ApiCatalogRequests {
                 .contentType(JSON)
                 .auth()
                 .basic(credentials.getUser(), new String(credentials.getPassword()))
-                .when()
+            .when()
                 .get(getApiCatalogUriWithPath(Endpoints.HEALTH))
-                .then()
+            .then()
+                .log().ifValidationFails()
                 .statusCode(200)
                 .body("status", Matchers.is("UP"));
             return true;
@@ -94,7 +95,7 @@ public class ApiCatalogRequests {
             .setScheme(scheme)
             .setHost(host)
             .setPort(port)
-            .setPath((IS_MODULITH_ENABLED ? "/apicatalog/api/v1" : "/apicatalog") + path)
+            .setPath((IS_MODULITH_ENABLED ? "/apicatalog/api/v1" : "") + path)
             .build();
     }
 
