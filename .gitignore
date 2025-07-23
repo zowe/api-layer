@@ -122,3 +122,5 @@ data/*
 index/*
 
 *.lock
+index.*
+index-count
