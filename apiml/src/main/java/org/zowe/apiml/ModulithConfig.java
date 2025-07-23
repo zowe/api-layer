@@ -121,11 +121,13 @@ public class ModulithConfig {
             default:
         }
 
+        String homePagePath = metadata.getOrDefault("apiml.homePagePath", "/");
+
         return InstanceInfo.Builder.newBuilder()
                 .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
                 .setAppName(serviceId)
                 .setHostName(hostname)
-                .setHomePageUrl(null, String.format("%s://%s:%d", scheme, hostname, port))
+                .setHomePageUrl(null, String.format("%s://%s:%d%s", scheme, hostname, port, homePagePath))
                 .setStatus(InstanceInfo.InstanceStatus.UP)
                 .setIPAddr(ipAddress)
                 .setPort(port)
