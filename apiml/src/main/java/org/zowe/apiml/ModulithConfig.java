@@ -121,7 +121,7 @@ public class ModulithConfig {
             default:
         }
 
-        String homePagePath = metadata.getOrDefault("apiml.homePagePath", "/");
+        String homePagePath = metadata.getOrDefault("apiml.homePagePath", "");
 
         return InstanceInfo.Builder.newBuilder()
                 .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
