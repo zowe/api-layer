@@ -11,6 +11,8 @@
 package org.zowe.apiml.apicatalog.security;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -19,10 +21,12 @@ import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
+@ExtendWith(MockitoExtension.class)
 class ApiCatalogLogoutSuccessHandlerTest {
 
     @Test
@@ -37,12 +41,18 @@ class ApiCatalogLogoutSuccessHandlerTest {
         AuthConfigurationProperties securityConfigurationProperties = new AuthConfigurationProperties();
         ApiCatalogLogoutSuccessHandler apiCatalogLogoutSuccessHandler = new ApiCatalogLogoutSuccessHandler(securityConfigurationProperties);
 
-        apiCatalogLogoutSuccessHandler.onLogoutSuccess(
-            webFilterExchange,
-            new TokenAuthentication("TEST_TOKEN_STRING")
-        ).block();
+        StepVerifier.create(apiCatalogLogoutSuccessHandler.onLogoutSuccess(
+                webFilterExchange,
+                new TokenAuthentication("TEST_TOKEN_STRING")
+            ))
+        .verifyComplete();
 
-        assertFalse(exchange.getSession().block().isStarted());
+        StepVerifier.create(exchange.getSession())
+            .assertNext(session -> {
+                assertFalse(session.isStarted());
+            })
+            .verifyComplete();
+
         assertEquals(HttpStatus.OK.value(), exchange.getResponse().getStatusCode().value());
 
         var cookie = exchange.getResponse().getCookies().getFirst(

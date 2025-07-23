@@ -231,10 +231,13 @@ class LoadBalancerCacheTest {
 
                 @Test
                 void andSuccess_thenSuccess() {
-                    var cacheRecord = new LoadBalancerCacheRecord("instance1");
+                    var expectedRecord = new LoadBalancerCacheRecord("instance1");
                     var key = "lb.anuser:aserviceid";
-                    when(map.get(key)).thenReturn(cacheRecord);
-                    assertEquals(cacheRecord, loadBalancerCache.retrieve("anuser", "aserviceid").block());
+                    when(map.get(key)).thenReturn(expectedRecord);
+                    StepVerifier.create(loadBalancerCache.retrieve("anuser", "aserviceid"))
+                        .assertNext(retrievedRecord -> assertEquals(expectedRecord, retrievedRecord))
+                        .verifyComplete();
+
                     verifyNoInteractions(cachingServiceClient);
                 }
 
