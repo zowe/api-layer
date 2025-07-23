@@ -22,6 +22,7 @@ import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import org.zowe.apiml.config.ApplicationInfo;
+import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.time.Duration;
@@ -60,25 +61,29 @@ public class WebConfig implements WebFluxConfigurer {
             .addResourceLocations("/resources/", "/resources/static/", "/resources/templates/");
     }
 
+    private Mono<ServerResponse> redirect(String path) {
+        return ServerResponse.permanentRedirect(URI.create(path)).build();
+    }
+
     @Bean
     @ConditionalOnMissingBean(name = "modulithConfig")
     public RouterFunction<ServerResponse> redirectRouteMicroservice() {
-        return route(GET("/"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog")).build())
-            .and(route(GET("/apicatalog"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/")).build()))
-            .and(route(GET("/apicatalog/"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/index.html")).build()));
+        return route(GET("/"), req -> redirect("/apicatalog"))
+            .and(route(GET("/apicatalog"), req -> redirect("/apicatalog/")))
+            .and(route(GET("/apicatalog/"), req -> redirect("/apicatalog/index.html")));
     }
 
     @Bean
     @ConditionalOnBean(name = "modulithConfig")
     public RouterFunction<ServerResponse> redirectRouteModulith() {
-        return route(GET("/apicatalog/api/v1"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/api/v1/")).build())
-            .and(route(GET("/apicatalog/api/v1/"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/api/v1/index.html")).build()))
-            .and(route(GET("/apicatalog/ui/v1"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/ui/v1/")).build()))
-            .and(route(GET("/apicatalog/ui/v1/"), req -> ServerResponse.permanentRedirect(URI.create("/apicatalog/ui/v1/index.html")).build()))
+        return route(GET("/apicatalog/api/v1"), req -> redirect("/apicatalog/api/v1/"))
+            .and(route(GET("/apicatalog/api/v1/"), req -> redirect("/apicatalog/api/v1/index.html")))
+            .and(route(GET("/apicatalog/ui/v1"), req -> redirect("/apicatalog/ui/v1/")))
+            .and(route(GET("/apicatalog/ui/v1/"), req -> redirect("/apicatalog/ui/v1/index.html")))
 
-            .and(route(POST("/apicatalog/api/v1/auth/login"), req -> ServerResponse.permanentRedirect(URI.create("/gateway/api/v1/auth/login")).build()))
-            .and(route(POST("/apicatalog/api/v1/auth/logout"), req -> ServerResponse.permanentRedirect(URI.create("/gateway/api/v1/auth/logout")).build()))
-            .and(route(POST("/apicatalog/api/v1/auth/query"), req -> ServerResponse.permanentRedirect(URI.create("/gateway/api/v1/auth/query")).build()));
+            .and(route(POST("/apicatalog/api/v1/auth/login"), req -> redirect("/gateway/api/v1/auth/login")))
+            .and(route(POST("/apicatalog/api/v1/auth/logout"), req -> redirect("/gateway/api/v1/auth/logout")))
+            .and(route(GET("/apicatalog/api/v1/auth/query"), req -> redirect("/gateway/api/v1/auth/query")));
     }
 
 }

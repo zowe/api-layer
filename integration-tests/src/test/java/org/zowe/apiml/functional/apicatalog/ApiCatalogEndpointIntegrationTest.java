@@ -266,6 +266,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
             }
 
             return requestSpecification.post(uri).then()
+                .log().ifValidationFails()
                 .statusCode(returnCode).extract().response();
         }
     }

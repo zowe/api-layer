@@ -27,6 +27,9 @@ import static org.hamcrest.core.Is.is;
 
 @Slf4j
 public class ApiCatalogRequests {
+
+    private static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
+
     private static final ApiCatalogServiceConfiguration apiCatalogServiceConfiguration = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration();
     private static final Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
 
@@ -58,7 +61,7 @@ public class ApiCatalogRequests {
                 .auth()
                 .basic(credentials.getUser(), new String(credentials.getPassword()))
                 .when()
-                .get(getApiCatalogUriWithPath("/apicatalog" + Endpoints.HEALTH))
+                .get(getApiCatalogUriWithPath(Endpoints.HEALTH))
                 .then()
                 .statusCode(200)
                 .body("status", Matchers.is("UP"));
@@ -91,7 +94,7 @@ public class ApiCatalogRequests {
             .setScheme(scheme)
             .setHost(host)
             .setPort(port)
-            .setPath(path)
+            .setPath((IS_MODULITH_ENABLED ? "/apicatalog/api/v1" : "/apicatalog") + path)
             .build();
     }
 
