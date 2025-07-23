@@ -39,7 +39,7 @@ apiCatalogServiceConfiguration:
     scheme: https
     url:
     host: localhost
-    port: 10010
+    port: 10014
     instances: 1
 cachingServiceConfiguration:
     url:
