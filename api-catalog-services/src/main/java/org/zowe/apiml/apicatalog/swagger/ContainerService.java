@@ -360,6 +360,7 @@ public class ContainerService {
     public APIService getService(String serviceId) {
         return EurekaUtils.getInstanceInfo(discoveryClient, serviceId)
             .map(this::createAPIServiceFromInstance)
+            .filter(this::update)
             .orElse(null);
     }
 
