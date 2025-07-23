@@ -196,7 +196,7 @@ public class SecurityConfiguration {
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
     ) {
         return baseConfiguration(http.securityMatcher(ServerWebExchangeMatchers.pathMatchers(
-                getFullUrls("/static-api/**", "/containers/**", "/application/**", "/services/**", APIDOC_ROUTES))),
+                getFullUrls("/static-api/**", "/containers", "/containers/**", "/application/**", "/services/**", APIDOC_ROUTES))),
                 serverAuthenticationEntryPoint,
                 basicAuthenticationFilter, tokenAuthenticationFilter, oidcAuthenticationFilter
             )

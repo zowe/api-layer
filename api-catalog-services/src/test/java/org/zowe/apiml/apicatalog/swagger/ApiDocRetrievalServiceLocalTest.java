@@ -37,7 +37,7 @@ class ApiDocRetrievalServiceLocalTest {
 
     @BeforeEach
     void init() {
-        service = new ApiDocRetrievalServiceLocal(Collections.emptyList(), null, null, null, null, null, null);
+        service = new ApiDocRetrievalServiceLocal(Collections.emptyList(), null, null, null, null, null, null, null);
     }
 
     @Test

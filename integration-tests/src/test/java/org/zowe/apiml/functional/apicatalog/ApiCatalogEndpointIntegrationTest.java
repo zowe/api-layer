@@ -131,6 +131,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         class ThenResponseOk {
 
             private static final String BASE_PATH = IS_MODULITH_ENABLED ? "/api/v1" : "";
+            private static final String BASIC_SCHEME = IS_MODULITH_ENABLED ? "LoginBasicAuth" : "BasicAuthorization";
 
             @Test
                 // Functional
@@ -164,7 +165,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
                 assertNotNull(paths.get(BASE_PATH + "/apidoc/{serviceId}/{apiId}"), apiCatalogSwagger);
                 assertNotNull(componentSchemas.get("APIContainer"), apiCatalogSwagger);
                 assertNotNull(componentSchemas.get("APIService"), apiCatalogSwagger);
-                assertNotNull(securitySchemes.get("LoginBasicAuth"), apiCatalogSwagger);
+                assertNotNull(securitySchemes.get(BASIC_SCHEME), apiCatalogSwagger);
                 assertNotNull(securitySchemes.get("CookieAuth"), apiCatalogSwagger);
             }
 
@@ -199,7 +200,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
                 assertNotNull(paths.get(BASE_PATH + "/apidoc/{serviceId}/{apiId}"), apiCatalogSwagger);
                 assertNotNull(componentSchemas.get("APIContainer"), apiCatalogSwagger);
                 assertNotNull(componentSchemas.get("APIService"), apiCatalogSwagger);
-                assertNotNull(securitySchemes.get("LoginBasicAuth"), apiCatalogSwagger);
+                assertNotNull(securitySchemes.get(BASIC_SCHEME), apiCatalogSwagger);
                 assertNotNull(securitySchemes.get("CookieAuth"), apiCatalogSwagger);
             }
         }

@@ -28,6 +28,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.product.gateway.GatewayClient;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
@@ -45,7 +46,8 @@ public class ApiDocRetrievalServiceLocal {
         GenericResponseService responseBuilder,
         OperationService operationParser,
         SpringDocConfigProperties springDocConfigProperties,
-        SpringDocProviders springDocProviders
+        SpringDocProviders springDocProviders,
+        GatewayClient gatewayClient
     ) {
         groupedOpenApis
             .forEach(groupedOpenApi -> {
@@ -65,7 +67,8 @@ public class ApiDocRetrievalServiceLocal {
                 ) {
                     @Override
                     protected String getServerUrl(ServerHttpRequest serverHttpRequest, String apiDocsUrl) {
-                        return "/";
+                        var gw = gatewayClient.getGatewayConfigProperties();
+                        return String.format("%s://%s/", gw.getScheme(), gw.getHostname());
                     }
                 };
 
