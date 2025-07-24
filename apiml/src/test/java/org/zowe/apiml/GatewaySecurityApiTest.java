@@ -86,9 +86,11 @@ class GatewaySecurityApiTest {
 
     @Test
     void givenUsernameIsBlank_thenThrowException() {
-        assertThrows(AuthenticationCredentialsNotFoundException.class, () -> {
-            gatewaySecurityApi.login(" ", "password".toCharArray(), null);
-        }, "Should throw AuthenticationCredentialsNotFoundException for blank username");
+        var password = "password".toCharArray();
+        assertThrows(AuthenticationCredentialsNotFoundException.class, () ->
+            gatewaySecurityApi.login(" ", password, null),
+            "Should throw AuthenticationCredentialsNotFoundException for blank username"
+        );
     }
 
     @Test

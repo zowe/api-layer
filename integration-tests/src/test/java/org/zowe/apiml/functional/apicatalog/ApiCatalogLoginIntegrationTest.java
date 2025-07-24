@@ -39,18 +39,18 @@ class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
 
     private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
 
-    private final static String API_PREFIX = "/api/v1";
-    private final static String GATEWAY_SERVICE_ID = "/gateway";
-    private final static String CATALOG_SERVICE_ID = "/apicatalog";
-    private final static String LOGIN_ENDPOINT = "/auth/login";
-    private final static String COOKIE_NAME = "apimlAuthenticationToken";
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
-    private final static String PASSWORD = new String(readPassword(ConfigReader.environmentConfiguration().getCredentials().getPassword()));
-    private final static String INVALID_USERNAME = "incorrectUser";
-    private final static String INVALID_PASSWORD = "incorrectPassword";
+    private static final String API_PREFIX = "/api/v1";
+    private static final String GATEWAY_SERVICE_ID = "/gateway";
+    private static final String CATALOG_SERVICE_ID = "/apicatalog";
+    private static final String LOGIN_ENDPOINT = "/auth/login";
+    private static final String COOKIE_NAME = "apimlAuthenticationToken";
+    private static final String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    private static final String PASSWORD = new String(readPassword(ConfigReader.environmentConfiguration().getCredentials().getPassword()));
+    private static final String INVALID_USERNAME = "incorrectUser";
+    private static final String INVALID_PASSWORD = "incorrectPassword";
 
-    private final static URI LOGIN_ENDPOINT_URL_CATALOG = HttpRequestUtils.getUriFromGateway(CATALOG_SERVICE_ID + API_PREFIX + LOGIN_ENDPOINT);
-    private final static String LOGIN_ENDPOINT_URL_GATEWAY = GATEWAY_SERVICE_ID + API_PREFIX + LOGIN_ENDPOINT;
+    private static final URI LOGIN_ENDPOINT_URL_CATALOG = HttpRequestUtils.getUriFromGateway(CATALOG_SERVICE_ID + API_PREFIX + LOGIN_ENDPOINT);
+    private static final String LOGIN_ENDPOINT_URL_GATEWAY = GATEWAY_SERVICE_ID + API_PREFIX + LOGIN_ENDPOINT;
 
     @BeforeEach
     void setUp() {

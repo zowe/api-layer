@@ -21,6 +21,7 @@ import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
 import io.swagger.v3.parser.OpenAPIV3Parser;
 import jakarta.validation.UnexpectedTypeException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -47,6 +48,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
+@Slf4j
 class ApiDocV3ServiceTest {
 
     private static final String HIDDEN_TAG = "apimlHidden";
@@ -249,10 +251,10 @@ class ApiDocV3ServiceTest {
         @Test
         void givenInputFile_thenParseItCorrectly() throws IOException {
             ServiceAddress gatewayConfigProperties = ServiceAddress.builder().scheme("https").hostname("localhost").build();
-            GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
+            gatewayClient.setGatewayConfigProperties(gatewayConfigProperties);
 
             AtomicReference<OpenAPI> openApiHolder = new AtomicReference<>();
-            ApiDocV3Service apiDocV3Service = new ApiDocV3Service(ApplicationInfo.builder().build(), gatewayClient) {
+            apiDocV3Service = new ApiDocV3Service(ApplicationInfo.builder().build(), gatewayClient) {
                 @Override
                 protected void updateExternalDoc(OpenAPI openAPI, ApiDocInfo apiDocInfo) {
                     super.updateExternalDoc(openAPI, apiDocInfo);
@@ -300,7 +302,7 @@ class ApiDocV3ServiceTest {
         try {
             return objectMapper.writeValueAsString(openApi);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            log.error("Cannot serializable openApi", e);
             return null;
         }
     }
@@ -320,7 +322,7 @@ class ApiDocV3ServiceTest {
         try {
             openAPI = objectMapper.readValue(content, OpenAPI.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Cannnot parse OpenAPI content", e);
         }
 
         return openAPI;

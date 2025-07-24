@@ -103,9 +103,9 @@ public class ApiDocRetrievalServiceLocal {
             }).toList());
 
             var newPaths = new Paths();
-            openApi.getPaths().entrySet().forEach(entry -> {
-                newPaths.addPathItem(entry.getKey().substring(basePath.length()), entry.getValue());
-            });
+            openApi.getPaths().entrySet().forEach(entry ->
+                newPaths.addPathItem(entry.getKey().substring(basePath.length()), entry.getValue())
+            );
             openApi.setPaths(newPaths);
         };
     }

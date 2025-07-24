@@ -17,6 +17,7 @@ import io.swagger.models.*;
 import io.swagger.parser.SwaggerParser;
 import io.swagger.util.Json;
 import jakarta.validation.UnexpectedTypeException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,6 +52,7 @@ import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@Slf4j
 class ApiDocV2ServiceTest {
 
     private static final String SERVICE_ID = "serviceId";
@@ -369,7 +371,7 @@ class ApiDocV2ServiceTest {
             GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
 
             AtomicReference<Swagger> swaggerHolder = new AtomicReference<>();
-            ApiDocV2Service apiDocV2Service = new ApiDocV2Service(ApplicationInfo.builder().build(), gatewayClient) {
+            apiDocV2Service = new ApiDocV2Service(ApplicationInfo.builder().build(), gatewayClient) {
                 @Override
                 protected void updateExternalDoc(Swagger swagger, ApiDocInfo apiDocInfo) {
                     super.updateExternalDoc(swagger, apiDocInfo);
@@ -402,7 +404,7 @@ class ApiDocV2ServiceTest {
         try {
             return objectMapper.writeValueAsString(swagger);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            log.error("Cannot serialize swagger", e);
             return null;
         }
     }
@@ -422,7 +424,7 @@ class ApiDocV2ServiceTest {
         try {
             swagger = objectMapper.readValue(content, Swagger.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Cannot read swagger content", e);
         }
 
         return swagger;
