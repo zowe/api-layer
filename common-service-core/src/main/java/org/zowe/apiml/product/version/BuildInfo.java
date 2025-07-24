@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.product.version;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 @Slf4j
+@Component
 public class BuildInfo {
 
     String buildProperties = "META-INF/build-info.properties";
@@ -29,6 +32,7 @@ public class BuildInfo {
         this.gitProperties = gitProperties;
     }
 
+    @Autowired
     public BuildInfo() {
     }
 

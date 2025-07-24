@@ -10,19 +10,25 @@
 
 package org.zowe.apiml.gateway.security.login;
 
+import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.AuthenticationException;
+import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.security.common.audit.Rauditx;
 import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
-
-import jakarta.servlet.ServletException;
 import org.zowe.apiml.security.common.handler.FailedAccessTokenHandler;
 
+import java.io.IOException;
+import java.util.function.BiConsumer;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 class FailedAccessTokenHandlerTest {
@@ -55,7 +61,7 @@ class FailedAccessTokenHandlerTest {
         AuthenticationException authenticationException = mock(AuthenticationException.class);
 
         @Test
-        void issueRauditx() throws ServletException {
+        void issueRauditx() throws ServletException, IOException {
             failedAccessTokenHandler.onAuthenticationFailure(mockHttpServletRequest, mockHttpServletResponse, authenticationException);
             verify(rauditxService).builder();
             verify(rauditxBuilder).failure();
@@ -63,9 +69,20 @@ class FailedAccessTokenHandlerTest {
         }
 
         @Test
-        void handleException() throws ServletException {
+        void handleException() throws ServletException, IOException {
             failedAccessTokenHandler.onAuthenticationFailure(mockHttpServletRequest, mockHttpServletResponse, authenticationException);
-            verify(authExceptionHandler).handleException(mockHttpServletRequest, mockHttpServletResponse, authenticationException);
+
+            ArgumentCaptor<RuntimeException> exceptionCaptor = ArgumentCaptor.forClass(RuntimeException.class);
+            ArgumentCaptor<BiConsumer<ApiMessageView, HttpStatus>> consumerCaptor = ArgumentCaptor.forClass(BiConsumer.class);
+            ArgumentCaptor<BiConsumer<String, String>> headerCaptor = ArgumentCaptor.forClass(BiConsumer.class);
+            verify(authExceptionHandler).handleException(
+                eq(mockHttpServletRequest.getRequestURI()),
+                consumerCaptor.capture(),
+                headerCaptor.capture(),
+                exceptionCaptor.capture()
+            );
+
+            assertEquals(authenticationException, exceptionCaptor.getValue());
         }
 
     }

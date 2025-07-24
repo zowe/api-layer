@@ -10,14 +10,21 @@
 
 package org.zowe.apiml.security.common.handler;
 
-import org.zowe.apiml.security.common.error.AuthExceptionHandler;
+import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 
-import jakarta.servlet.ServletException;
+import java.io.IOException;
+import java.util.function.BiConsumer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -25,22 +32,28 @@ import static org.mockito.Mockito.verify;
 class FailedAuthenticationHandlerTest {
 
     @Test
-    void testOnAuthenticationFailure() throws ServletException {
+    void testOnAuthenticationFailure() throws ServletException, IOException {
         AuthExceptionHandler authExceptionHandler = mock(AuthExceptionHandler.class);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FailedAuthenticationHandler handler = new FailedAuthenticationHandler(authExceptionHandler);
+        BadCredentialsException exception = new BadCredentialsException("ERROR");
 
-        MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-        MockHttpServletResponse httpServletResponse = new MockHttpServletResponse();
+        ArgumentCaptor<BiConsumer<ApiMessageView, HttpStatus>> consumerCaptor = ArgumentCaptor.forClass(BiConsumer.class);
+        ArgumentCaptor<BiConsumer<String, String>> headerCaptor = ArgumentCaptor.forClass(BiConsumer.class);
+        ArgumentCaptor<RuntimeException> exceptionCaptor = ArgumentCaptor.forClass(RuntimeException.class);
 
-        FailedAuthenticationHandler failedAuthenticationHandler = new FailedAuthenticationHandler(authExceptionHandler);
-
-        BadCredentialsException badCredentialsException = new BadCredentialsException("ERROR");
-        failedAuthenticationHandler.onAuthenticationFailure(httpServletRequest, httpServletResponse, badCredentialsException);
+        handler.onAuthenticationFailure(request, response, exception);
 
         verify(authExceptionHandler).handleException(
-            httpServletRequest,
-            httpServletResponse,
-            badCredentialsException
+            eq(request.getRequestURI()),
+            consumerCaptor.capture(),
+            headerCaptor.capture(),
+            exceptionCaptor.capture()
         );
+
+        assertEquals(BadCredentialsException.class, exceptionCaptor.getValue().getClass());
+        assertEquals("ERROR", exceptionCaptor.getValue().getMessage());
     }
 
 }

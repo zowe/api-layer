@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.server.reactive.SslInfo;
+import org.zowe.apiml.security.common.util.X509Util;
 
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;

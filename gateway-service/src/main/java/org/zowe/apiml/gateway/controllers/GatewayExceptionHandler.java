@@ -12,10 +12,13 @@ package org.zowe.apiml.gateway.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -28,6 +31,7 @@ import org.springframework.web.reactive.resource.NoResourceFoundException;
 import org.springframework.web.server.MethodNotAllowedException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.ServerWebInputException;
 import org.springframework.web.server.adapter.DefaultServerWebExchange;
 import org.springframework.web.server.i18n.LocaleContextResolver;
 import org.springframework.web.server.session.DefaultWebSessionManager;
@@ -44,14 +48,7 @@ import reactor.core.publisher.Mono;
 
 import javax.net.ssl.SSLException;
 
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_FORBIDDEN;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.apache.http.HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE;
+import static org.apache.http.HttpStatus.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
@@ -92,7 +89,7 @@ public class GatewayExceptionHandler {
             DataBuffer buffer = serverWebExchange.getResponse().bufferFactory().wrap(mapper.writeValueAsBytes(message.mapToView()));
             return serverWebExchange.getResponse().writeWith(Flux.just(buffer));
         } catch (JsonProcessingException e) {
-            apimlLog.log("org.zowe.apiml.security.errorWritingResponse", e.getMessage());
+            apimlLog.log("org.zowe.apiml.security.errorWrittingResponse", e.getMessage());
             return Mono.error(e);
         }
     }
@@ -178,6 +175,31 @@ public class GatewayExceptionHandler {
     public Mono<Void> handleZaasInternalErrorException(ServerWebExchange exchange, ZaasInternalErrorException ex) {
         log.debug("The ZAAS instance {} return internal server error for request {}: {}", ex.getInstanceId(), exchange.getRequest().getURI(), ex.getMessage());
         return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.gateway.zaas.internalServerError", ex.getInstanceId());
+    }
+
+    @ExceptionHandler(ServerWebInputException.class)
+    public Mono<ResponseEntity<ErrorInfo>> handleDeserialization(ServerWebInputException ex) {
+        Throwable rootCause = getRootCause(ex);
+        return Mono.just(ResponseEntity
+            .status(SC_BAD_REQUEST)
+            .body(new ErrorInfo(
+                "Failed to deserialize the request body",
+                ex.getMessage() + " | Root cause: " + rootCause.getMessage())));
+    }
+
+    private Throwable getRootCause(Throwable ex) {
+        Throwable cause = ex;
+        while (cause.getCause() != null && cause != cause.getCause()) {
+            cause = cause.getCause();
+        }
+        return cause;
+    }
+
+    @Data
+    @AllArgsConstructor
+    static class ErrorInfo {
+        private String error;
+        private String exception;
     }
 
 }

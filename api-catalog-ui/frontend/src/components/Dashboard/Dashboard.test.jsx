@@ -36,6 +36,8 @@ const ajaxError = {
     status: 404,
 };
 
+const auth = { user: 'mockUser', showUpdatePassSuccess: false};
+
 describe('>>> Dashboard component tests', () => {
     it('should have "Refresh Static APIs" button', () => {
         const wrapper = shallow(
@@ -46,7 +48,7 @@ describe('>>> Dashboard component tests', () => {
                 clearService={jest.fn()}
                 clear={jest.fn()}
                 assertAuthorization={jest.fn()}
-                authentication={jest.fn()}
+                authentication={auth}
             />
         );
         const button = wrapper.find('#refresh-api-button');
@@ -64,7 +66,7 @@ describe('>>> Dashboard component tests', () => {
                 clear={jest.fn()}
                 fetchTilesFailed={jest.fn()}
                 assertAuthorization={jest.fn()}
-                authentication={jest.fn()}
+                authentication={auth}
             />
         );
         expect(dashboard.find('#search_no_results').children().text()).toEqual(
@@ -83,7 +85,7 @@ describe('>>> Dashboard component tests', () => {
                 clear={jest.fn()}
                 fetchTilesFailed={jest.fn()}
                 assertAuthorization={jest.fn()}
-                authentication={jest.fn()}
+                authentication={auth}
             />
         );
         expect(dashboard.find('[data-testid="error"]').first().children().text()).toEqual(
@@ -103,7 +105,7 @@ describe('>>> Dashboard component tests', () => {
                 clearService={jest.fn()}
                 clear={jest.fn()}
                 assertAuthorization={jest.fn()}
-                authentication={jest.fn()}
+                authentication={auth}
             />
         );
         fireEvent.change(screen.getByPlaceholderText('Search...'),{target: {value: 'a'}});
@@ -123,7 +125,7 @@ describe('>>> Dashboard component tests', () => {
                 clear={jest.fn()}
                 inputData={categoryData}
                 assertAuthorization={jest.fn()}
-                authentication={jest.fn()}
+                authentication={auth}
             />
         );
         fireEvent.click(screen.getByText('Refresh Static APIs'));
@@ -141,7 +143,7 @@ describe('>>> Dashboard component tests', () => {
                 clearService={jest.fn()}
                 clear={jest.fn()}
                 assertAuthorization={jest.fn()}
-                authentication={jest.fn()}
+                authentication={auth}
                 selectEnabler={jest.fn()}
             />
         );
@@ -183,7 +185,7 @@ describe('>>> Dashboard component tests', () => {
                 clearService={jest.fn()}
                 clear={jest.fn()}
                 assertAuthorization={jest.fn()}
-                authentication={jest.fn()}
+                authentication={auth}
             />
         );
         const tile = dashboard.find('Tile');
@@ -191,6 +193,8 @@ describe('>>> Dashboard component tests', () => {
     });
 
     it('should display successful password change', () => {
+        const auth = { user: 'mockUser', showUpdatePassSuccess: true};
+
         render(
             <Dashboard
                 tiles={null}
@@ -199,7 +203,7 @@ describe('>>> Dashboard component tests', () => {
                 clearService={jest.fn()}
                 clear={jest.fn()}
                 assertAuthorization={jest.fn()}
-                authentication={{ showUpdatePassSuccess: true }}
+                authentication={auth}
             />
         );
         expect(screen.getByText('Your mainframe password was successfully changed.')).toBeInTheDocument();
@@ -216,7 +220,7 @@ describe('>>> Dashboard component tests', () => {
                 clear={jest.fn()}
                 closeAlert={jest.fn()}
                 assertAuthorization={jest.fn()}
-                authentication={jest.fn()}
+                authentication={auth}
             />
         );
         const button = wrapper.find('.loadingDiv');

@@ -40,6 +40,7 @@ public class AcceptanceTestWithBasePath {
         RestAssured.config = RestAssured.config.sslConfig(new SSLConfig().sslSocketFactory(
             new SSLSocketFactory(httpConfig.getSecureSslContextWithoutKeystore(), SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)
         ));
+
     }
 
 }

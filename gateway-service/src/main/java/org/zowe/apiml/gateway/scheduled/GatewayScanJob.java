@@ -26,7 +26,6 @@ import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.services.BasicInfoService;
 import org.zowe.apiml.services.ServiceInfo;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
@@ -82,14 +81,11 @@ public class GatewayScanJob {
      * reactive entry point  for the external gateways index refresh
      */
     protected Flux<List<ServiceInfo>> doScanExternalGateway() {
-        Mono<List<ServiceInstance>> registeredGateways = instanceInfoService.getServiceInstance(CoreService.GATEWAY.getServiceId())
-            .map(gateways -> gateways.stream()
-                .filter(info -> !StringUtils.equals(info.getMetadata().getOrDefault(APIML_ID, "N/A"), currentApimlId))
-                .toList());
+        Flux<ServiceInstance> registeredGateways = instanceInfoService.getServiceInstances(CoreService.GATEWAY.getServiceId())
+            .filter(info -> !StringUtils.equals(info.getMetadata().getOrDefault(APIML_ID, "N/A"), currentApimlId));
 
-        Flux<ServiceInstance> serviceInstanceFlux = registeredGateways.flatMapMany(Flux::fromIterable);
-
-        return serviceInstanceFlux
+        return registeredGateways
                 .flatMap(gatewayIndexerService::indexGatewayServices, maxSimultaneousRequests);
     }
+
 }

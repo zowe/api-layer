@@ -76,6 +76,13 @@ messages:
       reason: "Typically z/OSMF is either unavailable or offline."
       action: "Verify that z/OSMF is available, accessible by the ZAAS, and online."
 
+    - key: org.zowe.apiml.zaas.keys.unknown
+      number: ZWEAG717
+      type: ERROR
+      text: "It was not possible to get public key for JWK."
+      reason: "Probably an issue while reading JWK from external source."
+      action: "Check application logs for more information."
+
     # Legacy messages
 
     - key: org.zowe.apiml.security.generic
@@ -84,13 +91,6 @@ messages:
       text: "Authentication exception: '%s' for URL '%s'"
       reason: "A generic failure occurred during authentication."
       action: "Refer to the specific authentication exception details for troubleshooting."
-
-    - key: org.zowe.apiml.security.invalidMethod
-      number: ZWEAG101
-      type: ERROR
-      text: "Authentication method '%s' is not supported for URL '%s'"
-      reason: "The HTTP request method is not supported by the URL."
-      action: "Use the correct HTTP request method supported by the URL."
 
     - key: org.zowe.apiml.zaas.security.invalidToken
       number: ZWEAG102

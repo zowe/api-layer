@@ -29,8 +29,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
+import org.zowe.apiml.security.common.handler.ServletErrorUtils;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -38,6 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 /**
  * Filter to process authentication requests with the username and password in JSON format.
@@ -47,6 +51,8 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
     private final AuthenticationFailureHandler failureHandler;
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
     private final ObjectMapper mapper;
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     public LoginFilter(
         String authEndpoint,
@@ -85,7 +91,7 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
 
     }
 
-    public Authentication doAuth(HttpServletRequest request, HttpServletResponse response, LoginRequest loginRequest) throws ServletException {
+    public Authentication doAuth(HttpServletRequest request, HttpServletResponse response, LoginRequest loginRequest) {
 
         if (loginRequest == null) {
             return null;
@@ -104,7 +110,9 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
             try {
                 auth = this.getAuthenticationManager().authenticate(authentication);
             } catch (RuntimeException ex) {
-                resourceAccessExceptionHandler.handleException(request, response, ex);
+                var consumer = ServletErrorUtils.createApiErrorWriter(response, apimlLog);
+                var addHeader = (BiConsumer<String, String>) response::addHeader;
+                resourceAccessExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, ex);
             }
             return auth;
         } finally {
@@ -170,31 +178,39 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
         try {
             credentials = Base64.getDecoder().decode(base64Credentials);
             int index = ArrayUtils.indexOf(credentials, (byte) ':');
-            if (index > 0) {
-                byte[] password = null;
-                char[] passwordChars;
-                try {
-                    password = Arrays.copyOfRange(credentials, index + 1, credentials.length);
-                    passwordChars = new char[password.length];
-                    for (int i = 0; i < password.length; i++) {
-                        passwordChars[i] = (char) password[i];
-                    }
-                    return new LoginRequest(
-                        new String(Arrays.copyOfRange(credentials, 0, index), StandardCharsets.UTF_8),
-                        passwordChars
-                    );
-                } finally {
+            if (index < 0) {
+                throw new BadCredentialsException("Invalid basic authentication header");
+            }
+            if ((index == 0) || (index == credentials.length - 1)) {
+                throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
+            }
+            byte[] password = null;
+            char[] passwordChars;
+            try {
+                String username = new String(Arrays.copyOfRange(credentials, 0, index), StandardCharsets.UTF_8);
+                password = Arrays.copyOfRange(credentials, index + 1, credentials.length);
+                passwordChars = new char[password.length];
+                for (int i = 0; i < password.length; i++) {
+                    passwordChars[i] = (char) password[i];
+                }
+
+                if (StringUtils.isBlank(username) || passwordChars.length == 0) {
+                    throw new AuthenticationCredentialsNotFoundException("Username or password not provided.");
+                }
+
+                return new LoginRequest(username, passwordChars);
+            } finally {
                     if (password != null) {
                         Arrays.fill(password, (byte) 0);
                     }
                 }
-            }
+        } catch (IllegalArgumentException e) {
+            throw new BadCredentialsException("Invalid base64 encoding.", e);
         } finally {
             if (credentials != null) {
                 Arrays.fill(credentials, (byte) 0);
             }
         }
-        throw new BadCredentialsException("Invalid basic authentication header");
     }
 
     /**

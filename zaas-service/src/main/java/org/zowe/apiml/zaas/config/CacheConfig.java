@@ -28,6 +28,7 @@ import org.ehcache.impl.copy.SerializingCopier;
 import org.ehcache.jsr107.EhcacheCachingProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -36,14 +37,19 @@ import org.springframework.cache.jcache.JCacheCacheManager;
 import org.springframework.cache.support.NoOpCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.cache.CompositeKeyGenerator;
 import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
+import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.util.CacheUtils;
+import org.zowe.apiml.zaas.cache.CachingClient;
 import org.zowe.apiml.zaas.cache.CachingServiceClient;
+import org.zowe.apiml.zaas.cache.LocalCachingClient;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 
 import javax.cache.Caching;
@@ -89,8 +95,10 @@ public class CacheConfig {
         }
     }
 
+    @Primary
     @Bean("cacheManager")
     @ConditionalOnProperty(value = "apiml.caching.enabled", havingValue = "true", matchIfMissing = true)
+    @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "inMemory", matchIfMissing = true)
     public CacheManager cacheManager() {
         var caches = new HashMap<String, CacheConfiguration<?, ?>>();
 
@@ -174,6 +182,7 @@ public class CacheConfig {
 
     @ConditionalOnProperty(value = "apiml.caching.enabled", havingValue = "false")
     @Bean("cacheManager")
+    @ConditionalOnMissingBean(name = "modulithConfig")
     public CacheManager cacheManagerNoOp() {
         return new NoOpCacheManager();
     }
@@ -194,8 +203,15 @@ public class CacheConfig {
     }
 
     @Bean
-    public CachingServiceClient cachingServiceClient(GatewayClient gatewayClient, @Qualifier("restTemplateWithKeystore") RestTemplate restTemplate) {
+    @ConditionalOnMissingBean(name = "modulithConfig")
+    public CachingClient cachingServiceClient(GatewayClient gatewayClient, @Qualifier("restTemplateWithKeystore") RestTemplate restTemplate) {
         return new CachingServiceClient(restTemplate, gatewayClient);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public CachingClient cachingClient(Storage storage, HttpsConfig httpsConfig) {
+        return new LocalCachingClient(storage, httpsConfig);
     }
 
 }

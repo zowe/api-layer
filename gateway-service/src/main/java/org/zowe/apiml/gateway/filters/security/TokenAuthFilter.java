@@ -16,6 +16,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
@@ -25,9 +27,11 @@ import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.util.CookieUtil;
 import reactor.core.publisher.Mono;
 
+import java.net.ConnectException;
 import java.net.HttpCookie;
 import java.util.Optional;
 
+import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.zowe.apiml.security.common.token.TokenAuthentication.createAuthenticated;
 
 @RequiredArgsConstructor
@@ -51,7 +55,13 @@ public class TokenAuthFilter implements WebFilter {
                 }
                 return authExceptionHandlerReactive.handleTokenNotValid(exchange);
 
-            }).onErrorResume(ex -> authExceptionHandlerReactive.handleServiceUnavailable(exchange))
+            }).onErrorResume(ex -> {
+                if (isServiceUnavailable(ex)) {
+                    return authExceptionHandlerReactive.handleServiceUnavailable(exchange);
+                } else {
+                    return authExceptionHandlerReactive.handleTokenNotValid(exchange);
+                }
+            })
         ).orElseGet(() -> chain.filter(exchange));
     }
 
@@ -66,6 +76,12 @@ public class TokenAuthFilter implements WebFilter {
             .filter(httpCookie -> StringUtils.equals(cookieName, httpCookie.getName()))
             .findFirst()
             .map(HttpCookie::getValue);
+    }
+
+    private boolean isServiceUnavailable(Throwable ex) {
+        return ex instanceof ConnectException
+            || ex instanceof WebClientRequestException
+            || (ex instanceof WebClientResponseException webEx && webEx.getStatusCode().value() == SC_SERVICE_UNAVAILABLE);
     }
 
 }

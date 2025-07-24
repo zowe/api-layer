@@ -15,6 +15,7 @@ import io.swagger.v3.parser.OpenAPIV3Parser;
 import jakarta.annotation.PostConstruct;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -23,7 +24,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 
-@Configuration
+@Configuration("zaasSwaggerConfig")
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class SwaggerConfig {
 
     private URI servletEndpointDocLocation;
@@ -34,7 +36,7 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public OpenApiCustomizer servletEndpoints() {
+    OpenApiCustomizer servletEndpoints() {
         return this::customizeSwagger;
     }
 
@@ -55,7 +57,7 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi groupedOpenApiAuth() {
+    GroupedOpenApi groupedOpenApiAuth() {
         return GroupedOpenApi.builder()
             .group("auth").pathsToMatch("/zaas/api/v1/auth/**")
             .addOpenApiCustomizer(servletEndpoints())
@@ -63,7 +65,7 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi groupedOpenApiAll() {
+    GroupedOpenApi groupedOpenApiAll() {
         return GroupedOpenApi.builder()
             .group("v1").pathsToMatch("/**")
                 .addOpenApiCustomizer(servletEndpoints())

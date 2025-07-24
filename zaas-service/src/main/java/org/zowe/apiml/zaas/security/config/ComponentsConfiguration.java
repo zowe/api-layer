@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.zaas.security.config;
 
+import com.nimbusds.jose.util.DefaultResourceRetriever;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +27,9 @@ import org.zowe.apiml.zaas.security.service.schema.source.X509AuthSourceService;
 import org.zowe.apiml.zaas.security.service.schema.source.X509CNAuthSourceService;
 import org.zowe.apiml.zaas.security.service.token.ApimlAccessTokenProvider;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
+
+import javax.net.ssl.SSLContext;
+
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -37,12 +41,11 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 @Configuration
 public class ComponentsConfiguration {
 
-
     /**
      * Used for dummy authentication provider
      */
     @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
+    BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
     }
 
@@ -53,13 +56,13 @@ public class ComponentsConfiguration {
      * @return mainframe / dummy implementation of passTicket's generation and validation
      */
     @Bean
-    public PassTicketService passTicketService() {
+    PassTicketService passTicketService() {
         return new PassTicketService();
     }
 
     @Bean
     @Lazy
-    public Providers loginProviders(
+    Providers loginProviders(
         DiscoveryClient discoveryClient,
         AuthConfigurationProperties authConfigurationProperties,
         ZosmfService zosmfService,
@@ -73,7 +76,7 @@ public class ComponentsConfiguration {
      * This bean performs the mapping between common name from the client certificate and the mainframe user ID.
      */
     @Bean("x509MFAuthSourceService")
-    public X509AuthSourceService getX509MFAuthSourceService(@Qualifier("x509Mapper") AuthenticationMapper mapper, TokenCreationService tokenCreationService, AuthenticationService authenticationService) {
+    X509AuthSourceService getX509MFAuthSourceService(@Qualifier("x509Mapper") AuthenticationMapper mapper, TokenCreationService tokenCreationService, AuthenticationService authenticationService) {
         return new X509AuthSourceService(mapper, tokenCreationService, authenticationService);
     }
 
@@ -83,12 +86,18 @@ public class ComponentsConfiguration {
      * It treats client name from certificate as user ID and uses X509CommonNameUserMapper for validation.
      */
     @Bean("x509CNAuthSourceService")
-    public X509AuthSourceService getX509CNAuthSourceService(TokenCreationService tokenCreationService, AuthenticationService authenticationService) {
+    X509AuthSourceService getX509CNAuthSourceService(TokenCreationService tokenCreationService, AuthenticationService authenticationService) {
         return new X509CNAuthSourceService(new X509CommonNameUserMapper(), tokenCreationService, authenticationService);
     }
 
     @Bean
-    public SuccessfulAccessTokenHandler successfulAccessTokenHandler(ApimlAccessTokenProvider apimlAccessTokenProvider, RauditxService rauditxService) {
+    SuccessfulAccessTokenHandler successfulAccessTokenHandler(ApimlAccessTokenProvider apimlAccessTokenProvider, RauditxService rauditxService) {
         return new SuccessfulAccessTokenHandler(apimlAccessTokenProvider, rauditxService);
+    }
+
+    @Bean
+    DefaultResourceRetriever defaultResourceRetriever(@Qualifier("secureSslContextWithoutKeystore") SSLContext secureSslContextWithoutKeystore) {
+        return new DefaultResourceRetriever(
+                    0, 0, 0, true, secureSslContextWithoutKeystore.getSocketFactory());
     }
 }

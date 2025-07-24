@@ -11,6 +11,7 @@
 package org.zowe.apiml.security.common.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -30,12 +32,9 @@ import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 
-import jakarta.servlet.ServletException;
-
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(SpringExtension.class)
 class BasicUnauthorizedHandlerTest {
@@ -49,7 +48,7 @@ class BasicUnauthorizedHandlerTest {
     @Test
     void testCommence() throws IOException, ServletException {
         BasicAuthUnauthorizedHandler basicAuthUnauthorizedHandler = new BasicAuthUnauthorizedHandler(
-            new AuthExceptionHandler(messageService, objectMapper));
+            new AuthExceptionHandler(messageService, objectMapper, ApplicationInfo.builder().isModulith(false).build()));
 
         MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setRequestURI("URI");
@@ -64,14 +63,19 @@ class BasicUnauthorizedHandlerTest {
         Message message = messageService.createMessage(
             ErrorType.TOKEN_EXPIRED.getErrorMessageKey(),
             httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+
+        assertEquals("application/json", httpServletResponse.getContentType());
+        assertEquals(new ObjectMapper().writeValueAsString(message.mapToView()), httpServletResponse.getContentAsString());
     }
 
     @TestConfiguration
     static class ContextConfiguration {
+
         @Bean
-        public MessageService messageService() {
+        MessageService messageService() {
             return new YamlMessageService("/security-service-messages.yml");
         }
+
     }
+
 }

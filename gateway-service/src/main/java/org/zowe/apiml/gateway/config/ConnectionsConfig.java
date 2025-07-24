@@ -11,7 +11,11 @@
 package org.zowe.apiml.gateway.config;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.netflix.appinfo.*;
+import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.appinfo.EurekaInstanceConfig;
+import com.netflix.appinfo.HealthCheckHandler;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.LeaseInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
@@ -19,7 +23,6 @@ import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.resolver.DefaultAddressResolverGroup;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +53,11 @@ import org.springframework.cloud.netflix.eureka.http.RestClientDiscoveryClientOp
 import org.springframework.cloud.netflix.eureka.http.RestClientTransportClientFactories;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClient;
@@ -62,11 +69,12 @@ import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.config.AdditionalRegistrationCondition;
 import org.zowe.apiml.config.AdditionalRegistrationParser;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
+import org.zowe.apiml.gateway.filters.proxyheaders.AdditionalRegistrationGatewayRegistry;
+import org.zowe.apiml.gateway.filters.proxyheaders.X509AndGwAwareXForwardedHeadersFilter;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
-import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.HttpsFactory;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.util.CorsUtils;
 import reactor.netty.http.client.HttpClient;
@@ -88,106 +96,33 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.REGISTRATION_TYPE;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
 
 
 //TODO this configuration should be removed as redundancy of the HttpConfig in the apiml-common
 @Configuration
 @Slf4j
+@RequiredArgsConstructor
 public class ConnectionsConfig {
-
-    private static final char[] KEYRING_PASSWORD = "password".toCharArray();
-
-    @Value("${server.ssl.protocol:TLSv1.2}")
-    private String protocol;
-
-    @Value("${server.ssl.trustStore:#{null}}")
-    private String trustStorePath;
-
-    @Value("${server.ssl.trustStorePassword:#{null}}")
-    private char[] trustStorePassword;
-
-    @Value("${server.ssl.trustStoreType:PKCS12}")
-    private String trustStoreType;
-
-    @Value("${server.ssl.keyAlias:#{null}}")
-    private String keyAlias;
-
-    @Value("${server.ssl.keyStore:#{null}}")
-    private String keyStorePath;
-
-    @Value("${server.ssl.keyStorePassword:#{null}}")
-    private char[] keyStorePassword;
-
-    @Value("${server.ssl.keyPassword:#{null}}")
-    private char[] keyPassword;
-
-    @Value("${server.ssl.keyStoreType:PKCS12}")
-    private String keyStoreType;
-
-    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
-    private boolean verifySslCertificatesOfServices;
-
-    @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
-    private boolean nonStrictVerifySslCertificatesOfServices;
-
-    @Value("${server.ssl.trustStoreRequired:false}")
-    private boolean trustStoreRequired;
 
     @Value("${eureka.client.serviceUrl.defaultZone}")
     private String eurekaServerUrl;
 
-    @Value("${apiml.connection.idleConnectionTimeoutSeconds:#{5}}")
-    private int idleConnTimeoutSeconds;
-
-    @Value("${apiml.connection.timeout:60000}")
-    private int requestTimeout;
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
     private final ApplicationContext context;
+    private final HttpConfig config;
     private static final ApimlLogger apimlLog = ApimlLogger.of(ConnectionsConfig.class, YamlMessageServiceInstance.getInstance());
-    private HttpsFactory httpsFactory;
-
-    public ConnectionsConfig(ApplicationContext context) {
-        this.context = context;
-    }
 
     @Value("${apiml.service.externalUrl:}")
     private String externalUrl;
-
-    @PostConstruct
-    public void updateConfigParameters() {
-        ServerProperties serverProperties = context.getBean(ServerProperties.class);
-        if (SecurityUtils.isKeyring(keyStorePath)) {
-            keyStorePath = SecurityUtils.formatKeyringUrl(keyStorePath);
-            serverProperties.getSsl().setKeyStore(keyStorePath);
-            if (keyStorePassword == null) keyStorePassword = KEYRING_PASSWORD;
-        }
-        if (SecurityUtils.isKeyring(trustStorePath)) {
-            trustStorePath = SecurityUtils.formatKeyringUrl(trustStorePath);
-            serverProperties.getSsl().setTrustStore(trustStorePath);
-            if (trustStorePassword == null) trustStorePassword = KEYRING_PASSWORD;
-        }
-        httpsFactory = factory();
-    }
-
-    public HttpsFactory factory() {
-        HttpsConfig config = HttpsConfig.builder()
-            .protocol(protocol)
-            .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
-            .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
-            .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
-            .idleConnTimeoutSeconds(idleConnTimeoutSeconds).requestConnectionTimeout(requestTimeout)
-            .trustStore(trustStorePath).trustStoreType(trustStoreType)
-            .keyAlias(keyAlias).keyStore(keyStorePath).keyPassword(keyPassword)
-            .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
-        log.info("Using HTTPS configuration: {}", config.toString());
-
-        return new HttpsFactory(config);
-    }
 
     /**
      * @param httpClient             default http client
@@ -202,7 +137,7 @@ public class ConnectionsConfig {
 
     public HttpClient getHttpClient(HttpClient httpClient, boolean useClientCert) {
         var sslContextBuilder = SslProvider.builder().sslContext(getSslContext(useClientCert));
-        if (!nonStrictVerifySslCertificatesOfServices) {
+        if (!config.isNonStrictVerifySslCertificatesOfServices()) {
             sslContextBuilder.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
         }
         return httpClient.secure(sslContextBuilder.build());
@@ -234,7 +169,7 @@ public class ConnectionsConfig {
 
     @VisibleForTesting
     X509KeyManager x509KeyManagerSelectedAlias(KeyManagerFactory keyManagerFactory) {
-        return new X509KeyManagerSelectedAlias(keyManagerFactory, keyAlias);
+        return new X509KeyManagerSelectedAlias(keyManagerFactory, config.getKeyAlias());
     }
 
     /**
@@ -244,16 +179,18 @@ public class ConnectionsConfig {
         try {
             SslContextBuilder builder = SslContextBuilder.forClient();
 
-            KeyStore trustStore = SecurityUtils.loadKeyStore(trustStoreType, trustStorePath, trustStorePassword);
+            KeyStore trustStore = SecurityUtils.loadKeyStore(
+                config.getTrustStoreType(), config.getTrustStorePath(), config.getTrustStorePassword());
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             trustManagerFactory.init(trustStore);
             builder.trustManager(trustManagerFactory);
 
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             if (setKeystore) {
-                log.info("Loading keystore: {}: {}", keyStoreType, keyStorePath);
-                KeyStore keyStore = SecurityUtils.loadKeyStore(keyStoreType, keyStorePath, keyStorePassword);
-                keyManagerFactory.init(keyStore, keyStorePassword);
+                log.info("Loading keystore: {}: {}", config.getKeyStoreType(), config.getKeyStorePath());
+                KeyStore keyStore = SecurityUtils.loadKeyStore(
+                    config.getKeyStoreType(), config.getKeyStorePath(), config.getKeyStorePassword());
+                keyManagerFactory.init(keyStore, config.getKeyStorePassword());
                 builder.keyManager(x509KeyManagerSelectedAlias(keyManagerFactory));
             } else {
                 KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -262,7 +199,7 @@ public class ConnectionsConfig {
                 builder.keyManager(keyManagerFactory);
             }
 
-            if (verifySslCertificatesOfServices && nonStrictVerifySslCertificatesOfServices) {
+            if (config.isVerifySslCertificatesOfServices() && config.isNonStrictVerifySslCertificatesOfServices()) {
                 builder.endpointIdentificationAlgorithm(null);
             }
 
@@ -270,7 +207,7 @@ public class ConnectionsConfig {
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
             throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
-                HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, factory().getConfig());
+                HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config.httpsConfig());
         }
     }
 
@@ -306,8 +243,8 @@ public class ConnectionsConfig {
         if (eurekaServerUrl.startsWith("http://")) {
             apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
         } else {
-            clientArgs.setSSLContext(httpsFactory.getSslContext());
-            clientArgs.setHostnameVerifier(httpsFactory.getHostnameVerifier());
+            clientArgs.setSSLContext(config.httpsFactory().getSslContext());
+            clientArgs.setHostnameVerifier(config.httpsFactory().getHostnameVerifier());
         }
 
         return clientArgs;
@@ -324,17 +261,24 @@ public class ConnectionsConfig {
     @Bean(destroyMethod = "shutdown")
     @Conditional(AdditionalRegistrationCondition.class)
     @RefreshScope
-    AdditionalEurekaClientsHolder additionalEurekaClientsHolder(ApplicationInfoManager manager,
-                                                                       EurekaClientConfig config,
-                                                                       List<AdditionalRegistration> additionalRegistrations,
-                                                                       EurekaFactory eurekaFactory,
-                                                                       @Autowired(required = false) HealthCheckHandler healthCheckHandler
+    AdditionalEurekaClientsHolder additionalEurekaClientsHolder(
+        ApplicationInfoManager manager,
+        EurekaClientConfig config,
+        List<AdditionalRegistration> additionalRegistrations,
+        EurekaFactory eurekaFactory,
+        @Autowired(required = false) HealthCheckHandler healthCheckHandler,
+        AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry,
+        Optional<X509AndGwAwareXForwardedHeadersFilter> x509awareXForwardedHeadersFilter
     ) {
         List<CloudEurekaClient> additionalClients = new ArrayList<>(additionalRegistrations.size());
         for (AdditionalRegistration apimlRegistration : additionalRegistrations) {
             CloudEurekaClient cloudEurekaClient = registerInTheApimlInstance(config, apimlRegistration, manager, eurekaFactory);
             additionalClients.add(cloudEurekaClient);
             cloudEurekaClient.registerHealthCheck(healthCheckHandler);
+
+            x509awareXForwardedHeadersFilter
+                .ifPresent(__ ->
+                    additionalRegistrationGatewayRegistry.registerCacheRefreshEventListener(cloudEurekaClient));
         }
         return new AdditionalEurekaClientsHolder(additionalClients);
     }
@@ -388,7 +332,11 @@ public class ConnectionsConfig {
     @Bean
     Customizer<ReactiveResilience4JCircuitBreakerFactory> defaultCustomizer() {
         return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
-            .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults()).timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofMillis(requestTimeout)).build()).build());
+            .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+            .timeLimiterConfig(
+                TimeLimiterConfig.custom()
+                    .timeoutDuration(Duration.ofMillis(config.getRequestConnectionTimeout()))
+                .build()).build());
     }
 
     @Bean

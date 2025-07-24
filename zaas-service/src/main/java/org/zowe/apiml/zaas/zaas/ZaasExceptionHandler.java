@@ -13,6 +13,7 @@ package org.zowe.apiml.zaas.zaas;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -46,10 +47,8 @@ import javax.net.ssl.SSLException;
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RequiredArgsConstructor
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class ZaasExceptionHandler {
-
-    private static final String WWW_AUTHENTICATE = "WWW-Authenticate";
-    private static final String BASIC_REALM = "Basic realm=\"Realm\"";
 
     private final MessageService messageService;
 
@@ -152,7 +151,7 @@ public class ZaasExceptionHandler {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiMessageView> handleMethodNotAllowedException(HttpServletRequest request, HttpRequestMethodNotSupportedException notAllowedMethodException) {
         log.debug("MethodNotAllowedException exception", notAllowedMethodException);
-        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.security.invalidMethod", request.getMethod(), request.getRequestURI()).mapToView();
+        ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.common.methodNotAllowed", request.getMethod(), request.getRequestURI()).mapToView();
         return ResponseEntity
             .status(HttpStatus.METHOD_NOT_ALLOWED)
             .contentType(MediaType.APPLICATION_JSON)
@@ -168,7 +167,6 @@ public class ZaasExceptionHandler {
             .contentType(MediaType.APPLICATION_JSON)
             .body(messageView);
     }
-
 
     @ExceptionHandler(UnsupportedResourceClassException.class)
     public ResponseEntity<ApiMessageView> handleUnsupportedResourceClassException(UnsupportedResourceClassException unsupportedResourceClassException) {

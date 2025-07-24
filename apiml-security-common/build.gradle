@@ -3,6 +3,7 @@ dependencies {
 
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.security
+    implementation libs.reactor
 
     implementation libs.apache.commons.lang3
     implementation libs.http.client5

@@ -429,7 +429,7 @@ public class AuthController {
             return new ResponseEntity<>(getPublicKeyAsPem(key), HttpStatus.OK);
         } catch (IOException | JOSEException ex) {
             log.error("It was not possible to get public key for JWK, exception message: {}", ex.getMessage());
-            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.zaas.unknown").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.zaas.keys.unknown").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

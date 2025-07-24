@@ -10,9 +10,9 @@
 
 package org.zowe.apiml.security.common.content;
 
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -22,21 +22,18 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 class CookieContentFilterTest {
 
@@ -70,7 +67,7 @@ class CookieContentFilterTest {
         verify(authenticationManager).authenticate(tokenAuthentication);
         verify(filterChain).doFilter(request, response);
         verify(failureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any(), any());
     }
 
     @Test
@@ -89,7 +86,7 @@ class CookieContentFilterTest {
 
         verify(authenticationManager, never()).authenticate(any());
         verify(failureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any() , any());
     }
 
     @Test
@@ -108,14 +105,13 @@ class CookieContentFilterTest {
         verify(authenticationManager).authenticate(tokenAuthentication);
         verify(filterChain, never()).doFilter(any(), any());
         verify(failureHandler).onAuthenticationFailure(request, response, exception);
-        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(),any() , any());
     }
 
     @Test
     void shouldNotAuthenticateWithNoGateway() throws ServletException, IOException {
         String token = "token";
         RuntimeException exception = new RuntimeException("No Gateway");
-
         TokenAuthentication tokenAuthentication = new TokenAuthentication(token, TokenAuthentication.Type.JWT);
         Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), token);
         request.setCookies(cookie);
@@ -127,7 +123,12 @@ class CookieContentFilterTest {
         verify(authenticationManager).authenticate(tokenAuthentication);
         verify(filterChain, never()).doFilter(any(), any());
         verify(failureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(resourceAccessExceptionHandler).handleException(request, response, exception);
+        verify(resourceAccessExceptionHandler).handleException(
+            eq(request.getRequestURI()),
+            any(BiConsumer.class),
+            any(BiConsumer.class),
+            eq(exception)
+        );
     }
 
     @Test
@@ -137,7 +138,7 @@ class CookieContentFilterTest {
         verify(authenticationManager, never()).authenticate(any());
         verify(filterChain).doFilter(request, response);
         verify(failureHandler, never()).onAuthenticationFailure(any(), any(), any());
-        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any());
+        verify(resourceAccessExceptionHandler, never()).handleException(any(), any(), any() , any());
     }
 
     @Test

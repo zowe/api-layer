@@ -16,11 +16,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.passticket.*;
+import org.zowe.apiml.passticket.PassTicketException;
 import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.zaas.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.zaas.security.service.saf.SafIdtProvider;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
+import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
+import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
@@ -78,13 +80,14 @@ public class TokenCreationService {
     }
 
     public String createSafIdTokenWithoutCredentials(String user, String applId) throws PassTicketException {
-
-        char[] passTicket = "".toCharArray();
+        char[] passTicket = null;
         try {
             passTicket = passTicketService.generate(user, applId).toCharArray();
             return safIdtProvider.generate(user, passTicket, applId);
         } finally {
-            Arrays.fill(passTicket, (char) 0);
+            if (passTicket != null) {
+                Arrays.fill(passTicket, (char) 0);
+            }
         }
     }
 
@@ -105,7 +108,7 @@ public class TokenCreationService {
             log.debug("Generated PassTicket: {}", passTicket);
 
             return passTicket;
-        } catch (PassTicketException e) {
+        } catch (IRRPassTicketGenerationException e) {
             throw new AuthenticationTokenException("Generation of PassTicket failed", e);
         }
 

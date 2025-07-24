@@ -25,7 +25,7 @@ configurations.all {
 dependencies {
     testImplementation project(':apiml-security-common')
     testImplementation project(':zaas-client')
-    testImplementation group: 'org.springframework.graphql', name: 'spring-graphql-test', version: '1.4.0'
+    testImplementation group: 'org.springframework.graphql', name: 'spring-graphql-test', version: '1.4.1'
 
 
     testImplementation libs.spring.boot.starter.actuator
@@ -199,6 +199,7 @@ task runAllIntegrationTestsForZoweNonHaTestingOnZos(type: Test) {
             'ApiCatalogStandaloneTest',
             'SAFProviderTest',
             'GatewayProxyTest',
+            'GatewayCentralRegistry',
             'SafIdTokenTest'
         )
     }
@@ -240,6 +241,7 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
             'ApiCatalogStandaloneTest',
             'SAFProviderTest',
             'GatewayProxyTest',
+            'GatewayCentralRegistry',
             'SafIdTokenTest',
             'ChaoticHATest',
             'GraphQLTest'
@@ -335,14 +337,15 @@ task runContainerModulithTests(type: Test) {
             'GatewayServiceRouting',
             'GatewayCentralRegistry',
             'ZaasTest',
-            'ApiCatalogStandaloneTest'
+            'ApiCatalogStandaloneTest',
+            'NonModulithTest'
         )
     }
 }
 
 task runContainerTests(type: Test) {
     group "Integration tests"
-    description "Run only tests without long tests"
+    description "Run only tests without long tests. These tests run in Github Actions CITests workflow"
 
     outputs.cacheIf { false }
     def envConfig = System.getenv("ENV_CONFIG") ? System.getenv("ENV_CONFIG") : "docker"
@@ -369,6 +372,22 @@ task runContainerTests(type: Test) {
             'GatewayServiceRouting',
             'GatewayCentralRegistry',
             'ZaasTest'
+        )
+    }
+}
+
+task runContainerSAFProviderTests(type: Test) {
+    group "Integration tests"
+    description "Run only tests that verify SAF (non z/OSMF) authentication scenarios"
+
+    outputs.cacheIf { false }
+    def envConfig = System.getenv("ENV_CONFIG") ? System.getenv("ENV_CONFIG") : "docker"
+    systemProperty "environment.config", "-$envConfig"
+
+    systemProperties System.properties
+    useJUnitPlatform {
+        includeTags(
+            'SAFProviderTest'
         )
     }
 }
@@ -550,6 +569,24 @@ task runInfinispanServiceTests(type: Test) {
         includeTags(
             'CachingServiceTest',
             'InfinispanStorageTest'
+        )
+    }
+}
+
+task runModulithInfinispanServiceTests(type: Test) {
+    group "integration tests"
+    description "Run APIML(modulith) with infinispan storage tests"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'CachingServiceTest',
+            'InfinispanStorageTest'
+        )
+        excludeTags(
+            'NonModulithTest'
         )
     }
 }

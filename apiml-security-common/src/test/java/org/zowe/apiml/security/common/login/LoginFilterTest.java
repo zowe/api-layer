@@ -11,6 +11,7 @@
 package org.zowe.apiml.security.common.login;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -35,19 +37,23 @@ import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
-import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class LoginFilterTest {
+
     private static final String VALID_JSON = "{\"username\": \"user\", \"password\": \"pwd\"}";
     private static final String JSON_WITH_NEW_PW = "{\"username\": \"user\", \"password\": \"pwd\", \"newPassword\": \"newPwd\"}";
     private static final String EMPTY_JSON = "{\"username\": \"\", \"password\": \"\"}";
@@ -214,11 +220,15 @@ class LoginFilterTest {
     }
 
     private void testFailWithResourceAccessError(RuntimeException exception, ErrorType errorType) throws IOException, ServletException {
-        ObjectMapper objectMapper = mock(ObjectMapper.class);
+        ObjectMapper objectMapper = new ObjectMapper();
         MessageService messageService = new YamlMessageService("/security-service-messages.yml");
         ResourceAccessExceptionHandler resourceAccessExceptionHandler = new ResourceAccessExceptionHandler(messageService, objectMapper);
-        loginFilter = new LoginFilter("TEST_ENDPOINT", authenticationSuccessHandler,
-            authenticationFailureHandler, objectMapper, authenticationManager,
+        loginFilter = new LoginFilter(
+            "TEST_ENDPOINT",
+            authenticationSuccessHandler,
+            authenticationFailureHandler,
+            objectMapper,
+            authenticationManager,
             resourceAccessExceptionHandler);
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(USER, new LoginRequest(USER,PASSWORD));
@@ -229,10 +239,18 @@ class LoginFilterTest {
         httpServletRequest.addHeader(HttpHeaders.AUTHORIZATION, VALID_AUTH_HEADER);
         httpServletResponse = new MockHttpServletResponse();
 
-        loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+        assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
+        assertNull(httpServletResponse.getContentType());
+        assertEquals("", httpServletResponse.getContentAsString());
 
+        var auth = loginFilter.attemptAuthentication(httpServletRequest, httpServletResponse);
+
+        assertNull(auth);
         Message message = messageService.createMessage(errorType.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        verify(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+
+        assertEquals(HttpStatus.SERVICE_UNAVAILABLE.value(), httpServletResponse.getStatus());
+        assertEquals("application/json", httpServletResponse.getContentType());
+        assertEquals(objectMapper.writeValueAsString(message.mapToView()), httpServletResponse.getContentAsString());
     }
 
 }

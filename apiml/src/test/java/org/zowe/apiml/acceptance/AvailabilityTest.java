@@ -26,7 +26,7 @@ import static io.restassured.RestAssured.given;
  */
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ActiveProfiles("test")
+@ActiveProfiles({ "ApimlModulithAcceptanceTest", "AvailabilityTest" })
 public class AvailabilityTest extends AcceptanceTestWithBasePath {
 
     @Test
@@ -48,9 +48,9 @@ public class AvailabilityTest extends AcceptanceTestWithBasePath {
             .statusCode(401);
     }
 
-    @Profile("test")
+    @Profile("AvailabilityTest")
     @TestConfiguration
-    public class TestConfig {
+    public static class TestConfig {
 
         @Bean
         LocaleContextResolver localeContextResolver() {

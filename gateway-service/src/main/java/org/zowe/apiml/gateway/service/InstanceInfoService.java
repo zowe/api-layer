@@ -12,20 +12,18 @@ package org.zowe.apiml.gateway.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
-
-import java.util.List;
+import reactor.core.publisher.Flux;
 
 @Service
 @RequiredArgsConstructor
 public class InstanceInfoService {
 
-    private final ReactiveDiscoveryClient discoveryClient;
+    private final DiscoveryClient discoveryClient;
 
-    public Mono<List<ServiceInstance>> getServiceInstance(String serviceId) {
-        return discoveryClient.getInstances(serviceId).collectList();
+    public Flux<ServiceInstance> getServiceInstances(String serviceId) {
+        return Flux.defer(() -> Flux.fromIterable(discoveryClient.getInstances(serviceId)));
     }
 
 }

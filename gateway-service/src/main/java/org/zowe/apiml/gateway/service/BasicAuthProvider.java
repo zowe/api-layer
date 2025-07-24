@@ -59,7 +59,10 @@ public class BasicAuthProvider extends AbstractAuthProviderFilter<ClientResponse
 
     public Mono<String> getToken(String authHeader) {
         String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
-        return getZaasInstances().flatMap(instances ->
+
+        return getZaasInstances()
+            .collectList()
+            .flatMap(instances ->
                 invoke(
                     instances,
                     instance -> createRequest(instance, authHeader)
@@ -72,6 +75,7 @@ public class BasicAuthProvider extends AbstractAuthProviderFilter<ClientResponse
                 .findFirst()
                 .map(HttpCookie::getValue).orElse("")
             );
+
     }
 
 }

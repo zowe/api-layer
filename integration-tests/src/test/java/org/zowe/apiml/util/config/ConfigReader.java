@@ -29,6 +29,8 @@ import static org.zowe.apiml.util.requests.Endpoints.ROUTED_SERVICE;
 @Slf4j
 public class ConfigReader {
 
+    public static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
+
     private static final String PASSWORD = "password";
     private static String configurationFile;
 
@@ -125,10 +127,11 @@ public class ConfigReader {
                         }
                     );
 
-                    configuration.getZaasConfiguration().setScheme(System.getProperty("zaas.scheme", configuration.getZaasConfiguration().getScheme()));
-                    configuration.getZaasConfiguration().setHost(System.getProperty("zaas.host", configuration.getZaasConfiguration().getHost()));
-                    configuration.getZaasConfiguration().setPort(parseInt(System.getProperty("zaas.port", String.valueOf(configuration.getZaasConfiguration().getPort()))));
-
+                    if (!IS_MODULITH_ENABLED) {
+                        configuration.getZaasConfiguration().setScheme(System.getProperty("zaas.scheme", configuration.getZaasConfiguration().getScheme()));
+                        configuration.getZaasConfiguration().setHost(System.getProperty("zaas.host", configuration.getZaasConfiguration().getHost()));
+                        configuration.getZaasConfiguration().setPort(parseInt(System.getProperty("zaas.port", String.valueOf(configuration.getZaasConfiguration().getPort()))));
+                    }
                     configuration.getDiscoveryServiceConfiguration().setScheme(System.getProperty("discovery.scheme", configuration.getDiscoveryServiceConfiguration().getScheme()));
                     configuration.getDiscoveryServiceConfiguration().setUser(System.getProperty("discovery.user", configuration.getDiscoveryServiceConfiguration().getUser()));
                     configuration.getDiscoveryServiceConfiguration().setPassword(System.getProperty("discovery.password", configuration.getDiscoveryServiceConfiguration().getPassword()));

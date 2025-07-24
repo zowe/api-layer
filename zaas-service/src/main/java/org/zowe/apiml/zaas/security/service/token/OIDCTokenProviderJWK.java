@@ -16,7 +16,14 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyType;
 import com.nimbusds.jose.jwk.KeyUse;
-import io.jsonwebtoken.*;
+import com.nimbusds.jose.util.DefaultResourceRetriever;
+import com.nimbusds.jose.util.Resource;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Clock;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.LocatorAdapter;
+import io.jsonwebtoken.ProtectedHeader;
 import io.jsonwebtoken.security.UnsupportedKeyException;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
@@ -66,6 +73,7 @@ public class OIDCTokenProviderJWK implements OIDCProvider {
 
     @Qualifier("oidcJwtClock")
     private final Clock clock;
+    private final DefaultResourceRetriever resourceRetriever;
 
     @Getter
     private final Map<String, PublicKey> publicKeys = new ConcurrentHashMap<>();
@@ -90,7 +98,8 @@ public class OIDCTokenProviderJWK implements OIDCProvider {
         try {
             publicKeys.clear();
             jwkSet = null;
-            jwkSet = JWKSet.load(new URL(jwksUri));
+            Resource resource = resourceRetriever.retrieveResource(new URL(jwksUri));
+            jwkSet = JWKSet.parse(resource.getContent());
             publicKeys.putAll(processKeys(jwkSet));
         } catch (IOException | ParseException | IllegalStateException e) {
             log.error("Error processing response from URI {} message: {}", jwksUri, e.getMessage());

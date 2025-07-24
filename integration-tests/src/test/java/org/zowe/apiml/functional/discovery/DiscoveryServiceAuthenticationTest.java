@@ -91,7 +91,7 @@ class DiscoveryServiceAuthenticationTest {
         @Test
         @TestsNotMeantForZowe("Automation needs unprotected health endpoint")
         @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication enabled.")
-        void thenDoNotRequireAuthentication() {
+        void givenNoCredentials_thenUnauthorized() {
             given()
                 .when()
                 .get(DiscoveryUtils.getDiscoveryUrl() + DISCOVERY_HEALTH_ENDPOINT)
@@ -103,7 +103,7 @@ class DiscoveryServiceAuthenticationTest {
         @Test
         @TestsNotMeantForZowe("Automation needs unprotected health endpoint")
         @DisplayName("This test needs to run against discovery service instance that has application/health endpoint authentication enabled with authentication.")
-        void thenDoNotAuthenticateTheRequest() {
+        void givenBasicAuth_thenIsOk() {
             String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
             given()
                 .header("Authorization", "Bearer " + token)

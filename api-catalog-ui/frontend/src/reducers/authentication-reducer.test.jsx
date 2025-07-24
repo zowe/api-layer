@@ -12,8 +12,21 @@ import userConstants from '../constants/user-constants';
 import authenticationReducer from './authentication-reducer';
 
 describe('>>> Authentication reducer tests', () => {
+
+    let initialState = {
+        sessionOn: false,
+        user: null,
+        error: null,
+        showHeader: false,
+        loginSuccess: false,
+        authenticationFailed: false,
+        showUpdatePassSuccess: false,
+        expired: false,
+        expiredWarning: false,
+        matches: false,
+    };
     it('should return default state in the default action', () => {
-        expect(authenticationReducer()).toEqual({ sessionOn: false });
+        expect(authenticationReducer()).toEqual(initialState);
     });
 
     it('should handle USERS_LOGIN_REQUEST', () => {
@@ -21,7 +34,7 @@ describe('>>> Authentication reducer tests', () => {
             type: userConstants.USERS_LOGIN_REQUEST,
             user: 'user',
         };
-        expect(authenticationReducer({}, action)).toEqual({ user: 'user' });
+        expect(authenticationReducer({}, action)).toEqual({  authenticationFailed: false, user: 'user' });
     });
 
     it('should handle USERS_LOGIN_SUCCESS', () => {
@@ -29,8 +42,10 @@ describe('>>> Authentication reducer tests', () => {
             type: userConstants.USERS_LOGIN_SUCCESS,
             user: 'user',
         };
+
         expect(authenticationReducer({}, action)).toEqual({ authenticationFailed: false, error: null,loginSuccess: true, user: 'user', showHeader: true,showUpdatePassSuccess: undefined });
-        expect(authenticationReducer()).toEqual({ sessionOn: true });
+        expect(authenticationReducer().sessionOn).toEqual(true);
+
     });
 
     it('should handle USERS_LOGIN_FAILURE', () => {
@@ -39,7 +54,7 @@ describe('>>> Authentication reducer tests', () => {
             error: 'error',
         };
         expect(authenticationReducer({}, action)).toEqual({ error: 'error' });
-        expect(authenticationReducer()).toEqual({ sessionOn: true });
+        expect(authenticationReducer().sessionOn).toEqual(true);
     });
 
     it('should handle AUTHENTICATION_FAILURE', () => {
@@ -47,36 +62,59 @@ describe('>>> Authentication reducer tests', () => {
             type: userConstants.AUTHENTICATION_FAILURE,
             error: 'error',
         };
+
+        const initialState = {
+            sessionOn: true,
+            user: null,
+            error: null,
+            showHeader: false,
+            loginSuccess: false,
+            authenticationFailed: false,
+            showUpdatePassSuccess: false,
+            expired: false,
+            expiredWarning: false,
+            matches: false,
+        };
         const result = authenticationReducer({}, action);
         expect(result.error).toEqual('error');
         expect(result.sessionOn).toEqual(true);
-        expect(authenticationReducer()).toEqual({ sessionOn: true });
+        expect(authenticationReducer()).toEqual(initialState);
         result.onCompleteHandling();
-        expect(authenticationReducer()).toEqual({ sessionOn: false });
+        expect(authenticationReducer().sessionOn).toEqual(false );
     });
 
     it('should handle USERS_LOGOUT_REQUEST', () => {
         // Login again to recover from previous test case
         authenticationReducer({}, { type: userConstants.USERS_LOGIN_SUCCESS });
 
-        const result = authenticationReducer({}, { type: userConstants.USERS_LOGOUT_REQUEST });
+        const result = authenticationReducer(undefined, { type: userConstants.USERS_LOGOUT_REQUEST });
         expect(result.error).toEqual(null);
         expect(result.showHeader).toEqual(false);
-        expect(authenticationReducer()).toEqual({ sessionOn: true });
-        result.onCompleteHandling();
-        expect(authenticationReducer()).toEqual({ sessionOn: false });
+        expect(authenticationReducer().sessionOn).toEqual(true);
     });
 
     it('should handle USERS_LOGOUT_SUCCESS', () => {
         // Login again to recover from previous test case
         authenticationReducer({}, { type: userConstants.USERS_LOGIN_SUCCESS });
 
+        const initialState = {
+            sessionOn: true,
+            user: null,
+            error: null,
+            showHeader: false,
+            loginSuccess: false,
+            authenticationFailed: false,
+            showUpdatePassSuccess: false,
+            expired: false,
+            expiredWarning: false,
+            matches: false,
+        };
         const result = authenticationReducer({}, { type: userConstants.USERS_LOGOUT_SUCCESS });
         expect(result.error).toEqual(null);
         expect(result.showHeader).toEqual(false);
-        expect(authenticationReducer()).toEqual({ sessionOn: true });
+        expect(authenticationReducer()).toEqual(initialState);
         result.onCompleteHandling();
-        expect(authenticationReducer()).toEqual({ sessionOn: false });
+        expect(authenticationReducer().sessionOn).toEqual(false);
     });
 
     it('should handle USERS_LOGOUT_FAILURE', () => {
@@ -84,8 +122,21 @@ describe('>>> Authentication reducer tests', () => {
             type: userConstants.USERS_LOGOUT_FAILURE,
             error: 'error',
         };
+        const initialState = {
+            sessionOn: false,
+            user: null,
+            error: null,
+            showHeader: false,
+            loginSuccess: false,
+            authenticationFailed: false,
+            showUpdatePassSuccess: false,
+            expired: false,
+            expiredWarning: false,
+            matches: false,
+        };
         expect(authenticationReducer({}, action)).toEqual({ error: 'error', showHeader: false });
-        expect(authenticationReducer()).toEqual({ sessionOn: false });
+        expect(authenticationReducer()).toEqual(initialState);
+        expect(authenticationReducer().sessionOn).toEqual(false);
     });
 
     it('should handle USERS_LOGIN_INVALIDPASSWORD', () => {

@@ -21,6 +21,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
@@ -53,7 +54,7 @@ class StoreAccessTokenInfoFilterTest {
     private static final String INVALID_JSON2 = "{\"valissdity\": 90, \"scopes\": [\"service\"]}";
     private final MessageService messageService = new YamlMessageService("/security-service-messages.yml");
 
-    private final AuthExceptionHandler authExceptionHandler = new AuthExceptionHandler(messageService, new ObjectMapper());
+    private final AuthExceptionHandler authExceptionHandler = new AuthExceptionHandler(messageService, new ObjectMapper(), ApplicationInfo.builder().isModulith(false).build());
 
     @BeforeEach
     public void setUp() {

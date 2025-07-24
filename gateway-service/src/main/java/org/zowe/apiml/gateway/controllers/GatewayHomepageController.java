@@ -12,14 +12,15 @@ package org.zowe.apiml.gateway.controllers;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.product.version.BuildInfoDetails;
 
@@ -31,34 +32,24 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
  * Main page for Gateway, displaying status of Apiml services and build version information
  */
 @Tag(name = "Home page")
+@RequiredArgsConstructor
 @Controller
 public class GatewayHomepageController {
 
     private static final String SUCCESS_ICON_NAME = "success";
     private static final String WARNING_ICON_NAME = "warning";
     private static final String UI_V1_ROUTE = "%s.ui-v1.%s";
-    private static final String ZAAS_SERVICEID = CoreService.ZAAS.getServiceId();
 
     private final DiscoveryClient discoveryClient;
-
     private final BuildInfo buildInfo;
+    @Value("${apiml.catalog.serviceId:}")
+    private String apiCatalogServiceId;
+
+    private final ApplicationInfo applicationInfo;
     private String buildString;
 
-    private final String apiCatalogServiceId;
-
-    @Autowired
-    public GatewayHomepageController(DiscoveryClient discoveryClient,
-                                     @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId) {
-        this(discoveryClient, new BuildInfo(), apiCatalogServiceId);
-    }
-
-    public GatewayHomepageController(DiscoveryClient discoveryClient,
-                                     BuildInfo buildInfo,
-                                     String apiCatalogServiceId) {
-        this.discoveryClient = discoveryClient;
-        this.buildInfo = buildInfo;
-        this.apiCatalogServiceId = apiCatalogServiceId;
-
+    @PostConstruct
+    public void init() {
         initializeBuildInfos();
     }
 
@@ -155,7 +146,7 @@ public class GatewayHomepageController {
     }
 
     private int authorizationServiceCount() {
-        List<ServiceInstance> zaasServiceInstances = discoveryClient.getInstances(ZAAS_SERVICEID);
+        List<ServiceInstance> zaasServiceInstances = discoveryClient.getInstances(applicationInfo.getAuthServiceId());
         if (zaasServiceInstances != null) {
             return zaasServiceInstances.size();
         }

@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -26,10 +25,12 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -46,9 +47,9 @@ class AbstractTokenFilterFactoryTest {
             var request = MockServerHttpRequest.get("/url").build();
             var exchange = MockServerWebExchange.from(request);
 
-            new AbstractTokenFilterFactory<>(AbstractTokenFilterFactory.Config.class, null, null, null) {
+            new AbstractTokenFilterFactory<>(AbstractTokenFilterFactory.Config.class, null, null) {
                 @Override
-                public String getEndpointUrl(ServiceInstance instance) {
+                protected Function<RequestCredentials, Mono<AuthorizationResponse<ZaasTokenResponse>>> getAuthorizationResponseTransformer() {
                     return null;
                 }
             }.processResponse(exchange, chain, tokenResponse);

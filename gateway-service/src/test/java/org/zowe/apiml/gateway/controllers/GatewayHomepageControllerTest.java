@@ -16,8 +16,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;
+import org.zowe.apiml.config.ApplicationInfo;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.product.version.BuildInfoDetails;
 
@@ -46,18 +49,21 @@ class GatewayHomepageControllerTest {
 
         BuildInfoDetails buildInfoDetails = new BuildInfoDetails(new Properties(), new Properties());
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
-
+        ApplicationInfo applicationInfo = ApplicationInfo.builder()
+            .isModulith(false)
+            .authServiceId(CoreService.ZAAS.getServiceId()).build();
         gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, buildInfo, API_CATALOG_ID);
+            discoveryClient, buildInfo, applicationInfo);
+        ReflectionTestUtils.setField(gatewayHomepageController, "apiCatalogServiceId", "apicatalog");
     }
 
     @Test
     void givenBuildVersionNull_whenHomePageCalled_thenBuildInfoShouldStaticText() {
         Model model = new ConcurrentModel();
+        gatewayHomepageController.init();
         gatewayHomepageController.home(model);
 
         Map<String, Object> actualModelMap = model.asMap();
-
         assertThat(actualModelMap, IsMapContaining.hasEntry("buildInfoText", "Build information is not available"));
     }
 
@@ -71,10 +77,15 @@ class GatewayHomepageControllerTest {
         BuildInfoDetails buildInfoDetails = new BuildInfoDetails(buildProperties, new Properties());
         when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
 
+        ApplicationInfo applicationInfo = ApplicationInfo.builder()
+            .isModulith(false)
+            .authServiceId(CoreService.ZAAS.getServiceId()).build();
         GatewayHomepageController gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, buildInfo, API_CATALOG_ID);
+            discoveryClient, buildInfo, applicationInfo);
 
         Model model = new ConcurrentModel();
+
+        gatewayHomepageController.init();
         gatewayHomepageController.home(model);
 
         Map<String, Object> actualModelMap = model.asMap();
@@ -99,7 +110,11 @@ class GatewayHomepageControllerTest {
 
     @Test
     void givenApiCatalogueIsEmpty_whenHomePageIsCalled_thenThereIsNoMessageAroundTheCatalog() {
-        GatewayHomepageController underTest = new GatewayHomepageController(discoveryClient, buildInfo, null);
+        ApplicationInfo applicationInfo = ApplicationInfo.builder()
+            .isModulith(false)
+            .authServiceId(CoreService.GATEWAY.getServiceId()).build();
+
+        GatewayHomepageController underTest = new GatewayHomepageController(discoveryClient, buildInfo, applicationInfo);
         Model model = new ConcurrentModel();
         underTest.home(model);
 

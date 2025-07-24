@@ -46,7 +46,7 @@ bin
 !api-catalog-package/src/main/resources/bin
 !discovery-package/src/main/resources/bin
 !caching-service-package/src/main/resources/bin
-!zaas-service-package/src/main/resources/bin
+!zaas-package/src/main/resources/bin
 !apiml-package/src/main/resources/bin
 var
 sdist

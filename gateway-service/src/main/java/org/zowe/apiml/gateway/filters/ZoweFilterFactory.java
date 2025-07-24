@@ -11,32 +11,34 @@
 package org.zowe.apiml.gateway.filters;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 import reactor.core.publisher.Mono;
 
+import java.util.function.Function;
+
 
 @Service
-public class ZoweFilterFactory extends AbstractTokenFilterFactory<AbstractTokenFilterFactory.Config, Object> {
+public class ZoweFilterFactory extends AbstractTokenFilterFactory<AbstractTokenFilterFactory.Config> {
 
     @Value("${apiml.security.auth.jwt.customAuthHeader:}")
     private String customHeader;
 
-    public ZoweFilterFactory(@Qualifier("webClientClientCert") WebClient webClient, InstanceInfoService instanceInfoService, MessageService messageService) {
-        super(AbstractTokenFilterFactory.Config.class, webClient, instanceInfoService, messageService);
+    private final ZaasSchemeTransform zaasSchemeTransform;
+
+    public ZoweFilterFactory(ZaasSchemeTransform zaasSchemeTransform, InstanceInfoService instanceInfoService, MessageService messageService) {
+        super(AbstractTokenFilterFactory.Config.class, instanceInfoService, messageService);
+        this.zaasSchemeTransform = zaasSchemeTransform;
     }
 
     @Override
-    public String getEndpointUrl(ServiceInstance instance) {
-        return String.format("%s://%s:%d/%s/scheme/zoweJwt", instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
+    protected Function<RequestCredentials, Mono<AuthorizationResponse<ZaasTokenResponse>>> getAuthorizationResponseTransformer() {
+        return zaasSchemeTransform::zoweJwt;
     }
 
     @Override

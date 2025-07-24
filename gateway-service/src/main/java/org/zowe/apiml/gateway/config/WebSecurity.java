@@ -16,7 +16,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gateway.filter.headers.XForwardedHeadersFilter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,11 +40,20 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.client.*;
+import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.server.*;
+import org.springframework.security.oauth2.client.web.server.AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -58,21 +70,33 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.zowe.apiml.gateway.config.oidc.ClientConfiguration;
 import org.zowe.apiml.gateway.controllers.GatewayExceptionHandler;
+import org.zowe.apiml.gateway.filters.proxyheaders.AdditionalRegistrationGatewayRegistry;
+import org.zowe.apiml.gateway.filters.proxyheaders.X509AndGwAwareXForwardedHeadersFilter;
 import org.zowe.apiml.gateway.filters.security.AuthExceptionHandlerReactive;
 import org.zowe.apiml.gateway.filters.security.BasicAuthFilter;
 import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
 import org.zowe.apiml.gateway.service.TokenProvider;
-import org.zowe.apiml.gateway.x509.X509Util;
+import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.common.util.X509Util;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -155,8 +179,7 @@ public class WebSecurity {
      * Security chain for oauth2 client. To enable this chain, please refer to Zowe OIDC configuration.
      */
     @Bean
-    @Order(Ordered.HIGHEST_PRECEDENCE)
-    public SecurityWebFilterChain oauth2WebFilterChain(
+    SecurityWebFilterChain oauth2WebFilterChain(
         ServerHttpSecurity http,
         Optional<ReactiveOAuth2AuthorizedClientService> reactiveOAuth2AuthorizedClientService,
         Optional<ApimlServerAuthorizationRequestRepository> requestRepository,
@@ -234,7 +257,7 @@ public class WebSecurity {
     }
 
     @Bean
-    public ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(
+    ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(
         Optional<InMemoryReactiveClientRegistrationRepository> inMemoryReactiveClientRegistrationRepository
     ) {
         if (!clientConfiguration.isConfigured()) {
@@ -248,7 +271,7 @@ public class WebSecurity {
     }
 
     @Bean
-    public ApimlServerAuthorizationRequestRepository requestRepository(Optional<ServerOAuth2AuthorizationRequestResolver> authorizationRequestResolver) {
+    ApimlServerAuthorizationRequestRepository requestRepository(Optional<ServerOAuth2AuthorizationRequestResolver> authorizationRequestResolver) {
         if (!clientConfiguration.isConfigured()) {
             return null;
         }
@@ -259,7 +282,7 @@ public class WebSecurity {
     }
 
     @Bean
-    public ReactiveClientRegistrationRepository clientRegistrationRepository() {
+    ReactiveClientRegistrationRepository clientRegistrationRepository() {
         if (!clientConfiguration.isConfigured()) {
             return registrationId -> null;
         }
@@ -267,7 +290,7 @@ public class WebSecurity {
     }
 
     @Bean
-    public ServerOAuth2AuthorizedClientRepository serverOAuth2AuthorizedClientRepository(
+    ServerOAuth2AuthorizedClientRepository serverOAuth2AuthorizedClientRepository(
         Optional<ReactiveOAuth2AuthorizedClientService> clientService
     ) {
         if (!clientConfiguration.isConfigured()) {
@@ -280,7 +303,7 @@ public class WebSecurity {
 
     @Bean
     @ConditionalOnBean(ReactiveClientRegistrationRepository.class)
-    public ReactiveOAuth2AuthorizedClientManager gatewayReactiveOAuth2AuthorizedClientManager(
+    ReactiveOAuth2AuthorizedClientManager gatewayReactiveOAuth2AuthorizedClientManager(
         Optional<ReactiveClientRegistrationRepository> clientRegistrationRepository,
         Optional<ReactiveOAuth2AuthorizedClientService> authorizedClientService
     ) {
@@ -318,7 +341,7 @@ public class WebSecurity {
     }
 
     public ServerHttpSecurity defaultSecurityConfig(ServerHttpSecurity http) {
-        var gatewayExceptionHandler = applicationContext.getBean(GatewayExceptionHandler.class);
+        var gatewayExceptionHandler = applicationContext.getBean("gatewayExceptionHandler", GatewayExceptionHandler.class);
         return http
             .headers(headers -> headers
                 .hsts(hsts -> hsts.disable())
@@ -336,13 +359,14 @@ public class WebSecurity {
 
     @Bean
     @Order(Ordered.LOWEST_PRECEDENCE)
-    public SecurityWebFilterChain defaultSecurityWebFilterChain(ServerHttpSecurity http) {
+    SecurityWebFilterChain defaultSecurityWebFilterChain(ServerHttpSecurity http) {
         return defaultSecurityConfig(http).build();
     }
 
     @Bean
     @Order(1)
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+    @ConditionalOnMissingBean(name = "modulithConfig")
+    SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
         return defaultSecurityConfig(http)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
                 REGISTRY_PATH,
@@ -499,7 +523,7 @@ public class WebSecurity {
     }
 
     @Bean
-    public StrictServerWebExchangeFirewall httpFirewall() {
+    StrictServerWebExchangeFirewall httpFirewall() {
         StrictServerWebExchangeFirewall firewall = new StrictServerWebExchangeFirewall();
         if (isStrictUrlValidationEnabled) {
             return firewall;
@@ -512,6 +536,17 @@ public class WebSecurity {
         firewall.setAllowUrlEncodedPeriod(true);
         firewall.setAllowSemicolon(true);
         return firewall;
+    }
+
+    @Bean
+    @Primary
+    @ConditionalOnProperty(name = "spring.cloud.gateway.x-forwarded.enabled", matchIfMissing = true)
+    public XForwardedHeadersFilter xForwardedHeadersFilter(
+        @Value("${apiml.security.forwardHeader.trustedProxies:#{null}}") String trustedProxies,
+        HttpsConfig httpsConfig,
+        AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry
+    ) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+        return new X509AndGwAwareXForwardedHeadersFilter(httpsConfig, trustedProxies, additionalRegistrationGatewayRegistry);
     }
 
 }

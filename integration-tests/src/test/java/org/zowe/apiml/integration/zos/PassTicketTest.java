@@ -46,17 +46,19 @@ import static org.zowe.apiml.util.requests.Endpoints.ROUTED_PASSTICKET;
 @GeneralAuthenticationTest
 class PassTicketTest implements TestWithStartedInstances {
 
-    private final static EnvironmentConfiguration ENVIRONMENT_CONFIGURATION = ConfigReader.environmentConfiguration();
-    private final static DiscoverableClientConfiguration DISCOVERABLE_CLIENT_CONFIGURATION =
+    private static final EnvironmentConfiguration ENVIRONMENT_CONFIGURATION = ConfigReader.environmentConfiguration();
+    private static final DiscoverableClientConfiguration DISCOVERABLE_CLIENT_CONFIGURATION =
         ENVIRONMENT_CONFIGURATION.getDiscoverableClientConfiguration();
 
-    private final static String USERNAME = ENVIRONMENT_CONFIGURATION.getCredentials().getUser();
-    private final static String APPLICATION_NAME = DISCOVERABLE_CLIENT_CONFIGURATION.getApplId();
+    private static final String USERNAME = ENVIRONMENT_CONFIGURATION.getCredentials().getUser();
+    private static final String APPLICATION_NAME = DISCOVERABLE_CLIENT_CONFIGURATION.getApplId();
 
-    private final static String ZAAS_PASSTICKET_PATH = "/zaas/api/v1/auth/ticket";
+    private static final String ZAAS_PASSTICKET_PATH = "/zaas/api/v1/auth/ticket";
+    private static final String GATEWAY_PASSTICKET_PATH = "/gateway/api/v1/auth/ticket";
 
-    private final static String COOKIE = "apimlAuthenticationToken";
+    private static final String COOKIE = "apimlAuthenticationToken";
     private URI url = HttpRequestUtils.getUriFromGateway(ROUTED_PASSTICKET);
+    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
 
     @BeforeEach
     void setUp() {
@@ -122,7 +124,12 @@ class PassTicketTest implements TestWithStartedInstances {
 
             @Test
             void givenNoToken() {
-                String expectedMessage = "No authorization token provided for URL '" + ZAAS_PASSTICKET_PATH + "'";
+                String expectedMessage;
+                if (!IS_MODULITH_ENABLED) {
+                    expectedMessage = "No authorization token provided for URL '" + ZAAS_PASSTICKET_PATH + "'";
+                } else {
+                    expectedMessage = "No authorization token provided for URL '" + GATEWAY_PASSTICKET_PATH + "'";
+                }
 
                 given()
                     .contentType(JSON)
@@ -180,6 +187,7 @@ class PassTicketTest implements TestWithStartedInstances {
 
                 given()
                     .cookie(COOKIE, jwt)
+                    .contentType(JSON)
                 .when()
                     .post(url)
                 .then()
@@ -234,7 +242,7 @@ class PassTicketTest implements TestWithStartedInstances {
 
             @Test
             void givenInvalidHttpMethod() {
-                String expectedMessage = "Authentication method 'GET' is not supported for URL '" + ZAAS_PASSTICKET_PATH + "'";
+                String expectedMessage = "The request method has been disabled and cannot be used for the requested resource.";
 
                 given()
                     .contentType(JSON)
@@ -243,7 +251,7 @@ class PassTicketTest implements TestWithStartedInstances {
                     .get(url)
                 .then()
                     .statusCode(is(SC_METHOD_NOT_ALLOWED))
-                    .body("messages.find { it.messageNumber == 'ZWEAG101E' }.messageContent", equalTo(expectedMessage));
+                    .body("messages.find { it.messageNumber == 'ZWEAO405E' }.messageContent", equalTo(expectedMessage));
             }
         }
     }

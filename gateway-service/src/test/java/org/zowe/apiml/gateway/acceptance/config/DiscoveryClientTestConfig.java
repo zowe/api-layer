@@ -29,6 +29,7 @@ import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.client.RestClient;
 import org.zowe.apiml.gateway.ApimlDiscoveryClientStub;
 import org.zowe.apiml.gateway.ApplicationRegistry;
@@ -42,17 +43,19 @@ import reactor.core.publisher.Flux;
  */
 @TestConfiguration
 @RequiredArgsConstructor
+@Profile("!ApimlModulithAcceptanceTest")
 public class DiscoveryClientTestConfig {
 
     private final ApplicationContext context;
 
     @Bean
-    public ApplicationRegistry registry() {
+    @Primary
+    ApplicationRegistry registry() {
         return new ApplicationRegistry();
     }
 
     @Bean
-    public ReactiveDiscoveryClient mockServicesReactiveDiscoveryClient(ApplicationRegistry applicationRegistry) {
+    ReactiveDiscoveryClient mockServicesReactiveDiscoveryClient(ApplicationRegistry applicationRegistry) {
         return new ReactiveDiscoveryClient() {
 
             @Override
@@ -78,7 +81,7 @@ public class DiscoveryClientTestConfig {
     @Bean(destroyMethod = "shutdown", name = "test")
     @Primary
     @RefreshScope
-    public ApimlDiscoveryClientStub eurekaClient(ApplicationInfoManager manager,
+    ApimlDiscoveryClientStub eurekaClient(ApplicationInfoManager manager,
                                                  EurekaClientConfig config,
                                                  EurekaInstanceConfig instance,
                                                  @Autowired(required = false) HealthCheckHandler healthCheckHandler,

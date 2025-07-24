@@ -18,6 +18,7 @@ import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.Re
     scanBasePackages = {
         "org.zowe.apiml.gateway",
         "org.zowe.apiml.product.web",
+        "org.zowe.apiml.product.config",
         "org.zowe.apiml.product.gateway",
         "org.zowe.apiml.product.version",
         "org.zowe.apiml.product.logging",

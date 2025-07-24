@@ -160,8 +160,8 @@ class SchemeControllerTest {
                     .content(ticketBody.toString())
                     .requestAttr(AUTH_SOURCE_PARSED_ATTR, authParsedSource))
                 .andExpect(status().is(SC_METHOD_NOT_ALLOWED))
-                .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAG101E"))
-                .andExpect(jsonPath("$.messages[0].messageContent", is("Authentication method 'GET' is not supported for URL '/zaas/scheme/ticket'")));
+                .andExpect(jsonPath("$.messages[0].messageNumber").value("ZWEAO405E"))
+                .andExpect(jsonPath("$.messages[0].messageContent", is("The request method has been disabled and cannot be used for the requested resource.")));
         }
 
         @Test

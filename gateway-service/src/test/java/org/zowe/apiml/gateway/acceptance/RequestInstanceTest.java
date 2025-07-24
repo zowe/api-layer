@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.gateway.MockService;
-import org.zowe.apiml.gateway.acceptance.common.AcceptanceTest;
+import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 
 import java.io.IOException;
@@ -25,7 +25,7 @@ import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.core.Is.is;
 
-@AcceptanceTest
+@MicroservicesAcceptanceTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
     "apiml.service.corsEnabled=false"

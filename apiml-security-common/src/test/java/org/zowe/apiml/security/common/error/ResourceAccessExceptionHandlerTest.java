@@ -10,62 +10,76 @@
 
 package org.zowe.apiml.security.common.error;
 
-import org.zowe.apiml.message.core.Message;
-import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.util.BiConsumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.web.client.HttpServerErrorException;
-
-import jakarta.servlet.ServletException;
-import java.io.IOException;
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceAccessExceptionHandlerTest {
 
     private final MessageService messageService = new YamlMessageService("/security-service-messages.yml");
 
-    private ResourceAccessExceptionHandler resourceAccessExceptionHandler;
-    private MockHttpServletRequest httpServletRequest;
-    private MockHttpServletResponse httpServletResponse;
-
     @Mock
     private ObjectMapper objectMapper;
 
+    private ResourceAccessExceptionHandler handler;
+
     @BeforeEach
     void setUp() {
-        resourceAccessExceptionHandler = new ResourceAccessExceptionHandler(messageService, objectMapper);
-
-        httpServletRequest = new MockHttpServletRequest();
-        httpServletRequest.setRequestURI("URI");
-
-        httpServletResponse = new MockHttpServletResponse();
+        handler = new ResourceAccessExceptionHandler(messageService, objectMapper);
     }
 
     @Test
-    void shouldRethrowException() throws ServletException {
-        HttpServerErrorException response = assertDoesNotThrow(() -> new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-        assertThrows(HttpServerErrorException.class, () -> resourceAccessExceptionHandler.handleException(httpServletRequest, httpServletResponse, response));
+    void shouldHandleGatewayNotAvailableException() {
+        GatewayNotAvailableException ex = new GatewayNotAvailableException("gateway failed");
+        BiConsumer<ApiMessageView, HttpStatus> responseWriter = mock(BiConsumer.class);
+        BiConsumer<String, String> headerWriter = mock(BiConsumer.class);
+
+        assertDoesNotThrow(() ->
+            handler.handleException("/some-uri", responseWriter, headerWriter, ex)
+        );
+
+        verify(responseWriter).accept(any(ApiMessageView.class), eq(HttpStatus.SERVICE_UNAVAILABLE));
     }
 
     @Test
-    void shouldThrowServletExceptionOnIOException() throws Exception {
-        Message message = messageService.createMessage(ErrorType.GATEWAY_NOT_AVAILABLE.getErrorMessageKey(), httpServletRequest.getRequestURI());
-        doThrow(new IOException("Error in writing response")).when(objectMapper).writeValue(httpServletResponse.getWriter(), message.mapToView());
+    void shouldHandleServiceNotAccessibleException() {
+        ServiceNotAccessibleException ex = new ServiceNotAccessibleException("service failed");
+        BiConsumer<ApiMessageView, HttpStatus> responseWriter = mock(BiConsumer.class);
+        BiConsumer<String, String> headerWriter = mock(BiConsumer.class);
 
-        assertThrows(ServletException.class, () -> {
-            resourceAccessExceptionHandler.writeErrorResponse(message.mapToView(), HttpStatus.NOT_FOUND, httpServletResponse);
-        });
+        assertDoesNotThrow(() ->
+            handler.handleException("/another-uri", responseWriter, headerWriter, ex)
+        );
+
+        verify(responseWriter).accept(any(ApiMessageView.class), eq(HttpStatus.SERVICE_UNAVAILABLE));
+    }
+
+    @Test
+    void shouldRethrowUnhandledException() {
+        RuntimeException ex = new IllegalArgumentException("unexpected");
+        BiConsumer<ApiMessageView, HttpStatus> responseWriter = mock(BiConsumer.class);
+        BiConsumer<String, String> headerWriter = mock(BiConsumer.class);
+
+        assertThrows(IllegalArgumentException.class, () ->
+            handler.handleException("/uri", responseWriter, headerWriter, ex)
+        );
+
+        verifyNoInteractions(responseWriter);
     }
 }
