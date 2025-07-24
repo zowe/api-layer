@@ -25,6 +25,7 @@ import reactor.test.StepVerifier;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -56,7 +57,7 @@ class ForbidEncodedCharactersFilterFactoryTest {
                 return Mono.empty();
             }))
             .verifyComplete();
-            assertTrue(elapsed.toSeconds() == 0L);
+            assertEquals(0L, elapsed.toSeconds());
             assertTrue(exchange.getResponse().getStatusCode().is2xxSuccessful());
         }
 
