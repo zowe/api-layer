@@ -28,6 +28,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.swagger.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
@@ -69,7 +70,7 @@ class ApiDocV2ServiceTest {
     void setUp() {
         gatewayConfigProperties = getProperties();
         gatewayClient = new GatewayClient(gatewayConfigProperties);
-        apiDocV2Service = new ApiDocV2Service(gatewayClient);
+        apiDocV2Service = new ApiDocV2Service(ApplicationInfo.builder().build(), gatewayClient);
         ReflectionTestUtils.setField(apiDocV2Service, "scheme", "https");
     }
 
@@ -349,7 +350,7 @@ class ApiDocV2ServiceTest {
             GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
 
             AtomicReference<Swagger> swaggerHolder = new AtomicReference<>();
-            ApiDocV2Service apiDocV2Service = new ApiDocV2Service(gatewayClient) {
+            ApiDocV2Service apiDocV2Service = new ApiDocV2Service(ApplicationInfo.builder().build(), gatewayClient) {
                 @Override
                 protected void updateExternalDoc(Swagger swagger, ApiDocInfo apiDocInfo) {
                     super.updateExternalDoc(swagger, apiDocInfo);

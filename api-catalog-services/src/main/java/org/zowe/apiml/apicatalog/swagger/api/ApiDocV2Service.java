@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.zowe.apiml.apicatalog.swagger.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.ApiDocTransformationException;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 
@@ -32,8 +33,8 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
     @Value("${gateway.scheme.external:https}")
     private String scheme;
 
-    public ApiDocV2Service(GatewayClient gatewayClient) {
-        super(gatewayClient);
+    public ApiDocV2Service(ApplicationInfo applicationInfo, GatewayClient gatewayClient) {
+        super(applicationInfo, gatewayClient);
     }
 
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
@@ -45,7 +46,7 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
 
         boolean hidden = swagger.getTag(HIDDEN_TAG) != null;
 
-        if (!isDefinedOnlyBypassRoutes(apiDocInfo) && !apiDocInfo.isLocal()) {
+        if (!isDefinedOnlyBypassRoutes(apiDocInfo) && !(apiDocInfo.isLocal() && applicationInfo.isModulith())) {
             updateSchemeHost(swagger, serviceId);
             updatePaths(swagger, serviceId, apiDocInfo, hidden);
         }
