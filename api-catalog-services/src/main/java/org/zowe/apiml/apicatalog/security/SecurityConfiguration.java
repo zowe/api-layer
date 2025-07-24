@@ -249,14 +249,14 @@ public class SecurityConfiguration {
 
             .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec
                 .authenticationEntryPoint((exchange, exception) -> {
-                    String requestedUri = exchange.getRequest().getURI().toString();
-                    log.debug("Unauthorized access to '{}' endpoint", requestedUri);
+                    String requestedPath = exchange.getRequest().getPath().toString();
+                    log.debug("Unauthorized access to '{}' endpoint", requestedPath);
 
                     if (Stream.of(getFullUrls(
                             "/application/**",
                             APIDOC_ROUTES,
                             STATIC_REFRESH_ROUTE
-                        )).anyMatch(pattern -> antMatcher.match(pattern, requestedUri))
+                        )).anyMatch(pattern -> antMatcher.match(pattern, requestedPath))
                     ) {
                         exchange.getResponse().getHeaders().add(HttpHeaders.WWW_AUTHENTICATE, ApimlConstants.BASIC_AUTHENTICATION_PREFIX);
                     }

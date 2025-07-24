@@ -68,7 +68,7 @@ public class ApiDocRetrievalServiceLocal {
                     @Override
                     protected String getServerUrl(ServerHttpRequest serverHttpRequest, String apiDocsUrl) {
                         var gw = gatewayClient.getGatewayConfigProperties();
-                        return String.format("%s://%s/", gw.getScheme(), gw.getHostname());
+                        return String.format("%s://%s%s", gw.getScheme(), gw.getHostname(), apiDocsUrl);
                     }
                 };
 
