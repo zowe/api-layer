@@ -18,6 +18,7 @@ import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -142,24 +143,26 @@ public class ModulithConfig {
                 .orElse(null);
     }
 
+    @PostConstruct
     void createLocalInstances() {
         instances.put(CoreService.GATEWAY.getServiceId(), getInstanceInfo(CoreService.GATEWAY.getServiceId()));
         instances.put(CoreService.DISCOVERY.getServiceId(), getInstanceInfo(CoreService.DISCOVERY.getServiceId()));
         instances.put(CoreService.CACHING.getServiceId(), getInstanceInfo(CoreService.CACHING.getServiceId()));
         instances.put(CoreService.API_CATALOG.getServiceId(), getInstanceInfo(CoreService.API_CATALOG.getServiceId()));
         EurekaServerContextHolder.initialize(applicationContext.getBean(EurekaServerContext.class));
+
+        ApimlInstanceRegistry registry = getRegistry();
+        instances.forEach((key, value) -> registry.registerStatically(instances.get(key), false, CoreService.GATEWAY.getServiceId().equalsIgnoreCase(key)));
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationStart() {
-        createLocalInstances();
-        ApimlInstanceRegistry registry = getRegistry();
-        instances.forEach((key, value) -> registry.registerStatically(instances.get(key), false, CoreService.GATEWAY.getServiceId().equalsIgnoreCase(key)));
-
         log.info("Initialize timer for static services peer-replicated heartbeats");
 
         // This timer calls Eureka registry's peerReplicate method to accumulate all heartbeats of statically-onboarded services once
         timer.scheduleAtFixedRate(new TimerTask() {
+
+            private final ApimlInstanceRegistry registry = getRegistry();
 
             @Override
             public void run() {
