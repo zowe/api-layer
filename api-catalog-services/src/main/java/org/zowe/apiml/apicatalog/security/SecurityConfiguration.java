@@ -256,7 +256,7 @@ public class SecurityConfiguration {
                             "/application/**",
                             APIDOC_ROUTES,
                             STATIC_REFRESH_ROUTE
-                        )).noneMatch(pattern -> antMatcher.match(pattern, requestedUri))
+                        )).anyMatch(pattern -> antMatcher.match(pattern, requestedUri))
                     ) {
                         exchange.getResponse().getHeaders().add(HttpHeaders.WWW_AUTHENTICATE, ApimlConstants.BASIC_AUTHENTICATION_PREFIX);
                     }

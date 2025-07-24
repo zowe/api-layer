@@ -359,8 +359,11 @@ public class ContainerService {
 
     public APIService getService(String serviceId) {
         return EurekaUtils.getInstanceInfo(discoveryClient, serviceId)
-            .map(this::createAPIServiceFromInstance)
-            .filter(this::update)
+            .map(instance -> {
+                var apiService = createAPIServiceFromInstance(instance);
+                update(apiService);
+                return apiService;
+            })
             .orElse(null);
     }
 
