@@ -30,5 +30,6 @@ public class ApiDocInfo {
     ApiInfo apiInfo;
     String apiDocContent;
     RoutedServices routes;
+    boolean local;
 
 }

@@ -88,7 +88,7 @@ public class ApiDocRetrievalServiceLocal {
                 .orElseThrow(() -> new ApiDocNotFoundException("Cannot obtain API doc for service " + serviceId))
                 .openapiJson(null, "/", Locale.getDefault())
                 .map(String::new)
-                .map(content -> ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(content).build());
+                .map(content -> ApiDocInfo.builder().local(true).apiInfo(apiInfo).apiDocContent(content).build());
         } catch (JsonProcessingException jpe) {
             log.debug("Cannot process API doc", jpe);
             throw new ApiDocNotFoundException("Cannot obtain API doc for " + serviceId, jpe);
