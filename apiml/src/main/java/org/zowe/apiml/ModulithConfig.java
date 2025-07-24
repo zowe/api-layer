@@ -162,11 +162,14 @@ public class ModulithConfig {
         // This timer calls Eureka registry's peerReplicate method to accumulate all heartbeats of statically-onboarded services once
         timer.scheduleAtFixedRate(new TimerTask() {
 
-            private final ApimlInstanceRegistry registry = getRegistry();
-
             @Override
             public void run() {
-                registry.peerAwareHeartbeat(instances.get(CoreService.GATEWAY.getServiceId()));
+                var registry = getRegistry();
+                if (registry != null) {
+                    registry.peerAwareHeartbeat(instances.get(CoreService.GATEWAY.getServiceId()));
+                } else {
+                    log.debug("Eureka registry is not available yet.");
+                }
             }
 
         }, eurekaConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L, eurekaConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L);
