@@ -49,7 +49,7 @@ class TransformApiDocServiceTest {
 
     @Test
     void testTransformApiDoc_whenThereIsNotApiDocMatch() {
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, "DOC4", null);
+        ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiDocContent("DOC4").build();
         Exception exception = Assertions.assertThrows(UnexpectedTypeException.class, () -> {
             transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
         });
@@ -58,7 +58,7 @@ class TransformApiDocServiceTest {
 
     @Test
     void testTransformApiDoc_whenSwaggerDocIsPresent() {
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, "DOC2", null);
+        ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiDocContent("DOC2").build();
         transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
 
 
@@ -73,7 +73,7 @@ class TransformApiDocServiceTest {
 
     @Test
     void testTransformApiDoc_whenOpenDocIsPresent() {
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, "DOC3", null);
+        ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiDocContent("DOC3").build();
         transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
 
 

@@ -89,7 +89,7 @@ class ApiDocV3ServiceTest {
                 routedServices.addRoutedService(routedService);
                 routedServices.addRoutedService(routedService2);
                 ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", null, "https://www.zowe.org");
-                ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+                ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(apiDocContent).routes(routedServices).build();
 
                 String actualContent = apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
                 OpenAPI actualSwagger = convertJsonToOpenApi(actualContent);
@@ -137,7 +137,7 @@ class ApiDocV3ServiceTest {
                 routedServices.addRoutedService(routedService);
                 routedServices.addRoutedService(routedService2);
                 ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", null, "https://www.zowe.org");
-                ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+                ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(apiDocContent).routes(routedServices).build();
 
                 String actualContent = apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo);
                 OpenAPI actualSwagger = convertYamlToOpenApi(actualContent);
@@ -176,7 +176,7 @@ class ApiDocV3ServiceTest {
             void givenEmptyJson() {
                 String invalidJson = "";
                 ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", null, "https://www.zowe.org");
-                ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
+                ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(invalidJson).build();
 
                 Exception exception = assertThrows(UnexpectedTypeException.class, () -> apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo));
                 assertEquals("The OpenAPI for service 'serviceId' was retrieved but was not a valid JSON document. '[Null or empty definition]'", exception.getMessage());
@@ -188,7 +188,7 @@ class ApiDocV3ServiceTest {
                 String error = "The OpenAPI for service 'serviceId' was retrieved but was not a valid JSON document. '[Cannot construct instance of `java.util.LinkedHashMap` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('nonsense')\n" +
                     " at [Source: UNKNOWN; byte offset: #UNKNOWN]]'";
                 ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", null, "https://www.zowe.org");
-                ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, invalidJson, null);
+                ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(invalidJson).build();
 
                 Exception exception = assertThrows(UnexpectedTypeException.class, () -> apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo));
                 assertEquals(error, exception.getMessage());
@@ -207,7 +207,7 @@ class ApiDocV3ServiceTest {
             RoutedServices routedServices = new RoutedServices();
             routedServices.addRoutedService(routedService);
 
-            ApiDocInfo info = new ApiDocInfo(apiInfo, content, routedServices);
+            ApiDocInfo info = ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(content).routes(routedServices).build();
 
             assertThat(content, not(containsString("\"style\":\"form\"")));
             assertThat(content, not(containsString("\"style\":\"FORM\"")));
@@ -238,11 +238,12 @@ class ApiDocV3ServiceTest {
                     openApiHolder.set(openAPI);
                 }
             };
-            String transformed = apiDocV3Service.transformApiDoc("serviceId", new ApiDocInfo(
-                mock(ApiInfo.class),
-                IOUtils.toString(new ClassPathResource("swagger/openapi3.json").getInputStream(), StandardCharsets.UTF_8),
-                mock(RoutedServices.class)
-            ));
+            String transformed = apiDocV3Service.transformApiDoc("serviceId", ApiDocInfo.builder()
+                .apiInfo(mock(ApiInfo.class))
+                .apiDocContent(IOUtils.toString(new ClassPathResource("swagger/openapi3.json").getInputStream(), StandardCharsets.UTF_8))
+                .routes(mock(RoutedServices.class))
+                .build()
+            );
             assertNotNull(transformed);
             verifyOpenApi3(openApiHolder.get());
         }
@@ -255,7 +256,7 @@ class ApiDocV3ServiceTest {
             RoutedServices routedServices = new RoutedServices();
             routedServices.addRoutedService(new RoutedService("api-v1", "api/v1", "/apicatalog"));
 
-            ApiDocInfo info = new ApiDocInfo(apiInfo, content, routedServices);
+            ApiDocInfo info = ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(content).routes(routedServices).build();
             assertThat(content, containsString("\"exampleSetFlag\":"));
 
             String actualContent = apiDocV3Service.transformApiDoc(SERVICE_ID, info);

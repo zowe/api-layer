@@ -12,8 +12,15 @@ package org.zowe.apiml.apicatalog.swagger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.netflix.appinfo.InstanceInfo;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.servers.Server;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springdoc.webflux.api.OpenApiWebfluxResource;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -23,6 +30,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -84,6 +92,47 @@ class ApiDocRetrievalServiceLocalTest {
                 return true;
             })
             .verifyComplete();
+    }
+
+    @Nested
+    class NormalizePathsCustomizer {
+
+        @ParameterizedTest
+        @CsvSource({
+            "/api1/a,/api1/b/c,/api1",
+            "/a/start*,/a/start,/a",
+            "/a/start/*,/a/start,/a/start",
+            "/a/b/c,/a/b/c,/a/b/c",
+            "/a/b/c,/a/b/c/,/a/b/c",
+            "/a/b/c/,/a/b/c/,/a/b/c",
+            "/a/b*/c/**,/a/b*/c**,/a"
+        })
+        void givenTwoPatterns_whenGetCommonBasePath_thenGetBasePath(String pattern1, String pattern2, String basePath) {
+            assertEquals(basePath, service.getCommonBasePath(Arrays.asList(pattern1, pattern2)));
+        }
+
+        @Test
+        void givenOpenApiAndPath_whenNormalizePaths_thenModifyOpenApi() {
+            OpenAPI openApi = new OpenAPI();
+
+            var server = new Server();
+            server.setUrl("https://localhost:10014");
+            openApi.setServers(Collections.singletonList(server));
+
+            var paths = new Paths();
+            paths.addPathItem("/apicatalog/api/v1/endpoint", new PathItem());
+            openApi.setPaths(paths);
+
+            service.normalizePathsCustomizer(Collections.singletonList("/apicatalog/api/v1/"))
+                .customise(openApi);
+
+            assertEquals(1, openApi.getServers().size());
+            assertEquals("https://localhost:10014/apicatalog/api/v1", server.getUrl());
+
+            assertEquals(1, openApi.getPaths().size());
+            assertNotNull(openApi.getPaths().get("/endpoint"));
+        }
+
     }
 
 }

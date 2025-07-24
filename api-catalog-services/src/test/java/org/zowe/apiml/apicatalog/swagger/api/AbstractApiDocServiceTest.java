@@ -89,7 +89,7 @@ class AbstractApiDocServiceTest {
 
     @Test
     void givenNullApiInfo_whenGetRoutedServiceByApiInfo_thenReturnNull() {
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, null, null);
+        ApiDocInfo apiDocInfo = ApiDocInfo.builder().build();
         assertNull(abstractApiDocService.getRoutedServiceByApiInfo(apiDocInfo, "/"));
     }
 
@@ -109,7 +109,7 @@ class AbstractApiDocServiceTest {
         routedServices.addRoutedService(routedService2);
 
         ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", null, "https://localhost:10014/apicatalog/api-doc", null, "https://www.zowe.org");
-        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+        ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(apiDocContent).routes(routedServices).build();
 
         abstractApiDocService.preparePath(openAPI.getPaths(), apiDocPath, apiDocInfo, "/api/v1/api-doc", "/", "apicatalog");
 
