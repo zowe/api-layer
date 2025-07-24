@@ -18,7 +18,6 @@ import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -106,22 +105,14 @@ public class ModulithConfig {
 
         var scheme = https ? "https" : "http";
 
-        Map<String, String> metadata = new HashMap<>();
-        switch (serviceId) {
-            case "gateway":
-                metadata = eurekaInstanceGw.getMetadataMap();
-                metadata.put("management.port", "10010");
-                break;
-            case "cachingservice":
-                metadata = cachingServiceEurekaInstanceConfigBean.getMetadataMap();
-                break;
-            case "apicatalog":
-                metadata = catalogEurekaInstanceConfigBean.getMetadataMap();
-                break;
-            default:
-        }
+        Map<String, String> metadata = switch (serviceId) {
+            case "gateway" -> eurekaInstanceGw.getMetadataMap();
+            case "cachingservice" -> cachingServiceEurekaInstanceConfigBean.getMetadataMap();
+            case "apicatalog" -> catalogEurekaInstanceConfigBean.getMetadataMap();
+            default -> new HashMap<>();
+        };
 
-        String homePagePath = metadata.getOrDefault("apiml.homePagePath", "");
+        String homePagePath = metadata.getOrDefault("apiml.homePagePath", "/");
 
         return InstanceInfo.Builder.newBuilder()
                 .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
@@ -151,7 +142,6 @@ public class ModulithConfig {
                 .orElse(null);
     }
 
-    @PostConstruct
     void createLocalInstances() {
         instances.put(CoreService.GATEWAY.getServiceId(), getInstanceInfo(CoreService.GATEWAY.getServiceId()));
         instances.put(CoreService.DISCOVERY.getServiceId(), getInstanceInfo(CoreService.DISCOVERY.getServiceId()));
@@ -162,6 +152,7 @@ public class ModulithConfig {
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationStart() {
+        createLocalInstances();
         ApimlInstanceRegistry registry = getRegistry();
         instances.forEach((key, value) -> registry.registerStatically(instances.get(key), false, CoreService.GATEWAY.getServiceId().equalsIgnoreCase(key)));
 

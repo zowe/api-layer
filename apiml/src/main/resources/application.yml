@@ -149,6 +149,7 @@ apiml:
                             externalUrl: ${apiml.service.externalUrl:${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}}
                         authentication:
                             sso: true
+                    management.port: 10010
         registry:
             enabled: false
             metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
