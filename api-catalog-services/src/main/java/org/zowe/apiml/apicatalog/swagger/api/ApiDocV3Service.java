@@ -22,6 +22,7 @@ import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.security.SecurityScheme;
@@ -78,6 +79,13 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         }
         updateSwaggerUrl(openAPI, serviceId, apiDocInfo.getApiInfo(), hidden, scheme);
         updateExternalDoc(openAPI, apiDocInfo);
+
+        if (openAPI.getInfo() == null) {
+            openAPI.setInfo(new Info());
+        }
+        if (openAPI.getInfo().getVersion() == null) {
+            openAPI.getInfo().setVersion(apiDocInfo.getApiInfo().getVersion());
+        }
 
         try {
             return objectMapper().writeValueAsString(openAPI);

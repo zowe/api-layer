@@ -11,10 +11,7 @@
 package org.zowe.apiml.apicatalog.swagger.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.swagger.models.ExternalDocs;
-import io.swagger.models.Path;
-import io.swagger.models.Scheme;
-import io.swagger.models.Swagger;
+import io.swagger.models.*;
 import io.swagger.parser.SwaggerParser;
 import io.swagger.util.Json;
 import jakarta.validation.UnexpectedTypeException;
@@ -54,6 +51,13 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
         }
         updateSwaggerUrl(swagger, serviceId, apiDocInfo.getApiInfo(), hidden, scheme);
         updateExternalDoc(swagger, apiDocInfo);
+
+        if (swagger.getInfo() == null) {
+            swagger.setInfo(new Info());
+        }
+        if (swagger.getInfo().getVersion() == null) {
+            swagger.getInfo().setVersion(apiDocInfo.getApiInfo().getVersion());
+        }
 
         try {
             return Json.mapper().writeValueAsString(swagger);
