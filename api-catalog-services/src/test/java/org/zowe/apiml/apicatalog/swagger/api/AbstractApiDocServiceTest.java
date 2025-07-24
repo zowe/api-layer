@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.apicatalog.swagger.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.api.dummy.DummyApiDocService;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedService;
@@ -49,7 +50,7 @@ class AbstractApiDocServiceTest {
     @BeforeEach
     void setUp() {
         GatewayClient gatewayClient = new GatewayClient(getProperties());
-        abstractApiDocService = new DummyApiDocService(gatewayClient);
+        abstractApiDocService = new DummyApiDocService(ApplicationInfo.builder().build(), gatewayClient);
     }
 
     @Test
