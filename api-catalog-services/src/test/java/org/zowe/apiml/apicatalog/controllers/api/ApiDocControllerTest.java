@@ -66,7 +66,7 @@ class ApiDocControllerTest {
                         assertEquals(API_DOC, res.getBody());
                     })
                     .verifyComplete();
-                assertTrue(elapsed.getSeconds() == 0L);
+                assertEquals(0L, elapsed.getSeconds());
             }
 
             @Test
@@ -74,9 +74,9 @@ class ApiDocControllerTest {
                 when(mockApiDocService.retrieveApiDoc("service", "1.0.0")).thenThrow(new ApiDocNotFoundException("error"));
 
                 var elapsed = StepVerifier.create(Mono.defer(() -> underTest.getApiDocInfo("service", "1.0.0")))
-                    .expectErrorMatches(e -> e instanceof ApiDocNotFoundException)
+                    .expectErrorMatches(ApiDocNotFoundException.class::isInstance)
                     .verify();
-                assertTrue(elapsed.toSeconds() == 0L);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
         }
@@ -94,7 +94,7 @@ class ApiDocControllerTest {
                         assertEquals(API_DOC, res.getBody());
                     })
                     .verifyComplete();
-                assertTrue(elapsed.getSeconds() == 0L);
+                assertEquals(0L, elapsed.getSeconds());
             }
 
             @Test
@@ -102,9 +102,9 @@ class ApiDocControllerTest {
                 when(mockApiDocService.retrieveDefaultApiDoc("service")).thenThrow(new ApiDocNotFoundException("error"));
 
                 var elapsed = StepVerifier.create(Mono.defer(() -> underTest.getDefaultApiDocInfo("service")))
-                    .expectErrorMatches(e -> e instanceof ApiDocNotFoundException)
+                    .expectErrorMatches(ApiDocNotFoundException.class::isInstance)
                     .verify();
-                assertTrue(elapsed.toSeconds() == 0L);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
         }
@@ -126,8 +126,9 @@ class ApiDocControllerTest {
                         assertTrue(res.getBody().contains("<title>Api Change Log</title>"));
                     })
                     .verifyComplete();
-                assertTrue(elapsed.toSeconds() == 0L);
+                assertEquals(0L, elapsed.toSeconds());
             }
+
         }
 
     }

@@ -35,7 +35,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
@@ -88,7 +90,7 @@ class ClientCertFilterFactoryTest {
 
             var elapsed = StepVerifier.create(filter.filter(exchange, chain))
                 .verifyComplete();
-            assertTrue(elapsed.toSeconds() == 0L);
+            assertEquals(0L, elapsed.toSeconds());
 
             assertNull(exchange.getRequest().getHeaders().get(ApimlConstants.AUTH_FAIL_HEADER));
             assertNotNull(exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER));

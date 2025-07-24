@@ -58,7 +58,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_ID;
@@ -198,7 +197,7 @@ class ServicesControllerTests {
                             }));
                     })
                     .verifyComplete();
-                assertTrue(elapsed.toSeconds() == 0L);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Test
@@ -221,7 +220,7 @@ class ServicesControllerTests {
                     })
                     .verifyComplete();
 
-                assertTrue(elapsed.toSeconds() == 0L);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Test
@@ -245,7 +244,7 @@ class ServicesControllerTests {
                             }));
                     })
                     .verifyComplete();
-                assertTrue(elapsed.toSeconds() == 0L);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             private void assertThereIsOneContainer(ResponseEntity<List<APIContainer>> containers) {
@@ -295,7 +294,7 @@ class ServicesControllerTests {
                 })
                 .verifyComplete();
 
-            assertTrue(elapsed.toSeconds() == 0L);
+            assertEquals(0L, elapsed.toSeconds());
         }
 
         @Test
@@ -314,7 +313,7 @@ class ServicesControllerTests {
                 })
                 .verifyComplete();
 
-            assertTrue(elapsed.toSeconds() == 0L);
+            assertEquals(0L, elapsed.toSeconds());
         }
     }
 

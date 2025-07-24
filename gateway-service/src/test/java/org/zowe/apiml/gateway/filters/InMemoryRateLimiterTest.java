@@ -43,7 +43,7 @@ class InMemoryRateLimiterTest {
         var elapsed = StepVerifier.create(rateLimiter.isAllowed(routeId, userId))
             .assertNext(response -> assertTrue(response.isAllowed()))
             .verifyComplete();
-        assertTrue(elapsed.toSeconds() == 0L);
+        assertEquals(0L, elapsed.toSeconds());
     }
 
     @Test
@@ -54,13 +54,13 @@ class InMemoryRateLimiterTest {
             var elapsed = StepVerifier.create(rateLimiter.isAllowed(routeId, userId))
                 .assertNext(response -> assertTrue(response.isAllowed(), "Request " + (count + 1) + " should be allowed"))
                 .verifyComplete();
-            assertTrue(elapsed.toSeconds() == 0L);
+            assertEquals(0L, elapsed.toSeconds());
         }
         // Last request should be denied
         var elapsed = StepVerifier.create(rateLimiter.isAllowed(routeId, userId))
             .assertNext(response -> assertFalse(response.isAllowed(), "Fourth request should not be allowed"))
             .verifyComplete();
-        assertTrue(elapsed.toSeconds() == 0L);
+        assertEquals(0L, elapsed.toSeconds());
     }
 
     @Test
@@ -76,20 +76,20 @@ class InMemoryRateLimiterTest {
                     assertTrue(response.isAllowed(), "Request " + (count + 1) + " for client1 should be allowed");
                 })
                 .verifyComplete();
-            assertTrue(elapsed.toSeconds() == 0L);
+            assertEquals(0L, elapsed.toSeconds());
         }
 
         // Fourth request for client1 should be denied
         var elapsed = StepVerifier.create(rateLimiter.isAllowed(routeId, clientId1))
             .assertNext(response -> assertFalse(response.isAllowed(), "Fourth request for client1 should not be allowed"))
             .verifyComplete();
-        assertTrue(elapsed.toSeconds() == 0L);
+        assertEquals(0L, elapsed.toSeconds());
 
         // Allow first request for client2, it should be allowed since it's a separate bucket
         elapsed = StepVerifier.create(rateLimiter.isAllowed(routeId, clientId2))
             .assertNext(response -> assertTrue(response.isAllowed(), "First request for client2 should be allowed"))
             .verifyComplete();
-        assertTrue(elapsed.toSeconds() == 0L);
+        assertEquals(0L, elapsed.toSeconds());
     }
 
     @Test

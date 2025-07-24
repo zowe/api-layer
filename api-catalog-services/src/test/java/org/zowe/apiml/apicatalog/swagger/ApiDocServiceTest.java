@@ -51,7 +51,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
@@ -160,7 +159,7 @@ class ApiDocServiceTest {
                     })
                     .verifyComplete();
 
-                assertTrue(elapsed.toSeconds() == 0L);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Nested
@@ -240,7 +239,7 @@ class ApiDocServiceTest {
                         assertEquals(generatedResponseBody, actualApiDoc.replaceAll("\\s+", ""));
                     })
                     .verifyComplete();
-                assertTrue(elapsed.toSeconds() == 0L);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Test
@@ -259,7 +258,7 @@ class ApiDocServiceTest {
                     })
                     .verifyComplete();
 
-                assertTrue(elapsed.toSeconds() == 0L);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Test
@@ -278,7 +277,7 @@ class ApiDocServiceTest {
                     })
                     .verifyComplete();
 
-                assertTrue(elapsed.toSeconds() == 0L);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Test
@@ -327,7 +326,7 @@ class ApiDocServiceTest {
                     })
                     .verifyComplete();
 
-                assertTrue(elapsed.toSeconds() == 0L);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Test
@@ -354,7 +353,7 @@ class ApiDocServiceTest {
                     })
                     .verifyComplete();
 
-                assertTrue(elapsed.toSeconds() == 0L);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Test
@@ -379,7 +378,7 @@ class ApiDocServiceTest {
                     })
                     .verifyComplete();
 
-                assertTrue(elapsed.toSeconds() == 0L);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Test
@@ -398,7 +397,7 @@ class ApiDocServiceTest {
                     })
                     .verifyComplete();
 
-                assertTrue(elapsed.toSeconds() == 0L);
+                assertEquals(0L, elapsed.toSeconds());
             }
         }
 
