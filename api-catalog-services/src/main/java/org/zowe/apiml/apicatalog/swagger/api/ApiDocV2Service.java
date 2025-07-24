@@ -44,6 +44,13 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
             throw new UnexpectedTypeException(String.format("The Swagger definition for service '%s' was retrieved but was not a valid JSON document.", serviceId));
         }
 
+        if (swagger.getInfo() == null) {
+            swagger.setInfo(new Info());
+        }
+        if (swagger.getInfo().getVersion() == null) {
+            swagger.getInfo().setVersion(apiDocInfo.getApiInfo().getVersion());
+        }
+
         boolean hidden = swagger.getTag(HIDDEN_TAG) != null;
 
         if (!isDefinedOnlyBypassRoutes(apiDocInfo) && !(apiDocInfo.isLocal() && applicationInfo.isModulith())) {
@@ -52,13 +59,6 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
         }
         updateSwaggerUrl(swagger, serviceId, apiDocInfo.getApiInfo(), hidden, scheme);
         updateExternalDoc(swagger, apiDocInfo);
-
-        if (swagger.getInfo() == null) {
-            swagger.setInfo(new Info());
-        }
-        if (swagger.getInfo().getVersion() == null) {
-            swagger.getInfo().setVersion(apiDocInfo.getApiInfo().getVersion());
-        }
 
         try {
             return Json.mapper().writeValueAsString(swagger);

@@ -14,6 +14,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.swagger.models.*;
+import io.swagger.parser.SwaggerParser;
+import io.swagger.util.Json;
 import jakarta.validation.UnexpectedTypeException;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.collection.IsMapContaining;
@@ -86,8 +88,10 @@ class ApiDocV2ServiceTest {
 
     @Nested
     class WhenApiDocTransform {
+
         @Nested
         class ThenCheckUpdatedValues {
+
             @Test
             void givenSwaggerValidJson() {
                 Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
@@ -311,6 +315,21 @@ class ApiDocV2ServiceTest {
                     assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey(dummySwaggerObject.getBasePath() + k))
                 );
             }
+
+            @Test
+            void givenOpenApiWithoutVersion() throws JsonProcessingException {
+                SwaggerParser swaggerParser = new SwaggerParser();
+                Swagger swagger = new Swagger();
+                String transformedOpenApi = apiDocV2Service.transformApiDoc("serviceId", ApiDocInfo.builder()
+                    .apiInfo(ApiInfo.builder().version("1.2.3").build())
+                    .apiDocContent(Json.mapper().writeValueAsString(swagger))
+                    .build()
+                );
+                swagger = swaggerParser.readWithInfo(transformedOpenApi).getSwagger();
+
+                assertEquals("1.2.3", swagger.getInfo().getVersion());
+            }
+
         }
 
         @Test
@@ -445,4 +464,5 @@ class ApiDocV2ServiceTest {
             .hostname("localhost:10010")
             .build();
     }
+
 }

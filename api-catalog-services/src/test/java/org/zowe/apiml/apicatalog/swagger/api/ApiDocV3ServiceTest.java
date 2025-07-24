@@ -19,6 +19,7 @@ import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.tags.Tag;
+import io.swagger.v3.parser.OpenAPIV3Parser;
 import jakarta.validation.UnexpectedTypeException;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,8 +73,10 @@ class ApiDocV3ServiceTest {
 
     @Nested
     class WhenApiDocTransform {
+
         @Nested
         class ThenCheckUpdatedValues {
+
             @Test
             void givenOpenApiValidJson() {
                 List<Server> servers = new ArrayList<>();
@@ -169,10 +172,26 @@ class ApiDocV3ServiceTest {
                 assertEquals(EXTERNAL_DOCUMENTATION, actualSwagger.getExternalDocs().getDescription());
                 assertEquals(apiDocInfo.getApiInfo().getDocumentationUrl(), actualSwagger.getExternalDocs().getUrl());
             }
+
+            @Test
+            void givenOpenApiWithoutVersion() throws JsonProcessingException {
+                OpenAPIV3Parser openAPIV3Parser = new OpenAPIV3Parser();
+                OpenAPI openAPI = new OpenAPI();
+                String transformedOpenApi = apiDocV3Service.transformApiDoc("serviceId", ApiDocInfo.builder()
+                    .apiInfo(ApiInfo.builder().version("1.2.3").build())
+                    .apiDocContent(apiDocV3Service.objectMapper().writeValueAsString(openAPI))
+                    .build()
+                );
+                openAPI = openAPIV3Parser.readContents(transformedOpenApi).getOpenAPI();
+
+                assertEquals("1.2.3", openAPI.getInfo().getVersion());
+            }
+
         }
 
         @Nested
         class ThenThrowException {
+
             @Test
             void givenEmptyJson() {
                 String invalidJson = "";
@@ -194,6 +213,7 @@ class ApiDocV3ServiceTest {
                 Exception exception = assertThrows(UnexpectedTypeException.class, () -> apiDocV3Service.transformApiDoc(SERVICE_ID, apiDocInfo));
                 assertEquals(error, exception.getMessage());
             }
+
         }
 
         /**
@@ -263,6 +283,7 @@ class ApiDocV3ServiceTest {
             String actualContent = apiDocV3Service.transformApiDoc(SERVICE_ID, info);
             assertThat(actualContent, not(containsString("\"exampleSetFlag\":")));
         }
+
     }
 
     private String convertOpenApiToJson(OpenAPI openApi) {
@@ -343,4 +364,5 @@ class ApiDocV3ServiceTest {
             .hostname("localhost:10010")
             .build();
     }
+
 }

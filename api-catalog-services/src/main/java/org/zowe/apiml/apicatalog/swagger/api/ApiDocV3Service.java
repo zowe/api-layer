@@ -72,6 +72,13 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
             }
         }
 
+        if (openAPI.getInfo() == null) {
+            openAPI.setInfo(new Info());
+        }
+        if (openAPI.getInfo().getVersion() == null) {
+            openAPI.getInfo().setVersion(apiDocInfo.getApiInfo().getVersion());
+        }
+
         boolean hidden = isHidden(openAPI.getTags());
 
         if (!isDefinedOnlyBypassRoutes(apiDocInfo) && !(apiDocInfo.isLocal() && applicationInfo.isModulith())) {
@@ -80,13 +87,6 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         }
         updateSwaggerUrl(openAPI, serviceId, apiDocInfo.getApiInfo(), hidden, scheme);
         updateExternalDoc(openAPI, apiDocInfo);
-
-        if (openAPI.getInfo() == null) {
-            openAPI.setInfo(new Info());
-        }
-        if (openAPI.getInfo().getVersion() == null) {
-            openAPI.getInfo().setVersion(apiDocInfo.getApiInfo().getVersion());
-        }
 
         try {
             return objectMapper().writeValueAsString(openAPI);
@@ -205,7 +205,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         return tags != null && tags.stream().anyMatch(tag -> tag.getName().equals(HIDDEN_TAG));
     }
 
-    private ObjectMapper objectMapper() {
+    ObjectMapper objectMapper() {
         return new ObjectMapper()
             .setSerializationInclusion(JsonInclude.Include.NON_NULL)
             .registerModule(new SimpleModule().addSerializer(SecurityScheme.class, new SecuritySchemeSerializer()))
@@ -214,4 +214,5 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
             .addMixIn(Schema.class, SchemaMixin.class)
             .addMixIn(MediaType.class, MediaTypeMixin.class);
     }
+
 }
