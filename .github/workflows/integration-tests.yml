@@ -1814,7 +1814,7 @@ jobs:
             -   name: Run startup check
                 timeout-minutes: 4
                 run: >
-                    ./gradlew runStartUpCheck --info --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
+                    ./gradlew runStartUpCheck --info --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1 -Dgateway.instances=1
             -   name: Show status when APIML is not ready yet
                 if: failure()
                 shell: bash
