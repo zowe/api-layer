@@ -37,7 +37,7 @@ describe('>>> Multi-tenancy deployment test', () => {
         cy.contains('Version: ');
         cy.get('#grid-container').contains('API Gateway (apiml2)').click();
 
-        cy.visit(`${Cypress.env('catalogHomePage')}/#/service/apiml2`);
+        cy.visit(`${Cypress.env('catalogHomePage')}/index.html#/service/apiml2`);
 
         const baseUrl = `${Cypress.env('catalogHomePage')}`;
 
@@ -63,7 +63,7 @@ describe('>>> Multi-tenancy deployment test', () => {
         cy.contains('Version: ');
         cy.contains('API Gateway').click();
 
-        cy.visit(`${Cypress.env('catalogHomePage')}/#/service/gateway`);
+        cy.visit(`${Cypress.env('catalogHomePage')}/index.html#/service/gateway`);
 
         const baseUrl = `${Cypress.env('catalogHomePage')}`;
 

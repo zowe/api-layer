@@ -69,8 +69,9 @@ dependencies {
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.webflux
     implementation libs.spring.cloud.starter.eureka.client
-    implementation libs.spring.doc
+    implementation libs.spring.doc.webflux.ui
     implementation libs.spring.retry
 
     implementation libs.apache.velocity
@@ -89,6 +90,7 @@ dependencies {
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.spring.mock.mvc
     testImplementation(testFixtures(project(":apiml-common")))
+    testImplementation libs.reactor.test
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

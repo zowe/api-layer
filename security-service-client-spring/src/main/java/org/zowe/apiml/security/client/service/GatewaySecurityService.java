@@ -45,7 +45,8 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class GatewaySecurityService {
+public class GatewaySecurityService implements GatewaySecurity {
+
     private static final String MESSAGE_KEY_STRING = "messageKey\":\"";
 
     private final GatewayClient gatewayClient;
@@ -54,13 +55,7 @@ public class GatewaySecurityService {
     private final RestResponseHandler responseHandler;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    /**
-     * Logs into the gateway with username and password, and retrieves valid JWT token
-     *
-     * @param username Username
-     * @param password Password
-     * @return Valid JWT token for the supplied credentials
-     */
+    @Override
     public Optional<String> login(String username, char[] password, char[] newPassword) {
         ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
@@ -97,12 +92,7 @@ public class GatewaySecurityService {
         return Optional.empty();
     }
 
-    /**
-     * Verifies JWT token validity and returns JWT token data
-     *
-     * @param token JWT token to be validated
-     * @return JWT token data as {@link QueryResponse}
-     */
+    @Override
     public QueryResponse query(String token) {
         ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
@@ -133,6 +123,7 @@ public class GatewaySecurityService {
         return null;
     }
 
+    @Override
     public QueryResponse verifyOidc(String token) {
         ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),

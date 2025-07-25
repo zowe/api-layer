@@ -12,6 +12,9 @@ package org.zowe.apiml.gateway.filters;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +27,7 @@ import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import javax.naming.ldap.LdapName;
 import javax.security.auth.x500.X500Principal;
@@ -38,20 +42,24 @@ import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
 
+@ExtendWith(MockitoExtension.class)
 class X509FilterFactoryTest {
+
     public static final String ALL_HEADERS = "X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName";
+
     private final X509Certificate[] x509Certificates = new X509Certificate[1];
 
-    SslInfo sslInfo = mock(SslInfo.class);
-    ServerWebExchange exchange = mock(ServerWebExchange.class);
-    ServerHttpRequest request = mock(ServerHttpRequest.class);
-    ServerHttpResponse response = mock(ServerHttpResponse.class);
-    X509Certificate certificate = mock(X509Certificate.class);
-    GatewayFilterChain chain = mock(GatewayFilterChain.class);
+    @Mock SslInfo sslInfo;
+    @Mock ServerWebExchange exchange;
+    @Mock ServerHttpRequest request;
+    @Mock ServerHttpResponse response;
+    @Mock X509Certificate certificate;
+    @Mock GatewayFilterChain chain;
+
     X509FilterFactory factory;
     X509FilterFactory.Config config;
     MessageService messageService = YamlMessageServiceInstance.getInstance();
@@ -70,35 +78,36 @@ class X509FilterFactoryTest {
         ServerWebExchange.Builder exchangeBuilder = new ServerWebExchangeBuilderMock();
         x509Certificates[0] = certificate;
 
-        when(exchange.getRequest()).thenReturn(request);
+        lenient().when(exchange.getRequest()).thenReturn(request);
 
-        when(request.getSslInfo()).thenReturn(sslInfo);
-        when(request.mutate()).thenReturn(builder);
+        lenient().when(request.getSslInfo()).thenReturn(sslInfo);
+        lenient().when(request.mutate()).thenReturn(builder);
 
-        when(sslInfo.getPeerCertificates()).thenReturn(x509Certificates);
+        lenient().when(sslInfo.getPeerCertificates()).thenReturn(x509Certificates);
 
-        when(certificate.getSubjectDN()).thenReturn(new X500Principal("CN=user, OU=JavaSoft, O=Sun Microsystems, C=US"));
-        when(exchange.mutate()).thenReturn(exchangeBuilder);
+        lenient().when(certificate.getSubjectX500Principal()).thenReturn(new X500Principal("CN=user, OU=JavaSoft, O=Sun Microsystems, C=US"));
+        lenient().when(exchange.mutate()).thenReturn(exchangeBuilder);
 
         Map<String, Object> attributes = new HashMap<>();
-        when(exchange.getAttributes()).thenReturn(attributes);
+        lenient().when(exchange.getAttributes()).thenReturn(attributes);
 
-        when(chain.filter(exchange)).thenReturn(Mono.empty());
+        lenient().when(chain.filter(exchange)).thenReturn(Mono.empty());
     }
 
     @Test
     void givenCertificateInRequest_thenPopulateHeaders() throws Exception {
         GatewayFilter filter = factory.apply(config);
         when(certificate.getEncoded()).thenReturn(new byte[2]);
-        Mono<Void> result = filter.filter(exchange, chain);
-        result.block();
+
+        StepVerifier.create(filter.filter(exchange, chain))
+            .verifyComplete();
+
         assertEquals("user", exchange.getRequest().getHeaders().get("X-Certificate-CommonName").get(0));
         assertEquals(Boolean.TRUE, exchange.getAttributes().get(HTTP_CLIENT_USE_CLIENT_CERTIFICATE));
     }
 
     @Test
     void givenCertificateWithIncorrectEncoding_thenProvideInfoInHeader() throws Exception {
-
         GatewayFilter filter = factory.apply(config);
         when(certificate.getEncoded()).thenThrow(new CertificateEncodingException("incorrect encoding"));
         Mono<Void> result = filter.filter(exchange, chain);

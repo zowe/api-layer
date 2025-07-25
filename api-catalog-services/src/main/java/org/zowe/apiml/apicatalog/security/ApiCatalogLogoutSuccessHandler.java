@@ -10,52 +10,47 @@
 
 package org.zowe.apiml.apicatalog.security;
 
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
-
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseCookie;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.server.WebFilterExchange;
+import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
+import org.springframework.web.server.WebSession;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import reactor.core.publisher.Mono;
 
 /**
  * Handles logout success by removing cookie and clearing security context
  */
 @RequiredArgsConstructor
-public class ApiCatalogLogoutSuccessHandler extends SimpleUrlLogoutSuccessHandler {
+public class ApiCatalogLogoutSuccessHandler implements ServerLogoutSuccessHandler {
 
     private final AuthConfigurationProperties authConfigurationProperties;
 
     /**
      * Clears cookie, session, context and sets response code
      *
-     * @param httpServletRequest  Http request
-     * @param httpServletResponse Http response
+     * @param exchange            Request exchange
      * @param authentication      Valid authentication
      */
     @Override
-    public void onLogoutSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
-                                Authentication authentication) {
-        HttpSession session = httpServletRequest.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
-        httpServletResponse.setStatus(HttpServletResponse.SC_OK);
-
-        // Set the cookie to null and expired
-        Cookie tokenCookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), null);
-        tokenCookie.setPath(authConfigurationProperties.getCookieProperties().getCookiePath());
-        tokenCookie.setSecure(true);
-        tokenCookie.setHttpOnly(true);
-        tokenCookie.setMaxAge(0);
-        httpServletResponse.addCookie(tokenCookie);
-
-        SecurityContext context = SecurityContextHolder.getContext();
-        context.setAuthentication(null);
-        SecurityContextHolder.clearContext();
+    public Mono<Void> onLogoutSuccess(WebFilterExchange exchange, Authentication authentication) {
+        return exchange.getExchange().getSession()
+            .flatMap(WebSession::invalidate)
+            .then(Mono.defer(() -> {
+                var response = exchange.getExchange().getResponse();
+                response.addCookie(ResponseCookie.from(authConfigurationProperties.getCookieProperties().getCookieName())
+                    .path(authConfigurationProperties.getCookieProperties().getCookiePath())
+                    .secure(true)
+                    .httpOnly(true)
+                    .maxAge(0L)
+                    .build()
+                );
+                response.setStatusCode(HttpStatusCode.valueOf(HttpServletResponse.SC_OK));
+                return Mono.empty();
+            }));
     }
+
 }

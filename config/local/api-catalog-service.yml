@@ -1,5 +1,9 @@
 spring.profiles.active: debug,diag
 
+logging:
+    level:
+        web: debug
+
 eureka:
     client:
         instanceInfoReplicationIntervalSeconds: 30

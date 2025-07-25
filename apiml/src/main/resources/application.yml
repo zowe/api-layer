@@ -57,10 +57,47 @@ springdoc:
           paths-to-match: /discovery/api/v1/**
         - group: zaas
           paths-to-match: /zaas/api/v1/**
+        - group: apicatalog
+          paths-to-match: /apicatalog/api/v1/**
+
 
 apiml:
     catalog:
         serviceId: apicatalog
+        eureka:
+            instance:
+                metadata-map:
+                    apiml:
+                        apiBasePath: /apicatalog/api/v1
+                        homePagePath: /apicatalog
+                        catalog:
+                            tile:
+                                id: apimediationlayer
+                                title: API Mediation Layer API
+                                description: The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.
+                                version: 1.0.0
+
+                        routes:
+                            ui-v1:
+                                gatewayUrl: "/ui/v1"
+                                serviceUrl: /apicatalog
+                            api-v1:
+                                gatewayUrl: "/api/v1"
+                                serviceUrl: /apicatalog
+
+                        apiInfo:
+                            -   apiId: zowe.apiml.apicatalog
+                                version: 1.0.0
+                                gatewayUrl: api/v1
+                                swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/v3/api-docs/apicatalog
+
+                        service:
+                            title: API Catalog
+                            description: API Catalog service to display service details and API documentation for discovered API services.
+
+                        authentication:
+                            sso: true
+                            scheme: zoweJwt
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
         # Not used in HTTPS mode and not applicable for Zowe
@@ -112,6 +149,7 @@ apiml:
                             externalUrl: ${apiml.service.externalUrl:${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}}
                         authentication:
                             sso: true
+                    management.port: 10010
         registry:
             enabled: false
             metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
@@ -150,7 +188,7 @@ apiml:
         timeToLive: 10000
     routing:
         instanceIdHeader: false
-        ignoredServices: discovery,zaas # to disable routing to the Discovery and ZAAS service
+        ignoredServices: discovery,zaas,apicatalog,cachingservice # to disable routing to the Discovery and ZAAS service + local services on Modulith
     service:
         apimlId: apiml1
         corsEnabled: true
