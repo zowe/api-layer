@@ -81,6 +81,12 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
 
         boolean hidden = isHidden(openAPI.getTags());
 
+        /**
+         * When microservices are in place it is necessary to use path updates, it basically adds into the swagger
+         * routing. In case of modulith it is not wanted. The paths are the final one (REST calls does not use Gateway).
+         * One specific case is microservices and API Catalog. Even the api doc is downloaded locally it has to be
+         * handled by Gateway, so the routes should be added.
+         */
         if (!isDefinedOnlyBypassRoutes(apiDocInfo) && !(apiDocInfo.isLocal() && applicationInfo.isModulith())) {
             updatePaths(openAPI, serviceId, apiDocInfo, hidden);
             updateServer(openAPI);
