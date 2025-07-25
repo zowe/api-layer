@@ -43,7 +43,7 @@ services:
       - apiml_shared
     container_name: api-catalog-services
     volumes:
-      - /Users/pc891986/Projects/api-layer-v3/config/docker/api-defs:/api-defs
+      - /api-defs:/api-defs # Update to an existing local directory
     environment:
       - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
       - APIML_SERVICE_HOSTNAME=api-catalog-services
@@ -58,7 +58,7 @@ services:
       - apiml2_net
       - apiml_shared
     volumes:
-      - /Users/pc891986/Projects/api-layer-v3/config/docker/api-defs:/api-defs
+      - /api-defs:/api-defs # Update to an existing local directory
     container_name: apiml-2
     environment:
       - APIML_SECURITY_AUTH_PROVIDER=saf

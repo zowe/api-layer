@@ -37,10 +37,9 @@ out/
 .vscode/
 
 ## Caching service infinispan artifacts
-
-
 # created by infinispan during build
 index
 *.lck
 ispn12.*
 *.state
+

@@ -38,7 +38,7 @@ public class SecurityConfiguration {
     private boolean isAttlsEnabled;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         HttpSecurity newConf = http.csrf(AbstractHttpConfigurer::disable) // NOSONAR
             .authorizeHttpRequests(requests -> requests
 //                .requestMatchers("/api/v3/graphql/**").authenticated()
@@ -54,7 +54,7 @@ public class SecurityConfiguration {
 
 
     @Bean
-    public InMemoryUserDetailsManager userDetailsService() {
+    InMemoryUserDetailsManager userDetailsService() {
         UserDetails user = User.withDefaultPasswordEncoder()
             .username("user").password("pass").authorities(new SimpleGrantedAuthority("ADMIN"))
             .build();
@@ -63,7 +63,7 @@ public class SecurityConfiguration {
 
 
     @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
+    WebSecurityCustomizer webSecurityCustomizer() {
         StrictHttpFirewall firewall = new StrictHttpFirewall();
         firewall.setAllowUrlEncodedSlash(true);
         firewall.setAllowUrlEncodedDoubleSlash(true);
@@ -76,5 +76,7 @@ public class SecurityConfiguration {
             web.httpFirewall(firewall);
             web.ignoring().requestMatchers("/api/v1/**");
         };
+
     }
+
 }
