@@ -29,6 +29,7 @@ import org.zowe.apiml.product.version.BuildInfo;
     "org.zowe.apiml.product.security",
     "org.zowe.apiml.product.web",
     "org.zowe.apiml.product.gateway",
+    "org.zowe.apiml.product.service",
     "org.zowe.apiml.filter"
 })
 @EnableScheduling

@@ -151,9 +151,9 @@ else
 fi
 
 ZOWE_CONSOLE_LOG_CHARSET=UTF-8
-APIML_LOADER_PATH=${COMMON_LIB}
 if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
+    APIML_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
 
     JAVA_VERSION=$(${JAVA_HOME}/bin/javap -J-Xms4m -J-Xmx16m -verbose java.lang.String \
         | grep "major version" \
@@ -162,6 +162,8 @@ if [ "$(uname)" = "OS/390" ]; then
     if [ $JAVA_VERSION -ge 65 ]; then # Java 21
         ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
     fi
+else
+    APIML_LOADER_PATH=${COMMON_LIB}
 fi
 
 # Check if the directory containing the ZAAS shared JARs was set and append it to the ZAAS loader path
@@ -322,6 +324,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     ${QUICK_START} \
     ${ADD_OPENS} \
     ${LOGBACK} \
+    -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_haInstance_id:-localhost} \
     -Dapiml.connection.idleConnectionTimeoutSeconds=${ZWE_configs_apiml_connection_idleConnectionTimeoutSeconds:-${ZWE_components_gateway_apiml_connection_idleConnectionTimeoutSeconds:-5}} \
     -Dapiml.connection.timeout=${ZWE_configs_apiml_connection_timeout:-${ZWE_components_gateway_apiml_connection_timeout:-60000}} \
     -Dapiml.connection.timeToLive=${ZWE_configs_apiml_connection_timeToLive:-${ZWE_components_gateway_apiml_connection_timeToLive:-10000}} \
@@ -344,31 +347,56 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.httpclient.ssl.enabled-protocols=${client_enabled_protocols} \
     -Dapiml.internal-discovery.port=${ZWE_configs_internal_discovery_port:-${ZWE_components_discovery_port:-7553}} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.security.allowTokenRefresh=${ZWE_configs_apiml_security_allowtokenrefresh:-${ZWE_components_gateway_apiml_security_allowtokenrefresh:-false}} \
     -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
     -Dapiml.security.auth.jwt.customAuthHeader=${ZWE_configs_apiml_security_auth_jwt_customAuthHeader:-${ZWE_components_gateway_apiml_security_auth_jwt_customAuthHeader:-}} \
     -Dapiml.security.auth.passticket.customAuthHeader=${ZWE_configs_apiml_security_auth_passticket_customAuthHeader:-${ZWE_components_gateway_apiml_security_auth_passticket_customAuthHeader:-}} \
     -Dapiml.security.auth.passticket.customUserHeader=${ZWE_configs_apiml_security_auth_passticket_customUserHeader:-${ZWE_components_gateway_apiml_security_auth_passticket_customUserHeader:-}} \
+    -Dapiml.security.auth.provider=${ZWE_configs_apiml_security_auth_provider:-${ZWE_components_gateway_apiml_security_auth_provider:-zosmf}} \
+    -Dapiml.security.auth.zosmf.jwtAutoconfiguration=${ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration:-${ZWE_components_gateway_apiml_security_auth_zosmf_jwtAutoconfiguration:-jwt}} \
+    -Dapiml.security.auth.zosmf.serviceId=${ZWE_configs_apiml_security_auth_zosmf_serviceId:-${ZWE_components_gateway_apiml_security_auth_zosmf_serviceId:-ibmzosmf}} \
     -Dapiml.security.authorization.endpoint.enabled=${ZWE_configs_apiml_security_authorization_endpoint_enabled:-${ZWE_components_gateway_apiml_security_authorization_endpoint_enabled:-false}} \
     -Dapiml.security.authorization.endpoint.url=${ZWE_configs_apiml_security_authorization_endpoint_url:-${ZWE_components_gateway_apiml_security_authorization_endpoint_url:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf-auth"}} \
     -Dapiml.security.authorization.provider=${ZWE_configs_apiml_security_authorization_provider:-${ZWE_components_gateway_apiml_security_authorization_provider:-"native"}} \
+    -Dapiml.security.authorization.resourceClass=${ZWE_configs_apiml_security_authorization_resourceClass:-${ZWE_components_gateway_apiml_security_authorization_resourceClass:-ZOWE}} \
+    -Dapiml.security.authorization.resourceNamePrefix=${ZWE_configs_apiml_security_authorization_resourceNamePrefix:-${ZWE_components_gateway_apiml_security_authorization_resourceNamePrefix:-APIML.}} \
+    -Dapiml.security.jwtInitializerTimeout=${ZWE_configs_apiml_security_jwtInitializerTimeout:-${ZWE_components_gateway_apiml_security_jwtInitializerTimeout:-5}} \
+    -Dapiml.security.oidc.enabled=${ZWE_configs_apiml_security_oidc_enabled:-${ZWE_components_gateway_apiml_security_oidc_enabled:-false}} \
+    -Dapiml.security.oidc.identityMapperUrl=${ZWE_configs_apiml_security_oidc_identityMapperUrl:-${ZWE_components_gateway_apiml_security_oidc_identityMapperUrl:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/certificate/dn"}} \
+    -Dapiml.security.oidc.identityMapperUser=${ZWE_configs_apiml_security_oidc_identityMapperUser:-${ZWE_components_gateway_apiml_security_oidc_identityMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}}} \
+    -Dapiml.security.oidc.jwks.refreshInternalHours=${ZWE_configs_apiml_security_oidc_jwks_refreshInternalHours:-${ZWE_components_gateway_apiml_security_oidc_jwks_refreshInternalHours:-1}} \
+    -Dapiml.security.oidc.jwks.uri=${ZWE_configs_apiml_security_oidc_jwks_uri:-${ZWE_components_gateway_apiml_security_oidc_jwks_uri:-}} \
+    -Dapiml.security.oidc.registry=${ZWE_configs_apiml_security_oidc_registry:-${ZWE_components_gateway_apiml_security_oidc_registry:-}} \
+    -Dapiml.security.oidc.userInfo.uri=${ZWE_configs_apiml_security_oidc_userInfo_uri:-${ZWE_components_gateway_apiml_security_oidc_userInfo_uri:-}} \
+    -Dapiml.security.oidc.validationType=${ZWE_configs_apiml_security_oidc_validationType:-${ZWE_components_gateway_apiml_security_oidc_validationType:-"JWK"}} \
+    -Dapiml.security.personalAccessToken.enabled=${ZWE_configs_apiml_security_personalAccessToken_enabled:-${ZWE_components_gateway_apiml_security_personalAccessToken_enabled:-false}} \
+    -Dapiml.security.saf.provider=${ZWE_configs_apiml_security_saf_provider:-${ZWE_components_gateway_apiml_security_saf_provider:-"rest"}} \
+    -Dapiml.security.saf.urls.authenticate=${ZWE_configs_apiml_security_saf_urls_authenticate:-${ZWE_components_gateway_apiml_security_saf_urls_authenticate:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf/authenticate"}} \
+    -Dapiml.security.saf.urls.verify=${ZWE_configs_apiml_security_saf_urls_verify:-${ZWE_components_gateway_apiml_security_saf_urls_verify:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf/verify"}} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices} \
+    -Dapiml.security.useInternalMapper=${ZWE_configs_apiml_security_useInternalMapper:-${ZWE_components_gateway_apiml_security_useInternalMapper:-true}} \
     -Dapiml.security.x509.acceptForwardedCert=${ZWE_configs_apiml_security_x509_acceptForwardedCert:-${ZWE_components_gateway_apiml_security_x509_acceptForwardedCert:-false}} \
+    -Dapiml.security.x509.acceptForwardedCert=${ZWE_configs_apiml_security_x509_enabled:-${ZWE_components_gateway_apiml_security_x509_enabled:-${ZWE_components_gateway_apiml_security_x509_enabled:-true}}} \
+    -Dapiml.security.x509.certificatesUrls=${CERTIFICATES_URLS} \
     -Dapiml.security.x509.certificatesUrls=${ZWE_configs_apiml_security_x509_certificatesUrls:-${ZWE_configs_apiml_security_x509_certificatesUrl:-${ZWE_components_gateway_apiml_security_x509_certificatesUrls:-${ZWE_components_gateway_apiml_security_x509_certificatesUrl}}}} \
     -Dapiml.security.x509.enabled=${ZWE_configs_apiml_security_x509_enabled:-${ZWE_components_gateway_apiml_security_x509_enabled:-false}} \
+    -Dapiml.security.x509.externalMapperUrl=${ZWE_configs_apiml_security_x509_externalMapperUrl:-${ZWE_components_gateway_apiml_security_x509_externalMapperUrl:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/certificate/x509/map"}} \
+    -Dapiml.security.x509.externalMapperUser=${ZWE_configs_apiml_security_x509_externalMapperUser:-${ZWE_components_gateway_apiml_security_x509_externalMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}}} \
     -Dapiml.security.x509.registry.allowedUsers=${ZWE_configs_apiml_security_x509_registry_allowedUsers:-${ZWE_components_gateway_apiml_security_x509_registry_allowedUsers:-}} \
+    -Dapiml.security.zosmf.applid=${ZWE_configs_apiml_security_zosmf_applid:-${ZWE_components_gateway_apiml_security_zosmf_applid:-IZUDFLT}} \
     -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-${ZWE_components_gateway_apiml_service_allowEncodedSlashes:-true}} \
     -Dapiml.service.apimlId=${ZWE_configs_apimlId:-${ZWE_components_gateway_apimlId:-}} \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-${ZWE_components_gateway_apiml_service_corsEnabled:-false}} \
     -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.service.forwardClientCertEnabled=${ZWE_configs_apiml_security_x509_enabled:-${ZWE_components_gateway_apiml_security_x509_enabled:-false}} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
-    -Dapiml.service.port=${ZWE_configs_port:-${ZWE_components_gateway_port:-7554}} \
+    -Dapiml.service.port=${ZWE_components_gateway_port:-${ZWE_configs_port:-7554}} \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Dcaching.storage.evictionStrategy=${ZWE_configs_storage_evictionStrategy:-${ZWE_components_caching_service_storage_evictionStrategy:-reject}} \
     -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-${ZWE_components_caching_service_storage_infinispan_initialHosts:-"localhost[7600]"}} \
     -Dcaching.storage.mode=${ZWE_configs_storage_mode:-${ZWE_components_caching_service_storage_mode:-infinispan}} \
-    -Dcaching.storage.size=${ZWE_configs_storage_size:${ZWE_components_caching_service_storage_size:-10000}} \
+    -Dcaching.storage.size=${ZWE_configs_storage_size:-${ZWE_components_caching_service_storage_size:-10000}} \
     -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
     -Deureka.client.serviceUrl.defaultZone=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dfile.encoding=UTF-8 \
@@ -403,7 +431,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.webSocket.connectTimeout=${ZWE_configs_server_webSocket_connectTimeout:-${ZWE_components_gateway_server_webSocket_connectTimeout:-45000}} \
     -Dserver.webSocket.maxIdleTimeout=${ZWE_configs_server_webSocket_maxIdleTimeout:-${ZWE_components_gateway_server_webSocket_maxIdleTimeout:-3600000}} \
     -Dserver.webSocket.requestBufferSize=${ZWE_configs_server_webSocket_requestBufferSize:-${ZWE_components_gateway_server_webSocket_requestBufferSize:-8192}} \
-    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
     -Dapiml.catalog.hide.serviceInfo=${ZWE_configs_apiml_catalog_hide_serviceInfo:-${ZWE_components_apicatalog_apiml_catalog_hide_serviceInfo:-false}} \
     -Dapiml.catalog.customStyle.logo=${ZWE_configs_apiml_catalog_customStyle_logo:-${ZWE_components_apicatalog_apiml_catalog_customStyle_logo:-}} \
     -Dapiml.catalog.customStyle.fontFamily=${ZWE_configs_apiml_catalog_customStyle_fontFamily:-${ZWE_components_apicatalog_apiml_catalog_customStyle_fontFamily:-}} \
@@ -412,6 +439,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.catalog.customStyle.headerColor=${ZWE_configs_apiml_catalog_customStyle_headerColor:-${ZWE_components_apicatalog_apiml_catalog_customStyle_headerColor:-}} \
     -Dapiml.catalog.customStyle.textColor=${ZWE_configs_apiml_catalog_customStyle_textColor:-${ZWE_components_apicatalog_apiml_catalog_customStyle_textColor:-}} \
     -Dapiml.catalog.customStyle.docLink=${ZWE_configs_apiml_catalog_customStyle_docLink:-${ZWE_components_apicatalog_apiml_catalog_customStyle_docLink:-}} \
+    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -jar "${JAR_FILE}" &
 
 pid=$!

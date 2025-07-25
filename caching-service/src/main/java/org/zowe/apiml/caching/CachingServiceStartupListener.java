@@ -8,32 +8,24 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog;
+package org.zowe.apiml.caching;
 
+import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
+import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 
-/**
- * This class fires on ApplicationReadyEvent event during Spring context initialization
- */
 @Component
 @RequiredArgsConstructor
-public class AppReadyListener {
+public class CachingServiceStartupListener implements ApplicationListener<ApplicationReadyEvent> {
 
     private final ServiceStartupEventHandler handler;
 
-    /**
-     * Fires on ApplicationReadyEvent
-     * triggers ServiceStartupEventHandler
-     *
-     * @param event Spring event
-     */
-    @EventListener
-    public void onApplicationEvent(ApplicationReadyEvent event) {
-        handler.onServiceStartup("API Catalog Service",
+    @Override
+    public void onApplicationEvent(@Nonnull final ApplicationReadyEvent event) {
+        handler.onServiceStartup("Caching Service",
             ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
 

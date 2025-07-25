@@ -42,6 +42,15 @@
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 # - ZWE_configs_apiml_discovery_serviceIdPrefixReplacer - The service ID prefix replacer to be V2 conformant
+
+add_profile() {
+    new_profile=$1
+    if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+    fi
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}${new_profile}"
+}
+
 if [ -n "${LAUNCH_COMPONENT}" ]; then
     JAR_FILE="${LAUNCH_COMPONENT}/discovery-service-lite.jar"
 else
@@ -61,11 +70,7 @@ if [ -z "${LIBRARY_PATH}" ]; then
 fi
 
 if [ "${ZWE_configs_debug}" = "true" ]; then
-    if [ -n "${ZWE_configs_spring_profiles_active}" ];
-    then
-        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
-    fi
-    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}debug"
+    add_profile "debug"
 fi
 
 # FIXME: APIML_DIAG_MODE_ENABLED is not officially mentioned. We can still use it behind the scene,
@@ -127,10 +132,11 @@ fi
 
 if [ "${ATTLS_ENABLED}" = "true" ]; then
   ZWE_configs_server_ssl_enabled="false"
-  if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
-    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
-  fi
-  ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}attls"
+  add_profile "attls"
+fi
+
+if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" ]; then
+    add_profile "https"
 fi
 
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
@@ -293,7 +299,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.ssl.trustStore="${truststore_location}" \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
     -Dserver.ssl.trustStoreType="${truststore_type}" \
-    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
+    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"

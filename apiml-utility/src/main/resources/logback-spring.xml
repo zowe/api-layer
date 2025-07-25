@@ -28,28 +28,41 @@
         </encoder>
     </appender>
 
-    <appender name="FILE" class="org.zowe.apiml.product.logging.ApimlRollingFileAppender">
-        <file>${STORAGE_LOCATION}/${logbackService:-${logbackServiceName}}.log</file>
+    <if condition='isDefined("apiml.logs.location") &amp;&amp; property("spring.profiles.active").contains("debug")'>
+        <then>
+            <appender name="FILE" class="org.zowe.apiml.product.logging.ApimlRollingFileAppender">
+                <file>${STORAGE_LOCATION}/${logbackService:-${logbackServiceName}}.log</file>
 
-        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>${STORAGE_LOCATION}/${logbackService:-${logbackServiceName}}.%i.log</fileNamePattern>
-            <minIndex>${MIN_INDEX}</minIndex>
-            <maxIndex>${MAX_INDEX}</maxIndex>
-        </rollingPolicy>
+                <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+                    <fileNamePattern>${STORAGE_LOCATION}/${logbackService:-${logbackServiceName}}.%i.log</fileNamePattern>
+                    <minIndex>${MIN_INDEX}</minIndex>
+                    <maxIndex>${MAX_INDEX}</maxIndex>
+                </rollingPolicy>
 
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
-        </triggeringPolicy>
+                <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+                    <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+                </triggeringPolicy>
 
-        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
-                <pattern>${apimlLogPattern}</pattern>
-            </layout>
-        </encoder>
-    </appender>
+                <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+                    <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
+                        <pattern>${apimlLogPattern}</pattern>
+                    </layout>
+                </encoder>
+            </appender>
+        </then>
+    </if>
 
-    <root level="INFO">
-        <appender-ref ref="STDOUT"/>
-        <appender-ref ref="FILE"/>
-    </root>
+    <if condition='isDefined("apiml.logs.location") &amp;&amp; property("spring.profiles.active").contains("debug")'>
+        <then>
+            <root level="INFO">
+                <appender-ref ref="STDOUT"/>
+                <appender-ref ref="FILE"/>
+            </root>
+        </then>
+        <else>
+            <root level="INFO">
+                <appender-ref ref="STDOUT"/>
+            </root>
+        </else>
+    </if>
 </configuration>

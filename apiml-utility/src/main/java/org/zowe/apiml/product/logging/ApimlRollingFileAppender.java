@@ -17,6 +17,7 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
  * The conditionality is checked on the start of the Appender to limit the overhead.
  */
 public class ApimlRollingFileAppender<E> extends RollingFileAppender<E> { // NOSONAR
+
     @Override
     public void start() {
         if (verifyStartupParams()) {
