@@ -47,7 +47,7 @@ public class ApiCatalogMultipleInstancesTest {
 
             @Test
             @DisabledIfSystemProperty(
-                disabledReason = "In Modulith, API Gateway is only one in each API ML instance",
+                disabledReason = "In Modulith, API Catalog is only one in each API ML instance",
                 named = "environment.modulith",
                 matches = "true"
             )
@@ -59,7 +59,7 @@ public class ApiCatalogMultipleInstancesTest {
 
             @Test
             @DisabledIfSystemProperty(
-                disabledReason = "In Modulith, API Gateway is only one in each API ML instance",
+                disabledReason = "In Modulith, API Catalog is only one in each API ML instance",
                 named = "environment.modulith",
                 matches = "true"
             )
