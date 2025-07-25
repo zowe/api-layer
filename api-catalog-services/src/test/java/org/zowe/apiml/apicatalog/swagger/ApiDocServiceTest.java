@@ -47,10 +47,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO_API_ID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO_GATEWAY_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO_IS_DEFAULT;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO_SWAGGER_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO_VERSION;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class ApiDocServiceTest {
 
     private static final String SERVICE_ID = "service";
@@ -69,8 +88,6 @@ class ApiDocServiceTest {
     private static final ServiceAddress GW_SERVICE_ADDRESS = ServiceAddress.builder().scheme(GATEWAY_SCHEME).hostname(GATEWAY_HOST).build();
 
     @Nested
-    @ExtendWith(MockitoExtension.class)
-    @MockitoSettings(strictness = Strictness.LENIENT)
     class ViaRestCall {
 
         @Mock
@@ -112,10 +129,6 @@ class ApiDocServiceTest {
                     lastApiInfo.set(apiInfo);
                     return super.retrieveApiDoc(serviceInstance, apiInfo);
                 }
-
-                boolean isServiceAccessibleInternally(InstanceInfo instanceInfo) {
-                    return false;
-                }
             };
 
             ReflectionTestUtils.setField(apiDocRetrievalServiceRest, "apimlLogger", apimlLogger);
@@ -123,25 +136,30 @@ class ApiDocServiceTest {
 
         @Nested
         class WhenGetApiDoc {
+
             @Test
             void givenValidApiInfo_thenReturnApiDoc() {
-                String responseBody = "api-doc body";
+                var responseBody = "api-doc body";
 
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(Collections.singletonList(getStandardInstance(getStandardMetadata(), true)));
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-                String actualApiDoc = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V).block();
+                var elapsed = StepVerifier.create(apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V))
+                    .assertNext(actualApiDoc -> {
+                        assertNotNull(lastApiInfo.get());
+                        assertEquals(API_ID, lastApiInfo.get().getApiId());
+                        assertEquals(GATEWAY_URL, lastApiInfo.get().getGatewayUrl());
+                        assertEquals(SERVICE_VERSION, lastApiInfo.get().getVersion());
+                        assertEquals(SWAGGER_URL, lastApiInfo.get().getSwaggerUrl());
 
-                assertNotNull(lastApiInfo.get());
-                assertEquals(API_ID, lastApiInfo.get().getApiId());
-                assertEquals(GATEWAY_URL, lastApiInfo.get().getGatewayUrl());
-                assertEquals(SERVICE_VERSION, lastApiInfo.get().getVersion());
-                assertEquals(SWAGGER_URL, lastApiInfo.get().getSwaggerUrl());
+                        assertNotNull(actualApiDoc);
+                        assertEquals(responseBody, actualApiDoc);
+                    })
+                    .verifyComplete();
 
-                assertNotNull(actualApiDoc);
-                assertEquals(responseBody, actualApiDoc);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Nested
@@ -209,46 +227,57 @@ class ApiDocServiceTest {
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-                String actualApiDoc = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V).block();
+                var elapsed = StepVerifier.create(apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V))
+                    .assertNext(actualApiDoc -> {
+                        assertNotNull(lastApiInfo.get());
+                        assertEquals(API_ID, lastApiInfo.get().getApiId());
+                        assertEquals(GATEWAY_URL, lastApiInfo.get().getGatewayUrl());
+                        assertEquals(SERVICE_VERSION, lastApiInfo.get().getVersion());
+                        assertNull(lastApiInfo.get().getSwaggerUrl());
 
-                assertNotNull(lastApiInfo.get());
-                assertEquals(API_ID, lastApiInfo.get().getApiId());
-                assertEquals(GATEWAY_URL, lastApiInfo.get().getGatewayUrl());
-                assertEquals(SERVICE_VERSION, lastApiInfo.get().getVersion());
-                assertNull(lastApiInfo.get().getSwaggerUrl());
-
-                assertNotNull(actualApiDoc);
-                assertEquals(generatedResponseBody, actualApiDoc.replaceAll("\\s+", ""));
+                        assertNotNull(actualApiDoc);
+                        assertEquals(generatedResponseBody, actualApiDoc.replaceAll("\\s+", ""));
+                    })
+                    .verifyComplete();
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Test
             void givenApiDocUrlInRouting_thenCreateApiDocUrlFromRoutingAndReturnApiDoc() {
-                String responseBody = "api-doc body";
+                var responseBody = "api-doc body";
 
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(Collections.singletonList(getStandardInstance(getMetadataWithoutApiInfo(), true)));
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-                String actualApiDoc = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V).block();
+                var elapsed = StepVerifier.create(apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V))
+                    .assertNext(actualApiDoc -> {
+                        assertNotNull(actualApiDoc);
+                        assertEquals(responseBody, actualApiDoc);
+                    })
+                    .verifyComplete();
 
-                assertNotNull(actualApiDoc);
-                assertEquals(responseBody, actualApiDoc);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Test
             void shouldCreateApiDocUrlFromRoutingAndUseHttp() {
-                String responseBody = "api-doc body";
+                var responseBody = "api-doc body";
 
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(Collections.singletonList(getStandardInstance(getMetadataWithoutApiInfo(), false)));
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-                String actualApiDoc = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V).block();
+                var elapsed = StepVerifier.create(apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V))
+                    .assertNext(actualApiDoc -> {
+                        assertNotNull(actualApiDoc);
+                        assertEquals(responseBody, actualApiDoc);
+                    })
+                    .verifyComplete();
 
-                assertNotNull(actualApiDoc);
-                assertEquals(responseBody, actualApiDoc);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Test
@@ -273,32 +302,37 @@ class ApiDocServiceTest {
 
         @Nested
         class WhenGetDefaultApiDoc {
+
             @Test
             void givenDefaultApiDoc_thenReturnIt() {
-                String responseBody = "api-doc body";
-                Map<String, String> metadata = getMetadataWithMultipleApiInfo();
+                var responseBody = "api-doc body";
+                var metadata = getMetadataWithMultipleApiInfo();
 
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(Collections.singletonList(getStandardInstance(metadata, true)));
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-                String actualApiDoc = apiDocService.retrieveDefaultApiDoc(SERVICE_ID).block();
+                var elapsed = StepVerifier.create(apiDocService.retrieveDefaultApiDoc(SERVICE_ID))
+                    .assertNext(actualApiDoc -> {
+                        assertNotNull(lastApiInfo.get());
+                        assertEquals(API_ID, lastApiInfo.get().getApiId());
+                        assertEquals(GATEWAY_URL, lastApiInfo.get().getGatewayUrl());
+                        assertEquals(SERVICE_VERSION, lastApiInfo.get().getVersion());
+                        assertEquals(SWAGGER_URL, lastApiInfo.get().getSwaggerUrl());
 
-                assertNotNull(lastApiInfo.get());
-                assertEquals(API_ID, lastApiInfo.get().getApiId());
-                assertEquals(GATEWAY_URL, lastApiInfo.get().getGatewayUrl());
-                assertEquals(SERVICE_VERSION, lastApiInfo.get().getVersion());
-                assertEquals(SWAGGER_URL, lastApiInfo.get().getSwaggerUrl());
+                        assertNotNull(actualApiDoc);
+                        assertEquals(responseBody, actualApiDoc);
+                    })
+                    .verifyComplete();
 
-                assertNotNull(actualApiDoc);
-                assertEquals(responseBody, actualApiDoc);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Test
             void givenNoDefaultApiDoc_thenReturnHighestVersion() {
-                String responseBody = "api-doc body";
-                Map<String, String> metadata = getMetadataWithMultipleApiInfo();
+                var responseBody = "api-doc body";
+                var metadata = getMetadataWithMultipleApiInfo();
                 metadata.remove(API_INFO + ".1." + API_INFO_IS_DEFAULT); // unset default API, so higher version becomes default
 
                 when(discoveryClient.getInstances(SERVICE_ID))
@@ -306,52 +340,64 @@ class ApiDocServiceTest {
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-                String actualApiDoc = apiDocService.retrieveDefaultApiDoc(SERVICE_ID).block();
+                var elapsed = StepVerifier.create(apiDocService.retrieveDefaultApiDoc(SERVICE_ID))
+                    .assertNext(actualApiDoc -> {
+                        assertNotNull(lastApiInfo.get());
+                        assertEquals(API_ID, lastApiInfo.get().getApiId());
+                        assertEquals(GATEWAY_URL, lastApiInfo.get().getGatewayUrl());
+                        assertEquals(HIGHER_SERVICE_VERSION, lastApiInfo.get().getVersion());
+                        assertEquals(SWAGGER_URL, lastApiInfo.get().getSwaggerUrl());
 
-                assertNotNull(lastApiInfo.get());
-                assertEquals(API_ID, lastApiInfo.get().getApiId());
-                assertEquals(GATEWAY_URL, lastApiInfo.get().getGatewayUrl());
-                assertEquals(HIGHER_SERVICE_VERSION, lastApiInfo.get().getVersion());
-                assertEquals(SWAGGER_URL, lastApiInfo.get().getSwaggerUrl());
+                        assertNotNull(actualApiDoc);
+                        assertEquals(responseBody, actualApiDoc);
+                    })
+                    .verifyComplete();
 
-                assertNotNull(actualApiDoc);
-                assertEquals(responseBody, actualApiDoc);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Test
             void givenNoDefaultApiDocAndDifferentVersionFormat_thenReturnHighestVersion() {
-                String responseBody = "api-doc body";
+                var responseBody = "api-doc body";
 
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(Collections.singletonList(getStandardInstance(getMetadataWithMultipleApiInfoWithDifferentVersionFormat(), true)));
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-                String actualApiDoc = apiDocService.retrieveDefaultApiDoc(SERVICE_ID).block();
+                var elapsed = StepVerifier.create(apiDocService.retrieveDefaultApiDoc(SERVICE_ID))
+                    .assertNext(actualApiDoc -> {
+                        assertNotNull(lastApiInfo.get());
+                        assertEquals(API_ID, lastApiInfo.get().getApiId());
+                        assertEquals(GATEWAY_URL, lastApiInfo.get().getGatewayUrl());
+                        assertEquals(HIGHER_SERVICE_VERSION_V, lastApiInfo.get().getVersion());
+                        assertEquals(SWAGGER_URL, lastApiInfo.get().getSwaggerUrl());
 
-                assertNotNull(lastApiInfo.get());
-                assertEquals(API_ID, lastApiInfo.get().getApiId());
-                assertEquals(GATEWAY_URL, lastApiInfo.get().getGatewayUrl());
-                assertEquals(HIGHER_SERVICE_VERSION_V, lastApiInfo.get().getVersion());
-                assertEquals(SWAGGER_URL, lastApiInfo.get().getSwaggerUrl());
+                        assertNotNull(actualApiDoc);
+                        assertEquals(responseBody, actualApiDoc);
+                    })
+                    .verifyComplete();
 
-                assertNotNull(actualApiDoc);
-                assertEquals(responseBody, actualApiDoc);
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Test
             void givenNoApiDocs_thenReturnNull() {
-                String responseBody = "api-doc body";
+                var responseBody = "api-doc body";
 
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(Collections.singletonList(getStandardInstance(getMetadataWithoutApiInfo(), true)));
 
                 HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
 
-                String actualApiDoc = apiDocService.retrieveDefaultApiDoc(SERVICE_ID).block();
+                var elapsed = StepVerifier.create(apiDocService.retrieveDefaultApiDoc(SERVICE_ID))
+                    .assertNext(actualApiDoc -> {
+                        assertNotNull(actualApiDoc);
+                        assertEquals(responseBody, actualApiDoc);
+                    })
+                    .verifyComplete();
 
-                assertNotNull(actualApiDoc);
-                assertEquals(responseBody, actualApiDoc);
+                assertEquals(0L, elapsed.toSeconds());
             }
         }
 
