@@ -47,26 +47,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO_API_ID;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO_GATEWAY_URL;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO_IS_DEFAULT;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO_SWAGGER_URL;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO_VERSION;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
+import static org.mockito.Mockito.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
