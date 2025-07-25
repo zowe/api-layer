@@ -31,6 +31,10 @@ import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 import reactor.core.publisher.Mono;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+
 import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 
 /**
@@ -137,7 +141,11 @@ public class ApiDocController {
         ).flatMap(tuple -> Mono.fromCallable(() -> {
             ChangedOpenApi diff = OpenApiCompare.fromContents(tuple.getT1(), tuple.getT2());
             HtmlRender render = new HtmlRender();
-            String result = render.render(diff);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+            render.render(diff, new OutputStreamWriter(baos));
+            String result = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+
             // Remove external stylesheet
             result = result.replace("<link rel=\"stylesheet\" href=\"http://deepoove.com/swagger-diff/stylesheets/demo.css\">", "");
             return ResponseEntity

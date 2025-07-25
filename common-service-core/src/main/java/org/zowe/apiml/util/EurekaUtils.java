@@ -12,7 +12,6 @@ package org.zowe.apiml.util;
 
 import com.netflix.appinfo.InstanceInfo;
 import lombok.experimental.UtilityClass;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
@@ -70,7 +69,7 @@ public class EurekaUtils {
         return Optional.ofNullable(discoveryClient.getInstances(GATEWAY.getServiceId()))
             .map(instances -> instances.stream()
                 .filter(instance -> EurekaMetadataDefinition.RegistrationType.of(instance.getMetadata()).isAdditional())
-                .filter(instance -> StringUtils.equals(apimlId, instance.getMetadata().get(APIML_ID)))
+                .filter(instance -> apimlId.equals(instance.getMetadata().get(APIML_ID)))
                 .findFirst()
                 .orElse(null)
             );
@@ -84,6 +83,9 @@ public class EurekaUtils {
      * @return instance or empty Optional object
      */
     public Optional<ServiceInstance> getInstanceInfo(DiscoveryClient discoveryClient, String id) {
+        if (id == null) {
+            return Optional.empty();
+        }
         return getPrimaryInstanceInfo(discoveryClient, id)
             .or(() -> getSecondaryInstanceInfo(discoveryClient, id));
     }
