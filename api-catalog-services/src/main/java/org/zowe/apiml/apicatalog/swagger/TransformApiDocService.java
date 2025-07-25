@@ -13,6 +13,8 @@ package org.zowe.apiml.apicatalog.swagger;
 import jakarta.validation.UnexpectedTypeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.apicatalog.exceptions.ApiDocTransformationException;
+import org.zowe.apiml.apicatalog.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
 
 import java.util.function.Function;

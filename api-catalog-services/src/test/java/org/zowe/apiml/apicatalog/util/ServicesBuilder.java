@@ -11,7 +11,6 @@
 package org.zowe.apiml.apicatalog.util;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.shared.Application;
 import lombok.experimental.UtilityClass;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
@@ -25,14 +24,6 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 public class ServicesBuilder {
 
     private int id = 0;
-
-    public Application createApp(String serviceId, InstanceInfo...instanceInfos) {
-        Application application = new Application(serviceId);
-        for (InstanceInfo instanceInfo : instanceInfos) {
-            application.addInstance(instanceInfo);
-        }
-        return application;
-    }
 
     public ServiceInstance createInstance(String serviceId,
                                              InstanceInfo.InstanceStatus status,
@@ -61,15 +52,6 @@ public class ServicesBuilder {
                 otherMetadata);
     }
 
-    public ServiceInstance createInstance(
-            String serviceId, String catalogId, String catalogVersion, String title,
-            Map.Entry<String, String>...otherMetadata
-    ) {
-        return createInstance(
-                serviceId, catalogId, title, "Description", catalogVersion, InstanceInfo.InstanceStatus.UP,
-                otherMetadata);
-    }
-
     public ServiceInstance createInstance(String serviceId,
                                    String catalogId,
                                    String catalogTitle,
@@ -88,4 +70,5 @@ public class ServicesBuilder {
 
         return createInstance(serviceId, status, metadata);
     }
+
 }

@@ -13,6 +13,7 @@ package org.zowe.apiml.apicatalog.swagger.api;
 import com.fasterxml.jackson.core.JsonParseException;
 import jakarta.validation.UnexpectedTypeException;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.apicatalog.config.ApiTransformationConfig;
 import org.zowe.apiml.config.ApplicationInfo;
 
 import java.util.function.Function;

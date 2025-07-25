@@ -13,7 +13,7 @@ package org.zowe.apiml.apicatalog.swagger.api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.zowe.apiml.apicatalog.swagger.ApiDocInfo;
+import org.zowe.apiml.apicatalog.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;

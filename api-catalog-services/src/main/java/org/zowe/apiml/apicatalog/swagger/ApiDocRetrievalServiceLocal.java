@@ -30,6 +30,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
+import org.zowe.apiml.apicatalog.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import reactor.core.publisher.Mono;

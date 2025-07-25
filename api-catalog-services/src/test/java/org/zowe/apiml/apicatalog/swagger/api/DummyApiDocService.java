@@ -8,10 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.swagger.api.dummy;
+package org.zowe.apiml.apicatalog.swagger.api;
 
-import org.zowe.apiml.apicatalog.swagger.ApiDocInfo;
-import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
+import org.zowe.apiml.apicatalog.model.ApiDocInfo;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 

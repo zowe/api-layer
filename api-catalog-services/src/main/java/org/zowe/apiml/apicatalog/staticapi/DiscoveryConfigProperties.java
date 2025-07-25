@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.discovery;
+package org.zowe.apiml.apicatalog.staticapi;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;

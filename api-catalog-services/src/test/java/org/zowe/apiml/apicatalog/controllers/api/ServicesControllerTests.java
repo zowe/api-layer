@@ -30,7 +30,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.apicatalog.config.BeanConfig;
-import org.zowe.apiml.apicatalog.config.DefaultExceptionHandler;
+import org.zowe.apiml.apicatalog.controllers.handlers.DefaultExceptionHandler;
 import org.zowe.apiml.apicatalog.controllers.handlers.ApiCatalogControllerExceptionHandler;
 import org.zowe.apiml.apicatalog.exceptions.ContainerStatusRetrievalException;
 import org.zowe.apiml.apicatalog.model.APIContainer;

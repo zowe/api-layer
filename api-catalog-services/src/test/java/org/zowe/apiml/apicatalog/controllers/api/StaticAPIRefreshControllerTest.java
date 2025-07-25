@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.staticapi;
+package org.zowe.apiml.apicatalog.controllers.api;
 
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.client.RestClientException;
 import org.zowe.apiml.apicatalog.config.BeanConfig;
+import org.zowe.apiml.apicatalog.controllers.handlers.StaticAPIRefreshControllerExceptionHandler;
+import org.zowe.apiml.apicatalog.controllers.handlers.StaticDefinitionControllerExceptionHandler;
 import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
+import org.zowe.apiml.apicatalog.staticapi.StaticAPIResponse;
+import org.zowe.apiml.apicatalog.staticapi.StaticAPIService;
+import org.zowe.apiml.apicatalog.staticapi.StaticDefinitionGenerator;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;

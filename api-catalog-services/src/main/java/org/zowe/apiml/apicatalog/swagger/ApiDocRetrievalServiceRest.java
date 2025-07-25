@@ -23,6 +23,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
+import org.zowe.apiml.apicatalog.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;

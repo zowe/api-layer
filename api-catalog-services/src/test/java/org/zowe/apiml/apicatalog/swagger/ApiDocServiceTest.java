@@ -31,6 +31,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.exceptions.ApiVersionNotFoundException;
+import org.zowe.apiml.apicatalog.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.constants.CoreService;
