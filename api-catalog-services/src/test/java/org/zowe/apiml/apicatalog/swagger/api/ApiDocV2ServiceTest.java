@@ -14,6 +14,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.swagger.models.*;
+import io.swagger.parser.SwaggerParser;
+import io.swagger.util.Json;
+import jakarta.validation.UnexpectedTypeException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,15 +29,15 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
+import org.zowe.apiml.apicatalog.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
-import jakarta.validation.UnexpectedTypeException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -48,6 +52,7 @@ import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
+@Slf4j
 class ApiDocV2ServiceTest {
 
     private static final String SERVICE_ID = "serviceId";
@@ -69,7 +74,7 @@ class ApiDocV2ServiceTest {
     void setUp() {
         gatewayConfigProperties = getProperties();
         gatewayClient = new GatewayClient(gatewayConfigProperties);
-        apiDocV2Service = new ApiDocV2Service(gatewayClient);
+        apiDocV2Service = new ApiDocV2Service(ApplicationInfo.builder().build(), gatewayClient);
         ReflectionTestUtils.setField(apiDocV2Service, "scheme", "https");
     }
 
@@ -77,7 +82,7 @@ class ApiDocV2ServiceTest {
     void givenSwaggerJsonNotAsExpectedFormat_whenConvertToSwagger_thenThrowIOException() {
         String apiDocContent = "Failed content";
 
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, apiDocContent, null);
+        ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiDocContent(apiDocContent).build();
 
         Exception exception = assertThrows(UnexpectedTypeException.class, () -> apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo));
         assertEquals("The Swagger definition for service 'serviceId' was retrieved but was not a valid JSON document.", exception.getMessage());
@@ -85,8 +90,10 @@ class ApiDocV2ServiceTest {
 
     @Nested
     class WhenApiDocTransform {
+
         @Nested
         class ThenCheckUpdatedValues {
+
             @Test
             void givenSwaggerValidJson() {
                 Swagger dummySwaggerObject = getDummySwaggerObject("/apicatalog", false);
@@ -102,7 +109,7 @@ class ApiDocV2ServiceTest {
                 routedServices.addRoutedService(routedService3);
 
                 ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", null,  "https://www.zowe.org");
-                ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+                ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(apiDocContent).routes(routedServices).build();
 
                 String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
                 Swagger actualSwagger = convertJsonToSwagger(actualContent);
@@ -153,7 +160,7 @@ class ApiDocV2ServiceTest {
                 routedServices.addRoutedService(routedService3);
 
                 ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", null, "https://www.zowe.org");
-                ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+                ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(apiDocContent).routes(routedServices).build();
 
                 String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
                 Swagger actualSwagger = convertYamlToSwagger(actualContent);
@@ -201,7 +208,7 @@ class ApiDocV2ServiceTest {
                 routedServices.addRoutedService(routedService);
                 routedServices.addRoutedService(routedService2);
 
-                ApiDocInfo apiDocInfo = new ApiDocInfo(null, apiDocContent, routedServices);
+                ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiDocContent(apiDocContent).routes(routedServices).build();
 
                 String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
                 Swagger actualSwagger = convertJsonToSwagger(actualContent);
@@ -223,7 +230,7 @@ class ApiDocV2ServiceTest {
                 routedServices.addRoutedService(routedService);
                 routedServices.addRoutedService(routedService2);
 
-                ApiDocInfo apiDocInfo = new ApiDocInfo(null, apiDocContent, routedServices);
+                ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiDocContent(apiDocContent).routes(routedServices).build();
 
                 String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
                 Swagger actualSwagger = convertJsonToSwagger(actualContent);
@@ -248,7 +255,7 @@ class ApiDocV2ServiceTest {
                 routedServices.addRoutedService(routedService3);
 
                 ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc",null, "https://www.zowe.org");
-                ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+                ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(apiDocContent).routes(routedServices).build();
 
                 String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
                 Swagger actualSwagger = convertJsonToSwagger(actualContent);
@@ -298,7 +305,7 @@ class ApiDocV2ServiceTest {
                 routedServices.addRoutedService(routedService2);
 
                 ApiInfo apiInfo = new ApiInfo(API_VERSION, "api/v1", API_ID, "https://localhost:10014/apicatalog/api-doc", null, "https://www.zowe.org");
-                ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+                ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(apiDocContent).routes(routedServices).build();
 
                 String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
                 Swagger actualSwagger = convertJsonToSwagger(actualContent);
@@ -310,6 +317,21 @@ class ApiDocV2ServiceTest {
                     assertThat(actualSwagger.getPaths(), IsMapContaining.hasKey(dummySwaggerObject.getBasePath() + k))
                 );
             }
+
+            @Test
+            void givenOpenApiWithoutVersion() throws JsonProcessingException {
+                SwaggerParser swaggerParser = new SwaggerParser();
+                Swagger swagger = new Swagger();
+                String transformedOpenApi = apiDocV2Service.transformApiDoc("serviceId", ApiDocInfo.builder()
+                    .apiInfo(ApiInfo.builder().version("1.2.3").build())
+                    .apiDocContent(Json.mapper().writeValueAsString(swagger))
+                    .build()
+                );
+                swagger = swaggerParser.readWithInfo(transformedOpenApi).getSwagger();
+
+                assertEquals("1.2.3", swagger.getInfo().getVersion());
+            }
+
         }
 
         @Test
@@ -325,7 +347,7 @@ class ApiDocV2ServiceTest {
             routedServices.addRoutedService(routedService2);
 
             ApiInfo apiInfo = new ApiInfo(API_ID, "api/v1", API_VERSION, "https://localhost:10014/apicatalog/api-doc", null, null);
-            ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+            ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(apiDocContent).routes(routedServices).build();
 
             String actualContent = apiDocV2Service.transformApiDoc(SERVICE_ID, apiDocInfo);
             Swagger actualSwagger = convertJsonToSwagger(actualContent);
@@ -349,18 +371,19 @@ class ApiDocV2ServiceTest {
             GatewayClient gatewayClient = new GatewayClient(gatewayConfigProperties);
 
             AtomicReference<Swagger> swaggerHolder = new AtomicReference<>();
-            ApiDocV2Service apiDocV2Service = new ApiDocV2Service(gatewayClient) {
+            apiDocV2Service = new ApiDocV2Service(ApplicationInfo.builder().build(), gatewayClient) {
                 @Override
                 protected void updateExternalDoc(Swagger swagger, ApiDocInfo apiDocInfo) {
                     super.updateExternalDoc(swagger, apiDocInfo);
                     swaggerHolder.set(swagger);
                 }
             };
-            String transformed = apiDocV2Service.transformApiDoc("serviceId", new ApiDocInfo(
-                mock(ApiInfo.class),
-                IOUtils.toString(new ClassPathResource("swagger/swagger2.json").getInputStream(), StandardCharsets.UTF_8),
-                mock(RoutedServices.class)
-            ));
+            String transformed = apiDocV2Service.transformApiDoc("serviceId", ApiDocInfo.builder()
+                .apiInfo(mock(ApiInfo.class))
+                .apiDocContent(IOUtils.toString(new ClassPathResource("swagger/swagger2.json").getInputStream(), StandardCharsets.UTF_8))
+                .routes(mock(RoutedServices.class))
+                .build()
+            );
             assertNotNull(transformed);
             verifySwagger2(swaggerHolder.get());
         }
@@ -381,7 +404,7 @@ class ApiDocV2ServiceTest {
         try {
             return objectMapper.writeValueAsString(swagger);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            log.error("Cannot serialize swagger", e);
             return null;
         }
     }
@@ -401,7 +424,7 @@ class ApiDocV2ServiceTest {
         try {
             swagger = objectMapper.readValue(content, Swagger.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Cannot read swagger content", e);
         }
 
         return swagger;
@@ -443,4 +466,5 @@ class ApiDocV2ServiceTest {
             .hostname("localhost:10010")
             .build();
     }
+
 }

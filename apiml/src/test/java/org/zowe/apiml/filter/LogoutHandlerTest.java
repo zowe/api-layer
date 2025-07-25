@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
@@ -24,6 +25,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.handler.FailedAuthenticationWebHandler;
+import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.HttpUtils;
@@ -31,11 +33,12 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 @ExtendWith(MockitoExtension.class)
 class LogoutHandlerTest {
@@ -43,7 +46,11 @@ class LogoutHandlerTest {
     @Mock private AuthenticationService authenticationService;
     @Mock private FailedAuthenticationWebHandler failureHandler;
     @Mock private PeerAwareInstanceRegistryImpl registry;
-    private HttpUtils httpUtils = new HttpUtils(null);
+    private HttpUtils httpUtils = new HttpUtils(new AuthConfigurationProperties()) {
+        {
+            readConfig();
+        }
+    };
 
     private LogoutHandler logoutHandler;
 
@@ -128,6 +135,26 @@ class LogoutHandlerTest {
             .verifyComplete();
 
         verify(authenticationService).invalidateJwtTokenGateway(eq("token123"), eq(true), any());
+    }
+
+    @Test
+    void givenCookie_whenLogout_thenRemoveCookie() {
+        var request = MockServerHttpRequest.get("/logout")
+            .cookie(new HttpCookie(COOKIE_AUTH_NAME, "invalidated.jwt.token"))
+            .build();
+        var exchange = MockServerWebExchange.from(request);
+        WebFilterChain mockChain = mock(WebFilterChain.class);
+        var webFilterExchange = new WebFilterExchange(exchange, mockChain);
+
+        when(authenticationService.isInvalidated("invalidated.jwt.token")).thenReturn(false);
+        Applications mockApplications = mock(Applications.class);
+        when(registry.getApplications()).thenReturn(mockApplications);
+
+        StepVerifier.create(logoutHandler.logout(webFilterExchange, mock(Authentication.class))).verifyComplete();
+
+        var cookie = webFilterExchange.getExchange().getResponse().getCookies().getFirst(COOKIE_AUTH_NAME);
+        assertNotNull(cookie);
+        assertEquals(0L, cookie.getMaxAge().getSeconds());
     }
 
 }

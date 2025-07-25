@@ -10,17 +10,22 @@
 
 package org.zowe.apiml;
 
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cloud.commons.util.InetUtils;
-import org.springframework.cloud.netflix.eureka.EurekaInstanceConfigBean;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @ConfigurationProperties("apiml.caching.eureka.instance")
-public class CachingServiceEurekaInstanceConfigBean extends EurekaInstanceConfigBean {
+@Data
+public class CachingServiceEurekaInstanceConfigBean {
 
-    public CachingServiceEurekaInstanceConfigBean(InetUtils inetUtils) {
-        super(inetUtils);
-    }
+    /**
+     * Gets the metadata name/value pairs associated with this instance. This information
+     * is sent to eureka server and can be used by other instances.
+     */
+    private Map<String, String> metadataMap = new HashMap<>();
 
 }

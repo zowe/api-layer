@@ -41,12 +41,6 @@ apiCatalogServiceConfiguration:
     host: api-catalog-services
     port: 10014
     instances: 1
-apiCatalogStandaloneConfiguration:
-    scheme: https
-    url:
-    host: api-catalog-services-2
-    port: 10015
-    instances: 1
 cachingServiceConfiguration:
     url:
 tlsConfiguration:

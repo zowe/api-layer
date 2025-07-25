@@ -10,15 +10,15 @@
 
 package org.zowe.apiml.apicatalog.swagger;
 
+import jakarta.validation.UnexpectedTypeException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
+import org.zowe.apiml.apicatalog.model.ApiDocInfo;
 import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
 import org.zowe.apiml.apicatalog.swagger.api.ApiDocV2Service;
 import org.zowe.apiml.apicatalog.swagger.api.ApiDocV3Service;
 
-import jakarta.validation.UnexpectedTypeException;
 import java.util.function.Function;
 
 import static org.mockito.Mockito.*;
@@ -50,7 +50,7 @@ class TransformApiDocServiceTest {
 
     @Test
     void testTransformApiDoc_whenThereIsNotApiDocMatch() {
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, "DOC4", null);
+        ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiDocContent("DOC4").build();
         Exception exception = Assertions.assertThrows(UnexpectedTypeException.class, () -> {
             transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
         });
@@ -59,7 +59,7 @@ class TransformApiDocServiceTest {
 
     @Test
     void testTransformApiDoc_whenSwaggerDocIsPresent() {
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, "DOC2", null);
+        ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiDocContent("DOC2").build();
         transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
 
 
@@ -74,7 +74,7 @@ class TransformApiDocServiceTest {
 
     @Test
     void testTransformApiDoc_whenOpenDocIsPresent() {
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, "DOC3", null);
+        ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiDocContent("DOC3").build();
         transformApiDocService.transformApiDoc(SERVICE_ID, apiDocInfo);
 
 

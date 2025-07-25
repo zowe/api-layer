@@ -34,8 +34,8 @@ discoverableClientConfiguration:
 apiCatalogServiceConfiguration:
     scheme: https
     url:
-    host: api-catalog-services,api-catalog-services-2
-    port: 10014
+    host: apiml,apiml-2
+    port: 10010
     instances: 2
 cachingServiceConfiguration:
     url:

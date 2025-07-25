@@ -98,7 +98,7 @@ public class RouteLocator implements RouteDefinitionLocator {
         return output;
     }
 
-    List<FilterDefinition> getPostRoutingFilters(ServiceInstance serviceInstance) {
+    List<FilterDefinition> getPostRoutingFilters(ServiceInstance serviceInstance, RoutedService routedService) {
         List<FilterDefinition> serviceRelated = new LinkedList<>();
         if (forwardingClientCertEnabled
                 && Optional.ofNullable(serviceInstance.getMetadata().get(SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING))
@@ -137,6 +137,8 @@ public class RouteLocator implements RouteDefinitionLocator {
         pageRedirectionFilter.setName("PageRedirectionFilterFactory");
         pageRedirectionFilter.addArg("serviceId", serviceInstance.getServiceId());
         pageRedirectionFilter.addArg("instanceId", serviceInstance.getInstanceId());
+        pageRedirectionFilter.addArg("gatewayUrl", routedService.getGatewayUrl());
+        pageRedirectionFilter.addArg("serviceUrl", routedService.getServiceUrl());
         serviceRelated.add(pageRedirectionFilter);
 
         return join(commonFilters, serviceRelated);
@@ -144,8 +146,7 @@ public class RouteLocator implements RouteDefinitionLocator {
 
     private List<RouteDefinition> getAuthFilterPerRoute(
         AtomicInteger orderHolder,
-        ServiceInstance serviceInstance,
-        List<FilterDefinition> postRoutingFilters
+        ServiceInstance serviceInstance
     ) {
         Authentication auth = metadataParser.parseAuthentication(serviceInstance.getMetadata());
         // iterate over routing definition (ordered from the longest one to match with the most specific)
@@ -157,7 +158,7 @@ public class RouteLocator implements RouteDefinitionLocator {
                         // generate a new routing rule by a specific produces
                         RouteDefinition routeDefinition = rdp.get(serviceInstance, routedService);
                         routeDefinition.setOrder(orderHolder.getAndIncrement());
-                        routeDefinition.getFilters().addAll(postRoutingFilters);
+                        routeDefinition.getFilters().addAll(getPostRoutingFilters(serviceInstance, routedService));
                         setAuth(serviceInstance, routeDefinition, auth);
 
                         return routeDefinition;
@@ -182,13 +183,13 @@ public class RouteLocator implements RouteDefinitionLocator {
         // iterate over services
         return getServiceInstances().flatMap(Flux::fromIterable).map(serviceInstance ->
             // generate route definition per services and its routing rules
-            getAuthFilterPerRoute(order, serviceInstance, getPostRoutingFilters(serviceInstance))
+            getAuthFilterPerRoute(order, serviceInstance)
         )
         .flatMapIterable(list -> list);
     }
 
     private boolean filterIgnored(String serviceId) {
-        return !PatternMatchUtils.simpleMatch(ignoredServices, serviceId);
+        return !PatternMatchUtils.simpleMatch(ignoredServices, serviceId.toLowerCase());
     }
 
 }

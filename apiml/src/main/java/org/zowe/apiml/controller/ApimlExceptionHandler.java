@@ -100,7 +100,7 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public Mono<Void> handleBadCredentialsException(ServerWebExchange exchange, BadCredentialsException ex) {
         log.debug("Bad credentials: {}", ex.getMessage());
-        return setBodyResponse(exchange, SC_UNAUTHORIZED, "org.zowe.apiml.security.login.invalidCredentials");
+        return setBodyResponse(exchange, SC_UNAUTHORIZED, "org.zowe.apiml.security.login.invalidCredentials", String.valueOf(exchange.getRequest().getPath()));
     }
 
     @ExceptionHandler(StorageException.class)

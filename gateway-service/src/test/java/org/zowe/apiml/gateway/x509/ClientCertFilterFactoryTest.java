@@ -23,6 +23,7 @@ import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.constants.ApimlConstants;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -34,7 +35,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
@@ -84,8 +87,10 @@ class ClientCertFilterFactoryTest {
         @Test
         void whenFilter_thenAddHeaderToRequest() {
             GatewayFilter filter = filterFactory.apply(filterConfig);
-            Mono<Void> result = filter.filter(exchange, chain);
-            result.block();
+
+            var elapsed = StepVerifier.create(filter.filter(exchange, chain))
+                .verifyComplete();
+            assertEquals(0L, elapsed.toSeconds());
 
             assertNull(exchange.getRequest().getHeaders().get(ApimlConstants.AUTH_FAIL_HEADER));
             assertNotNull(exchange.getRequest().getHeaders().get(CLIENT_CERT_HEADER));

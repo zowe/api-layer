@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.gateway.MockService;
-import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
+import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.hc.core5.http.HttpStatus.SC_PERMANENT_REDIRECT;
@@ -41,7 +41,7 @@ class ForwardedProxyHeadersTest extends AcceptanceTestWithMockServices {
     @BeforeEach
     void setUp() {
         var responseHeaders = new Headers();
-        responseHeaders.add("Location", basePath + "/serviceid1/test2");
+        responseHeaders.add("Location", "/serviceid1/test2");
         mockService("serviceid1").scope(MockService.Scope.CLASS)
             .addEndpoint("/serviceid1/test")
                 .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst("X-forwarded-prefix")))

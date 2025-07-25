@@ -12,6 +12,7 @@ package org.zowe.apiml.apicatalog.swagger;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.apicatalog.exceptions.ApiDocTransformationException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

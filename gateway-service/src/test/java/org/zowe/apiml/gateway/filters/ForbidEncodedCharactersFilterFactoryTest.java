@@ -13,18 +13,23 @@ package org.zowe.apiml.gateway.filters;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpMethod;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(MockitoExtension.class)
 class ForbidEncodedCharactersFilterFactoryTest {
 
     private static final String ENCODED_REQUEST_URI = "/api/v1/encoded;ch%25rs";
@@ -33,24 +38,26 @@ class ForbidEncodedCharactersFilterFactoryTest {
     private ForbidEncodedCharactersFilterFactory filter;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         filter = new ForbidEncodedCharactersFilterFactory();
     }
 
     @Nested
     class Responses {
+
         @Test
         void givenNormalRequestUri_whenFilterApply_thenSuccess() {
-            MockServerHttpRequest request = MockServerHttpRequest
+            var request = MockServerHttpRequest
                 .get(NORMAL_REQUEST_URI)
                 .build();
-            MockServerWebExchange exchange = MockServerWebExchange.from(request);
+            var exchange = MockServerWebExchange.from(request);
 
-            var response = filter.apply("").filter(exchange, e -> {
+            var elapsed = StepVerifier.create(filter.apply("").filter(exchange, e -> {
                 exchange.getResponse().setRawStatusCode(200);
                 return Mono.empty();
-            });
-            response.block();
+            }))
+            .verifyComplete();
+            assertEquals(0L, elapsed.toSeconds());
             assertTrue(exchange.getResponse().getStatusCode().is2xxSuccessful());
         }
 
@@ -66,6 +73,7 @@ class ForbidEncodedCharactersFilterFactoryTest {
             var mono = filter.apply("");
             assertThrows(ForbidCharacterException.class, () -> mono.filter(exchange, e -> Mono.empty()));
         }
+
     }
 
 }

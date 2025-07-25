@@ -11,18 +11,16 @@
 package org.zowe.apiml.apicatalog.swagger.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import io.swagger.models.ExternalDocs;
-import io.swagger.models.Path;
-import io.swagger.models.Scheme;
-import io.swagger.models.Swagger;
+import io.swagger.models.*;
 import io.swagger.parser.SwaggerParser;
 import io.swagger.util.Json;
 import jakarta.validation.UnexpectedTypeException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
-import org.zowe.apiml.apicatalog.swagger.ApiDocTransformationException;
+import org.zowe.apiml.apicatalog.model.ApiDocInfo;
+import org.zowe.apiml.apicatalog.exceptions.ApiDocTransformationException;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 
@@ -35,8 +33,8 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
     @Value("${gateway.scheme.external:https}")
     private String scheme;
 
-    public ApiDocV2Service(GatewayClient gatewayClient) {
-        super(gatewayClient);
+    public ApiDocV2Service(ApplicationInfo applicationInfo, GatewayClient gatewayClient) {
+        super(applicationInfo, gatewayClient);
     }
 
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
@@ -46,9 +44,22 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
             throw new UnexpectedTypeException(String.format("The Swagger definition for service '%s' was retrieved but was not a valid JSON document.", serviceId));
         }
 
+        if (swagger.getInfo() == null) {
+            swagger.setInfo(new Info());
+        }
+        if (swagger.getInfo().getVersion() == null) {
+            swagger.getInfo().setVersion(apiDocInfo.getApiInfo().getVersion());
+        }
+
         boolean hidden = swagger.getTag(HIDDEN_TAG) != null;
 
-        if (!isDefinedOnlyBypassRoutes(apiDocInfo)) {
+        /**
+         * When microservices are in place it is necessary to use path updates, it basically adds into the swagger
+         * routing. In case of modulith it is not wanted. The paths are the final one (REST calls does not use Gateway).
+         * One specific case is microservices and API Catalog. Even the api doc is downloaded locally it has to be
+         * handled by Gateway, so the routes should be added.
+         */
+        if (!isDefinedOnlyBypassRoutes(apiDocInfo) && !(apiDocInfo.isLocal() && applicationInfo.isModulith())) {
             updateSchemeHost(swagger, serviceId);
             updatePaths(swagger, serviceId, apiDocInfo, hidden);
         }
@@ -70,9 +81,9 @@ public class ApiDocV2Service extends AbstractApiDocService<Swagger, Path> {
      * @param serviceId the unique service id
      */
     private void updateSchemeHost(Swagger swagger, String serviceId) {
-        log.debug("Updating host for service with id: " + serviceId + " to: " + getHostname(serviceId));
+        log.debug("Updating host for service with id: " + serviceId + " to: " + getHostname());
         swagger.setSchemes(Collections.singletonList(Scheme.forValue(scheme)));
-        swagger.setHost(getHostname(serviceId));
+        swagger.setHost(getHostname());
     }
 
     private void updateSwaggerUrl(Swagger swagger, String serviceId, ApiInfo apiInfo, boolean hidden, String scheme) {
