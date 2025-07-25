@@ -18,15 +18,19 @@ import org.mockito.Mockito;
 import org.openapitools.openapidiff.core.OpenApiCompare;
 import org.openapitools.openapidiff.core.compare.OpenApiDiffOptions;
 import org.openapitools.openapidiff.core.model.ChangedOpenApi;
-import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ApiDocControllerTest {
 
@@ -56,15 +60,23 @@ class ApiDocControllerTest {
             void givenApiDoc_thenReturnApiDoc() {
                 when(mockApiDocService.retrieveApiDoc("service", "1.0.0")).thenReturn(Mono.just(API_DOC));
 
-                ResponseEntity<String> res = underTest.getApiDocInfo("service", "1.0.0").block();
-                assertNotNull(res);
-                assertEquals(API_DOC, res.getBody());
+                var elapsed = StepVerifier.create(underTest.getApiDocInfo("service", "1.0.0"))
+                    .assertNext(res -> {
+                        assertNotNull(res);
+                        assertEquals(API_DOC, res.getBody());
+                    })
+                    .verifyComplete();
+                assertEquals(0L, elapsed.getSeconds());
             }
 
             @Test
             void givenNoApiDoc_thenThrowException() {
                 when(mockApiDocService.retrieveApiDoc("service", "1.0.0")).thenThrow(new ApiDocNotFoundException("error"));
-                assertThrows(ApiDocNotFoundException.class, () -> underTest.getApiDocInfo("service", "1.0.0").block());
+
+                var elapsed = StepVerifier.create(Mono.defer(() -> underTest.getApiDocInfo("service", "1.0.0")))
+                    .expectErrorMatches(ApiDocNotFoundException.class::isInstance)
+                    .verify();
+                assertEquals(0L, elapsed.toSeconds());
             }
 
         }
@@ -76,15 +88,23 @@ class ApiDocControllerTest {
             void givenApiDocExists_thenReturnIt() {
                 when(mockApiDocService.retrieveDefaultApiDoc("service")).thenReturn(Mono.just(API_DOC));
 
-                ResponseEntity<String> res = underTest.getDefaultApiDocInfo("service").block();
-                assertNotNull(res);
-                assertEquals(API_DOC, res.getBody());
+                var elapsed = StepVerifier.create(underTest.getDefaultApiDocInfo("service"))
+                    .assertNext(res -> {
+                        assertNotNull(res);
+                        assertEquals(API_DOC, res.getBody());
+                    })
+                    .verifyComplete();
+                assertEquals(0L, elapsed.getSeconds());
             }
 
             @Test
             void givenNoApiDocExists_thenThrowException() {
                 when(mockApiDocService.retrieveDefaultApiDoc("service")).thenThrow(new ApiDocNotFoundException("error"));
-                assertThrows(ApiDocNotFoundException.class, () -> underTest.getDefaultApiDocInfo("service").block());
+
+                var elapsed = StepVerifier.create(Mono.defer(() -> underTest.getDefaultApiDocInfo("service")))
+                    .expectErrorMatches(ApiDocNotFoundException.class::isInstance)
+                    .verify();
+                assertEquals(0L, elapsed.toSeconds());
             }
 
         }
@@ -100,10 +120,15 @@ class ApiDocControllerTest {
 
             try (MockedStatic<OpenApiCompare> openApiCompare = Mockito.mockStatic(OpenApiCompare.class)) {
                 openApiCompare.when(() -> OpenApiCompare.fromContents("doc1", "doc2")).thenReturn(changedOpenApi);
-                ResponseEntity<String> res = underTest.getApiDiff("service", "v1", "v2").block();
-                assertNotNull(res);
-                assertTrue(res.getBody().contains("<title>Api Change Log</title>"));
+                var elapsed = StepVerifier.create(underTest.getApiDiff("service", "v1", "v2"))
+                    .assertNext(res -> {
+                        assertNotNull(res);
+                        assertTrue(res.getBody().contains("<title>Api Change Log</title>"));
+                    })
+                    .verifyComplete();
+                assertEquals(0L, elapsed.toSeconds());
             }
+
         }
 
     }

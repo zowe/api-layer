@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.context.annotation.Bean;
@@ -41,12 +42,22 @@ import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_ID;
@@ -176,53 +187,64 @@ class ServicesControllerTests {
                 given(apiDocService.retrieveDefaultApiVersion("service1")).willReturn(defaultApiVersion);
                 given(apiDocService.retrieveDefaultApiVersion("service2")).willReturn(defaultApiVersion);
 
-                ResponseEntity<List<APIContainer>> containers = underTest.getAPIContainerById("api-one").block();
-
-                containers.getBody().forEach(apiContainer ->
-                    apiContainer.getServices().forEach(apiService -> {
-                        assertEquals(apiService.getServiceId(), apiService.getApiDoc());
-                        assertEquals(apiVersions, apiService.getApiVersions());
-                        assertEquals(defaultApiVersion, apiService.getDefaultApiVersion());
-                    }));
+                var elapsed = StepVerifier.create(underTest.getAPIContainerById("api-one"))
+                    .assertNext(containers -> {
+                        containers.getBody().forEach(apiContainer ->
+                            apiContainer.getServices().forEach(apiService -> {
+                                assertEquals(apiService.getServiceId(), apiService.getApiDoc());
+                                assertEquals(apiVersions, apiService.getApiVersions());
+                                assertEquals(defaultApiVersion, apiService.getDefaultApiVersion());
+                            }));
+                    })
+                    .verifyComplete();
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Test
             void thenPopulateApiDocForServicesExceptOneWhichFails() throws ContainerStatusRetrievalException {
                 given(apiDocService.retrieveDefaultApiDoc("service2")).willReturn(Mono.error(new RuntimeException()));
 
-                ResponseEntity<List<APIContainer>> containers = underTest.getAPIContainerById("api-one").block();
-                assertThereIsOneContainer(containers);
+                var elapsed = StepVerifier.create(underTest.getAPIContainerById("api-one"))
+                    .assertNext(containers -> {
+                        assertThereIsOneContainer(containers);
+                        containers.getBody().forEach(apiContainer ->
+                            apiContainer.getServices().forEach(apiService -> {
+                                if (apiService.getServiceId().equals("service1")) {
+                                    assertEquals(apiService.getServiceId(), apiService.getApiDoc());
+                                    assertEquals(apiService.getApiVersions(), apiVersions);
+                                }
+                                if (apiService.getServiceId().equals("service2")) {
+                                    Assertions.assertNull(apiService.getApiDoc());
+                                }
+                            }));
+                    })
+                    .verifyComplete();
 
-                containers.getBody().forEach(apiContainer ->
-                    apiContainer.getServices().forEach(apiService -> {
-                        if (apiService.getServiceId().equals("service1")) {
-                            assertEquals(apiService.getServiceId(), apiService.getApiDoc());
-                            assertEquals(apiService.getApiVersions(), apiVersions);
-                        }
-                        if (apiService.getServiceId().equals("service2")) {
-                            Assertions.assertNull(apiService.getApiDoc());
-                        }
-                    }));
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             @Test
             void thenPopulateApiVersionsForServicesExceptOneWhichFails() throws ContainerStatusRetrievalException {
                 given(apiDocService.retrieveApiVersions("service2")).willThrow(new RuntimeException());
 
-                ResponseEntity<List<APIContainer>> containers = underTest.getAPIContainerById("api-one").block();
-                assertThereIsOneContainer(containers);
+                var elapsed = StepVerifier.create(underTest.getAPIContainerById("api-one"))
+                    .assertNext(containers -> {
+                        assertThereIsOneContainer(containers);
 
-                containers.getBody().forEach(apiContainer ->
-                    apiContainer.getServices().forEach(apiService -> {
-                        if (apiService.getServiceId().equals("service1")) {
-                            assertEquals(apiService.getServiceId(), apiService.getApiDoc());
-                            assertEquals(apiService.getApiVersions(), apiVersions);
-                        }
-                        if (apiService.getServiceId().equals("service2")) {
-                            assertEquals(apiService.getServiceId(), apiService.getApiDoc());
-                            Assertions.assertNull(apiService.getApiVersions());
-                        }
-                    }));
+                        containers.getBody().forEach(apiContainer ->
+                            apiContainer.getServices().forEach(apiService -> {
+                                if (apiService.getServiceId().equals("service1")) {
+                                    assertEquals(apiService.getServiceId(), apiService.getApiDoc());
+                                    assertEquals(apiService.getApiVersions(), apiVersions);
+                                }
+                                if (apiService.getServiceId().equals("service2")) {
+                                    assertEquals(apiService.getServiceId(), apiService.getApiDoc());
+                                    Assertions.assertNull(apiService.getApiVersions());
+                                }
+                            }));
+                    })
+                    .verifyComplete();
+                assertEquals(0L, elapsed.toSeconds());
             }
 
             private void assertThereIsOneContainer(ResponseEntity<List<APIContainer>> containers) {
@@ -257,31 +279,41 @@ class ServicesControllerTests {
 
         @Test
         void thenReturnOk() {
-            String defaultApiVersion = "v1";
+            var defaultApiVersion = "v1";
 
             given(containerService.getService(serviceId)).willReturn(service);
             given(apiDocService.retrieveDefaultApiVersion(serviceId)).willReturn(defaultApiVersion);
             given(apiDocService.retrieveDefaultApiDoc(serviceId)).willReturn(Mono.just("mockApiDoc"));
 
-            ResponseEntity<APIService> apiServicesById = underTest.getAPIServicesById(serviceId).block();
-            assertEquals(HttpStatus.OK, apiServicesById.getStatusCode());
-            assertNotNull(apiServicesById.getBody());
-            assertEquals( "mockApiDoc", apiServicesById.getBody().getApiDoc());
-            assertEquals("v1", apiServicesById.getBody().getDefaultApiVersion());
+            var elapsed = StepVerifier.create(underTest.getAPIServicesById(serviceId))
+                .assertNext(apiServicesById -> {
+                    assertEquals(HttpStatus.OK, apiServicesById.getStatusCode());
+                    assertNotNull(apiServicesById.getBody());
+                    assertEquals( "mockApiDoc", apiServicesById.getBody().getApiDoc());
+                    assertEquals("v1", apiServicesById.getBody().getDefaultApiVersion());
+                })
+                .verifyComplete();
+
+            assertEquals(0L, elapsed.toSeconds());
         }
 
         @Test
         void thenReturnOkWithoutApiDoc() {
-            String defaultApiVersion = "v1";
+            var defaultApiVersion = "v1";
 
             given(containerService.getService(serviceId)).willReturn(service);
             given(apiDocService.retrieveDefaultApiVersion(serviceId)).willReturn(defaultApiVersion);
             given(apiDocService.retrieveDefaultApiDoc(serviceId)).willReturn(Mono.empty());
 
-            ResponseEntity<APIService> apiServicesById = underTest.getAPIServicesById(serviceId).block();
-            assertEquals(HttpStatus.OK, apiServicesById.getStatusCode());
-            assertNotNull(apiServicesById.getBody());
-            assertNull(apiServicesById.getBody().getApiDoc());
+            var elapsed = StepVerifier.create(underTest.getAPIServicesById(serviceId))
+                .assertNext(apiServicesById -> {
+                    assertEquals(HttpStatus.OK, apiServicesById.getStatusCode());
+                    assertNotNull(apiServicesById.getBody());
+                    assertNull(apiServicesById.getBody().getApiDoc());
+                })
+                .verifyComplete();
+
+            assertEquals(0L, elapsed.toSeconds());
         }
     }
 
@@ -327,10 +359,11 @@ class ServicesControllerTests {
             null, null, null, null);
     }
 
+    @TestConfiguration
     static class Context {
 
         @Bean
-        public GatewayClient gatewayClient() {
+        GatewayClient gatewayClient() {
             return new GatewayClient(ServiceAddress.builder().scheme("https").hostname("localhost").build());
         }
 
