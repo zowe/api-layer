@@ -314,7 +314,7 @@ if [ -n "${ZWE_java_home}" ]; then
     JAVA_BIN_DIR=${ZWE_java_home}/bin/
 fi
 
-APIML_CODE=AL
+APIML_CODE=AG
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Xms${ZWE_configs_heap_init:-${ZWE_components_gateway_heap_init:-32}}m -Xmx${ZWE_configs_heap_max:-${ZWE_components_gateway_heap_max:-512}}m \
