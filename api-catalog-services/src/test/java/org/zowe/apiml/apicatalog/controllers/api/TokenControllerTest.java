@@ -89,7 +89,7 @@ class TokenControllerTest {
         @Test
         void givenInvalidCredentialsInHeader_whenLogin_thenRejected() {
             webTestClient.post()
-                .uri("/apicatalog/api/v1/auth/login")
+                .uri("/apicatalog/auth/login")
                 .header(AUTHORIZATION, "Basic " + INVALID_CREDENTIALS_BASE64)
                 .exchange()
                 .expectStatus().isEqualTo(SC_UNAUTHORIZED);
@@ -127,7 +127,7 @@ class TokenControllerTest {
         @Test
         void givenValidCredentialsInHeader_whenQuery_thenSuccess() {
             webTestClient.get()
-                .uri("/apicatalog/api/v1/auth/query")
+                .uri("/apicatalog/auth/query")
                 .header(AUTHORIZATION, "Bearer " + VALID_TOKEN)
                 .exchange()
                     .expectStatus().isOk()
@@ -138,7 +138,7 @@ class TokenControllerTest {
         @Test
         void givenValidCredentialsInCookie_whenQuery_thenSuccess() {
             webTestClient.get()
-                .uri("/apicatalog/api/v1/auth/query")
+                .uri("/apicatalog/auth/query")
                 .cookie(COOKIE_AUTH_NAME, VALID_TOKEN)
                 .exchange()
                     .expectStatus().isOk()
@@ -149,7 +149,7 @@ class TokenControllerTest {
         @Test
         void givenInvalidCredentialsInHeader_whenQuery_thenReject() {
             webTestClient.get()
-                .uri("/apicatalog/api/v1/auth/query")
+                .uri("/apicatalog/auth/query")
                 .header(AUTHORIZATION, "Bearer " + INVALID_TOKEN)
                 .exchange()
                     .expectStatus().isEqualTo(SC_UNAUTHORIZED);
@@ -158,7 +158,7 @@ class TokenControllerTest {
         @Test
         void givenInvalidCredentialsInCookie_whenQuery_thenReject() {
             webTestClient.get()
-                .uri("/apicatalog/api/v1/auth/query")
+                .uri("/apicatalog/auth/query")
                 .cookie(COOKIE_AUTH_NAME, INVALID_TOKEN)
                 .exchange()
                     .expectStatus().isEqualTo(SC_UNAUTHORIZED);
@@ -167,7 +167,7 @@ class TokenControllerTest {
         @Test
         void givenNoCredentialsInCookie_whenQuery_thenReject() {
             webTestClient.get()
-                .uri("/apicatalog/api/v1/auth/query")
+                .uri("/apicatalog/auth/query")
                 .exchange()
                     .expectStatus().isEqualTo(SC_UNAUTHORIZED);
         }

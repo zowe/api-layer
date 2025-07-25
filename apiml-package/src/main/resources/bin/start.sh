@@ -328,7 +328,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.discovery.password=password \
     -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer:-${ZWE_components_discovery_apiml_discovery_serviceIdPrefixReplacer}} \
-    -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
+    -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR:-} \
     -Dapiml.discovery.userid=eureka \
     -Dapiml.gateway.cachePeriodSec=${ZWE_configs_apiml_gateway_registry_cachePeriodSec:-${ZWE_components_gateway_apiml_gateway_registry_cachePeriodSec:-120}} \
     -Dapiml.gateway.cookieNameForRateLimit=${cookieName:-apimlAuthenticationToken} \
@@ -404,6 +404,14 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.webSocket.maxIdleTimeout=${ZWE_configs_server_webSocket_maxIdleTimeout:-${ZWE_components_gateway_server_webSocket_maxIdleTimeout:-3600000}} \
     -Dserver.webSocket.requestBufferSize=${ZWE_configs_server_webSocket_requestBufferSize:-${ZWE_components_gateway_server_webSocket_requestBufferSize:-8192}} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
+    -Dapiml.catalog.hide.serviceInfo=${ZWE_configs_apiml_catalog_hide_serviceInfo:-${ZWE_components_apicatalog_apiml_catalog_hide_serviceInfo:-false}} \
+    -Dapiml.catalog.customStyle.logo=${ZWE_configs_apiml_catalog_customStyle_logo:-${ZWE_components_apicatalog_apiml_catalog_customStyle_logo:-}} \
+    -Dapiml.catalog.customStyle.fontFamily=${ZWE_configs_apiml_catalog_customStyle_fontFamily:-${ZWE_components_apicatalog_apiml_catalog_customStyle_fontFamily:-}} \
+    -Dapiml.catalog.customStyle.backgroundColor=${ZWE_configs_apiml_catalog_customStyle_backgroundColor:-${ZWE_components_apicatalog_apiml_catalog_customStyle_backgroundColor:-}} \
+    -Dapiml.catalog.customStyle.titlesColor=${ZWE_configs_apiml_catalog_customStyle_titlesColor:-${ZWE_components_apicatalog_apiml_catalog_customStyle_titlesColor:-}} \
+    -Dapiml.catalog.customStyle.headerColor=${ZWE_configs_apiml_catalog_customStyle_headerColor:-${ZWE_components_apicatalog_apiml_catalog_customStyle_headerColor:-}} \
+    -Dapiml.catalog.customStyle.textColor=${ZWE_configs_apiml_catalog_customStyle_textColor:-${ZWE_components_apicatalog_apiml_catalog_customStyle_textColor:-}} \
+    -Dapiml.catalog.customStyle.docLink=${ZWE_configs_apiml_catalog_customStyle_docLink:-${ZWE_components_apicatalog_apiml_catalog_customStyle_docLink:-}} \
     -jar "${JAR_FILE}" &
 
 pid=$!

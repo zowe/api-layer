@@ -18,9 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-@ConfigurationProperties("apiml.caching.eureka.instance")
+@ConfigurationProperties("apiml.catalog.eureka.instance")
 @Data
-public class CachingServiceEurekaInstanceConfigBean {
+public class CatalogEurekaInstanceConfigBean {
 
     /**
      * Gets the metadata name/value pairs associated with this instance. This information

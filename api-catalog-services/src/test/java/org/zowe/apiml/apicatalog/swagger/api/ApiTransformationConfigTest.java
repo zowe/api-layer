@@ -13,6 +13,7 @@ package org.zowe.apiml.apicatalog.swagger.api;
 import com.fasterxml.jackson.core.JsonParseException;
 import jakarta.validation.UnexpectedTypeException;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.config.ApplicationInfo;
 
 import java.util.function.Function;
 
@@ -20,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ApiTransformationConfigTest {
 
-    private final ApiTransformationConfig apiTransformationConfig = new ApiTransformationConfig(null);
+    private final ApiTransformationConfig apiTransformationConfig = new ApiTransformationConfig(ApplicationInfo.builder().build(), null);
     private final Function<String, AbstractApiDocService<?, ?>> beanApiDocFactory = apiTransformationConfig.beanApiDocFactory();
 
     @Test

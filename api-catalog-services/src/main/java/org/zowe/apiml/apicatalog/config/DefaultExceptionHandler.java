@@ -36,13 +36,12 @@ public class DefaultExceptionHandler {
     @ExceptionHandler(Exception.class)
     public Mono<ResponseEntity<ApiMessageView>> handleException(ServerWebExchange exchange, Exception exception) {
         AtomicReference<ResponseEntity<ApiMessageView>> responseJson = new AtomicReference<>();
-        BiConsumer<ApiMessageView, HttpStatus> consumer = (message, status) -> {
+        BiConsumer<ApiMessageView, HttpStatus> consumer = (message, status) ->
             responseJson.set(ResponseEntity
                 .status(status)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(message)
             );
-        };
 
         try {
             authExceptionHandler.handleException(exchange.getRequest().getPath().value(), consumer, exchange.getResponse().getHeaders()::add, exception);

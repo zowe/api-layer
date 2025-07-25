@@ -85,6 +85,7 @@ public class ContainerService {
     public Collection<APIContainer> getAllContainers() {
         return getProductIds().stream()
             .map(this::getContainerById)
+            .filter(Objects::nonNull)
             .toList();
     }
 
@@ -131,7 +132,7 @@ public class ContainerService {
         String instanceHomePage = getHomePageUrl(serviceInstance);
 
         //Gateway homePage is used to hold DVIPA address and must not be modified
-        if (hasHomePage(serviceInstance) && !StringUtils.equalsIgnoreCase(GATEWAY.getServiceId(), serviceId)) {
+        if (hasHomePage(serviceInstance) && !GATEWAY.getServiceId().equals(serviceId)) {
             instanceHomePage = instanceHomePage.trim();
             RoutedServices routes = metadataParser.parseRoutes(serviceInstance.getMetadata());
             try {
@@ -205,7 +206,7 @@ public class ContainerService {
 
         String serviceId = StringUtils.lowerCase(serviceInstance.getServiceId());
         String title = serviceInstance.getMetadata().get(SERVICE_TITLE);
-        if (StringUtils.equalsIgnoreCase(GATEWAY.getServiceId(), serviceId)) {
+        if (GATEWAY.getServiceId().equals(serviceId)) {
             if (RegistrationType.of(serviceInstance.getMetadata()).isAdditional()) {
                 // additional registration for GW means domain one, update serviceId and basePath with the ApimlId
                 String apimlId = serviceInstance.getMetadata().get(APIML_ID);
@@ -264,7 +265,7 @@ public class ContainerService {
         return container;
     }
 
-    private boolean update(APIService apiService) {
+    boolean update(APIService apiService) {
         List<ServiceInstance> instances = discoveryClient.getInstances(apiService.getServiceId());
 
         boolean isUp = instances.stream().anyMatch(this::isUp);
@@ -337,10 +338,14 @@ public class ContainerService {
      * @return {@link APIContainer}
      */
     public APIContainer getContainerById(String id) {
+        if (id == null) {
+            return null;
+        }
+
         var instances = discoveryClient.getServices().stream()
             .map(discoveryClient::getInstances)
             .flatMap(List::stream)
-            .filter(instance -> StringUtils.equalsIgnoreCase(id, instance.getMetadata().get(CATALOG_ID)))
+            .filter(instance -> id.equalsIgnoreCase(instance.getMetadata().get(CATALOG_ID)))
             .toArray(ServiceInstance[]::new);
 
         if (ArrayUtils.isEmpty(instances)) {
@@ -354,7 +359,11 @@ public class ContainerService {
 
     public APIService getService(String serviceId) {
         return EurekaUtils.getInstanceInfo(discoveryClient, serviceId)
-            .map(this::createAPIServiceFromInstance)
+            .map(instance -> {
+                var apiService = createAPIServiceFromInstance(instance);
+                update(apiService);
+                return apiService;
+            })
             .orElse(null);
     }
 

@@ -29,15 +29,15 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@WebFluxTest(controllers = OidcController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
-@ContextConfiguration(classes = OidcController.class)
+@WebFluxTest(controllers = OidcControllerMicroservice.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@ContextConfiguration(classes = OidcControllerMicroservice.class)
 class OidcControllerTest {
 
     @Autowired
     private WebTestClient webTestClient;
 
     @Autowired
-    private OidcController oidcController;
+    private OidcControllerMicroservice oidcController;
 
     @Nested
     class OidcProviders {

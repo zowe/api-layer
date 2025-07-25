@@ -23,7 +23,6 @@ import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.exceptions.ApiVersionNotFoundException;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
-import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedService;
@@ -194,12 +193,6 @@ public class ApiDocService {
         return defaultVersion;
     }
 
-    boolean isServiceAccessibleInternally(ServiceInstance serviceInstance) {
-        return StringUtils.equalsAnyIgnoreCase(serviceInstance.getServiceId(),
-            CoreService.API_CATALOG.getServiceId()
-        );
-    }
-
     /**
      * Creates a URL from the routing metadata 'apiml.routes.api-doc.serviceUrl' when 'apiml.apiInfo.swaggerUrl' is
      * not present
@@ -230,25 +223,6 @@ public class ApiDocService {
             .build();
 
         return uri.toUriString();
-    }
-
-    /**
-     * Get ApiDoc url
-     *
-     * @param apiInfo      the apiInfo of service instance
-     * @param serviceInstance the information about service instance
-     * @param routes       the routes of service instance
-     * @return the url of apidoc
-     */
-    private String getApiDocUrl(ApiInfo apiInfo, ServiceInstance serviceInstance, RoutedServices routes) {
-        String apiDocUrl = null;
-        if (apiInfo == null) {
-            apiDocUrl = createApiDocUrlFromRouting(serviceInstance, routes);
-        } else if (StringUtils.isNotBlank(apiInfo.getSwaggerUrl())) {
-            apiDocUrl = apiInfo.getSwaggerUrl();
-        }
-
-        return apiDocUrl;
     }
 
     private String getGatewayUrl() {
@@ -292,7 +266,7 @@ public class ApiDocService {
         Mono<ApiDocInfo> apiDocInfo;
         if (apiInfo.getSwaggerUrl() == null) {
             apiDocInfo = getApiDocInfoBySubstituteSwagger(serviceInstance, apiInfo);
-        } else if (isServiceAccessibleInternally(serviceInstance)) {
+        } else if (apiDocRetrievalServiceLocal.isSupported(serviceId)) {
             apiDocInfo = apiDocRetrievalServiceLocal.retrieveApiDoc(serviceInstance, apiInfo);
         } else {
             apiDocInfo = apiDocRetrievalServiceRest.retrieveApiDoc(serviceInstance, apiInfo);

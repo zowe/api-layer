@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 
 import java.io.IOException;
@@ -33,6 +34,7 @@ import java.util.function.Function;
 @SuppressWarnings("squid:S1452")
 public class ApiTransformationConfig {
 
+    private final ApplicationInfo applicationInfo;
     private final GatewayClient gatewayClient;
 
     @Bean
@@ -56,11 +58,11 @@ public class ApiTransformationConfig {
             ObjectNode objectNode = mapper.readValue(content, ObjectNode.class);
             JsonNode openApiNode = objectNode.get("openapi");
             if (openApiNode != null) {
-                return new ApiDocV3Service(gatewayClient);
+                return new ApiDocV3Service(applicationInfo, gatewayClient);
             } else {
                 JsonNode swaggerNode = objectNode.get("swagger");
                 if (swaggerNode != null) {
-                    return new ApiDocV2Service(gatewayClient);
+                    return new ApiDocV2Service(applicationInfo, gatewayClient);
                 }
             }
         } catch (IOException e) {

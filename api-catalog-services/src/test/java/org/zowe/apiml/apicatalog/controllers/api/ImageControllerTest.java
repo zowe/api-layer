@@ -20,15 +20,15 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-@WebFluxTest(controllers = ImageController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
-@ContextConfiguration(classes = ImageController.class)
+@WebFluxTest(controllers = ImageControllerMicroservice.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@ContextConfiguration(classes = ImageControllerMicroservice.class)
 class ImageControllerTest {
 
     @Autowired
     private WebTestClient webTestClient;
 
     @Autowired
-    private ImageController imageController;
+    private ImageControllerMicroservice imageController;
 
     @Nested
     class GivenImageEndpointRequest {

@@ -41,6 +41,8 @@ jobs:
         services:
             apiml:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
@@ -50,14 +52,6 @@ jobs:
                     SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: api-catalog-services
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
-                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -230,23 +224,6 @@ jobs:
                     APIML_SERVICE_HOSTNAME: apiml-2
                     logbackService: ZWEAGW2
                     APIML_HEALTH_PROTECTED: false
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: api-catalog-services
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
-            api-catalog-services-2:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: api-catalog-services-2
-                    APIML_HEALTH_PROTECTED: false
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
-                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1203,13 +1180,6 @@ jobs:
         timeout-minutes: 15
 
         services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1398,10 +1368,6 @@ jobs:
         timeout-minutes: 15
 
         services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1848,7 +1814,7 @@ jobs:
             -   name: Run startup check
                 timeout-minutes: 4
                 run: >
-                    ./gradlew runStartUpCheck --info --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
+                    ./gradlew runStartUpCheck --info --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1 -Dgateway.instances=1
             -   name: Show status when APIML is not ready yet
                 if: failure()
                 shell: bash
@@ -1894,14 +1860,6 @@ jobs:
         timeout-minutes: 30
 
         services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: api-catalog-services
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://gateway-service:10011/eureka
-                    APIML_SERVICE_GATEWAYHOSTNAME: https://gateway-service:10010
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1913,6 +1871,8 @@ jobs:
 
             gateway-service: # To avoid updating Oauth provider admin settings
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://gateway-service:10011/eureka
                     APIML_SERVICE_HOSTNAME: gateway-service
@@ -1927,8 +1887,11 @@ jobs:
                     APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
                     APIML_HEALTH_PROTECTED: false
                     logbackService: ZWEAGW1
+                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://gateway-service-2:10011/eureka
                     APIML_SERVICE_HOSTNAME: gateway-service-2
@@ -1941,6 +1904,7 @@ jobs:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
+                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
 
         steps:
             -   uses: actions/checkout@v4

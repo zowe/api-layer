@@ -17,6 +17,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,8 +41,6 @@ import java.util.stream.StreamSupport;
  * Main API for handling requests from the API Catalog UI, routed through the gateway
  */
 @Slf4j
-@RestController
-@RequestMapping({"/apicatalog/", "/apicatalog/api/v1/"})
 @Tag(name = "API Catalog")
 @RequiredArgsConstructor
 public class ServicesController {
@@ -214,6 +214,28 @@ public class ServicesController {
         }
         return StreamSupport.stream(iterable.spliterator(), false)
             .toList();
+    }
+
+}
+
+@RestController
+@RequestMapping("/apicatalog/api/v1/")
+@ConditionalOnBean(name = "modulithConfig")
+class ServicesControllerModulith extends ServicesController {
+
+    public ServicesControllerModulith(ContainerService containerService, ApiDocService apiDocService) {
+        super(containerService, apiDocService);
+    }
+
+}
+
+@RestController
+@RequestMapping("/apicatalog/")
+@ConditionalOnMissingBean(name = "modulithConfig")
+class ServicesControllerMicroservice extends ServicesController {
+
+    public ServicesControllerMicroservice(ContainerService containerService, ApiDocService apiDocService) {
+        super(containerService, apiDocService);
     }
 
 }

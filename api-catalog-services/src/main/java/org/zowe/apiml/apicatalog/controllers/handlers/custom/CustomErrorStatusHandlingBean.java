@@ -10,13 +10,15 @@
 
 package org.zowe.apiml.apicatalog.controllers.handlers.custom;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.web.server.ErrorPage;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("catalogCustomErrorStatusHandlingBean")
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class CustomErrorStatusHandlingBean implements WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> {
 
     @Override

@@ -11,6 +11,8 @@
 package org.zowe.apiml.apicatalog.staticapi;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,8 +25,6 @@ import java.io.IOException;
  * Controller to handle the request issued from the UI to generate
  * a static definition file from the Wizard interface
  */
-@RestController
-@RequestMapping({"/apicatalog/static-api", "/apicatalog/api/v1/static-api"})
 @RequiredArgsConstructor
 @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
 public class StaticDefinitionController {
@@ -66,6 +66,28 @@ public class StaticDefinitionController {
     public Mono<ResponseEntity<String>> deleteStaticDef(@RequestHeader(value = "Service-Id") String serviceId) throws IOException {
         StaticAPIResponse staticAPIResponse = staticDefinitionGenerator.deleteFile(serviceId);
         return Mono.just(ResponseEntity.status(staticAPIResponse.getStatusCode()).body(staticAPIResponse.getBody()));
+    }
+
+}
+
+@RestController
+@RequestMapping("/apicatalog/api/v1/static-api")
+@ConditionalOnBean(name = "modulithConfig")
+class StaticDefinitionControllerModulith extends StaticDefinitionController {
+
+    public StaticDefinitionControllerModulith(StaticDefinitionGenerator staticDefinitionGenerator) {
+        super(staticDefinitionGenerator);
+    }
+
+}
+
+@RestController
+@RequestMapping("/apicatalog/static-api")
+@ConditionalOnMissingBean(name = "modulithConfig")
+class StaticDefinitionControllerMicroservice extends StaticDefinitionController {
+
+    public StaticDefinitionControllerMicroservice(StaticDefinitionGenerator staticDefinitionGenerator) {
+        super(staticDefinitionGenerator);
     }
 
 }

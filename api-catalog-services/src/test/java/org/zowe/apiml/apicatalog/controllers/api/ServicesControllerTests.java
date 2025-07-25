@@ -62,14 +62,14 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doReturn;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.CATALOG_ID;
 
-@WebFluxTest(controllers = ServicesController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@WebFluxTest(controllers = ServicesControllerMicroservice.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
 @ContextConfiguration(classes = {
-    ServicesController.class,
+    ServicesControllerMicroservice.class,
     ApiCatalogControllerExceptionHandler.class,
     ContainerService.class,
-    ServicesControllerTests.Context.class,
     DefaultExceptionHandler.class,
     AuthExceptionHandler.class,
+    ServicesControllerTests.Context.class,
     BeanConfig.class
 })
 class ServicesControllerTests {
@@ -117,7 +117,7 @@ class ServicesControllerTests {
 
             @Test
             void ifExistingInstanceThenReturnOk() {
-                var instance = InstanceInfo.Builder.newBuilder().setAppName(SERVICE_ID).setInstanceId("instance1").setMetadata(Map.of(CATALOG_ID, "service1")).build();
+                var instance = InstanceInfo.Builder.newBuilder().setAppName(SERVICE_ID).setInstanceId("instance1").setMetadata(Map.of(CATALOG_ID, SERVICE_ID)).build();
                 doReturn(Collections.singletonList(new EurekaServiceInstance(instance))).when(discoveryClient).getInstances(SERVICE_ID);
                 doReturn(Collections.singletonList(SERVICE_ID)).when(discoveryClient).getServices();
                 doReturn(Mono.empty()).when(apiDocService).retrieveDefaultApiDoc(SERVICE_ID);
@@ -278,7 +278,7 @@ class ServicesControllerTests {
         }
 
         @Test
-        void thenReturnOk() throws ContainerStatusRetrievalException {
+        void thenReturnOk() {
             var defaultApiVersion = "v1";
 
             given(containerService.getService(serviceId)).willReturn(service);
@@ -298,7 +298,7 @@ class ServicesControllerTests {
         }
 
         @Test
-        void thenReturnOkWithoutApiDoc() throws ContainerStatusRetrievalException {
+        void thenReturnOkWithoutApiDoc() {
             var defaultApiVersion = "v1";
 
             given(containerService.getService(serviceId)).willReturn(service);

@@ -42,7 +42,7 @@ class ForwardedProxyHeadersTest extends AcceptanceTestWithMockServices {
     void setUp() {
         var responseHeaders = new Headers();
         responseHeaders.add("Location", "/serviceid1/test2");
-        var service1 = mockService("serviceid1").scope(MockService.Scope.CLASS)
+        mockService("serviceid1").scope(MockService.Scope.CLASS)
             .addEndpoint("/serviceid1/test")
                 .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst("X-forwarded-prefix")))
                 .assertion(he -> assertNotNull(he.getRequestHeaders().getFirst("X-forwarded-for")))

@@ -81,6 +81,11 @@ class ContainerServiceTest {
                 assertEquals(activeServices, container.getActiveServices().intValue());
             }
 
+            @Test
+            void givenNoServiceId_getGetContainerById_thenReturnNull() {
+                assertNull(containerService.getContainerById(null));
+            }
+
             @Nested
             class GivenAllServicesAreUp {
 
@@ -191,7 +196,19 @@ class ContainerServiceTest {
                     }
                 }
 
+                @Test
+                void whenGetService_thenUpdateIt() {
+                    containerService = spy(containerService);
+                    ServiceInstance serviceInstance = ServicesBuilder.createInstance(SERVICE_ID, SERVICE_ID, Pair.of(AUTHENTICATION_SCHEME, "zoweJwt"));
+                    doReturn(Collections.singletonList(serviceInstance)).when(discoveryClient).getInstances(SERVICE_ID);
+                    var apiService = containerService.getService(SERVICE_ID);
+                    assertNotNull(apiService);
+                    assertTrue(apiService.isSso());
+                    verify(containerService, times(1)).update(apiService);
+                }
+
             }
+
         }
 
         @Nested

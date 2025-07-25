@@ -11,6 +11,8 @@
 package org.zowe.apiml.apicatalog.controllers.api;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -23,8 +25,6 @@ import reactor.core.publisher.Mono;
 
 import java.io.File;
 
-@RestController
-@RequestMapping({"/apicatalog", "/apicatalog/api/v1/"})
 public class ImageController {
 
     @Value("${apiml.catalog.customStyle.logo:}")
@@ -64,5 +64,19 @@ public class ImageController {
             .headers(headers)
             .body(new FileSystemResource(imageFile)));
     }
+
+}
+
+@RestController
+@RequestMapping("/apicatalog/api/v1/")
+@ConditionalOnBean(name = "modulithConfig")
+class ImageControllerModulith extends ImageController {
+
+}
+
+@RestController
+@RequestMapping("/apicatalog")
+@ConditionalOnMissingBean(name = "modulithConfig")
+class ImageControllerMicroservice extends ImageController {
 
 }

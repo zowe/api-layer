@@ -50,8 +50,8 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
     private static final EurekaMetadataParser EUREKA_METADATA_PARSER = new EurekaMetadataParser();
 
-    private final TransformService transformService;
-    private final DiscoveryClient discoveryClient;
+    private TransformService transformService;
+    private DiscoveryClient discoveryClient;
 
     public PageRedirectionFilterFactory(
         GatewayClient gatewayClient,

@@ -12,8 +12,15 @@ package org.zowe.apiml.apicatalog.swagger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.netflix.appinfo.InstanceInfo;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.servers.Server;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springdoc.webflux.api.OpenApiWebfluxResource;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -23,6 +30,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
@@ -37,7 +45,7 @@ class ApiDocRetrievalServiceLocalTest {
 
     @BeforeEach
     void init() {
-        service = new ApiDocRetrievalServiceLocal(Collections.emptyList(), null, null, null, null, null, null);
+        service = new ApiDocRetrievalServiceLocal(Collections.emptyList(), null, null, null, null, null, null, null);
     }
 
     @Test
@@ -60,10 +68,10 @@ class ApiDocRetrievalServiceLocalTest {
         var apiDocResource = mockApiDocResource();
         doThrow(new JsonProcessingException("an error") {}).when(apiDocResource).openapiJson(any(), eq("/"), any());
 
-        var instance = InstanceInfo.Builder.newBuilder().setAppName("service").build();
+        var instance = new EurekaServiceInstance(InstanceInfo.Builder.newBuilder().setAppName("service").build());
         var apiInfo = ApiInfo.builder().build();
 
-        var exception = assertThrows(ApiDocNotFoundException.class, () -> service.retrieveApiDoc(new EurekaServiceInstance(instance), apiInfo));
+        var exception = assertThrows(ApiDocNotFoundException.class, () -> service.retrieveApiDoc(instance, apiInfo));
         assertEquals("Cannot obtain API doc for service", exception.getMessage());
         assertInstanceOf(JsonProcessingException.class, exception.getCause());
         assertEquals("an error", exception.getCause().getMessage());
@@ -74,16 +82,57 @@ class ApiDocRetrievalServiceLocalTest {
         var apiDocResource = mockApiDocResource();
         doReturn(Mono.just("Api doc".getBytes(StandardCharsets.UTF_8))).when(apiDocResource).openapiJson(any(), eq("/"), any());
 
-        var instance = InstanceInfo.Builder.newBuilder().setAppName("service").build();
+        var instance = new EurekaServiceInstance(InstanceInfo.Builder.newBuilder().setAppName("service").build());
         var apiInfo = ApiInfo.builder().build();
 
-        StepVerifier.create(service.retrieveApiDoc(new EurekaServiceInstance(instance), apiInfo))
+        StepVerifier.create(service.retrieveApiDoc(instance, apiInfo))
             .expectNextMatches(apiDocInfo -> {
                 assertEquals("Api doc", apiDocInfo.getApiDocContent());
                 assertSame(apiInfo, apiDocInfo.getApiInfo());
                 return true;
             })
             .verifyComplete();
+    }
+
+    @Nested
+    class NormalizePathsCustomizer {
+
+        @ParameterizedTest
+        @CsvSource({
+            "/api1/a,/api1/b/c,/api1",
+            "/a/start*,/a/start,/a",
+            "/a/start/*,/a/start,/a/start",
+            "/a/b/c,/a/b/c,/a/b/c",
+            "/a/b/c,/a/b/c/,/a/b/c",
+            "/a/b/c/,/a/b/c/,/a/b/c",
+            "/a/b*/c/**,/a/b*/c**,/a"
+        })
+        void givenTwoPatterns_whenGetCommonBasePath_thenGetBasePath(String pattern1, String pattern2, String basePath) {
+            assertEquals(basePath, service.getCommonBasePath(Arrays.asList(pattern1, pattern2)));
+        }
+
+        @Test
+        void givenOpenApiAndPath_whenNormalizePaths_thenModifyOpenApi() {
+            OpenAPI openApi = new OpenAPI();
+
+            var server = new Server();
+            server.setUrl("https://localhost:10014");
+            openApi.setServers(Collections.singletonList(server));
+
+            var paths = new Paths();
+            paths.addPathItem("/apicatalog/api/v1/endpoint", new PathItem());
+            openApi.setPaths(paths);
+
+            service.normalizePathsCustomizer(Collections.singletonList("/apicatalog/api/v1/"))
+                .customise(openApi);
+
+            assertEquals(1, openApi.getServers().size());
+            assertEquals("https://localhost:10014/apicatalog/api/v1", server.getUrl());
+
+            assertEquals(1, openApi.getPaths().size());
+            assertNotNull(openApi.getPaths().get("/endpoint"));
+        }
+
     }
 
 }

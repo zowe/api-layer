@@ -13,8 +13,8 @@ package org.zowe.apiml.apicatalog.controllers.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.ResponseCookie;
@@ -23,7 +23,7 @@ import org.springframework.security.authentication.InsufficientAuthenticationExc
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
-import org.zowe.apiml.security.client.service.GatewaySecurityService;
+import org.zowe.apiml.security.client.service.GatewaySecurity;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.LoginRequest;
@@ -39,12 +39,13 @@ import static org.apache.hc.core5.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.hc.core5.http.HttpStatus.SC_NO_CONTENT;
 
 @RestController
-@RequestMapping({"/apicatalog/auth", "/apicatalog/api/v1/auth"})
+@RequestMapping("/apicatalog/auth")
+@ConditionalOnMissingBean(name = "modulithConfig")
 @RequiredArgsConstructor
 public class TokenController {
 
     private final ObjectMapper mapper;
-    private final GatewaySecurityService gatewaySecurityService;
+    private final GatewaySecurity gatewaySecurity;
     private final AuthConfigurationProperties authConfigurationProperties;
 
     private AuthConfigurationProperties.CookieProperties cp;
@@ -79,7 +80,7 @@ public class TokenController {
             ))
             .switchIfEmpty(Mono.error(() -> WebClientResponseException.create(SC_BAD_REQUEST, "bad request", exchange.getRequest().getHeaders(), new byte[0], StandardCharsets.UTF_8)))
             .flatMap(login ->
-                gatewaySecurityService.login(login.getUsername(), login.getPassword(), null).map(token -> {
+                gatewaySecurity.login(login.getUsername(), login.getPassword(), null).map(token -> {
                     exchange.getResponse().addCookie(ResponseCookie.from(cp.getCookieName(), token)
                         .path(cp.getCookiePath())
                         .sameSite(cp.getCookieSameSite().getValue())
@@ -99,13 +100,13 @@ public class TokenController {
         ServerWebExchange exchange
     ) {
         return Optional.ofNullable(exchange.getRequest().getHeaders().getFirst(org.springframework.http.HttpHeaders.AUTHORIZATION))
-            .filter(header -> StringUtils.startsWith(header, "Bearer "))
+            .filter(header -> header.startsWith("Bearer "))
             .map(header -> header.substring("Bearer ".length()))
             .map(String::trim)
             .or(() -> Optional.ofNullable(exchange.getRequest().getCookies().getFirst(cp.getCookieName()))
                 .map(HttpCookie::getValue)
             )
-            .map(gatewaySecurityService::query)
+            .map(gatewaySecurity::query)
             .map(Mono::just)
             .orElse(Mono.error(() -> new InsufficientAuthenticationException("No credentials provided.")));
     }

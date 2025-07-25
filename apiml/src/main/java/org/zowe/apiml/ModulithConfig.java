@@ -70,8 +70,9 @@ public class ModulithConfig {
     private final ApplicationContext applicationContext;
     private final Map<String, InstanceInfo> instances = new HashMap<>();
     private final GatewayEurekaInstanceConfigBean eurekaInstanceGw;
+    private final CatalogEurekaInstanceConfigBean catalogEurekaInstanceConfigBean;
     private final EurekaClientConfig eurekaConfig;
-    private final CachingServiceEurekaInstanceConfigBean eurekaInstanceCaching;
+    private final CachingServiceEurekaInstanceConfigBean cachingServiceEurekaInstanceConfigBean;
 
     private final Timer timer = new Timer("PeerReplicated-StaticServices");
 
@@ -105,23 +106,20 @@ public class ModulithConfig {
 
         var scheme = https ? "https" : "http";
 
-        Map<String, String> metadata = new HashMap<>();
-        switch (serviceId) {
-            case "gateway":
-                metadata = eurekaInstanceGw.getMetadataMap();
-                metadata.put("management.port", "10010");
-                break;
-            case "cachingservice":
-                metadata = eurekaInstanceCaching.getMetadataMap();
-                break;
-            default:
-        }
+        Map<String, String> metadata = switch (serviceId) {
+            case "gateway" -> eurekaInstanceGw.getMetadataMap();
+            case "cachingservice" -> cachingServiceEurekaInstanceConfigBean.getMetadataMap();
+            case "apicatalog" -> catalogEurekaInstanceConfigBean.getMetadataMap();
+            default -> new HashMap<>();
+        };
+
+        String homePagePath = metadata.getOrDefault("apiml.homePagePath", "/");
 
         return InstanceInfo.Builder.newBuilder()
                 .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
                 .setAppName(serviceId)
                 .setHostName(hostname)
-                .setHomePageUrl(null, String.format("%s://%s:%d", scheme, hostname, port))
+                .setHomePageUrl(null, String.format("%s://%s:%d%s", scheme, hostname, port, homePagePath))
                 .setStatus(InstanceInfo.InstanceStatus.UP)
                 .setIPAddr(ipAddress)
                 .setPort(port)
@@ -150,14 +148,15 @@ public class ModulithConfig {
         instances.put(CoreService.GATEWAY.getServiceId(), getInstanceInfo(CoreService.GATEWAY.getServiceId()));
         instances.put(CoreService.DISCOVERY.getServiceId(), getInstanceInfo(CoreService.DISCOVERY.getServiceId()));
         instances.put(CoreService.CACHING.getServiceId(), getInstanceInfo(CoreService.CACHING.getServiceId()));
+        instances.put(CoreService.API_CATALOG.getServiceId(), getInstanceInfo(CoreService.API_CATALOG.getServiceId()));
         EurekaServerContextHolder.initialize(applicationContext.getBean(EurekaServerContext.class));
+
+        ApimlInstanceRegistry registry = getRegistry();
+        instances.forEach((key, value) -> registry.registerStatically(instances.get(key), false, CoreService.GATEWAY.getServiceId().equalsIgnoreCase(key)));
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationStart() {
-        ApimlInstanceRegistry registry = getRegistry();
-        instances.forEach((key, value) -> registry.registerStatically(instances.get(key), false, CoreService.GATEWAY.getServiceId().equalsIgnoreCase(key)));
-
         log.info("Initialize timer for static services peer-replicated heartbeats");
 
         // This timer calls Eureka registry's peerReplicate method to accumulate all heartbeats of statically-onboarded services once
@@ -165,7 +164,12 @@ public class ModulithConfig {
 
             @Override
             public void run() {
-                registry.peerAwareHeartbeat(instances.get(CoreService.GATEWAY.getServiceId()));
+                var registry = getRegistry();
+                if (registry != null) {
+                    registry.peerAwareHeartbeat(instances.get(CoreService.GATEWAY.getServiceId()));
+                } else {
+                    log.debug("Eureka registry is not available yet.");
+                }
             }
 
         }, eurekaConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L, eurekaConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L);
@@ -252,6 +256,7 @@ public class ModulithConfig {
 
         messageService.loadMessages("/discovery-log-messages.yml");
         messageService.loadMessages("/gateway-log-messages.yml");
+        messageService.loadMessages("/apicatalog-log-messages.yml");
 
         messageService.loadMessages("/zaas-log-messages.yml");
 

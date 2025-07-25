@@ -34,12 +34,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.login.LoginRequest;
@@ -55,10 +50,7 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.util.Objects;
 
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.http.HttpStatus.*;
 
 
 
@@ -115,6 +107,7 @@ public class ReactiveAuthenticationController {
             .map(SecurityContext::getAuthentication)
             .filter(Objects::nonNull)
             .filter(Authentication::isAuthenticated)
+            .filter(TokenAuthentication.class::isInstance)
             .map(authentication -> replyWithJwt(exchange, authentication))
             .switchIfEmpty(Mono.<ResponseEntity<Object>>defer(() -> this.authWithBody(exchange, request)))
             .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatusCode.valueOf(401)).build()));

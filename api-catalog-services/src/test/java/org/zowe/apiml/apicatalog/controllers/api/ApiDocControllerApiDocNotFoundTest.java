@@ -28,12 +28,12 @@ import static org.hamcrest.Matchers.contains;
 import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {
-    ApiDocController.class,
+    ApiDocControllerMicroservice.class,
     CatalogApiDocControllerExceptionHandler.class,
     BeanConfig.class
 })
-@WebFluxTest(controllers = ApiDocController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
-@TestInstance(TestInstance.Lifecycle. PER_CLASS)
+@WebFluxTest(controllers = ApiDocControllerMicroservice.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ApiDocControllerApiDocNotFoundTest {
 
     @Autowired

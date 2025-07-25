@@ -28,12 +28,12 @@ import static org.hamcrest.Matchers.contains;
 import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {
-    ServicesController.class,
+    ServicesControllerMicroservice.class,
     ApiCatalogControllerExceptionHandler.class,
     BeanConfig.class
 })
-@WebFluxTest(controllers = ServicesController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
-@TestInstance(TestInstance.Lifecycle. PER_CLASS)
+@WebFluxTest(controllers = ServicesControllerMicroservice.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServicesControllerContainerRetrievalTest {
 
     @Autowired
@@ -52,7 +52,7 @@ class ServicesControllerContainerRetrievalTest {
     }
 
     @Test
-    void getContainers() throws Exception {
+    void getContainers() {
         webTestClient.get().uri("/apicatalog/containers").exchange()
             .expectStatus().is5xxServerError()
             .expectBody().jsonPath("$.messages[?(@.messageNumber == 'ZWEAC104E')].messageContent")
