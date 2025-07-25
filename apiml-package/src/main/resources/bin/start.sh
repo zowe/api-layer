@@ -439,7 +439,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.catalog.customStyle.headerColor=${ZWE_configs_apiml_catalog_customStyle_headerColor:-${ZWE_components_apicatalog_apiml_catalog_customStyle_headerColor:-}} \
     -Dapiml.catalog.customStyle.textColor=${ZWE_configs_apiml_catalog_customStyle_textColor:-${ZWE_components_apicatalog_apiml_catalog_customStyle_textColor:-}} \
     -Dapiml.catalog.customStyle.docLink=${ZWE_configs_apiml_catalog_customStyle_docLink:-${ZWE_components_apicatalog_apiml_catalog_customStyle_docLink:-}} \
-    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
+    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -jar "${JAR_FILE}" &
 
 pid=$!
