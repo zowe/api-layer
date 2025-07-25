@@ -265,7 +265,7 @@ public class ContainerService {
         return container;
     }
 
-    private boolean update(APIService apiService) {
+    boolean update(APIService apiService) {
         List<ServiceInstance> instances = discoveryClient.getInstances(apiService.getServiceId());
 
         boolean isUp = instances.stream().anyMatch(this::isUp);
