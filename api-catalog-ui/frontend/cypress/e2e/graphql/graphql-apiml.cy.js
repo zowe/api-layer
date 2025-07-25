@@ -35,7 +35,7 @@ const PATH_TO_PLAYGROUND_INPUT_DATA =
     '#graphiql-session > div:nth-child(1) > div > div:nth-child(1) > section > div.graphiql-editor > div > div.CodeMirror-scroll > div.CodeMirror-sizer > div > div > div > div.CodeMirror-code';
 
 function login() {
-    cy.visit(`${Cypress.env('catalogHomePage')}/#/login`);
+    cy.visit(`${Cypress.env('catalogHomePage')}/index.html#/login`);
 
     const username = Cypress.env('username');
     const password = Cypress.env('password');
@@ -66,7 +66,7 @@ describe('>>> GraphiQL Playground page test', () => {
 
         cy.contains('Discoverable client with GraphQL').click();
 
-        cy.visit(`${Cypress.env('catalogHomePage')}/#/service/graphqlclient`);
+        cy.visit(`${Cypress.env('catalogHomePage')}/index.html#/service/graphqlclient`);
 
         cy.get('.tabs-container').should('not.exist');
 

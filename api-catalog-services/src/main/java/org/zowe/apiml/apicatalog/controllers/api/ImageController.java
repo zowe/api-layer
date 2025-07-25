@@ -11,6 +11,8 @@
 package org.zowe.apiml.apicatalog.controllers.api;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -19,11 +21,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.io.File;
 
-@RestController
-@RequestMapping("/")
 public class ImageController {
 
     @Value("${apiml.catalog.customStyle.logo:}")
@@ -51,17 +52,31 @@ public class ImageController {
 
     @GetMapping(value = "/custom-logo")
     @ResponseBody
-    public ResponseEntity<FileSystemResource> downloadImage() {
+    public Mono<ResponseEntity<FileSystemResource>> downloadImage() {
         File imageFile = new File(image);
         if (!imageFile.exists()) {
-            return ResponseEntity.notFound().build();
+            return Mono.just(ResponseEntity.notFound().build());
         }
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(getMediaType(image));
-        return ResponseEntity.ok()
+        return Mono.fromSupplier(() -> ResponseEntity.ok()
             .headers(headers)
-            .body(new FileSystemResource(imageFile));
+            .body(new FileSystemResource(imageFile)));
     }
+
+}
+
+@RestController
+@RequestMapping("/apicatalog/api/v1/")
+@ConditionalOnBean(name = "modulithConfig")
+class ImageControllerModulith extends ImageController {
+
+}
+
+@RestController
+@RequestMapping("/apicatalog")
+@ConditionalOnMissingBean(name = "modulithConfig")
+class ImageControllerMicroservice extends ImageController {
 
 }

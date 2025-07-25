@@ -10,21 +10,24 @@
 
 package org.zowe.apiml.security.client.token;
 
-import org.zowe.apiml.security.client.service.GatewaySecurityService;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.security.client.service.GatewaySecurity;
+import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 /**
  * Authentication provider that authenticates TokenAuthentication against Gateway
  */
 @Component
 @RequiredArgsConstructor
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class GatewayTokenProvider implements AuthenticationProvider {
-    private final GatewaySecurityService gatewaySecurityService;
+
+    private final GatewaySecurity gatewaySecurity;
 
     /**
      * Authenticate the token
@@ -37,9 +40,9 @@ public class GatewayTokenProvider implements AuthenticationProvider {
         TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
         QueryResponse queryResponse;
         if (tokenAuthentication.getType() == TokenAuthentication.Type.OIDC) {
-            queryResponse = gatewaySecurityService.verifyOidc(tokenAuthentication.getCredentials());
+            queryResponse = gatewaySecurity.verifyOidc(tokenAuthentication.getCredentials());
         } else {
-            queryResponse = gatewaySecurityService.query(tokenAuthentication.getCredentials());
+            queryResponse = gatewaySecurity.query(tokenAuthentication.getCredentials());
         }
 
         TokenAuthentication validTokenAuthentication = new TokenAuthentication(queryResponse.getUserId(), tokenAuthentication.getCredentials(), tokenAuthentication.getType());

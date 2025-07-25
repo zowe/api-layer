@@ -15,6 +15,7 @@ import lombok.NonNull;
 
 @EqualsAndHashCode(callSuper = false)
 public class SemanticVersion implements Comparable<SemanticVersion> {
+
     @NonNull
     private final int[] numbers;
 
@@ -38,4 +39,5 @@ public class SemanticVersion implements Comparable<SemanticVersion> {
         }
         return 0;
     }
+
 }

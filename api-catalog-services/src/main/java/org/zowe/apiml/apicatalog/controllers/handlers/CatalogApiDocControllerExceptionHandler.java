@@ -10,54 +10,62 @@
 
 package org.zowe.apiml.apicatalog.controllers.handlers;
 
-import org.zowe.apiml.apicatalog.controllers.api.CatalogApiDocController;
-import org.zowe.apiml.apicatalog.services.status.model.ApiDocNotFoundException;
-import org.zowe.apiml.apicatalog.services.status.model.ServiceNotFoundException;
-import org.zowe.apiml.message.api.ApiMessageView;
-import org.zowe.apiml.message.core.Message;
-import org.zowe.apiml.message.core.MessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.zowe.apiml.apicatalog.controllers.api.ApiDocController;
+import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
+import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.core.MessageService;
+import reactor.core.publisher.Mono;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 /**
  * This class creates responses for exceptional behavior of the CatalogApiDocController
  */
-@ControllerAdvice(assignableTypes = {CatalogApiDocController.class})
+@Order(0)
+@ControllerAdvice(assignableTypes = {ApiDocController.class})
 @RequiredArgsConstructor
 public class CatalogApiDocControllerExceptionHandler {
+
     private final MessageService messageService;
 
     /**
      * Could not retrieve the API Documentation
      *
      * @param exception InvalidFormatException
-     * @return 500 and the message 'TBD'
+     * @return 404 and the message 'API Documentation not retrieved...'
      */
     @ExceptionHandler(ApiDocNotFoundException.class)
-    public ResponseEntity<ApiMessageView> handleApiDocNotFoundException(ApiDocNotFoundException exception) {
+    public Mono<ResponseEntity<ApiMessageView>> handleApiDocNotFoundException(ApiDocNotFoundException exception) {
         Message message = messageService.createMessage("org.zowe.apiml.apicatalog.apiDocNotFound", exception.getMessage());
 
-        return ResponseEntity
+        return Mono.just(ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(message.mapToView());
+            .contentType(APPLICATION_JSON)
+            .body(message.mapToView()));
     }
 
     /**
      * Could not retrieve the API Documentation as the Gateway was not available
      *
      * @param exception InvalidFormatException
-     * @return 404 and the message 'TBD'
+     * @return 404 and the message 'Service not located...'
      */
     @ExceptionHandler(ServiceNotFoundException.class)
-    public ResponseEntity<ApiMessageView> handleServiceNotFoundException(ServiceNotFoundException exception) {
-
+    public Mono<ResponseEntity<ApiMessageView>> handleServiceNotFoundException(ServiceNotFoundException exception) {
         Message message = messageService.createMessage("org.zowe.apiml.apicatalog.serviceNotFound", exception.getMessage());
 
-        return ResponseEntity
+        return Mono.just(ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(message.mapToView());
+            .contentType(APPLICATION_JSON)
+            .body(message.mapToView()));
     }
+
 }

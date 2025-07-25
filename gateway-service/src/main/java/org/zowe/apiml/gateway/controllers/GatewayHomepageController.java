@@ -154,9 +154,13 @@ public class GatewayHomepageController {
     }
 
     private String getCatalogLink(ServiceInstance catalogInstance) {
-        String gatewayUrl = catalogInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_GATEWAY_URL));
-        String serviceUrl = catalogInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_SERVICE_URL));
-        return serviceUrl + gatewayUrl;
+        if (applicationInfo.isModulith()) {
+            return "/apicatalog/ui/v1";
+        } else {
+            String gatewayUrl = catalogInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_GATEWAY_URL));
+            String serviceUrl = catalogInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_SERVICE_URL));
+            return serviceUrl + gatewayUrl;
+        }
     }
 
 }

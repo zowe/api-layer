@@ -30,7 +30,7 @@ describe('>>> Service version compare Test', () => {
 
         cy.contains('Service Spring Onboarding Enabler sample application API').click(); // discoverable client
 
-        cy.visit(`${Cypress.env('catalogHomePage')}/#/service/discoverableclient`);
+        cy.visit(`${Cypress.env('catalogHomePage')}/index.html#/service/discoverableclient`);
     });
 
     it('Should show compare tab', () => {

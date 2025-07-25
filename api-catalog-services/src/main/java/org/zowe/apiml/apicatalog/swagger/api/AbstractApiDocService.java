@@ -13,9 +13,9 @@ package org.zowe.apiml.apicatalog.swagger.api;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.beans.factory.annotation.Value;
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
+import org.zowe.apiml.apicatalog.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
@@ -27,9 +27,7 @@ import java.util.Optional;
 @Slf4j
 public abstract class AbstractApiDocService<T, N> {
 
-    @Value("${apiml.catalog.standalone.enabled:false}")
-    protected boolean standalone;
-
+    protected final ApplicationInfo applicationInfo;
     protected final GatewayClient gatewayClient;
 
     protected static final String EXTERNAL_DOCUMENTATION = "External documentation";
@@ -41,15 +39,8 @@ public abstract class AbstractApiDocService<T, N> {
 
     protected abstract void updateExternalDoc(T swaggerAPI, ApiDocInfo apiDocInfo);
 
-    protected String getHostname(String serviceId) {
-        String hostname = gatewayClient.getGatewayConfigProperties().getHostname();
-        if (!standalone) return hostname;
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(hostname);
-        if (!hostname.endsWith("/")) sb.append('/');
-        sb.append(serviceId);
-        return sb.toString();
+    protected String getHostname() {
+        return gatewayClient.getGatewayConfigProperties().getHostname();
     }
 
     protected void preparePath(N path, ApiDocPath<N> apiDocPath, ApiDocInfo apiDocInfo, String basePath, String originalEndpoint, String serviceId) {

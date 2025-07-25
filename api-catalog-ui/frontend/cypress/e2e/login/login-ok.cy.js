@@ -12,7 +12,7 @@
 
 describe('>>> Login ok page test', () => {
     it('should not display header', () => {
-        cy.visit(`${Cypress.env('catalogHomePage')}/#/`);
+        cy.visit(`${Cypress.env('catalogHomePage')}/index.html#/`);
         cy.get('.header').should('not.exist');
     });
 

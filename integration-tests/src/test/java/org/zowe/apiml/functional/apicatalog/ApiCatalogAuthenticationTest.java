@@ -17,11 +17,8 @@ import io.restassured.response.Validatable;
 import io.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -35,6 +32,7 @@ import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import java.net.URISyntaxException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -50,6 +48,10 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 @Slf4j
 class ApiCatalogAuthenticationTest {
 
+    private static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
+
+    private static final String UNAUTHENTICATED_ERROR_NUMBER = IS_MODULITH_ENABLED ? "ZWEAG120E" : "ZWEAS120E";
+
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
 
@@ -59,7 +61,7 @@ class ApiCatalogAuthenticationTest {
 
     private static final String CATALOG_APIDOC_ENDPOINT = "/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v1.0.0";
     private static final String CATALOG_STATIC_REFRESH_ENDPOINT = "/static-api/refresh";
-    private static final String CATALOG_ACTUATOR_ENDPOINT = "/application";
+    private static final String CATALOG_APPLICATION_ENDPOINT = "/application";
     private static final String CATALOG_HEALTH_ENDPOINT = "/application/health";
     private final static String COOKIE = "apimlAuthenticationToken";
     private final static String BASIC_AUTHENTICATION_PREFIX = "Basic";
@@ -74,20 +76,30 @@ class ApiCatalogAuthenticationTest {
     }
 
     static Stream<Arguments> requestsToTest() {
-        return Stream.of(
+        var arguments = new LinkedList<Arguments>();
+        arguments.add(
             Arguments.of(CATALOG_APIDOC_ENDPOINT, (Request) (when, endpoint) ->
                 when.urlEncodingEnabled(false) // space in URL gets encoded by getUriFromGateway
                     .get(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint))
-            ),
-            Arguments.of(CATALOG_STATIC_REFRESH_ENDPOINT, (Request) (when, endpoint) -> when.post(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint))),
-            Arguments.of(CATALOG_ACTUATOR_ENDPOINT, (Request) (when, endpoint) -> when.get(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint)))
+            )
         );
+        arguments.add(
+            Arguments.of(CATALOG_STATIC_REFRESH_ENDPOINT, (Request) (when, endpoint) -> when.post(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint)))
+        );
+
+        if (!IS_MODULITH_ENABLED) {
+            arguments.add(
+                Arguments.of(CATALOG_APPLICATION_ENDPOINT, (Request) (when, endpoint) -> when.get(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + endpoint)))
+            );
+        }
+
+        return arguments.stream();
     }
 
     static Stream<Arguments> requestsToTestWithCertificate() {
         return Stream.of(
-            Arguments.of(CATALOG_SERVICE_ID_PATH + CATALOG_APIDOC_ENDPOINT, (Request) (when, endpoint) -> when.get(apiCatalogServiceUrl + endpoint)),
-            Arguments.of(CATALOG_SERVICE_ID_PATH + CATALOG_STATIC_REFRESH_ENDPOINT, (Request) (when, endpoint) -> when.post(apiCatalogServiceUrl + endpoint))
+            Arguments.of(CATALOG_SERVICE_ID_PATH + (IS_MODULITH_ENABLED ? CATALOG_PREFIX : "") + CATALOG_APIDOC_ENDPOINT, (Request) (when, endpoint) -> when.get(apiCatalogServiceUrl + endpoint)),
+            Arguments.of(CATALOG_SERVICE_ID_PATH + (IS_MODULITH_ENABLED ? CATALOG_PREFIX : "") + CATALOG_STATIC_REFRESH_ENDPOINT, (Request) (when, endpoint) -> when.post(apiCatalogServiceUrl + endpoint))
         );
     }
 
@@ -168,7 +180,7 @@ class ApiCatalogAuthenticationTest {
             @ParameterizedTest(name = "givenNoAuthentication {index} {0}")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
             void givenNoAuthentication(String endpoint, Request request) throws URISyntaxException {
-                String expectedMessage = "Authentication is required for URL '" + CATALOG_SERVICE_ID_PATH + new URIBuilder().setPath(endpoint).build() + "'";
+                String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID_PATH + (IS_MODULITH_ENABLED ? CATALOG_PREFIX : "") + new URIBuilder().setPath(endpoint).build() + "'";
 
                 request.execute(
                         given()
@@ -177,17 +189,18 @@ class ApiCatalogAuthenticationTest {
                         endpoint
                     )
                     .then()
+                    .log().ifValidationFails()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .header(HttpHeaders.WWW_AUTHENTICATE, BASIC_AUTHENTICATION_PREFIX)
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAS105E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == '" + UNAUTHENTICATED_ERROR_NUMBER + "' }.messageContent", equalTo(expectedMessage)
                     );
             }
 
             @ParameterizedTest(name = "givenInvalidBasicAuthentication {index} {0}")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
             void givenInvalidBasicAuthentication(String endpoint, Request request) throws URISyntaxException {
-                String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID_PATH + new URIBuilder().setPath(endpoint).build() + "'";
+                String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID_PATH + (IS_MODULITH_ENABLED ? CATALOG_PREFIX : "") + new URIBuilder().setPath(endpoint).build() + "'";
 
                 request.execute(
                         given()
@@ -199,7 +212,7 @@ class ApiCatalogAuthenticationTest {
                     .then()
                         .statusCode(is(SC_UNAUTHORIZED))
                         .body(
-                            "messages.find { it.messageNumber == 'ZWEAS120E' }.messageContent", equalTo(expectedMessage)
+                            "messages.find { it.messageNumber == '" + UNAUTHENTICATED_ERROR_NUMBER + "' }.messageContent", equalTo(expectedMessage)
                         );
             }
 
@@ -215,6 +228,7 @@ class ApiCatalogAuthenticationTest {
                         endpoint
                     )
                     .then()
+                    .log().ifValidationFails()
                     .body(
                         "messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage)
                     ).statusCode(is(SC_UNAUTHORIZED));
@@ -308,16 +322,21 @@ class ApiCatalogAuthenticationTest {
         }
 
         @Test
+        @DisabledIfSystemProperty(
+            disabledReason = "In Modulith, API Catalog does not have its own /application/** endpoints",
+            named = "environment.modulith",
+            matches = "true"
+        )
         void givenOnlyValidCertificate_whenAccessNotCertificateAuthedRoute_thenReturnUnauthorized() {
             try {
                 given()
                     .config(SslContext.clientCertApiml)
                 .when()
-                    .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_ACTUATOR_ENDPOINT)
+                    .get(apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APPLICATION_ENDPOINT)
                 .then()
                     .statusCode(HttpStatus.UNAUTHORIZED.value());
             } catch (Exception e) {
-                fail("Failure to GET " + apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_ACTUATOR_ENDPOINT);
+                fail("Failure to GET " + apiCatalogServiceUrl + CATALOG_SERVICE_ID_PATH + CATALOG_APPLICATION_ENDPOINT);
             }
 
         }
@@ -326,6 +345,11 @@ class ApiCatalogAuthenticationTest {
 
     @Test
     @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication enabled.")
+    @DisabledIfSystemProperty(
+        disabledReason = "In Modulith, API Catalog does not have its own /application/** endpoints",
+        named = "environment.modulith",
+        matches = "true"
+    )
     void thenDoNotAuthenticate() {
         try {
             given()
@@ -340,6 +364,11 @@ class ApiCatalogAuthenticationTest {
 
     @Test
     @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication provided.")
+    @DisabledIfSystemProperty(
+        disabledReason = "In Modulith, API Catalog does not have its own /application/** endpoints",
+        named = "environment.modulith",
+        matches = "true"
+    )
     void thenAuthenticateTheRequest() {
         try {
             given()

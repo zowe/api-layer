@@ -10,19 +10,21 @@
 
 package org.zowe.apiml.apicatalog.health;
 
-import org.zowe.apiml.product.constants.CoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.product.constants.CoreService;
 
 /**
  * Api Catalog health information (/application/health)
  */
 @Component
 @RequiredArgsConstructor
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class ApiCatalogHealthIndicator extends AbstractHealthIndicator {
 
     private final DiscoveryClient discoveryClient;
@@ -38,4 +40,5 @@ public class ApiCatalogHealthIndicator extends AbstractHealthIndicator {
             .status(healthStatus)
             .withDetail(gatewayServiceId, healthStatus.getCode());
     }
+
 }

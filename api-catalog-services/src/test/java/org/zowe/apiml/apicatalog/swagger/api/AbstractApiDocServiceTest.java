@@ -23,9 +23,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
-import org.zowe.apiml.apicatalog.swagger.api.dummy.DummyApiDocService;
+import org.zowe.apiml.apicatalog.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedService;
@@ -49,7 +49,7 @@ class AbstractApiDocServiceTest {
     @BeforeEach
     void setUp() {
         GatewayClient gatewayClient = new GatewayClient(getProperties());
-        abstractApiDocService = new DummyApiDocService(gatewayClient);
+        abstractApiDocService = new DummyApiDocService(ApplicationInfo.builder().build(), gatewayClient);
     }
 
     @Test
@@ -89,7 +89,7 @@ class AbstractApiDocServiceTest {
 
     @Test
     void givenNullApiInfo_whenGetRoutedServiceByApiInfo_thenReturnNull() {
-        ApiDocInfo apiDocInfo = new ApiDocInfo(null, null, null);
+        ApiDocInfo apiDocInfo = ApiDocInfo.builder().build();
         assertNull(abstractApiDocService.getRoutedServiceByApiInfo(apiDocInfo, "/"));
     }
 
@@ -109,7 +109,7 @@ class AbstractApiDocServiceTest {
         routedServices.addRoutedService(routedService2);
 
         ApiInfo apiInfo = new ApiInfo("org.zowe.apicatalog", "api/v1", null, "https://localhost:10014/apicatalog/api-doc", null, "https://www.zowe.org");
-        ApiDocInfo apiDocInfo = new ApiDocInfo(apiInfo, apiDocContent, routedServices);
+        ApiDocInfo apiDocInfo = ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(apiDocContent).routes(routedServices).build();
 
         abstractApiDocService.preparePath(openAPI.getPaths(), apiDocPath, apiDocInfo, "/api/v1/api-doc", "/", "apicatalog");
 

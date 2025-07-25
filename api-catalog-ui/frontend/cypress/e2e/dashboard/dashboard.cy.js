@@ -92,7 +92,7 @@ describe('>>> Dashboard test', () => {
             // Set the cookie in the Cypress browser
             cy.setCookie('apimlAuthenticationToken', cookieValue);
 
-            cy.visit(`${Cypress.env('catalogHomePage')}/#/dashboard`);
+            cy.visit(`${Cypress.env('catalogHomePage')}/index.html#/dashboard`);
 
             cy.get('.header').should('exist');
             cy.url().should('contain', '/dashboard');

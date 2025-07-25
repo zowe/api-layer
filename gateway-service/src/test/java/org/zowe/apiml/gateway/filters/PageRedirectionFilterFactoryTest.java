@@ -23,7 +23,6 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ServerWebExchange;
-import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import reactor.core.publisher.Mono;
@@ -34,21 +33,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 class PageRedirectionFilterFactoryTest {
 
     private GatewayClient gatewayClient;
     private DiscoveryClient discoveryClient;
-    private final EurekaMetadataParser eurekaMetadataParser = new EurekaMetadataParser();
     private static final String GW_HOSTNAME = "gateway";
     private static final String GW_PORT = "10010";
     private static final String GW_SCHEME = "https";
@@ -75,6 +70,8 @@ class PageRedirectionFilterFactoryTest {
         var config = new PageRedirectionFilterFactory.Config();
         config.setInstanceId("instanceId");
         config.setServiceId("GATEWAY");
+        config.setGatewayUrl("api/v1");
+        config.setServiceUrl("/");
         return config;
     }
 
@@ -85,7 +82,10 @@ class PageRedirectionFilterFactoryTest {
         metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api/v1");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
         when(serviceInstance.getMetadata()).thenReturn(metadata);
-        when(discoveryClient.getInstances("GATEWAY")).thenReturn(new ArrayList<>(asList(serviceInstance)));
+        when(serviceInstance.getInstanceId()).thenReturn("instanceId");
+        when(serviceInstance.getHost()).thenReturn("localhost");
+        when(serviceInstance.getPort()).thenReturn(10010);
+        when(discoveryClient.getInstances("GATEWAY")).thenReturn(new ArrayList<>(Collections.singletonList(serviceInstance)));
     }
 
     @Nested
@@ -94,7 +94,7 @@ class PageRedirectionFilterFactoryTest {
         @Test
         void whenNoAttls_thenAddRedirectionUrl() {
             var expectedUrl = GW_BASE_URL + "/gateway/api/v1/api/v1/redirected_url";
-            var factory = new PageRedirectionFilterFactory(discoveryClient, eurekaMetadataParser, gatewayClient);
+            var factory = new PageRedirectionFilterFactory(gatewayClient, discoveryClient);
 
             var chain = mock(GatewayFilterChain.class);
             var exchange = mock(ServerWebExchange.class);
@@ -118,13 +118,13 @@ class PageRedirectionFilterFactoryTest {
 
         @Test
         void whenAttls_thenAddRedirectionUrl() {
-            var expectedUrl = GW_BASE_URL + "/gateway/api/v1/api/v1/redirected_url";
-            var factory = new PageRedirectionFilterFactory(discoveryClient, eurekaMetadataParser, gatewayClient);
+            var expectedUrl = GW_BASE_URL + "/gateway/api/v1/api/v1/redirected_url?arg=1&arg=2";
+            var factory = new PageRedirectionFilterFactory(gatewayClient, discoveryClient);
             var chain = mock(GatewayFilterChain.class);
             var exchange = mock(ServerWebExchange.class);
             var res = mock(ServerHttpResponse.class);
             var header = new HttpHeaders();
-            header.put(HttpHeaders.LOCATION, Collections.singletonList("http://localhost:10010/api/v1/redirected_url"));
+            header.put(HttpHeaders.LOCATION, Collections.singletonList("http://localhost:10010/api/v1/redirected_url?arg=1&arg=2"));
             when(res.getHeaders()).thenReturn(header);
 
             commonSetup(factory, exchange, res, chain, true);
@@ -141,8 +141,8 @@ class PageRedirectionFilterFactoryTest {
 
         @Test
         void thenDoNotTransform() {
-            var expectedUrl = GW_BASE_URL + "http://localhost:10010/api/v1/redirected_url";
-            var factory = new PageRedirectionFilterFactory(discoveryClient, eurekaMetadataParser, gatewayClient);
+            var expectedUrl = GW_BASE_URL + "/api/v1/redirected_url";
+            var factory = new PageRedirectionFilterFactory(gatewayClient, discoveryClient);
             var chain = mock(GatewayFilterChain.class);
             var exchange = mock(ServerWebExchange.class);
             var res = mock(ServerHttpResponse.class);
@@ -163,7 +163,7 @@ class PageRedirectionFilterFactoryTest {
     class GivenNullUrl {
         @Test
         void thenDoNotTransform() {
-            var factory = new PageRedirectionFilterFactory(discoveryClient, eurekaMetadataParser, gatewayClient);
+            var factory = new PageRedirectionFilterFactory(gatewayClient, discoveryClient);
             var chain = mock(GatewayFilterChain.class);
             var exchange = mock(ServerWebExchange.class);
             var res = mock(ServerHttpResponse.class);
@@ -171,7 +171,6 @@ class PageRedirectionFilterFactoryTest {
             header.put(HttpHeaders.LOCATION, Collections.emptyList());
             when(res.getHeaders()).thenReturn(header);
             commonSetup(factory, exchange, res, chain, false);
-            setupInstanceInfo();
             var config = createConfig();
 
             StepVerifier.create(factory.apply(config).filter(exchange, chain)).expectComplete().verify();
@@ -183,7 +182,7 @@ class PageRedirectionFilterFactoryTest {
     class GivenDifferentResponseStatusCode {
         @Test
         void thenDoNotTransform() {
-            var factory = new PageRedirectionFilterFactory(discoveryClient, eurekaMetadataParser, gatewayClient);
+            var factory = new PageRedirectionFilterFactory(gatewayClient, discoveryClient);
             var chain = mock(GatewayFilterChain.class);
             var exchange = mock(ServerWebExchange.class);
             var res = mock(ServerHttpResponse.class);
