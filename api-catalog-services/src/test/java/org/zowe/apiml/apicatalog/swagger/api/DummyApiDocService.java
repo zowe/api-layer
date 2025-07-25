@@ -27,11 +27,12 @@ public class DummyApiDocService extends AbstractApiDocService {
 
     @Override
     protected void updatePaths(Object swaggerAPI, String serviceId, ApiDocInfo apiDocInfo, boolean hidden) {
-
+        // dummy implementation
     }
 
     @Override
     protected void updateExternalDoc(Object swaggerAPI, ApiDocInfo apiDocInfo) {
-
+        // dummy implementation
     }
+
 }

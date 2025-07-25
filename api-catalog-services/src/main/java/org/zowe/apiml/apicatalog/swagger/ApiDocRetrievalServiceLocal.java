@@ -41,6 +41,8 @@ import java.util.*;
 @Service
 public class ApiDocRetrievalServiceLocal {
 
+    private static final String SLASH = "/";
+
     private final Map<String, OpenApiWebfluxResource> apiDocResource = new HashMap<>();
 
     public ApiDocRetrievalServiceLocal(
@@ -86,12 +88,12 @@ public class ApiDocRetrievalServiceLocal {
     String getCommonBasePath(List<String> paths) {
         var commopnPath = StringUtils.getCommonPrefix(
             paths.stream()
-                .map(path -> path.endsWith("/") ? path : path + "/")
+                .map(path -> path.endsWith(SLASH) ? path : path + SLASH)
                 .map(path -> StringUtils.substringBefore(path, "*"))
-                .map(path -> StringUtils.substringBeforeLast(path, "/"))
+                .map(path -> StringUtils.substringBeforeLast(path, SLASH))
                 .toArray(String[]::new)
         );
-        return commopnPath.endsWith("/") ? commopnPath.substring(0, commopnPath.length() - 1) : commopnPath;
+        return commopnPath.endsWith(SLASH) ? commopnPath.substring(0, commopnPath.length() - 1) : commopnPath;
     }
 
     OpenApiCustomizer normalizePathsCustomizer(List<String> paths) {
@@ -121,7 +123,7 @@ public class ApiDocRetrievalServiceLocal {
         try {
             return Optional.ofNullable(apiDocResource.get(serviceId))
                 .orElseThrow(() -> new ApiDocNotFoundException("Cannot obtain API doc for service " + serviceId))
-                .openapiJson(null, "/", Locale.getDefault())
+                .openapiJson(null, SLASH, Locale.getDefault())
                 .map(String::new)
                 .map(content -> ApiDocInfo.builder().local(true).apiInfo(apiInfo).apiDocContent(content).build());
         } catch (JsonProcessingException jpe) {

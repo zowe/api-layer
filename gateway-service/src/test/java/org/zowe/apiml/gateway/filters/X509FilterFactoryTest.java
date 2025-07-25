@@ -31,7 +31,6 @@ import reactor.test.StepVerifier;
 
 import javax.naming.ldap.LdapName;
 import javax.security.auth.x500.X500Principal;
-
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.security.Principal;
@@ -86,7 +85,7 @@ class X509FilterFactoryTest {
 
         lenient().when(sslInfo.getPeerCertificates()).thenReturn(x509Certificates);
 
-        lenient().when(certificate.getSubjectDN()).thenReturn(new X500Principal("CN=user, OU=JavaSoft, O=Sun Microsystems, C=US"));
+        lenient().when(certificate.getSubjectX500Principal()).thenReturn(new X500Principal("CN=user, OU=JavaSoft, O=Sun Microsystems, C=US"));
         lenient().when(exchange.mutate()).thenReturn(exchangeBuilder);
 
         Map<String, Object> attributes = new HashMap<>();

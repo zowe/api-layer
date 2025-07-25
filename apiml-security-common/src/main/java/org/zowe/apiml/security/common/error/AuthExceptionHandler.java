@@ -69,7 +69,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         return Map.entry(clazz, handler);
     }
 
-    private final Map<Class<? extends Exception>, ExceptionHandler> exceptionHandlers = Map.ofEntries(
+    private final Map<Class<? extends Exception>, ExceptionHandler<? extends Exception>> exceptionHandlers = Map.ofEntries(
         entry(InsufficientAuthenticationException.class,
             (ex, ctx) -> handleAuthenticationRequired(ctx.requestUri, ctx.function, ctx.addHeader, ex)),
         entry(BadCredentialsException.class,
@@ -116,14 +116,14 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         )
     );
 
-    private ExceptionHandler resolveHandler(Exception ex) {
+    private <E extends Exception> ExceptionHandler<E> resolveHandler(E ex) {
         Class<?> exClass = ex.getClass();
         while (exClass != null) {
             if (!applicationInfo.isModulith() && exClass == RuntimeException.class) {
                 return null;
             }
 
-            ExceptionHandler handler = exceptionHandlers.get(exClass);
+            ExceptionHandler<E> handler = (ExceptionHandler<E>) exceptionHandlers.get(exClass);
             if (handler != null) {
                 return handler;
             }
@@ -150,7 +150,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
                                 Exception ex) throws ServletException {
 
         HandlerContext ctx = new HandlerContext(requestUri, function, addHeader);
-        ExceptionHandler handler = resolveHandler(ex);
+        ExceptionHandler<Exception> handler = resolveHandler(ex);
 
         if (handler != null) {
             handler.handle(ex, ctx);
@@ -170,31 +170,31 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         function.accept(message, status);
     }
 
-    private void handleAuthenticationRequired(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, RuntimeException ex) {
+    private void handleAuthenticationRequired(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, InsufficientAuthenticationException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         String error = this.messageService.createMessage("org.zowe.apiml.zaas.security.schema.missingAuthentication").mapToLogMessage();
         addHeader.accept(ApimlConstants.AUTH_FAIL_HEADER, error);
         writeErrorResponse(ErrorType.AUTH_REQUIRED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, function, requestUri);
     }
 
-    private void handleBadCredentials(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
+    private void handleBadCredentials(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BadCredentialsException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         writeErrorResponse(ErrorType.BAD_CREDENTIALS.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, function, requestUri);
     }
 
-    private void handleAuthenticationCredentialsNotFound(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
+    private void handleAuthenticationCredentialsNotFound(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, AuthenticationCredentialsNotFoundException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.BAD_REQUEST.value(), ex.getMessage());
         writeErrorResponse(ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getErrorMessageKey(), HttpStatus.BAD_REQUEST, function, requestUri);
     }
 
-    private void handleAuthMethodNotSupported(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
+    private void handleAuthMethodNotSupported(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, AuthMethodNotSupportedException ex) {
         final HttpStatus status = HttpStatus.METHOD_NOT_ALLOWED;
         log.debug(MESSAGE_FORMAT, status.value(), ex.getMessage());
         final ApiMessageView message = messageService.createMessage(ErrorType.METHOD_NOT_ALLOWED.getErrorMessageKey(), ex.getMessage(), requestUri).mapToView();
         function.accept(message, status);
     }
 
-    private void handleTokenNotValid(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, RuntimeException ex) {
+    private void handleTokenNotValid(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, TokenNotValidException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         String error = this.messageService.createMessage("org.zowe.apiml.common.unauthorized").mapToLogMessage();
         addHeader.accept(ApimlConstants.AUTH_FAIL_HEADER, error);
@@ -208,27 +208,27 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         writeErrorResponse(ErrorType.IDENTITY_MAPPING_FAILED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, function, requestUri);
     }
 
-    private void handleTokenNotProvided(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
+    private void handleTokenNotProvided(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, TokenNotProvidedException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         writeErrorResponse(ErrorType.TOKEN_NOT_PROVIDED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, function, requestUri);
     }
 
-    private void handleTokenExpire(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
+    private void handleTokenExpire(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, TokenExpireException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         writeErrorResponse(ErrorType.TOKEN_EXPIRED.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, function, requestUri);
     }
 
-    private void handleInvalidCertificate(BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
+    private void handleInvalidCertificate(BiConsumer<ApiMessageView, HttpStatus> function, InvalidCertificateException ex) {
         function.accept(null, HttpStatus.FORBIDDEN);
         log.debug(MESSAGE_FORMAT, HttpStatus.FORBIDDEN.value(), ex.getMessage());
     }
 
-    private void handleTokenFormatException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
+    private void handleTokenFormatException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, TokenFormatNotValidException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.BAD_REQUEST.value(), ex.getMessage());
         writeErrorResponse(ErrorType.TOKEN_NOT_VALID.getErrorMessageKey(), HttpStatus.BAD_REQUEST, function, requestUri);
     }
 
-    private void handleInvalidTokenTypeException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
+    private void handleInvalidTokenTypeException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, InvalidTokenTypeException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         writeErrorResponse(ErrorType.INVALID_TOKEN_TYPE.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, function, requestUri);
     }
@@ -253,7 +253,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         function.accept(message, status);
     }
 
-    private void handleServiceNotAccessibleException(String uri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex) {
+    private void handleServiceNotAccessibleException(String uri, BiConsumer<ApiMessageView, HttpStatus> function, ServiceNotAccessibleException ex) {
         final ApiMessageView message = messageService.createMessage(ErrorType.SERVICE_UNAVAILABLE.getErrorMessageKey(), ex.getMessage(), uri).mapToView();
         final HttpStatus status = HttpStatus.SERVICE_UNAVAILABLE;
         log.debug(MESSAGE_FORMAT, status.value(), ex.getMessage());

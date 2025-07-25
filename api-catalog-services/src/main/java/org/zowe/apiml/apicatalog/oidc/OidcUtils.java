@@ -11,9 +11,9 @@
 package org.zowe.apiml.apicatalog.oidc;
 
 import lombok.experimental.UtilityClass;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 @UtilityClass
 public class OidcUtils {
@@ -22,7 +22,8 @@ public class OidcUtils {
 
     public List<String> getOidcProvider() {
         return System.getenv().keySet().stream()
-            .filter(key -> StringUtils.startsWith(key, PREFIX))
+            .filter(Objects::nonNull)
+            .filter(key -> key.startsWith(PREFIX))
             .map(key -> key.substring(PREFIX.length()))
             .map(key -> key.split("_"))
             .filter(parts -> parts.length > 2)

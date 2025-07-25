@@ -45,13 +45,15 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<PageRedirectionFilterFactory.Config> {
 
+    private static final String SLASH = "/";
+
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
 
     private static final EurekaMetadataParser EUREKA_METADATA_PARSER = new EurekaMetadataParser();
 
-    private TransformService transformService;
-    private DiscoveryClient discoveryClient;
+    private final TransformService transformService;
+    private final DiscoveryClient discoveryClient;
 
     public PageRedirectionFilterFactory(
         GatewayClient gatewayClient,
@@ -65,7 +67,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
     @Override
     public GatewayFilter apply(Config config) {
         Optional<ServiceInstance> instance = discoveryClient.getInstances(config.serviceId).stream()
-            .filter(i -> StringUtils.equalsIgnoreCase(config.getInstanceId(), i.getInstanceId()))
+            .filter(i -> config.getInstanceId().equalsIgnoreCase(i.getInstanceId()))
             .findFirst();
         return (exchange, chain) -> chain.filter(exchange)
             .then(Mono.defer(() -> processNewLocationUrl(exchange, config, instance)));
@@ -103,11 +105,11 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
     }
 
     private String normalizePath(String path) {
-        if (!path.startsWith("/")) {
-            path = "/" + path;
+        if (!path.startsWith(SLASH)) {
+            path = SLASH + path;
         }
-        if (!path.endsWith("/")) {
-            path = path + "/";
+        if (!path.endsWith(SLASH)) {
+            path = path + SLASH;
         }
         return path;
     }

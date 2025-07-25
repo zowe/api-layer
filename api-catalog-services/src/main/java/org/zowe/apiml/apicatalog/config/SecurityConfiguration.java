@@ -333,7 +333,7 @@ public class SecurityConfiguration {
                     exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
                     return exchange.getResponse().writeWith(Mono.just(buffer));
                 } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
+                    throw new IllegalStateException("Cannot serialize the error message about unauthorized access", e);
                 }
             });
     }
@@ -377,7 +377,7 @@ public class SecurityConfiguration {
                 exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
                 return exchange.getResponse().writeWith(Mono.just(buffer));
             } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException("Cannot serialize the error message about invalid credentials", e);
             }
         };
     }

@@ -34,6 +34,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 @Configuration("catalogWebConfig")
 @ComponentScan("org.zowe.apiml.product.web")
 @RequiredArgsConstructor
+@SuppressWarnings("squid:S1192") // using same literals increase the readability
 public class WebConfig implements WebFluxConfigurer {
 
     private final ApplicationInfo applicationInfo;
