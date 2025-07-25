@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.config;
+package org.zowe.apiml.apicatalog.controllers.handlers;
 
 import jakarta.servlet.ServletException;
 import lombok.RequiredArgsConstructor;

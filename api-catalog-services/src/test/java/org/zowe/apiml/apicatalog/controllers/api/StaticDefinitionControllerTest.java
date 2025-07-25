@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.staticapi;
+package org.zowe.apiml.apicatalog.controllers.api;
 
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Nested;
@@ -20,6 +20,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.apicatalog.config.BeanConfig;
+import org.zowe.apiml.apicatalog.controllers.handlers.StaticDefinitionControllerExceptionHandler;
+import org.zowe.apiml.apicatalog.staticapi.StaticAPIResponse;
+import org.zowe.apiml.apicatalog.staticapi.StaticDefinitionGenerator;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;

@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.swagger;
+package org.zowe.apiml.apicatalog.exceptions;
 
 public class ApiDocTransformationException extends RuntimeException {
 

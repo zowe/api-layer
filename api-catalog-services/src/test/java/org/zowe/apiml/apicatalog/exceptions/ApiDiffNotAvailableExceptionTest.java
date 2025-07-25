@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ApiDiffNotAvailableExceptionTest {
+
     @Nested
     class GivenExceptionMessage {
 
@@ -25,5 +26,7 @@ class ApiDiffNotAvailableExceptionTest {
             ApiDiffNotAvailableException exception = new ApiDiffNotAvailableException(message);
             assertEquals(message, exception.getMessage());
         }
+
     }
+
 }

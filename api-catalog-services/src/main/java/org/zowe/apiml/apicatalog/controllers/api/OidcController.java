@@ -20,7 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.apicatalog.security.OidcUtils;
+import org.zowe.apiml.apicatalog.oidc.OidcUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.List;

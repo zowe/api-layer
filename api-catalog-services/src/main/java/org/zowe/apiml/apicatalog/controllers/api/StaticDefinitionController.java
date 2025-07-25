@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.staticapi;
+package org.zowe.apiml.apicatalog.controllers.api;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -17,6 +17,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.apicatalog.staticapi.StaticAPIResponse;
+import org.zowe.apiml.apicatalog.staticapi.StaticDefinitionGenerator;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;

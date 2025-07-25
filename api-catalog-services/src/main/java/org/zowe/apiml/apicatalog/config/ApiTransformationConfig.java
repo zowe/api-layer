@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.swagger.api;
+package org.zowe.apiml.apicatalog.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -22,6 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.zowe.apiml.apicatalog.swagger.api.AbstractApiDocService;
+import org.zowe.apiml.apicatalog.swagger.api.ApiDocV2Service;
+import org.zowe.apiml.apicatalog.swagger.api.ApiDocV3Service;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 
