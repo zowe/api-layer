@@ -22,14 +22,17 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 import org.zowe.apiml.zaas.ZaasServiceAvailableEvent;
 
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -37,13 +40,16 @@ import static org.mockito.Mockito.when;
 class GatewayHealthIndicatorTest {
 
     @Mock private DiscoveryClient discoveryClient;
+    @Mock private ApplicationContext applicationContext;
+    @Mock private ServiceStartupEventHandler serviceStartupEventHandler;
 
     private GatewayHealthIndicator healthIndicator;
 
     @BeforeEach
     void setUp() {
-        healthIndicator = new GatewayHealthIndicator(discoveryClient);
+        healthIndicator = new GatewayHealthIndicator(applicationContext, serviceStartupEventHandler);
         ReflectionTestUtils.setField(healthIndicator, "apiCatalogServiceId", CoreService.API_CATALOG.getServiceId());
+        lenient().when(applicationContext.getBean(DiscoveryClient.class)).thenReturn(discoveryClient);
     }
 
     private DefaultServiceInstance getDefaultServiceInstance(String serviceId, String hostname, int port) {
