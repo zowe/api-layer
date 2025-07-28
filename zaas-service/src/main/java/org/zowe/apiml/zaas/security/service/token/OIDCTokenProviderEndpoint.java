@@ -12,10 +12,9 @@ package org.zowe.apiml.zaas.security.service.token;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.http.HttpHeaders;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
@@ -43,11 +42,11 @@ public class OIDCTokenProviderEndpoint implements OIDCProvider {
             HttpGet httpGet = new HttpGet(endpointUrl);
             httpGet.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + token);
 
-            HttpResponse httpResponse = secureHttpClientWithKeystore.execute(httpGet);
-
-            int responseCode = httpResponse.getStatusLine().getStatusCode();
-            log.debug("Response code: {}", responseCode);
-            return HttpStatus.valueOf(responseCode).is2xxSuccessful();
+            return secureHttpClientWithKeystore.execute(httpGet, response -> {
+                final int responseCode = response.getCode();
+                log.debug("Response code: {}", responseCode);
+                return HttpStatus.valueOf(responseCode).is2xxSuccessful();
+            });
         } catch (IOException e) {
             log.error("An error occurred during validation of OIDC token using userInfo URI {}: {}", endpointUrl, e.getMessage());
             return false;
