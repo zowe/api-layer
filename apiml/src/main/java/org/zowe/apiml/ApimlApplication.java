@@ -30,6 +30,7 @@ import org.zowe.apiml.enable.register.RegisterToApiLayer;
         "org.zowe.apiml.product.version",
         "org.zowe.apiml.product.logging",
         "org.zowe.apiml.product.security",
+        "org.zowe.apiml.product.service",
         "org.zowe.apiml.security",
         "org.zowe.apiml.discovery"
     }

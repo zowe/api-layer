@@ -10,44 +10,56 @@
 
 package org.zowe.apiml.apicatalog.security;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
+import org.springframework.mock.web.server.MockServerWebExchange;
+import org.springframework.security.web.server.WebFilterExchange;
+import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.mock.web.MockHttpSession;
-
-import jakarta.servlet.http.Cookie;
+import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
+@ExtendWith(MockitoExtension.class)
 class ApiCatalogLogoutSuccessHandlerTest {
 
     @Test
     void testOnLogoutSuccess() {
-        MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
-        MockHttpSession mockHttpSession = new MockHttpSession();
-        httpServletRequest.setSession(mockHttpSession);
-
-        MockHttpServletResponse httpServletResponse = new MockHttpServletResponse();
+        var request = MockServerHttpRequest.get("/logout")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer token123")
+            .build();
+        var exchange = MockServerWebExchange.from(request);
+        WebFilterChain mockChain = mock(WebFilterChain.class);
+        var webFilterExchange = new WebFilterExchange(exchange, mockChain);
 
         AuthConfigurationProperties securityConfigurationProperties = new AuthConfigurationProperties();
         ApiCatalogLogoutSuccessHandler apiCatalogLogoutSuccessHandler = new ApiCatalogLogoutSuccessHandler(securityConfigurationProperties);
 
-        apiCatalogLogoutSuccessHandler.onLogoutSuccess(
-            httpServletRequest,
-            httpServletResponse,
-            new TokenAuthentication("TEST_TOKEN_STRING")
-        );
+        StepVerifier.create(apiCatalogLogoutSuccessHandler.onLogoutSuccess(
+                webFilterExchange,
+                new TokenAuthentication("TEST_TOKEN_STRING")
+            ))
+        .verifyComplete();
 
-        assertTrue(mockHttpSession.isInvalid());
-        assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
+        StepVerifier.create(exchange.getSession())
+            .assertNext(session -> {
+                assertFalse(session.isStarted());
+            })
+            .verifyComplete();
 
-        Cookie cookie = httpServletResponse.getCookie(
+        assertEquals(HttpStatus.OK.value(), exchange.getResponse().getStatusCode().value());
+
+        var cookie = exchange.getResponse().getCookies().getFirst(
             securityConfigurationProperties.getCookieProperties().getCookieName());
         assertNotNull(cookie);
-        assertTrue(cookie.getSecure());
+        assertTrue(cookie.isSecure());
         assertTrue(cookie.isHttpOnly());
     }
+
 }

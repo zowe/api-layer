@@ -13,13 +13,18 @@ package org.zowe.apiml.product.service;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
+import lombok.NoArgsConstructor;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.lang.management.ManagementFactory;
 
+@Component
+@NoArgsConstructor
 public class ServiceStartupEventHandler {
+
     public static final int DEFAULT_DELAY_FACTOR = 5;
 
     private final ApimlLogger apimlLog = ApimlLogger.of(ServiceStartupEventHandler.class,
@@ -43,5 +48,7 @@ public class ServiceStartupEventHandler {
                 }
             }
         }, uptime * delayFactor);
+
     }
+
 }

@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.zaas.error.custom;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.web.server.ErrorPage;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
@@ -17,10 +18,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class CustomErrorStatusHandlingBean implements WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> {
+
     @Override
     public void customize(ConfigurableServletWebServerFactory factory) {
         factory.addErrorPages(new ErrorPage(HttpStatus.NOT_FOUND, "/not_found"));
         factory.addErrorPages(new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/internal_error"));
     }
+
 }

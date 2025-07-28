@@ -27,7 +27,7 @@ describe('>>> Swagger Try Out and Code Snippets Test', () => {
         it('Should contain try-out button', () => {
             cy.log(`Visiting ${test.tile}, ${test.id}`);
             cy.contains(test.tile).click();
-            cy.visit(`${Cypress.env('catalogHomePage')}/#/service/${test.id}`);
+            cy.visit(`${Cypress.env('catalogHomePage')}/index.html#/service/${test.id}`);
             cy.get('.opblock-summary').eq(0).click();
             cy.get('.try-out').should('exist');
         });

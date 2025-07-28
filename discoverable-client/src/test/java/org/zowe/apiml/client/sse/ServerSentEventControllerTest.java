@@ -11,20 +11,18 @@
 package org.zowe.apiml.client.sse;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.zowe.apiml.client.configuration.SecurityConfiguration;
+import org.zowe.apiml.util.config.TestConfig;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {ServerSentEventController.class})
-@Import(SecurityConfiguration.class)
+@Import({ SecurityConfiguration.class, TestConfig.class })
 class ServerSentEventControllerTest {
     @Autowired
     private MockMvc mockMvc;

@@ -55,6 +55,8 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 @TestInstance(Lifecycle.PER_CLASS)
 class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
 
+    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
+
     private static final String GET_ALL_CONTAINERS_ENDPOINT = "/apicatalog/api/v1/containers";
     private static final String GET_CONTAINER_BY_ID_ENDPOINT = "/apicatalog/api/v1/containers/apimediationlayer";
     private static final String GET_CONTAINER_BY_INVALID_ID_ENDPOINT = "/apicatalog/api/v1/containers/bad";
@@ -117,16 +119,19 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
 
             @Test
             void whenGetContainerByInvalidId() throws IOException {
-                final HttpResponse response = getResponse(GET_CONTAINER_BY_INVALID_ID_ENDPOINT, HttpStatus.SC_OK);
-                assertEquals("[]", EntityUtils.toString(response.getEntity()));
+                getResponse(GET_CONTAINER_BY_INVALID_ID_ENDPOINT, HttpStatus.SC_NOT_FOUND);
             }
         }
     }
 
     @Nested
     class ApiDoc {
+
         @Nested
         class ThenResponseOk {
+
+            private static final String BASIC_SCHEME = IS_MODULITH_ENABLED ? "LoginBasicAuth" : "BasicAuthorization";
+
             @Test
                 // Functional
             void whenSpecificCatalogApiDoc() throws Exception {
@@ -159,7 +164,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
                 assertNotNull(paths.get("/apidoc/{serviceId}/{apiId}"), apiCatalogSwagger);
                 assertNotNull(componentSchemas.get("APIContainer"), apiCatalogSwagger);
                 assertNotNull(componentSchemas.get("APIService"), apiCatalogSwagger);
-                assertNotNull(securitySchemes.get("BasicAuthorization"), apiCatalogSwagger);
+                assertNotNull(securitySchemes.get(BASIC_SCHEME), apiCatalogSwagger);
                 assertNotNull(securitySchemes.get("CookieAuth"), apiCatalogSwagger);
             }
 
@@ -194,7 +199,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
                 assertNotNull(paths.get("/apidoc/{serviceId}/{apiId}"), apiCatalogSwagger);
                 assertNotNull(componentSchemas.get("APIContainer"), apiCatalogSwagger);
                 assertNotNull(componentSchemas.get("APIService"), apiCatalogSwagger);
-                assertNotNull(securitySchemes.get("BasicAuthorization"), apiCatalogSwagger);
+                assertNotNull(securitySchemes.get(BASIC_SCHEME), apiCatalogSwagger);
                 assertNotNull(securitySchemes.get("CookieAuth"), apiCatalogSwagger);
             }
         }
@@ -260,6 +265,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
             }
 
             return requestSpecification.post(uri).then()
+                .log().ifValidationFails()
                 .statusCode(returnCode).extract().response();
         }
     }

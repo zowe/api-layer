@@ -78,13 +78,13 @@ public class X509FilterFactory extends AbstractGatewayFilterFactory<X509FilterFa
         for (String headerName : headerNames) {
             switch (headerName.trim()) {
                 case COMMON_NAME:
-                    headers.add(COMMON_NAME, getCommonName(new LdapName(certificate.getSubjectDN().getName())));
+                    headers.add(COMMON_NAME, getCommonName(new LdapName(certificate.getSubjectX500Principal().getName())));
                     break;
                 case PUBLIC_KEY:
                     headers.add(PUBLIC_KEY, Base64.getEncoder().encodeToString(certificate.getEncoded()));
                     break;
                 case DISTINGUISHED_NAME:
-                    headers.add(DISTINGUISHED_NAME, certificate.getSubjectDN().getName());
+                    headers.add(DISTINGUISHED_NAME, certificate.getSubjectX500Principal().getName());
                     break;
                 default:
                     log.debug("Unsupported header specified in service metadata, " +

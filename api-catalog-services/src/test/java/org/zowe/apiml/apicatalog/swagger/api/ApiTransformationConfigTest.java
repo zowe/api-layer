@@ -10,61 +10,68 @@
 
 package org.zowe.apiml.apicatalog.swagger.api;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import com.fasterxml.jackson.core.JsonParseException;
 import jakarta.validation.UnexpectedTypeException;
+import org.junit.jupiter.api.Test;
+import org.zowe.apiml.apicatalog.config.ApiTransformationConfig;
+import org.zowe.apiml.config.ApplicationInfo;
+
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ApiTransformationConfigTest {
-    private AbstractApiDocService<?, ?> abstractApiDocService;
 
-    private final ApiTransformationConfig apiTransformationConfig = new ApiTransformationConfig(null);
+    private final ApiTransformationConfig apiTransformationConfig = new ApiTransformationConfig(ApplicationInfo.builder().build(), null);
     private final Function<String, AbstractApiDocService<?, ?>> beanApiDocFactory = apiTransformationConfig.beanApiDocFactory();
-
-    @BeforeEach
-    void setUp() {
-        abstractApiDocService = null;
-    }
 
     @Test
     void givenSwaggerJson_whenGetApiDocService_thenReturnApiDocV2Service() {
-        abstractApiDocService = beanApiDocFactory.apply("{\"swagger\": \"2.0\"}");
+        var abstractApiDocService = beanApiDocFactory.apply("{\"swagger\": \"2.0\"}");
         assertTrue(abstractApiDocService instanceof ApiDocV2Service, "AbstractApiDocService is not ApiDocV2Service");
     }
 
     @Test
     void givenOpenApiJson_whenGetApiDocService_thenReturnApiDocV3Service() {
-        abstractApiDocService = beanApiDocFactory.apply("{\"openapi\": \"3.0\"}");
+        var abstractApiDocService = beanApiDocFactory.apply("{\"openapi\": \"3.0\"}");
         assertTrue(abstractApiDocService instanceof ApiDocV3Service, "AbstractApiDocService is not ApiDocV3Service");
     }
 
     @Test
     void givenSwaggerYml_whenGetApiDocService_thenReturnApiDocV2Service() {
-        abstractApiDocService = beanApiDocFactory.apply("swagger: 2.0");
+        var abstractApiDocService = beanApiDocFactory.apply("swagger: 2.0");
         assertTrue(abstractApiDocService instanceof ApiDocV2Service, "AbstractApiDocService is not ApiDocV2Service");
     }
 
     @Test
     void givenOpenApiYml_whenGetApiDocService_thenReturnApiDocV3Service() {
-        abstractApiDocService = beanApiDocFactory.apply("openapi: 3.0");
+        var abstractApiDocService = beanApiDocFactory.apply("openapi: 3.0");
         assertTrue(abstractApiDocService instanceof ApiDocV3Service, "AbstractApiDocService is not ApiDocV3Service");
     }
 
     @Test
     void givenApiDocNotInOpenApiNorSwagger_whenGetApiDocService_thenReturnNull() {
-        abstractApiDocService = beanApiDocFactory.apply("{\"superapi\": \"3.0\"}");
+        var abstractApiDocService = beanApiDocFactory.apply("{\"superapi\": \"3.0\"}");
         assertNull(abstractApiDocService, "abstractApiDocService is not null");
     }
 
     @Test
     void givenApDocVersionIsNotAsExpectedFormat_whenGetApiDocService_thenThrowException() {
-        Exception exception = assertThrows(UnexpectedTypeException.class, () -> {
-            abstractApiDocService = beanApiDocFactory.apply("FAILED FORMAT");
-        });
-        assertNull(abstractApiDocService);
+        Exception exception = assertThrows(UnexpectedTypeException.class, () -> beanApiDocFactory.apply("FAILED FORMAT"));
         assertEquals("Response is not a Swagger or OpenAPI type object.", exception.getMessage());
     }
+
+    @Test
+    void givenJsonWithTabs_whenGetApiDocService_thenIsParsed() {
+        var abstractApiDocService = beanApiDocFactory.apply("{\t\"openapi\": \"3.0\"}");
+        assertTrue(abstractApiDocService instanceof ApiDocV3Service, "Parser doesn't support tabulators even it is JSON");
+    }
+
+    @Test
+    void givenYamlWithTabs_whenGetApiDocService_thenItIsUnparseable() {
+        var e = assertThrows(UnexpectedTypeException.class, () -> beanApiDocFactory.apply("\tswagger: 2.0"));
+        assertInstanceOf(JsonParseException.class, e.getCause());
+        assertTrue(e.getCause().getMessage().contains("Do not use \\t(TAB) for indentation"));
+    }
+
 }

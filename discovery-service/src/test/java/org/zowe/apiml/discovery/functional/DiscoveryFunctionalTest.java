@@ -15,14 +15,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.zowe.apiml.discovery.DiscoveryServiceApplication;
+import org.zowe.apiml.util.config.TestConfig;
 
 @SpringBootTest(
     classes = DiscoveryServiceApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT
 )
 @DirtiesContext
+@Import(TestConfig.class)
 public abstract class DiscoveryFunctionalTest {
 
     protected static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";

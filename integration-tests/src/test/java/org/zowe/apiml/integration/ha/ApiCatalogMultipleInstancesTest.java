@@ -14,6 +14,7 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.zowe.apiml.util.categories.HATest;
 import org.zowe.apiml.util.requests.Apps;
 import org.zowe.apiml.util.requests.ha.HAApiCatalogRequests;
@@ -29,6 +30,7 @@ import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
  */
 @HATest
 public class ApiCatalogMultipleInstancesTest {
+
     private final HAApiCatalogRequests haApiCatalogRequests = new HAApiCatalogRequests();
     private final HADiscoveryRequests haDiscoveryRequests = new HADiscoveryRequests();
 
@@ -39,9 +41,16 @@ public class ApiCatalogMultipleInstancesTest {
 
     @Nested
     class GivenMultipleApiCatalogInstances {
+
         @Nested
         class WhenSendingRequest {
+
             @Test
+            @DisabledIfSystemProperty(
+                disabledReason = "In Modulith, API Catalog is only one in each API ML instance",
+                named = "environment.modulith",
+                matches = "true"
+            )
             void apiCatalogInstancesAreUp() {
                 assumeTrue(haApiCatalogRequests.existing() > 1);
 
@@ -49,11 +58,19 @@ public class ApiCatalogMultipleInstancesTest {
             }
 
             @Test
+            @DisabledIfSystemProperty(
+                disabledReason = "In Modulith, API Catalog is only one in each API ML instance",
+                named = "environment.modulith",
+                matches = "true"
+            )
             void apiCatalogInstancesAreRegistered() {
                 assumeTrue(haApiCatalogRequests.existing() > 1 && haDiscoveryRequests.existing() > 1);
 
                 assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.API_CATALOG), is(2));
             }
+
         }
+
     }
+
 }

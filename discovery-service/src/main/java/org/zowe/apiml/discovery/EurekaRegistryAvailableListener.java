@@ -10,12 +10,14 @@
 
 package org.zowe.apiml.discovery;
 
-import org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService;
+import org.zowe.apiml.product.service.ServiceStartupEventHandler;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Called by Eureka when its service registry is initialized.
@@ -24,14 +26,18 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
-@ConditionalOnMissingBean(name = "modulithConfig")
 public class EurekaRegistryAvailableListener implements ApplicationListener<EurekaRegistryAvailableEvent> {
 
     private final StaticServicesRegistrationService registrationService;
+    private final ServiceStartupEventHandler handler;
+    private final AtomicBoolean startUpInfoPublished = new AtomicBoolean(false);
 
     @Override
     public void onApplicationEvent(EurekaRegistryAvailableEvent event) {
         registrationService.registerServices();
+        if (startUpInfoPublished.compareAndSet(false, true)) {
+            handler.onServiceStartup("Discovery Service", ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
+        }
     }
 
 }
