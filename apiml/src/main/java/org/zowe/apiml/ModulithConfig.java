@@ -249,6 +249,7 @@ public class ModulithConfig {
     }
 
     @Bean
+    @Primary
     MessageService messageService() {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/utility-log-messages.yml");
