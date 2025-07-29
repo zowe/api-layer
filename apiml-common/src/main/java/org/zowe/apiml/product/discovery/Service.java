@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.discovery.staticdef;
+package org.zowe.apiml.product.discovery;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;
@@ -24,7 +24,9 @@ import java.util.Map;
  * Each instance can have different base URL (http(s)://hostname:port/contextPath/).
  * The other URLs are relative to it.
  */
- @Data class Service {
+@Data
+public class Service {
+
     private String serviceId;
     private String title;
     private String description;
@@ -38,4 +40,5 @@ import java.util.Map;
     private List<ApiInfo> apiInfo;
     private Authentication authentication;
     private Map<String, Object> customMetadata;
+
 }
