@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.discovery.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +25,7 @@ public class BeanConfig {
 
     @Bean
     @Primary
+    @ConditionalOnMissingBean(name = "modulithConfig")
     public MessageService messageServiceDiscovery() {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/utility-log-messages.yml");
