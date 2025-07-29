@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.DefaultServiceInstance;
@@ -40,6 +41,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -107,6 +109,17 @@ class GatewayHealthIndicatorTest {
             Health.Builder builder = new Health.Builder();
             healthIndicator.doHealthCheck(builder);
             assertEquals(Status.DOWN, builder.build().getStatus());
+        }
+
+        @Test
+        void whenClientNotAvailable_thenDoNothing() throws Exception {
+            when(applicationContext.getBean(DiscoveryClient.class)).thenThrow(new NoSuchBeanDefinitionException(DiscoveryClient.class));
+
+            Health.Builder builder = new Health.Builder();
+            healthIndicator.doHealthCheck(builder);
+
+            verifyNoInteractions(serviceStartupEventHandler);
+            verifyNoInteractions(discoveryClient);
         }
 
     }
@@ -194,6 +207,22 @@ class GatewayHealthIndicatorTest {
 
             healthIndicator.onApplicationEvent(new ApiCatalogServiceAvailableEvent(new Object()));
             healthIndicator.onApplicationEvent(registeredEvent);
+
+            verify(serviceStartupEventHandler, times(1)).onServiceStartup("API Catalog Service", 5);
+        }
+
+        @Test
+        void whenBothEventsReverse_thenOneMessage() {
+            var registeredEvent = mock(EurekaInstanceRegisteredEvent.class);
+
+            var instanceInfo = mock(InstanceInfo.class);
+            when(registeredEvent.getInstanceInfo()).thenReturn(instanceInfo);
+            when(instanceInfo.getAppName()).thenReturn("apicatalog");
+
+            doNothing().when(serviceStartupEventHandler).onServiceStartup("API Catalog Service", 5);
+
+            healthIndicator.onApplicationEvent(registeredEvent);
+            healthIndicator.onApplicationEvent(new ApiCatalogServiceAvailableEvent(new Object()));
 
             verify(serviceStartupEventHandler, times(1)).onServiceStartup("API Catalog Service", 5);
         }
