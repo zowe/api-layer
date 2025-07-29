@@ -25,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.HttpClientMockHelper;
+import reactor.test.StepVerifier;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -85,9 +86,12 @@ class StaticRegistrationServiceRestTest {
                 when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{DISCOVERY_LOCATION});
                 mockRestTemplateExchange(DISCOVERY_URL);
 
-                StaticAPIResponse actualResponse = staticServiceRest.refresh();
-                StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
-                assertEquals(expectedResponse, actualResponse);
+                StepVerifier.create(staticServiceRest.refresh())
+                    .assertNext(actualResponse -> {
+                        StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
+                        assertEquals(expectedResponse, actualResponse);
+                    })
+                    .verifyComplete();
             }
 
             @Test
@@ -95,9 +99,12 @@ class StaticRegistrationServiceRestTest {
                 when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{DISCOVERY_LOCATION_HTTP});
 
                 mockRestTemplateExchange(DISCOVERY_URL_HTTP);
-                StaticAPIResponse actualResponse = staticServiceRest.refresh();
-                StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
-                assertEquals(expectedResponse, actualResponse);
+                StepVerifier.create(staticServiceRest.refresh())
+                    .assertNext(actualResponse -> {
+                        StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
+                        assertEquals(expectedResponse, actualResponse);
+                    })
+                    .verifyComplete();
             }
         }
 
@@ -117,9 +124,12 @@ class StaticRegistrationServiceRestTest {
                 void whenFirstSucceeds_thenReturnResponseFromFirst() throws IOException {
                     when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
                     mockRestTemplateExchange(DISCOVERY_LOCATION);
-                    StaticAPIResponse actualResponse = staticServiceRest.refresh();
-                    StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
-                    assertEquals(expectedResponse, actualResponse);
+                    StepVerifier.create(staticServiceRest.refresh())
+                        .assertNext(actualResponse -> {
+                            StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
+                            assertEquals(expectedResponse, actualResponse);
+                        })
+                        .verifyComplete();
                 }
 
                 @Test
@@ -127,9 +137,12 @@ class StaticRegistrationServiceRestTest {
                     when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
                     when(notFoundResponse.getCode()).thenReturn(HttpStatus.NOT_FOUND.value());
                     mockRestTemplateExchange(DISCOVERY_LOCATION_2);
-                    StaticAPIResponse actualResponse = staticServiceRest.refresh();
-                    StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
-                    assertEquals(expectedResponse, actualResponse);
+                    StepVerifier.create(staticServiceRest.refresh())
+                        .assertNext(actualResponse -> {
+                            StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
+                            assertEquals(expectedResponse, actualResponse);
+                        })
+                        .verifyComplete();
                 }
             }
 
@@ -143,9 +156,12 @@ class StaticRegistrationServiceRestTest {
                     when(entity.getContent()).thenAnswer(invocation -> new ByteArrayInputStream(BODY.getBytes()));
                     mockRestTemplateExchange(DISCOVERY_LOCATION_3);
 
-                    StaticAPIResponse actualResponse = staticServiceRest.refresh();
-                    StaticAPIResponse expectedResponse = new StaticAPIResponse(404, BODY);
-                    assertEquals(expectedResponse, actualResponse);
+                    StepVerifier.create(staticServiceRest.refresh())
+                        .assertNext(actualResponse -> {
+                            StaticAPIResponse expectedResponse = new StaticAPIResponse(404, BODY);
+                            assertEquals(expectedResponse, actualResponse);
+                        })
+                        .verifyComplete();
                 }
             }
         }
@@ -156,9 +172,12 @@ class StaticRegistrationServiceRestTest {
     void givenNoDiscoveryLocations_whenAttemptRefresh_thenReturn500() {
         when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{});
 
-        StaticAPIResponse actualResponse = staticServiceRest.refresh();
-        StaticAPIResponse expectedResponse = new StaticAPIResponse(500, "Error making static API refresh request to the Discovery Service");
-        assertEquals(expectedResponse, actualResponse);
+        StepVerifier.create(staticServiceRest.refresh())
+            .assertNext(actualResponse -> {
+                StaticAPIResponse expectedResponse = new StaticAPIResponse(500, "Error making static API refresh request to the Discovery Service");
+                assertEquals(expectedResponse, actualResponse);
+            })
+            .verifyComplete();
     }
 
     private void mockRestTemplateExchange(String discoveryUrl) throws IOException {

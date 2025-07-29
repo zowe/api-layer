@@ -42,8 +42,8 @@ public class ApiDocRetrievalServiceRest {
 
     private static final UnaryOperator<String> exceptionMessage = serviceId -> "No API Documentation was retrieved for the service " + serviceId + ".";
 
-    @Qualifier("webClientClientCert")
-    private final WebClient webClientClientCert;
+    @Qualifier("webClient")
+    private final WebClient webClient;
 
     @InjectApimlLogger
     private ApimlLogger apimlLogger = ApimlLogger.empty();
@@ -67,7 +67,7 @@ public class ApiDocRetrievalServiceRest {
      * @throws ApiDocNotFoundException if the response is error
      */
     private Mono<String> getApiDocContentByUrl(@NonNull String serviceId, String apiDocUrl) {
-        return webClientClientCert.get().uri(apiDocUrl)
+        return webClient.get().uri(apiDocUrl)
             .header(ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .retrieve()
             .onStatus(httpStatusCode -> httpStatusCode.value() != SC_OK, response -> Mono.error(

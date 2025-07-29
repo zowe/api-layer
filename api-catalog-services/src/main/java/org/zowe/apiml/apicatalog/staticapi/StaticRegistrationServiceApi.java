@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.product.discovery.StaticServicesRegistration;
+import reactor.core.publisher.Mono;
 
 import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 
@@ -30,13 +31,13 @@ public class StaticRegistrationServiceApi implements StaticRegistrationService {
     private final StaticServicesRegistration staticServicesRegistration;
 
     @Override
-    public StaticAPIResponse refresh() {
+    public Mono<StaticAPIResponse> refresh() {
         try {
             var result = staticServicesRegistration.reloadServices();
-            return new StaticAPIResponse(SC_OK, mapper.writeValueAsString(result));
+            return Mono.just(new StaticAPIResponse(SC_OK, mapper.writeValueAsString(result)));
         } catch (JsonProcessingException e) {
             log.error("Cannot serialize the list of static API services", e);
-            throw new IllegalStateException(e);
+            return Mono.error(new IllegalStateException(e));
         }
     }
 

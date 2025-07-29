@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.discovery.StaticRegistrationResult;
 import org.zowe.apiml.product.discovery.StaticServicesRegistration;
+import reactor.test.StepVerifier;
 
 import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,9 +36,12 @@ class StaticRegistrationServiceApiTest {
         var staticServiceApi = new StaticRegistrationServiceApi(staticServicesRegistration);
         doReturn(new StaticRegistrationResult()).when(staticServicesRegistration).reloadServices();
 
-        var response = staticServiceApi.refresh();
-        assertEquals(SC_OK, response.getStatusCode());
-        assertEquals("{\"errors\":[],\"instances\":[],\"additionalServiceMetadata\":{},\"registeredServices\":[]}", response.getBody());
+        StepVerifier.create(staticServiceApi.refresh())
+            .assertNext(response -> {
+                assertEquals(SC_OK, response.getStatusCode());
+                assertEquals("{\"errors\":[],\"instances\":[],\"additionalServiceMetadata\":{},\"registeredServices\":[]}", response.getBody());
+            })
+            .verifyComplete();
     }
 
     @Test
