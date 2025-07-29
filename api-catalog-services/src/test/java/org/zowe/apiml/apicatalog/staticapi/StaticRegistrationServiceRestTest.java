@@ -99,6 +99,7 @@ class StaticRegistrationServiceRestTest {
                 when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{DISCOVERY_LOCATION_HTTP});
 
                 mockRestTemplateExchange(DISCOVERY_URL_HTTP);
+              
                 StepVerifier.create(staticServiceRest.refresh())
                     .assertNext(actualResponse -> {
                         StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
@@ -106,12 +107,15 @@ class StaticRegistrationServiceRestTest {
                     })
                     .verifyComplete();
             }
+          
         }
 
         @Nested
         class GivenTwoDiscoveryUrlsTest {
+          
             @Nested
             class WhenOneSucceedsTest {
+              
                 @BeforeEach
                 void setup() throws IOException {
                     when(okResponse.getCode()).thenReturn(HttpStatus.OK.value());
@@ -124,6 +128,7 @@ class StaticRegistrationServiceRestTest {
                 void whenFirstSucceeds_thenReturnResponseFromFirst() throws IOException {
                     when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
                     mockRestTemplateExchange(DISCOVERY_LOCATION);
+
                     StepVerifier.create(staticServiceRest.refresh())
                         .assertNext(actualResponse -> {
                             StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
@@ -137,6 +142,7 @@ class StaticRegistrationServiceRestTest {
                     when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
                     when(notFoundResponse.getCode()).thenReturn(HttpStatus.NOT_FOUND.value());
                     mockRestTemplateExchange(DISCOVERY_LOCATION_2);
+
                     StepVerifier.create(staticServiceRest.refresh())
                         .assertNext(actualResponse -> {
                             StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
@@ -144,10 +150,12 @@ class StaticRegistrationServiceRestTest {
                         })
                         .verifyComplete();
                 }
+              
             }
 
             @Nested
             class WhenBothFailsTest {
+              
                 @Test
                 void whenBothFail_thenReturnResponseFromSecond() throws IOException {
                     when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
@@ -163,8 +171,11 @@ class StaticRegistrationServiceRestTest {
                         })
                         .verifyComplete();
                 }
+              
             }
+          
         }
+      
     }
 
 
@@ -191,4 +202,5 @@ class StaticRegistrationServiceRestTest {
             return HttpClientMockHelper.invokeResponseHandler(invocation, i == 0 ? okResponse : notFoundResponse);
         });
     }
+  
 }

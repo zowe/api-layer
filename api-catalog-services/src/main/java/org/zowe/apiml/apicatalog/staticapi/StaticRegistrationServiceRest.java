@@ -89,4 +89,5 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
         }
         return discoveryServiceUrls;
     }
+  
 }
