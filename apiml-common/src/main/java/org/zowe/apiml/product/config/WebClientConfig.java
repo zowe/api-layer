@@ -10,34 +10,54 @@
 
 package org.zowe.apiml.product.config;
 
+import com.google.common.annotations.VisibleForTesting;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.resolver.DefaultAddressResolverGroup;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.cloud.gateway.config.HttpClientCustomizer;
+import org.springframework.cloud.gateway.config.HttpClientFactory;
+import org.springframework.cloud.gateway.config.HttpClientProperties;
+import org.springframework.cloud.gateway.config.HttpClientSslConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.cloud.gateway.config.HttpClientCustomizer;
-import org.springframework.cloud.gateway.config.HttpClientFactory;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.context.annotation.Primary;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
-import org.springframework.cloud.gateway.config.HttpClientSslConfigurer;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
-import io.netty.resolver.DefaultAddressResolverGroup;
-
-import java.security.KeyStore;
-import java.util.List;
-import org.springframework.cloud.gateway.config.HttpClientProperties;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.SecurityUtils;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.http.client.HttpClientSecurityUtils;
+import reactor.netty.tcp.SslProvider;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509KeyManager;
+import java.net.Socket;
+import java.security.KeyStore;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+import java.util.List;
 
+@Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class WebClientConfig {
 
+    private final HttpConfig config;
+
+    private static final ApimlLogger apimlLog = ApimlLogger.of(WebClientConfig.class, YamlMessageServiceInstance.getInstance());
+
+    @VisibleForTesting
+    X509KeyManager x509KeyManagerSelectedAlias(KeyManagerFactory keyManagerFactory) {
+        return new X509KeyManagerSelectedAlias(keyManagerFactory, config.getKeyAlias());
+    }
 
     /**
      * @return io.netty.handler.ssl.SslContext for http client.
@@ -95,6 +115,14 @@ public class WebClientConfig {
         };
     }
 
+    public HttpClient getHttpClient(HttpClient httpClient, boolean useClientCert) {
+        var sslContextBuilder = SslProvider.builder().sslContext(getSslContext(useClientCert));
+        if (!config.isNonStrictVerifySslCertificatesOfServices()) {
+            sslContextBuilder.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
+        }
+        return httpClient.secure(sslContextBuilder.build());
+    }
+
     @Bean
     @Primary
     WebClient webClient(HttpClient httpClient) {
@@ -108,6 +136,54 @@ public class WebClientConfig {
         return WebClient.builder()
             .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, true)))
             .build();
+    }
+
+    static class X509KeyManagerSelectedAlias implements X509KeyManager {
+
+        private final X509KeyManager originalKm;
+        private final String keyAlias;
+
+        X509KeyManagerSelectedAlias(KeyManagerFactory keyManagerFactory, String keyAlias) {
+            this.originalKm = (X509KeyManager) keyManagerFactory.getKeyManagers()[0];
+            this.keyAlias = keyAlias;
+        }
+
+        @Override
+        public String[] getClientAliases(String keyType, Principal[] issuers) {
+            return originalKm.getClientAliases(keyType, issuers);
+        }
+
+        @Override
+        public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
+            if (keyAlias != null) {
+                return keyAlias;
+            }
+            return originalKm.chooseClientAlias(keyType, issuers, socket);
+        }
+
+        @Override
+        public String[] getServerAliases(String keyType, Principal[] issuers) {
+            return originalKm.getServerAliases(keyType, issuers);
+        }
+
+        @Override
+        public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
+            if (keyAlias != null) {
+                return keyAlias;
+            }
+            return originalKm.chooseServerAlias(keyType, issuers, socket);
+        }
+
+        @Override
+        public X509Certificate[] getCertificateChain(String alias) {
+            return originalKm.getCertificateChain(alias);
+        }
+
+        @Override
+        public PrivateKey getPrivateKey(String alias) {
+            return originalKm.getPrivateKey(alias);
+        }
+
     }
 
 }
