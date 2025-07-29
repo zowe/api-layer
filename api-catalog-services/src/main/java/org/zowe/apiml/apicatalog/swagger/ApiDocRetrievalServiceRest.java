@@ -14,25 +14,23 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.core5.http.HttpStatus;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.function.UnaryOperator;
+
+import static org.apache.hc.core5.http.HttpHeaders.ACCEPT;
+import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 
 /**
  * Retrieves the API documentation for a registered service
@@ -44,8 +42,8 @@ public class ApiDocRetrievalServiceRest {
 
     private static final UnaryOperator<String> exceptionMessage = serviceId -> "No API Documentation was retrieved for the service " + serviceId + ".";
 
-    @Qualifier("secureHttpClientWithoutKeystore")
-    private final CloseableHttpClient secureHttpClientWithoutKeystore;
+    @Qualifier("webClientClientCert")
+    private final WebClient webClientClientCert;
 
     @InjectApimlLogger
     private ApimlLogger apimlLogger = ApimlLogger.empty();
@@ -69,37 +67,22 @@ public class ApiDocRetrievalServiceRest {
      * @throws ApiDocNotFoundException if the response is error
      */
     private Mono<String> getApiDocContentByUrl(@NonNull String serviceId, String apiDocUrl) {
-        HttpGet httpGet = new HttpGet(apiDocUrl);
-        httpGet.setHeader(org.apache.http.HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-
-        // TODO: refactor with reactive client
-        return Mono.defer(() -> {
-            try {
-                return Mono.just(secureHttpClientWithoutKeystore.execute(httpGet, response -> {
-                        String responseBody = "";
-                        var responseEntity = response.getEntity();
-                        if (responseEntity != null) {
-                            responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
-                        }
-
-                        if (HttpStatus.SC_OK == response.getCode()) {
-                            return responseBody;
-                        } else {
-                            throw new ApiDocNotFoundException(
-                                String.format("No API Documentation was retrieved due to %s server error: %d %s", serviceId, response.getCode(), responseBody)
-                            );
-                        }
-                    }
-                ));
-            } catch (IOException e) {
+        return webClientClientCert.get().uri(apiDocUrl)
+            .header(ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .retrieve()
+            .onStatus(httpStatusCode -> httpStatusCode.value() != SC_OK, response -> Mono.error(
+                new ApiDocNotFoundException(
+                    String.format("No API Documentation was retrieved due to %s server error: %d", serviceId, response.statusCode().value())
+                )
+            ))
+            .bodyToMono(String.class)
+            .onErrorResume(IOException.class, e -> {
                 apimlLogger.log("org.zowe.apiml.apicatalog.apiDocHostCommunication", serviceId, e.getMessage());
                 log.debug("Error retrieving api doc for '{}'", serviceId, e);
                 return Mono.error(new ApiDocNotFoundException(
                     exceptionMessage.apply(serviceId) + " Root cause: " + e.getMessage(), e
                 ));
-            }
-        })
-        .subscribeOn(Schedulers.boundedElastic());
+            });
     }
 
 }

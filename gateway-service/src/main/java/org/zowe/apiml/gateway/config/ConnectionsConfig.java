@@ -11,17 +11,11 @@
 package org.zowe.apiml.gateway.config;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.EurekaInstanceConfig;
-import com.netflix.appinfo.HealthCheckHandler;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.LeaseInfo;
+import com.netflix.appinfo.*;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +32,6 @@ import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-
 import org.springframework.cloud.gateway.config.HttpClientProperties;
 import org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
@@ -68,36 +61,20 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.common.util.ConnectionUtil;
 import org.zowe.apiml.util.CorsUtils;
 import reactor.netty.http.client.HttpClient;
-import reactor.netty.http.client.HttpClientSecurityUtils;
-import reactor.netty.tcp.SslProvider;
 
 import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509KeyManager;
 import java.net.MalformedURLException;
-import java.net.Socket;
 import java.net.URL;
-import java.security.KeyStore;
-import java.security.Principal;
-import java.security.PrivateKey;
-import java.security.cert.X509Certificate;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.REGISTRATION_TYPE;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
-
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 //TODO this configuration should be removed as redundancy of the HttpConfig in the apiml-common
 @Configuration
@@ -125,15 +102,17 @@ public class ConnectionsConfig {
      */
     @Bean
     NettyRoutingFilterApiml createNettyRoutingFilterApiml(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
-        return new NettyRoutingFilterApiml(getHttpClient(httpClient, false), getHttpClient(httpClient, true), headersFiltersProvider, properties);
-    }
-
-    public HttpClient getHttpClient(HttpClient httpClient, boolean useClientCert) {
-        var sslContextBuilder = SslProvider.builder().sslContext(getSslContext(useClientCert));
-        if (!config.isNonStrictVerifySslCertificatesOfServices()) {
-            sslContextBuilder.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
+        try {
+            return new NettyRoutingFilterApiml(
+                ConnectionUtil.getHttpClient(config, httpClient, false),
+                ConnectionUtil.getHttpClient(config, httpClient, true),
+                headersFiltersProvider, properties
+            );
+        } catch (Exception e) {
+            apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
+            throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
+                HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config.httpsConfig());
         }
-        return httpClient.secure(sslContextBuilder.build());
     }
 
     /**
@@ -162,7 +141,7 @@ public class ConnectionsConfig {
 
     @VisibleForTesting
     X509KeyManager x509KeyManagerSelectedAlias(KeyManagerFactory keyManagerFactory) {
-        return new X509KeyManagerSelectedAlias(keyManagerFactory, config.getKeyAlias());
+        return new ConnectionUtil.X509KeyManagerSelectedAlias(keyManagerFactory, config.getKeyAlias());
     }
 
     @Bean(destroyMethod = "shutdown", name = "eurekaClient")

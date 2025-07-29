@@ -34,38 +34,25 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.WebFilter;
 import org.zowe.apiml.gateway.GatewayServiceApplication;
 import org.zowe.apiml.product.web.HttpConfig;
+import org.zowe.apiml.security.common.util.ConnectionUtil;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.SslProvider;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.X509KeyManager;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.Socket;
-import java.security.Principal;
-import java.security.PrivateKey;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class ConnectionsConfigTest {
 
@@ -128,8 +115,11 @@ class ConnectionsConfigTest {
             @MockitoSpyBean
             private ConnectionsConfig connectionsConfig;
 
+            @Autowired
+            private HttpConfig httpConfig;
+
             @Test
-            void whenAliasIsSet_thenReturnItByX509KeyManagerSelectedAlias() {
+            void whenAliasIsSet_thenReturnItByX509KeyManagerSelectedAlias() throws UnrecoverableKeyException, CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
                 AtomicReference<X509KeyManager> returnValue = new AtomicReference<>();
                 doAnswer(answer -> {
                     if (returnValue.get() == null) {
@@ -138,7 +128,7 @@ class ConnectionsConfigTest {
                     return returnValue.get();
                 }).when(connectionsConfig).x509KeyManagerSelectedAlias(any());
 
-                var sslContext = connectionsConfig.getSslContext(true);
+                var sslContext = ConnectionUtil.getSslContext(httpConfig, true);
                 var sslProvider = SslProvider.builder().sslContext(sslContext).build();
                 var httpClient = HttpClient.create().secure(sslProvider);
                 reset(returnValue.get());
@@ -162,10 +152,10 @@ class ConnectionsConfigTest {
             private HttpConfig httpConfig;
 
             @Test
-            void whenAliasIsInvalid_thenNoCertificateProvided() {
+            void whenAliasIsInvalid_thenNoCertificateProvided() throws UnrecoverableKeyException, CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
                 when(httpConfig.getKeyAlias()).thenReturn("invalid");
 
-                var sslContext = connectionsConfig.getSslContext(true);
+                var sslContext = ConnectionUtil.getSslContext(httpConfig,true);
                 var sslProvider = SslProvider.builder().sslContext(sslContext).build();
                 var httpClient = HttpClient.create().secure(sslProvider);
                 httpClient.get()
@@ -197,7 +187,7 @@ class ConnectionsConfigTest {
             void whenGetClientAliases_thenRecall() {
                 doReturn(ALIASES).when(origKeyManager).getClientAliases(KEY_TYPE, ISSUERS);
                 assertSame(ALIASES,
-                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
+                    new ConnectionUtil.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
                         .getClientAliases(KEY_TYPE, ISSUERS)
                 );
                 verify(origKeyManager).getClientAliases(KEY_TYPE, ISSUERS);
@@ -207,7 +197,7 @@ class ConnectionsConfigTest {
             void givenNoAlias_whenChooseClientAlias_thenRecall() {
                 doReturn(ALIAS).when(origKeyManager).chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET);
                 assertSame(ALIAS,
-                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, null)
+                    new ConnectionUtil.X509KeyManagerSelectedAlias(origKeyManagerFactory, null)
                         .chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET)
                 );
                 verify(origKeyManager).chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET);
@@ -216,7 +206,7 @@ class ConnectionsConfigTest {
             @Test
             void givenAlias_whenChooseClientAlias_thenReturnAlias() {
                 assertSame(CONFIG_ALIAS,
-                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
+                    new ConnectionUtil.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
                         .chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET)
                 );
                 verify(origKeyManager, never()).chooseClientAlias(KEY_TYPES, ISSUERS, SOCKET);
@@ -226,7 +216,7 @@ class ConnectionsConfigTest {
             void whenGetServerAliases_thenRecall() {
                 doReturn(ALIASES).when(origKeyManager).getServerAliases(KEY_TYPE, ISSUERS);
                 assertSame(ALIASES,
-                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
+                    new ConnectionUtil.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
                         .getServerAliases(KEY_TYPE, ISSUERS)
                 );
                 verify(origKeyManager).getServerAliases(KEY_TYPE, ISSUERS);
@@ -236,7 +226,7 @@ class ConnectionsConfigTest {
             void givenNoAlias_whenChooseServerAlias_thenRecall() {
                 doReturn(ALIAS).when(origKeyManager).chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET);
                 assertSame(ALIAS,
-                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, null)
+                    new ConnectionUtil.X509KeyManagerSelectedAlias(origKeyManagerFactory, null)
                         .chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET)
                 );
                 verify(origKeyManager).chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET);
@@ -245,7 +235,7 @@ class ConnectionsConfigTest {
             @Test
             void givenAlias_whenChooseServerAlias_thenReturnAlias() {
                 assertSame(CONFIG_ALIAS,
-                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
+                    new ConnectionUtil.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
                         .chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET)
                 );
                 verify(origKeyManager, never()).chooseServerAlias(KEY_TYPE, ISSUERS, SOCKET);
@@ -255,7 +245,7 @@ class ConnectionsConfigTest {
             void whenGetCertificateChain_thenRecall() {
                 doReturn(CERTIFICATES).when(origKeyManager).getCertificateChain(ALIAS);
                 assertSame(CERTIFICATES,
-                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
+                    new ConnectionUtil.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
                         .getCertificateChain(ALIAS)
                 );
                 verify(origKeyManager).getCertificateChain(ALIAS);
@@ -265,7 +255,7 @@ class ConnectionsConfigTest {
             void whenGetPrivateKey_thenRecall() {
                 doReturn(PRIVATE_KEY).when(origKeyManager).getPrivateKey(ALIAS);
                 assertSame(PRIVATE_KEY,
-                    new ConnectionsConfig.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
+                    new ConnectionUtil.X509KeyManagerSelectedAlias(origKeyManagerFactory, CONFIG_ALIAS)
                         .getPrivateKey(ALIAS)
                 );
                 verify(origKeyManager).getPrivateKey(ALIAS);

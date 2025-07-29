@@ -18,6 +18,10 @@ import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClien
 import org.springframework.web.reactive.socket.client.WebSocketClient;
 import org.springframework.web.reactive.socket.server.RequestUpgradeStrategy;
 import org.zowe.apiml.gateway.websocket.ApimlRequestUpgradeStrategy;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.web.HttpConfig;
+import org.zowe.apiml.security.HttpsConfigError;
+import org.zowe.apiml.security.common.util.ConnectionUtil;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.http.client.WebsocketClientSpec;
 
@@ -25,10 +29,19 @@ import reactor.netty.http.client.WebsocketClientSpec;
 @Configuration
 public class WebSocketConfig {
 
+    private static final ApimlLogger apimlLog = ApimlLogger.empty();
+
     @Bean
     @Primary
-    WebSocketClient webSocketClient(ConnectionsConfig connectionsConfig, HttpClient httpClient) {
-        var secureClient = connectionsConfig.getHttpClient(httpClient, false);
+    WebSocketClient webSocketClient(HttpConfig config, HttpClient httpClient) {
+        HttpClient secureClient;
+        try {
+            secureClient = ConnectionUtil.getHttpClient(config, httpClient, false);
+        } catch (Exception e) {
+            apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
+            throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
+                HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config.httpsConfig());
+        }
         var spec = WebsocketClientSpec.builder()
             .handlePing(true);
 
