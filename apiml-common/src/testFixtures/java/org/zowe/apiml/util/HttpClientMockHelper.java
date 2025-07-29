@@ -16,6 +16,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.BasicHttpEntity;
 import org.mockito.ArgumentMatchers;
@@ -48,6 +49,12 @@ public class HttpClientMockHelper {
 
     }
 
+    public static void mockResponse(ClassicHttpResponse responseMock, int statusCode, String responseBody, Header... headers) {
+        mockResponse(responseMock, statusCode);
+        mockResponse(responseMock, responseBody);
+        mockResponse(responseMock, headers);
+    }
+
     public static void mockResponse(ClassicHttpResponse responseMock, int statusCode, String responseBody) {
         mockResponse(responseMock, statusCode);
         mockResponse(responseMock, responseBody);
@@ -60,5 +67,9 @@ public class HttpClientMockHelper {
 
     public static void mockResponse(ClassicHttpResponse responseMock, int statusCode) {
         Mockito.when(responseMock.getCode()).thenReturn(statusCode);
+    }
+
+    public static void mockResponse(ClassicHttpResponse responseMock, Header... headers) {
+        Mockito.when(responseMock.getHeaders()).thenReturn(headers);
     }
 }

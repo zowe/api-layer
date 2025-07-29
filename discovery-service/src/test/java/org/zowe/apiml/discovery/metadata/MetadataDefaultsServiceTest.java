@@ -23,7 +23,7 @@ import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegis
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.discovery.EurekaInstanceRegisteredListener;
 import org.zowe.apiml.discovery.staticdef.ServiceDefinitionProcessor;
-import org.zowe.apiml.discovery.staticdef.StaticRegistrationResult;
+import org.zowe.apiml.product.discovery.StaticRegistrationResult;
 import org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService;
 
 import java.io.File;

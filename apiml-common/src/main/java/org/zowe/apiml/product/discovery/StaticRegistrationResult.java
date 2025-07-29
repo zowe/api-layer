@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.discovery.staticdef;
+package org.zowe.apiml.product.discovery;
 
 import com.netflix.appinfo.InstanceInfo;
 import lombok.Data;
