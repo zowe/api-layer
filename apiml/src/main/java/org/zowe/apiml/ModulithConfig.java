@@ -271,6 +271,7 @@ public class ModulithConfig {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/utility-log-messages.yml");
         messageService.loadMessages("/common-log-messages.yml");
+        messageService.loadMessages("/security-common-log-messages.yml");
 
         messageService.loadMessages("/discovery-log-messages.yml");
         messageService.loadMessages("/gateway-log-messages.yml");
