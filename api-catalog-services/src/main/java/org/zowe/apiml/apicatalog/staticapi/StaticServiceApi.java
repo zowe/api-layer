@@ -27,7 +27,7 @@ import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 public class StaticServiceApi implements StaticService {
 
     private ObjectMapper mapper = new ObjectMapper();
-    private StaticServicesRegistration staticServicesRegistration;
+    private final StaticServicesRegistration staticServicesRegistration;
 
     @Override
     public StaticAPIResponse refresh() {
