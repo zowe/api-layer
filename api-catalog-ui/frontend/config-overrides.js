@@ -24,6 +24,12 @@ module.exports = {
             },
         ];
 
+        //Needed because of a webpack issue with react-router 7.7.x and react 18, could be removed after upgrading to react 19
+        //https://github.com/remix-run/react-router/issues/14020#issuecomment-3099350823
+        config.module.parser ??= {};
+        config.module.parser.javascript ??= {};
+        config.module.parser.javascript.importExportsPresence = 'warn';
+
         return config;
     },
     jest: (config) => {

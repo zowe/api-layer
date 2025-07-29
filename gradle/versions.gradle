@@ -76,7 +76,7 @@ dependencyResolutionManagement {
             version('netty', '4.2.3.Final')
             // netty reactor contains a bug: https://github.com/reactor/reactor-netty/issues/3559 > https://github.com/reactor/reactor-netty/pull/3581
             version('nettyReactor', '1.2.8')
-            version('nimbusJoseJwt', '10.0.2')
+            version('nimbusJoseJwt', '10.4')
             version('openApiDiff', '2.1.2')
             version('picocli', '4.7.7')
 
