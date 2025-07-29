@@ -24,7 +24,7 @@ import org.zowe.apiml.apicatalog.controllers.handlers.StaticAPIRefreshController
 import org.zowe.apiml.apicatalog.controllers.handlers.StaticDefinitionControllerExceptionHandler;
 import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
 import org.zowe.apiml.apicatalog.staticapi.StaticAPIResponse;
-import org.zowe.apiml.apicatalog.staticapi.StaticServiceRest;
+import org.zowe.apiml.apicatalog.staticapi.StaticRegistrationServiceRest;
 import org.zowe.apiml.apicatalog.staticapi.StaticDefinitionGenerator;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -47,7 +47,7 @@ class StaticAPIRefreshControllerTest {
     private WebTestClient webTestClient;
 
     @MockitoBean
-    private StaticServiceRest staticServiceRest;
+    private StaticRegistrationServiceRest staticServiceRest;
 
     @MockitoBean
     private StaticDefinitionGenerator staticDefinitionGenerator;

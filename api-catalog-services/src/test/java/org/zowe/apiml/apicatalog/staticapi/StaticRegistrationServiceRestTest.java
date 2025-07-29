@@ -35,7 +35,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class StaticServiceRestTest {
+class StaticRegistrationServiceRestTest {
 
     private static final String REFRESH_ENDPOINT = "discovery/api/v1/staticApi";
 
@@ -48,7 +48,7 @@ class StaticServiceRestTest {
     private static final String DISCOVERY_URL_HTTP = "http://localhost:60004/";
 
     @InjectMocks
-    private StaticServiceRest staticServiceRest;
+    private StaticRegistrationServiceRest staticServiceRest;
 
     @Mock
     private CloseableHttpClient httpClient;

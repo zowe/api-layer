@@ -31,7 +31,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 @ConditionalOnMissingBean(name = "modulithConfig")
-public class StaticServiceRest implements StaticService {
+public class StaticRegistrationServiceRest implements StaticRegistrationService {
 
     private static final String REFRESH_ENDPOINT = "discovery/api/v1/staticApi";
 

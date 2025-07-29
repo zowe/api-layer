@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.apicatalog.staticapi;
 
-public interface StaticService {
+public interface StaticRegistrationService {
 
     StaticAPIResponse refresh();
 

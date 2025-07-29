@@ -25,14 +25,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class StaticServiceApiTest {
+class StaticRegistrationServiceApiTest {
 
     @Mock
     private StaticServicesRegistration staticServicesRegistration;
 
     @Test
     void givenService_whenRefresh_thenGenerateResponse() {
-        var staticServiceApi = new StaticServiceApi(staticServicesRegistration);
+        var staticServiceApi = new StaticRegistrationServiceApi(staticServicesRegistration);
         doReturn(new StaticRegistrationResult()).when(staticServicesRegistration).reloadServices();
 
         var response = staticServiceApi.refresh();
@@ -43,7 +43,7 @@ class StaticServiceApiTest {
     @Test
     void givenInvalidObject_whenRefresh_thenThrowAnException() throws JsonProcessingException {
         var mapper = spy(new ObjectMapper());
-        var staticServiceApi = new StaticServiceApi(staticServicesRegistration);
+        var staticServiceApi = new StaticRegistrationServiceApi(staticServicesRegistration);
         ReflectionTestUtils.setField(staticServiceApi, "mapper", mapper);
         doThrow(mock(JsonProcessingException.class)).when(mapper).writeValueAsString(any());
 

@@ -24,7 +24,7 @@ import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 @Service
 @RequiredArgsConstructor
 @ConditionalOnBean(name = "modulithConfig")
-public class StaticServiceApi implements StaticService {
+public class StaticRegistrationServiceApi implements StaticRegistrationService {
 
     private ObjectMapper mapper = new ObjectMapper();
     private final StaticServicesRegistration staticServicesRegistration;
