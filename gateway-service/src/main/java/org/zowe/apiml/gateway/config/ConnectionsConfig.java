@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.config;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.netflix.appinfo.*;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
@@ -65,8 +64,6 @@ import org.zowe.apiml.security.common.util.ConnectionUtil;
 import org.zowe.apiml.util.CorsUtils;
 import reactor.netty.http.client.HttpClient;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.X509KeyManager;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
@@ -137,11 +134,6 @@ public class ConnectionsConfig {
                 return bean;
             }
         };
-    }
-
-    @VisibleForTesting
-    X509KeyManager x509KeyManagerSelectedAlias(KeyManagerFactory keyManagerFactory) {
-        return new ConnectionUtil.X509KeyManagerSelectedAlias(keyManagerFactory, config.getKeyAlias());
     }
 
     @Bean(destroyMethod = "shutdown", name = "eurekaClient")

@@ -5,6 +5,7 @@ dependencies {
     implementation libs.spring.boot.starter.security
     implementation libs.reactor
     implementation libs.spring.webflux
+    implementation libs.guava
     compileOnly libs.netty.reactor.http
     compileOnly libs.spring.cloud.gateway.server
 

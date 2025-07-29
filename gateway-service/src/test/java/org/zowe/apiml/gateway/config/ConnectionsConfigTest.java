@@ -21,6 +21,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.invocation.InvocationOnMock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -121,24 +123,26 @@ class ConnectionsConfigTest {
             @Test
             void whenAliasIsSet_thenReturnItByX509KeyManagerSelectedAlias() throws UnrecoverableKeyException, CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
                 AtomicReference<X509KeyManager> returnValue = new AtomicReference<>();
-                doAnswer(answer -> {
-                    if (returnValue.get() == null) {
-                        returnValue.set(spy((X509KeyManager) answer.callRealMethod()));
-                    }
-                    return returnValue.get();
-                }).when(connectionsConfig).x509KeyManagerSelectedAlias(any());
+                try (MockedStatic<ConnectionUtil> connectionUtilMockedStatic = mockStatic(ConnectionUtil.class, InvocationOnMock::callRealMethod)) {
+                    connectionUtilMockedStatic.when(() -> ConnectionUtil.x509KeyManagerSelectedAlias(any(), any())).then(answer -> {
+                        if (returnValue.get() == null) {
+                            returnValue.set(spy((X509KeyManager) answer.callRealMethod()));
+                        }
+                        return returnValue.get();
+                    });
 
-                var sslContext = ConnectionUtil.getSslContext(httpConfig, true);
-                var sslProvider = SslProvider.builder().sslContext(sslContext).build();
-                var httpClient = HttpClient.create().secure(sslProvider);
-                reset(returnValue.get());
-                httpClient.get()
-                    .uri(String.format("https://localhost:%d/", port))
-                    .response().block();
-                assertNotNull(SslDetectorConfig.sslInfoHolder.get());
+                    var sslContext = ConnectionUtil.getSslContext(httpConfig, true);
+                    var sslProvider = SslProvider.builder().sslContext(sslContext).build();
+                    var httpClient = HttpClient.create().secure(sslProvider);
+                    reset(returnValue.get());
+                    httpClient.get()
+                        .uri(String.format("https://localhost:%d/", port))
+                        .response().block();
+                    assertNotNull(SslDetectorConfig.sslInfoHolder.get());
 
-                verify(returnValue.get(), atLeastOnce()).chooseClientAlias(any(), any(), any());
-                assertEquals(keyAlias, returnValue.get().chooseClientAlias(null, null, null));
+                    verify(returnValue.get(), atLeastOnce()).chooseClientAlias(any(), any(), any());
+                    assertEquals(keyAlias, returnValue.get().chooseClientAlias(null, null, null));
+                }
             }
 
         }

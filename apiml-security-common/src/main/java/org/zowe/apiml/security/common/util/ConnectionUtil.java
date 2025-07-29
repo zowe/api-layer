@@ -28,6 +28,7 @@ import java.net.Socket;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import com.google.common.annotations.VisibleForTesting;
 
 @UtilityClass
 @Slf4j
@@ -51,7 +52,7 @@ public class ConnectionUtil {
             KeyStore keyStore = SecurityUtils.loadKeyStore(
                 config.getKeyStoreType(), config.getKeyStorePath(), config.getKeyStorePassword());
             keyManagerFactory.init(keyStore, config.getKeyStorePassword());
-            builder.keyManager(new X509KeyManagerSelectedAlias(keyManagerFactory, config.getKeyAlias()));
+            builder.keyManager(x509KeyManagerSelectedAlias(config, keyManagerFactory));
         } else {
             KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
             emptyKeystore.load(null, null);
@@ -72,6 +73,11 @@ public class ConnectionUtil {
             sslContextBuilder.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
         }
         return httpClient.secure(sslContextBuilder.build());
+    }
+
+    @VisibleForTesting
+    public X509KeyManager x509KeyManagerSelectedAlias(HttpConfig config, KeyManagerFactory keyManagerFactory) {
+        return new ConnectionUtil.X509KeyManagerSelectedAlias(keyManagerFactory, config.getKeyAlias());
     }
 
     public static class X509KeyManagerSelectedAlias implements X509KeyManager {
