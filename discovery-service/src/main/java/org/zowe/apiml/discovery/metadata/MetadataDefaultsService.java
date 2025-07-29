@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.discovery.metadata;
 
-import org.zowe.apiml.discovery.staticdef.ServiceOverrideData;
+import org.zowe.apiml.product.discovery.ServiceOverrideData;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
