@@ -47,7 +47,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
     private static final String SLASH = "/";
 
-    @Value("${server.attls.enabled:false}")
+    @Value("${server.attlsClient.enabled:false}")
     private boolean isAttlsEnabled;
 
     private static final EurekaMetadataParser EUREKA_METADATA_PARSER = new EurekaMetadataParser();
