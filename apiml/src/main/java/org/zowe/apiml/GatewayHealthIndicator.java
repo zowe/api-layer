@@ -133,7 +133,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     }
 
     @EventListener
-    public void onApplicationevent(ApiCatalogServiceAvailableEvent event) {
+    public void onApplicationEvent(ApiCatalogServiceAvailableEvent event) {
         if (catalogAvailable.compareAndSet(false, true)) {
             serviceStartupEventHandler.onServiceStartup("API Catalog Service", ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
         }
