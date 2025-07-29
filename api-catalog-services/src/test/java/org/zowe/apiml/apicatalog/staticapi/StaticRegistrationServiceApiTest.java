@@ -22,7 +22,7 @@ import org.zowe.apiml.product.discovery.StaticServicesRegistration;
 import reactor.test.StepVerifier;
 
 import static org.apache.hc.core5.http.HttpStatus.SC_OK;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,8 +51,9 @@ class StaticRegistrationServiceApiTest {
         ReflectionTestUtils.setField(staticServiceApi, "mapper", mapper);
         doThrow(mock(JsonProcessingException.class)).when(mapper).writeValueAsString(any());
 
-        var exception = assertThrows(IllegalStateException.class, staticServiceApi::refresh);
-        assertInstanceOf(JsonProcessingException.class, exception.getCause());
+        StepVerifier.create(staticServiceApi.refresh())
+            .expectError(IllegalStateException.class)
+            .verify();
     }
 
 }

@@ -101,6 +101,7 @@ apiml:
             urls:
                 authenticate: https://mock-services:10013/zss/saf/authenticate
                 verify: https://localhost:10013/zss/saf/verify
+    webClientConfig.enabled: true
 caching:
     storage:
         mode: infinispan
