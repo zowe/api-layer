@@ -11,6 +11,8 @@
 package org.zowe.apiml.discovery.staticdef;
 
 import lombok.Data;
+import org.zowe.apiml.product.discovery.Service;
+import org.zowe.apiml.product.discovery.ServiceOverride;
 
 import java.util.List;
 import java.util.Map;

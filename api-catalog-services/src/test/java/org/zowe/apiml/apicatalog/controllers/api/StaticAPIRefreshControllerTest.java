@@ -24,7 +24,7 @@ import org.zowe.apiml.apicatalog.controllers.handlers.StaticAPIRefreshController
 import org.zowe.apiml.apicatalog.controllers.handlers.StaticDefinitionControllerExceptionHandler;
 import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
 import org.zowe.apiml.apicatalog.staticapi.StaticAPIResponse;
-import org.zowe.apiml.apicatalog.staticapi.StaticAPIService;
+import org.zowe.apiml.apicatalog.staticapi.StaticRegistrationServiceRest;
 import org.zowe.apiml.apicatalog.staticapi.StaticDefinitionGenerator;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -47,14 +47,14 @@ class StaticAPIRefreshControllerTest {
     private WebTestClient webTestClient;
 
     @MockitoBean
-    private StaticAPIService staticAPIService;
+    private StaticRegistrationServiceRest staticServiceRest;
 
     @MockitoBean
     private StaticDefinitionGenerator staticDefinitionGenerator;
 
     @Test
     void givenServiceNotFoundException_whenCallRefreshAPI_thenResponseShouldBe503WithSpecificMessage() {
-        when(staticAPIService.refresh()).thenThrow(
+        when(staticServiceRest.refresh()).thenThrow(
             new ServiceNotFoundException("Exception")
         );
 
@@ -70,7 +70,7 @@ class StaticAPIRefreshControllerTest {
 
     @Test
     void givenRestClientException_whenCallRefreshAPI_thenResponseShouldBe500WithSpecificMessage() {
-        when(staticAPIService.refresh()).thenThrow(
+        when(staticServiceRest.refresh()).thenThrow(
             new RestClientException("Exception")
         );
 
@@ -86,7 +86,7 @@ class StaticAPIRefreshControllerTest {
 
     @Test
     void givenSuccessStaticResponse_whenCallRefreshAPI_thenResponseCodeShouldBe200() {
-        when(staticAPIService.refresh()).thenReturn(
+        when(staticServiceRest.refresh()).thenReturn(
             new StaticAPIResponse(200, "This is body")
         );
 
