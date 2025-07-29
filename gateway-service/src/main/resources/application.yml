@@ -116,6 +116,7 @@ apiml:
             nonStrictVerifySslCertificatesOfServices: false
     health:
         protected: true
+    webClientConfig.enabled: true
 server:
     http2:
         enabled: false
@@ -167,6 +168,7 @@ management:
             base-path: /application
             exposure:
                 include: health,info,gateway
+
 ---
 spring.config.activate.on-profile: debug
 

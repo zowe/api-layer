@@ -14,6 +14,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.resolver.DefaultAddressResolverGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.cloud.gateway.config.HttpClientCustomizer;
 import org.springframework.cloud.gateway.config.HttpClientFactory;
@@ -36,6 +37,7 @@ import java.util.List;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "apiml.webClientConfig.enabled", havingValue = "true")
 public class WebClientConfig {
 
     private final HttpConfig config;

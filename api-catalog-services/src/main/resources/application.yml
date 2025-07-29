@@ -104,6 +104,7 @@ apiml:
         cacheRefreshUpdateThresholdInMillis: 30000
         cacheRefreshInitialDelayInMillis: 30000
         cacheRefreshRetryDelayInMillis: 30000
+    webClientConfig.enabled: true
 
 ##############################################################################################
 

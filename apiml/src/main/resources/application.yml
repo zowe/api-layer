@@ -242,6 +242,7 @@ apiml:
                 verify: https://${apiml.service.hostname}:10013/zss/saf/verify
     health:
         protected: true
+    webClientConfig.enabled: true
 server:
     http2:
         enabled: false
