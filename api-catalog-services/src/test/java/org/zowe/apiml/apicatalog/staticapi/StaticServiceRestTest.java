@@ -164,7 +164,7 @@ class StaticServiceRestTest {
     private void mockRestTemplateExchange(String discoveryUrl) throws IOException {
         HttpPost post = new HttpPost(discoveryUrl.replace("/eureka", "") + REFRESH_ENDPOINT);
 
-        when(httpClient.execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class))).thenAnswer((invocation) -> {
+        when(httpClient.execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class))).thenAnswer(invocation -> {
             HttpPost httpRequest = (HttpPost) invocation.getArguments()[0];
             URI uri = httpRequest.getUri();
             int i = uri.compareTo(post.getUri());
