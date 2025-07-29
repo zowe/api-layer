@@ -89,6 +89,7 @@ class SafLoginTest implements TestWithStartedInstances {
             .when()
                 .post(loginUrl)
             .then()
+                .log().ifValidationFails()
                 .statusCode(is(SC_UNAUTHORIZED))
                 .body(
                     "messages.find { it.messageNumber == 'ZWEAT412E' }.messageContent", containsString("expire")

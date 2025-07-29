@@ -111,7 +111,7 @@ class ServicesInfoTest implements TestWithStartedInstances {
             })
             void returns200WithoutSafCheck(String endpoint) {
                 given()
-                    .config(SslContext.clientCertValid)
+                    .config(SslContext.clientCertValid) // TODO add test with API ML cert
                 .when()
                     .get(getUriFromGateway(endpoint))
                 .then()
