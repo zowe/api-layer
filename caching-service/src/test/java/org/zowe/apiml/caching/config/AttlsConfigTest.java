@@ -30,7 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.zowe.apiml.caching.CachingService;
+import org.zowe.apiml.caching.CachingServiceApplication;
 import org.zowe.apiml.filter.AttlsHttpHandler;
 import org.zowe.apiml.util.config.SslContext;
 
@@ -45,7 +45,7 @@ import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest(
-    classes = CachingService.class,
+    classes = CachingServiceApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @ActiveProfiles("AttlsConfigTestCachingService")
@@ -58,13 +58,12 @@ import static org.mockito.Mockito.verify;
 )
 @DirtiesContext
 @TestInstance(Lifecycle.PER_CLASS)
-public class AttlsConfigTest {
+class AttlsConfigTest {
 
     @Value("${apiml.service.hostname:localhost}")
     String hostname;
     @LocalServerPort
     int port;
-
 
     @Nested
     class GivenAttlsModeEnabled {
@@ -115,6 +114,9 @@ public class AttlsConfigTest {
                     .filteredOn(element -> element.getMessage().contains("Cannot verify AT-TLS status"))
                     .isNotEmpty();
             }
+
         }
+
     }
+
 }

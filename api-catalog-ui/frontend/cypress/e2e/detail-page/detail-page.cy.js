@@ -38,7 +38,7 @@ describe('>>> Detail page test', () => {
         cy.contains('Version: ');
         cy.get('#grid-container').contains('API Catalog').click();
 
-        cy.visit(`${Cypress.env('catalogHomePage')}/#/service/apicatalog`);
+        cy.visit(`${Cypress.env('catalogHomePage')}/index.html#/service/apicatalog`);
 
         const baseUrl = `${Cypress.env('catalogHomePage')}`;
 
@@ -72,7 +72,7 @@ describe('>>> Detail page test', () => {
         cy.contains('Version: ');
         cy.contains('API Gateway').click();
 
-        cy.visit(`${Cypress.env('catalogHomePage')}/#/service/gateway`);
+        cy.visit(`${Cypress.env('catalogHomePage')}/index.html#/service/gateway`);
 
         const baseUrl = `${Cypress.env('catalogHomePage')}`;
 

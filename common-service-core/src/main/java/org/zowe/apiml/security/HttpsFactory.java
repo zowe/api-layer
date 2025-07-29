@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.UserTokenHandler;
 import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.LaxRedirectStrategy;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
@@ -35,11 +36,7 @@ import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.CertificateException;
 
 
@@ -69,7 +66,9 @@ public class HttpsFactory {
             .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
             .evictExpiredConnections()
             .evictIdleConnections(Timeout.ofSeconds(config.getIdleConnTimeoutSeconds()))
-            .disableAuthCaching().build();
+            .disableAuthCaching()
+            .setRedirectStrategy(new LaxRedirectStrategy())
+            .build();
 
     }
 

@@ -13,20 +13,18 @@ package org.zowe.apiml.acceptance;
 import io.restassured.RestAssured;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpStatus;
-import org.apache.http.Header;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicStatusLine;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.core.Is;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentMatchers;
@@ -40,8 +38,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.product.web.HttpConfig;
+import org.zowe.apiml.util.HttpClientMockHelper;
 import org.zowe.apiml.zaas.ZaasApplication;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderEndpoint;
@@ -77,28 +77,20 @@ class OIDCTokenProviderJWKEndpointTest {
 
     @LocalServerPort
     private int port;
-
     private String zaasEndpoint;
     private RestAssuredConfig withClientCert;
-
     @Autowired
     HttpConfig httpConfig;
-
-    @Autowired
-    OIDCTokenProviderEndpoint oidcTokenProviderEndpoint;
-
-    @Autowired
-    CloseableHttpClient secureHttpClientWithKeystore;
+    @MockitoSpyBean
+    CloseableHttpClient httpClientSecure;
 
     private CloseableHttpResponse createResponse(int responseCode, String body, Header...headers) {
         CloseableHttpResponse response = mock(CloseableHttpResponse.class);
-        Mockito.doReturn(new BasicStatusLine(new ProtocolVersion("http", 1, 1), responseCode, "")).when(response).getStatusLine();
-        Mockito.doReturn(new StringEntity(body, ContentType.APPLICATION_JSON)).when(response).getEntity();
-        Mockito.doReturn(headers).when(response).getAllHeaders();
+        HttpClientMockHelper.mockResponse(response, responseCode, body, headers);
         return response;
     }
 
-    @BeforeAll
+    @BeforeEach
     public void init() throws IOException {
         zaasEndpoint = "https://localhost:" + port + CONTROLLER_PATH + "/zoweJwt";
 
@@ -106,13 +98,13 @@ class OIDCTokenProviderJWKEndpointTest {
         withClientCert = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER))); // NOSONAR
 
         Mockito.doAnswer(invocation -> {
-            HttpUriRequest request = invocation.getArgument(0);
+            HttpGet request = invocation.getArgument(0);
             String authHeader = request.getFirstHeader(HttpHeaders.AUTHORIZATION).getValue();
-            if (StringUtils.equals(ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN, authHeader)) {
-                return createResponse(HttpStatus.SC_OK, "{\"detail\":\"information\")");
+            if (Strings.CS.equals(ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN, authHeader)) {
+                return HttpClientMockHelper.invokeResponseHandler(invocation, createResponse(HttpStatus.SC_OK, "{\"detail\":\"information\")"));
             }
-            return createResponse(HttpStatus.SC_UNAUTHORIZED, "{\"error\":\"message\")");
-        }).when(secureHttpClientWithKeystore).execute(ArgumentMatchers.any());
+            return HttpClientMockHelper.invokeResponseHandler(invocation, createResponse(HttpStatus.SC_UNAUTHORIZED, "{\"error\":\"message\")"));
+        }).when(httpClientSecure).execute(ArgumentMatchers.any(ClassicHttpRequest.class), ArgumentMatchers.any(HttpClientResponseHandler.class));
     }
 
     @Test
@@ -177,7 +169,7 @@ class OIDCTokenProviderJWKEndpointTest {
         }
 
         @Bean
-        CloseableHttpClient secureHttpClientWithKeystore() {
+        CloseableHttpClient httpClientSecure() {
             return mock(CloseableHttpClient.class);
         }
 

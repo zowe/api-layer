@@ -158,7 +158,7 @@ class TransformServiceTest {
 
     @Test
     void givenEmptyGatewayClient_thenThrowException() {
-        String url = "https:localhost:8080/wss";
+        String url = "https://localhost:8080/wss";
 
         GatewayClient emptyGatewayClient = new GatewayClient(null);
         TransformService transformService = new TransformService(emptyGatewayClient);

@@ -11,6 +11,7 @@
 package org.zowe.apiml.discovery;
 
 import jakarta.annotation.Nonnull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -30,12 +31,16 @@ import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 @ComponentScan({
     "org.zowe.apiml.discovery",
     "org.zowe.apiml.product.security",
-    "org.zowe.apiml.product.web"
+    "org.zowe.apiml.product.web",
+    "org.zowe.apiml.product.service",
 })
 @EnableApimlLogger
 @EnableWebSecurity
 @EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
 public class DiscoveryServiceApplication implements ApplicationListener<ApplicationReadyEvent> {
+
+    @Autowired
+    private ServiceStartupEventHandler startupEventHandler;
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(DiscoveryServiceApplication.class);
@@ -47,6 +52,7 @@ public class DiscoveryServiceApplication implements ApplicationListener<Applicat
 
     @Override
     public void onApplicationEvent(@Nonnull final ApplicationReadyEvent event) {
-        new ServiceStartupEventHandler().onServiceStartup("Discovery Service", ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
+        startupEventHandler.onServiceStartup("Discovery Service", ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
+
 }

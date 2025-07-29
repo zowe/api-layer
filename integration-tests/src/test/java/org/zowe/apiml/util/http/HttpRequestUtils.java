@@ -63,7 +63,13 @@ public class HttpRequestUtils {
     }
 
     public static HttpGet getRequest(String endpoint) {
-        URI uri = getUriFromGateway(endpoint);
+        var uri = getUriFromGateway(endpoint);
+
+        return new HttpGet(uri);
+    }
+
+    public static HttpGet getRequest(String gatewayHostname, String endpoint) {
+        var uri = getUriFromGateway(endpoint, gatewayHostname);
 
         return new HttpGet(uri);
     }

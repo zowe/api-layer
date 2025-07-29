@@ -22,6 +22,7 @@ import io.swagger.v3.oas.models.ExternalDocumentation;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.security.SecurityScheme;
@@ -32,10 +33,11 @@ import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import jakarta.validation.UnexpectedTypeException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.zowe.apiml.apicatalog.services.cached.model.ApiDocInfo;
-import org.zowe.apiml.apicatalog.swagger.ApiDocTransformationException;
+import org.zowe.apiml.apicatalog.model.ApiDocInfo;
+import org.zowe.apiml.apicatalog.exceptions.ApiDocTransformationException;
 import org.zowe.apiml.apicatalog.swagger.SecuritySchemeSerializer;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedService;
@@ -51,8 +53,8 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
     @Value("${gateway.scheme.external:https}")
     private String scheme;
 
-    public ApiDocV3Service(GatewayClient gatewayClient) {
-        super(gatewayClient);
+    public ApiDocV3Service(ApplicationInfo applicationInfo, GatewayClient gatewayClient) {
+        super(applicationInfo, gatewayClient);
     }
 
     public String transformApiDoc(String serviceId, ApiDocInfo apiDocInfo) {
@@ -70,11 +72,24 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
             }
         }
 
+        if (openAPI.getInfo() == null) {
+            openAPI.setInfo(new Info());
+        }
+        if (openAPI.getInfo().getVersion() == null) {
+            openAPI.getInfo().setVersion(apiDocInfo.getApiInfo().getVersion());
+        }
+
         boolean hidden = isHidden(openAPI.getTags());
 
-        if (!isDefinedOnlyBypassRoutes(apiDocInfo)) {
+        /**
+         * When microservices are in place it is necessary to use path updates, it basically adds into the swagger
+         * routing. In case of modulith it is not wanted. The paths are the final one (REST calls does not use Gateway).
+         * One specific case is microservices and API Catalog. Even the api doc is downloaded locally it has to be
+         * handled by Gateway, so the routes should be added.
+         */
+        if (!isDefinedOnlyBypassRoutes(apiDocInfo) && !(apiDocInfo.isLocal() && applicationInfo.isModulith())) {
             updatePaths(openAPI, serviceId, apiDocInfo, hidden);
-            updateServer(openAPI, serviceId);
+            updateServer(openAPI);
         }
         updateSwaggerUrl(openAPI, serviceId, apiDocInfo.getApiInfo(), hidden, scheme);
         updateExternalDoc(openAPI, apiDocInfo);
@@ -87,11 +102,11 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         }
     }
 
-    private void updateServer(OpenAPI openAPI, String serviceId) {
+    private void updateServer(OpenAPI openAPI) {
         if (openAPI.getServers() != null) {
             openAPI.getServers()
                 .forEach(server -> server.setUrl(
-                    String.format("%s://%s/%s", scheme, getHostname(serviceId), server.getUrl())));
+                    String.format("%s://%s/%s", scheme, getHostname(), server.getUrl())));
         }
     }
 
@@ -196,7 +211,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         return tags != null && tags.stream().anyMatch(tag -> tag.getName().equals(HIDDEN_TAG));
     }
 
-    private ObjectMapper objectMapper() {
+    ObjectMapper objectMapper() {
         return new ObjectMapper()
             .setSerializationInclusion(JsonInclude.Include.NON_NULL)
             .registerModule(new SimpleModule().addSerializer(SecurityScheme.class, new SecuritySchemeSerializer()))
@@ -205,4 +220,5 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
             .addMixIn(Schema.class, SchemaMixin.class)
             .addMixIn(MediaType.class, MediaTypeMixin.class);
     }
+
 }

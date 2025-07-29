@@ -136,7 +136,7 @@ public class SwaggerConfig {
 
     String download(URI uri) {
         return webClient
-                .get().uri(uri)
+            .get().uri(uri)
             .retrieve()
             .bodyToMono(String.class).share().block();
     }

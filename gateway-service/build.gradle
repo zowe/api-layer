@@ -75,7 +75,9 @@ dependencies {
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.oauth2.client
     implementation libs.spring.boot.starter.thymeleaf
-    implementation libs.spring.doc.webflux
+    implementation(libs.spring.doc.webflux) {
+        exclude group: "jakarta.xml.bind", module: "jakarta.xml.bind-api"
+    }
     implementation libs.netty.reactor.http
     implementation libs.google.gson
     implementation libs.jjwt
@@ -104,6 +106,7 @@ dependencies {
     testFixturesImplementation libs.lombok
     testFixturesImplementation libs.spring.cloud.starter.eureka.client
     testFixturesImplementation libs.guava
+    testFixturesImplementation libs.jaxbApi
     testFixturesAnnotationProcessor libs.lombok
 
     compileOnly libs.lombok

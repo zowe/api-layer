@@ -13,7 +13,7 @@ package org.zowe.apiml.apicatalog.model;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SemanticVersionTest {
 

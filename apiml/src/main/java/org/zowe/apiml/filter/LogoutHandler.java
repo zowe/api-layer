@@ -28,6 +28,7 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import reactor.core.publisher.Mono;
 
 import static org.zowe.apiml.constants.ApimlConstants.BEARER_AUTHENTICATION_PREFIX;
+import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 @RequiredArgsConstructor
 @Component
@@ -44,6 +45,12 @@ public class LogoutHandler implements ServerLogoutHandler {
     }
 
     private Mono<Void> invalidateJwtToken(String token, WebFilterExchange exchange) {
+        if (exchange.getExchange().getRequest().getCookies().getFirst(COOKIE_AUTH_NAME) != null) {
+            exchange.getExchange().getResponse().addCookie(
+                httpUtils.createResponseCookieRemoval()
+            );
+        }
+
         if (Boolean.TRUE.equals(authenticationService.isInvalidated(token))) {
            return failure.onAuthenticationFailure(exchange,new TokenNotValidException("The token you are trying to logout is not valid"));
         } else {
