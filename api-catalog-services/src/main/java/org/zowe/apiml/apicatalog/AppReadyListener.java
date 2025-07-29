@@ -11,6 +11,7 @@
 package org.zowe.apiml.apicatalog;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,7 @@ import org.zowe.apiml.product.service.ServiceStartupEventHandler;
  */
 @Component
 @RequiredArgsConstructor
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class AppReadyListener {
 
     private final ServiceStartupEventHandler handler;
@@ -33,8 +35,7 @@ public class AppReadyListener {
      */
     @EventListener
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        handler.onServiceStartup("API Catalog Service",
-            ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
+        handler.onServiceStartup("API Catalog Service", ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
 
 }
