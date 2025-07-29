@@ -34,7 +34,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
-    @Value("${server.attls.enabled:false}")
+    @Value("${server.attlsServer.enabled:false}")
     private boolean isAttlsEnabled;
 
     @Bean

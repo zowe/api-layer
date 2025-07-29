@@ -230,6 +230,7 @@ apiml:
         scheme: http
 
 server:
+    attlsServer:
+        enabled: true
     ssl:
         enabled: false
-

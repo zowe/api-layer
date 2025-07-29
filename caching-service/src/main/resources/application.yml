@@ -189,7 +189,7 @@ logbackServiceName: ZWEACS1
 spring.config.activate.on-profile: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
@@ -200,6 +200,10 @@ apiml:
 
 ---
 spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
 
 eureka:
     instance:

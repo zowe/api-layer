@@ -111,7 +111,7 @@ public class NewSecurityConfiguration {
     private final AuthSourceService authSourceService;
     private final AuthExceptionHandler authExceptionHandler;
 
-    @Value("${server.attls.enabled:false}")
+    @Value("${server.attlsServer.enabled:false}")
     private boolean isAttlsEnabled;
 
     @Value("${apiml.health.protected:true}")

@@ -254,13 +254,13 @@ server:
     internal:
         ssl:
             enabled: false
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
-
     service:
         scheme: http
+
 apiml:
     service:
         corsEnabled: true
@@ -268,6 +268,10 @@ apiml:
 
 ---
 spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
 
 apiml:
     security:

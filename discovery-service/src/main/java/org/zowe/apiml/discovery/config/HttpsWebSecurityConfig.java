@@ -56,7 +56,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
-    @Value("${server.attls.enabled:false}")
+    @Value("${server.attlsServer.enabled:false}")
     private boolean isAttlsEnabled;
 
     @Value("${apiml.health.protected:true}")

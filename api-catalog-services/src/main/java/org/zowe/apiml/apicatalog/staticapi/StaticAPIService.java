@@ -42,7 +42,7 @@ public class StaticAPIService {
     @Qualifier("secureHttpClientWithKeystore")
     private final CloseableHttpClient httpClient;
 
-    @Value("${server.attls.enabled:false}")
+    @Value("${server.attlsClient.enabled:false}")
     private boolean isAttlsEnabled;
 
     private final DiscoveryConfigProperties discoveryConfigProperties;
