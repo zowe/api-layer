@@ -8,18 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.discovery.staticdef;
+package org.zowe.apiml.apicatalog.staticapi;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+public interface StaticRegistrationService {
 
-import java.util.Map;
-
-@Data
-@AllArgsConstructor
-public class ServiceOverrideData {
-
-    private ServiceOverride.Mode mode;
-    private Map<String, String> metadata;
+    StaticAPIResponse refresh();
 
 }

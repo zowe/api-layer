@@ -19,7 +19,13 @@ import com.netflix.discovery.shared.Application;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import jakarta.annotation.PostConstruct;
-import jakarta.servlet.*;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
@@ -39,6 +45,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.server.reactive.HttpHandler;
@@ -46,6 +53,7 @@ import org.springframework.http.server.reactive.TomcatHttpHandlerAdapter;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.context.ServletContextAware;
+import org.zowe.apiml.apicatalog.ApiCatalogServiceAvailableEvent;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.filter.PreFluxFilter;
@@ -58,12 +66,20 @@ import reactor.core.publisher.Flux;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Timer;
+import java.util.TimerTask;
 
 @EnableScheduling
 @Configuration
 @RequiredArgsConstructor
 @EnableConfigurationProperties
+@DependsOn(value = { "gatewayHealthIndicator" })
 @Slf4j
 public class ModulithConfig {
 
@@ -73,6 +89,7 @@ public class ModulithConfig {
     private final CatalogEurekaInstanceConfigBean catalogEurekaInstanceConfigBean;
     private final EurekaClientConfig eurekaConfig;
     private final CachingServiceEurekaInstanceConfigBean cachingServiceEurekaInstanceConfigBean;
+    private final ApplicationEventPublisher eventPublisher;
 
     private final Timer timer = new Timer("PeerReplicated-StaticServices");
 
@@ -135,7 +152,7 @@ public class ModulithConfig {
                 .build();
     }
 
-    private ApimlInstanceRegistry getRegistry() {
+    static ApimlInstanceRegistry getRegistry() {
         return Optional.ofNullable(EurekaServerContextHolder.getInstance())
                 .map(EurekaServerContextHolder::getServerContext)
                 .map(EurekaServerContext::getRegistry)
@@ -158,6 +175,7 @@ public class ModulithConfig {
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationStart() {
         log.info("Initialize timer for static services peer-replicated heartbeats");
+        eventPublisher.publishEvent(new ApiCatalogServiceAvailableEvent(new Object()));
 
         // This timer calls Eureka registry's peerReplicate method to accumulate all heartbeats of statically-onboarded services once
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -183,7 +201,6 @@ public class ModulithConfig {
             jwtSec.getZosmfListener().getZosmfRegisteredListener().onEvent(new CacheRefreshedEvent());
         }
     }
-
 
     @Bean
     ReactiveDiscoveryClient registryReactiveDiscoveryClient(DiscoveryClient registryDiscoveryClient) {
@@ -254,6 +271,7 @@ public class ModulithConfig {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/utility-log-messages.yml");
         messageService.loadMessages("/common-log-messages.yml");
+        messageService.loadMessages("/security-common-log-messages.yml");
 
         messageService.loadMessages("/discovery-log-messages.yml");
         messageService.loadMessages("/gateway-log-messages.yml");
