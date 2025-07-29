@@ -8,18 +8,15 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.discovery.staticdef;
+package org.zowe.apiml.product.discovery;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.netflix.appinfo.InstanceInfo;
 
-import java.util.Map;
+import java.util.List;
 
-@Data
-@AllArgsConstructor
-public class ServiceOverrideData {
+public interface StaticServicesRegistration {
 
-    private ServiceOverride.Mode mode;
-    private Map<String, String> metadata;
+    List<InstanceInfo> getStaticInstances();
+    StaticRegistrationResult reloadServices();
 
 }

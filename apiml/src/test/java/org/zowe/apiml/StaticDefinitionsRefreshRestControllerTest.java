@@ -17,7 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatusCode;
-import org.zowe.apiml.discovery.staticdef.StaticRegistrationResult;
+import org.zowe.apiml.product.discovery.StaticRegistrationResult;
 import org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService;
 import reactor.test.StepVerifier;
 

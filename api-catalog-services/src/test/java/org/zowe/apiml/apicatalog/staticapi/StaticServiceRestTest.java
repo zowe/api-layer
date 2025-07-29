@@ -35,7 +35,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class StaticAPIServiceTest {
+class StaticServiceRestTest {
 
     private static final String REFRESH_ENDPOINT = "discovery/api/v1/staticApi";
 
@@ -48,7 +48,7 @@ class StaticAPIServiceTest {
     private static final String DISCOVERY_URL_HTTP = "http://localhost:60004/";
 
     @InjectMocks
-    private StaticAPIService staticAPIService;
+    private StaticServiceRest staticServiceRest;
 
     @Mock
     private CloseableHttpClient httpClient;
@@ -85,7 +85,7 @@ class StaticAPIServiceTest {
                 when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{DISCOVERY_LOCATION});
                 mockRestTemplateExchange(DISCOVERY_URL);
 
-                StaticAPIResponse actualResponse = staticAPIService.refresh();
+                StaticAPIResponse actualResponse = staticServiceRest.refresh();
                 StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
                 assertEquals(expectedResponse, actualResponse);
             }
@@ -95,7 +95,7 @@ class StaticAPIServiceTest {
                 when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{DISCOVERY_LOCATION_HTTP});
 
                 mockRestTemplateExchange(DISCOVERY_URL_HTTP);
-                StaticAPIResponse actualResponse = staticAPIService.refresh();
+                StaticAPIResponse actualResponse = staticServiceRest.refresh();
                 StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
                 assertEquals(expectedResponse, actualResponse);
             }
@@ -117,7 +117,7 @@ class StaticAPIServiceTest {
                 void whenFirstSucceeds_thenReturnResponseFromFirst() throws IOException {
                     when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
                     mockRestTemplateExchange(DISCOVERY_LOCATION);
-                    StaticAPIResponse actualResponse = staticAPIService.refresh();
+                    StaticAPIResponse actualResponse = staticServiceRest.refresh();
                     StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
                     assertEquals(expectedResponse, actualResponse);
                 }
@@ -127,7 +127,7 @@ class StaticAPIServiceTest {
                     when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
                     when(notFoundResponse.getCode()).thenReturn(HttpStatus.NOT_FOUND.value());
                     mockRestTemplateExchange(DISCOVERY_LOCATION_2);
-                    StaticAPIResponse actualResponse = staticAPIService.refresh();
+                    StaticAPIResponse actualResponse = staticServiceRest.refresh();
                     StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
                     assertEquals(expectedResponse, actualResponse);
                 }
@@ -143,7 +143,7 @@ class StaticAPIServiceTest {
                     when(entity.getContent()).thenAnswer(invocation -> new ByteArrayInputStream(BODY.getBytes()));
                     mockRestTemplateExchange(DISCOVERY_LOCATION_3);
 
-                    StaticAPIResponse actualResponse = staticAPIService.refresh();
+                    StaticAPIResponse actualResponse = staticServiceRest.refresh();
                     StaticAPIResponse expectedResponse = new StaticAPIResponse(404, BODY);
                     assertEquals(expectedResponse, actualResponse);
                 }
@@ -156,7 +156,7 @@ class StaticAPIServiceTest {
     void givenNoDiscoveryLocations_whenAttemptRefresh_thenReturn500() {
         when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{});
 
-        StaticAPIResponse actualResponse = staticAPIService.refresh();
+        StaticAPIResponse actualResponse = staticServiceRest.refresh();
         StaticAPIResponse expectedResponse = new StaticAPIResponse(500, "Error making static API refresh request to the Discovery Service");
         assertEquals(expectedResponse, actualResponse);
     }

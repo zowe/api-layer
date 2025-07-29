@@ -18,18 +18,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.apicatalog.staticapi.StaticAPIService;
+import org.zowe.apiml.apicatalog.staticapi.StaticService;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 @RequiredArgsConstructor
 public class StaticAPIRefreshController {
 
-    private final StaticAPIService staticAPIService;
+    private final StaticService staticService;
 
     @PostMapping(value = "/refresh", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<String>> refreshStaticApis() {
-        return Mono.fromCallable(staticAPIService::refresh)
+        return Mono.fromCallable(staticService::refresh)
             .map(staticAPIResponse -> ResponseEntity
                 .status(staticAPIResponse.getStatusCode())
                 .body(staticAPIResponse.getBody())
@@ -44,8 +44,8 @@ public class StaticAPIRefreshController {
 @ConditionalOnBean(name = "modulithConfig")
 class StaticAPIRefreshControllerModulith extends StaticAPIRefreshController {
 
-    public StaticAPIRefreshControllerModulith(StaticAPIService staticAPIService) {
-        super(staticAPIService);
+    public StaticAPIRefreshControllerModulith(StaticService staticService) {
+        super(staticService);
     }
 
 }
@@ -55,8 +55,8 @@ class StaticAPIRefreshControllerModulith extends StaticAPIRefreshController {
 @ConditionalOnMissingBean(name = "modulithConfig")
 class StaticAPIRefreshControllerMicroservice extends StaticAPIRefreshController {
 
-    public StaticAPIRefreshControllerMicroservice(StaticAPIService staticAPIService) {
-        super(staticAPIService);
+    public StaticAPIRefreshControllerMicroservice(StaticService staticService) {
+        super(staticService);
     }
 
 }
