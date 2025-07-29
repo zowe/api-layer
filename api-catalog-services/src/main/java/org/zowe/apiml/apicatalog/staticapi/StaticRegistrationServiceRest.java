@@ -18,6 +18,7 @@ import org.apache.hc.core5.http.HttpEntity;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +30,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class StaticAPIService {
+@ConditionalOnMissingBean(name = "modulithConfig")
+public class StaticRegistrationServiceRest implements StaticRegistrationService {
 
     private static final String REFRESH_ENDPOINT = "discovery/api/v1/staticApi";
 
@@ -47,6 +49,7 @@ public class StaticAPIService {
 
     private final DiscoveryConfigProperties discoveryConfigProperties;
 
+    @Override
     public StaticAPIResponse refresh() {
         List<String> discoveryServiceUrls = getDiscoveryServiceUrls();
         for (int i = 0; i < discoveryServiceUrls.size(); i++) {

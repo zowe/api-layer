@@ -20,6 +20,9 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.discovery.EurekaRegistryAvailableListener;
 import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
+import org.zowe.apiml.product.discovery.ServiceOverrideData;
+import org.zowe.apiml.product.discovery.StaticRegistrationResult;
+import org.zowe.apiml.product.discovery.StaticServicesRegistration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +36,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 @Slf4j
 @Component
-public class StaticServicesRegistrationService {
+public class StaticServicesRegistrationService implements StaticServicesRegistration {
     @Value("${apiml.discovery.staticApiDefinitionsDirectories:#{null}}")
     private String staticApiDefinitionsDirectories;
 
