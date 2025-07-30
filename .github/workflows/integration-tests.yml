@@ -817,7 +817,7 @@ jobs:
                 if: always()
                 timeout-minutes: 4
                 run: >
-                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith -Ddiscoverableclient.instances=0 -Denvironment.modulith=true -Dgateway.instances=2
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith -Ddiscoverableclient.instances=0 -Denvironment.modulith=true -Dgateway.instances=2 -Dgateway.host=central-gateway-service
 
             -   name: Run CI Tests
                 timeout-minutes: 4
