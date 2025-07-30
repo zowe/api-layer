@@ -12,6 +12,7 @@ package org.zowe.apiml.apicatalog.staticapi;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -64,14 +65,16 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
                         headers.add(HttpHeaders.AUTHORIZATION, basicToken);
                     }
                 })
-                .exchangeToMono(response -> {
-                    if (response.statusCode().is2xxSuccessful()) {
-                        return response
-                            .bodyToMono(String.class)
-                            .map(body -> new StaticAPIResponse(response.statusCode().value(), body));
-                    }
-                    return Mono.empty();
-                })
+                .exchangeToMono(response -> response
+                    .bodyToMono(String.class)
+                    .flatMap(body -> {
+                        if (response.statusCode().is2xxSuccessful() || StringUtils.isNotBlank(body)) {
+                            return Mono.just(body);
+                        }
+                        return Mono.empty();
+                    })
+                    .map(body -> new StaticAPIResponse(response.statusCode().value(), body))
+                )
                 .doOnError(IOException.class, e -> log.debug("Error refreshing static APIs from {}, error message: {}", uri, e.getMessage()))
             )
             .switchIfEmpty(Flux.just(new StaticAPIResponse(500, "Error making static API refresh request to the Discovery Service")))
@@ -89,5 +92,5 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
         }
         return discoveryServiceUrls;
     }
-  
+
 }
