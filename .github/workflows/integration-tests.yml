@@ -755,6 +755,86 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
+    ModulithCentralRegistry:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 10
+
+        services:
+            # Domain apiml instance which registers it's gateway in central's discovery service
+            apiml:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: apiml
+                    APIML_SERVICE_APIMLID: domain-apiml
+                    APIML_SERVICE_EXTERNALURL: https://apiml:10010
+                    APIML_GATEWAY_REGISTRY_ENABLED: false
+                    APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka/
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://central-gateway-service:10011/eureka
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
+                    logbackService: ZWEAGW1
+                    APIML_HEALTH_PROTECTED: false
+                    APIML_SECURITY_X509_ENABLED: true
+
+
+            # Central apiml instance with central gateway registry
+            central-gateway-service:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_APIMLID: central-apiml
+                    APIML_SERVICE_HOSTNAME: central-gateway-service
+                    APIML_SERVICE_EXTERNALURL: https://central-gateway-service:10010
+                    APIML_GATEWAY_REGISTRY_ENABLED: true
+                    APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://central-gateway-service:10011/eureka
+                    APIML_DISCOVERY_ALLPEERSURLS: https://central-gateway-service:10011/eureka
+                    logbackService: ZWEAGW2
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_HEALTH_PROTECTED: false
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
+
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Run CI Tests
+                timeout-minutes: 4
+                run: >
+                    ./gradlew runStartUpCheck :integration-tests:runGatewayCentralRegistryTest --info
+                    -Denvironment.config=-docker -Dgateway.instances=2 -Ddiscoverableclient.instances=0
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Dump CGW jacoco data
+                run: >
+                    java -jar ./scripts/jacococli.jar dump --address apiml --port 6300 --destfile ./results/gateway-service.exec
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ModulithCentralRegistry-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/teardown
+
     CITestsRegistration:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
