@@ -824,6 +824,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runGatewayCentralRegistryTest --info
                     -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    -Ddiscovery.additionalHost=central-gateway-service
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Dump CGW jacoco data
