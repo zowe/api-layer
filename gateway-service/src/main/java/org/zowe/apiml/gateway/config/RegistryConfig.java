@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.config;
 
 import com.netflix.discovery.EurekaClient;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
@@ -25,6 +26,7 @@ import java.net.URISyntaxException;
 public class RegistryConfig {
 
     @Bean
+    @ConditionalOnMissingBean
     public BasicInfoService basicInfoService(EurekaClient eurekaClient, EurekaMetadataParser eurekaMetadataParser) {
         return new BasicInfoService(eurekaClient, eurekaMetadataParser);
     }

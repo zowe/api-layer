@@ -50,10 +50,14 @@ import org.springframework.web.context.ServletContextAware;
 import org.zowe.apiml.apicatalog.ApiCatalogServiceAvailableEvent;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
+import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.filter.PreFluxFilter;
+import org.zowe.apiml.gateway.services.ServicesInfoService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.services.BasicInfoService;
+import org.zowe.apiml.services.ServiceInfo;
 import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import reactor.core.publisher.Flux;
@@ -62,6 +66,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+
+import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
+import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
 
 @EnableScheduling
 @Configuration
@@ -270,6 +277,28 @@ public class ModulithConfig {
 
         messageService.loadMessages("/caching-log-messages.yml");
         return messageService;
+    }
+
+    @Bean
+    public BasicInfoService basicInfoService(DiscoveryClient discoveryClient, EurekaMetadataParser eurekaMetadataParser) {
+
+        return new BasicInfoService(null, eurekaMetadataParser) {
+            @Override
+            public List<ServiceInfo> getServicesInfo() {
+                var serviceInfos = new ArrayList<ServiceInfo>();
+                for (var serviceId : discoveryClient.getServices()) {
+                    var instances = discoveryClient.getInstances(serviceId);
+                    var instanceInfos = ServicesInfoService.extractInstanceInfo(instances);
+                    serviceInfos.add(ServiceInfo.builder()
+                        .serviceId(serviceId)
+                        .status(getStatus(instanceInfos))
+                        .apiml(getApiml(instanceInfos))
+                        .instances(getInstances(instanceInfos))
+                        .build());
+                }
+                return serviceInfos;
+            }
+        };
     }
 
     @Bean
