@@ -827,10 +827,6 @@ jobs:
                     -Ddiscovery.additionalHost=central-gateway-service
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
-            -   name: Dump CGW jacoco data
-                run: >
-                    java -jar ./scripts/jacococli.jar dump --address apiml --port 6300 --destfile ./results/gateway-service.exec
-
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
@@ -838,7 +834,6 @@ jobs:
                     name: ModulithCentralRegistry-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
-                        results/**
 
             -   uses: ./.github/actions/teardown
 
