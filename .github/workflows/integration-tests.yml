@@ -733,11 +733,17 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Run Startup Check
+                if: always()
+                timeout-minutes: 4
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith -Ddiscoverableclient.instances=0 -Denvironment.modulith=true -Dgateway.instances=2
+
             -   name: Run CI Tests
                 timeout-minutes: 4
                 run: >
-                    ./gradlew runStartUpCheck :integration-tests:runGatewayCentralRegistryTest --info
-                    -Denvironment.config=-docker -Dgateway.instances=2 -Ddiscoverableclient.instances=0
+                    ./gradlew :integration-tests:runGatewayCentralRegistryTest --info
+                    -Denvironment.config=-docker-modulith
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Dump CGW jacoco data
