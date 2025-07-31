@@ -27,7 +27,7 @@ describe('>>> Login ok page test', () => {
         cy.get('li[data-testid="logout"]').click();
         cy.contains('API Catalog');
 
-        cy.contains('Version: ');
+        cy.contains('Please enter your mainframe username and password');
 
         cy.getCookie('apimlAuthenticationToken').should('not.exist');
     });
