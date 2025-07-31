@@ -16,6 +16,7 @@ apiml:
     gateway:
         serviceRegistryEnabled: false
         forwardClientCertEnabled: false
+    webClientConfig.enabled: true
 
 server:
     port: ${apiml.service.port}
