@@ -13,6 +13,7 @@ package org.zowe.apiml.util.config;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.zowe.apiml.product.constants.CoreService;
 
 /**
  * Configuration parameters for DiscoverableClient
@@ -21,9 +22,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DiscoverableClientConfiguration implements ServiceConfiguration {
+
     private String scheme;
     private String applId;
     private String host;
     private int port;
     private int instances;
+
+    @Override
+    public String getServiceId() {
+        return "discoverableclient";
+    }
+
 }

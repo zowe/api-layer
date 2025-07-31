@@ -13,6 +13,7 @@ package org.zowe.apiml.util.config;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.zowe.apiml.product.constants.CoreService;
 
 @Data
 @AllArgsConstructor
@@ -34,6 +35,11 @@ public class CachingServiceConfiguration implements ServiceConfiguration {
     @Override
     public int getPort() {
         throw new IllegalStateException("Method is not implemented");
+    }
+
+    @Override
+    public String getServiceId() {
+        return CoreService.CACHING.getServiceId();
     }
 
 }

@@ -10,10 +10,22 @@
 
 package org.zowe.apiml.util.config;
 
+import org.apache.commons.lang3.StringUtils;
+
 public interface ServiceConfiguration {
 
     String getScheme();
     String getHost();
     int getPort();
+
+    default int getInstances() {
+        var host = getHost();
+        if (StringUtils.isBlank(host)) {
+            return 0;
+        }
+        return getHost().split(",").length;
+    }
+
+    String getServiceId();
 
 }

@@ -18,9 +18,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ZosmfServiceConfiguration implements ServiceConfiguration {
+
     private String scheme;
     private String host;
     private int port;
     private String serviceId;
     private String contextRoot;
+
 }

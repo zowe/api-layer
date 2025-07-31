@@ -13,14 +13,22 @@ package org.zowe.apiml.util.config;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.zowe.apiml.product.constants.CoreService;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class ApiCatalogServiceConfiguration implements ServiceConfiguration {
+
     private String scheme;
     private String url;
     private String host;
     private int port;
     private int instances;
+
+    @Override
+    public String getServiceId() {
+        return CoreService.API_CATALOG.getServiceId();
+    }
+
 }

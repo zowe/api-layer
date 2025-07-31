@@ -57,12 +57,12 @@ public class ApiMediationLayerStartupChecker {
         discoverableClientConfiguration = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration();
         discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
 
-        servicesToCheck.add(new Service("Gateway", "$.status"));
+        servicesToCheck.add(new Service("Gateway", "$.status", ConfigReader.environmentConfiguration().getGatewayServiceConfiguration()));
         if (!IS_MODULITH_ENABLED) {
-            servicesToCheck.add(new Service("ZAAS", "$.components.gateway.details.zaas"));
+            servicesToCheck.add(new Service("ZAAS", "$.components.gateway.details.zaas", ConfigReader.environmentConfiguration().getZaasConfiguration()));
         }
-        servicesToCheck.add(new Service("Api Catalog", "$.components.gateway.details.apicatalog"));
-        servicesToCheck.add(new Service("Discovery Service", "$.components.gateway.details.discovery"));
+        servicesToCheck.add(new Service("Api Catalog", "$.components.gateway.details.apicatalog", ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration()));
+        servicesToCheck.add(new Service("Discovery Service", "$.components.gateway.details.discovery", ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration()));
     }
 
     public void waitUntilReady() {
@@ -115,6 +115,8 @@ public class ApiMediationLayerStartupChecker {
                 boolean isUp = isServiceUp(context, toCheck.path);
                 logDebug(toCheck.name + " is {}", isUp);
                 areAllServicesUp &= isUp;
+
+                areAllServicesUp &= checkServicesCount(context, gatewayConfiguration, gatewayHost);
             }
             if (!IS_MODULITH_ENABLED && !isAuthUp()) {
                 areAllServicesUp = false;
@@ -130,19 +132,6 @@ public class ApiMediationLayerStartupChecker {
             log.debug("Needs Discoverable Client: {}", needsTestApplication);
             isTestApplicationUp = !needsTestApplication || isTestApplicationUp;
 
-            Integer amountOfActiveGateways = context.read("$.components.gateway.details.gatewayCount");
-            var expectedGatewayCount = Integer.getInteger("environment.gwCount", gatewayConfiguration.getInstances());
-
-            boolean isValidAmountOfGatewaysUp = amountOfActiveGateways != null &&
-                amountOfActiveGateways >= expectedGatewayCount;
-            log.debug("There are {} gateways in GW on {}", amountOfActiveGateways, gatewayHost);
-
-            if (!isValidAmountOfGatewaysUp) {
-                log.debug("Expecting at least {} gateways", gatewayConfiguration.getInstances());
-                callEurekaApps();
-                return false;
-            }
-
             // Consider properly the case with multiple gateway services running on different ports.
             callInternalPorts(gatewayHost);
 
@@ -156,6 +145,26 @@ public class ApiMediationLayerStartupChecker {
             log.warn("Check failed on retrieving the information from document: {}", e.getMessage());
             return false;
         }
+    }
+
+    private boolean checkServicesCount(DocumentContext context, ServiceConfiguration serviceConfiguration, String gatewayHost) {
+        Integer amountOfActiveService = context.read("$.components.discoveryComposite.components.eureka.details.applications." + serviceConfiguration.getServiceId().toUpperCase());
+        var expectedCount = serviceConfiguration.getInstances();
+        if (serviceConfiguration instanceof GatewayServiceConfiguration) {
+            expectedCount = Integer.getInteger("environment.gwCount", expectedCount);
+        }
+
+        boolean isValidAmountOfServicesUp = amountOfActiveService != null &&
+            amountOfActiveService >= expectedCount;
+        log.debug("There are {} {} in GW on {}", amountOfActiveService, serviceConfiguration.getServiceId(), gatewayHost);
+
+        if (!isValidAmountOfServicesUp) {
+            log.debug("Expecting at least {} services ({})", expectedCount, serviceConfiguration.getServiceId());
+            callEurekaApps();
+            return false;
+        }
+
+        return true;
     }
 
     private void callInternalPorts(String gatewayHost) throws IOException {
@@ -231,7 +240,11 @@ public class ApiMediationLayerStartupChecker {
 
     @AllArgsConstructor
     private class Service {
+
         String name;
         String path;
+        ServiceConfiguration configuration;
+
     }
+
 }
