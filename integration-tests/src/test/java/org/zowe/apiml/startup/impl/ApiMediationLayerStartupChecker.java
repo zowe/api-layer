@@ -114,7 +114,7 @@ public class ApiMediationLayerStartupChecker {
             for (Service toCheck : servicesToCheck) {
                 boolean isUp = isServiceUp(context, toCheck.path);
                 logDebug(toCheck.name + " is {}", isUp);
-                areAllServicesUp &= false;
+                areAllServicesUp &= isUp;
             }
             if (!IS_MODULITH_ENABLED && !isAuthUp()) {
                 areAllServicesUp = false;
