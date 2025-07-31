@@ -87,6 +87,8 @@ apiml:
         cacheRefreshInitialDelayInMillis: 30000
         cacheRefreshRetryDelayInMillis: 30000
 
+    webClientConfig.enabled: true
+
 ##############################################################################################
 
 server:

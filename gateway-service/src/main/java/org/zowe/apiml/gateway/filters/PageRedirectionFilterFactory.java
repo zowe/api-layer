@@ -122,7 +122,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
     private Mono<Void> processNewLocationUrl(ServerWebExchange exchange, Config config, Optional<ServiceInstance> instance) {
         var response = exchange.getResponse();
-        var isRedirect = Optional.ofNullable(response.getStatusCode()).map(HttpStatusCode::is3xxRedirection).orElse(false);
+        boolean isRedirect = Optional.ofNullable(response.getStatusCode()).map(HttpStatusCode::is3xxRedirection).orElse(false);
         if (!isRedirect) {
             return Mono.empty();
         }
