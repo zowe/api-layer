@@ -755,7 +755,7 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
-    ModulithCentralRegistry:
+    CentralRegistryModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         container: ubuntu:latest
@@ -1845,6 +1845,9 @@ jobs:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_HEALTH_PROTECTED: false
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
