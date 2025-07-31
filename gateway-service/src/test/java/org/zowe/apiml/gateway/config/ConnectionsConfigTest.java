@@ -150,8 +150,6 @@ class ConnectionsConfigTest {
         @Nested
         class Negative {
 
-            @Autowired
-            private ConnectionsConfig connectionsConfig;
             @MockitoSpyBean
             private HttpConfig httpConfig;
 

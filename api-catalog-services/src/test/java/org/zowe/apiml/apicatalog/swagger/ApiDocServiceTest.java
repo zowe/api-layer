@@ -85,9 +85,12 @@ class ApiDocServiceTest {
         @Mock
         private ApimlLogger apimlLogger;
 
+        @Mock
         private ExchangeFunction exchangeFunction;
+
         @Mock
         private ClientResponse clientResponse;
+
         private WebClient webClient;
 
         private AtomicReference<ApiInfo> lastApiInfo = new AtomicReference<>();
@@ -95,8 +98,6 @@ class ApiDocServiceTest {
         @BeforeEach
         void setup() {
             lastApiInfo.set(null);
-
-            exchangeFunction = mock(ExchangeFunction.class);
             webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
             doReturn(Mono.just(clientResponse)).when(exchangeFunction).exchange(any());
             lenient().doReturn(Mono.empty()).when(clientResponse).releaseBody();
