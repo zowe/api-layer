@@ -495,47 +495,6 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
-    Oauth2Integration:
-        needs: PublishJibContainers
-        runs-on: ubuntu-latest
-        container: ubuntu:latest
-        timeout-minutes: 10
-        services:
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_OIDC_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
-                    APIML_SECURITY_OIDC_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
-                    APIML_SECURITY_OIDC_ENABLED: true
-                    APIML_SECURITY_OIDC_REGISTRY: zowe.okta.com
-                    APIML_SECURITY_OIDC_JWKS_URI: ${{ secrets.OKTA_JWKSET_URI }}
-                    APIML_SECURITY_OIDC_IDENTITYMAPPERUSER: APIMTST
-                    APIML_SECURITY_OIDC_IDENTITYMAPPERURL: https://gateway-service:10010/zss/api/v1/certificate/dn
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-
-        steps:
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Run CI Tests
-                run: >
-                    ./gradlew :integration-tests:runOidcTests --info -Denvironment.config=-docker -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }}
-                    -Doidc.test.user=${{ secrets.OIDC_TEST_USER }} -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }}
-                    -Doidc.test.alt_user=${{ secrets.OKTA_WINNIE_USER }} -Doidc.test.alt_pass=${{ secrets.OKTA_WINNIE_PASS }}
-                    -DidpConfiguration.host=${{secrets.OKTA_HOST}}
-
-            -   uses: ./.github/actions/teardown
-
     GatewayProxy:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
@@ -603,54 +562,6 @@ jobs:
                 if: always()
                 with:
                     name: GatewayProxy-${{ env.JOB_ID }}
-                    path: |
-                        integration-tests/build/reports/**
-                        results/**
-
-            -   uses: ./.github/actions/teardown
-
-    GatewayServiceRouting:
-        needs: PublishJibContainers
-        runs-on: ubuntu-latest
-        container: ubuntu:latest
-        timeout-minutes: 10
-
-        services:
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_APIMLID: apiml1
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-            central-gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-        steps:
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Run CI Tests
-                run: >
-                    ./gradlew :integration-tests:runGatewayServiceRoutingTest --info -Denvironment.config=-docker
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-
-            -   name: Dump CGW jacoco data
-                run: >
-                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
-
-            -   name: Store results
-                uses: actions/upload-artifact@v4
-                if: always()
-                with:
-                    name: GatewayServiceRouting-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
@@ -752,6 +663,88 @@ jobs:
                     path: |
                         integration-tests/build/reports/**
                         results/**
+
+            -   uses: ./.github/actions/teardown
+
+    CentralRegistryModulith:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 10
+
+        services:
+            # Domain apiml instance which registers it's gateway in central's discovery service
+            apiml:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: apiml
+                    APIML_SERVICE_APIMLID: domain-apiml
+                    APIML_SERVICE_EXTERNALURL: https://apiml:10010
+                    APIML_GATEWAY_REGISTRY_ENABLED: false
+                    APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka/
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://central-gateway-service:10011/eureka
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
+                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
+                    logbackService: ZWEAGW1
+                    APIML_HEALTH_PROTECTED: false
+                    APIML_SECURITY_X509_ENABLED: true
+
+
+            # Central apiml instance with central gateway registry
+            central-gateway-service:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_APIMLID: central-apiml
+                    APIML_SERVICE_HOSTNAME: central-gateway-service
+                    APIML_SERVICE_EXTERNALURL: https://central-gateway-service:10010
+                    APIML_GATEWAY_REGISTRY_ENABLED: true
+                    APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://central-gateway-service:10011/eureka
+                    APIML_DISCOVERY_ALLPEERSURLS: https://central-gateway-service:10011/eureka
+                    logbackService: ZWEAGW2
+                    APIML_SECURITY_X509_ENABLED: true
+                    APIML_HEALTH_PROTECTED: false
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
+
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Run Startup Check
+                if: always()
+                timeout-minutes: 4
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith -Ddiscoverableclient.instances=0 -Denvironment.modulith=true -Dgateway.instances=2 -Dgateway.host=central-gateway-service
+
+            -   name: Run CI Tests
+                timeout-minutes: 4
+                run: >
+                    ./gradlew :integration-tests:runGatewayCentralRegistryTest --info
+                    -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    -Ddiscovery.additionalHost=central-gateway-service
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ModulithCentralRegistry-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
 
@@ -1763,6 +1756,9 @@ jobs:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_HEALTH_PROTECTED: false
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
@@ -2014,7 +2010,7 @@ jobs:
 
     PublishResults:
         needs: [
-            CITests,CITestsWithInfinispan,CITestsZaas,GatewayProxy,GatewayServiceRouting,CITestsHA,
+            CITests,CITestsWithInfinispan,CITestsZaas,GatewayProxy,CITestsHA,
             CITestsModulith,CITestsModulithHA
         ]
         runs-on: ubuntu-latest
@@ -2052,14 +2048,10 @@ jobs:
                 with:
                     name: CITestsHA-${{ env.JOB_ID }}-websocket-chaotic
                     path: citestschaoticha
-            -   uses: actions/download-artifact@v4
-                with:
-                    name: GatewayServiceRouting-${{ env.JOB_ID }}
-                    path: GatewayServiceRouting
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --scan coverage sonar -Dresults="containercitests/results,containercitestsmodulith/results,citestswithinfinispan/results,GatewayProxy/results,citestschaoticha/results,GatewayServiceRouting/results,ContainerCITestsZaas/results"
+                    ./gradlew --scan coverage sonar -Dresults="containercitests/results,containercitestsmodulith/results,citestswithinfinispan/results,GatewayProxy/results,citestschaoticha/results,ContainerCITestsZaas/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}

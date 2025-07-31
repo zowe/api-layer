@@ -143,7 +143,7 @@ public class ServicesInfoService {
                 .build();
     }
 
-    private List<InstanceInfo> extractInstanceInfo(List<ServiceInstance> serviceInstances) {
+    public static List<InstanceInfo> extractInstanceInfo(List<ServiceInstance> serviceInstances) {
         return serviceInstances.stream()
         .filter(EurekaServiceInstance.class::isInstance)
         .map(EurekaServiceInstance.class::cast)
