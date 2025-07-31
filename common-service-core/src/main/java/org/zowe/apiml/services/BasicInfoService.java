@@ -72,7 +72,7 @@ public class BasicInfoService {
      * - getApiInfos
      * - getApiInfos
      */
-    private ServiceInfo.Apiml getApiml(List<InstanceInfo> appInstances) {
+    public ServiceInfo.Apiml getApiml(List<InstanceInfo> appInstances) {
         return ServiceInfo.Apiml.builder()
                 .apiInfo(getApiInfos(appInstances))
                 .service(getService(appInstances))

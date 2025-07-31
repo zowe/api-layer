@@ -158,7 +158,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
     @SneakyThrows
     private ValidatableResponse listEurekaApps() {
 
-        URI eurekaApps = new URL(discoveryConf.getScheme(), discoveryConf.getHost(), discoveryConf.getPort(), "/eureka/apps")
+        URI eurekaApps = new URL(discoveryConf.getScheme(), discoveryConf.getAdditionalHost(), discoveryConf.getPort(), "/eureka/apps")
             .toURI();
 
         return with().given()

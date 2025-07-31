@@ -34,7 +34,6 @@ module.exports = defineConfig({
         setupNodeEvents(on, config) {
             // eslint-disable-next-line global-require
             return require('./cypress/plugins/index.js')(on, config);
-        },
-        excludeSpecPattern: ['cypress/e2e/detail-page/multiple-gateway-services.cy.js'],
+        }
     },
 });

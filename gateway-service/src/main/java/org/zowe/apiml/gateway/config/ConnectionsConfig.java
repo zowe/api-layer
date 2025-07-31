@@ -216,6 +216,8 @@ public class ConnectionsConfig {
         EurekaClientConfigBean configBean = new EurekaClientConfigBean();
         BeanUtils.copyProperties(config, configBean);
         configBean.setServiceUrl(urls);
+        configBean.setRegisterWithEureka(true);
+        configBean.setFetchRegistry(true);
 
         EurekaInstanceConfig eurekaInstanceConfig = appManager.getEurekaInstanceConfig();
         InstanceInfo newInfo = create(eurekaInstanceConfig);

@@ -449,24 +449,12 @@ task runGatewayProxyTest(type: Test) {
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'GatewayProxyTest'
-        )
-    }
-}
-
-task runGatewayServiceRoutingTest(type: Test) {
-    group "integration tests"
-    description "Run tests verifying central gateway can locate service and translate auth scheme"
-
-    outputs.cacheIf { false }
-
-    systemProperties System.getProperties()
-    useJUnitPlatform {
-        includeTags(
+            'GatewayProxyTest',
             'GatewayServiceRouting'
         )
     }
 }
+
 
 task runGatewayCentralRegistryTest(type: Test) {
     group "integration tests"
@@ -478,20 +466,6 @@ task runGatewayCentralRegistryTest(type: Test) {
     useJUnitPlatform {
         includeTags(
             'GatewayCentralRegistry'
-        )
-    }
-}
-
-task runOidcTests(type: Test) {
-    group "integration tests"
-    description "Run tests verifying integration with oauth2 provider(okta)"
-
-    outputs.cacheIf { false }
-
-    systemProperties System.getProperties()
-    useJUnitPlatform {
-        includeTags(
-            'OktaOauth2Test'
         )
     }
 }
@@ -536,7 +510,8 @@ task runZaasTest(type: Test) {
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'ZaasTest'
+            'ZaasTest',
+            'OktaOauth2Test'
         )
     }
 }

@@ -90,6 +90,7 @@
                 <class>org.zowe.apiml.security.common.token.TokenAuthentication$Type</class>
                 <class>java.util.HashMap</class>
                 <class>java.util.Arrays$ArrayList</class>
+                <class>java.security.cert.Certificate$CertificateRep</class>
             </allow-list>
         </serialization>
 
