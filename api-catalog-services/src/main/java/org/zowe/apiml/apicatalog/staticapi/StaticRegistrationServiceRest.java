@@ -67,13 +67,9 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
                 })
                 .exchangeToMono(response -> response
                     .bodyToMono(String.class)
-                    .flatMap(body -> {
-                        if (response.statusCode().is2xxSuccessful() || StringUtils.isNotBlank(body)) {
-                            return Mono.just(body);
-                        }
-                        return Mono.empty();
-                    })
-                    .map(body -> new StaticAPIResponse(response.statusCode().value(), body))
+                    .flatMap(body -> (response.statusCode().is2xxSuccessful() || StringUtils.isNotBlank(body)) ?
+                        Mono.just(new StaticAPIResponse(response.statusCode().value(), body)) : Mono.empty()
+                    )
                 )
                 .doOnError(IOException.class, e -> log.debug("Error refreshing static APIs from {}, error message: {}", uri, e.getMessage()))
             )
