@@ -10,8 +10,10 @@
 
 package org.zowe.apiml.apicatalog.staticapi;
 
+import reactor.core.publisher.Mono;
+
 public interface StaticRegistrationService {
 
-    StaticAPIResponse refresh();
+    Mono<StaticAPIResponse> refresh();
 
 }

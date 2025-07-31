@@ -10,19 +10,11 @@
 
 package org.zowe.apiml.gateway.config;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.EurekaInstanceConfig;
-import com.netflix.appinfo.HealthCheckHandler;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.LeaseInfo;
+import com.netflix.appinfo.*;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
-import io.netty.handler.ssl.SslContext;
-import io.netty.handler.ssl.SslContextBuilder;
-import io.netty.resolver.DefaultAddressResolverGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
@@ -35,15 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JCircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.gateway.config.HttpClientCustomizer;
-import org.springframework.cloud.gateway.config.HttpClientFactory;
 import org.springframework.cloud.gateway.config.HttpClientProperties;
-import org.springframework.cloud.gateway.config.HttpClientSslConfigurer;
 import org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
@@ -57,12 +45,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Primary;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.cors.reactive.CorsWebFilter;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.config.AdditionalRegistration;
@@ -75,36 +60,18 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.common.util.ConnectionUtil;
 import org.zowe.apiml.util.CorsUtils;
 import reactor.netty.http.client.HttpClient;
-import reactor.netty.http.client.HttpClientSecurityUtils;
-import reactor.netty.tcp.SslProvider;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509KeyManager;
 import java.net.MalformedURLException;
-import java.net.Socket;
 import java.net.URL;
-import java.security.KeyStore;
-import java.security.Principal;
-import java.security.PrivateKey;
-import java.security.cert.X509Certificate;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.REGISTRATION_TYPE;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
-
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 //TODO this configuration should be removed as redundancy of the HttpConfig in the apiml-common
 @Configuration
@@ -132,15 +99,17 @@ public class ConnectionsConfig {
      */
     @Bean
     NettyRoutingFilterApiml createNettyRoutingFilterApiml(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
-        return new NettyRoutingFilterApiml(getHttpClient(httpClient, false), getHttpClient(httpClient, true), headersFiltersProvider, properties);
-    }
-
-    public HttpClient getHttpClient(HttpClient httpClient, boolean useClientCert) {
-        var sslContextBuilder = SslProvider.builder().sslContext(getSslContext(useClientCert));
-        if (!config.isNonStrictVerifySslCertificatesOfServices()) {
-            sslContextBuilder.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
+        try {
+            return new NettyRoutingFilterApiml(
+                ConnectionUtil.getHttpClient(config, httpClient, false),
+                ConnectionUtil.getHttpClient(config, httpClient, true),
+                headersFiltersProvider, properties
+            );
+        } catch (Exception e) {
+            apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
+            throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
+                HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config.httpsConfig());
         }
-        return httpClient.secure(sslContextBuilder.build());
     }
 
     /**
@@ -165,50 +134,6 @@ public class ConnectionsConfig {
                 return bean;
             }
         };
-    }
-
-    @VisibleForTesting
-    X509KeyManager x509KeyManagerSelectedAlias(KeyManagerFactory keyManagerFactory) {
-        return new X509KeyManagerSelectedAlias(keyManagerFactory, config.getKeyAlias());
-    }
-
-    /**
-     * @return io.netty.handler.ssl.SslContext for http client.
-     */
-    SslContext getSslContext(boolean setKeystore) {
-        try {
-            SslContextBuilder builder = SslContextBuilder.forClient();
-
-            KeyStore trustStore = SecurityUtils.loadKeyStore(
-                config.getTrustStoreType(), config.getTrustStorePath(), config.getTrustStorePassword());
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            trustManagerFactory.init(trustStore);
-            builder.trustManager(trustManagerFactory);
-
-            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            if (setKeystore) {
-                log.info("Loading keystore: {}: {}", config.getKeyStoreType(), config.getKeyStorePath());
-                KeyStore keyStore = SecurityUtils.loadKeyStore(
-                    config.getKeyStoreType(), config.getKeyStorePath(), config.getKeyStorePassword());
-                keyManagerFactory.init(keyStore, config.getKeyStorePassword());
-                builder.keyManager(x509KeyManagerSelectedAlias(keyManagerFactory));
-            } else {
-                KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
-                emptyKeystore.load(null, null);
-                keyManagerFactory.init(emptyKeystore, null);
-                builder.keyManager(keyManagerFactory);
-            }
-
-            if (config.isVerifySslCertificatesOfServices() && config.isNonStrictVerifySslCertificatesOfServices()) {
-                builder.endpointIdentificationAlgorithm(null);
-            }
-
-            return builder.build();
-        } catch (Exception e) {
-            apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
-            throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
-                HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config.httpsConfig());
-        }
     }
 
     @Bean(destroyMethod = "shutdown", name = "eurekaClient")
@@ -340,38 +265,6 @@ public class ConnectionsConfig {
     }
 
     @Bean
-    HttpClientFactory gatewayHttpClientFactory(
-        HttpClientProperties properties,
-        ServerProperties serverProperties, List<HttpClientCustomizer> customizers,
-        HttpClientSslConfigurer sslConfigurer
-    ) {
-        SslContext sslContext = getSslContext(false);
-        return new HttpClientFactory(properties, serverProperties, sslConfigurer, customizers) {
-            @Override
-            protected HttpClient createInstance() {
-                return super.createInstance()
-                    .secure(sslContextSpec -> sslContextSpec.sslContext(sslContext))
-                    .resolver(DefaultAddressResolverGroup.INSTANCE);
-            }
-        };
-    }
-
-    @Bean
-    @Primary
-    WebClient webClient(HttpClient httpClient) {
-        return WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, false)))
-            .build();
-    }
-
-    @Bean
-    WebClient webClientClientCert(HttpClient httpClient) {
-        return WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, true)))
-            .build();
-    }
-
-    @Bean
     CorsUtils corsUtils() {
         return new CorsUtils(corsEnabled, null);
     }
@@ -499,54 +392,6 @@ public class ConnectionsConfig {
             String getHomePageUrl();
             String getStatusPageUrl();
 
-        }
-
-    }
-
-    static class X509KeyManagerSelectedAlias implements X509KeyManager {
-
-        private final X509KeyManager originalKm;
-        private final String keyAlias;
-
-        X509KeyManagerSelectedAlias(KeyManagerFactory keyManagerFactory, String keyAlias) {
-            this.originalKm = (X509KeyManager) keyManagerFactory.getKeyManagers()[0];
-            this.keyAlias = keyAlias;
-        }
-
-        @Override
-        public String[] getClientAliases(String keyType, Principal[] issuers) {
-            return originalKm.getClientAliases(keyType, issuers);
-        }
-
-        @Override
-        public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
-            if (keyAlias != null) {
-                return keyAlias;
-            }
-            return originalKm.chooseClientAlias(keyType, issuers, socket);
-        }
-
-        @Override
-        public String[] getServerAliases(String keyType, Principal[] issuers) {
-            return originalKm.getServerAliases(keyType, issuers);
-        }
-
-        @Override
-        public String chooseServerAlias(String keyType, Principal[] issuers, Socket socket) {
-            if (keyAlias != null) {
-                return keyAlias;
-            }
-            return originalKm.chooseServerAlias(keyType, issuers, socket);
-        }
-
-        @Override
-        public X509Certificate[] getCertificateChain(String alias) {
-            return originalKm.getCertificateChain(alias);
-        }
-
-        @Override
-        public PrivateKey getPrivateKey(String alias) {
-            return originalKm.getPrivateKey(alias);
         }
 
     }

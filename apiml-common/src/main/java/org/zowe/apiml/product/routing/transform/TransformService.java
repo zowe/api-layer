@@ -132,7 +132,7 @@ public class TransformService {
         }
 
         // Make base path version a template so user can understand base path when looking at different API versions
-        String templatedVersionRoute = route.getGatewayUrl().replaceAll("/v\\d", "/{api-version}");
+        String templatedVersionRoute = route.getGatewayUrl().replaceAll("/v\\d+", "/{api-version}");
 
         return String.format("/%s/%s",
             serviceId,

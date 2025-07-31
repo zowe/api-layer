@@ -19,9 +19,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.discovery.StaticRegistrationResult;
 import org.zowe.apiml.product.discovery.StaticServicesRegistration;
+import reactor.test.StepVerifier;
 
 import static org.apache.hc.core5.http.HttpStatus.SC_OK;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,9 +36,12 @@ class StaticRegistrationServiceApiTest {
         var staticServiceApi = new StaticRegistrationServiceApi(staticServicesRegistration);
         doReturn(new StaticRegistrationResult()).when(staticServicesRegistration).reloadServices();
 
-        var response = staticServiceApi.refresh();
-        assertEquals(SC_OK, response.getStatusCode());
-        assertEquals("{\"errors\":[],\"instances\":[],\"additionalServiceMetadata\":{},\"registeredServices\":[]}", response.getBody());
+        StepVerifier.create(staticServiceApi.refresh())
+            .assertNext(response -> {
+                assertEquals(SC_OK, response.getStatusCode());
+                assertEquals("{\"errors\":[],\"instances\":[],\"additionalServiceMetadata\":{},\"registeredServices\":[]}", response.getBody());
+            })
+            .verifyComplete();
     }
 
     @Test
@@ -47,8 +51,9 @@ class StaticRegistrationServiceApiTest {
         ReflectionTestUtils.setField(staticServiceApi, "mapper", mapper);
         doThrow(mock(JsonProcessingException.class)).when(mapper).writeValueAsString(any());
 
-        var exception = assertThrows(IllegalStateException.class, staticServiceApi::refresh);
-        assertInstanceOf(JsonProcessingException.class, exception.getCause());
+        StepVerifier.create(staticServiceApi.refresh())
+            .expectError(IllegalStateException.class)
+            .verify();
     }
 
 }

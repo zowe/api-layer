@@ -12,20 +12,23 @@ package org.zowe.apiml.apicatalog.staticapi;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+
+import static org.apache.hc.core5.http.HttpHeaders.ACCEPT;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Service
 @RequiredArgsConstructor
@@ -41,8 +44,8 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
     @Value("${apiml.discovery.password:password}")
     private String eurekaPassword;
 
-    @Qualifier("secureHttpClientWithKeystore")
-    private final CloseableHttpClient httpClient;
+    @Qualifier("webClientClientCert")
+    private final WebClient webClientClientCert;
 
     @Value("${server.attls.enabled:false}")
     private boolean isAttlsEnabled;
@@ -50,48 +53,28 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
     private final DiscoveryConfigProperties discoveryConfigProperties;
 
     @Override
-    public StaticAPIResponse refresh() {
-        List<String> discoveryServiceUrls = getDiscoveryServiceUrls();
-        for (int i = 0; i < discoveryServiceUrls.size(); i++) {
-
-            String discoveryServiceUrl = discoveryServiceUrls.get(i);
-
-            try {
-                HttpPost post = getHttpRequest(discoveryServiceUrl);
-                var staticApiResponse = httpClient.execute(post, response -> {
-                    final HttpEntity responseEntity = response.getEntity();
-                    String responseBody = "";
-                    if (responseEntity != null) {
-                        responseBody = EntityUtils.toString(responseEntity);
+    public Mono<StaticAPIResponse> refresh() {
+        return Flux.fromIterable(getDiscoveryServiceUrls())
+            .flatMap(uri -> webClientClientCert
+                .post().uri(uri)
+                .header(ACCEPT, APPLICATION_JSON_VALUE)
+                .headers(headers -> {
+                    boolean isHttp = uri.startsWith("http://");
+                    if (isHttp && !isAttlsEnabled) {
+                        String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
+                        headers.add(HttpHeaders.AUTHORIZATION, basicToken);
                     }
-                    return new StaticAPIResponse(response.getCode(), responseBody);
-                });
-
-                // Return response if successful or if none have been successful and this is the last URL to try
-                if (isSuccessful(staticApiResponse) || i == discoveryServiceUrls.size() - 1) {
-                    return staticApiResponse;
-                }
-            } catch (IOException e) {
-                log.debug("Error refreshing static APIs from {}, error message: {}", discoveryServiceUrl, e.getMessage());
-            }
-        }
-
-        return new StaticAPIResponse(500, "Error making static API refresh request to the Discovery Service");
-    }
-
-    private boolean isSuccessful(StaticAPIResponse response) {
-        return HttpStatus.valueOf(response.getStatusCode()).is2xxSuccessful();
-    }
-
-    private HttpPost getHttpRequest(String discoveryServiceUrl) {
-        boolean isHttp = discoveryServiceUrl.startsWith("http://");
-        HttpPost post = new HttpPost(discoveryServiceUrl);
-        post.addHeader("Accept", "application/json");
-        if (isHttp && !isAttlsEnabled) {
-            String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
-            post.addHeader("Authorization", basicToken);
-        }
-        return post;
+                })
+                .exchangeToMono(response -> response
+                    .bodyToMono(String.class)
+                    .flatMap(body -> (response.statusCode().is2xxSuccessful() || StringUtils.isNotBlank(body)) ?
+                        Mono.just(new StaticAPIResponse(response.statusCode().value(), body)) : Mono.empty()
+                    )
+                )
+                .doOnError(IOException.class, e -> log.debug("Error refreshing static APIs from {}, error message: {}", uri, e.getMessage()))
+            )
+            .switchIfEmpty(Flux.just(new StaticAPIResponse(500, "Error making static API refresh request to the Discovery Service")))
+            .next();
     }
 
     private List<String> getDiscoveryServiceUrls() {
@@ -105,4 +88,5 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
         }
         return discoveryServiceUrls;
     }
+
 }

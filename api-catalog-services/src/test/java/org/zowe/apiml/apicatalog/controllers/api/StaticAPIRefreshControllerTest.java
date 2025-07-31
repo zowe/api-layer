@@ -26,6 +26,7 @@ import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
 import org.zowe.apiml.apicatalog.staticapi.StaticAPIResponse;
 import org.zowe.apiml.apicatalog.staticapi.StaticRegistrationServiceRest;
 import org.zowe.apiml.apicatalog.staticapi.StaticDefinitionGenerator;
+import reactor.core.publisher.Mono;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -87,7 +88,7 @@ class StaticAPIRefreshControllerTest {
     @Test
     void givenSuccessStaticResponse_whenCallRefreshAPI_thenResponseCodeShouldBe200() {
         when(staticServiceRest.refresh()).thenReturn(
-            new StaticAPIResponse(200, "This is body")
+            Mono.just(new StaticAPIResponse(200, "This is body"))
         );
 
         webTestClient.post().uri(API_REFRESH_ENDPOINT).exchange()
