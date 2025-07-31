@@ -15,6 +15,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.minidev.json.JSONArray;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -22,19 +23,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.Credentials;
-import org.zowe.apiml.util.config.DiscoverableClientConfiguration;
-import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.*;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -51,14 +45,15 @@ public class ApiMediationLayerStartupChecker {
     private final GatewayServiceConfiguration gatewayConfiguration;
     private final DiscoverableClientConfiguration discoverableClientConfiguration;
     private final DiscoveryServiceConfiguration discoveryServiceConfiguration;
-    private final Credentials credentials;
+    private final String authorizationHeader;
     private final List<Service> servicesToCheck = new ArrayList<>();
     private final String healthEndpoint = "/application/health";
 
 
     public ApiMediationLayerStartupChecker() {
         gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        credentials = ConfigReader.environmentConfiguration().getCredentials();
+        var credentials = ConfigReader.environmentConfiguration().getCredentials();
+        authorizationHeader = "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes());
         discoverableClientConfiguration = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration();
         discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
 
@@ -100,49 +95,47 @@ public class ApiMediationLayerStartupChecker {
     }
 
     private boolean areAllServicesUp() {
+        return Arrays.stream(gatewayConfiguration.getHost().split(","))
+            .allMatch(this::areAllServicesUp);
+    }
+
+    private boolean areAllServicesUp(String gatewayHost) {
         try {
-            var gatewayHosts = gatewayConfiguration.getHost().split(",");
-            var requestToGateway1 = HttpRequestUtils.getRequest(gatewayHosts[0], healthEndpoint);
-            // If second one does not exist, redundant call and check to same gateway
-            var requestToGateway2 = HttpRequestUtils.getRequest(gatewayHosts.length > 1 ? gatewayHosts[1] : gatewayHosts[0], healthEndpoint);
+            var requestToGateway = HttpRequestUtils.getRequest(gatewayHost, healthEndpoint);
 
-            requestToGateway1.addHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes()));
-            requestToGateway2.addHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes()));
-            DocumentContext context1 = getDocumentAsContext(requestToGateway1);
-            DocumentContext context2 = getDocumentAsContext(requestToGateway2);
+            requestToGateway.addHeader("Authorization", authorizationHeader);
+            DocumentContext context = getDocumentAsContext(requestToGateway);
 
-            if (context1 == null || context2 == null) {
+            if (context == null) {
                 return false;
             }
 
             boolean areAllServicesUp = true;
             for (Service toCheck : servicesToCheck) {
-                boolean isUp = isServiceUp(context1, toCheck.path);
+                boolean isUp = isServiceUp(context, toCheck.path);
                 logDebug(toCheck.name + " is {}", isUp);
-
-                if (!isUp) {
-                    areAllServicesUp = false;
-                }
+                areAllServicesUp &= false;
             }
             if (!IS_MODULITH_ENABLED && !isAuthUp()) {
                 areAllServicesUp = false;
             }
 
-            String allComponents = context1.read("$.components.discoveryComposite.components.discoveryClient.details.services").toString();
-            boolean isTestApplicationUp = allComponents.toLowerCase().contains("discoverableclient");
+            JSONArray servicesJsonArray = context.read("$.components.discoveryComposite.components.discoveryClient.details.services");
+            List<String> services = servicesJsonArray.stream().map(Objects::toString).map(String::toLowerCase).toList();
+
+            boolean isTestApplicationUp = services.contains("discoverableclient");
             boolean needsTestApplication = discoverableClientConfiguration.getInstances() > 0;
 
             log.debug("Discoverable Client is {}", isTestApplicationUp);
             log.debug("Needs Discoverable Client: {}", needsTestApplication);
             isTestApplicationUp = !needsTestApplication || isTestApplicationUp;
 
-            Integer amountOfActiveGateways1 = context1.read("$.components.gateway.details.gatewayCount");
-            Integer amountOfActiveGateways2 = context2.read("$.components.gateway.details.gatewayCount");
+            Integer amountOfActiveGateways = context.read("$.components.gateway.details.gatewayCount");
             var expectedGatewayCount = Integer.getInteger("environment.gwCount", gatewayConfiguration.getInstances());
 
-            boolean isValidAmountOfGatewaysUp = amountOfActiveGateways1 != null && amountOfActiveGateways2 != null &&
-                amountOfActiveGateways1 >= expectedGatewayCount && amountOfActiveGateways2 >= expectedGatewayCount;
-            log.debug("There are {} gateways in GW1 and {} in GW2", amountOfActiveGateways1, amountOfActiveGateways2);
+            boolean isValidAmountOfGatewaysUp = amountOfActiveGateways != null &&
+                amountOfActiveGateways >= expectedGatewayCount;
+            log.debug("There are {} gateways in GW on {}", amountOfActiveGateways, gatewayHost);
 
             if (!isValidAmountOfGatewaysUp) {
                 log.debug("Expecting at least {} gateways", gatewayConfiguration.getInstances());
@@ -151,24 +144,7 @@ public class ApiMediationLayerStartupChecker {
             }
 
             // Consider properly the case with multiple gateway services running on different ports.
-            if (gatewayConfiguration.getInternalPorts() != null && !gatewayConfiguration.getInternalPorts().isEmpty()) {
-                String[] internalPorts = gatewayConfiguration.getInternalPorts().split(",");
-                String[] hosts = gatewayConfiguration.getHost().split(",");
-
-                for (int i = 0; i < Math.min(internalPorts.length, hosts.length); i++) {
-                    log.debug("Trying to access the Gateway at port {}", internalPorts[i]);
-                    requestToGateway1 = HttpRequestUtils.getRequest(healthEndpoint);
-                    requestToGateway1.addHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes()));
-                    var response = HttpClientUtils.client().execute(requestToGateway1);
-
-                    if (response.getStatusLine().getStatusCode() != 200) {
-                        log.debug("Response from gateway at {} was: {}", requestToGateway1.getURI(), response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : "undefined");
-                        throw new IOException();
-                    }
-
-                }
-
-            }
+            callInternalPorts(gatewayHost);
 
             var result = areAllServicesUp && isTestApplicationUp;
             if (!result) {
@@ -179,6 +155,31 @@ public class ApiMediationLayerStartupChecker {
         } catch (PathNotFoundException | IOException e) {
             log.warn("Check failed on retrieving the information from document: {}", e.getMessage());
             return false;
+        }
+    }
+
+    private void callInternalPorts(String gatewayHost) throws IOException {
+        if (StringUtils.isBlank(gatewayConfiguration.getInternalPorts())) {
+            log.debug("No internal ports are defined");
+            return;
+        }
+
+        String[] internalPorts = gatewayConfiguration.getInternalPorts().split(",");
+        String[] hosts = gatewayConfiguration.getHost().split(",");
+
+        for (int i = 0; i < Math.min(internalPorts.length, hosts.length); i++) {
+            if (!StringUtils.equals(hosts[i], gatewayHost)) continue;
+
+            log.debug("Trying to access the Gateway at port {}", internalPorts[i]);
+            var requestToGateway = HttpRequestUtils.getRequest(healthEndpoint);
+            requestToGateway.addHeader("Authorization", authorizationHeader);
+            var response = HttpClientUtils.client().execute(requestToGateway);
+
+            if (response.getStatusLine().getStatusCode() != 200) {
+                log.debug("Response from gateway at {} was: {}", requestToGateway.getURI(), response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : "undefined");
+                throw new IOException();
+            }
+
         }
     }
 
@@ -205,7 +206,7 @@ public class ApiMediationLayerStartupChecker {
         } else {
             requestToZaas = new HttpGet(HttpRequestUtils.getUriFromGateway(healthEndpoint));
         }
-        requestToZaas.addHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes()));
+        requestToZaas.addHeader("Authorization", authorizationHeader);
         DocumentContext zaasContext = getDocumentAsContext(requestToZaas);
         if (zaasContext == null) {
             return false;
