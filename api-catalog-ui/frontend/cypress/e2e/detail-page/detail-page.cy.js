@@ -11,7 +11,6 @@
 
 /// <reference types="Cypress" />
 
-
 describe('>>> Detail page test', () => {
     it('Detail page test', () => {
         cy.login(Cypress.env('username'), Cypress.env('password'));

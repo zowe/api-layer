@@ -495,47 +495,6 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
-    Oauth2Integration:
-        needs: PublishJibContainers
-        runs-on: ubuntu-latest
-        container: ubuntu:latest
-        timeout-minutes: 10
-        services:
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_OIDC_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
-                    APIML_SECURITY_OIDC_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
-                    APIML_SECURITY_OIDC_ENABLED: true
-                    APIML_SECURITY_OIDC_REGISTRY: zowe.okta.com
-                    APIML_SECURITY_OIDC_JWKS_URI: ${{ secrets.OKTA_JWKSET_URI }}
-                    APIML_SECURITY_OIDC_IDENTITYMAPPERUSER: APIMTST
-                    APIML_SECURITY_OIDC_IDENTITYMAPPERURL: https://gateway-service:10010/zss/api/v1/certificate/dn
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-
-        steps:
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Run CI Tests
-                run: >
-                    ./gradlew :integration-tests:runOidcTests --info -Denvironment.config=-docker -Dokta.client.id=${{ secrets.OKTA_CLIENT_ID }}
-                    -Doidc.test.user=${{ secrets.OIDC_TEST_USER }} -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }}
-                    -Doidc.test.alt_user=${{ secrets.OKTA_WINNIE_USER }} -Doidc.test.alt_pass=${{ secrets.OKTA_WINNIE_PASS }}
-                    -DidpConfiguration.host=${{secrets.OKTA_HOST}}
-
-            -   uses: ./.github/actions/teardown
-
     GatewayProxy:
         needs: PublishJibContainers
         runs-on: ubuntu-latest

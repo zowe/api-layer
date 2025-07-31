@@ -482,20 +482,6 @@ task runGatewayCentralRegistryTest(type: Test) {
     }
 }
 
-task runOidcTests(type: Test) {
-    group "integration tests"
-    description "Run tests verifying integration with oauth2 provider(okta)"
-
-    outputs.cacheIf { false }
-
-    systemProperties System.getProperties()
-    useJUnitPlatform {
-        includeTags(
-            'OktaOauth2Test'
-        )
-    }
-}
-
 task runIdPrefixReplacerTests(type: Test) {
     group "integration tests"
     description "Run Integration Test verifying the service ID prefix replacer mechanism"
@@ -536,7 +522,8 @@ task runZaasTest(type: Test) {
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'ZaasTest'
+            'ZaasTest',
+            'OktaOauth2Test'
         )
     }
 }

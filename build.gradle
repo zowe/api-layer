@@ -212,11 +212,6 @@ task runGatewayServiceRoutingTest(dependsOn: [":integration-tests:runGatewayServ
     group "Integration tests"
 }
 
-task runOidcTests(dependsOn: [":integration-tests:runOidcTests"]) {
-    description "Run tests verifying integration with oidc provider(okta)"
-    group "Integration tests"
-}
-
 task runIdPrefixReplacerTests(dependsOn: [":integration-tests:runIdPrefixReplacerTests"]) {
     description "Run Integration Test verifying the service ID prefix replacer mechanism"
     group "Integration tests"
