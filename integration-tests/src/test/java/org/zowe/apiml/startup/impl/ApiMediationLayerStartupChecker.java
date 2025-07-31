@@ -23,7 +23,10 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.zowe.apiml.util.config.*;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.ServiceConfiguration;
+import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -42,20 +45,13 @@ public class ApiMediationLayerStartupChecker {
 
     private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
 
-    private final GatewayServiceConfiguration gatewayConfiguration;
-    private final DiscoverableClientConfiguration discoverableClientConfiguration;
-    private final DiscoveryServiceConfiguration discoveryServiceConfiguration;
     private final String authorizationHeader;
     private final List<Service> servicesToCheck = new ArrayList<>();
     private final String healthEndpoint = "/application/health";
 
-
     public ApiMediationLayerStartupChecker() {
-        gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         var credentials = ConfigReader.environmentConfiguration().getCredentials();
         authorizationHeader = "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes());
-        discoverableClientConfiguration = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration();
-        discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
 
         servicesToCheck.add(new Service("Gateway", "$.status", ConfigReader.environmentConfiguration().getGatewayServiceConfiguration()));
         if (!IS_MODULITH_ENABLED) {
@@ -95,7 +91,7 @@ public class ApiMediationLayerStartupChecker {
     }
 
     private boolean areAllServicesUp() {
-        return Arrays.stream(gatewayConfiguration.getHost().split(","))
+        return Arrays.stream(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost().split(","))
             .allMatch(this::areAllServicesUp);
     }
 
@@ -116,7 +112,7 @@ public class ApiMediationLayerStartupChecker {
                 logDebug(toCheck.name + " is {}", isUp);
                 areAllServicesUp &= isUp;
 
-                areAllServicesUp &= checkServicesCount(context, gatewayConfiguration, gatewayHost);
+                areAllServicesUp &= checkServicesCount(context, toCheck.configuration, gatewayHost);
             }
             if (!IS_MODULITH_ENABLED && !isAuthUp()) {
                 areAllServicesUp = false;
@@ -125,22 +121,14 @@ public class ApiMediationLayerStartupChecker {
             JSONArray servicesJsonArray = context.read("$.components.discoveryComposite.components.discoveryClient.details.services");
             List<String> services = servicesJsonArray.stream().map(Objects::toString).map(String::toLowerCase).toList();
 
-            boolean isTestApplicationUp = services.contains("discoverableclient");
-            boolean needsTestApplication = discoverableClientConfiguration.getInstances() > 0;
-
-            log.debug("Discoverable Client is {}", isTestApplicationUp);
-            log.debug("Needs Discoverable Client: {}", needsTestApplication);
-            isTestApplicationUp = !needsTestApplication || isTestApplicationUp;
-
             // Consider properly the case with multiple gateway services running on different ports.
             callInternalPorts(gatewayHost);
 
-            var result = areAllServicesUp && isTestApplicationUp;
-            if (!result) {
+            if (!areAllServicesUp) {
                 log.debug("API ML is not ready, check which services are missing in the above messages");
             }
 
-            return result;
+            return areAllServicesUp;
         } catch (PathNotFoundException | IOException e) {
             log.warn("Check failed on retrieving the information from document: {}", e.getMessage());
             return false;
@@ -148,6 +136,10 @@ public class ApiMediationLayerStartupChecker {
     }
 
     private boolean checkServicesCount(DocumentContext context, ServiceConfiguration serviceConfiguration, String gatewayHost) {
+        if (serviceConfiguration.getInstances() == 0) {
+            return true;
+        }
+
         Integer amountOfActiveService = context.read("$.components.discoveryComposite.components.eureka.details.applications." + serviceConfiguration.getServiceId().toUpperCase());
         var expectedCount = serviceConfiguration.getInstances();
         if (serviceConfiguration instanceof GatewayServiceConfiguration) {
@@ -168,6 +160,8 @@ public class ApiMediationLayerStartupChecker {
     }
 
     private void callInternalPorts(String gatewayHost) throws IOException {
+        var gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+
         if (StringUtils.isBlank(gatewayConfiguration.getInternalPorts())) {
             log.debug("No internal ports are defined");
             return;
@@ -193,6 +187,7 @@ public class ApiMediationLayerStartupChecker {
     }
 
     private void callEurekaApps() {
+        var discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         HttpGet requestToEurekaApps = new HttpGet(HttpRequestUtils.getUriFromService(discoveryServiceConfiguration, "/eureka/apps"));
         CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build();
         try (client) {
