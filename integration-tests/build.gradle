@@ -449,24 +449,12 @@ task runGatewayProxyTest(type: Test) {
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'GatewayProxyTest'
-        )
-    }
-}
-
-task runGatewayServiceRoutingTest(type: Test) {
-    group "integration tests"
-    description "Run tests verifying central gateway can locate service and translate auth scheme"
-
-    outputs.cacheIf { false }
-
-    systemProperties System.getProperties()
-    useJUnitPlatform {
-        includeTags(
+            'GatewayProxyTest',
             'GatewayServiceRouting'
         )
     }
 }
+
 
 task runGatewayCentralRegistryTest(type: Test) {
     group "integration tests"

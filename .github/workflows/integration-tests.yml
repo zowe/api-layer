@@ -568,54 +568,6 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
-    GatewayServiceRouting:
-        needs: PublishJibContainers
-        runs-on: ubuntu-latest
-        container: ubuntu:latest
-        timeout-minutes: 10
-
-        services:
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_APIMLID: apiml1
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-            central-gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-        steps:
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
-
-            -   uses: ./.github/actions/setup
-
-            -   name: Run CI Tests
-                run: >
-                    ./gradlew :integration-tests:runGatewayServiceRoutingTest --info -Denvironment.config=-docker
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-
-            -   name: Dump CGW jacoco data
-                run: >
-                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
-
-            -   name: Store results
-                uses: actions/upload-artifact@v4
-                if: always()
-                with:
-                    name: GatewayServiceRouting-${{ env.JOB_ID }}
-                    path: |
-                        integration-tests/build/reports/**
-                        results/**
-
-            -   uses: ./.github/actions/teardown
-
     GatewayCentralRegistry:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
