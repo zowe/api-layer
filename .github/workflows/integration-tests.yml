@@ -2010,7 +2010,7 @@ jobs:
 
     PublishResults:
         needs: [
-            CITests,CITestsWithInfinispan,CITestsZaas,GatewayProxy,GatewayServiceRouting,CITestsHA,
+            CITests,CITestsWithInfinispan,CITestsZaas,GatewayProxy,CITestsHA,
             CITestsModulith,CITestsModulithHA
         ]
         runs-on: ubuntu-latest
@@ -2048,14 +2048,10 @@ jobs:
                 with:
                     name: CITestsHA-${{ env.JOB_ID }}-websocket-chaotic
                     path: citestschaoticha
-            -   uses: actions/download-artifact@v4
-                with:
-                    name: GatewayServiceRouting-${{ env.JOB_ID }}
-                    path: GatewayServiceRouting
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --scan coverage sonar -Dresults="containercitests/results,containercitestsmodulith/results,citestswithinfinispan/results,GatewayProxy/results,citestschaoticha/results,GatewayServiceRouting/results,ContainerCITestsZaas/results"
+                    ./gradlew --scan coverage sonar -Dresults="containercitests/results,containercitestsmodulith/results,citestswithinfinispan/results,GatewayProxy/results,citestschaoticha/results,ContainerCITestsZaas/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
