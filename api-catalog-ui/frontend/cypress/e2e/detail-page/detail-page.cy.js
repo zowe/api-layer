@@ -11,8 +11,6 @@
 
 /// <reference types="Cypress" />
 
-const isModulith = Cypress.env('modulith');
-
 describe('>>> Detail page test', () => {
     it('Detail page test', () => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
@@ -118,10 +116,7 @@ describe('>>> Detail page test', () => {
 
         cy.get('#search > div > div > input').as('search').type('API Gateway');
 
-        let expectedGatewaysCount = 2;
-        if (isModulith) {
-            expectedGatewaysCount = 1;
-        }
+        const expectedGatewaysCount = 2;
 
         cy.get('.grid-tile').should('have.length', expectedGatewaysCount).should('contain', 'API Gateway'); // FIXME in modulith multi tenancy is not working
     });
