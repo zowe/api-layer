@@ -11,6 +11,7 @@
 package org.zowe.apiml.integration.zos;
 
 import io.restassured.RestAssured;
+import io.restassured.config.RestAssuredConfig;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -104,32 +105,27 @@ class ServicesInfoTest implements TestWithStartedInstances {
 
         @Nested
         class GivenClientCertificateCallDirectlyTowardsGateway {
-            @ParameterizedTest(name = "givenClientCertificate_returns200WithoutSafCheck {index} {0} ")
-            @ValueSource(strings = {
-                ROUTED_SERVICE_NOT_VERSIONED,
-                ROUTED_SERVICE_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
-            })
-            void returns200WithoutSafCheck(String endpoint) {
-                given()
-                    .config(SslContext.clientCertValid) // TODO add test with API ML cert
-                .when()
-                    .get(getUriFromGateway(endpoint))
-                .then()
-                    .statusCode(is(SC_OK));
+
+            static Stream<Arguments> endpointCertPairs() {
+                return Stream.of(
+                    Arguments.of(ROUTED_SERVICE_NOT_VERSIONED, "clientCertValid", SslContext.clientCertValid, SC_OK),
+                    Arguments.of(ROUTED_SERVICE_NOT_VERSIONED, "clientCertApiml", SslContext.clientCertApiml, SC_OK),
+                    Arguments.of(ROUTED_SERVICE_NOT_VERSIONED, "selfSignedUntrusted", SslContext.selfSignedUntrusted, SC_UNAUTHORIZED),
+                    Arguments.of(ROUTED_SERVICE_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID, "clientCertValid", SslContext.clientCertValid, SC_OK),
+                    Arguments.of(ROUTED_SERVICE_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID, "clientCertApiml", SslContext.clientCertApiml, SC_OK),
+                    Arguments.of(ROUTED_SERVICE_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID, "selfSignedUntrusted", SslContext.selfSignedUntrusted, SC_UNAUTHORIZED)
+                );
             }
 
-            @ParameterizedTest(name = "givenClientCertificate_returns401WithUntrustedCert {index} {0} ")
-            @ValueSource(strings = {
-                ROUTED_SERVICE_NOT_VERSIONED,
-                ROUTED_SERVICE_NOT_VERSIONED + "/" + API_CATALOG_SERVICE_ID
-            })
-            void returns401WithUntrustedCert(String endpoint) {
+            @ParameterizedTest(name = "given {1} when request {0} return {3} index:{index} returns200WithoutSafCheck")
+            @MethodSource("endpointCertPairs")
+            void givenEndpointAccessWithClientCertificateOnly(String endpoint, String certName, RestAssuredConfig config, int statusCode) {
                 given()
-                    .config(SslContext.selfSignedUntrusted)
-                .when()
+                    .config(config)
+                    .when()
                     .get(getUriFromGateway(endpoint))
-                .then()
-                    .statusCode(is(SC_UNAUTHORIZED));
+                    .then()
+                    .statusCode(is(statusCode));
             }
         }
 
