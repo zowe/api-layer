@@ -166,7 +166,6 @@ public class ApiMediationLayerStartupChecker {
                 areAllServicesUp = false;
             }
 
-
             if (!areAllServicesUp) {
                 log.debug("API ML is not ready, check which services are missing in the above messages");
             }
