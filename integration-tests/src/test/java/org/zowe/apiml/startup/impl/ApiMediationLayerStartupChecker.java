@@ -218,7 +218,7 @@ public class ApiMediationLayerStartupChecker {
         }
 
         if (IS_MODULITH_ENABLED && isModulithComponent(serviceConfiguration.getServiceId())) {
-            amountOfActiveService = Math.min(amountOfActiveService, 1);
+            expectedCount = Math.min(expectedCount, 1);
         }
 
         boolean isValidAmountOfServicesUp = amountOfActiveService != null &&
