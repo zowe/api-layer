@@ -129,6 +129,9 @@ public class ApiMediationLayerStartupChecker {
     }
 
     private boolean checkHealthEndpointWithEureka(ServiceConfiguration serviceConfiguration) {
+        if (serviceConfiguration == null) {
+            return true;
+        }
         return Arrays.stream(serviceConfiguration.getHost().split(","))
             .map(host -> getHealthEndpoint(serviceConfiguration, host))
             .map(HttpGet::new)
