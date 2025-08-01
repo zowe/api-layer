@@ -55,7 +55,7 @@ public class EurekaHealthIndicatorApiml extends EurekaHealthIndicator {
     private Map<String, Object> getApplications() {
         return discoveryClient.getServices().stream()
             .collect(Collectors.toMap(
-                Function.identity(),
+                String::toLowerCase,
                 serviceId -> discoveryClient.getInstances(serviceId).size())
             );
     }

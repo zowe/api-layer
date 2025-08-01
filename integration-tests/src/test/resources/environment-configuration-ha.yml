@@ -13,7 +13,7 @@ gatewayServiceConfiguration:
     bucketCapacity: 20
 zaasConfiguration:
     scheme: https
-    host: zaas-service
+    host: zaas-service,zaas-service-2
     port: 10023
 discoveryServiceConfiguration:
     scheme: https

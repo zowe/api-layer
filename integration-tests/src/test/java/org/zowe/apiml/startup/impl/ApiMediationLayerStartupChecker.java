@@ -20,19 +20,18 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import org.zowe.apiml.util.config.ServiceConfiguration;
-import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.*;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -68,10 +67,10 @@ public class ApiMediationLayerStartupChecker {
             .atMost(10, MINUTES)
             .pollDelay(0, SECONDS)
             .pollInterval(poolInterval, SECONDS)
-            .until(this::areAllServicesUp);
+            .until(this::isApimlReady);
     }
 
-    private DocumentContext getDocumentAsContext(HttpGet request) {
+    private static DocumentContext getDocumentAsContext(HttpGet request) {
         try {
             final HttpResponse response = HttpClientUtils.client().execute(request);
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
@@ -91,49 +90,113 @@ public class ApiMediationLayerStartupChecker {
         }
     }
 
-    private boolean areAllServicesUp() {
-        return Arrays.stream(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost().split(","))
-            .allMatch(this::areAllServicesUp);
+    private boolean isApimlReady() {
+        try {
+            return Stream.of(
+                checkHealthEndpointWithEureka(ConfigReader.environmentConfiguration().getZaasConfiguration()),
+                checkHealthEndpointWithEureka(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration()),
+                // Consider properly the case with multiple gateway services running on different ports.
+                callInternalPorts(),
+                allServicesAreUp()
+            ).allMatch(x -> x);
+        } catch (Exception e) {
+            log.error("Error during checking if APIML is up", e);
+            return false;
+        }
     }
 
-    private boolean areAllServicesUp(String gatewayHost) {
+    private String getHealthEndpoint(ServiceConfiguration serviceConfiguration, String host) {
+        String path = healthEndpoint;
+        if (serviceConfiguration instanceof ApiCatalogServiceConfiguration) {
+            path = "/apicatalog" + path;
+        }
+        return String.format("%s://%s:%d%s", serviceConfiguration.getScheme(), host, serviceConfiguration.getPort(), path);
+    }
+
+    private boolean allServicesAreUp() {
+        return servicesToCheck.stream()
+            .map(service -> service.configuration)
+            .filter(service -> !IS_MODULITH_ENABLED || !isModulithComponent(service.getServiceId()))
+            .flatMap(service -> Arrays.stream(service.getHost().split(","))
+                .map(host -> getHealthEndpoint(service, host))
+                .map(HttpGet::new)
+                .map(request -> {
+                    request.addHeader("Authorization", authorizationHeader);
+                    DocumentContext context = getDocumentAsContext(request);
+                    return (context != null) && "UP".equals(context.read("$.status"));
+                })
+            ).allMatch(x -> x);
+    }
+
+    private boolean checkHealthEndpointWithEureka(ServiceConfiguration serviceConfiguration) {
+        return Arrays.stream(serviceConfiguration.getHost().split(","))
+            .map(host -> getHealthEndpoint(serviceConfiguration, host))
+            .map(HttpGet::new)
+            .allMatch(request -> {
+                request.addHeader("Authorization", authorizationHeader);
+                DocumentContext context = getDocumentAsContext(request);
+
+                return isApimlReadyByFullHealthEndpoint(context, request.getURI().getHost());
+            });
+    }
+
+    private boolean isApimlReadyByFullHealthEndpoint(DocumentContext context, String host) {
         try {
-            var requestToGateway = HttpRequestUtils.getRequest(gatewayHost, healthEndpoint);
-
-            requestToGateway.addHeader("Authorization", authorizationHeader);
-            DocumentContext context = getDocumentAsContext(requestToGateway);
-
             if (context == null) {
                 return false;
-            }
-
-            boolean areAllServicesUp = true;
-            for (Service toCheck : servicesToCheck) {
-                boolean isUp = isServiceUp(context, toCheck.path);
-                logDebug(toCheck.name + " is {}", isUp);
-                areAllServicesUp &= isUp;
-
-                areAllServicesUp &= checkServicesCount(context, toCheck.configuration, gatewayHost);
-            }
-            if (!IS_MODULITH_ENABLED && !isAuthUp()) {
-                areAllServicesUp = false;
             }
 
             JSONArray servicesJsonArray = context.read("$.components.discoveryComposite.components.discoveryClient.details.services");
             List<String> services = servicesJsonArray.stream().map(Objects::toString).map(String::toLowerCase).toList();
 
-            // Consider properly the case with multiple gateway services running on different ports.
-            callInternalPorts(gatewayHost);
+            boolean areAllServicesUp = true;
+            for (Service toCheck : servicesToCheck) {
+                if (toCheck.configuration instanceof GatewayServiceConfiguration) {
+                    boolean isUp = isServiceUp(context, toCheck.path);
+                    logDebug(toCheck.name + " is {}", isUp);
+                    areAllServicesUp &= isUp;
+                }
+                areAllServicesUp &= services.contains(toCheck.configuration.getServiceId().toLowerCase());
+                areAllServicesUp &= checkServicesCount(context, toCheck.configuration, host);
+            }
+            if (!IS_MODULITH_ENABLED && !isAuthUp()) {
+                areAllServicesUp = false;
+            }
+
 
             if (!areAllServicesUp) {
                 log.debug("API ML is not ready, check which services are missing in the above messages");
             }
 
             return areAllServicesUp;
-        } catch (PathNotFoundException | IOException e) {
+        } catch (PathNotFoundException e) {
             log.warn("Check failed on retrieving the information from document: {}", e.getMessage());
             return false;
         }
+    }
+
+    private boolean isModulithComponent(String serviceId) {
+        return StringUtils.equalsAnyIgnoreCase(serviceId,
+            CoreService.API_CATALOG.getServiceId(),
+            CoreService.CACHING.getServiceId(),
+            CoreService.ZAAS.getServiceId(),
+            CoreService.DISCOVERY.getServiceId()
+        );
+    }
+
+    private <V> V getService(Map<String, V> map, String key) {
+        V out = map.get(key.toLowerCase());
+        if (out == null) {
+            out = map.get(key.toUpperCase());
+        }
+        if (out == null) {
+            out = map.entrySet().stream()
+                .filter(e -> key.equalsIgnoreCase(e.getKey()))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElseThrow(() -> new NullPointerException("Cannot find record for " + key));
+        }
+        return out;
     }
 
     private boolean checkServicesCount(DocumentContext context, ServiceConfiguration serviceConfiguration, String gatewayHost) {
@@ -141,15 +204,17 @@ public class ApiMediationLayerStartupChecker {
             return true;
         }
 
-        Integer amountOfActiveService = context.read("$.components.discoveryComposite.components.eureka.details.applications." + serviceConfiguration.getServiceId().toUpperCase());
+        Map<String, Integer> services = context.read("$.components.discoveryComposite.components.eureka.details.applications");
+        Integer amountOfActiveService = getService(services, serviceConfiguration.getServiceId());
+        if (amountOfActiveService == null) {
+            amountOfActiveService = services.get(serviceConfiguration.getServiceId().toUpperCase());
+        }
         var expectedCount = serviceConfiguration.getInstances();
         if (serviceConfiguration instanceof GatewayServiceConfiguration) {
             expectedCount = Integer.getInteger("environment.gwCount", expectedCount);
         }
 
-        if (IS_MODULITH_ENABLED && StringUtils.equalsAnyIgnoreCase(serviceConfiguration.getServiceId(),
-            CoreService.API_CATALOG.getServiceId(), CoreService.CACHING.getServiceId(), CoreService.ZAAS.getServiceId()
-        )) {
+        if (IS_MODULITH_ENABLED && isModulithComponent(serviceConfiguration.getServiceId())) {
             amountOfActiveService = Math.min(amountOfActiveService, 1);
         }
 
@@ -166,37 +231,42 @@ public class ApiMediationLayerStartupChecker {
         return true;
     }
 
-    private void callInternalPorts(String gatewayHost) throws IOException {
+    private boolean callInternalPorts() {
         var gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
         if (StringUtils.isBlank(gatewayConfiguration.getInternalPorts())) {
             log.debug("No internal ports are defined");
-            return;
+            return true;
         }
 
         String[] internalPorts = gatewayConfiguration.getInternalPorts().split(",");
         String[] hosts = gatewayConfiguration.getHost().split(",");
 
         for (int i = 0; i < Math.min(internalPorts.length, hosts.length); i++) {
-            if (!StringUtils.equals(hosts[i], gatewayHost)) continue;
-
             log.debug("Trying to access the Gateway at port {}", internalPorts[i]);
             var requestToGateway = HttpRequestUtils.getRequest(healthEndpoint);
             requestToGateway.addHeader("Authorization", authorizationHeader);
-            var response = HttpClientUtils.client().execute(requestToGateway);
+            try {
+                var response = HttpClientUtils.client().execute(requestToGateway);
 
-            if (response.getStatusLine().getStatusCode() != 200) {
-                log.debug("Response from gateway at {} was: {}", requestToGateway.getURI(), response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : "undefined");
-                throw new IOException();
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    log.debug("Response from gateway at {} was: {}", requestToGateway.getURI(), response.getEntity() != null ? EntityUtils.toString(response.getEntity()) : "undefined");
+                    return false;
+                }
+            } catch (IOException ioException) {
+                return false;
             }
-
         }
+        return true;
     }
 
     private void callEurekaApps() {
         var discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         HttpGet requestToEurekaApps = new HttpGet(HttpRequestUtils.getUriFromService(discoveryServiceConfiguration, "/eureka/apps"));
-        CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build();
+        CloseableHttpClient client = HttpClients.custom()
+            .setSSLContext(SslContext.sslClientCertValid)
+            .setSSLHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)
+            .build();
         try (client) {
             var response = client.execute(requestToEurekaApps);
             var entity = response.getEntity();
