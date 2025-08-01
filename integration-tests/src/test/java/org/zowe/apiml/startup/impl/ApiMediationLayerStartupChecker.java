@@ -123,7 +123,11 @@ public class ApiMediationLayerStartupChecker {
                 .map(request -> {
                     request.addHeader("Authorization", authorizationHeader);
                     DocumentContext context = getDocumentAsContext(request);
-                    return (context != null) && "UP".equals(context.read("$.status"));
+                    boolean response = (context != null) && "UP".equals(context.read("$.status"));
+                    if (!response) {
+                        log.debug("Service {} is not ready at {} : {}", service.getServiceId(), request.getURI(), context);
+                    }
+                    return response;
                 })
             ).allMatch(x -> x);
     }
