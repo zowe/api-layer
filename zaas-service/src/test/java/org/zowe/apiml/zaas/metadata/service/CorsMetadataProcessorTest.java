@@ -80,7 +80,7 @@ class CorsMetadataProcessorTest {
         private void assertDefaultConfiguration(CorsConfiguration provided) {
             assertThat(provided.getAllowedHeaders(), hasSize(1));
             assertThat(provided.getAllowedHeaders().get(0), is("*"));
-            assertThat(provided.getAllowedMethods(), hasSize(6));
+            assertThat(provided.getAllowedMethods(), hasSize(7));
             assertThat(provided.getAllowedMethods().get(0), is("GET"));
         }
     }

@@ -34,7 +34,8 @@ public class CorsUtils {
     static {
         allowedCorsHttpMethods = Collections.unmodifiableList(Arrays.asList(
             HttpMethod.GET.name(), HttpMethod.HEAD.name(), HttpMethod.POST.name(),
-            HttpMethod.DELETE.name(), HttpMethod.PUT.name(), HttpMethod.OPTIONS.name()
+            HttpMethod.PATCH.name(), HttpMethod.DELETE.name(), HttpMethod.PUT.name(),
+            HttpMethod.OPTIONS.name()
         ));
     }
 
