@@ -23,6 +23,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.config.ServiceConfiguration;
@@ -144,6 +145,12 @@ public class ApiMediationLayerStartupChecker {
         var expectedCount = serviceConfiguration.getInstances();
         if (serviceConfiguration instanceof GatewayServiceConfiguration) {
             expectedCount = Integer.getInteger("environment.gwCount", expectedCount);
+        }
+
+        if (IS_MODULITH_ENABLED && StringUtils.equalsAnyIgnoreCase(serviceConfiguration.getServiceId(),
+            CoreService.API_CATALOG.getServiceId(), CoreService.CACHING.getServiceId(), CoreService.ZAAS.getServiceId()
+        )) {
+            amountOfActiveService = Math.min(amountOfActiveService, 1);
         }
 
         boolean isValidAmountOfServicesUp = amountOfActiveService != null &&
