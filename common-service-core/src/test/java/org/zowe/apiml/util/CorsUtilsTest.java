@@ -43,7 +43,7 @@ class CorsUtilsTest {
                     assertTrue(path.contains("gateway"));
                     assertNotNull(configuration.getAllowedHeaders());
                     assertEquals(1, configuration.getAllowedHeaders().size());
-                    assertEquals(6, configuration.getAllowedMethods().size());
+                    assertEquals(7, configuration.getAllowedMethods().size());
                 }
             );
         }
@@ -55,7 +55,7 @@ class CorsUtilsTest {
                     assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
                     assertNotNull(configuration.getAllowedHeaders());
                     assertEquals(1, configuration.getAllowedHeaders().size());
-                    assertEquals(6, configuration.getAllowedMethods().size());
+                    assertEquals(7, configuration.getAllowedMethods().size());
                 }
             );
 
@@ -81,7 +81,7 @@ class CorsUtilsTest {
                     assertTrue(configuration.getAllowedOrigins().contains("https://localhost:3000"));
                     assertEquals(3, configuration.getAllowedOrigins().size());
                     assertEquals(1, configuration.getAllowedHeaders().size());
-                    assertEquals(6, configuration.getAllowedMethods().size());
+                    assertEquals(7, configuration.getAllowedMethods().size());
                 }
             );
         }
