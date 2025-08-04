@@ -258,6 +258,99 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
     outputs.cacheIf { false }
 }
 
+task runAllIntegrationTestsForZoweModulithNonHaTestingOnZos(type: Test) {
+    // This task is intended to run on z/OS systems with some limitations:
+    // Only 1 Gateway (Non-HA mode)
+    // z/OSMF Authentication provider only
+    // No support for SAF ID Tokens
+
+    group "Integration tests"
+    description "Run all integration tests for Zowe Non-HA testing on z/OS with modulith mode (limited)"
+
+    def targetSystem = System.getenv("ZOS_TARGET_SYS") ? "-" + System.getenv("ZOS_TARGET_SYS") : ""
+    systemProperty "environment.config", targetSystem
+    systemProperty "environment.zos.target", "true"
+    systemProperty "environment.modulith", "true"
+    systemProperties System.properties
+    systemProperties.remove('java.endorsed.dirs')
+
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'AdditionalLocalTest',
+            'TestsNotMeantForZowe',
+            'DiscoverableClientDependentTest',
+            'HATest',
+            'ChaoticHATest',
+            'OktaOauth2Test',
+            'MultipleRegistrationsTest',
+            'NotForMainframeTest',
+            'ApiCatalogStandaloneTest',
+            'SAFProviderTest',
+            'GatewayProxyTest',
+            'GatewayCentralRegistry',
+            'SafIdTokenTest',
+            'ZaasTest' // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
+        )
+    }
+
+    debugOptions {
+        port = 5005
+        suspend = true
+        server = true
+    }
+    outputs.upToDateWhen { false }
+}
+
+task runAllIntegrationTestsForZoweModulithHaTestingOnZos(type: Test) {
+    // This task is intended to run on z/OS systems with some limitations:
+    // More than 1 Gateway (HA mode)
+    // z/OSMF Authentication provider only
+    // No support for SAF ID Tokens
+
+    group "Integration tests"
+    description "Run all integration tests for Zowe HA testing on z/OS with modulith mode (limited)"
+
+    def targetSystem = System.getenv("ZOS_TARGET_SYS") ? "-" + System.getenv("ZOS_TARGET_SYS") : ""
+    systemProperty "environment.config", targetSystem
+    systemProperty "environment.zos.target", "true"
+    systemProperty "environment.ha", true
+    systemProperty "environment.modulith", true
+    systemProperties System.properties
+    systemProperties.remove('java.endorsed.dirs')
+
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'AdditionalLocalTest',
+            'TestsNotMeantForZowe',
+            'DiscoverableClientDependentTest',
+            'OktaOauth2Test',
+            'MultipleRegistrationsTest',
+            'NotForMainframeTest',
+            'ApiCatalogStandaloneTest',
+            'SAFProviderTest',
+            'GatewayProxyTest',
+            'GatewayCentralRegistry',
+            'SafIdTokenTest',
+            'ChaoticHATest',
+            'GraphQLTest',
+            'ZaasTest' // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
+        )
+    }
+
+    debugOptions {
+        port = 5005
+        suspend = true
+        server = true
+    }
+
+    outputs.upToDateWhen { false }
+    outputs.cacheIf { false }
+}
+
 task runAllIntegrationTestsForZoweTesting(type: Test) {
     group "Integration tests"
     description "Run all integration tests for Zowe testing"
