@@ -400,7 +400,7 @@ class ConnectionsConfigTest {
 
     }
 
-    @Nesteda
+    @Nested
     @SpringBootTest(
         properties = {"apiml.service.corsEnabled=true"}
     )
