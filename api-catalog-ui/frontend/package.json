@@ -37,7 +37,7 @@
         "react-app-polyfill": "3.0.0",
         "react-dom": "18.3.1",
         "react-error-boundary": "5.0.0",
-        "react-hook-form": "7.61.1",
+        "react-hook-form": "7.62.0",
         "react-redux": "9.2.0",
         "react-router": "7.6.3",
         "react-toastify": "10.0.6",
@@ -51,7 +51,7 @@
         "rxjs": "7.8.2",
         "sass": "1.89.2",
         "stream": "0.0.3",
-        "swagger-ui-react": "5.27.0",
+        "swagger-ui-react": "5.27.1",
         "url": "0.11.4",
         "util": "0.12.5",
         "uuid": "10.0.0"
@@ -98,7 +98,7 @@
         "ajv": "8.17.1",
         "ansi-regex": "6.1.0",
         "body-parser": "1.20.3",
-        "caniuse-lite": "1.0.30001727",
+        "caniuse-lite": "1.0.30001731",
         "concurrently": "9.2.0",
         "cors": "2.8.5",
         "cross-env": "7.0.3",
@@ -127,7 +127,7 @@
         "jest-mock": "29.7.0",
         "jest-watch-typeahead": "2.2.2",
         "json-schema": "0.4.0",
-        "mini-css-extract-plugin": "2.9.2",
+        "mini-css-extract-plugin": "2.9.3",
         "nodemon": "3.1.10",
         "nth-check": "2.1.1",
         "prettier": "3.6.2",
@@ -139,7 +139,7 @@
         "redux-mock-store": "1.5.5",
         "rimraf": "6.0.1",
         "source-map-explorer": "2.5.3",
-        "start-server-and-test": "2.0.12",
+        "start-server-and-test": "2.0.13",
         "tmpl": "1.0.5",
         "undici": "6.19.8",
         "yaml": "2.8.0"
@@ -156,6 +156,7 @@
         "semver": "7.7.2",
         "@babel/traverse": "7.28.0",
         "axios": "1.11.0",
+        "form-data": "3.0.4",
         "swagger-ui-react": {
             "react-syntax-highlighter": {
                 "refractor": "5.0.0"
