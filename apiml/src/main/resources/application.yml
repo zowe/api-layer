@@ -257,6 +257,7 @@ server:
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
+    max-http-request-header-size: 48000
 
 caching:
     storage:
