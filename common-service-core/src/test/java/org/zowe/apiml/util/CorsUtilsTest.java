@@ -35,62 +35,121 @@ class CorsUtilsTest {
 
     @Nested
     class GivenCorsEnabled {
-        CorsUtils corsUtils = new CorsUtils(true, Collections.emptyList());
 
-        @Test
-        void registerDefaultConfig() {
-            corsUtils.registerDefaultCorsConfiguration((path, configuration) -> {
-                    assertTrue(path.contains("gateway"));
-                    assertNotNull(configuration.getAllowedHeaders());
-                    assertEquals(1, configuration.getAllowedHeaders().size());
-                    assertEquals(7, configuration.getAllowedMethods().size());
-                }
-            );
+        @Nested
+        class givenCorsAllowedMethods {
+
+            CorsUtils corsUtils = new CorsUtils(true, "GET, POST,PATCH", Collections.emptyList());
+
+            @Test
+            void registerDefaultConfig() {
+                corsUtils.registerDefaultCorsConfiguration((path, configuration) -> {
+                        assertTrue(path.contains("gateway"));
+                        assertNotNull(configuration.getAllowedHeaders());
+                        assertEquals(1, configuration.getAllowedHeaders().size());
+                        assertEquals(3, configuration.getAllowedMethods().size());
+                    }
+                );
+            }
+
+            @Test
+            void registerConfigForService() {
+
+                corsUtils.setCorsConfiguration("dclient", metadata, (path, serviceId, configuration) -> {
+                        assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
+                        assertNotNull(configuration.getAllowedHeaders());
+                        assertEquals(1, configuration.getAllowedHeaders().size());
+                        assertEquals(3, configuration.getAllowedMethods().size());
+                    }
+                );
+            }
+
+            @Test
+            void registerDefaultConfigForService() {
+                metadata.remove("apiml.corsEnabled");
+                corsUtils.setCorsConfiguration("dclient", metadata, (path, serviceId, configuration) -> {
+                        assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
+                        assertNull(configuration.getAllowedMethods());
+                    }
+                );
+            }
+
+            @Test
+            void registerConfigForServiceWithCustomOrigins() {
+                Map<String, String> customMetadata = new HashMap<>(metadata);
+                customMetadata.put("apiml.corsAllowedOrigins", "https://localhost:3000,http://hostname.com,https://anothehostname:3040");
+                corsUtils.setCorsConfiguration("dclient", customMetadata, (path, serviceId, configuration) -> {
+                        assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
+                        assertNotNull(configuration.getAllowedHeaders());
+                        assertTrue(configuration.getAllowedOrigins().contains("https://localhost:3000"));
+                        assertEquals(3, configuration.getAllowedOrigins().size());
+                        assertEquals(1, configuration.getAllowedHeaders().size());
+                        assertEquals(3, configuration.getAllowedMethods().size());
+                    }
+                );
+            }
         }
 
-        @Test
-        void registerConfigForService() {
+        @Nested
+        class givenDefaultCorsAllowedMethods {
 
-            corsUtils.setCorsConfiguration("dclient", metadata, (path, serviceId, configuration) -> {
-                    assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
-                    assertNotNull(configuration.getAllowedHeaders());
-                    assertEquals(1, configuration.getAllowedHeaders().size());
-                    assertEquals(7, configuration.getAllowedMethods().size());
-                }
-            );
+            CorsUtils corsUtils = new CorsUtils(true, null, Collections.emptyList());
 
-        }
+            @Test
+            void registerDefaultConfig() {
+                corsUtils.registerDefaultCorsConfiguration((path, configuration) -> {
+                        assertTrue(path.contains("gateway"));
+                        assertNotNull(configuration.getAllowedHeaders());
+                        assertEquals(1, configuration.getAllowedHeaders().size());
+                        assertEquals(7, configuration.getAllowedMethods().size());
+                    }
+                );
+            }
 
-        @Test
-        void registerDefaultConfigForService() {
-            metadata.remove("apiml.corsEnabled");
-            corsUtils.setCorsConfiguration("dclient", metadata, (path, serviceId, configuration) -> {
-                    assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
-                    assertNull(configuration.getAllowedMethods());
-                }
-            );
-        }
+            @Test
+            void registerConfigForService() {
 
-        @Test
-        void registerConfigForServiceWithCustomOrigins() {
-            Map<String, String> customMetadata = new HashMap<>(metadata);
-            customMetadata.put("apiml.corsAllowedOrigins", "https://localhost:3000,http://hostname.com,https://anothehostname:3040");
-            corsUtils.setCorsConfiguration("dclient", customMetadata, (path, serviceId, configuration) -> {
-                    assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
-                    assertNotNull(configuration.getAllowedHeaders());
-                    assertTrue(configuration.getAllowedOrigins().contains("https://localhost:3000"));
-                    assertEquals(3, configuration.getAllowedOrigins().size());
-                    assertEquals(1, configuration.getAllowedHeaders().size());
-                    assertEquals(7, configuration.getAllowedMethods().size());
-                }
-            );
+                corsUtils.setCorsConfiguration("dclient", metadata, (path, serviceId, configuration) -> {
+                        assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
+                        assertNotNull(configuration.getAllowedHeaders());
+                        assertEquals(1, configuration.getAllowedHeaders().size());
+                        assertEquals(7, configuration.getAllowedMethods().size());
+                    }
+                );
+
+            }
+
+            @Test
+            void registerDefaultConfigForService() {
+                metadata.remove("apiml.corsEnabled");
+                corsUtils.setCorsConfiguration("dclient", metadata, (path, serviceId, configuration) -> {
+                        assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
+                        assertNull(configuration.getAllowedMethods());
+                    }
+                );
+            }
+
+            @Test
+            void registerConfigForServiceWithCustomOrigins() {
+                Map<String, String> customMetadata = new HashMap<>(metadata);
+                customMetadata.put("apiml.corsAllowedOrigins", "https://localhost:3000,http://hostname.com,https://anothehostname:3040");
+                corsUtils.setCorsConfiguration("dclient", customMetadata, (path, serviceId, configuration) -> {
+                        assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
+                        assertNotNull(configuration.getAllowedHeaders());
+                        assertTrue(configuration.getAllowedOrigins().contains("https://localhost:3000"));
+                        assertEquals(3, configuration.getAllowedOrigins().size());
+                        assertEquals(1, configuration.getAllowedHeaders().size());
+                        assertEquals(7, configuration.getAllowedMethods().size());
+                    }
+                );
+            }
         }
 
     }
 
     @Nested
     class GivenCorsDisabled {
-        CorsUtils corsUtils = new CorsUtils(false, Collections.emptyList());
+        CorsUtils corsUtils = new CorsUtils(false, null, Collections.emptyList());
 
         @Test
         void registerEmptyDefaultConfig() {
@@ -117,7 +176,7 @@ class CorsUtilsTest {
         @Test
         void setAllowedOrigins() {
             List<String> allowedOrigins = Arrays.asList("a");
-            CorsUtils corsUtils = new CorsUtils(true, allowedOrigins);
+            CorsUtils corsUtils = new CorsUtils(true, null, allowedOrigins);
             BiConsumer<String, CorsConfiguration> pathMapper = mock(BiConsumer.class);
             corsUtils.registerDefaultCorsConfiguration(pathMapper);
 

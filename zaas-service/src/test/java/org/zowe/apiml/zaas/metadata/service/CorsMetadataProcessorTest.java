@@ -29,14 +29,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 class CorsMetadataProcessorTest {
-    private CorsUtils corsUtils = new CorsUtils(true, null);
+    private CorsUtils corsUtils;
     private UrlBasedCorsConfigurationSource configurationSource;
     private ArgumentCaptor<CorsConfiguration> configurationCaptor = ArgumentCaptor.forClass(CorsConfiguration.class);
 
     @BeforeEach
     void setUp() {
         configurationSource = mock(UrlBasedCorsConfigurationSource.class);
-        corsUtils = new CorsUtils(true, null);
+        corsUtils = new CorsUtils(true, null, null);
     }
 
     @Nested

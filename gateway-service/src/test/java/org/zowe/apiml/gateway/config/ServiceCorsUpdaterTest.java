@@ -48,7 +48,7 @@ class ServiceCorsUpdaterTest {
     private static final String SERVICE_ID = "myserviceid";
     private static final String APIML_ID = "apimlid";
 
-    private CorsUtils corsUtils = spy(new CorsUtils(true, Collections.emptyList()));
+    private CorsUtils corsUtils = spy(new CorsUtils(true, null, Collections.emptyList()));
 
     @Mock private ReactiveDiscoveryClient discoveryClient;
 

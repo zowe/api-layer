@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.util;
 
-import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
@@ -21,22 +21,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
 public class CorsUtils {
-    private static final List<String> allowedCorsHttpMethods;
+    private final List<String> allowedCorsHttpMethods;
     private final boolean corsEnabled;
     private final List<String> allowedOrigins;
     private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes\\.[^.]*\\.gateway\\S*");
-
     private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/*/*/gateway/**", "/gateway/*/*/**", "/gateway/version");
 
-    static {
-        allowedCorsHttpMethods = Collections.unmodifiableList(Arrays.asList(
-            HttpMethod.GET.name(), HttpMethod.HEAD.name(), HttpMethod.POST.name(),
+    public CorsUtils(boolean corsEnabled, String corsAllowedMethods, List<String> allowedOrigins) {
+        this.corsEnabled = corsEnabled;
+        this.allowedOrigins = allowedOrigins;
+        this.allowedCorsHttpMethods = StringUtils.isBlank(corsAllowedMethods) ? getDefaultCorsAllowedMethods() :
+            Arrays.stream(corsAllowedMethods.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    private List<String> getDefaultCorsAllowedMethods() {
+        return Arrays.asList(HttpMethod.GET.name(), HttpMethod.HEAD.name(), HttpMethod.POST.name(),
             HttpMethod.PATCH.name(), HttpMethod.DELETE.name(), HttpMethod.PUT.name(),
-            HttpMethod.OPTIONS.name()
-        ));
+            HttpMethod.OPTIONS.name());
     }
 
     public boolean isCorsEnabledForService(Map<String, String> metadata) {
