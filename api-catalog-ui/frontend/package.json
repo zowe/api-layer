@@ -156,6 +156,7 @@
         "semver": "7.7.2",
         "@babel/traverse": "7.28.0",
         "axios": "1.11.0",
+        "form-data": "3.0.4",
         "swagger-ui-react": {
             "react-syntax-highlighter": {
                 "refractor": "5.0.0"
