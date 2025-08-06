@@ -35,7 +35,7 @@ configs:
   debug: false
   sslDebug: ""
   apimlId:
-  apiml: # TODO Is this needed?
+  apiml:
       service:
           # Enables forwarding client certificate from request to next gateway in a special request header
           forwardClientCertEnabled: false
