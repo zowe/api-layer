@@ -46,7 +46,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
     }
 )
 @TestInstance(Lifecycle.PER_CLASS)
-public class AttlsConfigTest {
+class AttlsConfigTest {
 
     @MockitoBean(name = "x509Mapper")
     private AuthenticationMapper x509Mapper;

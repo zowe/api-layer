@@ -37,6 +37,7 @@ import org.zowe.apiml.util.config.SslContext;
 import javax.net.ssl.SSLException;
 
 import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.when;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -87,8 +88,9 @@ class AttlsConfigTest {
                     given()
                         .config(SslContext.clientCertUnknownUser)
                         .header("Content-type", "application/json")
+                    when()
                         .get(getUri("https"))
-                        .then()
+                    .then()
                         .statusCode(HttpStatus.FORBIDDEN.value());
                     fail("");
                 } catch (Exception e) {
@@ -104,8 +106,9 @@ class AttlsConfigTest {
                 given()
                     .config(SslContext.clientCertUnknownUser)
                     .header("Content-type", "application/json")
+                .when()
                     .get(getUri("http"))
-                    .then()
+                .then()
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .body(containsString("org.zowe.apiml.common.internalServerError"));
 

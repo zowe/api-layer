@@ -45,7 +45,7 @@ import static org.mockito.Mockito.verify;
 )
 @DirtiesContext
 @ActiveProfiles("AttlsConfigTestCatalog")
-public class AttlsConfigTest extends ApiCatalogFunctionalTest {
+class AttlsConfigTest extends ApiCatalogFunctionalTest {
 
     @Nested
     class GivenAttlsModeEnabled {

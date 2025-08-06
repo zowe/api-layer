@@ -57,7 +57,7 @@ class AttlsConfigTest extends DiscoveryFunctionalTest {
         }
 
         @Test
-        void whenContextLoads_RequestFailsWithHttps() {
+        void whenContextLoads_requestFailsWithHttps() {
             try {
                 given()
                     .log().all()
@@ -92,5 +92,7 @@ class AttlsConfigTest extends DiscoveryFunctionalTest {
                 .body(containsString("Connection is not secure."))
                 .body(containsString("AttlsContext.getStatConn"));
         }
+
     }
+
 }
