@@ -30,8 +30,8 @@ import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -48,9 +48,10 @@ class ServiceCorsUpdaterTest {
     private static final String SERVICE_ID = "myserviceid";
     private static final String APIML_ID = "apimlid";
 
-    private CorsUtils corsUtils = spy(new CorsUtils(true, null, Collections.emptyList()));
+    private CorsUtils corsUtils = spy(new CorsUtils(true, List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS")));
 
-    @Mock private ReactiveDiscoveryClient discoveryClient;
+    @Mock
+    private ReactiveDiscoveryClient discoveryClient;
 
     private ServiceCorsUpdater serviceCorsUpdater;
 

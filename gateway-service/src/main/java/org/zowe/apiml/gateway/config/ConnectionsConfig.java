@@ -84,8 +84,8 @@ public class ConnectionsConfig {
 
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
-    @Value("${apiml.service.corsAllowedMethods:#{null}}")
-    private String corsAllowedMethods;
+    @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
+    private List<String> corsAllowedMethods;
     private final ApplicationContext context;
     private final HttpConfig config;
     private static final ApimlLogger apimlLog = ApimlLogger.of(ConnectionsConfig.class, YamlMessageServiceInstance.getInstance());
@@ -270,7 +270,7 @@ public class ConnectionsConfig {
 
     @Bean
     CorsUtils corsUtils() {
-        return new CorsUtils(corsEnabled, corsAllowedMethods, null);
+        return new CorsUtils(corsEnabled, corsAllowedMethods);
     }
 
     @Bean
