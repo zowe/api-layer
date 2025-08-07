@@ -18,6 +18,8 @@ import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,6 +28,8 @@ import static org.mockito.Mockito.*;
 class CorsUtilsTest {
 
     Map<String, String> metadata = new HashMap<>();
+    List<String> defaultCorsMethods = Stream.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS").collect(Collectors.toList());
+
 
     @BeforeEach
     void setup() {
@@ -35,7 +39,7 @@ class CorsUtilsTest {
 
     @Nested
     class GivenCorsEnabled {
-        CorsUtils corsUtils = new CorsUtils(true, Collections.emptyList());
+        CorsUtils corsUtils = new CorsUtils(true, defaultCorsMethods, Collections.emptyList());
 
         @Test
         void registerDefaultConfig() {
@@ -43,7 +47,7 @@ class CorsUtilsTest {
                     assertTrue(path.contains("gateway"));
                     assertNotNull(configuration.getAllowedHeaders());
                     assertEquals(1, configuration.getAllowedHeaders().size());
-                    assertEquals(7, configuration.getAllowedMethods().size());
+                    assertEquals(defaultCorsMethods.size(), configuration.getAllowedMethods().size());
                 }
             );
         }
@@ -55,7 +59,7 @@ class CorsUtilsTest {
                     assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
                     assertNotNull(configuration.getAllowedHeaders());
                     assertEquals(1, configuration.getAllowedHeaders().size());
-                    assertEquals(7, configuration.getAllowedMethods().size());
+                    assertEquals(defaultCorsMethods.size(), configuration.getAllowedMethods().size());
                 }
             );
 
@@ -81,7 +85,7 @@ class CorsUtilsTest {
                     assertTrue(configuration.getAllowedOrigins().contains("https://localhost:3000"));
                     assertEquals(3, configuration.getAllowedOrigins().size());
                     assertEquals(1, configuration.getAllowedHeaders().size());
-                    assertEquals(7, configuration.getAllowedMethods().size());
+                    assertEquals(defaultCorsMethods.size(), configuration.getAllowedMethods().size());
                 }
             );
         }
@@ -90,7 +94,7 @@ class CorsUtilsTest {
 
     @Nested
     class GivenCorsDisabled {
-        CorsUtils corsUtils = new CorsUtils(false, Collections.emptyList());
+        CorsUtils corsUtils = new CorsUtils(false, null, Collections.emptyList());
 
         @Test
         void registerEmptyDefaultConfig() {
@@ -117,7 +121,7 @@ class CorsUtilsTest {
         @Test
         void setAllowedOrigins() {
             List<String> allowedOrigins = Arrays.asList("a");
-            CorsUtils corsUtils = new CorsUtils(true, allowedOrigins);
+            CorsUtils corsUtils = new CorsUtils(true, defaultCorsMethods, allowedOrigins);
             BiConsumer<String, CorsConfiguration> pathMapper = mock(BiConsumer.class);
             corsUtils.registerDefaultCorsConfiguration(pathMapper);
 
