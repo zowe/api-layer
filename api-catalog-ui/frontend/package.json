@@ -39,7 +39,7 @@
         "react-error-boundary": "5.0.0",
         "react-hook-form": "7.62.0",
         "react-redux": "9.2.0",
-        "react-router": "7.6.3",
+        "react-router": "7.8.0",
         "react-toastify": "10.0.6",
         "redux": "5.0.1",
         "redux-catch": "1.3.1",
@@ -49,7 +49,7 @@
         "redux-persist-transform-filter": "0.0.22",
         "redux-thunk": "3.1.0",
         "rxjs": "7.8.2",
-        "sass": "1.89.2",
+        "sass": "1.90.0",
         "stream": "0.0.3",
         "swagger-ui-react": "5.27.1",
         "url": "0.11.4",
@@ -113,7 +113,7 @@
         "eslint-plugin-header": "3.1.1",
         "eslint-plugin-import": "2.32.0",
         "eslint-plugin-jsx-a11y": "6.10.2",
-        "eslint-plugin-prettier": "5.5.3",
+        "eslint-plugin-prettier": "5.5.4",
         "eslint-plugin-react": "7.37.5",
         "express": "4.21.2",
         "globals": "15.15.0",
@@ -142,7 +142,7 @@
         "start-server-and-test": "2.0.13",
         "tmpl": "1.0.5",
         "undici": "6.19.8",
-        "yaml": "2.8.0"
+        "yaml": "2.8.1"
     },
     "overrides": {
         "nth-check": "2.1.1",
