@@ -12,7 +12,6 @@ package org.zowe.apiml.util;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.TriConsumer;
-import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Arrays;
@@ -24,19 +23,11 @@ import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 public class CorsUtils {
-    private static final List<String> allowedCorsHttpMethods;
     private final boolean corsEnabled;
+    private final List<String> allowedCorsHttpMethods;
     private final List<String> allowedOrigins;
     private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes.*.gateway\\S*");
-
     private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/*/*/gateway/**", "/gateway/*/*/**", "/gateway/version");
-
-    static {
-        allowedCorsHttpMethods = Collections.unmodifiableList(Arrays.asList(
-            HttpMethod.GET.name(), HttpMethod.HEAD.name(), HttpMethod.POST.name(),
-            HttpMethod.DELETE.name(), HttpMethod.PUT.name(), HttpMethod.OPTIONS.name()
-        ));
-    }
 
     public boolean isCorsEnabledForService(Map<String, String> metadata) {
         String isCorsEnabledForService = metadata.get("apiml.corsEnabled");
