@@ -14,6 +14,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.websocket.Endpoint;
 import jakarta.websocket.server.ServerEndpointConfig;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cloud.gateway.config.HttpClientProperties;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
@@ -35,7 +37,10 @@ import java.util.function.Supplier;
 
 import static reactor.core.publisher.Mono.*;
 
+@RequiredArgsConstructor
 public class ApimlRequestUpgradeStrategy extends StandardWebSocketUpgradeStrategy {
+
+    private final HttpClientProperties httpClientProperties;
 
     @Override
     protected void upgradeHttpToWebSocket(HttpServletRequest request, HttpServletResponse response,
@@ -62,8 +67,14 @@ public class ApimlRequestUpgradeStrategy extends StandardWebSocketUpgradeStrateg
             .then(deferContextual(contextView -> {
                 Endpoint endpoint = new StandardWebSocketHandlerAdapter(
                     ContextWebSocketHandler.decorate(handler, contextView),
-                    session -> new ApimlWebSocketSession(session, handshakeInfo, bufferFactory));
-
+                    session -> {
+                        //Set the gateway outbound frame limit for websockets
+                        if (httpClientProperties.getWebsocket().getMaxFramePayloadLength() != null) {
+                            session.setMaxTextMessageBufferSize(httpClientProperties.getWebsocket().getMaxFramePayloadLength());
+                            session.setMaxBinaryMessageBufferSize(httpClientProperties.getWebsocket().getMaxFramePayloadLength());
+                        }
+                        return new ApimlWebSocketSession(session, handshakeInfo, bufferFactory);
+                    });
                 String requestURI = servletRequest.getRequestURI();
                 var config = new ApimlServerEndpointConfig(requestURI, endpoint);
                 config.setSubprotocols(subProtocol != null ?
