@@ -328,6 +328,9 @@ jobs:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
+                    SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
 #                needs to run in isolation from another DS for multi-tenancy setup

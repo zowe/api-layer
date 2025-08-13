@@ -61,6 +61,8 @@ class RouteLocatorTest {
             Arrays.asList(PRODUCERS),
             Arrays.asList(SCHEME_HANDLER_FILTERS)
         ));
+        routeLocator.servicesToLimitRequestRateProperty = Collections.emptyList();
+        routeLocator.servicesToDisableRetryProperty = Collections.emptyList();
         routeLocator.afterPropertiesSet();
     }
 
@@ -226,6 +228,8 @@ class RouteLocatorTest {
 
             @BeforeAll
             static void init() {
+                routeLocator.servicesToLimitRequestRateProperty = Collections.emptyList();
+                routeLocator.servicesToDisableRetryProperty = Collections.emptyList();
                 routeLocator.afterPropertiesSet();
             }
 
