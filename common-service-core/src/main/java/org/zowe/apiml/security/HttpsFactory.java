@@ -69,7 +69,6 @@ public class HttpsFactory {
             .disableAuthCaching()
             .setRedirectStrategy(new LaxRedirectStrategy())
             .build();
-
     }
 
     public ConnectionSocketFactory createSslSocketFactory() {

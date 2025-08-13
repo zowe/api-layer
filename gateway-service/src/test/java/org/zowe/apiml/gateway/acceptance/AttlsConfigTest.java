@@ -16,6 +16,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
 import org.apache.http.HttpStatus;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -65,7 +66,6 @@ class AttlsConfigTest {
     )
     @ActiveProfiles("attls")
     @DirtiesContext
-    // @Import(TestConfig.class)
     @SpringBootTest(
         classes = GatewayServiceApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -104,7 +104,7 @@ class AttlsConfigTest {
         }
 
         @Test
-        void requestWorksWithAttls() {
+        void requestFailsWithAttlsReasonWithHttp() {
             var logger = (Logger) LoggerFactory.getLogger(AttlsHttpHandler.class);
             logger.addAppender(mockedAppender);
             logger.setLevel(Level.ERROR);
@@ -128,8 +128,9 @@ class AttlsConfigTest {
         }
 
         @Test
-        void requestFailsWithAttls() {
-            // gateway does not use AttlsFilter?
+        void requestSuccessWithAttls_withoutNativeCodeCheck() {
+            doNothing().when(apimlTomcatCustomizer).customize(any());
+
         }
 
     }
@@ -148,7 +149,6 @@ class AttlsConfigTest {
             "server.ssl.keyStore="
         }
     )
-    // @Import(TestConfig.class)
     @ActiveProfiles("attls")
     @DirtiesContext
     @SpringBootTest(
@@ -166,8 +166,13 @@ class AttlsConfigTest {
         @Value("${apiml.service.hostname:localhost}")
         private String hostname;
 
-        // @Autowired
-        // private DiscoveryClient discoveryClient;
+        @MockitoBean
+        private ApimlTomcatCustomizer apimlTomcatCustomizer;
+
+        @BeforeEach
+        void setUp() {
+            doNothing().when(apimlTomcatCustomizer).customize(any());
+        }
 
         @Test
         void whenNoKeystore_thenStartupSuccess() {

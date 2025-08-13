@@ -14,6 +14,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.SecurityUtils;
 import reactor.netty.http.client.HttpClient;
@@ -38,23 +39,23 @@ public class ConnectionUtil {
      * @return io.netty.handler.ssl.SslContext for http client.
      */
     public SslContext getSslContext(HttpConfig config, boolean setKeystore) throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException {
-        SslContextBuilder builder = SslContextBuilder.forClient();
+        var builder = SslContextBuilder.forClient();
 
-        KeyStore trustStore = SecurityUtils.loadKeyStore(
-            config.getTrustStoreType(), config.getTrustStorePath(), config.getTrustStorePassword());
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        var trustStore = SecurityUtils.loadKeyStore(config.getTrustStoreType(), config.getTrustStorePath(), config.getTrustStorePassword());
+        var trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(trustStore);
         builder.trustManager(trustManagerFactory);
 
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        var keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+
         if (setKeystore) {
             log.info("Loading keystore: {}: {}", config.getKeyStoreType(), config.getKeyStorePath());
-            KeyStore keyStore = SecurityUtils.loadKeyStore(
+            var keyStore = SecurityUtils.loadKeyStore(
                 config.getKeyStoreType(), config.getKeyStorePath(), config.getKeyStorePassword());
             keyManagerFactory.init(keyStore, config.getKeyStorePassword());
             builder.keyManager(x509KeyManagerSelectedAlias(config, keyManagerFactory));
         } else {
-            KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            var emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
             emptyKeystore.load(null, null);
             keyManagerFactory.init(emptyKeystore, null);
             builder.keyManager(keyManagerFactory);
@@ -68,7 +69,11 @@ public class ConnectionUtil {
     }
 
     public HttpClient getHttpClient(HttpConfig config, HttpClient httpClient, boolean useClientCert) throws UnrecoverableKeyException, CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
-        var sslContextBuilder = SslProvider.builder().sslContext(ConnectionUtil.getSslContext(config, useClientCert));
+        boolean loadServerKey = useClientCert && StringUtils.isNotBlank(config.getKeyStorePath());
+        if (!loadServerKey && config.isAttlsEnabled()) {
+            log.debug("");
+        }
+        var sslContextBuilder = SslProvider.builder().sslContext(ConnectionUtil.getSslContext(config, loadServerKey));
         if (!config.isNonStrictVerifySslCertificatesOfServices()) {
             sslContextBuilder.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
         }

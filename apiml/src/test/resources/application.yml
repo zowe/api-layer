@@ -134,3 +134,21 @@ spring:
         banner-mode: ${apiml.banner:"console"}
         web-application-type: reactive
         allow-bean-definition-overriding: true
+
+---
+spring.config.activate.on-profile: attls
+
+server:
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+    service:
+        scheme: http
+apiml:
+    service:
+        corsEnabled: true
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false

@@ -57,9 +57,9 @@ class ServiceCorsUpdaterTest {
     private UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         serviceCorsUpdater = new ServiceCorsUpdater(corsUtils, discoveryClient, mock(RoutePredicateHandlerMapping.class), mock(GlobalCorsProperties.class));
-        serviceCorsUpdater.initCorsConfigurationSource();
+        serviceCorsUpdater.afterPropertiesSet();
         urlBasedCorsConfigurationSource = spy((UrlBasedCorsConfigurationSource) ReflectionTestUtils.getField(serviceCorsUpdater, "urlBasedCorsConfigurationSource"));
         ReflectionTestUtils.setField(serviceCorsUpdater, "urlBasedCorsConfigurationSource", urlBasedCorsConfigurationSource);
     }
