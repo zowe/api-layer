@@ -59,7 +59,7 @@ dependencyResolutionManagement {
             }
             version('jbossLogging', '3.6.1.Final')
             version('jerseySun', '1.19.4')
-            version('jettyWebSocketClient', '12.0.23')
+            version('jettyWebSocketClient', '12.0.24')
             version('jettison', '1.5.4')
             //0.12.x version contains breaking changes
             version('jjwt', '0.12.6')
@@ -69,14 +69,14 @@ dependencyResolutionManagement {
             version('junitJupiter', '5.13.4')
             version('junitPlatform', '1.13.4')
             version('jxpath', '1.4.0')
-            version('lettuce', '6.7.1.RELEASE')
+            version('lettuce', '6.8.0.RELEASE')
             // force version in build.gradle file - compatibility with Slf4j
             version('log4j', '2.25.1')
             version('lombok', '1.18.38')
             version('netty', '4.2.3.Final')
             // netty reactor contains a bug: https://github.com/reactor/reactor-netty/issues/3559 > https://github.com/reactor/reactor-netty/pull/3581
             version('nettyReactor', '1.2.8')
-            version('nimbusJoseJwt', '10.4')
+            version('nimbusJoseJwt', '10.4.1')
             version('openApiDiff', '2.1.2')
             version('picocli', '4.7.7')
 
