@@ -69,7 +69,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private boolean nonStrictVerifySslCertificatesOfServices;
 
     @Bean
-    public WebSecurityCustomizer httpsWebSecurityCustomizer() {
+    WebSecurityCustomizer httpsWebSecurityCustomizer() {
         String[] noSecurityAntMatchers = {
             "/eureka/css/**",
             "/eureka/js/**",
@@ -92,7 +92,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
      */
     @Bean
     @Order(1)
-    public SecurityFilterChain errorHandler(HttpSecurity http) throws Exception {
+    SecurityFilterChain errorHandler(HttpSecurity http) throws Exception {
         return baseConfigure(http.securityMatcher("/error")).build();
     }
 
@@ -101,7 +101,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
      */
     @Bean
     @Order(3)
-    public SecurityFilterChain basicAuthOrTokenFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain basicAuthOrTokenFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
             "/application/**",
             "/*"
@@ -124,7 +124,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
      */
     @Bean
     @Order(2)
-    public SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatcher("/eureka/**"));
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
             http.x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
@@ -146,7 +146,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
      */
     @Bean
     @Order(4)
-    public SecurityFilterChain basicAuthOrTokenOrCertFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain basicAuthOrTokenOrCertFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatcher("/discovery/**"))
             .authenticationProvider(gatewayLoginProvider)
             .authenticationProvider(gatewayTokenProvider)

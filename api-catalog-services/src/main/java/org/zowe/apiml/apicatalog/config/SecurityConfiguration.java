@@ -118,7 +118,7 @@ public class SecurityConfiguration {
     @Bean
     @Order(1)
     @ConditionalOnMissingBean(name = "modulithConfig")
-    public SecurityWebFilterChain loginSecurityWebFilterChain(ServerHttpSecurity http, ServerAuthenticationEntryPoint serverAuthenticationEntryPoint) {
+    SecurityWebFilterChain loginSecurityWebFilterChain(ServerHttpSecurity http, ServerAuthenticationEntryPoint serverAuthenticationEntryPoint) {
         return baseConfiguration(http, serverAuthenticationEntryPoint)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, getFullUrls(authConfigurationProperties.getServiceLoginEndpoint())))
             .authorizeExchange(exchange -> exchange
@@ -130,7 +130,7 @@ public class SecurityConfiguration {
     @Bean
     @Order(2)
     @ConditionalOnMissingBean(name = "modulithConfig")
-    public SecurityWebFilterChain logoutSecurityWebFilterChain(ServerHttpSecurity http, ServerAuthenticationEntryPoint serverAuthenticationEntryPoint) {
+    SecurityWebFilterChain logoutSecurityWebFilterChain(ServerHttpSecurity http, ServerAuthenticationEntryPoint serverAuthenticationEntryPoint) {
         return baseConfiguration(http, serverAuthenticationEntryPoint)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.POST, getFullUrls(authConfigurationProperties.getServiceLogoutEndpoint())))
             .logout(logout -> logout
@@ -145,7 +145,7 @@ public class SecurityConfiguration {
      */
     @Bean
     @Order(3)
-    public SecurityWebFilterChain basicAuthOrTokenOrCertApiDocFilterChain(
+    SecurityWebFilterChain basicAuthOrTokenOrCertApiDocFilterChain(
         ServerHttpSecurity http,
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
     ) {
@@ -168,7 +168,7 @@ public class SecurityConfiguration {
 
     @Bean
     @Order(4)
-    public SecurityWebFilterChain healthEndpointSecurityWebFilterChain(
+    SecurityWebFilterChain healthEndpointSecurityWebFilterChain(
         ServerHttpSecurity http,
         @Value("${apiml.health.protected:true}") boolean isHealthEndpointProtected,
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
@@ -192,7 +192,7 @@ public class SecurityConfiguration {
 
     @Bean
     @Order(5)
-    public SecurityWebFilterChain basicAuthOrTokenAllEndpointsFilterChain(
+    SecurityWebFilterChain basicAuthOrTokenAllEndpointsFilterChain(
         ServerHttpSecurity http,
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
     ) {
@@ -210,7 +210,7 @@ public class SecurityConfiguration {
      */
     @Bean
     @Order(6)
-    public SecurityWebFilterChain webSecurityCustomizer(
+    SecurityWebFilterChain webSecurityCustomizer(
         ServerHttpSecurity http,
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
     ) {
@@ -360,12 +360,12 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public ReactiveAuthenticationManager reactiveAuthenticationManager() {
+    ReactiveAuthenticationManager reactiveAuthenticationManager() {
         return Mono::just;
     }
 
     @Bean
-    public ServerAuthenticationEntryPoint serverAuthenticationEntryPoint(
+    ServerAuthenticationEntryPoint serverAuthenticationEntryPoint(
         MessageService messageService,
         ObjectMapper mapper
     ) {

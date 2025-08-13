@@ -59,11 +59,13 @@ spring:
 
 logging:
     level:
+        ROOT: DEBUG
+        org.springframework: DEBUG
+        org.springframework.web: TRACE
         org.springframework.cloud.gateway: DEBUG
-        reactor.netty: DEBUG
         org.springframework.security: DEBUG
         org.springframework.beans: WARN
-
+        reactor.netty: DEBUG
 
 management:
     endpoint:

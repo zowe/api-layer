@@ -27,13 +27,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.filter.AttlsHttpHandler;
 import org.zowe.apiml.gateway.GatewayServiceApplication;
-import org.zowe.apiml.util.config.TestConfig;
+import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
 
 import javax.net.ssl.SSLException;
 
@@ -44,14 +44,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 
 @TestInstance(Lifecycle.PER_CLASS)
 class AttlsConfigTest {
 
-    private String getGatewayUrlWithPath(String scheme, String path) {
-        return "";
+    private String getGatewayUrlWithPath(String hostname, int port, String scheme, String path) {
+        return String.format("%s://%s:%d/%s", scheme, hostname, port, path);
     }
 
     @Nested
@@ -62,17 +64,19 @@ class AttlsConfigTest {
         }
     )
     @ActiveProfiles("attls")
-    @Import(TestConfig.class)
+    @DirtiesContext
+    // @Import(TestConfig.class)
     @SpringBootTest(
         classes = GatewayServiceApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
     class GivenAttlsProfile {
 
-        @Value("${apiml.service.hostname:localhost}")
-        String hostname;
         @LocalServerPort
-        int port;
+        private int port;
+
+        @Value("${apiml.service.hostname:localhost}")
+        private String hostname;
 
         @Mock
         private Appender<ILoggingEvent> mockedAppender;
@@ -80,13 +84,16 @@ class AttlsConfigTest {
         @Captor
         private ArgumentCaptor<LoggingEvent> loggingEventCaptor;
 
+        @MockitoBean
+        private ApimlTomcatCustomizer apimlTomcatCustomizer;
+
         @Test
         void whenContextloads_requestFailsWithHttps() {
             try {
                 given()
                     .log().all()
                 .when()
-                    .get(getGatewayUrlWithPath("https", "application/version"))
+                    .get(getGatewayUrlWithPath(hostname, port, "https", "application/version"))
                 .then()
                     .log().all()
                     .statusCode(SC_INTERNAL_SERVER_ERROR);
@@ -97,15 +104,18 @@ class AttlsConfigTest {
         }
 
         @Test
-        void requestFailsWithAttlsReasonWithHttp() {
+        void requestWorksWithAttls() {
             var logger = (Logger) LoggerFactory.getLogger(AttlsHttpHandler.class);
             logger.addAppender(mockedAppender);
             logger.setLevel(Level.ERROR);
 
+            // Prevent use of native code but verify it calls the customizer
+            doNothing().when(apimlTomcatCustomizer).customize(any());
+
             given()
                     .log().all()
                 .when()
-                    .get(getGatewayUrlWithPath("http", "application/version"))
+                    .get(getGatewayUrlWithPath(hostname, port, "http", "application/version"))
                 .then()
                     .log().all()
                     .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
@@ -115,6 +125,11 @@ class AttlsConfigTest {
                 assertThat(loggingEventCaptor.getAllValues())
                     .filteredOn(element -> element.getMessage().contains("Cannot verify AT-TLS status"))
                     .isNotEmpty();
+        }
+
+        @Test
+        void requestFailsWithAttls() {
+            // gateway does not use AttlsFilter?
         }
 
     }
@@ -133,8 +148,9 @@ class AttlsConfigTest {
             "server.ssl.keyStore="
         }
     )
-    @Import(TestConfig.class)
+    // @Import(TestConfig.class)
     @ActiveProfiles("attls")
+    @DirtiesContext
     @SpringBootTest(
         classes = GatewayServiceApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -144,6 +160,12 @@ class AttlsConfigTest {
         @MockitoBean
         private AttlsHttpHandler attlsHttpHandler;
 
+        @LocalServerPort
+        private int port;
+
+        @Value("${apiml.service.hostname:localhost}")
+        private String hostname;
+
         // @Autowired
         // private DiscoveryClient discoveryClient;
 
@@ -152,7 +174,7 @@ class AttlsConfigTest {
             given()
                 .log().all()
             .when()
-                .get(getGatewayUrlWithPath("http", "application/version"))
+                .get(getGatewayUrlWithPath(hostname, port, "http", "application/version"))
             .then()
                 .statusCode(SC_OK);
         }
