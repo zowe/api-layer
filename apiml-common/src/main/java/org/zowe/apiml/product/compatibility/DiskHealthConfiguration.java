@@ -15,6 +15,7 @@ import org.springframework.boot.actuate.autoconfigure.system.DiskSpaceHealthIndi
 import org.springframework.boot.actuate.system.DiskSpaceHealthIndicator;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 //import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -24,6 +25,7 @@ import org.springframework.context.annotation.Primary;
  */
 @Configuration
 @AutoConfigureBefore(DiskSpaceHealthContributorAutoConfiguration.class)
+@EnableConfigurationProperties(DiskSpaceHealthIndicatorProperties.class)
 public class DiskHealthConfiguration {
     /**
      * Replace the default DiskSpaceHealthIndicator with our custom implementation
