@@ -282,7 +282,7 @@ public class HttpConfig implements InitializingBean {
     }
 
     @Bean
-    SSLContext secureSslContext() {
+    public SSLContext secureSslContext() {
         return secureSslContext;
     }
 

@@ -87,7 +87,7 @@ class AttlsConfigTest {
                 try {
                     given()
                         .config(SslContext.clientCertUnknownUser)
-                        .header("Content-type", "application/json")
+                        .header("Content-type", "application/json");
                     when()
                         .get(getUri("https"))
                     .then()
