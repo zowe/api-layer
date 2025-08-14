@@ -51,11 +51,17 @@ jobs:
                     SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
                     SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+                    APIML_GATEWAY_SERVICESTODISABLERETRY: discoverableclient
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+                #The memory is constrained to test large file upload memory issues (#4265)
+                #If the container runs oom, it is hard killed without printing any reasonable message in the log
+                options: --memory 640m --memory-swap 640m
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+                    SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
+                    SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -350,9 +356,11 @@ jobs:
                     SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
                     SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+                    APIML_GATEWAY_SERVICESTODISABLERETRY: discoverableclient
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
                     EUREKA_CLIENT_INSTANCEINFOREPLICATIONINTERVALSECONDS: 1
                     EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS: 1
+                options: --memory 640m --memory-swap 640m
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
