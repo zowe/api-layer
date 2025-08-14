@@ -133,7 +133,8 @@ class AttlsConfigTest {
             "server.ssl.keyStorePassword=",
             "server.ssl.keyPassword=",
             "server.ssl.keyAlias=",
-            "server.ssl.keyStore="
+            "server.ssl.keyStore=",
+            "apiml.service.discoveryServiceUrls=http://localhost:10011/eureka/" // Caching-service loads onboarding-enabler, which validates SSL configuration for Eureka client if it starts in https
         }
     )
     @ActiveProfiles("attls")
