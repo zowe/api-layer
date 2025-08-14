@@ -73,6 +73,7 @@ class ConnectionUtilTest {
                 assertTrue(m.getCertificateChain("localhost").length > 0);
                 return true;
             }));
+
         }
 
     }
@@ -92,6 +93,7 @@ class ConnectionUtilTest {
                 assertTrue(f.getKeyManagers().length > 0);
                 return true;
             }));
+
         }
 
     }
@@ -109,6 +111,7 @@ class ConnectionUtilTest {
             verify(builder, times(1)).trustManager(any(TrustManagerFactory.class));
             verify(builder, times(1)).endpointIdentificationAlgorithm(isNull());
         }
+
     }
 
 }

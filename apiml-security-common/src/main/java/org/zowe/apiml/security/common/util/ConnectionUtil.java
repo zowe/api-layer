@@ -10,11 +10,11 @@
 
 package org.zowe.apiml.security.common.util;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.SecurityUtils;
 import reactor.netty.http.client.HttpClient;
@@ -24,12 +24,17 @@ import reactor.netty.tcp.SslProvider;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509KeyManager;
+
 import java.io.IOException;
 import java.net.Socket;
-import java.security.*;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import com.google.common.annotations.VisibleForTesting;
 
 @UtilityClass
 @Slf4j
@@ -69,11 +74,7 @@ public class ConnectionUtil {
     }
 
     public HttpClient getHttpClient(HttpConfig config, HttpClient httpClient, boolean useClientCert) throws UnrecoverableKeyException, CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
-        boolean loadServerKey = useClientCert && StringUtils.isNotBlank(config.getKeyStorePath());
-        if (!loadServerKey && config.isAttlsEnabled()) {
-            log.debug("");
-        }
-        var sslContextBuilder = SslProvider.builder().sslContext(ConnectionUtil.getSslContext(config, loadServerKey));
+        var sslContextBuilder = SslProvider.builder().sslContext(ConnectionUtil.getSslContext(config, useClientCert));
         if (!config.isNonStrictVerifySslCertificatesOfServices()) {
             sslContextBuilder.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
         }

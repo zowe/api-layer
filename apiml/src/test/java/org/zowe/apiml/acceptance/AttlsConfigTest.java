@@ -18,7 +18,6 @@ import ch.qos.logback.core.Appender;
 import com.netflix.discovery.shared.Applications;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -76,7 +75,6 @@ class AttlsConfigTest {
         classes = ApimlApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
-    @Disabled
     class GivenAttlsProfile {
 
         @LocalServerPort
