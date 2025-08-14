@@ -39,6 +39,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.server.reactive.HttpHandler;
@@ -46,12 +47,18 @@ import org.springframework.http.server.reactive.TomcatHttpHandlerAdapter;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.context.ServletContextAware;
+import org.zowe.apiml.apicatalog.ApiCatalogServiceAvailableEvent;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
+import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.filter.PreFluxFilter;
+import org.zowe.apiml.gateway.services.ServicesInfoService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.services.BasicInfoService;
+import org.zowe.apiml.services.ServiceInfo;
+import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import reactor.core.publisher.Flux;
 
@@ -60,10 +67,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
+import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
+
 @EnableScheduling
 @Configuration
 @RequiredArgsConstructor
 @EnableConfigurationProperties
+@DependsOn(value = {"gatewayHealthIndicator"})
 @Slf4j
 public class ModulithConfig {
 
@@ -73,6 +84,7 @@ public class ModulithConfig {
     private final CatalogEurekaInstanceConfigBean catalogEurekaInstanceConfigBean;
     private final EurekaClientConfig eurekaConfig;
     private final CachingServiceEurekaInstanceConfigBean cachingServiceEurekaInstanceConfigBean;
+    private final ApplicationEventPublisher eventPublisher;
 
     private final Timer timer = new Timer("PeerReplicated-StaticServices");
 
@@ -97,12 +109,12 @@ public class ModulithConfig {
 
     private InstanceInfo getInstanceInfo(String serviceId) {
         var leaseInfo = LeaseInfo.Builder.newBuilder()
-                .setDurationInSecs(Integer.MAX_VALUE)
-                .setRegistrationTimestamp(System.currentTimeMillis())
-                .setRenewalTimestamp(System.currentTimeMillis())
-                .setRenewalIntervalInSecs(Integer.MAX_VALUE)
-                .setServiceUpTimestamp(System.currentTimeMillis())
-                .build();
+            .setDurationInSecs(Integer.MAX_VALUE)
+            .setRegistrationTimestamp(System.currentTimeMillis())
+            .setRenewalTimestamp(System.currentTimeMillis())
+            .setRenewalIntervalInSecs(Integer.MAX_VALUE)
+            .setServiceUpTimestamp(System.currentTimeMillis())
+            .build();
 
         var scheme = https ? "https" : "http";
 
@@ -116,31 +128,31 @@ public class ModulithConfig {
         String homePagePath = metadata.getOrDefault("apiml.homePagePath", "/");
 
         return InstanceInfo.Builder.newBuilder()
-                .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
-                .setAppName(serviceId)
-                .setHostName(hostname)
-                .setHomePageUrl(null, String.format("%s://%s:%d%s", scheme, hostname, port, homePagePath))
-                .setStatus(InstanceInfo.InstanceStatus.UP)
-                .setIPAddr(ipAddress)
-                .setPort(port)
-                .setSecurePort(port)
-                .enablePort(InstanceInfo.PortType.SECURE, https)
-                .enablePort(InstanceInfo.PortType.UNSECURE, !https)
-                .setVIPAddress(serviceId)
-                .setDataCenterInfo(() -> DataCenterInfo.Name.MyOwn)
-                .setLeaseInfo(leaseInfo)
-                .setLastUpdatedTimestamp(System.currentTimeMillis())
-                .setMetadata(metadata)
-                .setVIPAddress(serviceId)
-                .build();
+            .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
+            .setAppName(serviceId)
+            .setHostName(hostname)
+            .setHomePageUrl(null, String.format("%s://%s:%d%s", scheme, hostname, port, homePagePath))
+            .setStatus(InstanceInfo.InstanceStatus.UP)
+            .setIPAddr(ipAddress)
+            .setPort(port)
+            .setSecurePort(port)
+            .enablePort(InstanceInfo.PortType.SECURE, https)
+            .enablePort(InstanceInfo.PortType.UNSECURE, !https)
+            .setVIPAddress(serviceId)
+            .setDataCenterInfo(() -> DataCenterInfo.Name.MyOwn)
+            .setLeaseInfo(leaseInfo)
+            .setLastUpdatedTimestamp(System.currentTimeMillis())
+            .setMetadata(metadata)
+            .setVIPAddress(serviceId)
+            .build();
     }
 
-    private ApimlInstanceRegistry getRegistry() {
+    static ApimlInstanceRegistry getRegistry() {
         return Optional.ofNullable(EurekaServerContextHolder.getInstance())
-                .map(EurekaServerContextHolder::getServerContext)
-                .map(EurekaServerContext::getRegistry)
-                .map(ApimlInstanceRegistry.class::cast)
-                .orElse(null);
+            .map(EurekaServerContextHolder::getServerContext)
+            .map(EurekaServerContext::getRegistry)
+            .map(ApimlInstanceRegistry.class::cast)
+            .orElse(null);
     }
 
     @PostConstruct
@@ -158,6 +170,7 @@ public class ModulithConfig {
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationStart() {
         log.info("Initialize timer for static services peer-replicated heartbeats");
+        eventPublisher.publishEvent(new ApiCatalogServiceAvailableEvent(new Object()));
 
         // This timer calls Eureka registry's peerReplicate method to accumulate all heartbeats of statically-onboarded services once
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -179,11 +192,11 @@ public class ModulithConfig {
     @Scheduled(initialDelay = 3000, fixedRate = 20_000) // TODO find better solution but DON'T JUST REMOVE!
     public void periodicJwtInit() {
         var jwtSec = applicationContext.getBean(JwtSecurity.class);
-        if (!jwtSec.getZosmfListener().isZosmfReady()) {
+        var providers = applicationContext.getBean(Providers.class);
+        if (providers.isZosfmUsed() && !jwtSec.getZosmfListener().isZosmfReady()) {
             jwtSec.getZosmfListener().getZosmfRegisteredListener().onEvent(new CacheRefreshedEvent());
         }
     }
-
 
     @Bean
     ReactiveDiscoveryClient registryReactiveDiscoveryClient(DiscoveryClient registryDiscoveryClient) {
@@ -225,12 +238,12 @@ public class ModulithConfig {
                     return Collections.emptyList();
                 }
                 return Optional.ofNullable(registry.getApplication(StringUtils.upperCase(serviceId)))
-                        .map(Application::getInstances)
-                        .orElse(Collections.emptyList())
-                        .stream()
-                        .map(EurekaServiceInstance::new)
-                        .map(ServiceInstance.class::cast)
-                        .toList();
+                    .map(Application::getInstances)
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .map(EurekaServiceInstance::new)
+                    .map(ServiceInstance.class::cast)
+                    .toList();
             }
 
             @Override
@@ -240,19 +253,21 @@ public class ModulithConfig {
                     return Collections.emptyList();
                 }
                 return registry.getApplications().getRegisteredApplications()
-                        .stream()
-                        .map(Application::getName)
-                        .distinct()
-                        .toList();
+                    .stream()
+                    .map(Application::getName)
+                    .distinct()
+                    .toList();
             }
         };
     }
 
     @Bean
+    @Primary
     MessageService messageService() {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/utility-log-messages.yml");
         messageService.loadMessages("/common-log-messages.yml");
+        messageService.loadMessages("/security-common-log-messages.yml");
 
         messageService.loadMessages("/discovery-log-messages.yml");
         messageService.loadMessages("/gateway-log-messages.yml");
@@ -265,11 +280,33 @@ public class ModulithConfig {
     }
 
     @Bean
+    public BasicInfoService basicInfoService(DiscoveryClient discoveryClient, EurekaMetadataParser eurekaMetadataParser) {
+
+        return new BasicInfoService(null, eurekaMetadataParser) {
+            @Override
+            public List<ServiceInfo> getServicesInfo() {
+                var serviceInfos = new ArrayList<ServiceInfo>();
+                for (var serviceId : discoveryClient.getServices()) {
+                    var instances = discoveryClient.getInstances(serviceId);
+                    var instanceInfos = ServicesInfoService.extractInstanceInfo(instances);
+                    serviceInfos.add(ServiceInfo.builder()
+                        .serviceId(serviceId)
+                        .status(getStatus(instanceInfos))
+                        .apiml(getApiml(instanceInfos))
+                        .instances(getInstances(instanceInfos))
+                        .build());
+                }
+                return serviceInfos;
+            }
+        };
+    }
+
+    @Bean
     @Primary
     TomcatReactiveWebServerFactory tomcatReactiveWebServerWithFiltersFactory(
-            HttpHandler httpHandler,
-            List<PreFluxFilter> preFluxFilters,
-            List<ServletContextAware> servletContextAwareListeners) {
+        HttpHandler httpHandler,
+        List<PreFluxFilter> preFluxFilters,
+        List<ServletContextAware> servletContextAwareListeners) {
 
         return new TomcatReactiveWebServerFactory() {
             @Override
@@ -296,13 +333,13 @@ public class ModulithConfig {
      */
     @Bean
     WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> internalPortCustomizer(
-            @Value("${apiml.internal-discovery.port:10011}") int internalDiscoveryPort) {
+        @Value("${apiml.internal-discovery.port:10011}") int internalDiscoveryPort) {
         return factory -> {
             var connector = new Connector();
 
             try {
                 Method method = TomcatReactiveWebServerFactory.class.getDeclaredMethod("customizeConnector",
-                        Connector.class);
+                    Connector.class);
                 method.setAccessible(true);
                 method.invoke(factory, connector);
             } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
@@ -322,7 +359,7 @@ public class ModulithConfig {
         private final FilterChain filterChain;
 
         public ServletWithFilters(HttpHandler httpHandler, TomcatHttpHandlerAdapter servlet,
-                Collection<? extends Filter> filters) {
+                                  Collection<? extends Filter> filters) {
             super(httpHandler);
             this.servlet = servlet;
 

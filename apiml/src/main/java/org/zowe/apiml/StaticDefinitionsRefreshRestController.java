@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.discovery.staticdef.StaticRegistrationResult;
+import org.zowe.apiml.product.discovery.StaticRegistrationResult;
 import org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;

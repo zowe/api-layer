@@ -11,9 +11,6 @@
 package org.zowe.apiml.apicatalog.swagger;
 
 import com.netflix.appinfo.InstanceInfo;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,8 +24,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.ExchangeFunction;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.exceptions.ApiVersionNotFoundException;
 import org.zowe.apiml.apicatalog.model.ApiDocInfo;
@@ -37,7 +38,6 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
-import org.zowe.apiml.util.HttpClientMockHelper;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.apache.hc.core5.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -84,19 +86,24 @@ class ApiDocServiceTest {
         private ApimlLogger apimlLogger;
 
         @Mock
-        private CloseableHttpClient httpClient;
+        private ExchangeFunction exchangeFunction;
 
         @Mock
-        private CloseableHttpResponse response;
+        private ClientResponse clientResponse;
+
+        private WebClient webClient;
 
         private AtomicReference<ApiInfo> lastApiInfo = new AtomicReference<>();
 
         @BeforeEach
         void setup() {
             lastApiInfo.set(null);
+            webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
+            doReturn(Mono.just(clientResponse)).when(exchangeFunction).exchange(any());
+            lenient().doReturn(Mono.empty()).when(clientResponse).releaseBody();
+            lenient().doReturn(Mono.empty()).when(clientResponse).bodyToMono(String.class);
 
-            HttpClientMockHelper.mockExecuteWithResponse(httpClient, response);
-            var apiDocRetrievalServiceRest = new ApiDocRetrievalServiceRest(httpClient);
+            var apiDocRetrievalServiceRest = new ApiDocRetrievalServiceRest(webClient);
             apiDocService = new ApiDocService(
                 discoveryClient,
                 new GatewayClient(GW_SERVICE_ADDRESS),
@@ -129,7 +136,8 @@ class ApiDocServiceTest {
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(Collections.singletonList(getStandardInstance(getStandardMetadata(), true)));
 
-                HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
+                doReturn(HttpStatusCode.valueOf(SC_OK)).when(clientResponse).statusCode();
+                doReturn(Mono.just(responseBody)).when(clientResponse).bodyToMono(String.class);
 
                 var elapsed = StepVerifier.create(apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V))
                     .assertNext(actualApiDoc -> {
@@ -158,16 +166,14 @@ class ApiDocServiceTest {
 
                 @Test
                 void givenServerErrorWhenRequestingSwaggerUrl() {
-                    String responseBody = "Server not found";
-
                     when(discoveryClient.getInstances(SERVICE_ID))
                         .thenReturn(Collections.singletonList(getStandardInstance(getStandardMetadata(), true)));
 
-                    HttpClientMockHelper.mockResponse(response, HttpStatus.SC_INTERNAL_SERVER_ERROR, responseBody);
+                    doReturn(HttpStatusCode.valueOf(SC_INTERNAL_SERVER_ERROR)).when(clientResponse).statusCode();
 
                     Mono<String> apiDocMono = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
                     Exception exception = assertThrows(ApiDocNotFoundException.class, apiDocMono::block);
-                    assertEquals("No API Documentation was retrieved due to " + SERVICE_ID + " server error: 500 " + responseBody, exception.getMessage());
+                    assertEquals("No API Documentation was retrieved due to " + SERVICE_ID + " server error: 500", exception.getMessage());
                 }
 
             }
@@ -210,7 +216,8 @@ class ApiDocServiceTest {
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(Collections.singletonList(getStandardInstance(getMetadataWithoutSwaggerUrl(), true)));
 
-                HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
+                doReturn(HttpStatusCode.valueOf(SC_OK)).when(clientResponse).statusCode();
+                doReturn(Mono.just(responseBody)).when(clientResponse).bodyToMono(String.class);
 
                 var elapsed = StepVerifier.create(apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V))
                     .assertNext(actualApiDoc -> {
@@ -234,7 +241,8 @@ class ApiDocServiceTest {
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(Collections.singletonList(getStandardInstance(getMetadataWithoutApiInfo(), true)));
 
-                HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
+                doReturn(HttpStatusCode.valueOf(SC_OK)).when(clientResponse).statusCode();
+                doReturn(Mono.just(responseBody)).when(clientResponse).bodyToMono(String.class);
 
                 var elapsed = StepVerifier.create(apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V))
                     .assertNext(actualApiDoc -> {
@@ -253,7 +261,8 @@ class ApiDocServiceTest {
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(Collections.singletonList(getStandardInstance(getMetadataWithoutApiInfo(), false)));
 
-                HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
+                doReturn(HttpStatusCode.valueOf(SC_OK)).when(clientResponse).statusCode();
+                doReturn(Mono.just(responseBody)).when(clientResponse).bodyToMono(String.class);
 
                 var elapsed = StepVerifier.create(apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V))
                     .assertNext(actualApiDoc -> {
@@ -271,7 +280,9 @@ class ApiDocServiceTest {
                     .thenReturn(Collections.singletonList(getStandardInstance(getStandardMetadata(), true)));
 
                 var exception = new IOException("Unable to reach the host");
-                HttpClientMockHelper.whenExecuteThenThrow(httpClient, exception);
+                doReturn(HttpStatusCode.valueOf(SC_INTERNAL_SERVER_ERROR)).when(clientResponse).statusCode();
+                doReturn(Mono.error(exception)).when(exchangeFunction).exchange(any());
+
                 Mono<String> apiDocMono = apiDocService.retrieveDefaultApiDoc(SERVICE_ID);
                 assertThrows(ApiDocNotFoundException.class, apiDocMono::block);
 
@@ -296,7 +307,8 @@ class ApiDocServiceTest {
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(Collections.singletonList(getStandardInstance(metadata, true)));
 
-                HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
+                doReturn(HttpStatusCode.valueOf(SC_OK)).when(clientResponse).statusCode();
+                doReturn(Mono.just(responseBody)).when(clientResponse).bodyToMono(String.class);
 
                 var elapsed = StepVerifier.create(apiDocService.retrieveDefaultApiDoc(SERVICE_ID))
                     .assertNext(actualApiDoc -> {
@@ -323,7 +335,8 @@ class ApiDocServiceTest {
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(Collections.singletonList(getStandardInstance(metadata, true)));
 
-                HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
+                doReturn(HttpStatusCode.valueOf(SC_OK)).when(clientResponse).statusCode();
+                doReturn(Mono.just(responseBody)).when(clientResponse).bodyToMono(String.class);
 
                 var elapsed = StepVerifier.create(apiDocService.retrieveDefaultApiDoc(SERVICE_ID))
                     .assertNext(actualApiDoc -> {
@@ -348,7 +361,8 @@ class ApiDocServiceTest {
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(Collections.singletonList(getStandardInstance(getMetadataWithMultipleApiInfoWithDifferentVersionFormat(), true)));
 
-                HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
+                doReturn(HttpStatusCode.valueOf(SC_OK)).when(clientResponse).statusCode();
+                doReturn(Mono.just(responseBody)).when(clientResponse).bodyToMono(String.class);
 
                 var elapsed = StepVerifier.create(apiDocService.retrieveDefaultApiDoc(SERVICE_ID))
                     .assertNext(actualApiDoc -> {
@@ -373,7 +387,8 @@ class ApiDocServiceTest {
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(Collections.singletonList(getStandardInstance(getMetadataWithoutApiInfo(), true)));
 
-                HttpClientMockHelper.mockResponse(response, HttpStatus.SC_OK, responseBody);
+                doReturn(HttpStatusCode.valueOf(SC_OK)).when(clientResponse).statusCode();
+                doReturn(Mono.just(responseBody)).when(clientResponse).bodyToMono(String.class);
 
                 var elapsed = StepVerifier.create(apiDocService.retrieveDefaultApiDoc(SERVICE_ID))
                     .assertNext(actualApiDoc -> {

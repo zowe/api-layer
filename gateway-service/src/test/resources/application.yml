@@ -16,6 +16,7 @@ apiml:
     gateway:
         serviceRegistryEnabled: false
         forwardClientCertEnabled: false
+    webClientConfig.enabled: true
 
 server:
     port: ${apiml.service.port}
@@ -33,6 +34,7 @@ server:
         clientKeyStore: ../keystore/client_cert/client-certs.p12
         clientCN: apimtst # case-sensitive
         clientKeyStorePassword: password
+    max-http-request-header-size: 48000
 
 #For testing forwarded headers with (un)trusted proxies
 test:

@@ -73,6 +73,7 @@ dependencies {
     implementation libs.spring.cloud.starter.eureka.client
     implementation libs.spring.doc.webflux.ui
     implementation libs.spring.retry
+    implementation libs.spring.cloud.gateway.server
 
     implementation libs.apache.velocity
 

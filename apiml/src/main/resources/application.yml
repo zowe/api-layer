@@ -245,6 +245,7 @@ apiml:
                 verify: https://${apiml.service.hostname}:10013/zss/saf/verify
     health:
         protected: true
+    webClientConfig.enabled: true
 server:
     http2:
         enabled: false
@@ -259,6 +260,7 @@ server:
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
+    max-http-request-header-size: 48000
 
 caching:
     storage:
