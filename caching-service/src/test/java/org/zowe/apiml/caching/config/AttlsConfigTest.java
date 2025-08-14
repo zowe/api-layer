@@ -45,39 +45,39 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 
-@SpringBootTest(
-    classes = CachingServiceApplication.class,
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-)
-@ActiveProfiles("AttlsConfigTestCachingService")
-@TestPropertySource(
-    properties = {
-        "server.attls.enabled=true",
-        "server.ssl.enabled=false",
-        "caching.storage.mode=inMemory"
-    }
-)
-@DirtiesContext
 @TestInstance(Lifecycle.PER_CLASS)
 class AttlsConfigTest {
 
-    @Value("${apiml.service.hostname:localhost}")
-    String hostname;
-    @LocalServerPort
-    int port;
+    private String getUri(String hostname, int port, String scheme) {
+        return String.format("%s://%s:%d/%s", scheme, hostname, port, "api/v1/cache");
+    }
 
+    @SpringBootTest(
+        classes = CachingServiceApplication.class,
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+    )
+    @ActiveProfiles("AttlsConfigTestCachingService")
+    @TestPropertySource(
+        properties = {
+            "server.attls.enabled=true",
+            "server.ssl.enabled=false",
+            "caching.storage.mode=inMemory"
+        }
+    )
+    @DirtiesContext
     @Nested
     class GivenAttlsModeEnabled {
+
+        @Value("${apiml.service.hostname:localhost}")
+        String hostname;
+        @LocalServerPort
+        int port;
 
         @Mock
         private Appender<ILoggingEvent> mockedAppender;
 
         @Captor
         private ArgumentCaptor<LoggingEvent> loggingEventCaptor;
-
-        private String getUri(String scheme) {
-            return String.format("%s://%s:%d/%s", scheme, hostname, port, "api/v1/cache");
-        }
 
         @Nested
         class WhenContextLoads {
@@ -89,7 +89,7 @@ class AttlsConfigTest {
                         .config(SslContext.clientCertUnknownUser)
                         .header("Content-type", "application/json");
                     when()
-                        .get(getUri("https"))
+                        .get(getUri(hostname, port, "https"))
                     .then()
                         .statusCode(HttpStatus.FORBIDDEN.value());
                     fail("");
@@ -107,7 +107,7 @@ class AttlsConfigTest {
                     .config(SslContext.clientCertUnknownUser)
                     .header("Content-type", "application/json")
                 .when()
-                    .get(getUri("http"))
+                    .get(getUri(hostname, port, "http"))
                 .then()
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .body(containsString("org.zowe.apiml.common.internalServerError"));
@@ -118,6 +118,62 @@ class AttlsConfigTest {
                     .isNotEmpty();
             }
 
+        }
+
+    }
+
+    /**
+     * This test intends to verify ICSF workaround (no keyring load)
+     */
+    @Nested
+    @TestPropertySource(
+        properties = {
+            "server.ssl.enabled=false",
+            "server.ssl.keyStoreType=",
+            "server.ssl.keyStorePassword=",
+            "server.ssl.keyPassword=",
+            "server.ssl.keyAlias=",
+            "server.ssl.keyStore="
+        }
+    )
+    @ActiveProfiles("attls")
+    @DirtiesContext
+    @SpringBootTest(
+        classes = CachingServiceApplication.class,
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+    )
+    class GivenSslDisabled {
+
+        @Value("${apiml.service.hostname:localhost}")
+        String hostname;
+        @LocalServerPort
+        int port;
+
+        @Mock
+        private Appender<ILoggingEvent> mockedAppender;
+
+        @Captor
+        private ArgumentCaptor<LoggingEvent> loggingEventCaptor;
+
+        @Test
+        void whenNoKeystore_thenStartupSuccess() {
+            var logger = (Logger) LoggerFactory.getLogger(AttlsHttpHandler.class);
+            logger.addAppender(mockedAppender);
+            logger.setLevel(Level.ERROR);
+
+            given()
+                .log().all()
+            .when()
+                .get(getUri(hostname, port, "http"))
+            .then()
+                .log().all()
+                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .body(containsString("org.zowe.apiml.common.internalServerError"));
+
+            verify(mockedAppender, atLeast(1)).doAppend(loggingEventCaptor.capture());
+            assertThat(loggingEventCaptor.getAllValues())
+                .filteredOn(element -> element.getMessage().contains("Cannot verify AT-TLS status"))
+                .isNotEmpty();
         }
 
     }

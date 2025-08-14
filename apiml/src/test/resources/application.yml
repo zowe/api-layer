@@ -1,6 +1,7 @@
 logging:
     level:
         ROOT: DEBUG
+        org.springframework: DEBUG
         org.zowe.apiml: DEBUG
 
 eureka:

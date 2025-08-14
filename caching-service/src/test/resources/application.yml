@@ -93,6 +93,11 @@ server:
         trustStore: ../keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
 
+logging:
+    level:
+        ROOT: DEBUG
+        org.springframework: DEBUG
+
 ---
 spring.config.activate.on-profile: attls
 
