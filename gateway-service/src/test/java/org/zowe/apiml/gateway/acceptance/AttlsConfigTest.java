@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -48,6 +49,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -127,12 +129,6 @@ class AttlsConfigTest {
                     .isNotEmpty();
         }
 
-        @Test
-        void requestSuccessWithAttls_withoutNativeCodeCheck() {
-            doNothing().when(apimlTomcatCustomizer).customize(any());
-
-        }
-
     }
 
     /**
@@ -182,6 +178,9 @@ class AttlsConfigTest {
                 .get(getGatewayUrlWithPath(hostname, port, "http", "application/version"))
             .then()
                 .statusCode(SC_OK);
+
+            verify(apimlTomcatCustomizer, times(1)).customize(any());
+            verify(attlsHttpHandler, times(1)).postProcessAfterInitialization(any(HttpHandler.class), any());
         }
 
     }

@@ -63,6 +63,12 @@ management:
                   DOWN: 503
                   PARTIAL: 200
             show-details: always
+
+logging:
+    level:
+        ROOT: DEBUG
+        org.springframework: DEBUG
+
 ---
 spring.config.activate.on-profile: https
 
@@ -82,3 +88,17 @@ server:
         keyStorePassword: password
         trustStore: ../keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
+
+---
+spring.config.activate.on-profile: attls
+
+server:
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+eureka:
+    instance:
+        nonSecurePortEnabled: true
+        securePortEnabled: false

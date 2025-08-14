@@ -189,9 +189,9 @@ management:
 
 logging:
     level:
-        ROOT: INFO
+        ROOT: DEBUG
         org.zowe.apiml: DEBUG
-        org.springframework: INFO
+        org.springframework: DEBUG
         org.apache: INFO
         org.apache.http: DEBUG
         com.netflix: INFO

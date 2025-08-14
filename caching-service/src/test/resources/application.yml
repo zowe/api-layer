@@ -92,3 +92,21 @@ server:
         keyStorePassword: password
         trustStore: ../keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
+
+---
+spring.config.activate.on-profile: attls
+
+server:
+    attls:
+        enabled: true
+    ssl:
+        enabled: false
+
+apiml:
+    service:
+        scheme: http
+
+eureka:
+    instance:
+        nonSecurePortEnabled: true
+        securePortEnabled: false
