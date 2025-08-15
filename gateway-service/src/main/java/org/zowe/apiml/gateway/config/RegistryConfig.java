@@ -43,7 +43,7 @@ public class RegistryConfig {
         if (externalUrl != null) {
             URI uri = new URI(externalUrl);
             return ServiceAddress.builder()
-                .scheme(uri.getScheme())
+                .scheme(clientAttlsEnabled ? "http" : uri.getScheme())
                 .hostname(uri.getHost() + ":" + uri.getPort())
                 .build();
         }

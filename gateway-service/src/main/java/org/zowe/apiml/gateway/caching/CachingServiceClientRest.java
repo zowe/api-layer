@@ -108,7 +108,7 @@ public class CachingServiceClientRest implements CachingServiceClient {
                     return handler.bodyToMono(ApiKeyValue.class);
                 } else if (handler.statusCode().is4xxClientError()) {
                     if (log.isTraceEnabled()) {
-                        log.trace("Key with ID {}not found. Status code from caching service: {}", key, handler.statusCode());
+                        log.trace("Key with ID {} not found. Status code from caching service: {}", key, handler.statusCode());
                     }
                     return empty();
                 } else {
