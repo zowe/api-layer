@@ -27,14 +27,14 @@ public class RegistryConfig {
 
     @Bean
     @ConditionalOnMissingBean
-    public BasicInfoService basicInfoService(EurekaClient eurekaClient, EurekaMetadataParser eurekaMetadataParser) {
+    BasicInfoService basicInfoService(EurekaClient eurekaClient, EurekaMetadataParser eurekaMetadataParser) {
         return new BasicInfoService(eurekaClient, eurekaMetadataParser);
     }
 
     @Bean
-    public ServiceAddress gatewayServiceAddress(
+    ServiceAddress gatewayServiceAddress(
         @Value("${apiml.service.externalUrl:#{null}}") String externalUrl,
-        @Value("${server.attls.enabled:false}") boolean attlsEnabled,
+        @Value("${server.attlsServer.enabled:false}") boolean serverAttlsEnabled,
         @Value("${server.ssl.enabled:true}") boolean sslEnabled,
         @Value("${apiml.service.hostname:localhost}") String hostname,
         @Value("${server.port}") int port
@@ -48,7 +48,7 @@ public class RegistryConfig {
         }
 
         return ServiceAddress.builder()
-            .scheme(attlsEnabled || sslEnabled ? "https" : "http")
+            .scheme(serverAttlsEnabled || sslEnabled ? "https" : "http")
             .hostname(hostname + ":" + port)
             .build();
     }

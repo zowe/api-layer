@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 eureka:
     dashboard:
         path: /eureka
@@ -357,19 +360,29 @@ logging:
         org.infinispan: DEBUG
 
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
 
-    service:
-        scheme: http
 apiml:
     service:
         corsEnabled: true
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+    service:
+        scheme: http
+
+apiml:
+    service:
         scheme: http
         nonSecurePortEnabled: true
         securePortEnabled: false
