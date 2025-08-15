@@ -305,6 +305,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.gateway.registry.enabled=${ZWE_configs_apiml_gateway_registry_enabled:-false} \
     -Dapiml.gateway.registry.metadata-key-allow-list=${ZWE_configs_gateway_registry_metadataKeyAllowList:-} \
     -Dapiml.gateway.servicesToLimitRequestRate=${ZWE_configs_apiml_gateway_servicesToLimitRequestRate:-} \
+    -Dapiml.gateway.servicesToDisableRetry=${ZWE_configs_apiml_gateway_servicesToDisableRetry:-} \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-true} \
     -Dapiml.httpclient.ssl.enabled-protocols=${client_enabled_protocols} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
