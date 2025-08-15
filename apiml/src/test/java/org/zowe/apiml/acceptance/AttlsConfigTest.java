@@ -63,13 +63,7 @@ class AttlsConfigTest {
     }
 
     @Nested
-    @TestPropertySource(
-        properties = {
-            "server.attls.enabled=true",
-            "server.ssl.enabled=false"
-        }
-    )
-    @ActiveProfiles("attls")
+    @ActiveProfiles({ "attlsClient", "attlsServer" })
     @DirtiesContext
     @SpringBootTest(
         classes = ApimlApplication.class,
@@ -141,7 +135,6 @@ class AttlsConfigTest {
     @Nested
     @TestPropertySource(
         properties = {
-            "server.ssl.enabled=false",
             "server.ssl.keyStoreType=",
             "server.ssl.keyStorePassword=",
             "server.ssl.keyPassword=",
@@ -149,7 +142,7 @@ class AttlsConfigTest {
             "server.ssl.keyStore="
         }
     )
-    @ActiveProfiles({ "attls", "ApimlModulithAcceptanceTest" })
+    @ActiveProfiles({ "attlsServer", "attlsClient", "ApimlModulithAcceptanceTest" })
     @AcceptanceTest
     class GivenSslDisabled {
 

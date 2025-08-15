@@ -110,9 +110,6 @@ public class HttpConfig implements InitializingBean {
     @Value("${apiml.connection.timeToLive:#{60000}}")
     private int timeToLive;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
-
     private final Timer connectionManagerTimer = new Timer("ApimlHttpClientConfiguration.connectionManagerTimer", true);
 
     private CloseableHttpClient secureHttpClient;

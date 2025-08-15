@@ -42,15 +42,6 @@ class AttlsConfigTest {
      * Simple Spring Context test to verify AT-TLS filter chain setup is in place with the right properties being sent
      */
     @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-    @TestPropertySource(
-        properties = {
-            "server.internal.ssl.enabled=false",
-            "server.attlsServer.enabled=true",
-            "server.attlsClient.enabled=true",
-            "server.ssl.enabled=false",
-            "server.service.scheme=http"
-        }
-    )
     @ActiveProfiles({ "attlsServer", "attlsClient" })
     @DirtiesContext
     @Nested
@@ -105,7 +96,6 @@ class AttlsConfigTest {
     @Nested
     @TestPropertySource(
         properties = {
-            "server.ssl.enabled=false",
             "server.ssl.keyStoreType=",
             "server.ssl.keyStorePassword=",
             "server.ssl.keyPassword=",

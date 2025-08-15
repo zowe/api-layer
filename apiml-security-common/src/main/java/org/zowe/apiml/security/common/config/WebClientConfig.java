@@ -46,8 +46,8 @@ public class WebClientConfig {
 
     private final HttpConfig config;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
 
     @Bean
     HttpClientFactory gatewayHttpClientFactory(
@@ -93,7 +93,7 @@ public class WebClientConfig {
 
     @Bean
     WebClient webClientClientCert(HttpClient httpClient) {
-        boolean isKeyLoadPrevented = StringUtils.isBlank(config.getKeyStorePath()) && isAttlsEnabled;
+        boolean isKeyLoadPrevented = StringUtils.isBlank(config.getKeyStorePath()) && isClientAttlsEnabled;
         return WebClient.builder()
             .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, !isKeyLoadPrevented)))
             .build();

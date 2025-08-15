@@ -78,10 +78,10 @@ management:
                 include: health,gateway
 
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
@@ -94,3 +94,21 @@ apiml:
         scheme: http
         nonSecurePortEnabled: true
         securePortEnabled: false
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
+apiml:
+    service:
+        discoveryServiceUrls: http://localhost:10011/eureka/
+
+eureka:
+    instance:
+        metadata-map:
+            apiml:
+                apiInfo[0]:
+                    swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/gateway/api-docs

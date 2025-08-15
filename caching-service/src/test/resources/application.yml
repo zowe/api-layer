@@ -99,17 +99,24 @@ logging:
         org.springframework: DEBUG
 
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
 
+---
+spring.config.activate.on-profile: attlsClient
+
 apiml:
     service:
         scheme: http
+
+server:
+    attlsClient:
+        enabled: true
 
 eureka:
     instance:

@@ -59,9 +59,6 @@ class AttlsConfigTest {
     @ActiveProfiles({ "AttlsConfigTestCachingService", "attlsClient", "attlsServer" })
     @TestPropertySource(
         properties = {
-            "server.attlsServer.enabled=true",
-            "server.attlsClient.enabled=true",
-            "server.ssl.enabled=false",
             "caching.storage.mode=inMemory"
         }
     )
@@ -129,7 +126,6 @@ class AttlsConfigTest {
     @Nested
     @TestPropertySource(
         properties = {
-            "server.ssl.enabled=false",
             "server.ssl.keyStoreType=",
             "server.ssl.keyStorePassword=",
             "server.ssl.keyPassword=",
@@ -138,7 +134,7 @@ class AttlsConfigTest {
             "apiml.service.discoveryServiceUrls=http://localhost:10011/eureka/" // Caching-service loads onboarding-enabler, which validates SSL configuration for Eureka client if it starts in https
         }
     )
-    @ActiveProfiles("attls")
+    @ActiveProfiles({ "attlsClient", "attlsServer" })
     @DirtiesContext
     @SpringBootTest(
         classes = CachingServiceApplication.class,

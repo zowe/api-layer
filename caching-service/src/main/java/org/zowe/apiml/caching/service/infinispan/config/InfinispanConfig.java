@@ -72,8 +72,8 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${jgroups.tcp.diag.enabled:false}")
     private String tcpDiagEnabled;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
 
     void updateKeyring() {
         if (isKeyring(keyStore)) {
@@ -114,7 +114,7 @@ public class InfinispanConfig implements InitializingBean {
         var oldKeyStore = Optional.ofNullable(System.getProperty("server.ssl.keyStore"));
         var oldKeyStorePassword = Optional.ofNullable(System.getProperty("server.ssl.keyStorePassword"));
 
-        if (!isAttlsEnabled) {
+        if (!isServerAttlsEnabled) {
             System.setProperty("server.ssl.keyStoreType", keyStoreType);
             System.setProperty("server.ssl.keyStore", keyStore);
             System.setProperty("server.ssl.keyStorePassword", keyStorePass);
@@ -122,7 +122,7 @@ public class InfinispanConfig implements InitializingBean {
 
         ConfigurationBuilderHolder holder;
 
-        var infinispanConfigFile = isAttlsEnabled ? "infinispan-attls.xml" : "infinispan.xml";
+        var infinispanConfigFile = isServerAttlsEnabled ? "infinispan-attls.xml" : "infinispan.xml";
         try (InputStream configurationStream = resourceLoader.getResource("classpath:" + infinispanConfigFile).getInputStream()) {
             holder = new ParserRegistry().parse(configurationStream, MediaType.APPLICATION_XML);
         } catch (IOException e) {

@@ -32,13 +32,6 @@ class AttlsConfigTest {
 
     private String protocol = "http";
 
-    @TestPropertySource(
-        properties = {
-            "server.attlsServer.enabled=true",
-            "server.attlsClient.enabled=true",
-            "server.ssl.enabled=false"
-        }
-    )
     @ActiveProfiles({ "attlsServer", "attlsClient" })
     @Nested
     class GivenAttlsModeEnabled extends DiscoveryFunctionalTest {
@@ -89,7 +82,6 @@ class AttlsConfigTest {
     @Nested
     @TestPropertySource(
         properties = {
-            "server.ssl.enabled=false",
             "server.ssl.keyStoreType=",
             "server.ssl.keyStorePassword=",
             "server.ssl.keyPassword=",
@@ -97,7 +89,7 @@ class AttlsConfigTest {
             "server.ssl.keyStore="
         }
     )
-    @ActiveProfiles("attls")
+    @ActiveProfiles({ "attlsServer", "attlsClient" })
     class GivenSslDisabled extends DiscoveryFunctionalTest {
 
         @Test

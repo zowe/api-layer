@@ -90,8 +90,8 @@ public class ConnectionsConfig {
     @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
     private List<String> corsAllowedMethods;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
 
     private final ApplicationContext context;
     private final HttpConfig config;
@@ -107,7 +107,7 @@ public class ConnectionsConfig {
      */
     @Bean
     NettyRoutingFilterApiml createNettyRoutingFilterApiml(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
-        boolean isKeyLoadPrevented = StringUtils.isBlank(config.getKeyStorePath()) && isAttlsEnabled;
+        boolean isKeyLoadPrevented = StringUtils.isBlank(config.getKeyStorePath()) && isClientAttlsEnabled;
         try {
             return new NettyRoutingFilterApiml(
                 ConnectionUtil.getHttpClient(config, httpClient, false),

@@ -17,7 +17,6 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -52,16 +51,8 @@ import static org.mockito.Mockito.verify;
 class AttlsConfigTest {
 
     @Nested
-    @TestPropertySource(
-        properties = {
-            "server.attlsServer.enabled=true",
-            "server.attlsClient.enabled=true",
-            "server.ssl.enabled=false"
-        }
-    )
     @DirtiesContext
     @ActiveProfiles({"AttlsConfigTestCatalog", "attlsServer", "attlsClient"})
-    @Disabled
     class GivenAttlsModeEnabled extends ApiCatalogFunctionalTest {
 
         @Mock
@@ -112,7 +103,6 @@ class AttlsConfigTest {
     @Nested
     @TestPropertySource(
         properties = {
-            "server.ssl.enabled=false",
             "server.ssl.keyStoreType=",
             "server.ssl.keyStorePassword=",
             "server.ssl.keyPassword=",
@@ -120,7 +110,7 @@ class AttlsConfigTest {
             "server.ssl.keyStore="
         }
     )
-    @ActiveProfiles({ "attls", "debug" })
+    @ActiveProfiles({ "attlsServer", "attlsClient", "debug" })
     @DirtiesContext
     @SpringBootTest(
         classes = ApiCatalogApplication.class,
