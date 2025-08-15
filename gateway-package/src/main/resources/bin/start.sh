@@ -169,6 +169,7 @@ fi
 if [ "${ATTLS_SERVER_ENABLED}" = "true" ]; then
   add_profile "attlsServer"
   ZWE_configs_server_ssl_enabled="false"
+  ZWE_configs_apiml_service_corsEnabled=true
 fi
 
 internalProtocol="https"
