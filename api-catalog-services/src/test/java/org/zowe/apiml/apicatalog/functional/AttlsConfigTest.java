@@ -39,7 +39,7 @@ import static org.mockito.Mockito.verify;
 
 @TestPropertySource(
     properties = {
-        "server.attls.enabled=true",
+        "server.attlsServer.enabled=true",
         "server.ssl.enabled=false"
     }
 )

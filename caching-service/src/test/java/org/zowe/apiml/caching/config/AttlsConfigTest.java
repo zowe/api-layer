@@ -51,7 +51,7 @@ import static org.mockito.Mockito.verify;
 @ActiveProfiles("AttlsConfigTestCachingService")
 @TestPropertySource(
     properties = {
-        "server.attls.enabled=true",
+        "server.attlsServer.enabled=true",
         "server.ssl.enabled=false",
         "caching.storage.mode=inMemory"
     }
