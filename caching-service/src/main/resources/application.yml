@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 caching:
     storage:
         mode: inMemory
@@ -183,17 +186,24 @@ spring.config.activate.on-profile: dev
 logbackServiceName: ZWEACS1
 
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
 
+---
+spring.config.activate.on-profile: attlsClient
+
 apiml:
     service:
         scheme: http
+
+server:
+    attlsClient:
+        enabled: true
 
 eureka:
     instance:
