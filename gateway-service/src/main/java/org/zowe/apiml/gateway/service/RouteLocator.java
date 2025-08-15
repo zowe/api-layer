@@ -50,11 +50,17 @@ public class RouteLocator implements RouteDefinitionLocator {
     private boolean forwardingClientCertEnabled;
 
     @Value("${apiml.gateway.servicesToLimitRequestRate:-}")
+    List<String> servicesToLimitRequestRateProperty;
     List<String> servicesToLimitRequestRate;
+
+    @Value("${apiml.gateway.servicesToDisableRetry:-}")
+    List<String> servicesToDisableRetryProperty;
+    List<String> servicesToDisableRetry;
 
     private final ReactiveDiscoveryClient discoveryClient;
 
     private final List<FilterDefinition> commonFilters;
+    private final List<FilterDefinition> commonNoRetryFilters;
     private final List<RouteDefinitionProducer> routeDefinitionProducers;
     private final List<SchemeHandler> schemeHandlersList;
     private final Map<AuthenticationScheme, SchemeHandler> schemeHandlers = new EnumMap<>(AuthenticationScheme.class);
@@ -64,6 +70,9 @@ public class RouteLocator implements RouteDefinitionLocator {
         for (SchemeHandler schemeHandler : schemeHandlersList) {
             schemeHandlers.put(schemeHandler.getAuthenticationScheme(), schemeHandler);
         }
+
+        servicesToLimitRequestRate = servicesToLimitRequestRateProperty.stream().map(String::toLowerCase).toList();
+        servicesToDisableRetry = servicesToDisableRetryProperty.stream().map(String::toLowerCase).toList();
     }
 
     Flux<List<ServiceInstance>> getServiceInstances() {
@@ -81,8 +90,6 @@ public class RouteLocator implements RouteDefinitionLocator {
             }
         }
     }
-
-
 
     Stream<RoutedService> getRoutedService(ServiceInstance serviceInstance) {
         return metadataParser.parseToListRoute(serviceInstance.getMetadata()).stream()
@@ -141,7 +148,11 @@ public class RouteLocator implements RouteDefinitionLocator {
         pageRedirectionFilter.addArg("serviceUrl", routedService.getServiceUrl());
         serviceRelated.add(pageRedirectionFilter);
 
-        return join(commonFilters, serviceRelated);
+        if (servicesToDisableRetry.contains(serviceInstance.getServiceId().toLowerCase())) {
+            return join(commonNoRetryFilters, serviceRelated);
+        } else {
+            return join(commonFilters, serviceRelated);
+        }
     }
 
     private List<RouteDefinition> getAuthFilterPerRoute(
