@@ -47,8 +47,8 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
     private static final String SLASH = "/";
 
-    @Value("${server.attlsClient.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
 
     private static final EurekaMetadataParser EUREKA_METADATA_PARSER = new EurekaMetadataParser();
 
@@ -174,7 +174,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
         if (newUrl.get() != null) {
             // if the new URL was defined, decorate (scheme by AT-TLS) and set
-            if (isAttlsEnabled) {
+            if (isServerAttlsEnabled) {
                 newUrl.set(UriComponentsBuilder.fromUriString(newUrl.get()).scheme("https").build().toUriString());
             }
 

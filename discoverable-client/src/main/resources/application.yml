@@ -1,5 +1,5 @@
 # for back-compatibility
-spring.profiles.group.attls: attlsServer
+spring.profiles.group.attls: attlsServer,attlsClient
 
 logging:
     level:
@@ -225,12 +225,19 @@ logbackServiceName: ZWEADC1
 ---
 spring.config.activate.on-profile: attlsServer
 
-apiml:
-    service:
-        scheme: http
-
 server:
     attlsServer:
         enabled: true
     ssl:
         enabled: false
+
+---
+spring.config.activate.on-profile: attlsClient
+
+apiml:
+    service:
+        scheme: http
+
+server:
+    attlsClient:
+        enabled: true

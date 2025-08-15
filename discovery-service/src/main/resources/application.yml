@@ -1,5 +1,5 @@
 # for back-compatibility
-spring.profiles.group.attls: attlsServer
+spring.profiles.group.attls: attlsServer,attlsClient
 
 logging:
     level:
@@ -197,17 +197,17 @@ server:
     ssl:
         enabled: false
 
-eureka:
-    instance:
-        nonSecurePortEnabled: true
-        securePortEnabled: false
-
 ---
 spring.config.activate.on-profile: attlsClient
 
 server:
     attlsClient:
         enabled: true
+
+eureka:
+    instance:
+        nonSecurePortEnabled: true
+        securePortEnabled: false
 
 apiml:
     discovery:

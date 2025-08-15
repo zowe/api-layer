@@ -1,5 +1,5 @@
 # for back-compatibility
-spring.profiles.group.attls: attlsServer
+spring.profiles.group.attls: attlsServer,attlsClient
 
 logging:
     level:
@@ -264,7 +264,6 @@ server:
 apiml:
     service:
         corsEnabled: true
-        scheme: http
 
 ---
 spring.config.activate.on-profile: attlsClient
@@ -279,6 +278,9 @@ apiml:
             urls:
                 authenticate: http://localhost:10013/zss/saf/authenticate
                 verify: http://localhost:10013/zss/saf/verify
+    service:
+        corsEnabled: true
+        scheme: http
 eureka:
     instance:
         securePortEnabled: false
