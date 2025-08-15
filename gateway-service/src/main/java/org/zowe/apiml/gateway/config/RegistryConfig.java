@@ -59,7 +59,7 @@ public class RegistryConfig {
         boolean clientAttlsEnabled,
         boolean sslEnabled
     ) {
-        var scheme = "https";
+        String scheme;
         if (clientAttlsEnabled) {
             scheme = "http";
         } else {

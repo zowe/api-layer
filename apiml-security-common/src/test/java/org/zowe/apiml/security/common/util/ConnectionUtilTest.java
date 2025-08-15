@@ -60,7 +60,7 @@ class ConnectionUtilTest {
         when(httpConfig.getKeyStorePassword()).thenReturn("password".toCharArray()); //NOSONAR
 
         try (MockedStatic<SslContextBuilder> sslContextBuilder = Mockito.mockStatic(SslContextBuilder.class)) {
-            sslContextBuilder.when(() -> SslContextBuilder.forClient()).thenReturn(builder);
+            sslContextBuilder.when(SslContextBuilder::forClient).thenReturn(builder);
 
             ConnectionUtil.getSslContext(httpConfig, true);
 
@@ -81,7 +81,7 @@ class ConnectionUtilTest {
     @Test
     void onGetSslContextWithoutKeystore_thenEmpty() throws UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         try (MockedStatic<SslContextBuilder> sslContextBuilder = Mockito.mockStatic(SslContextBuilder.class)) {
-            sslContextBuilder.when(() -> SslContextBuilder.forClient()).thenReturn(builder);
+            sslContextBuilder.when(SslContextBuilder::forClient).thenReturn(builder);
 
             ConnectionUtil.getSslContext(httpConfig, false);
 
@@ -104,7 +104,7 @@ class ConnectionUtilTest {
         when(httpConfig.isNonStrictVerifySslCertificatesOfServices()).thenReturn(true);
 
         try (MockedStatic<SslContextBuilder> sslContextBuilder = Mockito.mockStatic(SslContextBuilder.class)) {
-            sslContextBuilder.when(() -> SslContextBuilder.forClient()).thenReturn(builder);
+            sslContextBuilder.when(SslContextBuilder::forClient).thenReturn(builder);
 
             ConnectionUtil.getSslContext(httpConfig, false);
 

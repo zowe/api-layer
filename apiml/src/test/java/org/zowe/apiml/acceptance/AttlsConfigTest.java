@@ -158,12 +158,8 @@ class AttlsConfigTest {
         @Value("${apiml.service.hostname:localhost}")
         private String hostname;
 
-        // @MockitoBean
-        // private ApimlTomcatCustomizer apimlTomcatCustomizer;
-
         @BeforeEach
         void setUp() {
-            // doNothing().when(apimlTomcatCustomizer).customize(any());
             when(apimlInstanceRegistry.getApplications()).thenReturn(new Applications());
         }
 
@@ -176,7 +172,6 @@ class AttlsConfigTest {
             .then()
                 .statusCode(SC_OK);
 
-            // verify(apimlTomcatCustomizer, times(1)).customize(any());
             verify(attlsHttpHandler, times(1)).postProcessAfterInitialization(any(HttpHandler.class), any());
         }
 

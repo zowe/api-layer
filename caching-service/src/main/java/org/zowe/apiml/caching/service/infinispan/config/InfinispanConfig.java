@@ -46,6 +46,10 @@ import static org.zowe.apiml.security.SecurityUtils.isKeyring;
 @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "infinispan")
 public class InfinispanConfig implements InitializingBean {
 
+    private static final String SERVER_SSL_KEY_STORE_PASSWORD = "server.ssl.keyStorePassword";
+    private static final String SERVER_SSL_KEY_STORE = "server.ssl.keyStore";
+    private static final String SERVER_SSL_KEY_STORE_TYPE = "server.ssl.keyStoreType";
+
     private static final String KEYRING_PASSWORD = "password";
 
     @Value("${caching.storage.infinispan.initialHosts}")
@@ -110,14 +114,14 @@ public class InfinispanConfig implements InitializingBean {
         System.setProperty("jgroups.keyExchange.port", keyExchangePort);
         System.setProperty("jgroups.tcp.diag.enabled", String.valueOf(Boolean.parseBoolean(tcpDiagEnabled)));
 
-        var oldKeyStoreType = Optional.ofNullable(System.getProperty("server.ssl.keyStoreType"));
-        var oldKeyStore = Optional.ofNullable(System.getProperty("server.ssl.keyStore"));
-        var oldKeyStorePassword = Optional.ofNullable(System.getProperty("server.ssl.keyStorePassword"));
+        var oldKeyStoreType = Optional.ofNullable(System.getProperty(SERVER_SSL_KEY_STORE_TYPE));
+        var oldKeyStore = Optional.ofNullable(System.getProperty(SERVER_SSL_KEY_STORE));
+        var oldKeyStorePassword = Optional.ofNullable(System.getProperty(SERVER_SSL_KEY_STORE_PASSWORD));
 
         if (!isServerAttlsEnabled) {
-            System.setProperty("server.ssl.keyStoreType", keyStoreType);
-            System.setProperty("server.ssl.keyStore", keyStore);
-            System.setProperty("server.ssl.keyStorePassword", keyStorePass);
+            System.setProperty(SERVER_SSL_KEY_STORE_TYPE, keyStoreType);
+            System.setProperty(SERVER_SSL_KEY_STORE, keyStore);
+            System.setProperty(SERVER_SSL_KEY_STORE_PASSWORD, keyStorePass);
         }
 
         ConfigurationBuilderHolder holder;
@@ -153,9 +157,9 @@ public class InfinispanConfig implements InitializingBean {
             .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
             .getOrCreateCache(cacheName, builder.build()));
 
-        oldKeyStoreType.ifPresent(kst -> System.setProperty("server.ssl.keyStoreType", kst));
-        oldKeyStore.ifPresent(ks -> System.setProperty("server.ssl.keyStore", ks));
-        oldKeyStorePassword.ifPresent(p -> System.setProperty("server.ssl.keyStorePassword", p));
+        oldKeyStoreType.ifPresent(kst -> System.setProperty(SERVER_SSL_KEY_STORE_TYPE, kst));
+        oldKeyStore.ifPresent(ks -> System.setProperty(SERVER_SSL_KEY_STORE, ks));
+        oldKeyStorePassword.ifPresent(p -> System.setProperty(SERVER_SSL_KEY_STORE_PASSWORD, p));
 
         return cacheManager;
     }

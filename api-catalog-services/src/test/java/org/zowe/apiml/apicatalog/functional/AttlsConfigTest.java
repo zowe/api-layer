@@ -128,6 +128,7 @@ class AttlsConfigTest {
         private ApimlTomcatCustomizer apimlTomcatCustomizer;
 
         @BeforeEach
+        @Override
         void setUp() {
             doNothing().when(apimlTomcatCustomizer).customize(any());
         }
