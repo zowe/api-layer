@@ -32,7 +32,7 @@ public class RoutingConfig {
     private boolean allowEncodedSlashes;
 
     @Bean
-    public List<FilterDefinition> filters() {
+    public List<FilterDefinition> commonNoRetryFilters() {
         List<FilterDefinition> filters = new ArrayList<>();
 
         if (acceptForwardedCert) {
@@ -55,13 +55,6 @@ public class RoutingConfig {
         circuitBreakerFilter.setName("CircuitBreaker");
         filters.add(circuitBreakerFilter);
 
-        FilterDefinition retryFilter = new FilterDefinition();
-        retryFilter.setName("Retry");
-        retryFilter.addArg("retries", "5");
-        retryFilter.addArg("statuses", "SERVICE_UNAVAILABLE");
-        retryFilter.addArg("series", "");
-        filters.add(retryFilter);
-
         for (String headerName : ignoredHeadersWhenCorsEnabled.split(",")) {
             FilterDefinition removeHeaders = new FilterDefinition();
             removeHeaders.setName("RemoveRequestHeader");
@@ -70,6 +63,20 @@ public class RoutingConfig {
             removeHeaders.setArgs(args);
             filters.add(removeHeaders);
         }
+        return filters;
+    }
+
+    @Bean
+    public List<FilterDefinition> commonFilters(List<FilterDefinition> commonNoRetryFilters) {
+        List<FilterDefinition> filters = new ArrayList<>(commonNoRetryFilters);
+
+        FilterDefinition retryFilter = new FilterDefinition();
+        retryFilter.setName("Retry");
+        retryFilter.addArg("retries", "5");
+        retryFilter.addArg("statuses", "SERVICE_UNAVAILABLE");
+        retryFilter.addArg("series", "");
+        filters.add(retryFilter);
+
         return filters;
     }
 }
