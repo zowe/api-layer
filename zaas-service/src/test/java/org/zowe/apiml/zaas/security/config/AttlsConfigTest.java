@@ -114,7 +114,7 @@ class AttlsConfigTest {
             "apiml.security.auth.provider=zosmf"
         }
     )
-    @ActiveProfiles("attls")
+    @ActiveProfiles({ "attlsServer", "attlsClient" })
     @DirtiesContext
     @SpringBootTest(
         classes = ZaasApplication.class,
