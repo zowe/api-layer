@@ -34,11 +34,12 @@ class AttlsConfigTest {
 
     @TestPropertySource(
         properties = {
-            "server.attls.enabled=true",
+            "server.attlsServer.enabled=true",
+            "server.attlsClient.enabled=true",
             "server.ssl.enabled=false"
         }
     )
-    @ActiveProfiles("attls")
+    @ActiveProfiles({ "attlsServer", "attlsClient" })
     @Nested
     class GivenAttlsModeEnabled extends DiscoveryFunctionalTest {
 

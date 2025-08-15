@@ -54,12 +54,13 @@ class AttlsConfigTest {
     @Nested
     @TestPropertySource(
         properties = {
-            "server.attls.enabled=true",
+            "server.attlsServer.enabled=true",
+            "server.attlsClient.enabled=true",
             "server.ssl.enabled=false"
         }
     )
     @DirtiesContext
-    @ActiveProfiles({"AttlsConfigTestCatalog", "attls"})
+    @ActiveProfiles({"AttlsConfigTestCatalog", "attlsServer", "attlsClient"})
     @Disabled
     class GivenAttlsModeEnabled extends ApiCatalogFunctionalTest {
 

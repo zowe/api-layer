@@ -45,12 +45,13 @@ class AttlsConfigTest {
     @TestPropertySource(
         properties = {
             "server.internal.ssl.enabled=false",
-            "server.attls.enabled=true",
+            "server.attlsServer.enabled=true",
+            "server.attlsClient.enabled=true",
             "server.ssl.enabled=false",
             "server.service.scheme=http"
         }
     )
-    @ActiveProfiles("attls")
+    @ActiveProfiles({ "attlsServer", "attlsClient" })
     @DirtiesContext
     @Nested
     @Disabled

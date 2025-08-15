@@ -56,10 +56,11 @@ class AttlsConfigTest {
         classes = CachingServiceApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
-    @ActiveProfiles("AttlsConfigTestCachingService")
+    @ActiveProfiles({ "AttlsConfigTestCachingService", "attlsClient", "attlsServer" })
     @TestPropertySource(
         properties = {
-            "server.attls.enabled=true",
+            "server.attlsServer.enabled=true",
+            "server.attlsClient.enabled=true",
             "server.ssl.enabled=false",
             "caching.storage.mode=inMemory"
         }

@@ -46,7 +46,7 @@ import java.util.Collections;
  */
 @Configuration
 @RequiredArgsConstructor
-@Profile("!https & !attls")
+@Profile("!https & !attlsServer")
 @ConditionalOnMissingBean(name = "modulithConfig")
 public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";

@@ -47,17 +47,19 @@ import java.util.Collections;
 @Configuration
 @RequiredArgsConstructor
 @EnableApimlAuth
-@Profile({"https", "attls"})
+@Profile({"https", "attlsServer"})
 @ConditionalOnMissingBean(name = "modulithConfig")
 public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
+
+    private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
     private final HandlerInitializer handlerInitializer;
     private final AuthConfigurationProperties securityConfigurationProperties;
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
-    private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
 
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
@@ -111,7 +113,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             .authorizeHttpRequests(requests -> requests
                 .requestMatchers("/**").authenticated())
             .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
-        if (isAttlsEnabled) {
+        if (isServerAttlsEnabled) {
             http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
         }
 
@@ -131,7 +133,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
                 .authorizeHttpRequests(requests -> requests
                     .anyRequest().authenticated()
                 );
-            if (isAttlsEnabled) {
+            if (isServerAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
@@ -154,7 +156,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
             http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
                 .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
-            if (isAttlsEnabled) {
+            if (isServerAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
