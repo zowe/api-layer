@@ -35,7 +35,7 @@ public class CachingServiceClientRest implements CachingServiceClient {
     @Value("${apiml.cachingServiceClient.apiPath:/cachingservice/api/v1/cache}")
     private String CACHING_API_PATH;
 
-    private String cachingBalancerUrl;
+    private volatile String cachingBalancerUrl;
     private final GatewayClient gatewayClient;
 
     private static final MultiValueMap<String, String> defaultHeaders = new LinkedMultiValueMap<>();
@@ -56,12 +56,14 @@ public class CachingServiceClientRest implements CachingServiceClient {
 
     @PostConstruct
     void updateUrl() {
+        // Lazy initialization of GatewayClient's ServerAddress may bring invalid URL during initialization
         this.cachingBalancerUrl = String.format("%s://%s/%s", gatewayClient.getGatewayConfigProperties().getScheme(), gatewayClient.getGatewayConfigProperties().getHostname(), CACHING_API_PATH);
     }
 
 
     public Mono<Void> create(ApiKeyValue keyValue) {
-        return webClient.post()
+        updateUrl();
+        Mono<Void> post = webClient.post()
             .uri(cachingBalancerUrl)
             .bodyValue(keyValue)
             .headers(c -> c.addAll(defaultHeaders))
@@ -69,13 +71,18 @@ public class CachingServiceClientRest implements CachingServiceClient {
                 if (handler.statusCode().is2xxSuccessful()) {
                     return empty();
                 } else {
+                    log.debug("Unable to create cache record with result: {}", handler.statusCode());
                     return error(new CachingServiceClientException(handler.statusCode().value(), "Unable to create caching key " + keyValue.getKey() + CACHING_SERVICE_RETURNED + handler.statusCode()));
                 }
             });
+        post.doOnError(e -> log.debug("Unable to create cache record", e));
+
+        return post;
     }
 
     public Mono<Void> update(ApiKeyValue keyValue) {
-        return webClient.put()
+        updateUrl();
+        Mono<Void> put = webClient.put()
             .uri(cachingBalancerUrl)
             .bodyValue(keyValue)
             .headers(c -> c.addAll(defaultHeaders))
@@ -86,10 +93,14 @@ public class CachingServiceClientRest implements CachingServiceClient {
                     return error(new CachingServiceClientException(handler.statusCode().value(), "Unable to update caching key " + keyValue.getKey() + CACHING_SERVICE_RETURNED + handler.statusCode()));
                 }
             });
+        put.doOnError(e -> log.debug("Unable to update cache key", e));
+
+        return put;
     }
 
     public Mono<ApiKeyValue> read(String key) {
-        return webClient.get()
+        updateUrl();
+        Mono<ApiKeyValue> read = webClient.get()
             .uri(cachingBalancerUrl + "/" + key)
             .headers(c -> c.addAll(defaultHeaders))
             .exchangeToMono(handler -> {
@@ -104,6 +115,9 @@ public class CachingServiceClientRest implements CachingServiceClient {
                     return error(new CachingServiceClientException(handler.statusCode().value(), "Unable to read caching key " + key + CACHING_SERVICE_RETURNED + handler.statusCode()));
                 }
             });
+        read.doOnError(e -> log.debug("Unable to read cache key", e));
+
+        return read;
     }
 
     /**
@@ -113,7 +127,8 @@ public class CachingServiceClientRest implements CachingServiceClient {
      * @return mono with status success / error
      */
     public Mono<Void> delete(String key) {
-        return webClient.delete()
+        updateUrl();
+        Mono<Void> delete = webClient.delete()
             .uri(cachingBalancerUrl + "/" + key)
             .headers(c -> c.addAll(defaultHeaders))
             .exchangeToMono(handler -> {
@@ -123,6 +138,9 @@ public class CachingServiceClientRest implements CachingServiceClient {
                     return error(new CachingServiceClientException(handler.statusCode().value(), "Unable to delete caching key " + key + CACHING_SERVICE_RETURNED + handler.statusCode()));
                 }
             });
+        delete.doOnError(e -> log.debug("Unable to delete cache key", e));
+
+        return delete;
     }
 
 }
