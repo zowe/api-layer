@@ -1,5 +1,5 @@
 # for back-compatibility
-spring.profiles.group.attls: attlsServer
+spring.profiles.group.attls: attlsServer,attlsClient
 
 eureka:
     instance:
