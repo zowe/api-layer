@@ -11,13 +11,14 @@
 package org.zowe.apiml.client.api;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
@@ -31,6 +32,9 @@ import org.zowe.apiml.client.service.PetService;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 /**
  * This is an example of the REST API controller to implement GET, POST, PUT and DELETE methods.
@@ -40,7 +44,8 @@ import java.util.List;
 @RequestMapping("/api/v1")
 @Tag(
     description = "/api/v1/pets",
-    name = "The pet API")
+    name = "The pet API"
+)
 public class PetController {
     private final PetService petService;
 
@@ -49,7 +54,6 @@ public class PetController {
      *
      * @param petService service for working with {@link Pet} objects.
      */
-    @Autowired
     public PetController(PetService petService) {
         this.petService = petService;
     }
@@ -133,7 +137,7 @@ public class PetController {
     })
     @HystrixCommand()
     public Pet getPetById(@Parameter(description = "Pet id to return", required = true, example = "1")
-                          @PathVariable("id") Long id) {
+                          @PathVariable Long id) {
         Pet pet = petService.getById(id);
         if (pet == null) {
             throw new PetNotFoundException("Pet with provided id is not found", id);
@@ -208,4 +212,19 @@ public class PetController {
                               @PathVariable("id") Long id) {
         petService.deleteById(id);
     }
+
+    @GetMapping(value = "/pets/long")
+    @Operation(
+        summary = "Provide an endpoint with documentation that amounts to a big payload for the API Catalog",
+        description = "This description is meant to provide a long text that amounts to a large payload to verify the limits of the WebClient used in such scenario in API Catalog.",
+        externalDocs = @ExternalDocumentation(
+            url = "https://"
+        )
+    )
+    public String longApiDocEndpoint() {
+        String twoMb = StringUtils.repeat("0", 1024 * 1024 * 2);
+
+        return twoMb;
+    }
+
 }
