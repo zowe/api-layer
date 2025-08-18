@@ -45,8 +45,10 @@ public class DiscoveryRestTemplateConfig {
     ) {
         RestClientDiscoveryClientOptionalArgs clientArgs = new RestClientDiscoveryClientOptionalArgs(getDefaultEurekaClientHttpRequestFactorySupplier(), RestClient::builder);
 
-        if (eurekaServerUrl.startsWith("http://") && !isClientAttlsEnabled) {
-            apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
+        if (eurekaServerUrl.startsWith("http://")) {
+            if (!isClientAttlsEnabled) {
+                apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
+            }
         } else {
             clientArgs.setSSLContext(secureSslContext);
             clientArgs.setHostnameVerifier(secureHostnameVerifier);
