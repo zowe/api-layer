@@ -11,7 +11,6 @@
 package org.zowe.apiml.zaas.security.config;
 
 import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -45,7 +44,6 @@ class AttlsConfigTest {
     @ActiveProfiles({ "attlsServer", "attlsClient" })
     @DirtiesContext
     @Nested
-    @Disabled
     class GivenAttlsModeEnabled {
 
         @MockitoBean(name = "x509Mapper")
