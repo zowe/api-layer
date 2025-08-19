@@ -357,6 +357,9 @@ logging:
         reactor.netty.http.client.HttpClient: DEBUG
         reactor.netty.http.client.HttpClientConnect: DEBUG
 
+---
+spring.config.activate.on-profile: wiretap
+
 spring:
     cloud:
         gateway:

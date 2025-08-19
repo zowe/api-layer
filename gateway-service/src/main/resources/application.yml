@@ -192,6 +192,9 @@ logging:
         org.zowe.apiml: DEBUG
         reactor.netty: TRACE
 
+---
+spring.config.activate.on-profile: wiretap
+
 spring:
     cloud:
         gateway:

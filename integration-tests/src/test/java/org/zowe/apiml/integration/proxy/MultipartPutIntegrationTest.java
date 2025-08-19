@@ -27,7 +27,7 @@ import java.util.Random;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_MULTIPART;
 
 @DiscoverableClientDependentTest
 class MultipartPutIntegrationTest implements TestWithStartedInstances {
@@ -87,9 +87,9 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
                     new RandomDataInputStream(payloadSize),
                     "application/octet-stream"
                 )
-                .when()
+            .when()
                 .post(url)
-                .then()
+            .then()
                 .statusCode(200)
                 .body("fileName", equalTo("largefile.dat"))
                 .body("fileType", equalTo("application/octet-stream"))
