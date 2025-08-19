@@ -16,11 +16,19 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.client.exception.PetIdMismatchException;
 import org.zowe.apiml.client.exception.PetNotFoundException;
 import org.zowe.apiml.client.model.Pet;
@@ -39,19 +47,12 @@ import java.util.List;
 @RequestMapping("/api/v1")
 @Tag(
     description = "/api/v1/pets",
-    name = "The pet API")
+    name = "The pet API"
+)
+@RequiredArgsConstructor
 public class PetController {
-    private final PetService petService;
 
-    /**
-     * Constructor for {@link PetController}.
-     *
-     * @param petService service for working with {@link Pet} objects.
-     */
-    @Autowired
-    public PetController(PetService petService) {
-        this.petService = petService;
-    }
+    private final PetService petService;
 
     /**
      * The getAllPets method lists all existing pets
