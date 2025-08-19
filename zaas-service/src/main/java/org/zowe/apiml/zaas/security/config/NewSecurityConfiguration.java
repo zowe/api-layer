@@ -134,7 +134,7 @@ public class NewSecurityConfiguration {
         private final CompoundAuthProvider compoundAuthProvider;
 
         @Bean
-        public SecurityFilterChain authenticationFunctionalityFilterChain(HttpSecurity http) throws Exception {
+        SecurityFilterChain authenticationFunctionalityFilterChain(HttpSecurity http) throws Exception {
             baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                 authConfigurationProperties.getZaasLoginEndpoint(),
                 authConfigurationProperties.getZaasLogoutEndpoint()
@@ -157,6 +157,7 @@ public class NewSecurityConfiguration {
         }
 
         private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {
+
             @Override
             public void configure(HttpSecurity http) {
                 AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
@@ -188,6 +189,7 @@ public class NewSecurityConfiguration {
             FailedAuthenticationHandler failure = handlerInitializer.getAuthenticationFailureHandler();
             return new JWTLogoutHandler(authenticationService, failure);
         }
+
     }
 
     /**
@@ -212,7 +214,7 @@ public class NewSecurityConfiguration {
         private final AuthenticationProvider tokenAuthenticationProvider;
 
         @Bean
-        public SecurityFilterChain accessTokenFilterChain(HttpSecurity http) throws Exception {
+        SecurityFilterChain accessTokenFilterChain(HttpSecurity http) throws Exception {
             baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                 authConfigurationProperties.getZaasAccessTokenEndpoint()
             )))
@@ -274,7 +276,7 @@ public class NewSecurityConfiguration {
             private final CompoundAuthProvider compoundAuthProvider;
 
             @Bean
-            public SecurityFilterChain authProtectedEndpointsFilterChain(HttpSecurity http) throws Exception {
+            SecurityFilterChain authProtectedEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                         authConfigurationProperties.getZaasRevokeMultipleAccessTokens() + "/**",
                         authConfigurationProperties.getZaasEvictAccessTokensAndRules()
@@ -319,7 +321,7 @@ public class NewSecurityConfiguration {
         class ZaasEndpoints {
 
             @Bean
-            public SecurityFilterChain authZaasEndpointsFilterChain(HttpSecurity http) throws Exception {
+            SecurityFilterChain authZaasEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                         "/zaas/scheme/**"
                 )))
@@ -348,7 +350,7 @@ public class NewSecurityConfiguration {
             private final TokenAuthenticationProvider tokenAuthenticationProvider;
 
             @Bean
-            public SecurityFilterChain queryFilterChain(HttpSecurity http) throws Exception {
+            SecurityFilterChain queryFilterChain(HttpSecurity http) throws Exception {
                 return baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
                         authConfigurationProperties.getZaasQueryEndpoint()
                     )))
@@ -392,7 +394,7 @@ public class NewSecurityConfiguration {
             private final AuthenticationProvider tokenAuthenticationProvider;
 
             @Bean
-            public SecurityFilterChain ticketFilterChain(HttpSecurity http) throws Exception {
+            SecurityFilterChain ticketFilterChain(HttpSecurity http) throws Exception {
                 return baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
                     authConfigurationProperties.getZaasTicketEndpoint()
                 ))).authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
@@ -438,7 +440,7 @@ public class NewSecurityConfiguration {
             private final AuthenticationProvider tokenAuthenticationProvider;
 
             @Bean
-            public SecurityFilterChain refreshFilterChain(HttpSecurity http) throws Exception {
+            SecurityFilterChain refreshFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
                         authConfigurationProperties.getZaasRefreshEndpoint()
                 ))).authorizeHttpRequests(requests -> requests
@@ -481,7 +483,7 @@ public class NewSecurityConfiguration {
         @Order(4)
         class CertificateProtectedEndpoints {
             @Bean
-            public SecurityFilterChain certificateEndpointsFilterChain(HttpSecurity http) throws Exception {
+            SecurityFilterChain certificateEndpointsFilterChain(HttpSecurity http) throws Exception {
                 return baseConfigure(http.securityMatchers(matchers -> matchers
                     .requestMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH))
                 ).authorizeHttpRequests(requests -> requests
@@ -606,7 +608,7 @@ public class NewSecurityConfiguration {
 
             // Web security only needs to be configured once, putting it to multiple filter chains causes multiple evaluations of the same rules
             @Bean
-            public WebSecurityCustomizer webSecurityCustomizer() {
+            WebSecurityCustomizer webSecurityCustomizer() {
                 return web -> {
                     if (!isHealthEndpointProtected) {
                         web.ignoring().requestMatchers("/application/health");
@@ -623,7 +625,7 @@ public class NewSecurityConfiguration {
         }
 
         @Bean
-        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             return baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers("/**", "/gateway/version")))
                 .authorizeHttpRequests(requests -> requests
                     .anyRequest()

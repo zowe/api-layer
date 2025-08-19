@@ -30,20 +30,25 @@ public class DiscoveryRestTemplateConfig {
 
     private static final ApimlLogger apimlLog = ApimlLogger.of(DiscoveryRestTemplateConfig.class, YamlMessageServiceInstance.getInstance());
 
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
+
     @Bean
-    public RestClientTransportClientFactories restTemplateTransportClientFactories(RestClientDiscoveryClientOptionalArgs restClientDiscoveryClientOptionalArgs) {
+    RestClientTransportClientFactories restTemplateTransportClientFactories(RestClientDiscoveryClientOptionalArgs restClientDiscoveryClientOptionalArgs) {
         return new RestClientTransportClientFactories(restClientDiscoveryClientOptionalArgs);
     }
 
     @Bean
-    public RestClientDiscoveryClientOptionalArgs defaultArgs(@Value("${eureka.client.serviceUrl.defaultZone}") String eurekaServerUrl,
+    RestClientDiscoveryClientOptionalArgs defaultArgs(@Value("${eureka.client.serviceUrl.defaultZone}") String eurekaServerUrl,
                                                              @Qualifier("secureSslContext") SSLContext secureSslContext,
                                                              HostnameVerifier secureHostnameVerifier
     ) {
         RestClientDiscoveryClientOptionalArgs clientArgs = new RestClientDiscoveryClientOptionalArgs(getDefaultEurekaClientHttpRequestFactorySupplier(), RestClient::builder);
 
         if (eurekaServerUrl.startsWith("http://")) {
-            apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
+            if (!isClientAttlsEnabled) {
+                apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
+            }
         } else {
             clientArgs.setSSLContext(secureSslContext);
             clientArgs.setHostnameVerifier(secureHostnameVerifier);

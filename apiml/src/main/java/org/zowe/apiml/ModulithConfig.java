@@ -16,16 +16,23 @@ import com.netflix.appinfo.LeaseInfo;
 import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Application;
+import com.netflix.discovery.shared.Applications;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
-import jakarta.annotation.PostConstruct;
-import jakarta.servlet.*;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
 import org.apache.catalina.Host;
 import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -65,7 +72,15 @@ import reactor.core.publisher.Flux;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
 import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
@@ -76,7 +91,7 @@ import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
 @EnableConfigurationProperties
 @DependsOn(value = {"gatewayHealthIndicator"})
 @Slf4j
-public class ModulithConfig {
+public class ModulithConfig implements InitializingBean {
 
     private final ApplicationContext applicationContext;
     private final Map<String, InstanceInfo> instances = new HashMap<>();
@@ -155,7 +170,11 @@ public class ModulithConfig {
             .orElse(null);
     }
 
-    @PostConstruct
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        createLocalInstances();
+    }
+
     void createLocalInstances() {
         instances.put(CoreService.GATEWAY.getServiceId(), getInstanceInfo(CoreService.GATEWAY.getServiceId()));
         instances.put(CoreService.DISCOVERY.getServiceId(), getInstanceInfo(CoreService.DISCOVERY.getServiceId()));
@@ -252,11 +271,11 @@ public class ModulithConfig {
                 if (registry == null) {
                     return Collections.emptyList();
                 }
-                return registry.getApplications().getRegisteredApplications()
-                    .stream()
-                    .map(Application::getName)
-                    .distinct()
-                    .toList();
+
+                return Optional.ofNullable(registry.getApplications())
+                    .map(Applications::getRegisteredApplications)
+                    .map(applications -> applications.stream().map(Application::getName).distinct().toList())
+                    .orElse(List.of());
             }
         };
     }

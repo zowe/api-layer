@@ -24,6 +24,7 @@ import org.zowe.apiml.enable.register.RegisterToApiLayer;
 @SpringBootApplication(
     exclude = { ReactiveOAuth2ClientAutoConfiguration.class },
     scanBasePackages = {
+        "org.zowe.apiml.filter",
         "org.zowe.apiml.gateway",
         "org.zowe.apiml.product.web",
         "org.zowe.apiml.product.gateway",

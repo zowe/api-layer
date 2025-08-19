@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.security.common.util;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import lombok.experimental.UtilityClass;
@@ -23,12 +24,17 @@ import reactor.netty.tcp.SslProvider;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509KeyManager;
+
 import java.io.IOException;
 import java.net.Socket;
-import java.security.*;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import com.google.common.annotations.VisibleForTesting;
 
 @UtilityClass
 @Slf4j
@@ -38,23 +44,23 @@ public class ConnectionUtil {
      * @return io.netty.handler.ssl.SslContext for http client.
      */
     public SslContext getSslContext(HttpConfig config, boolean setKeystore) throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException {
-        SslContextBuilder builder = SslContextBuilder.forClient();
+        var builder = SslContextBuilder.forClient();
 
-        KeyStore trustStore = SecurityUtils.loadKeyStore(
-            config.getTrustStoreType(), config.getTrustStorePath(), config.getTrustStorePassword());
-        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        var trustStore = SecurityUtils.loadKeyStore(config.getTrustStoreType(), config.getTrustStorePath(), config.getTrustStorePassword());
+        var trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustManagerFactory.init(trustStore);
         builder.trustManager(trustManagerFactory);
 
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        var keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+
         if (setKeystore) {
             log.info("Loading keystore: {}: {}", config.getKeyStoreType(), config.getKeyStorePath());
-            KeyStore keyStore = SecurityUtils.loadKeyStore(
+            var keyStore = SecurityUtils.loadKeyStore(
                 config.getKeyStoreType(), config.getKeyStorePath(), config.getKeyStorePassword());
             keyManagerFactory.init(keyStore, config.getKeyStorePassword());
             builder.keyManager(x509KeyManagerSelectedAlias(config, keyManagerFactory));
         } else {
-            KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            var emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
             emptyKeystore.load(null, null);
             keyManagerFactory.init(emptyKeystore, null);
             builder.keyManager(keyManagerFactory);
