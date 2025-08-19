@@ -30,12 +30,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 @TestPropertySource(
     properties = {
-        "server.attls.enabled=true",
+        "server.attlsServer.enabled=true",
         "server.ssl.enabled=false"
     }
 )
 @TestInstance(Lifecycle.PER_CLASS)
-@ActiveProfiles("attls")
+@ActiveProfiles("attlsServer")
 class AttlsConfigTest extends DiscoveryFunctionalTest {
 
     private String protocol = "http";

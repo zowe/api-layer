@@ -52,7 +52,7 @@ import java.util.Collections;
 })
 @EnableWebSecurity
 @RequiredArgsConstructor
-@Profile("!https & !attls")
+@Profile("!https & !attlsServer")
 public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 

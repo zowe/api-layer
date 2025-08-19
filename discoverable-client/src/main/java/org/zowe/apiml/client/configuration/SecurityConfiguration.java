@@ -34,8 +34,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -46,7 +46,7 @@ public class SecurityConfiguration {
                 .requestMatchers("/**").permitAll())
             .httpBasic(withDefaults());
 
-        if (isAttlsEnabled) {
+        if (isServerAttlsEnabled) {
             newConf.addFilterBefore(new AttlsFilter(), UsernamePasswordAuthenticationFilter.class);
         }
         return newConf.build();
