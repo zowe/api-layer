@@ -63,6 +63,12 @@ management:
                   DOWN: 503
                   PARTIAL: 200
             show-details: always
+
+logging:
+    level:
+        ROOT: DEBUG
+        org.springframework: DEBUG
+
 ---
 spring:
     profiles: https
@@ -83,3 +89,28 @@ server:
         keyStorePassword: password
         trustStore: ../keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
+
+---
+spring.config.activate.on-profile: attlsServer
+
+server:
+    attlsServer:
+        enabled: true
+    ssl:
+        enabled: false
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
+eureka:
+    instance:
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+
+apiml:
+    discovery:
+        allPeersUrls: http://${apiml.service.hostname}:${apiml.service.port}/eureka/

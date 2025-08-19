@@ -452,7 +452,7 @@ public class WebSecurity {
     @Bean
     @Primary
     @ConditionalOnProperty(name = "spring.cloud.gateway.x-forwarded.enabled", matchIfMissing = true)
-    public XForwardedHeadersFilter xForwardedHeadersFilter(
+    XForwardedHeadersFilter xForwardedHeadersFilter(
         @Value("${apiml.security.forwardHeader.trustedProxies:#{null}}") String trustedProxies,
         HttpsConfig httpsConfig,
         AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry

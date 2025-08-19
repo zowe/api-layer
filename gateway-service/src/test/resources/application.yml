@@ -239,16 +239,20 @@ management:
 
 logging:
     level:
-        ROOT: INFO
+        ROOT: DEBUG
         org.zowe.apiml: DEBUG
-        org.springframework: INFO
+        org.springframework: DEBUG
+        org.springframework.web: TRACE
+        org.springframework.web.servlet.PageNotFound: WARN
+        org.springframework.cloud.gateway: DEBUG
+        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
+        org.springframework.security: DEBUG
+        org.springframework.beans: WARN
         org.apache: INFO
         org.apache.http: DEBUG
         com.netflix: INFO
         org.hibernate: INFO
-        org.springframework.web.servlet.PageNotFound: WARN
         org.ehcache: INFO
-        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
 
 ---
 spring:
@@ -270,3 +274,39 @@ spring:
 
 
 logbackServiceName: ZWEAGW1
+
+---
+spring.config.activate.on-profile: attlsServer
+
+server:
+    attlsServer:
+        enabled: true
+    ssl:
+        enabled: false
+
+    service:
+        scheme: http
+apiml:
+    service:
+        corsEnabled: true
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
+apiml:
+    service:
+        discoveryServiceUrls: http://localhost:10011/eureka/
+
+eureka:
+    instance:
+        metadata-map:
+            apiml:
+                apiInfo[0]:
+                    swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/api-docs

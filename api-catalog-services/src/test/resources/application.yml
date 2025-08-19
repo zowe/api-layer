@@ -186,9 +186,9 @@ management:
 
 logging:
     level:
-        ROOT: INFO
+        ROOT: DEBUG
         org.zowe.apiml: DEBUG
-        org.springframework: INFO
+        org.springframework: DEBUG
         org.apache: INFO
         org.apache.http: DEBUG
         com.netflix: INFO
@@ -242,12 +242,6 @@ spring.config.activate.on-profile: attlsClient
 server:
     attlsClient:
         enabled: true
-
-apiml:
-    service:
-        scheme: http
-        nonSecurePortEnabled: true
-        securePortEnabled: false
 
 eureka:
     instance:
