@@ -219,9 +219,6 @@ server:
 apiml:
     service:
         corsEnabled: true
-        scheme: http
-        nonSecurePortEnabled: true
-        securePortEnabled: false
 
 ---
 spring.config.activate.on-profile: attlsClient
@@ -232,6 +229,9 @@ server:
 
 apiml:
     service:
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
         discoveryServiceUrls: http://localhost:10011/eureka/
 
 eureka:
