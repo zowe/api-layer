@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.caching;
 
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,12 +53,10 @@ public class CachingServiceClientRest implements CachingServiceClient {
         this.webClient = webClientClientCert;
     }
 
-    @PostConstruct
     void updateUrl() {
         // Lazy initialization of GatewayClient's ServerAddress may bring invalid URL during initialization
         this.cachingBalancerUrl = String.format("%s://%s/%s", gatewayClient.getGatewayConfigProperties().getScheme(), gatewayClient.getGatewayConfigProperties().getHostname(), CACHING_API_PATH);
     }
-
 
     public Mono<Void> create(ApiKeyValue keyValue) {
         updateUrl();
