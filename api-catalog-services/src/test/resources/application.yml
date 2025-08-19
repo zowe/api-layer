@@ -189,9 +189,9 @@ management:
 
 logging:
     level:
-        ROOT: INFO
+        ROOT: DEBUG
         org.zowe.apiml: DEBUG
-        org.springframework: INFO
+        org.springframework: DEBUG
         org.apache: INFO
         org.apache.http: DEBUG
         com.netflix: INFO
@@ -211,13 +211,34 @@ management:
 spring.config.activate.on-profile: dev
 
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
+
+eureka:
+    instance:
+        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}/apicatalog/application/health
+        metadata-map:
+            apiml:
+                corsEnabled: true
+                corsAllowedOrigins: https://${apiml.service.hostname}:${apiml.service.port},${apiml.service.externalUrl}
+                apiInfo:
+                    - apiId: zowe.apiml.apicatalog
+                      version: 1.0.0
+                      gatewayUrl: api/v1
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/apicatalog/v3/api-docs
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
 eureka:
     instance:
         securePort: 0
@@ -227,13 +248,9 @@ eureka:
         metadata-map:
             apiml:
                 corsEnabled: true
+                corsAllowedOrigins: https://${apiml.service.hostname}:${apiml.service.port},${apiml.service.externalUrl}
                 apiInfo:
                     - apiId: zowe.apiml.apicatalog
                       version: 1.0.0
                       gatewayUrl: api/v1
                       swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/apicatalog/v3/api-docs
-apiml:
-    service:
-        scheme: http
-        nonSecurePortEnabled: true
-        securePortEnabled: false

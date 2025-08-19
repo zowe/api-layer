@@ -77,11 +77,11 @@ import org.zowe.apiml.gateway.filters.security.BasicAuthFilter;
 import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
 import org.zowe.apiml.gateway.service.TokenProvider;
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.common.util.X509Util;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
+import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
@@ -342,6 +342,7 @@ public class WebSecurity {
 
     public ServerHttpSecurity defaultSecurityConfig(ServerHttpSecurity http) {
         var gatewayExceptionHandler = applicationContext.getBean("gatewayExceptionHandler", GatewayExceptionHandler.class);
+
         return http
             .headers(headers -> headers
                 .hsts(hsts -> hsts.disable())
@@ -541,7 +542,7 @@ public class WebSecurity {
     @Bean
     @Primary
     @ConditionalOnProperty(name = "spring.cloud.gateway.x-forwarded.enabled", matchIfMissing = true)
-    public XForwardedHeadersFilter xForwardedHeadersFilter(
+    XForwardedHeadersFilter xForwardedHeadersFilter(
         @Value("${apiml.security.forwardHeader.trustedProxies:#{null}}") String trustedProxies,
         HttpsConfig httpsConfig,
         AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry

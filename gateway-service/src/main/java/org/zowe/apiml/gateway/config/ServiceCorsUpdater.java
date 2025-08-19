@@ -10,9 +10,9 @@
 
 package org.zowe.apiml.gateway.config;
 
-import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.gateway.config.GlobalCorsProperties;
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent;
@@ -28,7 +28,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 
 @Component
 @RequiredArgsConstructor
-public class ServiceCorsUpdater {
+public class ServiceCorsUpdater implements InitializingBean {
 
     private final CorsUtils corsUtils;
     private final ReactiveDiscoveryClient discoveryClient;
@@ -38,8 +38,8 @@ public class ServiceCorsUpdater {
     @Getter
     private UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource;
 
-    @PostConstruct
-    void initCorsConfigurationSource() {
+    @Override
+    public void afterPropertiesSet() throws Exception {
         urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource(new PathPatternParser());
         urlBasedCorsConfigurationSource.setCorsConfigurations(globalCorsProperties.getCorsConfigurations());
         corsUtils.registerDefaultCorsConfiguration(urlBasedCorsConfigurationSource::registerCorsConfiguration);
