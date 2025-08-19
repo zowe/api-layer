@@ -11,15 +11,12 @@
 package org.zowe.apiml.discovery.config;
 
 import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.zowe.apiml.util.config.TestConfig;
 import org.zowe.apiml.discovery.functional.DiscoveryFunctionalTest;
 
 import java.io.IOException;
@@ -27,61 +24,41 @@ import java.io.IOException;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@TestPropertySource(
-    properties = {
-        "server.attlsServer.enabled=true",
-        "server.ssl.enabled=false"
-    }
-)
 @TestInstance(Lifecycle.PER_CLASS)
-@ActiveProfiles("attlsServer")
-@Import(TestConfig.class)
-class AttlsConfigTest extends DiscoveryFunctionalTest {
+class AttlsConfigTest {
 
     private String protocol = "http";
 
-    @Override
-    protected String getProtocol() {
-        return protocol;
-    }
-
+    @ActiveProfiles({ "attlsServer", "attlsClient" })
     @Nested
-    class GivenAttlsModeEnabledAndHttps {
+    class GivenAttlsModeEnabled extends DiscoveryFunctionalTest {
 
-        @BeforeEach
-        void setUp() {
-            protocol = "https";
+        @Override
+        protected String getProtocol() {
+            return protocol;
         }
 
         @Test
-        void whenContextLoads_RequestFailsWithHttps() {
-            try {
+        void whenContextLoads_requestFailsWithHttps() {
+            protocol = "https";
+            assertThrows(IOException.class, () -> {
                 given()
                     .log().all()
                 .when()
                     .get(getDiscoveryUriWithPath("/application/info"))
                 .then()
                     .log().all();
-                fail("Expected SSL failure");
-            } catch (Exception e) {
-                assertInstanceOf(IOException.class, e);
-            }
-        }
-    }
-
-    @Nested
-    class GivenAttlsModeEnabledAndHttp {
-
-        @BeforeEach
-        void setUp() {
-            protocol = "http";
+            });
         }
 
+        /**
+         * This test verifies the call attempted to use AT-TLS filters
+         */
         @Test
         void whenContextLoads_RequestFailsWithAttlsContextReason() {
+            protocol = "http";
             given()
                 .log().all()
             .when()
@@ -92,5 +69,39 @@ class AttlsConfigTest extends DiscoveryFunctionalTest {
                 .body(containsString("Connection is not secure."))
                 .body(containsString("AttlsContext.getStatConn"));
         }
+
     }
+
+    /**
+     * This test intends to verify ICSF workaround (no keyring load)
+     */
+    @Nested
+    @TestPropertySource(
+        properties = {
+            "server.ssl.keyStoreType=",
+            "server.ssl.keyStorePassword=",
+            "server.ssl.keyPassword=",
+            "server.ssl.keyAlias=",
+            "server.ssl.keyStore="
+        }
+    )
+    @ActiveProfiles({ "attlsServer", "attlsClient" })
+    class GivenSslDisabled extends DiscoveryFunctionalTest {
+
+        @Test
+        void whenNoKeystore_thenStartupSuccess() {
+            protocol = "http";
+            given()
+                .log().all()
+            .when()
+                .get(getDiscoveryUriWithPath("/eureka/apps"))
+            .then()
+                .log().all()
+                .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR))
+                .body(containsString("Connection is not secure."))
+                .body(containsString("AttlsContext.getStatConn"));
+        }
+
+    }
+
 }

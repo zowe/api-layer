@@ -183,3 +183,48 @@ management:
 spring.config.activate.on-profile: dev
 
 logbackServiceName: ZWEAZS1
+
+---
+spring.config.activate.on-profile: attlsServer
+
+server:
+    internal:
+        ssl:
+            enabled: false
+    attlsServer:
+        enabled: true
+    ssl:
+        enabled: false
+    service:
+        scheme: http
+
+apiml:
+    service:
+        corsEnabled: true
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
+apiml:
+    security:
+        saf:
+            urls:
+                authenticate: http://localhost:10013/zss/saf/authenticate
+                verify: http://localhost:10013/zss/saf/verify
+    service:
+        corsEnabled: true
+        scheme: http
+eureka:
+    instance:
+        securePortEnabled: false
+        metadata-map:
+            apiml:
+                apiInfo:
+                    -   apiId: zowe.apiml.zaas
+                        gatewayUrl: api/v1
+                        swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/api-doc
+                        documentationUrl: https://zowe.github.io/docs-site/

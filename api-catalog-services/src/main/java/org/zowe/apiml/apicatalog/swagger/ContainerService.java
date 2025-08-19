@@ -63,7 +63,7 @@ public class ContainerService {
     private boolean hideServiceInfo;
 
     @Value("${server.attlsClient.enabled:false}")
-    private boolean isAttlsEnabled;
+    private boolean isClientAttlsEnabled;
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -141,7 +141,7 @@ public class ContainerService {
                     serviceId,
                     instanceHomePage,
                     routes,
-                    isAttlsEnabled);
+                    isClientAttlsEnabled);
             } catch (URLTransformationException | IllegalArgumentException e) {
                 apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", serviceId, e.getMessage());
             }

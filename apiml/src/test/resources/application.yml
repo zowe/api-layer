@@ -1,6 +1,7 @@
 logging:
     level:
         ROOT: DEBUG
+        org.springframework: DEBUG
         org.zowe.apiml: DEBUG
 
 eureka:
@@ -134,3 +135,31 @@ spring:
         banner-mode: ${apiml.banner:"console"}
         web-application-type: reactive
         allow-bean-definition-overriding: true
+
+---
+spring.config.activate.on-profile: attlsServer
+
+server:
+    attlsServer:
+        enabled: true
+    ssl:
+        enabled: false
+
+apiml:
+    service:
+        corsEnabled: true
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+    service:
+        scheme: http
+
+apiml:
+    service:
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
