@@ -37,11 +37,9 @@ import org.zowe.apiml.util.config.SslContext;
 import javax.net.ssl.SSLException;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.when;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 
@@ -82,18 +80,15 @@ class AttlsConfigTest {
 
             @Test
             void requestFailsWithHttps() {
-                try {
+                assertThrows(SSLException.class, () -> {
                     given()
                         .config(SslContext.clientCertUnknownUser)
-                        .header("Content-type", "application/json");
-                    when()
+                        .header("Content-type", "application/json")
+                    .when()
                         .get(getUri(hostname, port, "https"))
                     .then()
-                        .statusCode(HttpStatus.FORBIDDEN.value());
-                    fail("");
-                } catch (Exception e) {
-                    assertInstanceOf(SSLException.class, e);
-                }
+                        .log().all();
+                });
             }
 
             @Test

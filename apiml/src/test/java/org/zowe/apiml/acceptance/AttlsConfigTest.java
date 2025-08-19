@@ -41,19 +41,17 @@ import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
 
 import javax.net.ssl.SSLException;
 
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static io.restassured.RestAssured.given;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
 
 @TestInstance(Lifecycle.PER_CLASS)
 class AttlsConfigTest {
@@ -88,19 +86,14 @@ class AttlsConfigTest {
 
         @Test
         void whenContextloads_requestFailsWithHttps() {
-            try {
+            assertThrows(SSLException.class, () -> {
                 given()
                     .log().all()
                 .when()
                     .get(getGatewayUrlWithPath(hostname, port, "https", "application/version"))
                 .then()
-                    .log().all()
-                    .statusCode(SC_INTERNAL_SERVER_ERROR);
-                fail("Expected an SSL failure");
-            } catch (Exception e) {
-                assertInstanceOf(SSLException.class, e);
-            }
-
+                    .log().all();
+            });
         }
 
         @Test

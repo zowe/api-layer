@@ -39,8 +39,7 @@ import javax.net.ssl.SSLException;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doNothing;
@@ -63,18 +62,14 @@ class AttlsConfigTest {
 
         @Test
         void requestFailsWithHttps() {
-            try {
+            assertThrows(SSLException.class, () -> {
                 given()
                     .log().all()
                 .when()
                     .get(getCatalogUriWithPath("apicatalog/containers"))
                 .then()
-                    .log().all()
-                    .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
-                fail("Expected an SSL failure");
-            } catch (Exception e) {
-                assertInstanceOf(SSLException.class, e);
-            }
+                    .log().all();
+            });
         }
 
         @Test

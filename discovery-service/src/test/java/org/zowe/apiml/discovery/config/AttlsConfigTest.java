@@ -24,8 +24,7 @@ import java.io.IOException;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @TestInstance(Lifecycle.PER_CLASS)
 class AttlsConfigTest {
@@ -44,17 +43,14 @@ class AttlsConfigTest {
         @Test
         void whenContextLoads_requestFailsWithHttps() {
             protocol = "https";
-            try {
+            assertThrows(IOException.class, () -> {
                 given()
                     .log().all()
                 .when()
                     .get(getDiscoveryUriWithPath("/application/info"))
                 .then()
                     .log().all();
-                fail("Expected SSL failure");
-            } catch (Exception e) {
-                assertInstanceOf(IOException.class, e);
-            }
+            });
         }
 
         /**

@@ -30,7 +30,7 @@ import javax.net.ssl.SSLException;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
@@ -57,19 +57,16 @@ class AttlsConfigTest {
 
         @Test
         void requestFailsWithHttps() {
-            try {
+            assertThrows(SSLException.class, () -> {
                 given()
                     .log().all()
                     .cookie(COOKIE_AUTH_NAME, "jwttoken")
                 .when()
                     .get(String.format("https://%s:%d", hostname, port))
                 .then()
-                    .log().all()
-                    .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR));
+                    .log().all();
                 fail("Expected SSL failure");
-            } catch (Exception e) {
-                assertInstanceOf(SSLException.class, e);
-            }
+            });
         }
 
         @Test

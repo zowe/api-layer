@@ -352,7 +352,7 @@ logging:
         org.springframework.security: TRACE
         org.springframework.security.web: TRACE
         org.zowe.apiml: DEBUG
-        reactor.netty: TRACE
+        reactor.netty: DEBUG
         reactor.netty.http.client: DEBUG
         reactor.netty.http.client.HttpClient: DEBUG
         reactor.netty.http.client.HttpClientConnect: DEBUG
