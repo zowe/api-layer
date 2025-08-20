@@ -11,7 +11,11 @@
 package org.zowe.apiml.gateway.config;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.netflix.appinfo.*;
+import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.appinfo.EurekaInstanceConfig;
+import com.netflix.appinfo.HealthCheckHandler;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.LeaseInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
@@ -50,7 +54,11 @@ import org.springframework.cloud.netflix.eureka.http.RestClientDiscoveryClientOp
 import org.springframework.cloud.netflix.eureka.http.RestClientTransportClientFactories;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClient;
@@ -64,7 +72,6 @@ import org.zowe.apiml.config.AdditionalRegistrationParser;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
-import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.HttpsFactory;
@@ -77,6 +84,7 @@ import reactor.netty.tcp.SslProvider;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509KeyManager;
+
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
@@ -92,7 +100,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.REGISTRATION_TYPE;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
 
 
 //TODO this configuration should be removed as redundancy of the HttpConfig in the apiml-common

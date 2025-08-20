@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.caching.config;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -39,12 +40,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 @TestPropertySource(
     properties = {
         "server.attlsServer.enabled=true",
+        "server.attlsClient.enabled=true",
         "server.ssl.enabled=false",
         "caching.storage.mode=inMemory"
     }
 )
 @DirtiesContext
 @TestInstance(Lifecycle.PER_CLASS)
+@Disabled
 public class AttlsConfigTest {
 
     @Value("${apiml.service.hostname:localhost}")

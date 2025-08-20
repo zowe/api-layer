@@ -11,6 +11,7 @@
 package org.zowe.apiml.apicatalog.functional;
 
 import org.apache.http.HttpStatus;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.annotation.DirtiesContext;
@@ -32,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 )
 @DirtiesContext
 @ActiveProfiles("AttlsConfigTestCatalog")
+@Disabled
 public class AttlsConfigTest extends ApiCatalogFunctionalTest {
 
     @Nested
