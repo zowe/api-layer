@@ -33,26 +33,33 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.reactive.SslInfo;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.WebFilter;
 import org.zowe.apiml.gateway.GatewayServiceApplication;
+import org.zowe.apiml.util.CorsUtils;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.SslProvider;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.X509KeyManager;
+
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class ConnectionsConfigTest {
@@ -417,6 +424,47 @@ class ConnectionsConfigTest {
             assertEquals("statuspageUrl", delegator.getStatusPageUrl());
         }
 
+    }
+
+    @Nested
+    @SpringBootTest(
+        properties = {"apiml.service.corsEnabled=true"}
+    )
+    @ComponentScan(basePackages = "org.zowe.apiml.gateway")
+    class GivenCorsEnabled {
+        @Nested
+        public class WhenCorsAllowedMethodsIsNotSet {
+            @Autowired
+            private ConnectionsConfig connectionsConfig;
+            @Test
+            void validateDefaultCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
+                CorsUtils corsUtils = connectionsConfig.corsUtils();
+                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
+                field.setAccessible(true);
+                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
+                assertEquals(7, corsAllowedMethods.size());
+            }
+        }
+        @Nested
+        @TestPropertySource(properties = {
+            "apiml.service.corsAllowedMethods=GET,POST, PATCH"
+        })
+        @DirtiesContext
+        public class WhenCorsAllowedMethodsIsSet {
+            @Autowired
+            private ConnectionsConfig connectionsConfig;
+            @Test
+            void validateCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
+                CorsUtils corsUtils = connectionsConfig.corsUtils();
+                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
+                field.setAccessible(true);
+                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
+                assertEquals(3, corsAllowedMethods.size());
+                assertEquals("GET", corsAllowedMethods.get(0));
+                assertEquals("POST", corsAllowedMethods.get(1));
+                assertEquals("PATCH", corsAllowedMethods.get(2));
+            }
+        }
     }
 
     @Configuration

@@ -45,8 +45,8 @@ import static reactor.core.publisher.Mono.empty;
 @Slf4j
 public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<PageRedirectionFilterFactory.Config> {
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
 
     private final EurekaClient eurekaClient;
     private final EurekaMetadataParser metadataParser;
@@ -75,7 +75,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
                         RoutedServices routes = metadataParser.parseRoutes(metadata);
                         try {
                             String newUrl = transformService.transformURL(ServiceType.ALL, StringUtils.toRootLowerCase(config.serviceId), location, routes, false);
-                            if (isAttlsEnabled) {
+                            if (isServerAttlsEnabled) {
                                 newUrl = UriComponentsBuilder.fromUriString(newUrl).scheme("https").build().toUriString();
                             }
                             return newUrl;

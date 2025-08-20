@@ -61,7 +61,7 @@ class PageRedirectionFilterFactoryTest {
     }
 
     private void commonSetup(PageRedirectionFilterFactory factory, ServerWebExchange exchange, ServerHttpResponse res, GatewayFilterChain chain, boolean isAttlsEnabled) {
-        ReflectionTestUtils.setField(factory, "isAttlsEnabled", isAttlsEnabled);
+        ReflectionTestUtils.setField(factory, "isServerAttlsEnabled", isAttlsEnabled);
         when(res.getStatusCode()).thenReturn(HttpStatusCode.valueOf(HttpStatus.SC_MOVED_PERMANENTLY));
         when(exchange.getResponse()).thenReturn(res);
         when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());

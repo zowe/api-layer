@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 logging:
     config: classpath:logback-zaas.xml
     level:
@@ -254,28 +257,44 @@ spring.config.activate.on-profile: dev
 logbackServiceName: ZWEAZS1
 
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: attlsServer
 
 server:
     internal:
         ssl:
             enabled: false
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
 
-    service:
-        scheme: http
 apiml:
     service:
         corsEnabled: true
-        scheme: http
 
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
+apiml:
+    security:
+        saf:
+            urls:
+                authenticate: http://localhost:10013/zss/saf/authenticate
+                verify: http://localhost:10013/zss/saf/verify
+    service:
+        corsEnabled: true
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
 
 eureka:
     instance:
         securePortEnabled: false
+        nonSecurePortEnabled: true
         metadata-map:
             apiml:
                 apiInfo:

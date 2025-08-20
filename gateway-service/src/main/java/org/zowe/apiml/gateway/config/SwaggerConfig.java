@@ -73,8 +73,8 @@ import static org.zowe.apiml.product.constants.CoreService.ZAAS;
 )
 public class SwaggerConfig {
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
 
     private final EurekaClient eurekaClient;
     private final WebClient webClient;
@@ -91,7 +91,7 @@ public class SwaggerConfig {
                 .ifPresent(app -> {
                     try {
                         zaasUri = new URIBuilder()
-                            .setScheme(isAttlsEnabled || app.isPortEnabled(InstanceInfo.PortType.SECURE) ? "https" : "http")
+                            .setScheme(app.isPortEnabled(InstanceInfo.PortType.SECURE) && !isClientAttlsEnabled ? "https" : "http")
                             .setHost(app.getHostName())
                             .setPort(app.isPortEnabled(InstanceInfo.PortType.SECURE) ? app.getSecurePort() : app.getPort())
                             .setPath("/v3/api-docs/auth")
