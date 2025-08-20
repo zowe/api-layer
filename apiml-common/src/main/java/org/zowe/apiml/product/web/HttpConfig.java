@@ -13,6 +13,7 @@ package org.zowe.apiml.product.web;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
@@ -35,6 +36,7 @@ import org.zowe.apiml.security.SecurityUtils;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
+import java.security.cert.X509Certificate;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -66,7 +68,7 @@ public class HttpConfig {
     private String keyAlias;
 
     @Value("${server.ssl.keyStore:#{null}}")
-    private String keyStore;
+    private String keyStorePath;
 
     @Value("${server.ssl.keyStorePassword:#{null}}")
     private char[] keyStorePassword;
@@ -113,8 +115,8 @@ public class HttpConfig {
     private Set<String> publicKeyCertificatesBase64;
 
     void updateStorePaths() {
-        if (SecurityUtils.isKeyring(keyStore)) {
-            keyStore = SecurityUtils.formatKeyringUrl(keyStore);
+        if (SecurityUtils.isKeyring(keyStorePath)) {
+            keyStorePath = SecurityUtils.formatKeyringUrl(keyStorePath);
             if (keyStorePassword == null) keyStorePassword = KEYRING_PASSWORD;
         }
         if (SecurityUtils.isKeyring(trustStore)) {
@@ -128,6 +130,11 @@ public class HttpConfig {
         updateStorePaths();
 
         try {
+            X509Certificate certificate = null;
+            if (StringUtils.isNotBlank(keyStorePath)) {
+                var ks = SecurityUtils.loadKeyStore(keyStoreType, keyStorePath, keyStorePassword);
+                certificate = (X509Certificate) ks.getCertificate(keyAlias);
+            }
             Supplier<HttpsConfig.HttpsConfigBuilder> httpsConfigSupplier = () ->
                 HttpsConfig.builder()
                     .protocol(protocol).enabledProtocols(supportedProtocols).cipherSuite(ciphers)
@@ -140,8 +147,12 @@ public class HttpConfig {
                     .timeToLive(timeToLive);
 
             httpsConfig = httpsConfigSupplier.get()
-                .keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
-                .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType)
+                .keyAlias(keyAlias)
+                .keyStore(keyStorePath)
+                .keyPassword(keyPassword)
+                .keyStorePassword(keyStorePassword)
+                .keyStoreType(keyStoreType)
+                .certificate(certificate)
                 .build();
 
             HttpsConfig httpsConfigWithoutKeystore = httpsConfigSupplier.get().build();

@@ -36,7 +36,7 @@ public class CachingServiceClient {
     @Value("${apiml.cachingServiceClient.apiPath}")
     private static final String CACHING_API_PATH = "/cachingservice/api/v1/cache"; //NOSONAR parametrization provided by @Value annotation
 
-    private final String cachingBalancerUrl;
+    private volatile String cachingBalancerUrl;
 
     private static final MultiValueMap<String, String> defaultHeaders = new LinkedMultiValueMap<>();
 
@@ -45,17 +45,22 @@ public class CachingServiceClient {
     }
 
     private final WebClient webClient;
+    private final GatewayClient gatewayClient;
 
     public CachingServiceClient(
         @Qualifier("webClientClientCert") WebClient webClientClientCert,
         GatewayClient gatewayClient
     ) {
-        this.cachingBalancerUrl = String.format("%s://%s/%s", gatewayClient.getGatewayConfigProperties().getScheme(), gatewayClient.getGatewayConfigProperties().getHostname(), CACHING_API_PATH);
+        this.gatewayClient = gatewayClient;
         this.webClient = webClientClientCert;
     }
 
+    void updateUrl() {
+        this.cachingBalancerUrl = String.format("%s://%s/%s", gatewayClient.getGatewayConfigProperties().getScheme(), gatewayClient.getGatewayConfigProperties().getHostname(), CACHING_API_PATH);
+    }
 
     public Mono<Void> create(KeyValue keyValue) {
+        updateUrl();
         return webClient.post()
             .uri(cachingBalancerUrl)
             .bodyValue(keyValue)
@@ -70,6 +75,7 @@ public class CachingServiceClient {
     }
 
     public Mono<Void> update(KeyValue keyValue) {
+        updateUrl();
         return webClient.put()
             .uri(cachingBalancerUrl)
             .bodyValue(keyValue)
@@ -84,6 +90,7 @@ public class CachingServiceClient {
     }
 
     public Mono<KeyValue> read(String key) {
+        updateUrl();
         return webClient.get()
             .uri(cachingBalancerUrl + "/" + key)
             .headers(c -> c.addAll(defaultHeaders))
@@ -108,6 +115,7 @@ public class CachingServiceClient {
      * @return mono with status success / error
      */
     public Mono<Void> delete(String key) {
+        updateUrl();
         return webClient.delete()
             .uri(cachingBalancerUrl + "/" + key)
             .headers(c -> c.addAll(defaultHeaders))

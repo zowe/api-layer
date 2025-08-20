@@ -64,6 +64,7 @@ import org.zowe.apiml.config.AdditionalRegistrationParser;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.HttpsFactory;
@@ -100,6 +101,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 public class ConnectionsConfig {
 
     private static final char[] KEYRING_PASSWORD = "password".toCharArray();
+    private static final ApimlLogger apimlLog = ApimlLogger.of(ConnectionsConfig.class, YamlMessageServiceInstance.getInstance());
 
     @Value("${server.ssl.protocol:TLSv1.2}")
     private String protocol;
@@ -150,8 +152,11 @@ public class ConnectionsConfig {
 
     @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
     private List<String> corsAllowedMethods;
+
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
+
     private final ApplicationContext context;
-    private static final ApimlLogger apimlLog = ApimlLogger.of(ConnectionsConfig.class, YamlMessageServiceInstance.getInstance());
     private HttpsFactory httpsFactory;
 
     public ConnectionsConfig(ApplicationContext context) {
@@ -200,7 +205,8 @@ public class ConnectionsConfig {
      */
     @Bean
     NettyRoutingFilterApiml createNettyRoutingFilterApiml(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
-        return new NettyRoutingFilterApiml(getHttpClient(httpClient, false), getHttpClient(httpClient, true), headersFiltersProvider, properties);
+        boolean isKeyLoadPrevented = StringUtils.isBlank(keyStorePath) && isClientAttlsEnabled;
+        return new NettyRoutingFilterApiml(getHttpClient(httpClient, !isKeyLoadPrevented), getHttpClient(httpClient, true), headersFiltersProvider, properties);
     }
 
     public HttpClient getHttpClient(HttpClient httpClient, boolean useClientCert) {
@@ -416,13 +422,16 @@ public class ConnectionsConfig {
     WebClient webClient(HttpClient httpClient) {
         return WebClient.builder()
             .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, false)))
+            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
             .build();
     }
 
     @Bean
     WebClient webClientClientCert(HttpClient httpClient) {
+        boolean isKeyLoadPrevented = StringUtils.isBlank(keyStorePath) && isClientAttlsEnabled;
         return WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, true)))
+            .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, !isKeyLoadPrevented)))
+
             .build();
     }
 

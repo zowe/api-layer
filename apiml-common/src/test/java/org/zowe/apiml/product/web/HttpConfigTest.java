@@ -24,12 +24,12 @@ class HttpConfigTest {
         @Test
         void whenKeyringHasWrongFormatAndMissingPasswords_thenFixIt() {
             HttpConfig httpConfig = new HttpConfig();
-            ReflectionTestUtils.setField(httpConfig, "keyStore", "safkeyring:///userId/ringId1");
+            ReflectionTestUtils.setField(httpConfig, "keyStorePath", "safkeyring:///userId/ringId1");
             ReflectionTestUtils.setField(httpConfig, "trustStore", "safkeyring:////userId/ringId2");
 
             httpConfig.updateStorePaths();
 
-            assertEquals("safkeyring://userId/ringId1", ReflectionTestUtils.getField(httpConfig, "keyStore"));
+            assertEquals("safkeyring://userId/ringId1", ReflectionTestUtils.getField(httpConfig, "keyStorePath"));
             assertEquals("safkeyring://userId/ringId2", ReflectionTestUtils.getField(httpConfig, "trustStore"));
             assertArrayEquals("password".toCharArray(), (char[]) ReflectionTestUtils.getField(httpConfig, "keyStorePassword"));
             assertArrayEquals("password".toCharArray(), (char[]) ReflectionTestUtils.getField(httpConfig, "trustStorePassword"));
@@ -38,12 +38,12 @@ class HttpConfigTest {
         @Test
         void whenKeystore_thenDoNothing() {
             HttpConfig httpConfig = new HttpConfig();
-            ReflectionTestUtils.setField(httpConfig, "keyStore", "/path1");
+            ReflectionTestUtils.setField(httpConfig, "keyStorePath", "/path1");
             ReflectionTestUtils.setField(httpConfig, "trustStore", "/path2");
 
             httpConfig.updateStorePaths();
 
-            assertEquals("/path1", ReflectionTestUtils.getField(httpConfig, "keyStore"));
+            assertEquals("/path1", ReflectionTestUtils.getField(httpConfig, "keyStorePath"));
             assertEquals("/path2", ReflectionTestUtils.getField(httpConfig, "trustStore"));
             assertNull(ReflectionTestUtils.getField(httpConfig, "keyStorePassword"));
             assertNull(ReflectionTestUtils.getField(httpConfig, "trustStorePassword"));

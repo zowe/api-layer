@@ -35,6 +35,7 @@ import org.zowe.apiml.caching.service.infinispan.storage.InfinispanStorage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
 import static org.zowe.apiml.security.SecurityUtils.isKeyring;
@@ -43,6 +44,10 @@ import static org.zowe.apiml.security.SecurityUtils.isKeyring;
 @ConfigurationProperties(value = "caching.storage.infinispan")
 @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "infinispan")
 public class InfinispanConfig {
+
+    private static final String SERVER_SSL_KEY_STORE_PASSWORD = "server.ssl.keyStorePassword";
+    private static final String SERVER_SSL_KEY_STORE = "server.ssl.keyStore";
+    private static final String SERVER_SSL_KEY_STORE_TYPE = "server.ssl.keyStoreType";
 
     private static final String KEYRING_PASSWORD = "password";
 
@@ -60,6 +65,8 @@ public class InfinispanConfig {
     private String address;
     @Value("${jgroups.keyExchange.port:7601}")
     private String keyExchangePort;
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
 
     @PostConstruct
     void updateKeyring() {
@@ -85,33 +92,47 @@ public class InfinispanConfig {
     }
 
     @Bean(destroyMethod = "stop")
-    DefaultCacheManager cacheManager(ResourceLoader resourceLoader) {
+    synchronized DefaultCacheManager cacheManager(ResourceLoader resourceLoader) {
         System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
         System.setProperty("jgroups.bind.port", port);
         System.setProperty("jgroups.bind.address", address);
         System.setProperty("jgroups.keyExchange.port", keyExchangePort);
-        System.setProperty("server.ssl.keyStoreType", keyStoreType);
-        System.setProperty("server.ssl.keyStore", keyStore);
-        System.setProperty("server.ssl.keyStorePassword", keyStorePass);
+
+        var oldKeyStoreType = Optional.ofNullable(System.getProperty(SERVER_SSL_KEY_STORE_TYPE));
+        var oldKeyStore = Optional.ofNullable(System.getProperty(SERVER_SSL_KEY_STORE));
+        var oldKeyStorePassword = Optional.ofNullable(System.getProperty(SERVER_SSL_KEY_STORE_PASSWORD));
+
+        if (!isServerAttlsEnabled) {
+            System.setProperty(SERVER_SSL_KEY_STORE_TYPE, keyStoreType);
+            System.setProperty(SERVER_SSL_KEY_STORE, keyStore);
+            System.setProperty(SERVER_SSL_KEY_STORE_PASSWORD, keyStorePass);
+        }
+
         ConfigurationBuilderHolder holder;
 
-        try (InputStream configurationStream = resourceLoader.getResource(
-            "classpath:infinispan.xml").getInputStream()) {
+        var infinispanConfigFile = isServerAttlsEnabled ? "infinispan-attls.xml" : "infinispan.xml";
+        try (InputStream configurationStream = resourceLoader.getResource("classpath:" + infinispanConfigFile).getInputStream()) {
             holder = new ParserRegistry().parse(configurationStream, MediaType.APPLICATION_XML);
         } catch (IOException e) {
             throw new InfinispanConfigException("Can't read configuration file", e);
         }
         holder.getGlobalConfigurationBuilder().globalState().persistentLocation(getRootFolder()).enable();
-        holder.newConfigurationBuilder("default").persistence().passivation(true).addSoftIndexFileStore()
+        holder.newConfigurationBuilder("default")
+            .persistence()
+            .passivation(true)
+            .addSoftIndexFileStore()
             .shared(false);
 
         DefaultCacheManager cacheManager = new DefaultCacheManager(holder, true);
 
         ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder.clustering().cacheMode(CacheMode.REPL_SYNC)
-            .encoding().mediaType("application/x-jboss-marshalling");
+        builder.clustering()
+            .cacheMode(CacheMode.REPL_SYNC)
+            .encoding()
+            .mediaType("application/x-jboss-marshalling");
 
-        builder.persistence().passivation(true)
+        builder.persistence()
+            .passivation(true)
             .addSoftIndexFileStore()
             .shared(false);
         cacheManager.administration()
@@ -120,6 +141,10 @@ public class InfinispanConfig {
         cacheManager.administration()
             .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
             .getOrCreateCache("zoweInvalidatedTokenCache", builder.build());
+
+        oldKeyStoreType.ifPresent(kst -> System.setProperty(SERVER_SSL_KEY_STORE_TYPE, kst));
+        oldKeyStore.ifPresent(ks -> System.setProperty(SERVER_SSL_KEY_STORE, ks));
+        oldKeyStorePassword.ifPresent(p -> System.setProperty(SERVER_SSL_KEY_STORE_PASSWORD, p));
         return cacheManager;
     }
 

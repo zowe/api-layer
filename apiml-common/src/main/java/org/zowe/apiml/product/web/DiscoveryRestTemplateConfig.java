@@ -30,6 +30,9 @@ public class DiscoveryRestTemplateConfig {
 
     private static final ApimlLogger apimlLog = ApimlLogger.of(DiscoveryRestTemplateConfig.class, YamlMessageServiceInstance.getInstance());
 
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
+
     @Bean
     public RestClientTransportClientFactories restTemplateTransportClientFactories(RestClientDiscoveryClientOptionalArgs restClientDiscoveryClientOptionalArgs) {
         return new RestClientTransportClientFactories(restClientDiscoveryClientOptionalArgs);
@@ -43,7 +46,9 @@ public class DiscoveryRestTemplateConfig {
         RestClientDiscoveryClientOptionalArgs clientArgs = new RestClientDiscoveryClientOptionalArgs(getDefaultEurekaClientHttpRequestFactorySupplier(), RestClient::builder);
 
         if (eurekaServerUrl.startsWith("http://")) {
-            apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
+            if (!isClientAttlsEnabled) {
+                apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
+            }
         } else {
             clientArgs.setSSLContext(secureSslContext);
             clientArgs.setHostnameVerifier(secureHostnameVerifier);
