@@ -258,8 +258,6 @@ server:
         enabled: true
     ssl:
         enabled: false
-    service:
-        scheme: http
 
 apiml:
     service:
@@ -281,6 +279,8 @@ apiml:
     service:
         corsEnabled: true
         scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
 eureka:
     instance:
         securePortEnabled: false
