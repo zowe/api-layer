@@ -217,7 +217,7 @@ public class ConnectionsConfig {
     @Bean
     NettyRoutingFilterApiml createNettyRoutingFilterApiml(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
         boolean isKeyLoadPrevented = StringUtils.isBlank(keyStorePath) && isClientAttlsEnabled;
-        return new NettyRoutingFilterApiml(getHttpClient(httpClient, !isKeyLoadPrevented), getHttpClient(httpClient, true), headersFiltersProvider, properties);
+        return new NettyRoutingFilterApiml(getHttpClient(httpClient, false), getHttpClient(httpClient, !isKeyLoadPrevented), headersFiltersProvider, properties);
     }
 
     public HttpClient getHttpClient(HttpClient httpClient, boolean useClientCert) {
