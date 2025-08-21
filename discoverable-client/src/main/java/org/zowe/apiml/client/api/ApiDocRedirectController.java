@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+/**
+ * Controller to test the support of Catalog to render redirected Swagger
+ */
 @RestController
 @Tag(name = "Other Operations")
 public class ApiDocRedirectController {
