@@ -144,7 +144,7 @@ public class ContainerService {
                     routes,
                     isClientAttlsEnabled);
             } catch (URLTransformationException | IllegalArgumentException e) {
-                if(!ApiLayerServices.isApiLayerService(serviceId)) {
+                if (!ApiLayerServices.isApiLayerService(serviceId)) {
                     apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", serviceId, e.getMessage());
                 }
             }
@@ -174,7 +174,7 @@ public class ContainerService {
                     getHomePageUrl(serviceInstance),
                     routes);
             } catch (URLTransformationException e) {
-                if(!ApiLayerServices.isApiLayerService(serviceInstance.getServiceId())) {
+                if (!ApiLayerServices.isApiLayerService(serviceInstance.getServiceId())) {
                     apimlLog.log("org.zowe.apiml.apicatalog.getApiBasePathFailed", serviceInstance.getServiceId(), e.getMessage());
                 }
             }
