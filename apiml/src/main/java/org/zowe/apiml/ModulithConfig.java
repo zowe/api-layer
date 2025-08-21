@@ -19,13 +19,7 @@ import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
-import jakarta.servlet.Filter;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.Servlet;
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
+import jakarta.servlet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
@@ -36,6 +30,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.cloud.client.ServiceInstance;
@@ -72,15 +67,7 @@ import reactor.core.publisher.Flux;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
 import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
@@ -341,6 +328,11 @@ public class ModulithConfig implements InitializingBean {
         };
     }
 
+    @Bean
+    public WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> servletContainer(List<TomcatConnectorCustomizer> connectorCustomizers) {
+        return factory -> factory.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
+    }
+
     /**
      * Create a custom Tomcat connector with same customizations as the main
      * external (GW) connector to handle
@@ -352,7 +344,7 @@ public class ModulithConfig implements InitializingBean {
      */
     @Bean
     WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> internalPortCustomizer(
-        @Value("${apiml.internal-discovery.port:10011}") int internalDiscoveryPort) {
+        @Value("${apiml.internal-discovery.port:10011}") int internalDiscoveryPort, List<TomcatConnectorCustomizer> connectorCustomizers) {
         return factory -> {
             var connector = new Connector();
 
@@ -368,6 +360,7 @@ public class ModulithConfig implements InitializingBean {
             connector.setPort(internalDiscoveryPort);
 
             factory.addAdditionalTomcatConnectors(connector);
+            factory.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
         };
 
     }

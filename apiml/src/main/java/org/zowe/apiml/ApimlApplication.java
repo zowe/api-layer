@@ -21,7 +21,19 @@ import org.zowe.apiml.enable.config.EnableApiDiscoveryConfig;
 import org.zowe.apiml.enable.register.RegisterToApiLayer;
 import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
 
-@SpringBootApplication(exclude = {ReactiveOAuth2ClientAutoConfiguration.class})
+@SpringBootApplication(exclude = {ReactiveOAuth2ClientAutoConfiguration.class},
+    scanBasePackages = {
+        "org.zowe.apiml.filter",
+        "org.zowe.apiml.gateway",
+        "org.zowe.apiml.product.web",
+        "org.zowe.apiml.product.gateway",
+        "org.zowe.apiml.product.version",
+        "org.zowe.apiml.product.logging",
+        "org.zowe.apiml.product.security",
+        "org.zowe.apiml.product.service",
+        "org.zowe.apiml.security",
+        "org.zowe.apiml.discovery"
+    })
 @ComponentScan(
     excludeFilters = {
         @ComponentScan.Filter(
@@ -36,9 +48,6 @@ import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
             type = FilterType.ANNOTATION,
             classes = EnableApiDiscovery.class
         )
-    },
-    basePackages = {
-        "org.zowe.apiml.product.web"
     }
 )
 public class ApimlApplication {
