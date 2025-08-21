@@ -11,20 +11,32 @@
 package org.zowe.apiml.client.api;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @Tag(name = "Other Operations")
 public class ApiDocRedirectController {
 
-    private static final String ORIGINAL_APIV2_DOC_PATH = "/v3/api-docs/redirect";
+    @Value("${apiml.service.baseUrl}")
+    private String baseUrl;
 
-    @GetMapping("/v3/api-docs/redirect")
-    public ResponseEntity<String> getDocWithRedirect() {
+    @Value("${apiml.service.contextPath}")
+    private String contextPath;
+
+    private static final String REDIRECT_DOC_URL = "/docs/redirect";
+
+    @GetMapping(REDIRECT_DOC_URL)
+    public ResponseEntity<Void> getDocWithRedirect() {
+        String location = UriComponentsBuilder.fromUriString(baseUrl)
+            .path(contextPath)
+            .path("/v3/api-docs/apiv2").toUriString();
+
         return ResponseEntity.status(301)
-            .header("Location", ORIGINAL_APIV2_DOC_PATH)
+            .header("Location", location)
             .build();
     }
 
