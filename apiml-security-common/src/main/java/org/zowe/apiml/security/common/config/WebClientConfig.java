@@ -86,8 +86,10 @@ public class WebClientConfig {
     @Bean
     @Primary
     WebClient webClient(HttpClient httpClient) {
+        HttpClient base = getHttpClient(httpClient, false)
+            .followRedirect(true);
         return WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, false)))
+            .clientConnector(new ReactorClientHttpConnector(base))
             .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
             .build();
     }
