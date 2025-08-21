@@ -73,6 +73,7 @@ public class PHBase extends FunctionalApar {
             if (!isValidAuthHeader(authorization) && !ltpaIsPresent(headers)) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
+            // if auth header contains invalid token, zOSMF returns 401
             if (authorization.startsWith("Bearer") && !isValidTokenInAuthHeader(authorization)) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
