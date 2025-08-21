@@ -10,10 +10,10 @@
 
 package org.zowe.apiml.client.services.apars;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -71,6 +71,9 @@ public class PHBase extends FunctionalApar {
 
         if (authorization != null) {
             if (!isValidAuthHeader(authorization) && !ltpaIsPresent(headers)) {
+                return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            }
+            if (authorization.startsWith("Bearer") && !isValidTokenInAuthHeader(authorization)) {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
         } else {
