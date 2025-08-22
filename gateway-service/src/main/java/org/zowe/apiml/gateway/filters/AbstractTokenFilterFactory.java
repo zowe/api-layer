@@ -76,7 +76,9 @@ public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFa
                         response.get().getToken()
                     );
                     headers.set(HttpHeaders.COOKIE, cookieHeader);
-                    headers.set(HttpHeaders.AUTHORIZATION, BEARER_AUTHENTICATION_PREFIX + " " + response.get().getToken());
+                    if (!isLtpaToken(response)) {
+                        headers.set(HttpHeaders.AUTHORIZATION, BEARER_AUTHENTICATION_PREFIX + " " + response.get().getToken());
+                    }
                 }).build();
                 exchange = exchange.mutate().request(request).build();
             }
@@ -101,6 +103,10 @@ public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFa
         }
 
         return chain.filter(exchange);
+    }
+
+    private boolean isLtpaToken(AtomicReference<ZaasTokenResponse> response) {
+        return "LtpaToken2".equals(response.get().getCookieName());
     }
 
     @EqualsAndHashCode(callSuper = true)
