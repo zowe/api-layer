@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.client.ws;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -36,4 +38,14 @@ public class DiscoverableClientWebSocketConfigurer implements WebSocketConfigure
 
         registry.addHandler(new HeaderSocketServerHandler(), webSocketEndpoint);
     }
+
+    // Configure buffer sizes for inbound messages
+    @Bean
+    public ServletServerContainerFactoryBean createWebSocketContainer() {
+        ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
+        container.setMaxTextMessageBufferSize(3 * 1024 * 1024); // 3MB
+        container.setMaxBinaryMessageBufferSize(3 * 1024 * 1024); // 3MB
+        return container;
+    }
+
 }
