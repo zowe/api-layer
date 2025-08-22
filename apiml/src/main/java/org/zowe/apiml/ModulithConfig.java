@@ -19,13 +19,7 @@ import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
-import jakarta.servlet.Filter;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.Servlet;
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
+import jakarta.servlet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
@@ -33,9 +27,13 @@ import org.apache.catalina.Host;
 import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatProtocolHandlerCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.cloud.client.ServiceInstance;
@@ -72,15 +70,7 @@ import reactor.core.publisher.Flux;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
 import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
@@ -324,10 +314,12 @@ public class ModulithConfig implements InitializingBean {
     @Primary
     TomcatReactiveWebServerFactory tomcatReactiveWebServerWithFiltersFactory(
         HttpHandler httpHandler,
-        List<PreFluxFilter> preFluxFilters,
+        List<PreFluxFilter> preFluxFilters, ObjectProvider<TomcatConnectorCustomizer> connectorCustomizers,
+        ObjectProvider<TomcatContextCustomizer> contextCustomizers,
+        ObjectProvider<TomcatProtocolHandlerCustomizer<?>> protocolHandlerCustomizers,
         List<ServletContextAware> servletContextAwareListeners) {
 
-        return new TomcatReactiveWebServerFactory() {
+        var factory = new TomcatReactiveWebServerFactory() {
             @Override
             protected void prepareContext(Host host, TomcatHttpHandlerAdapter servlet) {
                 super.prepareContext(host, new ServletWithFilters(httpHandler, servlet, preFluxFilters));
@@ -339,7 +331,12 @@ public class ModulithConfig implements InitializingBean {
                 super.configureContext(context);
             }
         };
+        factory.getTomcatConnectorCustomizers().addAll(connectorCustomizers.orderedStream().toList());
+        factory.getTomcatContextCustomizers().addAll(contextCustomizers.orderedStream().toList());
+        factory.getTomcatProtocolHandlerCustomizers().addAll(protocolHandlerCustomizers.orderedStream().toList());
+        return factory;
     }
+
 
     /**
      * Create a custom Tomcat connector with same customizations as the main
@@ -352,7 +349,7 @@ public class ModulithConfig implements InitializingBean {
      */
     @Bean
     WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> internalPortCustomizer(
-        @Value("${apiml.internal-discovery.port:10011}") int internalDiscoveryPort) {
+        @Value("${apiml.internal-discovery.port:10011}") int internalDiscoveryPort, List<TomcatConnectorCustomizer> connectorCustomizers) {
         return factory -> {
             var connector = new Connector();
 
@@ -368,6 +365,7 @@ public class ModulithConfig implements InitializingBean {
             connector.setPort(internalDiscoveryPort);
 
             factory.addAdditionalTomcatConnectors(connector);
+            factory.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
         };
 
     }
