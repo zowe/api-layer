@@ -148,33 +148,40 @@ fi
 
 echo "Setting loader path: "${GATEWAY_LOADER_PATH}
 
-ATTLS_ENABLED="false"
+add_profile() {
+    new_profile=$1
+    if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+    fi
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}${new_profile}"
+}
+
+ATTLS_SERVER_ENABLED="false"
 ATTLS_CLIENT_ENABLED="false"
 
 if [ "${ZWE_zowe_network_server_tls_attls}" = "true" ]; then
-  ATTLS_ENABLED="true"
+  ATTLS_SERVER_ENABLED="true"
 fi
 if [ "${ZWE_zowe_network_client_tls_attls}" = "true" ]; then
   ATTLS_CLIENT_ENABLED="true"
 fi
 
-if [ "${ATTLS_ENABLED}" = "true" ]; then
+if [ "${ATTLS_SERVER_ENABLED}" = "true" ]; then
+  add_profile "attlsServer"
   ZWE_configs_server_ssl_enabled="false"
-  if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
-    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
-  fi
-  ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}attls"
+  ZWE_configs_apiml_service_corsEnabled=true
 fi
 
 internalProtocol="https"
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
 if [ "${ATTLS_CLIENT_ENABLED}" = "true" ]; then
+    add_profile "attlsClient"
     ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
     internalProtocol=http
     ZWE_configs_apiml_service_corsEnabled=true
 fi
 
-if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_ENABLED" = "true" ]; then
+if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_SERVER_ENABLED" = "true" ]; then
     externalProtocol="https"
 else
     externalProtocol="http"
@@ -272,7 +279,7 @@ if [ -n "${ZWE_configs_logging_config}" ]; then
     LOGBACK="-Dlogging.config=${ZWE_configs_logging_config}"
 fi
 
-if [ "${ATTLS_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
+if [ "${ATTLS_SERVER_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
   keystore_type=
   keystore_pass=
   key_pass=
@@ -305,6 +312,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.gateway.registry.enabled=${ZWE_configs_apiml_gateway_registry_enabled:-false} \
     -Dapiml.gateway.registry.metadata-key-allow-list=${ZWE_configs_gateway_registry_metadataKeyAllowList:-} \
     -Dapiml.gateway.servicesToLimitRequestRate=${ZWE_configs_apiml_gateway_servicesToLimitRequestRate:-} \
+    -Dapiml.gateway.servicesToDisableRetry=${ZWE_configs_apiml_gateway_servicesToDisableRetry:-} \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-true} \
     -Dapiml.httpclient.ssl.enabled-protocols=${client_enabled_protocols} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
@@ -325,7 +333,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
     -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
-    -Dapiml.service.corsAllowedMethods=${ZWE_configs_apiml_service_corsAllowedMethods:-} \
+    -Dapiml.service.corsAllowedMethods=${ZWE_configs_apiml_service_corsAllowedMethods:-GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS} \
     -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.service.forwardClientCertEnabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
@@ -359,7 +367,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.webSocket.asyncWriteTimeout=${ZWE_configs_server_webSocket_asyncWriteTimeout:-60000} \
     -Dserver.webSocket.connectTimeout=${ZWE_configs_server_webSocket_connectTimeout:-45000} \
     -Dserver.webSocket.maxIdleTimeout=${ZWE_configs_server_webSocket_maxIdleTimeout:-3600000} \
-    -Dserver.webSocket.requestBufferSize=${ZWE_configs_server_webSocket_requestBufferSize:-8192} \
+    -Dspring.cloud.gateway.server.webflux.httpclient.websocket.max-frame-payload-length=${ZWE_configs_server_webSocket_requestBufferSize:-8192} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -jar "${JAR_FILE}" &
 

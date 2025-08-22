@@ -49,13 +49,19 @@ jobs:
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
                     APIML_SECURITY_X509_ENABLED: true
                     SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
-                    SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
+                    SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: 3145728
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+                    APIML_GATEWAY_SERVICESTODISABLERETRY: discoverableclient
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+                #The memory is constrained to test large file upload memory issues (#4265)
+                #If the container runs oom, it is hard killed without printing any reasonable message in the log
+                options: --memory 640m --memory-swap 640m
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+                    SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
+                    SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -103,7 +109,7 @@ jobs:
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
                     APIML_SECURITY_X509_ENABLED: true
                     SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
-                    SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
+                    SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: 16348
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
                     APIML_SECURITY_AUTH_PROVIDER: saf
@@ -118,7 +124,7 @@ jobs:
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
                     APIML_SECURITY_X509_ENABLED: true
                     SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
-                    SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
+                    SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: 16348
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
                     APIML_SECURITY_AUTH_PROVIDER: saf
@@ -200,7 +206,7 @@ jobs:
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
                     APIML_SECURITY_X509_ENABLED: true
                     SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
-                    SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
+                    SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: 16348
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
@@ -216,7 +222,7 @@ jobs:
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
                     APIML_SECURITY_X509_ENABLED: true
                     SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
-                    SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
+                    SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: 16348
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
@@ -328,6 +334,9 @@ jobs:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
+                    SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
 #                needs to run in isolation from another DS for multi-tenancy setup
@@ -345,11 +354,13 @@ jobs:
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka
                     SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
-                    SERVER_WEBSOCKET_REQUESTBUFFERSIZE: 16348
+                    SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: 3145728
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+                    APIML_GATEWAY_SERVICESTODISABLERETRY: discoverableclient
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
                     EUREKA_CLIENT_INSTANCEINFOREPLICATIONINTERVALSECONDS: 1
                     EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS: 1
+                options: --memory 640m --memory-swap 640m
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:

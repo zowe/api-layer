@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 eureka:
     instance:
         instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
@@ -139,21 +142,21 @@ logging:
     level:
         ROOT: INFO
         com.netflix: WARN
-        com.netflix.discovery: ERROR
         com.netflix.config: ERROR
-        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.netflix.discovery: ERROR
         com.netflix.discovery.DiscoveryClient: OFF
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        io.netty.resolver.dns: WARN
+        io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
+        javax.net.ssl: ERROR
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.springframework.beans: WARN
         org.springframework.cloud.gateway.filter: WARN
         org.springframework.cloud.gateway.route: WARN
         org.springframework.context.support: WARN
-        org.springframework.beans: WARN
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
-        io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
-        io.netty.resolver.dns: WARN
-        javax.net.ssl: ERROR
-        org.apache.tomcat.util.net.SSLUtilBase: ERROR
 
 management:
     endpoint:
@@ -175,35 +178,63 @@ spring.config.activate.on-profile: debug
 
 logging:
     level:
-        org.zowe.apiml: DEBUG
-        org.springframework.cloud.gateway: DEBUG
-        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
-        org.springframework.security: DEBUG
-        org.springframework.http.server.reactive: DEBUG
-        org.springframework.web.reactive: DEBUG
-        org.springframework.web.reactive.socket: DEBUG
-        reactor.netty.http.client: DEBUG
-        reactor.netty.http.client.HttpClient: DEBUG
-        reactor.netty.http.client.HttpClientConnect: DEBUG
         com.netflix: DEBUG
+        javax.net.ssl: ERROR
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
-        javax.net.ssl: ERROR
+        org.springframework.boot.autoconfigure.web: DEBUG
+        org.springframework.cloud.gateway: DEBUG
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
+        org.springframework.http.server.reactive: DEBUG
+        org.springframework.security: DEBUG
+        org.springframework.web.reactive: DEBUG
+        org.springframework.web.reactive.socket: DEBUG
+        org.zowe.apiml: DEBUG
+        reactor.netty: TRACE
 
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: wiretap
+
+spring:
+    cloud:
+        gateway:
+            server:
+                webflux:
+                    httpserver:
+                        wiretap: true
+                    httpclient:
+                        wiretap: true
+
+---
+spring.config.activate.on-profile: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
 
-    service:
-        scheme: http
 apiml:
     service:
         corsEnabled: true
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
+apiml:
+    service:
         scheme: http
         nonSecurePortEnabled: true
         securePortEnabled: false
+        discoveryServiceUrls: http://localhost:10011/eureka/
+
+eureka:
+    instance:
+        metadata-map:
+            apiml:
+                apiInfo[0]:
+                    swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/gateway/api-docs

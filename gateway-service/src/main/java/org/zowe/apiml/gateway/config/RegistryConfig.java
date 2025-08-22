@@ -27,14 +27,15 @@ public class RegistryConfig {
 
     @Bean
     @ConditionalOnMissingBean
-    public BasicInfoService basicInfoService(EurekaClient eurekaClient, EurekaMetadataParser eurekaMetadataParser) {
+    BasicInfoService basicInfoService(EurekaClient eurekaClient, EurekaMetadataParser eurekaMetadataParser) {
         return new BasicInfoService(eurekaClient, eurekaMetadataParser);
     }
 
     @Bean
-    public ServiceAddress gatewayServiceAddress(
+    ServiceAddress gatewayServiceAddress(
         @Value("${apiml.service.externalUrl:#{null}}") String externalUrl,
-        @Value("${server.attls.enabled:false}") boolean attlsEnabled,
+        @Value("${server.attlsServer.enabled:false}") boolean serverAttlsEnabled,
+        @Value("${server.attlsClient.enabled:false}") boolean clientAttlsEnabled,
         @Value("${server.ssl.enabled:true}") boolean sslEnabled,
         @Value("${apiml.service.hostname:localhost}") String hostname,
         @Value("${server.port}") int port
@@ -42,15 +43,30 @@ public class RegistryConfig {
         if (externalUrl != null) {
             URI uri = new URI(externalUrl);
             return ServiceAddress.builder()
-                .scheme(uri.getScheme())
+                .scheme(clientAttlsEnabled ? "http" : uri.getScheme())
                 .hostname(uri.getHost() + ":" + uri.getPort())
                 .build();
         }
 
         return ServiceAddress.builder()
-            .scheme(attlsEnabled || sslEnabled ? "https" : "http")
+            .scheme(determineScheme(serverAttlsEnabled, clientAttlsEnabled, sslEnabled))
             .hostname(hostname + ":" + port)
             .build();
+    }
+
+    private String determineScheme(
+        boolean serverAttlsEnabled,
+        boolean clientAttlsEnabled,
+        boolean sslEnabled
+    ) {
+        String scheme;
+        if (clientAttlsEnabled) {
+            scheme = "http";
+        } else {
+            scheme = serverAttlsEnabled || sslEnabled ? "https" : "http";
+        }
+
+        return scheme;
     }
 
 }

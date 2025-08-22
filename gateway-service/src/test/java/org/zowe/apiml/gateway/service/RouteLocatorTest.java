@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.service;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -56,9 +57,12 @@ class RouteLocatorTest {
         routeLocator = spy(new RouteLocator(
             discoveryClient,
             Arrays.asList(COMMON_FILTERS),
+            Arrays.asList(COMMON_FILTERS),
             Arrays.asList(PRODUCERS),
             Arrays.asList(SCHEME_HANDLER_FILTERS)
         ));
+        routeLocator.servicesToLimitRequestRateProperty = Collections.emptyList();
+        routeLocator.servicesToDisableRetryProperty = Collections.emptyList();
         routeLocator.afterPropertiesSet();
     }
 
@@ -218,9 +222,16 @@ class RouteLocatorTest {
         @Nested
         class PostRoutingFilterDefinition {
 
-            private final List<FilterDefinition> COMMON_FILTERS = Collections.singletonList(mock(FilterDefinition.class));
-            private final RouteLocator routeLocator = new RouteLocator(null, COMMON_FILTERS, Collections.emptyList(), null);
+            private static final List<FilterDefinition> COMMON_FILTERS = Collections.singletonList(mock(FilterDefinition.class));
+            private static final RouteLocator routeLocator = new RouteLocator(null, COMMON_FILTERS, COMMON_FILTERS, Collections.emptyList(), Collections.emptyList());
             private final RoutedService routedService = new RoutedService("test", "api/v1", "/service1");
+
+            @BeforeAll
+            static void init() {
+                routeLocator.servicesToLimitRequestRateProperty = Collections.emptyList();
+                routeLocator.servicesToDisableRetryProperty = Collections.emptyList();
+                routeLocator.afterPropertiesSet();
+            }
 
             private ServiceInstance createServiceInstance(Boolean forwardingEnabled, Boolean encodedCharactersEnabled, Boolean rateLimiterEnabled) {
                 Map<String, String> metadata = new HashMap<>();
@@ -235,10 +246,9 @@ class RouteLocatorTest {
                 }
                 ServiceInstance serviceInstance = mock(ServiceInstance.class);
                 doReturn(metadata).when(serviceInstance).getMetadata();
+                doReturn("dummy").when(serviceInstance).getServiceId();
                 return serviceInstance;
             }
-
-
 
             @Nested
             class EnabledForwarding {

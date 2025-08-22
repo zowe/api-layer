@@ -16,9 +16,9 @@ import com.netflix.appinfo.LeaseInfo;
 import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Application;
+import com.netflix.discovery.shared.Applications;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +26,14 @@ import org.apache.catalina.Context;
 import org.apache.catalina.Host;
 import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatProtocolHandlerCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.cloud.client.ServiceInstance;
@@ -76,7 +81,7 @@ import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
 @EnableConfigurationProperties
 @DependsOn(value = {"gatewayHealthIndicator"})
 @Slf4j
-public class ModulithConfig {
+public class ModulithConfig implements InitializingBean {
 
     private final ApplicationContext applicationContext;
     private final Map<String, InstanceInfo> instances = new HashMap<>();
@@ -155,7 +160,11 @@ public class ModulithConfig {
             .orElse(null);
     }
 
-    @PostConstruct
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        createLocalInstances();
+    }
+
     void createLocalInstances() {
         instances.put(CoreService.GATEWAY.getServiceId(), getInstanceInfo(CoreService.GATEWAY.getServiceId()));
         instances.put(CoreService.DISCOVERY.getServiceId(), getInstanceInfo(CoreService.DISCOVERY.getServiceId()));
@@ -252,11 +261,11 @@ public class ModulithConfig {
                 if (registry == null) {
                     return Collections.emptyList();
                 }
-                return registry.getApplications().getRegisteredApplications()
-                    .stream()
-                    .map(Application::getName)
-                    .distinct()
-                    .toList();
+
+                return Optional.ofNullable(registry.getApplications())
+                    .map(Applications::getRegisteredApplications)
+                    .map(applications -> applications.stream().map(Application::getName).distinct().toList())
+                    .orElse(List.of());
             }
         };
     }
@@ -305,10 +314,12 @@ public class ModulithConfig {
     @Primary
     TomcatReactiveWebServerFactory tomcatReactiveWebServerWithFiltersFactory(
         HttpHandler httpHandler,
-        List<PreFluxFilter> preFluxFilters,
+        List<PreFluxFilter> preFluxFilters, ObjectProvider<TomcatConnectorCustomizer> connectorCustomizers,
+        ObjectProvider<TomcatContextCustomizer> contextCustomizers,
+        ObjectProvider<TomcatProtocolHandlerCustomizer<?>> protocolHandlerCustomizers,
         List<ServletContextAware> servletContextAwareListeners) {
 
-        return new TomcatReactiveWebServerFactory() {
+        var factory = new TomcatReactiveWebServerFactory() {
             @Override
             protected void prepareContext(Host host, TomcatHttpHandlerAdapter servlet) {
                 super.prepareContext(host, new ServletWithFilters(httpHandler, servlet, preFluxFilters));
@@ -320,7 +331,12 @@ public class ModulithConfig {
                 super.configureContext(context);
             }
         };
+        factory.getTomcatConnectorCustomizers().addAll(connectorCustomizers.orderedStream().toList());
+        factory.getTomcatContextCustomizers().addAll(contextCustomizers.orderedStream().toList());
+        factory.getTomcatProtocolHandlerCustomizers().addAll(protocolHandlerCustomizers.orderedStream().toList());
+        return factory;
     }
+
 
     /**
      * Create a custom Tomcat connector with same customizations as the main
@@ -333,7 +349,7 @@ public class ModulithConfig {
      */
     @Bean
     WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> internalPortCustomizer(
-        @Value("${apiml.internal-discovery.port:10011}") int internalDiscoveryPort) {
+        @Value("${apiml.internal-discovery.port:10011}") int internalDiscoveryPort, List<TomcatConnectorCustomizer> connectorCustomizers) {
         return factory -> {
             var connector = new Connector();
 
@@ -349,6 +365,7 @@ public class ModulithConfig {
             connector.setPort(internalDiscoveryPort);
 
             factory.addAdditionalTomcatConnectors(connector);
+            factory.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
         };
 
     }

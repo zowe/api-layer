@@ -47,8 +47,8 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
     @Qualifier("webClientClientCert")
     private final WebClient webClientClientCert;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
 
     private final DiscoveryConfigProperties discoveryConfigProperties;
 
@@ -60,7 +60,7 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .headers(headers -> {
                     boolean isHttp = uri.startsWith("http://");
-                    if (isHttp && !isAttlsEnabled) {
+                    if (isHttp && !isServerAttlsEnabled) {
                         String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
                         headers.add(HttpHeaders.AUTHORIZATION, basicToken);
                     }

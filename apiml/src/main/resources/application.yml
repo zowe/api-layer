@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 eureka:
     dashboard:
         path: /eureka
@@ -328,9 +331,12 @@ spring.config.activate.on-profile: debug
 
 logging:
     level:
+        org.springframework.cloud.gateway: DEBUG
+        org.springframework.web.reactive: DEBUG
+        org.springframework.web.reactive.socket: DEBUG
         com.netflix: INFO # Update to DEBUG
-        com.netflix.eureka: DEBUG
         com.netflix.discovery.shared.transport.decorator: DEBUG
+        com.netflix.eureka: DEBUG
         com.netflix.eureka.cluster: DEBUG
         com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
         javax.net.ssl: ERROR
@@ -339,37 +345,55 @@ logging:
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.ehcache: INFO
+        org.infinispan: DEBUG
+        org.jgroups: DEBUG
         org.springframework: DEBUG
-        # org.springframework.cloud.gateway: TRACE
-        # org.springframework.cloud.gateway.filter: TRACE
-        # org.springframework.cloud.gateway.route: TRACE
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.springframework.security: TRACE
         org.springframework.security.web: TRACE
-        # org.springframework.web.reactive: DEBUG
-        # org.springframework.web.reactive.socket: DEBUG
         org.zowe.apiml: DEBUG
         reactor.netty: DEBUG
         reactor.netty.http.client: DEBUG
         reactor.netty.http.client.HttpClient: DEBUG
         reactor.netty.http.client.HttpClientConnect: DEBUG
-        org.jgroups: DEBUG
-        org.infinispan: DEBUG
 
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: wiretap
+
+spring:
+    cloud:
+        gateway:
+            server:
+                webflux:
+                    httpserver:
+                        wiretap: true
+                    httpclient:
+                        wiretap: true
+
+---
+spring.config.activate.on-profile: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
 
-    service:
-        scheme: http
 apiml:
     service:
         corsEnabled: true
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+    service:
+        scheme: http
+
+apiml:
+    service:
         scheme: http
         nonSecurePortEnabled: true
         securePortEnabled: false

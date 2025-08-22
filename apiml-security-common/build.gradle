@@ -19,5 +19,6 @@ dependencies {
     annotationProcessor libs.lombok
 
     testCompileOnly libs.lombok
+    testImplementation libs.netty.reactor.http
     testAnnotationProcessor libs.lombok
 }

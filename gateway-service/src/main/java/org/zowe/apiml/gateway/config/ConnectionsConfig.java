@@ -79,16 +79,22 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 @RequiredArgsConstructor
 public class ConnectionsConfig {
 
+    private static final ApimlLogger apimlLog = ApimlLogger.of(ConnectionsConfig.class, YamlMessageServiceInstance.getInstance());
+
     @Value("${eureka.client.serviceUrl.defaultZone}")
     private String eurekaServerUrl;
 
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
+
     @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
     private List<String> corsAllowedMethods;
+
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
+
     private final ApplicationContext context;
     private final HttpConfig config;
-    private static final ApimlLogger apimlLog = ApimlLogger.of(ConnectionsConfig.class, YamlMessageServiceInstance.getInstance());
 
     @Value("${apiml.service.externalUrl:}")
     private String externalUrl;
@@ -101,10 +107,11 @@ public class ConnectionsConfig {
      */
     @Bean
     NettyRoutingFilterApiml createNettyRoutingFilterApiml(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
+        boolean isKeyLoadPrevented = StringUtils.isBlank(config.getKeyStorePath()) && isClientAttlsEnabled;
         try {
             return new NettyRoutingFilterApiml(
                 ConnectionUtil.getHttpClient(config, httpClient, false),
-                ConnectionUtil.getHttpClient(config, httpClient, true),
+                ConnectionUtil.getHttpClient(config, httpClient, !isKeyLoadPrevented),
                 headersFiltersProvider, properties
             );
         } catch (Exception e) {

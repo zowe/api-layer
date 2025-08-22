@@ -47,17 +47,19 @@ import java.util.Collections;
 @Configuration
 @RequiredArgsConstructor
 @EnableApimlAuth
-@Profile({"https", "attls"})
+@Profile({"https", "attlsServer"})
 @ConditionalOnMissingBean(name = "modulithConfig")
 public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
+
+    private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
     private final HandlerInitializer handlerInitializer;
     private final AuthConfigurationProperties securityConfigurationProperties;
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
-    private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
 
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
@@ -69,7 +71,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private boolean nonStrictVerifySslCertificatesOfServices;
 
     @Bean
-    public WebSecurityCustomizer httpsWebSecurityCustomizer() {
+    WebSecurityCustomizer httpsWebSecurityCustomizer() {
         String[] noSecurityAntMatchers = {
             "/eureka/css/**",
             "/eureka/js/**",
@@ -92,7 +94,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
      */
     @Bean
     @Order(1)
-    public SecurityFilterChain errorHandler(HttpSecurity http) throws Exception {
+    SecurityFilterChain errorHandler(HttpSecurity http) throws Exception {
         return baseConfigure(http.securityMatcher("/error")).build();
     }
 
@@ -101,7 +103,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
      */
     @Bean
     @Order(3)
-    public SecurityFilterChain basicAuthOrTokenFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain basicAuthOrTokenFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
             "/application/**",
             "/*"
@@ -111,7 +113,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             .authorizeHttpRequests(requests -> requests
                 .requestMatchers("/**").authenticated())
             .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
-        if (isAttlsEnabled) {
+        if (isServerAttlsEnabled) {
             http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
         }
 
@@ -124,14 +126,14 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
      */
     @Bean
     @Order(2)
-    public SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatcher("/eureka/**"));
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
             http.x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
                 .authorizeHttpRequests(requests -> requests
                     .anyRequest().authenticated()
                 );
-            if (isAttlsEnabled) {
+            if (isServerAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
@@ -146,7 +148,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
      */
     @Bean
     @Order(4)
-    public SecurityFilterChain basicAuthOrTokenOrCertFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain basicAuthOrTokenOrCertFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatcher("/discovery/**"))
             .authenticationProvider(gatewayLoginProvider)
             .authenticationProvider(gatewayTokenProvider)
@@ -154,7 +156,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
             http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
                 .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
-            if (isAttlsEnabled) {
+            if (isServerAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }

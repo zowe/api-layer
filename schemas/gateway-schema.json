@@ -199,6 +199,14 @@
                                                                         "type": "string",
                                                                         "description": "The name of the service."
                                                                     }
+                                                                },
+                                                                "servicesToDisableRetry":{
+                                                                    "type": "array",
+                                                                    "description": "Array of services which the retry filter will be disabled for.",
+                                                                    "items": {
+                                                                        "type": "string",
+                                                                        "description": "The name of the service."
+                                                                    }
                                                                 }
                                                             }
                                                         },

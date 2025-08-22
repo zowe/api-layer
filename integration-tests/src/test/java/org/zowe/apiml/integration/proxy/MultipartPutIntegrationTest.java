@@ -20,11 +20,14 @@ import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.util.Random;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_MULTIPART;
 
 @DiscoverableClientDependentTest
 class MultipartPutIntegrationTest implements TestWithStartedInstances {
@@ -35,6 +38,7 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
     @BeforeAll
     static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 
     @Nested
@@ -69,6 +73,45 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
                     body("fileType", equalTo("application/octet-stream")).
                 when().
                     post(url);
+            }
+        }
+
+        @Test
+        void givenLargeFileUpload() {
+            int payloadSize = 750 * 1024 * 1024; //750MB
+
+            given()
+                .multiPart(
+                    "file",
+                    "largefile.dat",
+                    new RandomDataInputStream(payloadSize),
+                    "application/octet-stream"
+                )
+            .when()
+                .post(url)
+            .then()
+                .statusCode(200)
+                .body("fileName", equalTo("largefile.dat"))
+                .body("fileType", equalTo("application/octet-stream"))
+                .body("size", equalTo(payloadSize));
+        }
+
+        static class RandomDataInputStream extends InputStream {
+            private final long targetSize;
+            private long count = 0;
+            private final Random random = new Random();
+
+            RandomDataInputStream(long targetSize) {
+                this.targetSize = targetSize;
+            }
+
+            @Override
+            public int read() throws IOException {
+                if (count >= targetSize) {
+                    return -1;
+                }
+                count++;
+                return random.nextInt(256);
             }
         }
     }

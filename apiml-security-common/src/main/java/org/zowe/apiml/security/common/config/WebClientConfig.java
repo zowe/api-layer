@@ -14,6 +14,8 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.resolver.DefaultAddressResolverGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.cloud.gateway.config.HttpClientCustomizer;
@@ -40,9 +42,12 @@ import java.util.List;
 @ConditionalOnProperty(name = "apiml.webClientConfig.enabled", havingValue = "true")
 public class WebClientConfig {
 
+    private static final ApimlLogger apimlLog = ApimlLogger.of(WebClientConfig.class, YamlMessageServiceInstance.getInstance());
+
     private final HttpConfig config;
 
-    private static final ApimlLogger apimlLog = ApimlLogger.of(WebClientConfig.class, YamlMessageServiceInstance.getInstance());
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
 
     @Bean
     HttpClientFactory gatewayHttpClientFactory(
@@ -81,15 +86,19 @@ public class WebClientConfig {
     @Bean
     @Primary
     WebClient webClient(HttpClient httpClient) {
+        HttpClient base = getHttpClient(httpClient, false)
+            .followRedirect(true);
         return WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, false)))
+            .clientConnector(new ReactorClientHttpConnector(base))
+            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
             .build();
     }
 
     @Bean
     WebClient webClientClientCert(HttpClient httpClient) {
+        boolean isKeyLoadPrevented = StringUtils.isBlank(config.getKeyStorePath()) && isClientAttlsEnabled;
         return WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, true)))
+            .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, !isKeyLoadPrevented)))
             .build();
     }
 
