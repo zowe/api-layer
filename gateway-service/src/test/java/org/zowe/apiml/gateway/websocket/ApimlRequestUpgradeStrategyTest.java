@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.websocket.DeploymentException;
 import jakarta.websocket.server.ServerContainer;
 import org.junit.jupiter.api.Test;
+import org.springframework.cloud.gateway.config.HttpClientProperties;
 import org.springframework.http.server.reactive.AbstractServerHttpRequest;
 import org.springframework.http.server.reactive.AbstractServerHttpResponse;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -48,7 +49,7 @@ class ApimlRequestUpgradeStrategyTest {
         when(resp.getNativeResponse()).thenReturn(nativeResp);
         var handler = mock(WebSocketHandler.class);
         var handShakeInfo = mock(HandshakeInfo.class);
-        var updateStrategy = new ApimlRequestUpgradeStrategy();
+        var updateStrategy = new ApimlRequestUpgradeStrategy(new HttpClientProperties());
         var serverContainer = mock(ServerContainer.class);
         ReflectionTestUtils.setField(updateStrategy, "serverContainer", serverContainer);
 
