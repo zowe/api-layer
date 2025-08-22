@@ -38,6 +38,7 @@ import java.util.function.Supplier;
 import static reactor.core.publisher.Mono.*;
 
 @RequiredArgsConstructor
+//TODO explore extending TomcatRequestUpgradeStrategy
 public class ApimlRequestUpgradeStrategy extends StandardWebSocketUpgradeStrategy {
 
     private final HttpClientProperties httpClientProperties;
