@@ -30,4 +30,14 @@ public class StompController {
         char c = 'B';
         return String.valueOf(c).repeat(payloadSize);
     }
+
+    @MessageMapping("/replyWithMultipliedSize/{id}")
+    @SendTo("/topic/replyWithMultipliedSize/{id}")
+    public String replyWithMultipliedSize(@DestinationVariable String id, @Payload String payload) throws IllegalArgumentException {
+        var payloadSize = payload.getBytes().length;
+        log.info("Received stomp message id {} with payload size {}. Sending the 10 times the size back.", id, payloadSize);
+
+        char c = 'B';
+        return String.valueOf(c).repeat(10 * payloadSize);
+    }
 }

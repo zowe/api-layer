@@ -73,6 +73,26 @@ public class StompProxyTest extends WebSocketProxyTest {
         assertEquals(payloadSize, response.getBytes().length);
     }
 
+    @Test
+    void stompOverWebsocketClosedOnOversizedPayloadError() throws Exception {
+        completableFuture = new CompletableFuture<>();
+        String uuid = UUID.randomUUID().toString();
+
+        StompSession stompSession = stompClient.connectAsync(
+            discoverableClientGatewayUrl(DISCOVERABLE_STOMP), VALID_AUTH_HEADERS, new StompSessionHandlerAdapter() {
+            }).get(1, SECONDS);
+        stompSession.subscribe(SUBSCRIBE_ENDPOINT + uuid, new StringStompFrameHandler());
+
+        char c = 'A';
+        int payloadSize = 1024 * 1024;
+        stompSession.send(SEND_ENDPOINT + uuid, String.valueOf(c).repeat(payloadSize));
+        
+        String response = completableFuture.get(10, SECONDS);
+        stompSession.disconnect();
+
+        assertEquals(payloadSize, response.getBytes().length);
+    }
+
     private class StringStompFrameHandler implements StompFrameHandler {
         @Override
         public Type getPayloadType(StompHeaders stompHeaders) {
