@@ -5,8 +5,8 @@ dependencyResolutionManagement {
             version('projectNode', '20.14.0')
             version('projectNpm', '10.7.0')
 
-            version('springBoot', '3.5.4')
-            version('springBootGraphQl', '3.5.4')
+            version('springBoot', '3.5.5')
+            version('springBootGraphQl', '3.5.5')
             version('springCloudNetflix', '4.3.0')
             version('springCloudCommons', '4.3.0')
             version('springCloudCB', '3.3.0')
@@ -62,7 +62,7 @@ dependencyResolutionManagement {
             version('jettyWebSocketClient', '12.1.0')
             version('jettison', '1.5.4')
             //0.12.x version contains breaking changes
-            version('jjwt', '0.12.7')
+            version('jjwt', '0.13.0')
             version('jodaTime', '2.14.0')
             version('jsonPath', '2.9.0')
             version('jsonSmart', '2.6.0')
@@ -83,7 +83,7 @@ dependencyResolutionManagement {
             version('reactor', '3.7.9')
             version('restAssured', '5.5.6')
             version('rhino', '1.8.0')
-            version('springDoc', '2.8.9')
+            version('springDoc', '2.8.10')
             version('swaggerCore', '2.2.36')
             version('swaggerInflector', '2.0.13')
             version('swagger2Parser', '1.0.75')
