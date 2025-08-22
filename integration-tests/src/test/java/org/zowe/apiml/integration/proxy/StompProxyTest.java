@@ -30,8 +30,10 @@ import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_STOMP;
 
 public class StompProxyTest extends WebSocketProxyTest {
 
-    private static final String SEND_ENDPOINT = "/app/replyWithSameSize/";
-    private static final String SUBSCRIBE_ENDPOINT = "/topic/replyWithSameSize/";
+    private static final String SEND_SAMESIZE_ENDPOINT = "/app/replyWithSameSize/";
+    private static final String SUBSCRIBE_SAMESIZE_ENDPOINT = "/topic/replyWithSameSize/";
+    private static final String SEND_MULTIPLYSIZE_ENDPOINT = "/app/replyWithMultipliedSize/";
+    private static final String SUBSCRIBE_MULTIPLYESIZE_ENDPOINT = "/topic/replyWithMultipliedSize/";
 
     private static WebSocketStompClient stompClient;
 
@@ -61,11 +63,11 @@ public class StompProxyTest extends WebSocketProxyTest {
         StompSession stompSession = stompClient.connectAsync(
             discoverableClientGatewayUrl(DISCOVERABLE_STOMP), VALID_AUTH_HEADERS, new StompSessionHandlerAdapter() {
         }).get(1, SECONDS);
-        stompSession.subscribe(SUBSCRIBE_ENDPOINT + uuid, new StringStompFrameHandler());
+        stompSession.subscribe(SUBSCRIBE_SAMESIZE_ENDPOINT + uuid, new StringStompFrameHandler());
 
         char c = 'A';
         int payloadSize = 1024 * 1024;
-        stompSession.send(SEND_ENDPOINT + uuid, String.valueOf(c).repeat(payloadSize));
+        stompSession.send(SEND_SAMESIZE_ENDPOINT + uuid, String.valueOf(c).repeat(payloadSize));
 
         String response = completableFuture.get(10, SECONDS);
         stompSession.disconnect();
@@ -81,12 +83,12 @@ public class StompProxyTest extends WebSocketProxyTest {
         StompSession stompSession = stompClient.connectAsync(
             discoverableClientGatewayUrl(DISCOVERABLE_STOMP), VALID_AUTH_HEADERS, new StompSessionHandlerAdapter() {
             }).get(1, SECONDS);
-        stompSession.subscribe(SUBSCRIBE_ENDPOINT + uuid, new StringStompFrameHandler());
+        stompSession.subscribe(SUBSCRIBE_MULTIPLYESIZE_ENDPOINT + uuid, new StringStompFrameHandler());
 
         char c = 'A';
         int payloadSize = 1024 * 1024;
-        stompSession.send(SEND_ENDPOINT + uuid, String.valueOf(c).repeat(payloadSize));
-        
+        stompSession.send(SEND_MULTIPLYSIZE_ENDPOINT + uuid, String.valueOf(c).repeat(payloadSize));
+
         String response = completableFuture.get(10, SECONDS);
         stompSession.disconnect();
 
