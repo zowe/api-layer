@@ -60,7 +60,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
     private static final String BASE64_CREDENTIALS = Base64.getEncoder().encodeToString("user:pass".getBytes());
     private static final String INVALID_BASE64_CREDENTIALS = Base64.getEncoder().encodeToString("user:invalidPass".getBytes());
 
-    private WebSocketHttpHeaders VALID_AUTH_HEADERS;
+    protected WebSocketHttpHeaders VALID_AUTH_HEADERS;
     private WebSocketHttpHeaders INVALID_AUTH_HEADERS;
 
     @BeforeEach
@@ -101,7 +101,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
         };
     }
 
-    private String discoverableClientGatewayUrl(String gatewayUrl) throws URISyntaxException {
+    protected String discoverableClientGatewayUrl(String gatewayUrl) throws URISyntaxException {
         String scheme = gatewayServiceConfiguration.getScheme().equals("http") ? "ws" : "wss";
         String host = StringUtils.isNotBlank(gatewayServiceConfiguration.getDvipaHost()) ? gatewayServiceConfiguration.getDvipaHost() : gatewayServiceConfiguration.getHost();
         int port = gatewayServiceConfiguration.getPort();

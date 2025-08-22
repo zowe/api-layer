@@ -57,6 +57,7 @@ public class Endpoints {
     public static final String DISCOVERABLE_GREET = "/discoverableclient/api/v1/greeting";
     public static final String DISCOVERABLE_WS_HEADER = "/discoverableclient/ws/v1/header";
     public static final String DISCOVERABLE_WS_UPPERCASE = "/discoverableclient/ws/v1/uppercase";
+    public static final String DISCOVERABLE_STOMP = "/discoverableclient/ws/v1/stomp";
     public static final String DISCOVERABLE_GET_FILE = "/discoverableclient/api/v1/get-file";
     public static final String DISCOVERABLE_MULTIPART = "/discoverableclient/api/v1/multipart";
     public static final String DISCOVERABLE_SSE_EVENTS = "/discoverableclient/sse/v1/events";
