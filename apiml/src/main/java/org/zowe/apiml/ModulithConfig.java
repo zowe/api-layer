@@ -27,10 +27,13 @@ import org.apache.catalina.Host;
 import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatProtocolHandlerCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.cloud.client.ServiceInstance;
@@ -311,10 +314,12 @@ public class ModulithConfig implements InitializingBean {
     @Primary
     TomcatReactiveWebServerFactory tomcatReactiveWebServerWithFiltersFactory(
         HttpHandler httpHandler,
-        List<PreFluxFilter> preFluxFilters,
+        List<PreFluxFilter> preFluxFilters, ObjectProvider<TomcatConnectorCustomizer> connectorCustomizers,
+        ObjectProvider<TomcatContextCustomizer> contextCustomizers,
+        ObjectProvider<TomcatProtocolHandlerCustomizer<?>> protocolHandlerCustomizers,
         List<ServletContextAware> servletContextAwareListeners) {
 
-        return new TomcatReactiveWebServerFactory() {
+        var factory = new TomcatReactiveWebServerFactory() {
             @Override
             protected void prepareContext(Host host, TomcatHttpHandlerAdapter servlet) {
                 super.prepareContext(host, new ServletWithFilters(httpHandler, servlet, preFluxFilters));
@@ -326,12 +331,12 @@ public class ModulithConfig implements InitializingBean {
                 super.configureContext(context);
             }
         };
+        factory.getTomcatConnectorCustomizers().addAll(connectorCustomizers.orderedStream().toList());
+        factory.getTomcatContextCustomizers().addAll(contextCustomizers.orderedStream().toList());
+        factory.getTomcatProtocolHandlerCustomizers().addAll(protocolHandlerCustomizers.orderedStream().toList());
+        return factory;
     }
 
-    @Bean
-    public WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> servletContainer(List<TomcatConnectorCustomizer> connectorCustomizers) {
-        return factory -> factory.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
-    }
 
     /**
      * Create a custom Tomcat connector with same customizations as the main
