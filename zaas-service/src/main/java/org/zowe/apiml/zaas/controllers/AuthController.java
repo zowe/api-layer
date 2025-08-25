@@ -45,7 +45,7 @@ import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
-import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderJWK;
+import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
@@ -354,8 +354,8 @@ public class AuthController {
         }
         Optional<JWK> key = jwtSecurity.getJwkPublicKey();
         key.ifPresent(keys::add);
-        if ((oidcProvider != null) && (oidcProvider instanceof OIDCTokenProviderJWK oidcTokenProviderJwk)) {
-            JWKSet oidcSet = oidcTokenProviderJwk.getJwkSet();
+        if ((oidcProvider != null) && (oidcProvider instanceof OIDCTokenProvider oidcTokenProvider)) {
+            JWKSet oidcSet = oidcTokenProvider.getJwkSet();
             if (oidcSet != null) {
                 keys.addAll(oidcSet.getKeys());
             }

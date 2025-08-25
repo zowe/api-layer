@@ -24,19 +24,23 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.LocatorAdapter;
 import io.jsonwebtoken.ProtectedHeader;
+import io.jsonwebtoken.lang.Collections;
 import io.jsonwebtoken.security.UnsupportedKeyException;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.http.HttpStatus;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 
 import java.io.IOException;
@@ -44,6 +48,7 @@ import java.net.URL;
 import java.security.Key;
 import java.security.PublicKey;
 import java.text.ParseException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,19 +59,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-@ConditionalOnExpression("'${apiml.security.oidc.validationType:JWK}' == 'JWK' && '${apiml.security.oidc.enabled:false}' == 'true'")
-public class OIDCTokenProviderJWK implements OIDCProvider {
+@ConditionalOnExpression("'${apiml.security.oidc.enabled:false}' == 'true'")
+public class OIDCTokenProvider implements OIDCProvider {
 
     private final LocatorAdapterKid keyLocator = new LocatorAdapterKid();
 
-    @InjectApimlLogger
-    protected final ApimlLogger logger = ApimlLogger.empty();
 
-    @Value("${apiml.security.oidc.registry:}")
-    String registry;
 
     @Value("${apiml.security.oidc.jwks.uri}")
-    private String jwksUri;
+    private List<String> jwksUri;
 
     @Value("${apiml.security.oidc.jwks.refreshInternalHours:1}")
     private int jwkRefreshInterval;
@@ -75,6 +76,10 @@ public class OIDCTokenProviderJWK implements OIDCProvider {
     private final Clock clock;
     private final DefaultResourceRetriever resourceRetriever;
 
+    @Value("${apiml.security.oidc.userInfo.uri}")
+    private String endpointUrl;
+
+    private final CloseableHttpClient secureHttpClientWithKeystore;
     @Getter
     private final Map<String, PublicKey> publicKeys = new ConcurrentHashMap<>();
     @Getter
@@ -89,7 +94,7 @@ public class OIDCTokenProviderJWK implements OIDCProvider {
 
     @Retryable
     void fetchJWKSet() {
-        if (StringUtils.isBlank(jwksUri)) {
+        if (Collections.isEmpty(jwksUri)) {
             log.debug("OIDC JWK URI not provided, JWK refresh not performed");
             return;
         }
@@ -98,9 +103,11 @@ public class OIDCTokenProviderJWK implements OIDCProvider {
         try {
             publicKeys.clear();
             jwkSet = null;
-            Resource resource = resourceRetriever.retrieveResource(new URL(jwksUri));
-            jwkSet = JWKSet.parse(resource.getContent());
-            publicKeys.putAll(processKeys(jwkSet));
+            for(String url: jwksUri) {
+                Resource resource = resourceRetriever.retrieveResource(new URL(url));
+                jwkSet = JWKSet.parse(resource.getContent());
+                publicKeys.putAll(processKeys(jwkSet));
+            }
         } catch (IOException | ParseException | IllegalStateException e) {
             log.error("Error processing response from URI {} message: {}", jwksUri, e.getMessage());
         }
@@ -127,9 +134,33 @@ public class OIDCTokenProviderJWK implements OIDCProvider {
     public boolean isValid(String token) {
         try {
             log.debug("Validating the token with JWK: {}", jwksUri);
-            return !getClaims(token).isEmpty();
+            if (Collections.isEmpty(jwksUri) || getClaims(token).isEmpty()) {
+                return isValidExternal(token);
+            }
+            return true;
         } catch (JwtException jwte) {
             log.debug("JWK token validation failed with the exception {}", jwte.getMessage(), jwte.getCause());
+            return false;
+        }
+    }
+
+    public boolean isValidExternal(String token) {
+        try {
+            if(StringUtils.isEmpty(endpointUrl)) {
+                log.debug("JWT can't be validated externally because endpoint URL was not provided.");
+                return false;
+            }
+            log.debug("Validating the token against URL: {}", endpointUrl);
+            HttpGet httpGet = new HttpGet(endpointUrl);
+            httpGet.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + token);
+
+            return secureHttpClientWithKeystore.execute(httpGet, response -> {
+                final int responseCode = response.getCode();
+                log.debug("Response code: {}", responseCode);
+                return HttpStatus.valueOf(responseCode).is2xxSuccessful();
+            });
+        } catch (IOException e) {
+            log.error("An error occurred during validation of OIDC token using userInfo URI {}: {}", endpointUrl, e.getMessage());
             return false;
         }
     }

@@ -15,6 +15,7 @@ import com.nimbusds.jose.util.DefaultResourceRetriever;
 import com.nimbusds.jose.util.Resource;
 import io.jsonwebtoken.impl.DefaultClock;
 import io.jsonwebtoken.impl.FixedClock;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.PublicKey;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
@@ -44,7 +47,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class OIDCTokenProviderJWKTest {
+class OIDCTokenProviderTest {
 
     private static final String OKTA_JWKS_RESOURCE = "test_samples/okta_jwks.json";
 
@@ -52,15 +55,16 @@ class OIDCTokenProviderJWKTest {
 
     private static final String TOKEN = "token";
 
-    private OIDCTokenProviderJWK oidcTokenProviderJwk;
+    private OIDCTokenProvider oidcTokenProvider;
 
     @Mock private DefaultResourceRetriever resourceRetriever;
+    @Mock private CloseableHttpClient httpClient;
 
     @BeforeEach
     void setup() throws CachingServiceClientException, IOException {
-        oidcTokenProviderJwk = new OIDCTokenProviderJWK(new DefaultClock(), resourceRetriever);
-        ReflectionTestUtils.setField(oidcTokenProviderJwk, "jwkRefreshInterval", 1);
-        ReflectionTestUtils.setField(oidcTokenProviderJwk, "jwksUri", "https://jwksurl");
+        oidcTokenProvider = new OIDCTokenProvider(new DefaultClock(), resourceRetriever, httpClient);
+        ReflectionTestUtils.setField(oidcTokenProvider, "jwkRefreshInterval", 1);
+        ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", Arrays.asList("https://jwksurl"));
 
         String oktaJwks = Resources.toString(Resources.getResource(OKTA_JWKS_RESOURCE), StandardCharsets.UTF_8);
 
@@ -72,8 +76,8 @@ class OIDCTokenProviderJWKTest {
 
         @Test
         void initialized_thenJwksFullfilled() {
-            oidcTokenProviderJwk.afterPropertiesSet();
-            Map<String, PublicKey> publicKeys = oidcTokenProviderJwk.getPublicKeys();
+            oidcTokenProvider.afterPropertiesSet();
+            Map<String, PublicKey> publicKeys = oidcTokenProvider.getPublicKeys();
 
             assertFalse(publicKeys.isEmpty());
             assertTrue(publicKeys.containsKey("Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4"));
@@ -85,22 +89,22 @@ class OIDCTokenProviderJWKTest {
         @Test
         void whenRequestFails_thenNotInitialized() throws IOException {
             doThrow(new IOException("failed request")).when(resourceRetriever).retrieveResource(any());
-            oidcTokenProviderJwk.afterPropertiesSet();
-            assertTrue(oidcTokenProviderJwk.getPublicKeys().isEmpty());
+            oidcTokenProvider.afterPropertiesSet();
+            assertTrue(oidcTokenProvider.getPublicKeys().isEmpty());
         }
 
         @Test
         void whenUriNotProvided_thenNotInitialized() {
-            ReflectionTestUtils.setField(oidcTokenProviderJwk, "jwksUri", "");
-            oidcTokenProviderJwk.afterPropertiesSet();
-            assertTrue(oidcTokenProviderJwk.getPublicKeys().isEmpty());
+            ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", Collections.emptyList());
+            oidcTokenProvider.afterPropertiesSet();
+            assertTrue(oidcTokenProvider.getPublicKeys().isEmpty());
         }
 
         @Test
         void whenInvalidKeyResponse_thenNotInitialized() throws IOException {
             when(resourceRetriever.retrieveResource(any())).thenReturn(new Resource("invalid_json", null));
-            oidcTokenProviderJwk.afterPropertiesSet();
-            assertTrue(oidcTokenProviderJwk.getPublicKeys().isEmpty());
+            oidcTokenProvider.afterPropertiesSet();
+            assertTrue(oidcTokenProvider.getPublicKeys().isEmpty());
         }
     }
 
@@ -109,24 +113,24 @@ class OIDCTokenProviderJWKTest {
 
         @Test
         void whenValidTokenExpired_thenReturnInvalid() {
-            assertFalse(oidcTokenProviderJwk.isValid(EXPIRED_TOKEN));
+            assertFalse(oidcTokenProvider.isValid(EXPIRED_TOKEN));
         }
 
         @Test
         void whenValidToken_thenReturnValid() {
-            ReflectionTestUtils.setField(oidcTokenProviderJwk, "clock", new FixedClock(new Date(Instant.ofEpochSecond(1697060773 + 1000L).toEpochMilli())));
-            assertTrue(oidcTokenProviderJwk.isValid(EXPIRED_TOKEN));
+            ReflectionTestUtils.setField(oidcTokenProvider, "clock", new FixedClock(new Date(Instant.ofEpochSecond(1697060773 + 1000L).toEpochMilli())));
+            assertTrue(oidcTokenProvider.isValid(EXPIRED_TOKEN));
         }
 
         @Test
         void whenInvalidToken_thenReturnInvalid() {
-            assertFalse(oidcTokenProviderJwk.isValid(TOKEN));
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
         @Test
         void whenNoJwk_thenReturnInvalid() {
-            assumeTrue(oidcTokenProviderJwk.getPublicKeys().isEmpty());
-            assertFalse(oidcTokenProviderJwk.isValid(TOKEN));
+            assumeTrue(oidcTokenProvider.getPublicKeys().isEmpty());
+            assertFalse(oidcTokenProvider.isValid(TOKEN));
         }
 
     }
@@ -135,12 +139,12 @@ class OIDCTokenProviderJWKTest {
     class GivenEmptyTokenProvided {
         @Test
         void whenTokenIsNull_thenReturnInvalid() {
-            assertFalse(oidcTokenProviderJwk.isValid(null));
+            assertFalse(oidcTokenProvider.isValid(null));
         }
 
         @Test
         void whenTokenIsEmpty_thenReturnInvalid() {
-            assertFalse(oidcTokenProviderJwk.isValid(""));
+            assertFalse(oidcTokenProvider.isValid(""));
         }
     }
 
@@ -149,9 +153,9 @@ class OIDCTokenProviderJWKTest {
 
         @BeforeEach
         public void setUp() {
-            oidcTokenProviderJwk = new OIDCTokenProviderJWK(new DefaultClock(), resourceRetriever);
-            ReflectionTestUtils.setField(oidcTokenProviderJwk, "jwksUri", "https://jwksurl");
-            ReflectionTestUtils.setField(oidcTokenProviderJwk, "resourceRetriever", resourceRetriever);
+            oidcTokenProvider = new OIDCTokenProvider(new DefaultClock(), resourceRetriever, httpClient);
+            ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", Arrays.asList("https://jwksurl"));
+            ReflectionTestUtils.setField(oidcTokenProvider, "resourceRetriever", resourceRetriever);
         }
 
         @Test
@@ -160,7 +164,7 @@ class OIDCTokenProviderJWKTest {
 
             when(resourceRetriever.retrieveResource(any())).thenReturn(new Resource(json, null));
 
-            assertDoesNotThrow(() -> oidcTokenProviderJwk.fetchJWKSet());
+            assertDoesNotThrow(() -> oidcTokenProvider.fetchJWKSet());
         }
 
         @Test
@@ -181,7 +185,7 @@ class OIDCTokenProviderJWKTest {
         """;
 
             when(resourceRetriever.retrieveResource(any())).thenReturn(new Resource(json, null));
-            assertDoesNotThrow(() -> oidcTokenProviderJwk.fetchJWKSet());
+            assertDoesNotThrow(() -> oidcTokenProvider.fetchJWKSet());
         }
 
 
@@ -204,7 +208,7 @@ class OIDCTokenProviderJWKTest {
 
             when(resourceRetriever.retrieveResource(any())).thenReturn(new Resource(json, null));
 
-            assertDoesNotThrow(() -> oidcTokenProviderJwk.fetchJWKSet());
+            assertDoesNotThrow(() -> oidcTokenProvider.fetchJWKSet());
         }
 
         @Test
@@ -225,7 +229,7 @@ class OIDCTokenProviderJWKTest {
 
             when(resourceRetriever.retrieveResource(any())).thenReturn(new Resource(json, null));
 
-            assertDoesNotThrow(() -> oidcTokenProviderJwk.fetchJWKSet());
+            assertDoesNotThrow(() -> oidcTokenProvider.fetchJWKSet());
         }
 
     }
