@@ -27,6 +27,8 @@ public class ApiLayerServicesTest {
         assertEquals("zaas", ApiLayerServices.ZAAS.getServiceId());
         assertEquals("apicatalog", ApiLayerServices.API_CATALOG.getServiceId());
         assertEquals("cachingservice", ApiLayerServices.CACHING_SERVICE.getServiceId());
+        assertEquals("ibmzosmf", ApiLayerServices.IBMZOSMF.getServiceId());
+        assertEquals("zss", ApiLayerServices.ZSS.getServiceId());
     }
 
     @Test

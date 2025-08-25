@@ -21,7 +21,9 @@ public enum ApiLayerServices {
     APIML("apiml"),
     ZAAS("zaas"),
     API_CATALOG("apicatalog"),
-    CACHING_SERVICE("cachingservice");
+    CACHING_SERVICE("cachingservice"),
+    IBMZOSMF("ibmzosmf"),
+    ZSS("zss");
 
     private final String serviceId;
 
