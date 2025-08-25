@@ -34,6 +34,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.web.reactive.result.view.freemarker.FreeMarkerConfigurer;
 import org.zowe.apiml.ApimlApplication;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.filter.AttlsHttpHandler;
@@ -47,11 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @TestInstance(Lifecycle.PER_CLASS)
 class AttlsConfigTest {
@@ -61,7 +58,7 @@ class AttlsConfigTest {
     }
 
     @Nested
-    @ActiveProfiles({ "attlsClient", "attlsServer" })
+    @ActiveProfiles({"attlsClient", "attlsServer"})
     @DirtiesContext
     @SpringBootTest(
         classes = ApimlApplication.class,
@@ -89,9 +86,9 @@ class AttlsConfigTest {
             assertThrows(SSLException.class, () -> {
                 given()
                     .log().all()
-                .when()
+                    .when()
                     .get(getGatewayUrlWithPath(hostname, port, "https", "application/version"))
-                .then()
+                    .then()
                     .log().all();
             });
         }
@@ -106,18 +103,18 @@ class AttlsConfigTest {
             doNothing().when(apimlTomcatCustomizer).customize(any());
 
             given()
-                    .log().all()
+                .log().all()
                 .when()
-                    .get(getGatewayUrlWithPath(hostname, port, "http", "application/version"))
+                .get(getGatewayUrlWithPath(hostname, port, "http", "application/version"))
                 .then()
-                    .log().all()
-                    .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-                    .body(containsString("org.zowe.apiml.common.internalServerError"));
+                .log().all()
+                .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+                .body(containsString("org.zowe.apiml.common.internalServerError"));
 
-                verify(mockedAppender, atLeast(1)).doAppend(loggingEventCaptor.capture());
-                assertThat(loggingEventCaptor.getAllValues())
-                    .filteredOn(element -> element.getMessage().contains("Cannot verify AT-TLS status"))
-                    .isNotEmpty();
+            verify(mockedAppender, atLeast(1)).doAppend(loggingEventCaptor.capture());
+            assertThat(loggingEventCaptor.getAllValues())
+                .filteredOn(element -> element.getMessage().contains("Cannot verify AT-TLS status"))
+                .isNotEmpty();
         }
 
     }
@@ -135,8 +132,16 @@ class AttlsConfigTest {
             "server.ssl.keyStore="
         }
     )
-    @ActiveProfiles({ "attlsServer", "attlsClient", "ApimlModulithAcceptanceTest" })
-    @AcceptanceTest
+    @ActiveProfiles({"attlsServer", "attlsClient", "ApimlModulithAcceptanceTest"})
+    @DirtiesContext
+    @SpringBootTest(
+        classes = {
+            ApimlApplication.class,
+            FreeMarkerConfigurer.class,
+            TestConfig.class
+        },
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+    )
     class GivenSslDisabled {
 
         @MockitoBean
@@ -150,21 +155,24 @@ class AttlsConfigTest {
 
         @Value("${apiml.service.hostname:localhost}")
         private String hostname;
+        @MockitoBean
+        private ApimlTomcatCustomizer apimlTomcatCustomizer;
 
         @BeforeEach
         void setUp() {
             when(apimlInstanceRegistry.getApplications()).thenReturn(new Applications());
+            doNothing().when(apimlTomcatCustomizer).customize(any());
         }
 
         @Test
         void whenNoKeystore_thenStartupSuccess() {
             given()
                 .log().all()
-            .when()
+                .when()
                 .get(getGatewayUrlWithPath(hostname, port, "http", "application/version"))
-            .then()
+                .then()
                 .statusCode(SC_OK);
-
+            verify(apimlTomcatCustomizer, times(1)).customize(any());
             verify(attlsHttpHandler, times(1)).postProcessAfterInitialization(any(HttpHandler.class), any());
         }
 
