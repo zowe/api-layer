@@ -18,10 +18,10 @@ import org.zowe.apiml.apicatalog.config.ApiLayerServices;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ApiLayerServicesTest {
+public class ApiLayerServicesTest {
 
     @Test
-    void testEnumConstruction_shouldHaveCorrectServiceIds() {
+    public void testEnumConstruction_shouldHaveCorrectServiceIds() {
         assertEquals("discovery", ApiLayerServices.DISCOVERY.getServiceId());
         assertEquals("gateway", ApiLayerServices.GATEWAY.getServiceId());
         assertEquals("apiml", ApiLayerServices.APIML.getServiceId());
@@ -33,14 +33,14 @@ class ApiLayerServicesTest {
     }
 
     @Test
-    void testToString_shouldReturnEnumConstantName() {
+    public void testToString_shouldReturnEnumConstantName() {
         assertEquals("DISCOVERY", ApiLayerServices.DISCOVERY.toString());
         assertEquals("GATEWAY", ApiLayerServices.GATEWAY.toString());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"discovery", "DISCOVERY", "Discovery", " discovery ", "DiScOvErY"})
-    void testIsApiLayerService_withDiscoveryVariants_shouldReturnTrue(String input) {
+    public void testIsApiLayerService_withDiscoveryVariants_shouldReturnTrue(String input) {
         boolean result = ApiLayerServices.isApiLayerService(input);
         assertTrue(result, "Should recognize '" + input + "' as an API Layer service");
     }
@@ -48,14 +48,14 @@ class ApiLayerServicesTest {
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {" ", "   "})
-    void testIsApiLayerService_withNullOrEmptyOrBlank_shouldReturnFalse(String input) {
+    public void testIsApiLayerService_withNullOrEmptyOrBlank_shouldReturnFalse(String input) {
         boolean result = ApiLayerServices.isApiLayerService(input);
         assertFalse(result, "Should not recognize null or empty string as an API Layer service");
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"unknown", "discoveryservice", "gateways", "api", "catalog", "caching", "notaservice", "external-service"})
-    void testIsApiLayerService_withNonApiLayerServices_shouldReturnFalse(String input) {
+    public void testIsApiLayerService_withNonApiLayerServices_shouldReturnFalse(String input) {
         boolean result = ApiLayerServices.isApiLayerService(input);
         assertFalse(result, "Should not recognize '" + input + "' as an API Layer service");
     }
