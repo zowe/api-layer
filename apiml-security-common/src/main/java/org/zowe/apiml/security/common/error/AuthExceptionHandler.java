@@ -112,7 +112,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             (ex, ctx) ->  handleForbidden(ctx.function, ex)
         ),
         entry(GatewayNotAvailableException.class,
-            (ex, ctx) -> handleGatewayNotAvailable(ctx.function, ex)
+            (ex, ctx) -> handleGatewayNotAvailable(ctx.function, ex, ctx.requestUri)
         )
     );
 
@@ -275,9 +275,9 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         writeErrorResponse("org.zowe.apiml.security.forbidden", HttpStatus.FORBIDDEN, function);
     }
 
-    private void handleGatewayNotAvailable(BiConsumer<ApiMessageView, HttpStatus> function, GatewayNotAvailableException ex) {
+    private void handleGatewayNotAvailable(BiConsumer<ApiMessageView, HttpStatus> function, GatewayNotAvailableException ex, String uri) {
         log.debug(MESSAGE_FORMAT, HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage());
-        writeErrorResponse("org.zowe.apiml.security.gatewayNotAvailable", HttpStatus.SERVICE_UNAVAILABLE, function);
+        writeErrorResponse("org.zowe.apiml.security.gatewayNotAvailable", HttpStatus.SERVICE_UNAVAILABLE, function, uri);
 
     }
 

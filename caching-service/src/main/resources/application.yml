@@ -197,13 +197,13 @@ server:
 ---
 spring.config.activate.on-profile: attlsClient
 
-apiml:
-    service:
-        scheme: http
-
 server:
     attlsClient:
         enabled: true
+
+apiml:
+    service:
+        scheme: http
 
 eureka:
     instance:
