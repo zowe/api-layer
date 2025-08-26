@@ -52,8 +52,8 @@
     "@eslint/js": "9.34.0",
     "@types/jest": "29.5.14",
     "@types/node": "20.19.11",
-    "@typescript-eslint/eslint-plugin": "8.40.0",
-    "@typescript-eslint/parser": "8.40.0",
+    "@typescript-eslint/eslint-plugin": "8.41.0",
+    "@typescript-eslint/parser": "8.41.0",
     "@zowe/cli": "8.26.2",
     "@zowe/cli-test-utils": "8.26.2",
     "@zowe/imperative": "8.26.2",
@@ -75,7 +75,7 @@
     "madge": "8.0.0",
     "ts-jest": "29.4.1",
     "ts-node": "10.9.2",
-    "typedoc": "0.28.10",
+    "typedoc": "0.28.11",
     "typescript": "5.9.2"
   },
   "overrides": {
