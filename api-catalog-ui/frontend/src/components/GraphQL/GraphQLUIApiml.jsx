@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import React, { useEffect, useRef, useState } from 'react';
-import GraphiQL from 'graphiql';
+import { GraphiQL } from 'graphiql';
 import 'graphiql/graphiql.css';
 import './GraphQLUIApiml.css';
 import { buildClientSchema, getIntrospectionQuery } from 'graphql/utilities';
