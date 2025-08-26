@@ -18,12 +18,7 @@ import com.nimbusds.jose.jwk.KeyType;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.util.DefaultResourceRetriever;
 import com.nimbusds.jose.util.Resource;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Clock;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.LocatorAdapter;
-import io.jsonwebtoken.ProtectedHeader;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.lang.Collections;
 import io.jsonwebtoken.security.UnsupportedKeyException;
 import jakarta.annotation.PostConstruct;
@@ -65,7 +60,6 @@ public class OIDCTokenProvider implements OIDCProvider {
     private final LocatorAdapterKid keyLocator = new LocatorAdapterKid();
 
 
-
     @Value("${apiml.security.oidc.jwks.uri}")
     private List<String> jwksUri;
 
@@ -103,7 +97,7 @@ public class OIDCTokenProvider implements OIDCProvider {
         try {
             publicKeys.clear();
             jwkSet = null;
-            for(String url: jwksUri) {
+            for (String url : jwksUri) {
                 Resource resource = resourceRetriever.retrieveResource(new URL(url));
                 jwkSet = JWKSet.parse(resource.getContent());
                 publicKeys.putAll(processKeys(jwkSet));
@@ -138,15 +132,18 @@ public class OIDCTokenProvider implements OIDCProvider {
                 return isValidExternal(token);
             }
             return true;
+        } catch (MalformedJwtException jwte) {
+            log.debug("Malformed JWT: {}", jwte.getMessage(), jwte.getCause());
+            return false;
         } catch (JwtException jwte) {
             log.debug("JWK token validation failed with the exception {}", jwte.getMessage(), jwte.getCause());
-            return false;
+            return isValidExternal(token);
         }
     }
 
     public boolean isValidExternal(String token) {
         try {
-            if(StringUtils.isEmpty(endpointUrl)) {
+            if (StringUtils.isEmpty(endpointUrl)) {
                 log.debug("JWT can't be validated externally because endpoint URL was not provided.");
                 return false;
             }
