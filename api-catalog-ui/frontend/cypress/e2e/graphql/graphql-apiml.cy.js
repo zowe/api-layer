@@ -173,10 +173,10 @@ describe('>>> GraphiQL Playground page test', () => {
 
         const variable = '{"id" :"book-1"}';
 
-        cy.get('.graphiql-editor').first()
+        cy.get('.graphiql-editor-tool').first()
             .type(variable, {parseSpecialCharSequences: false});
 
-        cy.get('.graphiql-editor').then(($container) => {
+        cy.get('.graphiql-editor-tool').then(($container) => {
             const text = $container.text().trim();
             expect(text).to.include(variable);
         });
@@ -191,10 +191,10 @@ describe('>>> GraphiQL Playground page test', () => {
 
         const header = '{"X-Custom-Header": "CustomValue"}';
 
-        cy.get('.graphiql-editor').first()
+        cy.get('.graphiql-editor-tool').first()
             .type(header, {parseSpecialCharSequences: false});
 
-        cy.get('.graphiql-editor').then(($container) => {
+        cy.get('.graphiql-editor-tool').then(($container) => {
             const text = $container.text().trim();
             expect(text).to.include(header);
         });
