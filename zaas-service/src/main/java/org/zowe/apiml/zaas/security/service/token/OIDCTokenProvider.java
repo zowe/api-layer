@@ -148,7 +148,7 @@ public class OIDCTokenProvider implements OIDCProvider {
                 return false;
             }
             log.debug("Validating the token against URL: {}", endpointUrl);
-            HttpGet httpGet = new HttpGet(endpointUrl);
+            var httpGet = new HttpGet(endpointUrl);
             httpGet.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + token);
 
             return secureHttpClientWithKeystore.execute(httpGet, response -> {
@@ -186,7 +186,7 @@ public class OIDCTokenProvider implements OIDCProvider {
             if (jwkSet == null) {
                 throw new JwtException("Could not validate the token due to missing public key.");
             }
-            String kid = header.getKeyId();
+            var kid = header.getKeyId();
             if (kid == null) {
                 throw new UnsupportedKeyException("Token does not provide kid. It uses an unsupported type of signature.");
             }

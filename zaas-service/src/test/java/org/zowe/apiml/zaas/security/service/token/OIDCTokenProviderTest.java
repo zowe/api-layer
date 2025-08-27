@@ -17,15 +17,22 @@ import com.nimbusds.jose.util.DefaultResourceRetriever;
 import com.nimbusds.jose.util.Resource;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.impl.DefaultClock;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 
 import java.io.FileInputStream;
@@ -39,6 +46,7 @@ import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -63,6 +71,12 @@ class OIDCTokenProviderTest {
     private DefaultResourceRetriever resourceRetriever;
     @Mock
     private CloseableHttpClient httpClient;
+
+    static Stream<String> invalidTokens() {
+        return Stream.of(
+            EXPIRED_TOKEN, MALFORMED_TOKEN, "", null
+        );
+    }
 
     @BeforeAll
     static void init() throws Exception {
@@ -129,26 +143,21 @@ class OIDCTokenProviderTest {
     @Nested
     class GivenCorrectConfiguration {
 
+
         @Nested
         class WhenJWKValidation {
 
             @BeforeEach
             void init() throws Exception {
                 ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", Arrays.asList("https://jwksurl", "https://localjwk"));
-
                 when(resourceRetriever.retrieveResource(eq(new URL("https://jwksurl")))).thenReturn(new Resource(oktaJwks, null));
                 when(resourceRetriever.retrieveResource(eq(new URL("https://localjwk")))).thenReturn(new Resource(localJwkSet.toString(), null));
-
             }
 
-            @Test
-            void whenInvalidToken_thenReturnInvalid() {
-                assertFalse(oidcTokenProvider.isValid(MALFORMED_TOKEN));
-            }
-
-            @Test
-            void whenExpiredToken_thenReturnInvalid() {
-                assertFalse(oidcTokenProvider.isValid(EXPIRED_TOKEN));
+            @ParameterizedTest(name = "#{index} return invalid when given invalid token: {0}")
+            @MethodSource("org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderTest#invalidTokens")
+            void whenInvalidToken_thenReturnInvalid(String token) {
+                assertFalse(oidcTokenProvider.isValid(token));
             }
 
             @Test
@@ -156,15 +165,44 @@ class OIDCTokenProviderTest {
                 assumeTrue(oidcTokenProvider.isValid(VALID_TOKEN));
             }
 
-            @Test
-            void whenTokenIsNull_thenReturnInvalid() {
-                assertFalse(oidcTokenProvider.isValid(null));
+        }
+
+        @Nested
+        class WhenEndpointValidation {
+
+
+            @BeforeEach
+            void init() throws Exception {
+                ReflectionTestUtils.setField(oidcTokenProvider, "endpointUrl", "https://entra.com");
+                var httpGet = new HttpGet("https://entra.com");
+                httpGet.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN);
+                try (var mockResponse = mock(ClassicHttpResponse.class)) {
+
+                    when(httpClient.execute(any(HttpGet.class), any(HttpClientResponseHandler.class)))
+                        .thenAnswer(invocation -> {
+                            HttpGet get = invocation.getArgument(0);
+                            if (get.getHeader(HttpHeaders.AUTHORIZATION).getValue().equals(ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN)) {
+                                when(mockResponse.getCode()).thenReturn(200);
+                            } else {
+                                when(mockResponse.getCode()).thenReturn(401);
+                            }
+                            HttpClientResponseHandler<?> handler = invocation.getArgument(1);
+                            return handler.handleResponse(mockResponse);
+                        });
+                }
+            }
+
+            @ParameterizedTest(name = "#{index} return invalid when given invalid token: {0}")
+            @MethodSource("org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderTest#invalidTokens")
+            void whenInvalidToken_thenReturnInvalid(String token) {
+                assertFalse(oidcTokenProvider.isValid(token));
             }
 
             @Test
-            void whenTokenIsEmptyString_thenReturnInvalid() {
-                assertFalse(oidcTokenProvider.isValid(""));
+            void whenValidToken_thenReturnValid() {
+                assumeTrue(oidcTokenProvider.isValid(VALID_TOKEN));
             }
+
         }
     }
 
