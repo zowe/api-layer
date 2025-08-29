@@ -14,6 +14,8 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayInstanceInitializer;
 import org.zowe.apiml.product.instance.lookup.InstanceLookupExecutor;
@@ -23,15 +25,20 @@ public class ZaasConfig {
 
     @Bean
     public GatewayInstanceInitializer gatewayInstanceInitializer(
-            DiscoveryClient discoveryClient,
-            ApplicationEventPublisher applicationEventPublisher,
-            GatewayClient gatewayClient) {
+        DiscoveryClient discoveryClient,
+        ApplicationEventPublisher applicationEventPublisher,
+        GatewayClient gatewayClient) {
 
         return new GatewayInstanceInitializer(
-                new InstanceLookupExecutor(discoveryClient),
-                applicationEventPublisher,
-                gatewayClient
+            new InstanceLookupExecutor(discoveryClient),
+            applicationEventPublisher,
+            gatewayClient
         );
+    }
+
+    @Bean
+    TaskScheduler taskScheduler() {
+        return new SimpleAsyncTaskScheduler();
     }
 
 }

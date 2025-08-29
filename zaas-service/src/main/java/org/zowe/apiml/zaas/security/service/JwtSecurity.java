@@ -21,10 +21,12 @@ import com.nimbusds.jose.jwk.RSAKey;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -37,7 +39,9 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * JWT Security related configuration. Distinguishes between methods used to generate JWT tokens provided by ZAAS.
@@ -65,26 +69,32 @@ public class JwtSecurity {
     @Value("${apiml.security.jwtInitializerTimeout:5}")
     private int timeout;
 
+    @Getter
     private SignatureAlgorithm signatureAlgorithm;
+    @Getter
     private PrivateKey jwtSecret;
+    @Getter
     private PublicKey jwtPublicKey;
 
     private final Providers providers;
     private final ZosmfListener zosmfListener;
     private final String zosmfServiceId;
 
+    private final TaskScheduler taskScheduler;
+
     private final Set<String> events = Collections.synchronizedSet(new HashSet<>());
 
     @Autowired
-    public JwtSecurity(Providers providers, EurekaClient eurekaClient) {
+    public JwtSecurity(Providers providers, EurekaClient eurekaClient, TaskScheduler taskScheduler) {
         this.providers = providers;
         this.zosmfServiceId = providers.getZosmfServiceId();
         this.zosmfListener = new ZosmfListener(eurekaClient);
+        this.taskScheduler = taskScheduler;
     }
 
     @VisibleForTesting
-    JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, EurekaClient eurekaClient) {
-        this(providers, eurekaClient);
+    JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, EurekaClient eurekaClient, TaskScheduler taskScheduler) {
+        this(providers, eurekaClient, taskScheduler);
 
         this.keyStore = keyStore;
         this.keyStorePassword = keyStorePassword;
@@ -213,21 +223,6 @@ public class JwtSecurity {
         }
     }
 
-    /*
-     * Start of the actual API for the security class
-     */
-    public SignatureAlgorithm getSignatureAlgorithm() {
-        return signatureAlgorithm;
-    }
-
-    public PrivateKey getJwtSecret() {
-        return jwtSecret;
-    }
-
-    public PublicKey getJwtPublicKey() {
-        return jwtPublicKey;
-    }
-
     public JWKSet getPublicKeyInSet() {
         final List<JWK> keys = new LinkedList<>();
 
@@ -259,18 +254,14 @@ public class JwtSecurity {
         events.add("Started waiting for z/OSMF instance " + zosmfServiceId + " to be registered and known by the discovery service");
         log.debug("Waiting for z/OSMF instance {} to be registered and known by the Discovery Service.", zosmfServiceId);
 
-        new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    if (!zosmfListener.isZosmfReady()) {
-                        synchronized (events) {
-                            apimlLog.log("org.zowe.apiml.zaas.jwtProducerConfigError", StringUtils.join(events, "\n"));
-                        }
-                        apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", zosmfServiceId);
-                    }
+        taskScheduler.scheduleAtFixedRate(() -> {
+            if (!zosmfListener.isZosmfReady().get()) {
+                synchronized (events) {
+                    apimlLog.log("org.zowe.apiml.zaas.jwtProducerConfigError", StringUtils.join(events, "\n"));
                 }
-            }, Duration.ofMinutes(1).toMillis()
-        );
+                apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", zosmfServiceId);
+            }
+        }, Instant.now(), Duration.ofMinutes(1));
     }
 
     /**
@@ -282,14 +273,21 @@ public class JwtSecurity {
     }
 
     public class ZosmfListener {
-        private boolean isZosmfReady = false;
+
+        private final AtomicBoolean zosmfReady = new AtomicBoolean(false);
+
         private final EurekaClient eurekaClient;
 
         private ZosmfListener(EurekaClient eurekaClient) {
             this.eurekaClient = eurekaClient;
         }
 
+        public AtomicBoolean isZosmfReady() {
+            return zosmfReady;
+        }
+
         // instance variable so can create an accessor for unit testing purposes
+        @Getter
         private final EurekaEventListener zosmfRegisteredListener = new EurekaEventListener() {
             @Override
             public void onEvent(EurekaEvent event) {
@@ -298,13 +296,13 @@ public class JwtSecurity {
                 }
 
                 events.add("Discovery Service Cache was updated.");
-                log.debug("Trying to reach the z/OSMF instance " + zosmfServiceId + ".");
+                log.debug("Trying to reach the z/OSMF instance {}", zosmfServiceId);
                 if (providers.isZosmfAvailableAndOnline()) {
                     events.add("z/OSMF instance " + zosmfServiceId + " is available and online.");
                     log.debug("The z/OSMF instance {} was reached.", zosmfServiceId);
 
                     eurekaClient.unregisterEventListener(this); // only need to see zosmf up once to validate jwt secret
-                    isZosmfReady = true;
+                    zosmfReady.set(true);
 
                     try {
                         validateInitializationAgainstZosmf();
@@ -324,16 +322,6 @@ public class JwtSecurity {
             eurekaClient.registerEventListener(zosmfRegisteredListener);
         }
 
-        public boolean isZosmfReady() {
-            return isZosmfReady;
-        }
-
-        /**
-         * Only for unit testing the event listener.
-         */
-        public EurekaEventListener getZosmfRegisteredListener() {
-            return zosmfRegisteredListener;
-        }
     }
 
     public enum JwtProducer {

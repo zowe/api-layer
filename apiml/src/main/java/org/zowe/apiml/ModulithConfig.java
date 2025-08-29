@@ -202,7 +202,7 @@ public class ModulithConfig implements InitializingBean {
     public void periodicJwtInit() {
         var jwtSec = applicationContext.getBean(JwtSecurity.class);
         var providers = applicationContext.getBean(Providers.class);
-        if (providers.isZosfmUsed() && !jwtSec.getZosmfListener().isZosmfReady()) {
+        if (providers.isZosfmUsed() && !jwtSec.getZosmfListener().isZosmfReady().get()) {
             jwtSec.getZosmfListener().getZosmfRegisteredListener().onEvent(new CacheRefreshedEvent());
         }
     }
