@@ -144,7 +144,7 @@ public class OIDCTokenProvider implements OIDCProvider {
     }
 
     Claims getClaims(String token) {
-        if (publicKeys.isEmpty()) {
+        if (jwkSet == null || jwkSet.isEmpty()) {
             fetchJWKSet();
         }
 
@@ -164,14 +164,14 @@ public class OIDCTokenProvider implements OIDCProvider {
 
         @Override
         protected Key locate(ProtectedHeader header) {
-            if (publicKeys.isEmpty()) {
+            if (jwkSet == null || jwkSet.isEmpty()) {
                 throw new JwtException("Could not validate the token due to missing public key.");
             }
             var kid = header.getKeyId();
             if (kid == null) {
                 throw new UnsupportedKeyException("Token does not provide kid. It uses an unsupported type of signature.");
             }
-            return Optional.ofNullable(publicKeys.get(header.getKeyId()))
+            return Optional.ofNullable(jwkSet.getKeyByKeyId(header.getKeyId()))
                 .map(key -> {
                     try {
                         return key.toRSAKey().toPublicKey();
