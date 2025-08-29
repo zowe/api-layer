@@ -27,7 +27,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
-import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderJWK;
+import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -69,7 +69,7 @@ class ReactivePublicJWKControllerTest {
         JWK oidcJwk = new RSAKey.Builder((RSAPublicKey) generateKeyPair().getPublic()).keyID("oidcKey").build();
         JWKSet oidcKeySet = new JWKSet(oidcJwk);
 
-        OIDCTokenProviderJWK mockOidcProviderJwk = mock(OIDCTokenProviderJWK.class);
+        OIDCTokenProvider mockOidcProviderJwk = mock(OIDCTokenProvider.class);
 
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
         when(zosmfService.getPublicKeys()).thenReturn(zosmfKeySet);
