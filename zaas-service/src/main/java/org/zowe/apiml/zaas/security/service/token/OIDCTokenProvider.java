@@ -98,7 +98,7 @@ public class OIDCTokenProvider implements OIDCProvider {
                 var tmpJwk = JWKSet.parse(resource.getContent());
                 tmpJwk.getKeys().forEach(jwk -> publicKeys.put(jwk.getKeyID(), jwk));
             } catch (IOException | ParseException | IllegalStateException e) {
-                log.error("Error processing response from URI {} message: {}", jwksUri, e.getMessage());
+                log.error("Error processing response from URI {} message: {}", url, e.getMessage());
             }
         }
         jwkSet = new JWKSet(publicKeys.values().stream().toList());
