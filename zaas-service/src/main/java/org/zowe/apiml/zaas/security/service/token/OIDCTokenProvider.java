@@ -14,8 +14,6 @@ package org.zowe.apiml.zaas.security.service.token;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.KeyType;
-import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.util.DefaultResourceRetriever;
 import com.nimbusds.jose.util.Resource;
 import io.jsonwebtoken.*;
@@ -41,7 +39,6 @@ import org.zowe.apiml.security.common.token.OIDCProvider;
 import java.io.IOException;
 import java.net.URL;
 import java.security.Key;
-import java.security.PublicKey;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +46,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -75,9 +71,10 @@ public class OIDCTokenProvider implements OIDCProvider {
 
     private final CloseableHttpClient secureHttpClientWithKeystore;
     @Getter
-    private final Map<String, PublicKey> publicKeys = new ConcurrentHashMap<>();
+    private final Map<String, JWK> publicKeys = new ConcurrentHashMap<>();
     @Getter
     private JWKSet jwkSet;
+
 
     @PostConstruct
     public void afterPropertiesSet() {
@@ -94,34 +91,18 @@ public class OIDCTokenProvider implements OIDCProvider {
         }
         log.debug("Refreshing JWK endpoints {}", jwksUri);
 
-        try {
-            publicKeys.clear();
-            jwkSet = null;
-            for (String url : jwksUri) {
+        publicKeys.clear();
+        for (String url : jwksUri) {
+            try {
                 Resource resource = resourceRetriever.retrieveResource(new URL(url));
-                jwkSet = JWKSet.parse(resource.getContent());
-                publicKeys.putAll(processKeys(jwkSet));
+                var tmpJwk = JWKSet.parse(resource.getContent());
+                tmpJwk.getKeys().forEach(jwk -> publicKeys.put(jwk.getKeyID(), jwk));
+            } catch (IOException | ParseException | IllegalStateException e) {
+                log.error("Error processing response from URI {} message: {}", jwksUri, e.getMessage());
             }
-        } catch (IOException | ParseException | IllegalStateException e) {
-            log.error("Error processing response from URI {} message: {}", jwksUri, e.getMessage());
         }
-    }
+        jwkSet = new JWKSet(publicKeys.values().stream().toList());
 
-    private Map<String, PublicKey> processKeys(JWKSet jwkKeys) {
-        return jwkKeys.getKeys().stream()
-            .filter(jwkKey -> {
-                KeyUse keyUse = jwkKey.getKeyUse();
-                KeyType keyType = jwkKey.getKeyType();
-                return keyUse != null && keyType != null && "sig".equals(keyUse.getValue()) && "RSA".equals(keyType.getValue());
-            })
-            .collect(Collectors.toMap(JWK::getKeyID, jwkKey -> {
-                try {
-                    return jwkKey.toRSAKey().toRSAPublicKey();
-                } catch (JOSEException e) {
-                    log.debug("Problem with getting RSA Public key from JWK. ", e.getCause());
-                    throw new IllegalStateException("Failed to parse public key", e);
-                }
-            }));
     }
 
     @Override
@@ -143,7 +124,7 @@ public class OIDCTokenProvider implements OIDCProvider {
 
     public boolean isValidExternal(String token) {
         try {
-            if (StringUtils.isEmpty(endpointUrl)) {
+            if (StringUtils.isBlank(endpointUrl)) {
                 log.debug("JWT can't be validated externally because endpoint URL was not provided.");
                 return false;
             }
@@ -163,7 +144,7 @@ public class OIDCTokenProvider implements OIDCProvider {
     }
 
     Claims getClaims(String token) {
-        if (jwkSet == null || jwkSet.isEmpty()) {
+        if (publicKeys.isEmpty()) {
             fetchJWKSet();
         }
 
@@ -183,14 +164,14 @@ public class OIDCTokenProvider implements OIDCProvider {
 
         @Override
         protected Key locate(ProtectedHeader header) {
-            if (jwkSet == null) {
+            if (publicKeys.isEmpty()) {
                 throw new JwtException("Could not validate the token due to missing public key.");
             }
             var kid = header.getKeyId();
             if (kid == null) {
                 throw new UnsupportedKeyException("Token does not provide kid. It uses an unsupported type of signature.");
             }
-            return Optional.ofNullable(jwkSet.getKeyByKeyId(header.getKeyId()))
+            return Optional.ofNullable(publicKeys.get(header.getKeyId()))
                 .map(key -> {
                     try {
                         return key.toRSAKey().toPublicKey();

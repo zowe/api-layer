@@ -42,14 +42,12 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -119,20 +117,6 @@ class OIDCTokenProviderTest {
     class GivenInitializationWithJwks {
 
         @Test
-        void initialized_thenJwksFullfilled() throws Exception {
-            ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", Arrays.asList("https://jwksurl"));
-            when(resourceRetriever.retrieveResource(eq(new URL("https://jwksurl")))).thenReturn(new Resource(oktaJwks, null));
-            oidcTokenProvider.afterPropertiesSet();
-            Map<String, PublicKey> publicKeys = oidcTokenProvider.getPublicKeys();
-
-            assertFalse(publicKeys.isEmpty());
-            assertTrue(publicKeys.containsKey("Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4"));
-            assertTrue(publicKeys.containsKey("-716sp3XBB_v30lGj2mu5MdXkdh8poa9zJQlAwC46n4"));
-            assertNotNull(publicKeys.get("Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4"));
-            assertInstanceOf(Key.class, publicKeys.get("Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4"));
-        }
-
-        @Test
         void whenUriNotProvided_thenNotInitialized() throws Exception {
             ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", Collections.emptyList());
             oidcTokenProvider.afterPropertiesSet();
@@ -149,7 +133,7 @@ class OIDCTokenProviderTest {
 
             @BeforeEach
             void init() throws Exception {
-                ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", Arrays.asList("https://jwksurl", "https://localjwk"));
+                ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", Arrays.asList("https://localjwk", "https://jwksurl"));
                 when(resourceRetriever.retrieveResource(eq(new URL("https://jwksurl")))).thenReturn(new Resource(oktaJwks, null));
                 when(resourceRetriever.retrieveResource(eq(new URL("https://localjwk")))).thenReturn(new Resource(localJwkSet.toString(), null));
             }
@@ -162,7 +146,7 @@ class OIDCTokenProviderTest {
 
             @Test
             void whenValidToken_thenReturnValid() {
-                assumeTrue(oidcTokenProvider.isValid(VALID_TOKEN));
+                assertTrue(oidcTokenProvider.isValid(VALID_TOKEN));
             }
 
         }
@@ -200,7 +184,7 @@ class OIDCTokenProviderTest {
 
             @Test
             void whenValidToken_thenReturnValid() {
-                assumeTrue(oidcTokenProvider.isValid(VALID_TOKEN));
+                assertTrue(oidcTokenProvider.isValid(VALID_TOKEN));
             }
 
         }
@@ -213,7 +197,7 @@ class OIDCTokenProviderTest {
         @BeforeEach
         public void setUp() {
             oidcTokenProvider = new OIDCTokenProvider(new DefaultClock(), resourceRetriever, httpClient);
-            ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", Arrays.asList("https://jwksurl"));
+            ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", List.of("https://jwksurl"));
             ReflectionTestUtils.setField(oidcTokenProvider, "resourceRetriever", resourceRetriever);
         }
 
