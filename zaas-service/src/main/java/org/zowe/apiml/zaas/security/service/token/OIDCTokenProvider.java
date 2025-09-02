@@ -89,10 +89,10 @@ public class OIDCTokenProvider implements OIDCProvider {
             log.debug("OIDC JWK URI not provided, JWK refresh not performed");
             return;
         }
-        log.debug("Refreshing JWK endpoints {}", jwksUri);
 
         publicKeys.clear();
         for (String url : jwksUri) {
+            log.debug("Refreshing JWK endpoints {}", url);
             try {
                 Resource resource = resourceRetriever.retrieveResource(new URL(url));
                 var tmpJwk = JWKSet.parse(resource.getContent());
@@ -108,7 +108,7 @@ public class OIDCTokenProvider implements OIDCProvider {
     @Override
     public boolean isValid(String token) {
         try {
-            log.debug("Validating the token with JWK: {}", jwksUri);
+
             if (Collections.isEmpty(jwksUri) || getClaims(token).isEmpty()) {
                 return isValidExternal(token);
             }
@@ -151,7 +151,7 @@ public class OIDCTokenProvider implements OIDCProvider {
         if (StringUtils.isBlank(token)) {
             throw new JwtException("Empty string provided instead of a token.");
         }
-
+        log.debug("Validating the token with JWK");
         return Jwts.parser()
             .clock(clock)
             .keyLocator(keyLocator)
