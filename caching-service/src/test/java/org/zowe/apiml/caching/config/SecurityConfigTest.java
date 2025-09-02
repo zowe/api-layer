@@ -38,8 +38,8 @@ public class SecurityConfigTest {
         SslContext.prepareSslAuthentication(configurer);
     }
 
-    private String getUri(String scheme, String hostname, int port, String path) {
-        return String.format("%s://%s:%d/%s", scheme, hostname, port, path);
+    private String getUri(String hostname, int port) {
+        return String.format("%s://%s:%d/%s", "https", hostname, port, "cachingservice/api/v1/cache");
     }
 
     @Nested
@@ -65,7 +65,7 @@ public class SecurityConfigTest {
         void thenDoNotRequireAuth() {
             given()
                 .header(new Header("X-CS-Service-ID", "apimtst"))
-                .get(getUri("https", hostname, port, "cachingservice/api/v1/cache"))
+                .get(getUri(hostname, port))
                 .then()
                 .log().ifValidationFails()
                 .statusCode(HttpStatus.OK.value());
@@ -94,7 +94,7 @@ public class SecurityConfigTest {
         void whenNoClientCertificate_thenReturnUnauthorized() {
             given()
                 .header(new Header("X-CS-Service-ID", "apimtst"))
-                .get(getUri("https", hostname, port, "cachingservice/api/v1/cache"))
+                .get(getUri(hostname, port))
                 .then()
                 .log().ifValidationFails()
                 .statusCode(HttpStatus.FORBIDDEN.value());
@@ -106,7 +106,7 @@ public class SecurityConfigTest {
             given()
                 .config(SslContext.clientCertApiml)
                 .header(new Header("X-CS-Service-ID", "apimtst"))
-                .get(getUri("https", hostname, port, "cachingservice/api/v1/cache"))
+                .get(getUri(hostname, port))
                 .then()
                 .log().ifValidationFails()
                 .statusCode(HttpStatus.OK.value());

@@ -43,8 +43,8 @@ public class SecurityConfigTest {
         SslContext.prepareSslAuthentication(configurer);
     }
 
-    private String getUri(String scheme, String hostname, int port, String path) {
-        return String.format("%s://%s:%d/%s", scheme, hostname, port, path);
+    private String getUri(String hostname, int port) {
+        return String.format("%s://%s:%d/%s", "https", hostname, port, "eureka/apps");
     }
 
     @Nested
@@ -65,7 +65,7 @@ public class SecurityConfigTest {
         @Test
         void thenDoNotRequireAuth() {
             given()
-                .get(getUri("https", hostname, port, "eureka/apps"))
+                .get(getUri(hostname, port))
                 .then()
                 .log().ifValidationFails()
                 .statusCode(HttpStatus.OK.value());
@@ -89,7 +89,7 @@ public class SecurityConfigTest {
         @Test
         void whenNoClientCertificate_thenReturnUnauthorized() {
             given()
-                .get(getUri("https", hostname, port, "eureka/apps"))
+                .get(getUri(hostname, port))
                 .then()
                 .log().ifValidationFails()
                 .statusCode(HttpStatus.FORBIDDEN.value());
@@ -100,7 +100,7 @@ public class SecurityConfigTest {
 
             given()
                 .config(SslContext.clientCertApiml)
-                .get(getUri("https", hostname, port, "eureka/apps"))
+                .get(getUri(hostname, port))
                 .then()
                 .log().ifValidationFails()
                 .statusCode(HttpStatus.OK.value());
