@@ -93,9 +93,6 @@ public class SecurityConfiguration {
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
-    @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
-    private boolean nonStrictVerifySslCertificatesOfServices;
-
     private WebFilter basicAuthenticationFilter;
     private WebFilter tokenAuthenticationFilter;
     private WebFilter oidcAuthenticationFilter;
@@ -107,7 +104,7 @@ public class SecurityConfiguration {
         oidcAuthenticationFilter = oidcAuthenticationFilter(gatewaySecurity);
     }
 
-    private String[] getFullUrls(String...baseUrl) {
+    private String[] getFullUrls(String... baseUrl) {
         String prefix = applicationInfo.isModulith() ? "/apicatalog/api/v1" : "/apicatalog";
         for (int i = 0; i < baseUrl.length; i++) {
             baseUrl[i] = prefix + baseUrl[i];
@@ -154,9 +151,9 @@ public class SecurityConfiguration {
             serverAuthenticationEntryPoint,
             basicAuthenticationFilter, tokenAuthenticationFilter, oidcAuthenticationFilter
         )
-        .authorizeExchange(exchange -> exchange.anyExchange().authenticated());
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated());
 
-        if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
+        if (verifySslCertificatesOfServices) {
             http.x509(x509 -> x509
                 .principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
@@ -198,9 +195,9 @@ public class SecurityConfiguration {
     ) {
         return baseConfiguration(http.securityMatcher(ServerWebExchangeMatchers.pathMatchers(
                 getFullUrls("/static-api/**", "/containers", "/containers/**", "/application/**", "/services/**", APIDOC_ROUTES))),
-                serverAuthenticationEntryPoint,
-                basicAuthenticationFilter, tokenAuthenticationFilter, oidcAuthenticationFilter
-            )
+            serverAuthenticationEntryPoint,
+            basicAuthenticationFilter, tokenAuthenticationFilter, oidcAuthenticationFilter
+        )
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .build();
     }
@@ -233,7 +230,7 @@ public class SecurityConfiguration {
     private ServerHttpSecurity baseConfiguration(
         ServerHttpSecurity http,
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint,
-        WebFilter...webFiltersAuthorization
+        WebFilter... webFiltersAuthorization
     ) {
         var antMatcher = new AntPathMatcher();
 
@@ -254,10 +251,10 @@ public class SecurityConfiguration {
                     log.debug("Unauthorized access to '{}' endpoint", requestedPath);
 
                     if (Stream.of(getFullUrls(
-                            "/application/**",
-                            APIDOC_ROUTES,
-                            STATIC_REFRESH_ROUTE
-                        )).anyMatch(pattern -> antMatcher.match(pattern, requestedPath))
+                        "/application/**",
+                        APIDOC_ROUTES,
+                        STATIC_REFRESH_ROUTE
+                    )).anyMatch(pattern -> antMatcher.match(pattern, requestedPath))
                     ) {
                         exchange.getResponse().getHeaders().add(HttpHeaders.WWW_AUTHENTICATE, ApimlConstants.BASIC_AUTHENTICATION_PREFIX);
                     }
@@ -266,7 +263,7 @@ public class SecurityConfiguration {
                 })
             );
 
-            Stream.of(webFiltersAuthorization).forEach(webFilter -> http.addFilterBefore(webFilter, SecurityWebFiltersOrder.AUTHENTICATION));
+        Stream.of(webFiltersAuthorization).forEach(webFilter -> http.addFilterBefore(webFilter, SecurityWebFiltersOrder.AUTHENTICATION));
 
         return http;
     }
