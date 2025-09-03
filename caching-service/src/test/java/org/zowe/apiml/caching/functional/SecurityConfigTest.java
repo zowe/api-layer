@@ -8,9 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.discovery.config;
+package org.zowe.apiml.caching.functional;
 
 import io.restassured.RestAssured;
+import io.restassured.http.Header;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,20 +21,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.zowe.apiml.discovery.DiscoveryServiceApplication;
+import org.zowe.apiml.caching.CachingServiceApplication;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 
 import static io.restassured.RestAssured.given;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@SpringBootTest(
-    classes = DiscoveryServiceApplication.class,
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-)
-@ActiveProfiles({"https"})
 public class SecurityConfigTest {
 
     @BeforeAll
@@ -44,17 +39,20 @@ public class SecurityConfigTest {
     }
 
     private String getUri(String hostname, int port) {
-        return String.format("%s://%s:%d/%s", "https", hostname, port, "eureka/apps");
+        return String.format("%s://%s:%d/%s", "https", hostname, port, "cachingservice/api/v1/cache");
     }
 
     @Nested
     @TestPropertySource(
         properties = {
-            "apiml.security.ssl.verifySslCertificatesOfServices=false",
-            "apiml.security.ssl.nonStrictVerifySslCertificatesOfServices=true"
+            "apiml.service.ssl.verifySslCertificatesOfServices=false"
         }
     )
     @DirtiesContext
+    @SpringBootTest(
+        classes = CachingServiceApplication.class,
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+    )
     class GivenDisabledSSLVerification {
 
         @Value("${apiml.service.hostname:localhost}")
@@ -65,6 +63,7 @@ public class SecurityConfigTest {
         @Test
         void thenDoNotRequireAuth() {
             given()
+                .header(new Header("X-CS-Service-ID", "apimtst"))
                 .get(getUri(hostname, port))
                 .then()
                 .log().ifValidationFails()
@@ -75,10 +74,14 @@ public class SecurityConfigTest {
     @Nested
     @TestPropertySource(
         properties = {
-            "apiml.security.ssl.verifySslCertificatesOfServices=true"
+            "apiml.service.ssl.verifySslCertificatesOfServices=true"
         }
     )
     @DirtiesContext
+    @SpringBootTest(
+        classes = CachingServiceApplication.class,
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+    )
     class GivenEnabledSSLVerification {
 
         @Value("${apiml.service.hostname:localhost}")
@@ -89,6 +92,7 @@ public class SecurityConfigTest {
         @Test
         void whenNoClientCertificate_thenReturnUnauthorized() {
             given()
+                .header(new Header("X-CS-Service-ID", "apimtst"))
                 .get(getUri(hostname, port))
                 .then()
                 .log().ifValidationFails()
@@ -100,6 +104,7 @@ public class SecurityConfigTest {
 
             given()
                 .config(SslContext.clientCertApiml)
+                .header(new Header("X-CS-Service-ID", "apimtst"))
                 .get(getUri(hostname, port))
                 .then()
                 .log().ifValidationFails()

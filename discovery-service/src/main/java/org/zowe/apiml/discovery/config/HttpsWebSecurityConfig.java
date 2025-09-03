@@ -67,9 +67,6 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
-    @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
-    private boolean nonStrictVerifySslCertificatesOfServices;
-
     @Bean
     WebSecurityCustomizer httpsWebSecurityCustomizer() {
         String[] noSecurityAntMatchers = {
@@ -128,7 +125,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Order(2)
     SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatcher("/eureka/**"));
-        if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
+        if (verifySslCertificatesOfServices) {
             http.x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
                 .authorizeHttpRequests(requests -> requests
                     .anyRequest().authenticated()
@@ -153,7 +150,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             .authenticationProvider(gatewayLoginProvider)
             .authenticationProvider(gatewayTokenProvider)
             .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
-        if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
+        if (verifySslCertificatesOfServices) {
             http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
                 .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
             if (isServerAttlsEnabled) {

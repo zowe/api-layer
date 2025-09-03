@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog.security;
+package org.zowe.apiml.apicatalog.functional;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.*;
@@ -55,8 +55,7 @@ public class SecurityConfigTest {
     @Nested
     @TestPropertySource(
         properties = {
-            "apiml.security.ssl.verifySslCertificatesOfServices=false",
-            "apiml.security.ssl.nonStrictVerifySslCertificatesOfServices=true"
+            "apiml.security.ssl.verifySslCertificatesOfServices=false"
         }
     )
     @DirtiesContext
