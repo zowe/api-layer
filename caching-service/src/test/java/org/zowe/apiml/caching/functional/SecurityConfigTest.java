@@ -33,6 +33,7 @@ public class SecurityConfigTest {
 
     @BeforeAll
     static void init() throws Exception {
+        SslContext.reset();
         RestAssured.useRelaxedHTTPSValidation();
         SslContextConfigurer configurer = new SslContextConfigurer("password".toCharArray(), "../keystore/client_cert/client-certs.p12", "../keystore/localhost/localhost.keystore.p12");
         SslContext.prepareSslAuthentication(configurer);
