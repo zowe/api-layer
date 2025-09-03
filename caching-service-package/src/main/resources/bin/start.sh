@@ -77,7 +77,6 @@ fi
 verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates}" | tr '[:lower:]' '[:upper:]')
 if [ "${verify_certificates_config}" = "DISABLED" ]; then
   verifySslCertificatesOfServices=false
-  nonStrictVerifySslCertificatesOfServices=true
 elif [ "${verify_certificates_config}" = "NONSTRICT" ]; then
   verifySslCertificatesOfServices=true
   nonStrictVerifySslCertificatesOfServices=true
