@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.caching.functional;
+package org.zowe.apiml.caching.config;
 
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
