@@ -104,7 +104,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
             authSource.setDistributedId(getFieldValueFromToken(authSource.getRawSource(), userIdFieldPath));
             return true;
         } catch (TokenFormatNotValidException e) {
-            logger.log(MessageType.DEBUG, "Cannot extract distributed id from token.", e);
+            logger.log(MessageType.DEBUG, String.format("Cannot extract distributed id from token. Reason: %s", e.getMessage()));
             return false;
         }
     }
