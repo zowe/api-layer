@@ -87,7 +87,7 @@ describe('>>> GraphQL component tests', () => {
 
     it('should render the GraphiQL container', async () => {
         await act(async () => render(<GraphQLUI graphqlUrl={graphqlUrl} />));
-        expect(screen.getByTestId('graphiql-container')).toBeInTheDocument();
+        expect(document.getElementById('graphiql-container')).toBeInTheDocument();
     }, 10000);
 
     it('getUrl constructs the correct URL', async () => {
@@ -125,7 +125,7 @@ describe('>>> GraphQL component tests', () => {
         const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
         await act(async () => render(<GraphQLUI graphqlUrl={graphqlUrl} />));
         expect(consoleErrorSpy).toHaveBeenCalledWith('Error fetching data:', expect.any(Error));
-        expect(screen.getByTestId('graphiql-container')).toBeInTheDocument();
+        expect(document.getElementById('graphiql-container')).toBeInTheDocument();
         consoleErrorSpy.mockRestore();
     });
 
