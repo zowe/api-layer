@@ -10,24 +10,23 @@
 
 package org.zowe.apiml.zaas.security.service.schema.source;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
-import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
+import org.zowe.apiml.zaas.security.service.AuthenticationService;
+import org.zowe.apiml.zaas.security.service.TokenCreationService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -67,7 +66,6 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
     }
 
     @Override
-    @Cacheable(value = "validationOIDCToken", key = "#oidcToken", condition = "#oidcToken != null")
     public boolean isValid(AuthSource authSource) {
         if (authSource instanceof OIDCAuthSource) {
             String token = ((OIDCAuthSource) authSource).getRawSource();
@@ -88,7 +86,6 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
     }
 
     @Override
-    @Cacheable(value = "parseOIDCToken", key = "#parsedOIDCToken", condition = "#parsedOIDCToken != null")
     public AuthSource.Parsed parse(AuthSource authSource) {
         if (authSource instanceof OIDCAuthSource) {
             if (isValid(authSource)) {
