@@ -101,10 +101,12 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
 
     private boolean extractUserId(OIDCAuthSource authSource) {
         try {
-            authSource.setDistributedId(getFieldValueFromToken(authSource.getRawSource(), userIdFieldPath));
+            var userId = getFieldValueFromToken(authSource.getRawSource(), userIdFieldPath);
+            logger.log(MessageType.DEBUG, "UserId {} extracted from OIDC token field {}.", userId, String.join(".", userIdFieldPath));
+            authSource.setDistributedId(userId);
             return true;
         } catch (TokenFormatNotValidException e) {
-            logger.log(MessageType.DEBUG, String.format("Cannot extract distributed id from token. Reason: %s", e.getMessage()));
+            logger.log(MessageType.DEBUG, "Cannot extract distributed id from OIDC token. Reason: {}", e.getMessage());
             return false;
         }
     }
