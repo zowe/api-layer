@@ -380,6 +380,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.oidc.jwks.refreshInternalHours=${ZWE_components_gateway_apiml_security_oidc_jwks_refreshInternalHours:-${ZWE_configs_apiml_security_oidc_jwks_refreshInternalHours:-1}} \
     -Dapiml.security.oidc.jwks.uri=${ZWE_components_gateway_apiml_security_oidc_jwks_uri:-${ZWE_configs_apiml_security_oidc_jwks_uri:-}} \
     -Dapiml.security.oidc.registry=${ZWE_components_gateway_apiml_security_oidc_registry:-${ZWE_configs_apiml_security_oidc_registry:-}} \
+    -Dapiml.security.oidc.userIdField=${ZWE_components_gateway_apiml_security_oidc_userIdField:-${ZWE_configs_apiml_security_oidc_userIdField:-"sub"}} \
     -Dapiml.security.oidc.userInfo.uri=${ZWE_components_gateway_apiml_security_oidc_userInfo_uri:-${ZWE_configs_apiml_security_oidc_userInfo_uri:-}} \
     -Dapiml.security.oidc.validationType=${ZWE_components_gateway_apiml_security_oidc_validationType:-${ZWE_configs_apiml_security_oidc_validationType:-"JWK"}} \
     -Dapiml.security.personalAccessToken.enabled=${ZWE_components_gateway_apiml_security_personalAccessToken_enabled:-${ZWE_configs_apiml_security_personalAccessToken_enabled:-false}} \
