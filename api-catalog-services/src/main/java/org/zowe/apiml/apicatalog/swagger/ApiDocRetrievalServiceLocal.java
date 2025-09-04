@@ -72,7 +72,8 @@ public class ApiDocRetrievalServiceLocal {
                     operationParser,
                     springDocConfigProperties,
                     springDocProviders, new SpringDocCustomizers(Optional.of(openApiCustomizers), Optional.of(groupedOpenApi.getOperationCustomizers()),
-                    Optional.of(groupedOpenApi.getRouterOperationCustomizers()), Optional.of(groupedOpenApi.getOpenApiMethodFilters()))
+                    Optional.of(groupedOpenApi.getRouterOperationCustomizers()), Optional.of(groupedOpenApi.getOpenApiMethodFilters()),
+                    Optional.empty(), Optional.empty())
                 ) {
                     @Override
                     protected String getServerUrl(ServerHttpRequest serverHttpRequest, String apiDocsUrl) {
