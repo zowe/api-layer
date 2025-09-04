@@ -13,7 +13,9 @@ package org.zowe.apiml.zaas.security.service.schema.source;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.message.core.MessageType;
@@ -22,18 +24,23 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+
+import static org.zowe.apiml.zaas.security.service.JwtUtils.getFieldValueFromToken;
 
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
-public class OIDCAuthSourceService extends TokenAuthSourceService {
+public class OIDCAuthSourceService extends TokenAuthSourceService implements InitializingBean {
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
 
@@ -42,6 +49,15 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
     private final AuthenticationService authenticationService;
     private final OIDCProvider oidcProvider;
     private final TokenCreationService tokenService;
+
+    @Value("${apiml.security.oidc.userIdField:sub}")
+    protected String userIdFieldPathProperty;
+    private List<String> userIdFieldPath;
+
+    @Override
+    public void afterPropertiesSet() {
+        userIdFieldPath = Arrays.asList(userIdFieldPathProperty.trim().split("\\."));
+    }
 
     @Override
     protected ApimlLogger getLogger() {
@@ -67,15 +83,13 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
 
     @Override
     public boolean isValid(AuthSource authSource) {
-        if (authSource instanceof OIDCAuthSource) {
-            String token = ((OIDCAuthSource) authSource).getRawSource();
+        if (authSource instanceof OIDCAuthSource oidcAuthSource) {
+            String token = oidcAuthSource.getRawSource();
             if (StringUtils.isNotBlank(token)) {
                 logger.log(MessageType.DEBUG, "Validating OIDC token.");
                 if (oidcProvider.isValid(token)) {
                     logger.log(MessageType.DEBUG, "OIDC token is valid, set the distributed id to the auth source.");
-                    QueryResponse tokenClaims = authenticationService.parseJwtToken(token);
-                    ((OIDCAuthSource) authSource).setDistributedId(tokenClaims.getUserId());
-                    return true;
+                    return extractUserId(oidcAuthSource);
                 }
                 logger.log(MessageType.DEBUG, "OIDC token is not valid or the validation failed.");
             }
@@ -85,11 +99,23 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
         return false;
     }
 
+    private boolean extractUserId(OIDCAuthSource authSource) {
+        try {
+            var userId = getFieldValueFromToken(authSource.getRawSource(), userIdFieldPath);
+            logger.log(MessageType.DEBUG, "UserId {} extracted from OIDC token field {}.", userId, String.join(".", userIdFieldPath));
+            authSource.setDistributedId(userId);
+            return true;
+        } catch (TokenFormatNotValidException e) {
+            logger.log(MessageType.DEBUG, "Cannot extract distributed id from OIDC token. Reason: {}", e.getMessage());
+            return false;
+        }
+    }
+
     @Override
     public AuthSource.Parsed parse(AuthSource authSource) {
-        if (authSource instanceof OIDCAuthSource) {
-            if (isValid(authSource)) {
-                return parseOIDCToken((OIDCAuthSource) authSource, mapper);
+        if (authSource instanceof OIDCAuthSource oidcAuthSource) {
+            if (isValid(oidcAuthSource)) {
+                return parseOIDCToken( oidcAuthSource, mapper);
             }
             throw new TokenNotValidException("OIDC token is not valid.");
         }
@@ -135,5 +161,4 @@ public class OIDCAuthSourceService extends TokenAuthSourceService {
         AuthSource.Parsed parsed = parse(authSource);
         return tokenService.createJwtTokenWithoutCredentials(parsed.getUserId());
     }
-
 }
