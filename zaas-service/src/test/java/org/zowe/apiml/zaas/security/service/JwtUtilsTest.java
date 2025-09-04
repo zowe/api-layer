@@ -15,15 +15,25 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.JwtException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
-
 class JwtUtilsTest {
+
+    private static final String TOKEN_WITH_USERNAME_FIELDS = "ewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiLAogICJlbWFpbCI6ICJ1c2VybmFtZUBvaWRjLm9yZyIsCiAgIm9yZyI6IHsKICAgICJuYW1lIjogIm9wZW5tYWluZnJhbWUiLAogICAgImRlcCI6IHsKICAgICAgIm5hbWUiOiAiem93ZSIsCiAgICAgICJ0ZWFtIjogImFwaW1sIiwKICAgICAgImNvbnRyaWJ1dG9yIjogImNvbnRyaWJ1dG9yQGFwaW1sLnpvd2UiLAogICAgICAibmlja25hbWUiOiAiIiwKICAgICAgIm51bGxWYWx1ZSI6IG51bGwKICAgIH0KICB9LAogICJtZW1iZXJPZiI6IFsKICAgICJvcGVubWFpbmZyYW1lIiwKICAgICJ6b3dlIiwKICAgICJhcGltbCIKICBdCn0.c29tZVNpZ25lZEhhc2hDb2Rl";
 
     @Test
     void testHandleJwtParserExceptionForExpiredToken() {
@@ -47,4 +57,45 @@ class JwtUtilsTest {
         assertTrue(exception instanceof TokenNotValidException);
         assertEquals("An internal error occurred while validating the token therefore the token is no longer valid.", exception.getMessage());
     }
+
+    @ParameterizedTest
+    @CsvSource({
+        "email,username@oidc.org",
+        "org.dep.contributor, contributor@apiml.zowe"})
+    void givenValidFieldPath_thenReturnCorrectValue(String fieldPath, String expectedValue) {
+        var actualValue = JwtUtils.getFieldValueFromToken(TOKEN_WITH_USERNAME_FIELDS, splitFieldPath(fieldPath));
+        assertEquals(expectedValue, actualValue);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "nonexistent", "org.nonexistent.foo", "org.dep", "org.dep.nonexistent", "org.dep.nickname", "org.dep.nullValue"})
+    void givenInvalidFieldPath_thenThrowInvalidTokenFormatException(String fieldPath) {
+        assertThrows(TokenFormatNotValidException.class, () -> JwtUtils.getFieldValueFromToken(TOKEN_WITH_USERNAME_FIELDS, splitFieldPath(fieldPath)));
+    }
+
+    @Test
+    void givenNullToken_thenThrowIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> JwtUtils.getFieldValueFromToken(null, List.of("foo")));
+    }
+
+    @Test
+    void givenNullFieldPath_thenThrowIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> JwtUtils.getFieldValueFromToken(TOKEN_WITH_USERNAME_FIELDS, null));
+    }
+
+    @Test
+    void givenEmptyFieldPath_thenThrowIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> JwtUtils.getFieldValueFromToken(TOKEN_WITH_USERNAME_FIELDS, Collections.emptyList()));
+    }
+
+    @Test
+    void givenEmptyStringFieldPath_thenThrowIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> JwtUtils.getFieldValueFromToken(TOKEN_WITH_USERNAME_FIELDS, List.of(" ")));
+    }
+
+
+    private List<String> splitFieldPath(String fieldPath) {
+        return Arrays.asList(fieldPath.trim().split("\\."));
+    }
+
 }
