@@ -314,8 +314,6 @@ logging:
 
 management:
     endpoint:
-        gateway:
-            access: none
         health:
             showDetails: always
     health:
@@ -325,7 +323,7 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,gateway
+                include: health,info
 ---
 spring.config.activate.on-profile: debug
 
@@ -357,6 +355,14 @@ logging:
         reactor.netty.http.client.HttpClient: DEBUG
         reactor.netty.http.client.HttpClientConnect: DEBUG
 
+management:
+    endpoint:
+        gateway:
+            access: unrestricted
+    endpoints:
+        web:
+            exposure:
+                include: health,info,gateway
 ---
 spring.config.activate.on-profile: wiretap
 
