@@ -32,7 +32,7 @@ dependencyResolutionManagement {
             version('eureka', '2.0.5')
             version('netflixServo', '0.13.2')
             version('googleErrorprone', '2.41.0')
-            version('gradleGitProperties', '2.5.3') // Used in classpath dependencies
+            version('gradleGitProperties', '2.5.2') // Used in classpath dependencies
             version('googleGson', '2.13.1')
             version('guava', '33.4.8-jre')
             version('hamcrest', '3.0')
