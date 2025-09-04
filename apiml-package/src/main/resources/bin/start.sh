@@ -356,6 +356,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.gateway.registry.enabled=${ZWE_components_gateway_apiml_gateway_registry_enabled:-${ZWE_configs_apiml_gateway_registry_enabled:-false}} \
     -Dapiml.gateway.registry.metadata-key-allow-list=${ZWE_components_gateway_gateway_registry_metadataKeyAllowList:-${ZWE_configs_gateway_registry_metadataKeyAllowList:-}} \
     -Dapiml.gateway.servicesToLimitRequestRate=${ZWE_components_gateway_apiml_gateway_servicesToLimitRequestRate:-${ZWE_configs_apiml_gateway_servicesToLimitRequestRate:-}} \
+    -Dapiml.gateway.servicesToDisableRetry=${ZWE_components_gateway_apiml_gateway_servicesToDisableRetry:-${ZWE_configs_apiml_gateway_servicesToDisableRetry:-}} \
     -Dapiml.health.protected=${ZWE_components_gateway_apiml_health_protected:-${ZWE_configs_apiml_health_protected:-true}} \
     -Dapiml.httpclient.ssl.enabled-protocols=${client_enabled_protocols} \
     -Dapiml.internal-discovery.port=${ZWE_components_discovery_port:-${ZWE_configs_internal_discovery_port:-7553}} \
