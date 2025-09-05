@@ -49,9 +49,9 @@
         "redux-persist-transform-filter": "0.0.22",
         "redux-thunk": "3.1.0",
         "rxjs": "7.8.2",
-        "sass": "1.91.0",
+        "sass": "1.92.0",
         "stream": "0.0.3",
-        "swagger-ui-react": "5.27.1",
+        "swagger-ui-react": "5.28.1",
         "url": "0.11.4",
         "util": "0.12.5",
         "uuid": "10.0.0"
@@ -94,11 +94,11 @@
         "@testing-library/jest-dom": "6.8.0",
         "@testing-library/react": "16.3.0",
         "@testing-library/user-event": "14.6.1",
-        "@reduxjs/toolkit": "2.8.2",
+        "@reduxjs/toolkit": "2.9.0",
         "ajv": "8.17.1",
         "ansi-regex": "6.2.0",
         "body-parser": "1.20.3",
-        "caniuse-lite": "1.0.30001737",
+        "caniuse-lite": "1.0.30001739",
         "concurrently": "9.2.1",
         "cors": "2.8.5",
         "cross-env": "7.0.3",
@@ -147,7 +147,7 @@
     "overrides": {
         "nth-check": "2.1.1",
         "jsdom": "16.7.0",
-        "got": "14.4.7",
+        "got": "14.4.8",
         "react-error-overlay": "6.1.0",
         "tough-cookie": "5.1.2",
         "@braintree/sanitize-url": "7.1.1",
@@ -167,7 +167,7 @@
     },
     "engines": {
         "npm": "=10.9.3",
-        "node": "=20.19.4"
+        "node": "=20.19.5"
     },
     "browserslist": [
         ">0.2%",
