@@ -85,7 +85,7 @@ public class ConfigReader {
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "ibmzosmf", "");
                         IDPConfiguration idpConfiguration = new IDPConfiguration("https://okta-dev.com", "user", "user", "alt_user", "alt_user");
                         SafIdtConfiguration safIdtConfiguration = new SafIdtConfiguration(true);
-                        OidcConfiguration oidcConfiguration = new OidcConfiguration("");
+                        OidcConfiguration oidcConfiguration = new OidcConfiguration("","","");
 
                         configuration = new EnvironmentConfiguration(
                             credentials,
@@ -166,6 +166,8 @@ public class ConfigReader {
                     configuration.getSafIdtConfiguration().setEnabled(Boolean.parseBoolean(System.getProperty("safidt.enabled", String.valueOf(configuration.getSafIdtConfiguration().isEnabled()))));
 
                     configuration.getOidcConfiguration().setClientId(System.getProperty("okta.client.id", String.valueOf(configuration.getOidcConfiguration().getClientId())));
+                    configuration.getOidcConfiguration().setClientSecret(System.getProperty("okta.client.secret", String.valueOf(configuration.getOidcConfiguration().getClientSecret())));
+                    configuration.getOidcConfiguration().setProviderName(System.getProperty("okta.client.providerName", String.valueOf(configuration.getOidcConfiguration().getProviderName())));
 
                     setZosmfConfigurationFromSystemProperties(configuration);
                     setTlsConfigurationFromSystemProperties(configuration);

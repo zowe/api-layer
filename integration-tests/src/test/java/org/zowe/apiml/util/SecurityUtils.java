@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.util.Base64;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -60,7 +61,6 @@ import org.zowe.apiml.util.config.TlsConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import javax.net.ssl.SSLContext;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -68,24 +68,12 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.Key;
-import java.security.KeyManagementException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Security;
-import java.security.UnrecoverableKeyException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -97,10 +85,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.zowe.apiml.util.requests.Endpoints.GENERATE_ACCESS_TOKEN;
-import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGIN;
-import static org.zowe.apiml.util.requests.Endpoints.ROUTED_QUERY;
-import static org.zowe.apiml.util.requests.Endpoints.ZOSMF_AUTH_ENDPOINT;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 public class SecurityUtils {
     public static final String GATEWAY_TOKEN_COOKIE_NAME = "apimlAuthenticationToken";
@@ -121,6 +106,7 @@ public class SecurityUtils {
 
     public static final String OKTA_HOSTNAME = ConfigReader.environmentConfiguration().getIdpConfiguration().getHost();
     public static final String OKTA_CLIENT_ID = ConfigReader.environmentConfiguration().getOidcConfiguration().getClientId();
+    public static final String OKTA_CLIENT_PASSWORD = ConfigReader.environmentConfiguration().getOidcConfiguration().getClientSecret();
     public static final String OKTA_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getUser();
     public static final String OKTA_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getPassword();
     public static final String OKTA_ALT_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternateUser();
@@ -128,6 +114,8 @@ public class SecurityUtils {
 
     public static final String COOKIE_NAME = "apimlAuthenticationToken";
     public static final String PAT_COOKIE_AUTH_NAME = "personalAccessToken";
+
+    public static final ObjectMapper MAPPER = new ObjectMapper();
 
     protected static String getUsername() {
         return USERNAME;
@@ -468,6 +456,50 @@ public class SecurityUtils {
                 return accessToken;
             } else {
                 throw new RuntimeException("Failed obtaining OKTA access token: " + response.getStatusLine().getStatusCode() + ": " + EntityUtils.toString(response.getEntity()));
+            }
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public static boolean isKeycloakProvider(){
+        return "keycloak".equalsIgnoreCase(ConfigReader.environmentConfiguration().getOidcConfiguration().getProviderName());
+    }
+    public static String validKeycloakToken(boolean userHasMappingDefined) {
+        assertNotNull(OKTA_HOSTNAME, "Keycloak host name is not set.");
+        assertNotNull(OKTA_CLIENT_ID, "Keycloak client id is not set.");
+        // retrieve the access token from Okta using session token
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) {
+            var uri = new URI(OKTA_HOSTNAME + "/realms/apiml/protocol/openid-connect/token");
+            var request = new HttpPost(uri);
+            var form = new StringBuilder();
+            form.append("grant_type=password");
+            form.append("&scope=discoverableclient");
+            form.append("&client_id=").append(URLEncoder.encode(OKTA_CLIENT_ID, StandardCharsets.UTF_8));
+            form.append("&client_secret=").append(URLEncoder.encode(OKTA_CLIENT_PASSWORD, StandardCharsets.UTF_8));
+            if(userHasMappingDefined) {
+                form.append("&username=").append(URLEncoder.encode(OKTA_USER, StandardCharsets.UTF_8));
+                form.append("&password=").append(URLEncoder.encode(OKTA_PASSWORD, StandardCharsets.UTF_8));
+            } else {
+                form.append("&username=").append(URLEncoder.encode(OKTA_ALT_USER, StandardCharsets.UTF_8));
+                form.append("&password=").append(URLEncoder.encode(OKTA_ALT_PASSWORD, StandardCharsets.UTF_8));
+            }
+            var entity = new StringEntity(
+                form.toString(),
+                ContentType.APPLICATION_FORM_URLENCODED
+            );
+            request.setEntity(entity);
+            request.addHeader("content-type", "application/x-www-form-urlencoded");
+
+            var response = httpClient.execute(request);
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                // The response is HTML form where access token is hidden input field (this is controlled by response_mode = form_post)
+                var body = EntityUtils.toString(response.getEntity());
+                var accessToken = MAPPER.readValue(body,HashMap.class).get("access_token");
+                assertNotNull(accessToken, "Failed to locate access token in the Keycloak /authorize response.");
+                return (String)accessToken;
+            } else {
+                throw new RuntimeException("Failed obtaining Keycloak access token: " + response.getStatusLine().getStatusCode() + ": " + EntityUtils.toString(response.getEntity()));
             }
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);

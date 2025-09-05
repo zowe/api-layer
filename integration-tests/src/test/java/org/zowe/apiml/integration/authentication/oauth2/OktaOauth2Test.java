@@ -45,25 +45,20 @@ import java.text.ParseException;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.zowe.apiml.util.SecurityUtils.GATEWAY_TOKEN_COOKIE_NAME;
-import static org.zowe.apiml.util.requests.Endpoints.JWK_ALL;
-import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
-import static org.zowe.apiml.util.requests.Endpoints.SAF_IDT_REQUEST;
-import static org.zowe.apiml.util.requests.Endpoints.ZOSMF_REQUEST;
-import static org.zowe.apiml.util.requests.Endpoints.ZOWE_JWT_REQUEST;
+import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @Tag("OktaOauth2Test")
 public class OktaOauth2Test {
 
     public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_OIDC_TOKEN);
-    public static final URI JWK_ENDPOINT = HttpRequestUtils.getUriFromGateway(JWK_ALL);
-    private static final String VALID_TOKEN_WITH_MAPPING = SecurityUtils.validOktaAccessToken(true);
-    private static final String VALID_TOKEN_NO_MAPPING = SecurityUtils.validOktaAccessToken(false);
+    public static URI JWK_ENDPOINT = HttpRequestUtils.getUriFromGateway(JWK_ALL);
+
+    private static final String VALID_TOKEN_WITH_MAPPING = SecurityUtils.isKeycloakProvider() ? SecurityUtils.validKeycloakToken(true) : SecurityUtils.validOktaAccessToken(true);
+    private static final String VALID_TOKEN_NO_MAPPING = SecurityUtils.isKeycloakProvider() ? SecurityUtils.validKeycloakToken(false) : SecurityUtils.validOktaAccessToken(false);
     private static final String EXPIRED_TOKEN = SecurityUtils.expiredOktaAccessToken();
 
     static Stream<Arguments> validTokens() {
