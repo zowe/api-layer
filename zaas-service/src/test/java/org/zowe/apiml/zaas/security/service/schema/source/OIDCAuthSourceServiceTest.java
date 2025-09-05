@@ -108,7 +108,7 @@ class OIDCAuthSourceServiceTest {
             OIDCAuthSource authSource = new OIDCAuthSource(TOKEN_WITH_USERNAME_FIELDS);
 
             assertTrue(service.isValid(authSource));
-            assertEquals(SUB_USER, authSource.getDistributedId());
+            assertEquals(SUB_USER, authSource.getDistributedId().get(0));
         }
 
         @Test
@@ -118,7 +118,7 @@ class OIDCAuthSourceServiceTest {
             AuthSource.Parsed parsedSource = service.parse(authSource);
 
             verify(mapper, times(1)).mapToMainframeUserId(authSource);
-            assertEquals(SUB_USER, authSource.getDistributedId());
+            assertEquals(SUB_USER, authSource.getDistributedId().get(0));
             assertEquals(MF_USER, parsedSource.getUserId());
         }
 
@@ -144,7 +144,7 @@ class OIDCAuthSourceServiceTest {
 
             String ltpaResult = service.getLtpaToken(authSource);
             assertEquals(expectedToken, ltpaResult);
-            assertEquals(SUB_USER, authSource.getDistributedId());
+            assertEquals(SUB_USER, authSource.getDistributedId().get(0));
         }
 
         @Test
@@ -155,7 +155,7 @@ class OIDCAuthSourceServiceTest {
             when(tokenCreationService.createJwtTokenWithoutCredentials(MF_USER)).thenReturn(expectedToken);
             String jwtResult = service.getJWT(authSource);
             assertEquals(expectedToken, jwtResult);
-            assertEquals(SUB_USER, authSource.getDistributedId());
+            assertEquals(SUB_USER, authSource.getDistributedId().get(0));
         }
 
         @ParameterizedTest
@@ -170,7 +170,7 @@ class OIDCAuthSourceServiceTest {
             service.afterPropertiesSet();
 
             assertTrue(service.isValid(authSource));
-            assertEquals(username, authSource.getDistributedId());
+            assertEquals(username, authSource.getDistributedId().get(0));
         }
 
         @ParameterizedTest

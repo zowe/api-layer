@@ -15,6 +15,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.RequiredTypeException;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -99,37 +100,60 @@ public class JwtUtils {
      * Extracts value of a field from an OIDC token. The value is extracted from a custom path which supports nested objects.
      * @param token to extract the field from
      * @param pathToField list of strings representing path to the field
-     * @return userId extracted from the token
+     * @return list of values extracted from the token field
      *
      * @throws TokenFormatNotValidException in case of the field value cannot be extracted from the token, is null, or empty
      */
-    @SuppressWarnings("rawtypes")
-    public static String getFieldValueFromToken(String token, List<String> pathToField) throws TokenFormatNotValidException {
+    public static List<String> getFieldValuesFromToken(String token, List<String> pathToField) throws TokenFormatNotValidException {
         if (token == null || pathToField == null || pathToField.isEmpty() || StringUtils.isBlank(pathToField.get(0))) {
-            throw new IllegalArgumentException("Token and field path most not be null or empty");
+            throw new IllegalArgumentException("Token and field path must not be null or empty");
         }
 
         try {
             Claims claims = getJwtClaims(token);
-            String fieldValue;
+            List<String> fieldValues;
             if (pathToField.size() == 1) {
-                fieldValue = claims.get(pathToField.get(0), String.class);
+                fieldValues = extractHighLevelField(claims, pathToField);
             } else {
-                var iterator = pathToField.iterator();
-                var key = iterator.next();
-                Map val = claims.get(key, Map.class);
-                while (iterator.hasNext()) {
-                    key = iterator.next();
-                    if (iterator.hasNext()) {
-                        val = (Map) val.get(key);
-                    }
-                }
-                fieldValue = (String) val.get(key);
+               fieldValues = extractNestedFields(claims, pathToField);
             }
-            if (StringUtils.isBlank(fieldValue)) throw new IllegalArgumentException();
-            return fieldValue;
+
+            fieldValues = fieldValues.stream().filter(StringUtils::isNotBlank).toList();
+            if (fieldValues.isEmpty()) {
+                throw new IllegalArgumentException();
+            } else {
+                return fieldValues;
+            }
         } catch (Exception e) {
-            throw new TokenFormatNotValidException(String.format("Cannot extract value from field %s. The field does not exists, is empty, or is na object.", String.join(".", pathToField)));
+            throw new TokenFormatNotValidException(
+                String.format("Cannot extract value from field %s. The field does not exists, is empty, or is na object.", String.join(".", pathToField)));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> extractHighLevelField(Claims claims, List<String> pathToField) {
+        try {
+            return List.of(claims.get(pathToField.get(0), String.class));
+        } catch (RequiredTypeException e) {
+            return claims.get(pathToField.get(0), List.class);
+        }
+    }
+
+    @SuppressWarnings({"unchecked,rawtypes"})
+    private List<String> extractNestedFields(Claims claims, List<String> pathToField) {
+        var iterator = pathToField.iterator();
+        var key = iterator.next();
+        Map<String, Object> val = claims.get(key, Map.class);
+        while (iterator.hasNext()) {
+            key = iterator.next();
+            if (iterator.hasNext()) {
+                val = (Map) val.get(key);
+            }
+        }
+        try {
+            return List.of((String) val.get(key));
+        } catch (ClassCastException e) {
+            return (List<String>) val.get(key);
         }
     }
 

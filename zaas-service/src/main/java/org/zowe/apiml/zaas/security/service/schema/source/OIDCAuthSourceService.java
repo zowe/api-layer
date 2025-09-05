@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static org.zowe.apiml.zaas.security.service.JwtUtils.getFieldValueFromToken;
+import static org.zowe.apiml.zaas.security.service.JwtUtils.getFieldValuesFromToken;
 
 @Service
 @RequiredArgsConstructor
@@ -101,9 +101,9 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
 
     private boolean extractUserId(OIDCAuthSource authSource) {
         try {
-            var userId = getFieldValueFromToken(authSource.getRawSource(), userIdFieldPath);
-            logger.log(MessageType.DEBUG, "UserId {} extracted from OIDC token field {}.", userId, String.join(".", userIdFieldPath));
-            authSource.setDistributedId(userId);
+            var userIds = getFieldValuesFromToken(authSource.getRawSource(), userIdFieldPath);
+            logger.log(MessageType.DEBUG, "UserId {} extracted from OIDC token field {}.", userIds, String.join(".", userIdFieldPath));
+            authSource.setDistributedId(userIds);
             return true;
         } catch (TokenFormatNotValidException e) {
             logger.log(MessageType.DEBUG, "Cannot extract distributed id from OIDC token. Reason: {}", e.getMessage());
