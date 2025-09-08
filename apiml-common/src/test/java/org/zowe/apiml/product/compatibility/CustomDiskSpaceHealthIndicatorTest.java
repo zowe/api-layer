@@ -21,7 +21,7 @@ import java.io.File;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class CustomDiskSpaceHealthIndicatorTest {
+class CustomDiskSpaceHealthIndicatorTest {
 
     private File testPath;
     private DataSize testThreshold;
