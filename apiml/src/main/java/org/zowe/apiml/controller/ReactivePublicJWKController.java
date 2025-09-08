@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
-import org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderJWK;
+import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import reactor.core.publisher.Mono;
 
@@ -91,8 +91,8 @@ public class ReactivePublicJWKController {
             }
             Optional<JWK> key = jwtSecurity.getJwkPublicKey();
             key.ifPresent(keys::add);
-            if ((oidcProvider != null) && (oidcProvider instanceof OIDCTokenProviderJWK oidcTokenProviderJwk)) {
-                JWKSet oidcSet = oidcTokenProviderJwk.getJwkSet();
+            if ((oidcProvider != null) && (oidcProvider instanceof OIDCTokenProvider oidcTokenProvider)) {
+                JWKSet oidcSet = oidcTokenProvider.getJwkSet();
                 if (oidcSet != null) {
                     keys.addAll(oidcSet.getKeys());
                 }

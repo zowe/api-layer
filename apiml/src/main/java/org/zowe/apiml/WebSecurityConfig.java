@@ -122,7 +122,7 @@ public class WebSecurityConfig {
     @Bean
     @Order(0)
     SecurityWebFilterChain discoveryServiceClientCertificateFilterChain(ServerHttpSecurity http) {
-        http
+        http.csrf(ServerHttpSecurity.CsrfSpec::disable)
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
                 pathMatchers("/eureka/**"),

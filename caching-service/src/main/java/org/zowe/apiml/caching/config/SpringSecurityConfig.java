@@ -38,9 +38,6 @@ public class SpringSecurityConfig {
     @Value("${apiml.service.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifyCertificates;
 
-    @Value("${apiml.service.ssl.nonStrictVerifySslCertificatesOfServices:false}")
-    private boolean nonStrictVerifyCerts;
-
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
 
@@ -61,15 +58,15 @@ public class SpringSecurityConfig {
             .securityMatcher(new AndServerWebExchangeMatcher(
                 ServerWebExchangeMatchers.pathMatchers("/cachingservice/**")
             ))
-            .authorizeExchange(exchange -> exchange
-                .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
-                .anyExchange().authenticated()
-            ).exceptionHandling(exceptionHandlingSpec ->
+            .exceptionHandling(exceptionHandlingSpec ->
                 exceptionHandlingSpec.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.FORBIDDEN))
             );
 
-        if (verifyCertificates || !nonStrictVerifyCerts) {
-            http.x509(x509spec -> x509spec.principalExtractor(X509Util.x509PrincipalExtractor())
+        if (verifyCertificates) {
+            http.authorizeExchange(exchange -> exchange
+                .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
+                .anyExchange().authenticated()
+            ).x509(x509spec -> x509spec.principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager()));
         } else {
             http.authorizeExchange(exchange -> exchange.anyExchange().permitAll());
