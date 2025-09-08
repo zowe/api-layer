@@ -38,9 +38,6 @@ public class SpringSecurityConfig {
     @Value("${apiml.service.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifyCertificates;
 
-    @Value("${apiml.service.ssl.nonStrictVerifySslCertificatesOfServices:false}")
-    private boolean nonStrictVerifyCerts;
-
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
 
@@ -65,7 +62,7 @@ public class SpringSecurityConfig {
                 exceptionHandlingSpec.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.FORBIDDEN))
             );
 
-        if (verifyCertificates || !nonStrictVerifyCerts) {
+        if (verifyCertificates) {
             http.authorizeExchange(exchange -> exchange
                 .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
                 .anyExchange().authenticated()
