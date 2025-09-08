@@ -60,6 +60,11 @@ class JwtUtilsTest {
         assertEquals("An internal error occurred while validating the token therefore the token is no longer valid.", exception.getMessage());
     }
 
+    @Test
+    void givenJwtNullToken_thenThrowTokenNotValidException() {
+        assertThrows(TokenNotValidException.class, () -> JwtUtils.getJwtClaims(null));
+    }
+
     @ParameterizedTest
     @CsvSource({
         "email,username@oidc.org",

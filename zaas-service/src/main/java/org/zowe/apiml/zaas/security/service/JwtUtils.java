@@ -15,7 +15,6 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.RequiredTypeException;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -41,7 +40,7 @@ public class JwtUtils {
      * This method reads the claims without validating the token signature. It should be used only if the validity was checked in the calling code.
      *
      * @param jwt token to be parsed
-     * @return parsed claims or empty object if the jwt is null
+     * @return parsed claims
      * @throws TokenNotValidException in case of invalid input, or TokenExpireException if JWT is expired
      */
     public static Claims getJwtClaims(String jwt) {
@@ -126,20 +125,15 @@ public class JwtUtils {
             }
         } catch (Exception e) {
             throw new TokenFormatNotValidException(
-                String.format("Cannot extract value from field %s. The field does not exists, is empty, or is na object.", String.join(".", pathToField)));
+                String.format("Cannot extract value from field %s. The field does not exist, is empty, or is an object.", String.join(".", pathToField)));
         }
     }
 
-    @SuppressWarnings("unchecked")
     private List<String> extractHighLevelField(Claims claims, List<String> pathToField) {
-        try {
-            return List.of(claims.get(pathToField.get(0), String.class));
-        } catch (RequiredTypeException e) {
-            return claims.get(pathToField.get(0), List.class);
-        }
+        return extractValueAsList(claims.get(pathToField.get(0)));
     }
 
-    @SuppressWarnings({"unchecked,rawtypes"})
+        @SuppressWarnings({ "unchecked", "rawtypes" })
     private List<String> extractNestedFields(Claims claims, List<String> pathToField) {
         var iterator = pathToField.iterator();
         var key = iterator.next();
@@ -150,10 +144,18 @@ public class JwtUtils {
                 val = (Map) val.get(key);
             }
         }
-        try {
-            return List.of((String) val.get(key));
-        } catch (ClassCastException e) {
-            return (List<String>) val.get(key);
+
+        return extractValueAsList(val.get(key));
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> extractValueAsList(Object rawValue) {
+        if (rawValue instanceof String value) {
+            return List.of(value);
+        } else if (rawValue instanceof List values) {
+            return values;
+        } else {
+            throw new IllegalArgumentException("Field value is neither String nor List of Strings");
         }
     }
 

@@ -39,16 +39,28 @@ public class OIDCMapperHelper implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() {
-        if (StringUtils.isEmpty(registry)) {
+        if (StringUtils.isBlank(registry)) {
             isConfigError = true;
             apimlLog.log("org.zowe.apiml.security.common.OIDCConfigError");
         }
     }
 
+    /**
+     * Maps the authSource distribution id to a mainframe user. The method validates OIDC mapping configuration and authSource and if these are valid, invokes the mapper.
+     * @param authSource OidcAuthSource with the distributed id to map
+     * @param mapper the mapper function with the actual mapping logic, accepts the authSource distributed id and returns a mainframe user id on success or null otherwise
+     * @return returns result of the mapper or null on validation failure
+     */
+
     public String mapToMainframeUserId(AuthSource authSource, UnaryOperator<String> mapper) {
 
         if (isConfigError) {
             apimlLog.log("org.zowe.apiml.security.common.OIDCConfigError");
+            return null;
+        }
+
+        if (mapper == null) {
+            apimlLog.log(MessageType.ERROR, "OIDC token mapping invoked but no mapper provided");
             return null;
         }
 
@@ -74,6 +86,7 @@ public class OIDCMapperHelper implements InitializingBean {
             }
         }
 
+        apimlLog.log(MessageType.DEBUG, "No mainframe user mapping found for distributed ids {}", distributedIds);
         return null;
     }
 }
