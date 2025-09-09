@@ -19,6 +19,6 @@ import org.springframework.context.annotation.Profile;
     "org.zowe.apiml.security.common",
     "org.zowe.apiml.gateway.security.login"
 })
-@Profile("!https & !attls")
+@Profile("!https & !attlsServer")
 public class HttpWebSecurityLoginConfig {
 }

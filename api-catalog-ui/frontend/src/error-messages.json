@@ -13,6 +13,10 @@
             "messageText": "Invalid Credentials"
         },
         {
+            "messageKey": "ZWEAG120E",
+            "messageText": "Invalid Credentials"
+        },
+        {
             "messageKey": "ZWEAT604E",
             "messageText": "Passwords do not match"
         },

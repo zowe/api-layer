@@ -28,7 +28,7 @@ class RegistryConfigTest {
 
             @Test
             void whenExternalUrlIsDefined_thenTransformIt() throws URISyntaxException {
-                ServiceAddress serviceAddress = new RegistryConfig().gatewayServiceAddress("https://host:123/path", false, false, null, 0);
+                ServiceAddress serviceAddress = new RegistryConfig().gatewayServiceAddress("https://host:123/path", false, false, false, null, 0);
                 assertEquals("https", serviceAddress.getScheme());
                 assertEquals("host:123", serviceAddress.getHostname());
             }
@@ -39,22 +39,29 @@ class RegistryConfigTest {
         class WithoutExternalUrl {
 
             @Test
-            void whenAttls_thenTransformIt() throws URISyntaxException {
-                ServiceAddress serviceAddress = new RegistryConfig().gatewayServiceAddress(null, true, false, "hostname", 10010);
+            void whenClientAttls_thenTransformIt() throws URISyntaxException {
+                ServiceAddress serviceAddress = new RegistryConfig().gatewayServiceAddress(null, true, true, false, "hostname", 10010);
+                assertEquals("http", serviceAddress.getScheme());
+                assertEquals("hostname:10010", serviceAddress.getHostname());
+            }
+
+            @Test
+            void whenOnlyServerAttls_thenTransformIt() throws URISyntaxException {
+                ServiceAddress serviceAddress = new RegistryConfig().gatewayServiceAddress(null, true, false, false, "hostname", 10010);
                 assertEquals("https", serviceAddress.getScheme());
                 assertEquals("hostname:10010", serviceAddress.getHostname());
             }
 
             @Test
             void whenSsl_thenTransformIt() throws URISyntaxException {
-                ServiceAddress serviceAddress = new RegistryConfig().gatewayServiceAddress(null, false, true, "localhost", 10010);
+                ServiceAddress serviceAddress = new RegistryConfig().gatewayServiceAddress(null, false, false, true, "localhost", 10010);
                 assertEquals("https", serviceAddress.getScheme());
                 assertEquals("localhost:10010", serviceAddress.getHostname());
             }
 
             @Test
             void whenNoTtls_thenTransformIt() throws URISyntaxException {
-                ServiceAddress serviceAddress = new RegistryConfig().gatewayServiceAddress(null, false, false, "localhost", 80);
+                ServiceAddress serviceAddress = new RegistryConfig().gatewayServiceAddress(null, false, false, false, "localhost", 80);
                 assertEquals("http", serviceAddress.getScheme());
                 assertEquals("localhost:80", serviceAddress.getHostname());
             }

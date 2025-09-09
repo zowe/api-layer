@@ -20,14 +20,19 @@ This is an example about how an API service implemented in Python can be registe
     test_env\Scripts\activate     # Windows      
     ```
    
-2. Install the Python enabler package in editable mode:
+2. Download dependencies  
     ```shell
-    pip install -e onboarding-enabler-python
+    pipenv sync
     ```
-   
+*OPTIONAL:*
+In case of need to modify the list of libraries, modify Pipfile and generate new lock file:
+   ```shell
+    pipenv lock
+   ```
+
 3. You can now start the service using by running:
     ```shell
-    cd onboarding-enabler-python-sample-app/src
+    cd src
     python app.py
     ```
  

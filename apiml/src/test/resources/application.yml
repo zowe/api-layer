@@ -1,6 +1,7 @@
 logging:
     level:
         ROOT: DEBUG
+        org.springframework: DEBUG
         org.zowe.apiml: DEBUG
 
 eureka:
@@ -101,6 +102,7 @@ apiml:
             urls:
                 authenticate: https://mock-services:10013/zss/saf/authenticate
                 verify: https://localhost:10013/zss/saf/verify
+    webClientConfig.enabled: true
 caching:
     storage:
         mode: infinispan
@@ -123,6 +125,7 @@ server:
         trustStore: ../keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
+    max-http-request-header-size: 48000
 
 spring:
     application:
@@ -132,3 +135,31 @@ spring:
         banner-mode: ${apiml.banner:"console"}
         web-application-type: reactive
         allow-bean-definition-overriding: true
+
+---
+spring.config.activate.on-profile: attlsServer
+
+server:
+    attlsServer:
+        enabled: true
+    ssl:
+        enabled: false
+
+apiml:
+    service:
+        corsEnabled: true
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+    service:
+        scheme: http
+
+apiml:
+    service:
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false

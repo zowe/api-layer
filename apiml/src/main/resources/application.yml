@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 eureka:
     dashboard:
         path: /eureka
@@ -38,7 +41,7 @@ spring:
                         redirectUri: "{baseUrl}/gateway/{action}/oauth2/code/{registrationId}"
     main:
         allow-circular-references: true
-        banner-mode: ${apiml.banner:"console"}
+        banner-mode: ${apiml.banner:"off"}
         web-application-type: reactive
         allow-bean-definition-overriding: true
 
@@ -57,10 +60,47 @@ springdoc:
           paths-to-match: /discovery/api/v1/**
         - group: zaas
           paths-to-match: /zaas/api/v1/**
+        - group: apicatalog
+          paths-to-match: /apicatalog/api/v1/**
+
 
 apiml:
     catalog:
         serviceId: apicatalog
+        eureka:
+            instance:
+                metadata-map:
+                    apiml:
+                        apiBasePath: /apicatalog/api/v1
+                        homePagePath: /apicatalog
+                        catalog:
+                            tile:
+                                id: apimediationlayer
+                                title: API Mediation Layer API
+                                description: The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.
+                                version: 1.0.0
+
+                        routes:
+                            ui-v1:
+                                gatewayUrl: "/ui/v1"
+                                serviceUrl: /apicatalog
+                            api-v1:
+                                gatewayUrl: "/api/v1"
+                                serviceUrl: /apicatalog
+
+                        apiInfo:
+                            -   apiId: zowe.apiml.apicatalog
+                                version: 1.0.0
+                                gatewayUrl: api/v1
+                                swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/v3/api-docs/apicatalog
+
+                        service:
+                            title: API Catalog
+                            description: API Catalog service to display service details and API documentation for discovered API services.
+
+                        authentication:
+                            sso: true
+                            scheme: zoweJwt
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
         # Not used in HTTPS mode and not applicable for Zowe
@@ -112,6 +152,7 @@ apiml:
                             externalUrl: ${apiml.service.externalUrl:${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}}
                         authentication:
                             sso: true
+                    management.port: 10010
         registry:
             enabled: false
             metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
@@ -150,7 +191,7 @@ apiml:
         timeToLive: 10000
     routing:
         instanceIdHeader: false
-        ignoredServices: discovery,zaas # to disable routing to the Discovery and ZAAS service
+        ignoredServices: discovery,zaas,apicatalog,cachingservice # to disable routing to the Discovery and ZAAS service + local services on Modulith
     service:
         apimlId: apiml1
         corsEnabled: true
@@ -204,6 +245,7 @@ apiml:
                 verify: https://${apiml.service.hostname}:10013/zss/saf/verify
     health:
         protected: true
+    webClientConfig.enabled: true
 server:
     http2:
         enabled: false
@@ -218,6 +260,7 @@ server:
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
+    max-http-request-header-size: 48000
 
 caching:
     storage:
@@ -271,8 +314,6 @@ logging:
 
 management:
     endpoint:
-        gateway:
-            access: none
         health:
             showDetails: always
     health:
@@ -282,15 +323,18 @@ management:
         web:
             base-path: /application
             exposure:
-                include: health,info,gateway
+                include: health,info
 ---
 spring.config.activate.on-profile: debug
 
 logging:
     level:
+        org.springframework.cloud.gateway: DEBUG
+        org.springframework.web.reactive: DEBUG
+        org.springframework.web.reactive.socket: DEBUG
         com.netflix: INFO # Update to DEBUG
-        com.netflix.eureka: DEBUG
         com.netflix.discovery.shared.transport.decorator: DEBUG
+        com.netflix.eureka: DEBUG
         com.netflix.eureka.cluster: DEBUG
         com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
         javax.net.ssl: ERROR
@@ -299,37 +343,63 @@ logging:
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.ehcache: INFO
+        org.infinispan: DEBUG
+        org.jgroups: DEBUG
         org.springframework: DEBUG
-        # org.springframework.cloud.gateway: TRACE
-        # org.springframework.cloud.gateway.filter: TRACE
-        # org.springframework.cloud.gateway.route: TRACE
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.springframework.security: TRACE
         org.springframework.security.web: TRACE
-        # org.springframework.web.reactive: DEBUG
-        # org.springframework.web.reactive.socket: DEBUG
         org.zowe.apiml: DEBUG
         reactor.netty: DEBUG
         reactor.netty.http.client: DEBUG
         reactor.netty.http.client.HttpClient: DEBUG
         reactor.netty.http.client.HttpClientConnect: DEBUG
-        org.jgroups: DEBUG
-        org.infinispan: DEBUG
+
+management:
+    endpoint:
+        gateway:
+            access: unrestricted
+    endpoints:
+        web:
+            exposure:
+                include: health,info,gateway
+---
+spring.config.activate.on-profile: wiretap
+
+spring:
+    cloud:
+        gateway:
+            server:
+                webflux:
+                    httpserver:
+                        wiretap: true
+                    httpclient:
+                        wiretap: true
 
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
 
-    service:
-        scheme: http
 apiml:
     service:
         corsEnabled: true
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+    service:
+        scheme: http
+
+apiml:
+    service:
         scheme: http
         nonSecurePortEnabled: true
         securePortEnabled: false

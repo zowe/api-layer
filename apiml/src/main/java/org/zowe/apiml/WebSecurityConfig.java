@@ -122,7 +122,7 @@ public class WebSecurityConfig {
     @Bean
     @Order(0)
     SecurityWebFilterChain discoveryServiceClientCertificateFilterChain(ServerHttpSecurity http) {
-        http
+        http.csrf(ServerHttpSecurity.CsrfSpec::disable)
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
                 pathMatchers("/eureka/**"),
@@ -550,7 +550,6 @@ public class WebSecurityConfig {
                     .anyExchange().authenticated()
             )
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-            .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
             .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();

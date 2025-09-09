@@ -12,51 +12,56 @@ package org.zowe.apiml.gateway.filters;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class KeyResolverTest {
+@ExtendWith(MockitoExtension.class)
+class KeyResolverTest {
+
+    @Mock private ServerHttpRequest request;
 
     private KeyResolver keyResolver;
     private ServerWebExchange exchange;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         keyResolver = new KeyResolver();
         exchange = mock(ServerWebExchange.class);
         ReflectionTestUtils.setField(keyResolver, "cookieName", "apimlAuthenticationToken");
     }
 
     @Test
-    public void resolve_shouldReturnCookieValue_whenCookieIsPresent() {
-        ServerHttpRequest request = mock(ServerHttpRequest.class);
+    void resolve_shouldReturnCookieValue_whenCookieIsPresent() {
         HttpCookie cookie = new HttpCookie("apimlAuthenticationToken", "testToken");
         when(exchange.getRequest()).thenReturn(request);
         var cookies = new LinkedMultiValueMap<String, HttpCookie>();
         cookies.add("apimlAuthenticationToken", cookie);
         when(request.getCookies()).thenReturn(cookies);
-        Mono<String> result = keyResolver.resolve(exchange);
 
-        assertEquals("testToken", result.block());
+        StepVerifier.create(keyResolver.resolve(exchange))
+            .assertNext(result -> assertEquals("testToken", result))
+            .verifyComplete();
     }
 
     @Test
-    public void resolve_shouldReturnNull_whenCookieIsNotPresent() {
-        ServerHttpRequest request = mock(ServerHttpRequest.class);
+    void resolve_shouldReturnNull_whenCookieIsNotPresent() {
         when(exchange.getRequest()).thenReturn(request);
         when(request.getCookies()).thenReturn(new LinkedMultiValueMap<>());
 
-        Mono<String> result = keyResolver.resolve(exchange);
-
-        assertEquals("", result.block());
+        StepVerifier.create(keyResolver.resolve(exchange))
+            .assertNext(result -> assertEquals("", result))
+            .verifyComplete();
     }
 }
 

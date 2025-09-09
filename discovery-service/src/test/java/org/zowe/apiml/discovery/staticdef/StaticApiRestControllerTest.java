@@ -14,6 +14,7 @@ import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
+import org.zowe.apiml.product.discovery.StaticRegistrationResult;
 
 import java.util.Base64;
 import java.util.Collections;

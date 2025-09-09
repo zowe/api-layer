@@ -49,13 +49,11 @@
             <MERGE3 min_interval="10000"
                     max_interval="30000"
             />
-            <FD_SOCK/>
             <!-- Suspect node `timeout` to `timeout + timeout_check_interval` millis after the last heartbeat -->
             <FD_ALL timeout="10000"
                     interval="2000"
                     timeout_check_interval="1000"
             />
-
 
             <UNICAST3 xmit_interval="100"
                       xmit_table_num_rows="50"
@@ -90,6 +88,7 @@
                 <class>org.zowe.apiml.security.common.token.TokenAuthentication$Type</class>
                 <class>java.util.HashMap</class>
                 <class>java.util.Arrays$ArrayList</class>
+                <class>java.security.cert.Certificate$CertificateRep</class>
             </allow-list>
         </serialization>
 

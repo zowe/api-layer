@@ -13,7 +13,7 @@ const { defineConfig } = require('cypress');
 module.exports = defineConfig({
     env: {
         catalogHomePage: 'https://localhost:10010/apicatalog/ui/v1',
-        loginUrl: 'https://localhost:10010/apicatalog/api/v1/auth/login',
+        loginUrl: 'https://localhost:10010/gateway/api/v1/auth/login',
         gatewayOktaRedirect:
             'https://localhost:10010/gateway/oauth2/authorization/okta?returnUrl=https%3A%2F%2Flocalhost%3A10010%2Fapplication',
         username: 'USER',
@@ -34,7 +34,6 @@ module.exports = defineConfig({
         setupNodeEvents(on, config) {
             // eslint-disable-next-line global-require
             return require('./cypress/plugins/index.js')(on, config);
-        },
-        excludeSpecPattern: ['cypress/e2e/detail-page/multiple-gateway-services.cy.js'],
+        }
     },
 });

@@ -16,24 +16,24 @@ import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.Re
 import org.springframework.cloud.netflix.eureka.server.EurekaController;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
-import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
 import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.zowe.apiml.enable.config.EnableApiDiscoveryConfig;
 import org.zowe.apiml.enable.register.RegisterToApiLayer;
+import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
 
-@SpringBootApplication(
-    exclude = { ReactiveOAuth2ClientAutoConfiguration.class },
+@SpringBootApplication(exclude = {ReactiveOAuth2ClientAutoConfiguration.class},
     scanBasePackages = {
+        "org.zowe.apiml.filter",
         "org.zowe.apiml.gateway",
         "org.zowe.apiml.product.web",
         "org.zowe.apiml.product.gateway",
         "org.zowe.apiml.product.version",
         "org.zowe.apiml.product.logging",
         "org.zowe.apiml.product.security",
+        "org.zowe.apiml.product.service",
         "org.zowe.apiml.security",
         "org.zowe.apiml.discovery"
-    }
-)
+    })
 @ComponentScan(
     excludeFilters = {
         @ComponentScan.Filter(
@@ -42,7 +42,7 @@ import org.zowe.apiml.enable.register.RegisterToApiLayer;
         ),
         @ComponentScan.Filter(
             type = FilterType.ASSIGNABLE_TYPE,
-            classes = { EnableApiDiscoveryConfig.class, EurekaController.class, RegisterToApiLayer.class, GatewayHealthIndicator.class }
+            classes = {EnableApiDiscoveryConfig.class, EurekaController.class, RegisterToApiLayer.class, GatewayHealthIndicator.class}
         ),
         @ComponentScan.Filter(
             type = FilterType.ANNOTATION,

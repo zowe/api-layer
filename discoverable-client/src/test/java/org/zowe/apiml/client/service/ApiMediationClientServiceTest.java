@@ -77,7 +77,7 @@ class ApiMediationClientServiceTest {
     @Profile("test")
     public static class TestConfig {
         @Bean
-        public DiscoverableClientConfig discoverableClientConfig() {
+        DiscoverableClientConfig discoverableClientConfig() {
             return new DiscoverableClientConfig();
         }
     }

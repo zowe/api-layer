@@ -115,6 +115,7 @@ __Breaking changes in API ML__
 | Configuration of keyrings now requires transformation from safkeyring://// to safkeyring://                                   | If your Zowe configuration contains safkeyring:////, change this part to safkeyring://.
 | Support access to z/OSMF only through /ibmzosmf route. V3 will not support access through the /zosmf route                    | If you use z/OSMF via {apimlUrl}/zosmf/{zosmfEndpoint} you need to move to {apimlUrl}/ibmzosmf/{zosmfEndpoint}.
 | Error code change for nonexistent services | Nonexistent service returns 404 with error code ZWEAO404E
+| Service ids with underscore in service id won't be routed | Replace underscor with another character like - or remove it altogether from the service id |
 
 __New features and enhancements in API ML__
 

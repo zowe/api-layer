@@ -11,7 +11,9 @@
 package org.zowe.apiml;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health.Builder;
@@ -19,12 +21,15 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.apicatalog.ApiCatalogServiceAvailableEvent;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.compatibility.ApimlHealthCheckHandler;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 import org.zowe.apiml.zaas.ZaasServiceAvailableEvent;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,9 +45,11 @@ import static org.springframework.boot.actuate.health.Status.UP;
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
-    private final DiscoveryClient discoveryClient;
+    private final ApplicationContext applicationContext;
+    private final ServiceStartupEventHandler serviceStartupEventHandler;
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -53,15 +60,24 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private AtomicBoolean discoveryAvailable = new AtomicBoolean(false);
     private AtomicBoolean zaasAvailable = new AtomicBoolean(false);
     private AtomicBoolean catalogAvailable = new AtomicBoolean(false);
+
     private AtomicBoolean startedInformationPublished = new AtomicBoolean(false);
 
     @Override
     protected void doHealthCheck(Builder builder) throws Exception {
         var anyCatalogIsAvailable = StringUtils.isNotBlank(apiCatalogServiceId);
-        catalogAvailable.set(anyCatalogIsAvailable && !this.discoveryClient.getInstances(apiCatalogServiceId).isEmpty());
+        DiscoveryClient discoveryClient;
+        try {
+            discoveryClient = applicationContext.getBean(DiscoveryClient.class);
+        } catch (BeansException e) {
+            log.debug("DiscoveryClient is not available", e);
+            return;
+        }
+
+        catalogAvailable.set(anyCatalogIsAvailable && !discoveryClient.getInstances(apiCatalogServiceId).isEmpty());
 
         // Keeping for backwards compatibility, in modulith the amount of gateways is the amount of authentication services available
-        var gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
+        var gatewayCount = discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
         var zaasCount = gatewayCount;
 
         builder.status(toStatus(discoveryAvailable.get() && zaasAvailable.get()))
@@ -108,8 +124,18 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     @EventListener
     public void onApplicationEvent(EurekaInstanceRegisteredEvent event) {
         var instanceInfo = event.getInstanceInfo();
-        if (String.valueOf(instanceInfo.getAppName()).equalsIgnoreCase(apiCatalogServiceId)) {
-            catalogAvailable.set(true);
+        if (String.valueOf(instanceInfo.getAppName()).equalsIgnoreCase(apiCatalogServiceId) && catalogAvailable.compareAndSet(false, true)) {
+            serviceStartupEventHandler.onServiceStartup("API Catalog Service", ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
+        }
+        if (isFullyUp()) {
+            onFullyUp();
+        }
+    }
+
+    @EventListener
+    public void onApplicationEvent(ApiCatalogServiceAvailableEvent event) {
+        if (catalogAvailable.compareAndSet(false, true)) {
+            serviceStartupEventHandler.onServiceStartup("API Catalog Service", ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
         }
         if (isFullyUp()) {
             onFullyUp();

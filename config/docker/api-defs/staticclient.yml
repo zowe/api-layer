@@ -25,7 +25,7 @@ services:
       apiInfo:
         - apiId: zowe.apiml.discoverableclient
           gatewayUrl: api/v1
-          swaggerUrl: https://discoverable-client:10012/discoverableclient/v2/api-docs
+          swaggerUrl: https://discoverable-client:10012/discoverableclient/v3/api-docs
       customMetadata:
             apiml:
                 okToRetryOnAllOperations: true

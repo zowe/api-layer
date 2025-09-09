@@ -172,9 +172,11 @@ public class LoadBalancerCache {
      */
     @Data
     public static class LoadBalancerCacheRecord {
+
+        public static final LoadBalancerCacheRecord NONE = new LoadBalancerCacheRecord(null, null);
+
         private final String instanceId;
         private final LocalDateTime creationTime;
-        public static final LoadBalancerCacheRecord NONE = new LoadBalancerCacheRecord(null, null);
 
         public LoadBalancerCacheRecord(String instanceId) {
             this(instanceId, LocalDateTime.now());

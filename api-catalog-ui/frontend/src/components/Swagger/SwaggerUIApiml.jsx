@@ -34,7 +34,7 @@ function transformSwaggerToCurrentHost(swagger, service) {
                 }
             } catch (e) {
                 // not a proper url, assume it is an endpoint
-                server.url = location + server;
+                server.url = location + server.url;
             }
         });
     }

@@ -25,6 +25,8 @@ apiml:
     health:
         protected: false
     gateway:
+        registry:
+            enabled: true
         servicesToLimitRequestRate: discoverableclient
         cookieNameForRateLimiter: apimlAuthenticationToken
     service:

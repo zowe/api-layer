@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
+import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 
 /**
  * Configuration for Spring Boot components.
@@ -21,9 +22,16 @@ import org.springframework.context.annotation.Bean;
  */
 @SpringBootConfiguration
 public class SpringComponentsConfiguration {
+
     @Bean
-    public Jackson2ObjectMapperBuilderCustomizer failOnUnknownProperties() {
+    Jackson2ObjectMapperBuilderCustomizer failOnUnknownProperties() {
         return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
             .featuresToEnable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
+
+    @Bean
+    ServiceStartupEventHandler serviceStartupEventHandler() {
+        return new ServiceStartupEventHandler();
+    }
+
 }

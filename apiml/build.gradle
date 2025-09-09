@@ -59,6 +59,7 @@ dependencies {
     api project(":discovery-service")
     api project(":zaas-service")
     api project(":caching-service")
+    api project(":api-catalog-services")
 
     implementation libs.bundles.modulith
     implementation libs.spring.boot.starter.web

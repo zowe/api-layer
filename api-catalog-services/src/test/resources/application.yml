@@ -16,6 +16,15 @@ spring:
     main:
         banner-mode: ${apiml.banner:"off"}
         allow-circular-references: true
+        web-application-type: reactive
+
+springdoc:
+    packagesToScan: org.zowe.apiml.apicatalog.controllers.api
+    api-docs:
+        path: /apicatalog/v3/api-docs
+    group-configs:
+        - group: apicatalog
+          pathsToMatch: /apicatalog/**
 
 logging:
     level:
@@ -44,7 +53,6 @@ apiml:
         hostname: localhost
         ipAddress: 0.0.0.0
         port: 10014
-        contextPath: /apicatalog
         scheme: https
 
         discoveryServiceUrls: https://localhost2:10021/eureka/,https://localhost:10011/eureka/
@@ -79,13 +87,13 @@ apiml:
         cacheRefreshInitialDelayInMillis: 30000
         cacheRefreshRetryDelayInMillis: 30000
 
+    webClientConfig.enabled: true
+
 ##############################################################################################
 
 server:
     address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}
-    servlet:
-        contextPath: ${apiml.service.contextPath}
     ssl:
         enabled: ${apiml.security.ssl.sslEnabled}
         protocol: ${apiml.security.ssl.protocol}
@@ -110,10 +118,10 @@ eureka:
     instance:
         instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
         hostname: ${apiml.service.hostname}
-        statusPageUrlPath: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/info
-        healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
-        secureHealthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
-        homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}
+        statusPageUrlPath: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/apicatalog/application/info
+        healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/apicatalog/application/health
+        secureHealthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}/apicatalog/application/health
+        homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/apicatalog
         port: ${apiml.service.port}
         securePort: ${apiml.service.port}
         nonSecurePortEnabled: ${apiml.service.nonSecurePortEnabled}
@@ -139,7 +147,7 @@ eureka:
                     - apiId: zowe.apiml.apicatalog
                       version: 1.0.0
                       gatewayUrl: api/v1
-                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/apicatalog/v3/api-docs
 
                 service:
                     title: API Catalog
@@ -158,7 +166,7 @@ management:
     endpoints:
         migrate-legacy-ids: true
         web:
-            base-path: /application
+            base-path: /apicatalog/application
             exposure:
                 include: health,info
     health:
@@ -176,15 +184,14 @@ management:
     endpoints:
         migrate-legacy-ids: true
         web:
-            base-path: /application
             exposure:
                 include: health,info,loggers
 
 logging:
     level:
-        ROOT: INFO
+        ROOT: DEBUG
         org.zowe.apiml: DEBUG
-        org.springframework: INFO
+        org.springframework: DEBUG
         org.apache: INFO
         org.apache.http: DEBUG
         com.netflix: INFO
@@ -197,7 +204,6 @@ management:
     endpoints:
         migrate-legacy-ids: true
         web:
-            base-path: /application
             exposure:
                 include: "*"
 
@@ -205,29 +211,46 @@ management:
 spring.config.activate.on-profile: dev
 
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
+
+eureka:
+    instance:
+        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}/apicatalog/application/health
+        metadata-map:
+            apiml:
+                corsEnabled: true
+                corsAllowedOrigins: https://${apiml.service.hostname}:${apiml.service.port},${apiml.service.externalUrl}
+                apiInfo:
+                    - apiId: zowe.apiml.apicatalog
+                      version: 1.0.0
+                      gatewayUrl: api/v1
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/apicatalog/v3/api-docs
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
 eureka:
     instance:
         securePort: 0
         nonSecurePortEnabled: true
         securePortEnabled: false
-        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
+        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}/apicatalog/application/health
         metadata-map:
             apiml:
                 corsEnabled: true
+                corsAllowedOrigins: https://${apiml.service.hostname}:${apiml.service.port},${apiml.service.externalUrl}
                 apiInfo:
                     - apiId: zowe.apiml.apicatalog
                       version: 1.0.0
                       gatewayUrl: api/v1
-                      swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
-apiml:
-    service:
-        scheme: http
-        nonSecurePortEnabled: true
-        securePortEnabled: false
+                      swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/apicatalog/v3/api-docs
