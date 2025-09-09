@@ -32,10 +32,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.zowe.apiml.zaas.utils.JWTUtils.createTokenWithUserFields;
 
 class JwtUtilsTest {
 
-    private static final String TOKEN_WITH_USERNAME_FIELDS = "ewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiLAogICJlbWFpbCI6ICJ1c2VybmFtZUBvaWRjLm9yZyIsCiAgIm9yZyI6IHsKICAgICJuYW1lIjogIm9wZW5tYWluZnJhbWUiLAogICAgImRlcCI6IHsKICAgICAgIm5hbWUiOiAiem93ZSIsCiAgICAgICJ0ZWFtIjogImFwaW1sIiwKICAgICAgImNvbnRyaWJ1dG9yIjogImNvbnRyaWJ1dG9yQGFwaW1sLnpvd2UiLAogICAgICAibmlja25hbWUiOiAiIiwKICAgICAgIm51bGxWYWx1ZSI6IG51bGwKICAgIH0KICB9LAogICJtZW1iZXJPZiI6IFsKICAgICJvcGVubWFpbmZyYW1lIiwKICAgICJ6b3dlIiwKICAgICJhcGltbCIKICBdLAogICJncm91cHMiOiB7CiAgICAgICJtZW1iZXJPZiI6IFsKICAgICAgICAgICJvcGVubWFpbmZyYW1lIiwKICAgICAgICAgICIgIiwKICAgICAgICAgICJ6b3dlIiwKICAgICAgICAgICJhcGltbCIKICBdCiAgfQp9.c29tZVNpZ25lZEhhc2hDb2Rl";
+    private static final String TOKEN_WITH_USERNAME_FIELDS = createTokenWithUserFields();
 
     @Test
     void testHandleJwtParserExceptionForExpiredToken() {
@@ -82,7 +83,7 @@ class JwtUtilsTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "nonexistent", "org.nonexistent.foo", "org.dep", "org.dep.nonexistent", "org.dep.nickname", "org.dep.nullValue"})
+    @ValueSource(strings = { "nonexistent", "nullValue", "org.nonexistent.foo", "org.dep", "org.dep.nonexistent", "org.dep.nickname"})
     void givenInvalidFieldPath_thenThrowInvalidTokenFormatException(String fieldPath) {
         assertThrows(TokenFormatNotValidException.class, () -> JwtUtils.getFieldValuesFromToken(TOKEN_WITH_USERNAME_FIELDS, splitFieldPath(fieldPath)));
     }
