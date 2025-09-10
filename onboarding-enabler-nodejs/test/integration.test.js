@@ -32,7 +32,7 @@
  * SOFTWARE.
  */
 
-import Eureka from '../src/EurekaClient.js';
+import { EurekaClient as Eureka } from '../src';
 import { expect } from 'chai';
 import fs from 'fs';
 
