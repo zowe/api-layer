@@ -33,6 +33,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.*;
 
@@ -97,6 +98,10 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                     new X509Certificate[]{clientCertFromHeader.get()},
                     certificateForClientAuth
                 );
+
+                // Log ignored certificates
+                logIgnoredCertificates(new X509Certificate[]{clientCertFromHeader.get()}, clientAuthCerts);
+
                 exchange.getAttributes().put(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, clientAuthCerts);
                 log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, Arrays.toString(clientAuthCerts));
 
@@ -108,6 +113,10 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
 
             } else {
                 X509Certificate[] clientAuthCerts = selectCerts(certsFromTls, certificateForClientAuth);
+
+                // Log ignored certificates
+                logIgnoredCertificates(certsFromTls, clientAuthCerts);
+
                 exchange.getAttributes().put(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, clientAuthCerts);
                 log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, Arrays.toString(clientAuthCerts));
 
@@ -125,6 +134,51 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
             log.debug("No TLS peer certificates found in the request.");
         }
         return exchange.mutate().request(requestBuilder.build()).build();
+    }
+
+    /**
+     * Logs information about certificates that were ignored during authentication.
+     * Compares the original set of certificates with the filtered set to identify ignored certificates.
+     *
+     * @param originalCerts The original array of certificates before filtering
+     * @param filteredCerts The array of certificates after filtering for authentication
+     */
+    private void logIgnoredCertificates(X509Certificate[] originalCerts, X509Certificate[] filteredCerts) {
+        if (originalCerts == null || originalCerts.length == 0) return;
+
+        // Creating sets for efficient comparison
+        //  !!Verify if this approach is correct or not
+        Set<X509Certificate> originalSet = new HashSet<>(Arrays.asList(originalCerts));
+        Set<X509Certificate> filteredSet = filteredCerts != null ? new HashSet<>(Arrays.asList(filteredCerts)) : new HashSet<>();
+
+        // Finding ignored certificates (in original but not in filtered)
+        Set<X509Certificate> ignoredCerts = new HashSet<>(originalSet);
+        ignoredCerts.removeAll(filteredSet);
+
+        // Log information about ignored certificates
+        if (!ignoredCerts.isEmpty()) {
+            //Update this message after discussing with Team
+            log.debug("Certificates ignored/not used for authentication: {}",
+                ignoredCerts.stream()
+                    .map(cert -> {
+                        String subjectDN = cert.getSubjectX500Principal().getName();
+                        String issuerDN = cert.getIssuerX500Principal().getName();
+                        String publicKeyBase64 = base64EncodePublicKey(cert);
+                        return String.format("[Subject: %s, Issuer: %s, Public Key (first 20 chars): %s...]",
+                            subjectDN, issuerDN, publicKeyBase64.substring(0, Math.min(20, publicKeyBase64.length())));
+                    })
+                    .collect(Collectors.joining(", ")));
+
+            // For each ignored certificate, logging why it was ignored
+            ignoredCerts.forEach(cert -> {
+                String publicKeyBase64 = base64EncodePublicKey(cert);
+                boolean isApimlCert = getPublicKeyCertificatesBase64().contains(publicKeyBase64);
+                //Update this message after discussing with Team
+                log.debug("Certificate with subject '{}' was ignored because it {} APIML's own certificate",
+                    cert.getSubjectX500Principal().getName(),
+                    isApimlCert ? "IS" : "is NOT");
+            });
+        }
     }
 
     /**
