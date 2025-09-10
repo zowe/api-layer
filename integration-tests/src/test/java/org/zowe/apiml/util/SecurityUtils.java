@@ -421,6 +421,9 @@ public class SecurityUtils {
     }
 
     public static String validOktaAccessToken(boolean userHasMappingDefined) {
+        if(isKeycloakProvider()){
+            return validKeycloakToken(userHasMappingDefined);
+        }
         assertNotNull(OKTA_HOSTNAME, "OKTA host name is not set.");
         assertNotNull(OKTA_CLIENT_ID, "OKTA client id is not set.");
 
