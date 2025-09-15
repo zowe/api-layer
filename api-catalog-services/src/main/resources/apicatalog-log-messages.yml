@@ -86,7 +86,7 @@ messages:
 
     - key: org.zowe.apiml.apicatalog.homePageTransformFailed
       number: ZWEAC705
-      type: WARNING
+      type: DEBUG
       text: "The home page url for service %s was not transformed. %s"
       reason: "The home page url for service was not transformed. The original url will be used."
       action: "Refer to the specific printed message. Possible causes include:\n
@@ -111,7 +111,7 @@ messages:
 
     - key: org.zowe.apiml.apicatalog.getApiBasePathFailed
       number: ZWEAC708
-      type: ERROR
+      type: DEBUG
       text: "The API base path for service %s was not retrieved. %s"
       reason: "The API base path for service was not retrieved. An empty path will be used."
       action: "Refer to the specific printed message. Possible causes include:\n
