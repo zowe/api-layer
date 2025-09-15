@@ -18,9 +18,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OidcConfiguration {
-
     private String clientId;
     private String clientSecret;
-    private String providerName;
-
 }

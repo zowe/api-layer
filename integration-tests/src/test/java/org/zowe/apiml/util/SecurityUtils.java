@@ -25,10 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.ParseException;
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.SSLSocketFactory;
@@ -61,10 +58,7 @@ import org.zowe.apiml.util.config.TlsConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import javax.net.ssl.SSLContext;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -465,7 +459,7 @@ public class SecurityUtils {
         }
     }
     public static boolean isKeycloakProvider(){
-        return "keycloak".equalsIgnoreCase(ConfigReader.environmentConfiguration().getOidcConfiguration().getProviderName());
+        return "keycloak".equalsIgnoreCase(ConfigReader.environmentConfiguration().getIdpConfiguration().getProviderName());
     }
     public static String validKeycloakToken(boolean userHasMappingDefined) {
         assertNotNull(OKTA_HOSTNAME, "Keycloak host name is not set.");
