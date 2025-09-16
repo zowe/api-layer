@@ -12,7 +12,6 @@ package org.zowe.apiml.zaas.security.service.token;
 
 import com.google.common.io.Resources;
 import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.util.DefaultResourceRetriever;
 import com.nimbusds.jose.util.Resource;
 import io.jsonwebtoken.Jwts;
@@ -35,21 +34,27 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.zowe.apiml.zaas.utils.JWTUtils.loadPrivateKey;
 
 @ExtendWith(MockitoExtension.class)
 class OIDCTokenProviderTest {
@@ -79,7 +84,8 @@ class OIDCTokenProviderTest {
     @BeforeAll
     static void init() throws Exception {
         var now = Instant.now();
-        var pKey = loadPrivateKey("../keystore/localhost/localhost.keystore.p12", "localhost", "password");
+        var jwkAndSet = loadPrivateKey("../keystore/localhost/localhost.keystore.p12", "localhost", "password");
+        localJwkSet = jwkAndSet.jwkSet();
         VALID_TOKEN = Jwts.builder()
             .header().keyId("0987").and()
             .subject("user")
@@ -87,23 +93,7 @@ class OIDCTokenProviderTest {
             .expiration(Date.from(now.plusSeconds(1200)))
             .issuer("API ML")
             .id(UUID.randomUUID().toString())
-            .signWith(pKey, Jwts.SIG.RS256).compact();
-    }
-
-    static PrivateKey loadPrivateKey(String path, String alias, String password) throws Exception {
-        KeyStore ks = KeyStore.getInstance("PKCS12");
-        try (FileInputStream fis = new FileInputStream(path)) {
-            ks.load(fis, password.toCharArray());
-        }
-        Key key = ks.getKey(alias, password.toCharArray());
-        var cert = ks.getCertificate(alias);
-        var pubKey = cert.getPublicKey();
-        if (pubKey instanceof RSAPublicKey rsaPublicKey) {
-            var k = new RSAKey.Builder(rsaPublicKey).keyID("0987").build().toPublicJWK();
-            localJwkSet = new JWKSet(k);
-        }
-
-        return (PrivateKey) key;
+            .signWith(jwkAndSet.privateKey()).compact();
     }
 
     @BeforeEach

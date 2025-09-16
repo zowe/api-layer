@@ -44,6 +44,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.zowe.apiml.zaas.utils.JWTUtils.createTokenWithUserFields;
 
 @ExtendWith(MockitoExtension.class)
 class OIDCAuthSourceServiceTest {
@@ -55,7 +56,7 @@ class OIDCAuthSourceServiceTest {
     private OIDCProvider provider;
     private AuthenticationMapper mapper;
     private static final String DUMMY_TOKEN = "token";
-    private static final String TOKEN_WITH_USERNAME_FIELDS = "ewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiLAogICJlbWFpbCI6ICJ1c2VybmFtZUBvaWRjLm9yZyIsCiAgIm9yZyI6IHsKICAgICJuYW1lIjogIm9wZW5tYWluZnJhbWUiLAogICAgImRlcCI6IHsKICAgICAgIm5hbWUiOiAiem93ZSIsCiAgICAgICJ0ZWFtIjogImFwaW1sIiwKICAgICAgImNvbnRyaWJ1dG9yIjogImNvbnRyaWJ1dG9yQGFwaW1sLnpvd2UiLAogICAgICAibmlja25hbWUiOiAiIiwKICAgICAgIm51bGxWYWx1ZSI6IG51bGwKICAgIH0KICB9LAogICJtZW1iZXJPZiI6IFsKICAgICJvcGVubWFpbmZyYW1lIiwKICAgICJ6b3dlIiwKICAgICJhcGltbCIKICBdCn0.c29tZVNpZ25lZEhhc2hDb2Rl";
+    private static final String TOKEN_WITH_USERNAME_FIELDS = createTokenWithUserFields();
     public static final String SUB_USER = "oidc.username";
     private static final String MF_USER = "MF_USER";
     private static final String DEFAULT_USERID_FIELD = "sub";
@@ -108,7 +109,7 @@ class OIDCAuthSourceServiceTest {
             OIDCAuthSource authSource = new OIDCAuthSource(TOKEN_WITH_USERNAME_FIELDS);
 
             assertTrue(service.isValid(authSource));
-            assertEquals(SUB_USER, authSource.getDistributedId());
+            assertEquals(SUB_USER, authSource.getDistributedId().get(0));
         }
 
         @Test
@@ -118,7 +119,7 @@ class OIDCAuthSourceServiceTest {
             AuthSource.Parsed parsedSource = service.parse(authSource);
 
             verify(mapper, times(1)).mapToMainframeUserId(authSource);
-            assertEquals(SUB_USER, authSource.getDistributedId());
+            assertEquals(SUB_USER, authSource.getDistributedId().get(0));
             assertEquals(MF_USER, parsedSource.getUserId());
         }
 
@@ -127,9 +128,7 @@ class OIDCAuthSourceServiceTest {
             when(provider.isValid(TOKEN_WITH_USERNAME_FIELDS)).thenReturn(true);
             OIDCAuthSource authSource = new OIDCAuthSource(TOKEN_WITH_USERNAME_FIELDS);
 
-            assertThrows(NoMainframeIdentityException.class, () -> {
-                service.parse(authSource);
-            });
+            assertThrows(NoMainframeIdentityException.class, () -> service.parse(authSource));
         }
 
         @Test
@@ -144,7 +143,7 @@ class OIDCAuthSourceServiceTest {
 
             String ltpaResult = service.getLtpaToken(authSource);
             assertEquals(expectedToken, ltpaResult);
-            assertEquals(SUB_USER, authSource.getDistributedId());
+            assertEquals(SUB_USER, authSource.getDistributedId().get(0));
         }
 
         @Test
@@ -155,7 +154,7 @@ class OIDCAuthSourceServiceTest {
             when(tokenCreationService.createJwtTokenWithoutCredentials(MF_USER)).thenReturn(expectedToken);
             String jwtResult = service.getJWT(authSource);
             assertEquals(expectedToken, jwtResult);
-            assertEquals(SUB_USER, authSource.getDistributedId());
+            assertEquals(SUB_USER, authSource.getDistributedId().get(0));
         }
 
         @ParameterizedTest
@@ -170,7 +169,7 @@ class OIDCAuthSourceServiceTest {
             service.afterPropertiesSet();
 
             assertTrue(service.isValid(authSource));
-            assertEquals(username, authSource.getDistributedId());
+            assertEquals(username, authSource.getDistributedId().get(0));
         }
 
         @ParameterizedTest

@@ -35,9 +35,12 @@ public class HttpClientMockHelper {
     }
 
     @SneakyThrows
-    public static OngoingStubbing<?> mockExecuteWithResponse(CloseableHttpClient httpClientMock, ClassicHttpResponse responseMock) {
-        return Mockito.when(httpClientMock.execute(ArgumentMatchers.any(ClassicHttpRequest.class), ArgumentMatchers.any(HttpClientResponseHandler.class)))
-                .thenAnswer((InvocationOnMock invocation) -> invokeResponseHandler(invocation, responseMock));
+    public static OngoingStubbing<?> mockExecuteWithResponse(CloseableHttpClient httpClientMock, ClassicHttpResponse... responseMocks) {
+        var stubbing = Mockito.when(httpClientMock.execute(ArgumentMatchers.any(ClassicHttpRequest.class), ArgumentMatchers.any(HttpClientResponseHandler.class)));
+        for (ClassicHttpResponse responseMock : responseMocks) {
+            stubbing = stubbing.thenAnswer((InvocationOnMock invocation) -> invokeResponseHandler(invocation, responseMock));
+        }
+        return stubbing;
     }
 
     @SneakyThrows

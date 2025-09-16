@@ -14,6 +14,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.JwtException;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -26,14 +27,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.zowe.apiml.zaas.utils.JWTUtils.createTokenWithUserFields;
 
 class JwtUtilsTest {
 
-    private static final String TOKEN_WITH_USERNAME_FIELDS = "ewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiLAogICJlbWFpbCI6ICJ1c2VybmFtZUBvaWRjLm9yZyIsCiAgIm9yZyI6IHsKICAgICJuYW1lIjogIm9wZW5tYWluZnJhbWUiLAogICAgImRlcCI6IHsKICAgICAgIm5hbWUiOiAiem93ZSIsCiAgICAgICJ0ZWFtIjogImFwaW1sIiwKICAgICAgImNvbnRyaWJ1dG9yIjogImNvbnRyaWJ1dG9yQGFwaW1sLnpvd2UiLAogICAgICAibmlja25hbWUiOiAiIiwKICAgICAgIm51bGxWYWx1ZSI6IG51bGwKICAgIH0KICB9LAogICJtZW1iZXJPZiI6IFsKICAgICJvcGVubWFpbmZyYW1lIiwKICAgICJ6b3dlIiwKICAgICJhcGltbCIKICBdCn0.c29tZVNpZ25lZEhhc2hDb2Rl";
+    private static final String TOKEN_WITH_USERNAME_FIELDS = createTokenWithUserFields();
 
     @Test
     void testHandleJwtParserExceptionForExpiredToken() {
@@ -58,39 +61,51 @@ class JwtUtilsTest {
         assertEquals("An internal error occurred while validating the token therefore the token is no longer valid.", exception.getMessage());
     }
 
+    @Test
+    void givenJwtNullToken_thenThrowTokenNotValidException() {
+        assertThrows(TokenNotValidException.class, () -> JwtUtils.getJwtClaims(null));
+    }
+
     @ParameterizedTest
     @CsvSource({
         "email,username@oidc.org",
         "org.dep.contributor, contributor@apiml.zowe"})
     void givenValidFieldPath_thenReturnCorrectValue(String fieldPath, String expectedValue) {
-        var actualValue = JwtUtils.getFieldValueFromToken(TOKEN_WITH_USERNAME_FIELDS, splitFieldPath(fieldPath));
-        assertEquals(expectedValue, actualValue);
+        var actualValue = JwtUtils.getFieldValuesFromToken(TOKEN_WITH_USERNAME_FIELDS, splitFieldPath(fieldPath));
+        assertEquals(List.of(expectedValue), actualValue);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "nonexistent", "org.nonexistent.foo", "org.dep", "org.dep.nonexistent", "org.dep.nickname", "org.dep.nullValue"})
+    @ValueSource(strings = { "memberOf", "groups.memberOf"})
+    void givenValidFieldPath_thenReturnCorrectValuesFromArray(String fieldPath) {
+        var actualValue = JwtUtils.getFieldValuesFromToken(TOKEN_WITH_USERNAME_FIELDS, splitFieldPath(fieldPath));
+        assertThat(List.of("openmainframe", "zowe", "apiml"), Matchers.containsInAnyOrder(actualValue.toArray()));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "nonexistent", "nullValue", "org.nonexistent.foo", "org.dep", "org.dep.nonexistent", "org.dep.nickname"})
     void givenInvalidFieldPath_thenThrowInvalidTokenFormatException(String fieldPath) {
-        assertThrows(TokenFormatNotValidException.class, () -> JwtUtils.getFieldValueFromToken(TOKEN_WITH_USERNAME_FIELDS, splitFieldPath(fieldPath)));
+        assertThrows(TokenFormatNotValidException.class, () -> JwtUtils.getFieldValuesFromToken(TOKEN_WITH_USERNAME_FIELDS, splitFieldPath(fieldPath)));
     }
 
     @Test
     void givenNullToken_thenThrowIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> JwtUtils.getFieldValueFromToken(null, List.of("foo")));
+        assertThrows(IllegalArgumentException.class, () -> JwtUtils.getFieldValuesFromToken(null, List.of("foo")));
     }
 
     @Test
     void givenNullFieldPath_thenThrowIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> JwtUtils.getFieldValueFromToken(TOKEN_WITH_USERNAME_FIELDS, null));
+        assertThrows(IllegalArgumentException.class, () -> JwtUtils.getFieldValuesFromToken(TOKEN_WITH_USERNAME_FIELDS, null));
     }
 
     @Test
     void givenEmptyFieldPath_thenThrowIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> JwtUtils.getFieldValueFromToken(TOKEN_WITH_USERNAME_FIELDS, Collections.emptyList()));
+        assertThrows(IllegalArgumentException.class, () -> JwtUtils.getFieldValuesFromToken(TOKEN_WITH_USERNAME_FIELDS, Collections.emptyList()));
     }
 
     @Test
     void givenEmptyStringFieldPath_thenThrowIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> JwtUtils.getFieldValueFromToken(TOKEN_WITH_USERNAME_FIELDS, List.of(" ")));
+        assertThrows(IllegalArgumentException.class, () -> JwtUtils.getFieldValuesFromToken(TOKEN_WITH_USERNAME_FIELDS, List.of(" ")));
     }
 
 
