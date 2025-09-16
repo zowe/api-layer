@@ -27,7 +27,7 @@ dependencyResolutionManagement {
             version('zosUtils', '2.0.7')
             version('archaius', '0.7.12')
             version('awaitility', '4.2.2')
-            version('awsJavaSdk', '1.12.788')
+            version('awsJavaSdk', '1.12.791')
             version('bouncyCastle', '1.78.1')
             // forced version in root gradle.build file. Version 3.x requieres Java 11
             version('caffeine', '2.9.3')
@@ -88,7 +88,7 @@ dependencyResolutionManagement {
                 prefer '1.2.13'
             }
             version('lombok', '1.18.32')
-            version('lombok', '1.18.38')
+            version('lombok', '1.18.40')
             version('mockitoCore') {
                 // version 5.x requires Java 11
                 strictly '[4.11.0, 5.0.0['
@@ -127,12 +127,12 @@ dependencyResolutionManagement {
                 prefer '1.6.15'
             }
             version('swagger3Core', '2.2.36')
-            version('swagger3Parser', '2.1.32')
+            version('swagger3Parser', '2.1.33')
             version('swaggerCore', '1.6.16')
-            version('swaggerInflector', '2.0.13')
+            version('swaggerInflector', '2.0.14')
             version('swaggerJaxrs2', '2.2.36')
             version('thymeleaf', '3.1.3.RELEASE')
-            version('tomcat', '9.0.108')
+            version('tomcat', '9.0.109')
             version('velocity', '2.4.1')
             version('woodstoxCore', '6.7.0')
             version('woodstoxStax2', '4.2.2')
