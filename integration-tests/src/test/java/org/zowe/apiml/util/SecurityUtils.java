@@ -497,7 +497,7 @@ public class SecurityUtils {
                 return (String)accessToken;
             } else {
                 throw new RuntimeException("Failed obtaining Keycloak access token: " + response.getStatusLine().getStatusCode() + ": " + EntityUtils.toString(response.getEntity()) +
-                    "; request entity: " + request.getEntity() + " request headers: " + Arrays.toString(request.getAllHeaders()));
+                    "; form: " + form + " request headers: " + Arrays.toString(request.getAllHeaders()));
             }
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
