@@ -496,7 +496,8 @@ public class SecurityUtils {
                 assertNotNull(accessToken, "Failed to locate access token in the Keycloak /authorize response.");
                 return (String)accessToken;
             } else {
-                throw new RuntimeException("Failed obtaining Keycloak access token: " + response.getStatusLine().getStatusCode() + ": " + EntityUtils.toString(response.getEntity()));
+                throw new RuntimeException("Failed obtaining Keycloak access token: " + response.getStatusLine().getStatusCode() + ": " + EntityUtils.toString(response.getEntity()) +
+                    "; request entity: " + request.getEntity() + " request headers: " + Arrays.toString(request.getAllHeaders()));
             }
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
