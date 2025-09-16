@@ -11,7 +11,6 @@
 package org.zowe.apiml.zaas.security.mapping;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.io.entity.StringEntity;
@@ -19,81 +18,45 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.message.core.MessageType;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.zaas.security.mapping.model.MapperResponse;
 import org.zowe.apiml.zaas.security.mapping.model.OIDCRequest;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
-import org.zowe.apiml.zaas.security.service.schema.source.OIDCAuthSource;
-
-import static org.zowe.apiml.zaas.security.mapping.model.MapperResponse.OIDC_FAILED_MESSAGE_KEY;
 
 @Component("oidcMapper")
 @ConditionalOnExpression("'${apiml.security.oidc.enabled:false}' == 'true' && '${apiml.security.useInternalMapper:false}' == 'false'")
 public class OIDCExternalMapper extends ExternalMapper implements AuthenticationMapper {
 
-    @Value("${apiml.security.oidc.registry:}")
-    protected String registry;
-
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
-
-    protected boolean isConfigError = false;
-
-    @PostConstruct
-    private void postConstruct() {
-        if (StringUtils.isEmpty(registry)) {
-            isConfigError = true;
-            apimlLog.log("org.zowe.apiml.security.common.OIDCConfigError");
-        }
-    }
+    OIDCMapperHelper mapperHelper;
 
     public OIDCExternalMapper(@Value("${apiml.security.oidc.identityMapperUrl:}") String mapperUrl,
                               @Value("${apiml.security.oidc.identityMapperUser:}") String mapperUser,
                               @Qualifier("secureHttpClientWithoutKeystore") CloseableHttpClient secureHttpClientWithoutKeystore,
                               TokenCreationService tokenCreationService,
-                              AuthConfigurationProperties authConfigurationProperties) {
+                              AuthConfigurationProperties authConfigurationProperties,
+                              OIDCMapperHelper mapperHelper) {
         super(mapperUrl, mapperUser, secureHttpClientWithoutKeystore, tokenCreationService, authConfigurationProperties);
+        this.mapperHelper = mapperHelper;
     }
 
     public String mapToMainframeUserId(AuthSource authSource) {
-        if (isConfigError) {
-            apimlLog.log("org.zowe.apiml.security.common.OIDCConfigError");
-            return null;
-        }
+        return mapperHelper.mapToMainframeUserId(authSource, distributedId -> {
+            OIDCRequest oidcRequest = new OIDCRequest(distributedId, mapperHelper.registry);
+            try {
+                StringEntity payload = new StringEntity(objectMapper.writeValueAsString(oidcRequest));
+                MapperResponse mapperResponse = callExternalMapper(payload);
 
-        if (!(authSource instanceof OIDCAuthSource)) {
-            apimlLog.log(MessageType.DEBUG,"The used authentication source type is {} and not OIDC", authSource.getType());
-            return null;
-        }
-
-        final String distributedId = ((OIDCAuthSource) authSource).getDistributedId();
-        if (StringUtils.isEmpty(distributedId)) {
-            apimlLog.log(OIDC_FAILED_MESSAGE_KEY,
-                "OIDC token is missing the distributed ID. Make sure your distributed identity provider is" +
-                    " properly configured.");
-            return null;
-        }
-        OIDCRequest oidcRequest = new OIDCRequest(distributedId, registry);
-        try {
-            StringEntity payload = new StringEntity(objectMapper.writeValueAsString(oidcRequest));
-            MapperResponse mapperResponse = callExternalMapper(payload);
-
-            if (mapperResponse != null && mapperResponse.isOIDCResultValid()) {
-                String userId = mapperResponse.getUserId().trim();
-                return StringUtils.isNotEmpty(userId) ? userId : null;
+                if (mapperResponse != null && mapperResponse.isOIDCResultValid()) {
+                    String userId = mapperResponse.getUserId().trim();
+                    return StringUtils.isNotEmpty(userId) ? userId : null;
+                }
+            } catch (JsonProcessingException e) {
+                apimlLog.log("org.zowe.apiml.security.common.OIDCMappingError",
+                    "Unable to generate JSON payload for identity mapping request",
+                    e.getMessage());
             }
-
-        } catch (JsonProcessingException e) {
-            apimlLog.log("org.zowe.apiml.security.common.OIDCMappingError",
-                "Unable to generate JSON payload for identity mapping request",
-                e.getMessage());
-        }
-
-        return null;
+            return null;
+        });
     }
-
 }
