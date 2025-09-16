@@ -101,9 +101,9 @@ dependencyResolutionManagement {
             }
             version('netflixCommonsUtil', '0.3.0')
             version('netflixServo', '0.13.2')
-            version('netty', '4.1.119.Final')
-            version('nettyReactor', '1.1.23')
-            version('nimbusJoseJwt', '10.0.2')
+            version('netty', '4.1.127.Final')
+            version('nettyReactor', '1.1.31')
+            version('nimbusJoseJwt', '10.5')
             version('openApiDiff', '2.0.1')
             version('ow2asm', '9.7.1')
             version('picocli', '4.7.7')
