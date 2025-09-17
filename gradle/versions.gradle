@@ -30,6 +30,7 @@ dependencyResolutionManagement {
             version('commonsIo', '2.20.0')
             version('ehCache', '3.11.1')
             version('eureka', '2.0.5')
+            version('fileupload', '1.6.0')
             version('netflixServo', '0.13.2')
             version('googleErrorprone', '2.41.0')
             version('gradleGitProperties', '2.5.2') // Used in classpath dependencies
@@ -167,6 +168,7 @@ dependencyResolutionManagement {
             library('eh_cache', 'org.ehcache', 'ehcache').versionRef('ehCache')
             library('eureka_jersey_client', 'com.netflix.eureka', 'eureka-client-jersey3').versionRef('eureka')
             library('eureka_core', 'com.netflix.eureka', 'eureka-core').versionRef('eureka')
+            library('fileupload', 'commons-fileupload', 'commons-fileupload').versionRef('fileupload')
             library('google_errorprone', 'com.google.errorprone', 'error_prone_annotations').versionRef('googleErrorprone') // to define minimum version and avoid duplicity libraries in the classpath
             library('google_gson', 'com.google.code.gson', 'gson').versionRef('googleGson')
             library('guava', 'com.google.guava', 'guava').versionRef('guava')
