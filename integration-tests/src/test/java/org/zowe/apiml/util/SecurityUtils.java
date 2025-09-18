@@ -98,13 +98,14 @@ public class SecurityUtils {
     public static final String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     public static final String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
 
-    public static final String OKTA_HOSTNAME = ConfigReader.environmentConfiguration().getIdpConfiguration().getHost();
-    public static final String OKTA_CLIENT_ID = ConfigReader.environmentConfiguration().getOidcConfiguration().getClientId();
-    public static final String OKTA_CLIENT_PASSWORD = ConfigReader.environmentConfiguration().getOidcConfiguration().getClientSecret();
-    public static final String OKTA_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getUser();
-    public static final String OKTA_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getPassword();
-    public static final String OKTA_ALT_USER = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternateUser();
-    public static final String OKTA_ALT_PASSWORD = ConfigReader.environmentConfiguration().getIdpConfiguration().getAlternatePassword();
+    public static final String OIDC_HOSTNAME = ConfigReader.environmentConfiguration().getOidcConfiguration().getHost();
+    public static final String OIDC_CLIENT_ID = ConfigReader.environmentConfiguration().getOidcConfiguration().getClientId();
+    public static final String OIDC_CLIENT_PASSWORD = ConfigReader.environmentConfiguration().getOidcConfiguration().getClientSecret();
+    public static final String OIDC_USER = ConfigReader.environmentConfiguration().getOidcConfiguration().getUser();
+    public static final String OIDC_PASSWORD = ConfigReader.environmentConfiguration().getOidcConfiguration().getPassword();
+    public static final String OIDC_ALT_USER = ConfigReader.environmentConfiguration().getOidcConfiguration().getAlternateUser();
+    public static final String OIDC_ALT_PASSWORD = ConfigReader.environmentConfiguration().getOidcConfiguration().getAlternatePassword();
+    public static final String OIDC_PROVIDER_NAME = ConfigReader.environmentConfiguration().getOidcConfiguration().getProviderName();
 
     public static final String COOKIE_NAME = "apimlAuthenticationToken";
     public static final String PAT_COOKIE_AUTH_NAME = "personalAccessToken";
@@ -414,26 +415,33 @@ public class SecurityUtils {
         }
     }
 
-    public static String validOktaAccessToken(boolean userHasMappingDefined) {
-        if(isKeycloakProvider()){
+    public static String validOidcAccessToken(boolean userHasMappingDefined) {
+        if (isKeycloakProvider()) {
             return validKeycloakToken(userHasMappingDefined);
+        } else if (isOktaProvider()) {
+            return validOktaAccessToken(userHasMappingDefined);
         }
-        assertNotNull(OKTA_HOSTNAME, "OKTA host name is not set.");
-        assertNotNull(OKTA_CLIENT_ID, "OKTA client id is not set.");
+        throw new IllegalArgumentException(String.format("Unsupported OIDC provider: %s", OIDC_PROVIDER_NAME));
+    }
+
+    public static String validOktaAccessToken(boolean userHasMappingDefined) {
+
+        assertNotNull(OIDC_HOSTNAME, "OIDC host name is not set.");
+        assertNotNull(OIDC_CLIENT_ID, "OIDC client id is not set.");
 
         String sessionToken;
         if (userHasMappingDefined) {
-            sessionToken = getOktaSession(OKTA_USER, OKTA_PASSWORD);
+            sessionToken = getOktaSession(OIDC_USER, OIDC_PASSWORD);
         } else {
-            sessionToken = getOktaSession(OKTA_ALT_USER, OKTA_ALT_PASSWORD);
+            sessionToken = getOktaSession(OIDC_ALT_USER, OIDC_ALT_PASSWORD);
         }
         assertNotNull(sessionToken, "Failed to get session token from Okta authentication.");
 
         // retrieve the access token from Okta using session token
 
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) {
-            var uriBuilder = new URIBuilder(OKTA_HOSTNAME + "/oauth2/v1/authorize");
-            uriBuilder.setParameter("client_id", OKTA_CLIENT_ID)
+            var uriBuilder = new URIBuilder(OIDC_HOSTNAME + "/oauth2/v1/authorize");
+            uriBuilder.setParameter("client_id", OIDC_CLIENT_ID)
                 .setParameter("redirect_uri", "https://localhost:10010/login/oauth2/code/okta")
                 .setParameter("response_type", "token")
                 .setParameter("response_mode", "form_post")
@@ -458,27 +466,33 @@ public class SecurityUtils {
             throw new RuntimeException(e);
         }
     }
-    public static boolean isKeycloakProvider(){
-        return "keycloak".equalsIgnoreCase(ConfigReader.environmentConfiguration().getIdpConfiguration().getProviderName());
+
+    public static boolean isKeycloakProvider() {
+        return "keycloak".equalsIgnoreCase(OIDC_PROVIDER_NAME);
     }
+
+    public static boolean isOktaProvider() {
+        return "okta".equalsIgnoreCase(OIDC_PROVIDER_NAME);
+    }
+
     public static String validKeycloakToken(boolean userHasMappingDefined) {
-        assertNotNull(OKTA_HOSTNAME, "Keycloak host name is not set.");
-        assertNotNull(OKTA_CLIENT_ID, "Keycloak client id is not set.");
+        assertNotNull(OIDC_HOSTNAME, "Keycloak host name is not set.");
+        assertNotNull(OIDC_CLIENT_ID, "Keycloak client id is not set.");
         // retrieve the access token from Okta using session token
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) {
-            var uri = new URI(OKTA_HOSTNAME + "/realms/apiml/protocol/openid-connect/token");
+            var uri = new URI(OIDC_HOSTNAME + "/realms/apiml/protocol/openid-connect/token");
             var request = new HttpPost(uri);
             var form = new StringBuilder();
             form.append("grant_type=password");
             form.append("&scope=discoverableclient");
-            form.append("&client_id=").append(URLEncoder.encode(OKTA_CLIENT_ID, StandardCharsets.UTF_8));
-            form.append("&client_secret=").append(URLEncoder.encode(OKTA_CLIENT_PASSWORD, StandardCharsets.UTF_8));
-            if(userHasMappingDefined) {
-                form.append("&username=").append(URLEncoder.encode(OKTA_USER, StandardCharsets.UTF_8));
-                form.append("&password=").append(URLEncoder.encode(OKTA_PASSWORD, StandardCharsets.UTF_8));
+            form.append("&client_id=").append(URLEncoder.encode(OIDC_CLIENT_ID, StandardCharsets.UTF_8));
+            form.append("&client_secret=").append(URLEncoder.encode(OIDC_CLIENT_PASSWORD, StandardCharsets.UTF_8));
+            if (userHasMappingDefined) {
+                form.append("&username=").append(URLEncoder.encode(OIDC_USER, StandardCharsets.UTF_8));
+                form.append("&password=").append(URLEncoder.encode(OIDC_PASSWORD, StandardCharsets.UTF_8));
             } else {
-                form.append("&username=").append(URLEncoder.encode(OKTA_ALT_USER, StandardCharsets.UTF_8));
-                form.append("&password=").append(URLEncoder.encode(OKTA_ALT_PASSWORD, StandardCharsets.UTF_8));
+                form.append("&username=").append(URLEncoder.encode(OIDC_ALT_USER, StandardCharsets.UTF_8));
+                form.append("&password=").append(URLEncoder.encode(OIDC_ALT_PASSWORD, StandardCharsets.UTF_8));
             }
             var entity = new StringEntity(
                 form.toString(),
@@ -516,7 +530,7 @@ public class SecurityUtils {
         }
 
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) {
-            var uriBuilder = new URIBuilder(OKTA_HOSTNAME + "/api/v1/authn");
+            var uriBuilder = new URIBuilder(OIDC_HOSTNAME + "/api/v1/authn");
 
             var request = new HttpPost(uriBuilder.build());
             request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
@@ -537,8 +551,21 @@ public class SecurityUtils {
         }
     }
 
+    public static String expiredOidcAccessToken() {
+        if (isOktaProvider()) {
+            return expiredOktaAccessToken();
+        } else if (isKeycloakProvider()) {
+            return expiredKeycloakAccessToken();
+        }
+        throw new IllegalArgumentException(String.format("Unsupported OIDC provider: %s", OIDC_PROVIDER_NAME));
+    }
+
     public static String expiredOktaAccessToken() {
         return "eyJraWQiOiJGTUM5UndncFVJMUt0V25QWkdmVmFKYzZUZGlTTElZU29jeWs4aHlEbE44IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULkVzZ051RGxkcm5FN0VDYlhnNUhEdUY4MW9BV3k1UDF4WUZLT1psTmVJcmMiLCJpc3MiOiJodHRwczovL2Rldi05NTcyNzY4Ni5va3RhLmNvbS9vYXV0aDIvZGVmYXVsdCIsImF1ZCI6ImFwaTovL2RlZmF1bHQiLCJpYXQiOjE2Njc5MTc5MjcsImV4cCI6MTY2NzkyMTUyNywiY2lkIjoiMG9hNmE0OG1uaVhBcUVNcng1ZDciLCJ1aWQiOiIwMHU3NmVvZjB6bnNNYkY3NDVkNyIsInNjcCI6WyJvcGVuaWQiXSwiYXV0aF90aW1lIjoxNjY3OTE3ODg2LCJzdWIiOiJpdF90ZXN0QGFjbWUuY29tIiwiZ3JvdXBzIjpbIkV2ZXJ5b25lIl19.KiPa0c1U5IClozwZI5aDRSwjoi-hYtIkQZWpizGF8PPsgzvfMaivUzMoPi5GfEUZF6Bjlg_fQFUK7kJQ8NWjL6gY_5QQMfONw0U9dzQy2HLHb5gU55IKt6mBIutBSPk2FmCTd4SaPmllMb6nAyhIZf0DI7xuAXqRgt5JnasnmCKSIM3HJMlTeXDzHQ5BvMr7tVHWmwQ-8W3nef5nsKi2Sw05rds9RgkcckGUzhA2tMeF_rVTitufeG7h2oXYICtv60wfK6YSnmE78aoHf5NQD5517gnGrRxGMM6UAn3SV4GKOll6OlGDzpz87mq-AR2tigkDfVcOtJA9mkxFFv7HSg";
+    }
+
+    public static String expiredKeycloakAccessToken() {
+        return "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJJZzc0dlkyMEZ5bXNxSmN5ZDc1MjVGbGloWElPdk13cFZMVVc5TkN2VVFrIn0.eyJleHAiOjE3NTgxOTgyMzUsImlhdCI6MTc1ODE5NzkzNSwianRpIjoib25ydHJvOjBiYjQzNTE4LTQ0MTQtODg1Zi01YThlLWQ1YmExYWMzOGI2NCIsImlzcyI6Imh0dHA6Ly8xMC4yNTIuMTIxLjE5MDo4MDgwL3JlYWxtcy9hcGltbCIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJmYzA4NWE1NC01N2E5LTRhMTEtOGQzMy1hMGU5Njc1YmMwZTkiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJjbGllbnRpZGFwaW1sIiwic2lkIjoiOGYzYzlkZmItYzEwNS00NzIyLWE5NTYtODhmZTc1ZjcwMTcwIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyIvKiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy1hcGltbCIsIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZGlzY292ZXJhYmxlY2xpZW50IGVtYWlsIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiQVBJTUwgTWluaXBsZXggSW50ZWdyYXRpb24gVGVzdHMgQXV0aG9yaXplZCBVc2VyIiwiZ3JvdXBzIjp7Im1lbWViZXJPZiI6WyIvYXBpbWwiLCIva2V5Y2xvYWtncm91cCIsIi9yZWFkZXJzIiwiL3dhdGNoVG93ZXJVc2VyIl19LCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJ6b3dlc29uQHpvd2UuY29tIiwiZ2l2ZW5fbmFtZSI6IkFQSU1MIE1pbmlwbGV4IEludGVncmF0aW9uIFRlc3RzIiwiZmFtaWx5X25hbWUiOiJBdXRob3JpemVkIFVzZXIiLCJ1c2VybmFtZSI6eyJmdWxsTmFtZSI6Inpvd2Vzb25Aem93ZS5jb20ifX0.Yut1S6tIoBdX-h782Zde4g2xvkMu28HduOf4DwwpCUzWSJ-KxPbk5JZl7x_8ga81EuR8myv9o4bowOUA3nLZwOd9iC4_gcj_ZnS3dHIAlPA1PC7cUmppDRl_3GGYdEfAk7a_uLbyc9S1RyrD4FuvJASv4HPoB8pcrF7MJAFuQnWSVOhvDzKq-aRhuAHDXNBBb8SzwfKOuQ5cCeq1AjDrGPUt3XGWySeGxOFzQHPRdqPYTbgmJ7nOqzKJdJ-5hd6tvQRoGmGsq8nU1RCcrayc-27flnR1M3JJEVB3CcAp1DmofijHHO-CSgwbycUSz5zdx1c_tY_iUseQeSWsvshPxA";
     }
 
     public static void logoutOnGateway(String url, String jwtToken) {

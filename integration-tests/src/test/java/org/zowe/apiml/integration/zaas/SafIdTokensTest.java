@@ -11,10 +11,7 @@
 package org.zowe.apiml.integration.zaas;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.passticket.PassTicketService;
@@ -37,7 +34,9 @@ import static io.restassured.http.ContentType.XML;
 import static jakarta.servlet.http.HttpServletResponse.*;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.*;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.LTPA_COOKIE;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_SAFIDT_URI;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
 @ZaasTest
@@ -132,7 +131,7 @@ public class SafIdTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenValidOAuthToken() {
-            String oAuthToken = validOktaAccessToken(true);
+            String oAuthToken = validOidcAccessToken(true);
 
             //@formatter:off
             given()

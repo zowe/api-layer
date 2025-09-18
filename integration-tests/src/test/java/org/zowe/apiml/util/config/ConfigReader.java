@@ -83,9 +83,8 @@ public class ConfigReader {
                         AuxiliaryUserList auxiliaryUserList = new AuxiliaryUserList("user,password");
 
                         ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "ibmzosmf", "");
-                        IDPConfiguration idpConfiguration = new IDPConfiguration("okta","https://okta-dev.com", "user", "user", "alt_user", "alt_user");
+                        OidcConfiguration oidcConfiguration = new OidcConfiguration("okta","https://okta-dev.com", "","", "user", "user", "alt_user", "alt_user");
                         SafIdtConfiguration safIdtConfiguration = new SafIdtConfiguration(true);
-                        OidcConfiguration oidcConfiguration = new OidcConfiguration("","");
 
                         configuration = new EnvironmentConfiguration(
                             credentials,
@@ -101,9 +100,8 @@ public class ConfigReader {
                             zosmfServiceConfiguration,
                             auxiliaryUserList,
                             null,
-                            idpConfiguration,
-                            safIdtConfiguration,
-                            oidcConfiguration
+                            oidcConfiguration,
+                            safIdtConfiguration
                         );
                     }
 
@@ -157,25 +155,20 @@ public class ConfigReader {
 
                     configuration.getCachingServiceConfiguration().setUrl(System.getProperty("caching.url", configuration.getCachingServiceConfiguration().getUrl()));
 
-                    configuration.getIdpConfiguration().setProviderName(System.getProperty("oidc.providerName", String.valueOf(configuration.getIdpConfiguration().getProviderName())));
-                    configuration.getIdpConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getIdpConfiguration().getUser()));
-                    configuration.getIdpConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getIdpConfiguration().getPassword()));
-                    configuration.getIdpConfiguration().setAlternateUser(System.getProperty("oidc.test.alt_user", configuration.getIdpConfiguration().getAlternateUser()));
-                    configuration.getIdpConfiguration().setAlternatePassword(System.getProperty("oidc.test.alt_pass", configuration.getIdpConfiguration().getAlternatePassword()));
-                    configuration.getIdpConfiguration().setHost(System.getProperty("idpConfiguration.host", configuration.getIdpConfiguration().getHost()));
+                    configuration.getOidcConfiguration().setProviderName(System.getProperty("oidc.providerName", String.valueOf(configuration.getOidcConfiguration().getProviderName())));
+                    configuration.getOidcConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getOidcConfiguration().getUser()));
+                    configuration.getOidcConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getOidcConfiguration().getPassword()));
+                    configuration.getOidcConfiguration().setAlternateUser(System.getProperty("oidc.test.alt_user", configuration.getOidcConfiguration().getAlternateUser()));
+                    configuration.getOidcConfiguration().setAlternatePassword(System.getProperty("oidc.test.alt_pass", configuration.getOidcConfiguration().getAlternatePassword()));
+                    configuration.getOidcConfiguration().setHost(System.getProperty("oidc.host", configuration.getOidcConfiguration().getHost()));
+                    configuration.getOidcConfiguration().setClientId(System.getProperty("oidc.client.id", String.valueOf(configuration.getOidcConfiguration().getClientId())));
+                    configuration.getOidcConfiguration().setClientSecret(System.getProperty("oidc.client.secret", String.valueOf(configuration.getOidcConfiguration().getClientSecret())));
+                    var oidcProviderName = configuration.getOidcConfiguration().getProviderName();
+                    if (!("keycloak".equalsIgnoreCase(oidcProviderName) || "okta".equalsIgnoreCase(oidcProviderName))) {
+                        throw new IllegalArgumentException(String.format("Unsupported OIDC provider: %s", oidcProviderName));
+                    }
 
                     configuration.getSafIdtConfiguration().setEnabled(Boolean.parseBoolean(System.getProperty("safidt.enabled", String.valueOf(configuration.getSafIdtConfiguration().isEnabled()))));
-
-
-                    if ("keycloak".equalsIgnoreCase(configuration.getIdpConfiguration().getProviderName())) {
-                        configuration.getOidcConfiguration().setClientId(System.getProperty("keycloak.client.id", String.valueOf(configuration.getOidcConfiguration().getClientId())));
-                        configuration.getOidcConfiguration().setClientSecret(System.getProperty("keycloak.client.secret", String.valueOf(configuration.getOidcConfiguration().getClientSecret())));
-                    } else if ("okta".equalsIgnoreCase(configuration.getIdpConfiguration().getProviderName())) {
-                        configuration.getOidcConfiguration().setClientId(System.getProperty("okta.client.id", String.valueOf(configuration.getOidcConfiguration().getClientId())));
-                        configuration.getOidcConfiguration().setClientSecret(System.getProperty("okta.client.secret", String.valueOf(configuration.getOidcConfiguration().getClientSecret())));
-                    } else if (StringUtils.isNotBlank(configuration.getIdpConfiguration().getProviderName())) {
-                        throw new RuntimeException(String.format("Unknown oidc provider: %s", configuration.getIdpConfiguration().getProviderName()));
-                    }
 
                     setZosmfConfigurationFromSystemProperties(configuration);
                     setTlsConfigurationFromSystemProperties(configuration);

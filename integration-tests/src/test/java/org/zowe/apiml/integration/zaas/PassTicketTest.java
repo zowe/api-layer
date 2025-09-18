@@ -11,10 +11,7 @@
 package org.zowe.apiml.integration.zaas;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.passticket.PassTicketService;
@@ -32,11 +29,7 @@ import java.util.Collections;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static io.restassured.http.ContentType.TEXT;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
@@ -45,13 +38,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_TICKET_URI;
-import static org.zowe.apiml.util.SecurityUtils.USERNAME;
-import static org.zowe.apiml.util.SecurityUtils.generateZoweJwtWithLtpa;
-import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
-import static org.zowe.apiml.util.SecurityUtils.getZosmfJwtTokenFromGw;
-import static org.zowe.apiml.util.SecurityUtils.getZosmfLtpaToken;
-import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
-import static org.zowe.apiml.util.SecurityUtils.validOktaAccessToken;
+import static org.zowe.apiml.util.SecurityUtils.*;
 
 /**
  * Verify integration of the API ML PassTicket support with the zOS provider of the PassTicket.
@@ -151,7 +138,7 @@ class PassTicketTest {
 
         @Test
         void givenValidOAuthToken() {
-            String oAuthToken = validOktaAccessToken(true);
+            String oAuthToken = validOidcAccessToken(true);
 
             //@formatter:off
             given()

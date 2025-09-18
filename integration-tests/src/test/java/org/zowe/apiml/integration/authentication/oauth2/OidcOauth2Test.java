@@ -12,19 +12,13 @@ package org.zowe.apiml.integration.authentication.oauth2;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWKSet;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.LocatorAdapter;
-import io.jsonwebtoken.ProtectedHeader;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.impl.DefaultClock;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -45,21 +39,23 @@ import java.text.ParseException;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.zowe.apiml.util.SecurityUtils.GATEWAY_TOKEN_COOKIE_NAME;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
-@Tag("OktaOauth2Test")
-public class OktaOauth2Test {
+@Tag("OidcOauth2Test")
+public class OidcOauth2Test {
 
     public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_OIDC_TOKEN);
     public static URI JWK_ENDPOINT = HttpRequestUtils.getUriFromGateway(JWK_ALL);
 
-    private static final String VALID_TOKEN_WITH_MAPPING = SecurityUtils.isKeycloakProvider() ? SecurityUtils.validKeycloakToken(true) : SecurityUtils.validOktaAccessToken(true);
-    private static final String VALID_TOKEN_NO_MAPPING = SecurityUtils.isKeycloakProvider() ? SecurityUtils.validKeycloakToken(false) : SecurityUtils.validOktaAccessToken(false);
-    private static final String EXPIRED_TOKEN = SecurityUtils.expiredOktaAccessToken();
+    private static final String VALID_TOKEN_WITH_MAPPING = SecurityUtils.validOidcAccessToken(true);
+    private static final String VALID_TOKEN_NO_MAPPING = SecurityUtils.validOidcAccessToken(false);
+    private static final String EXPIRED_TOKEN = SecurityUtils.expiredOidcAccessToken();
 
     static Stream<Arguments> validTokens() {
         return Stream.of(
@@ -81,10 +77,10 @@ public class OktaOauth2Test {
     }
 
     @Nested
-    class GivenValidOktaToken {
+    class GivenValidOidcToken {
 
         @ParameterizedTest
-        @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#validTokens")
+        @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OidcOauth2Test#validTokens")
         void thenValidateUsingJWKLocally(String token) throws ParseException, IOException, JOSEException {
             HttpsURLConnection.setDefaultSSLSocketFactory(SecurityUtils.getSslContext().getSocketFactory());
             JWKSet jwkSet = JWKSet.load(new URL(JWK_ENDPOINT.toString()));
@@ -107,7 +103,7 @@ public class OktaOauth2Test {
         }
 
         @ParameterizedTest
-        @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#validTokens")
+        @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OidcOauth2Test#validTokens")
         void thenValidateReturns200(String validToken) {
             ValidateRequestModel requestBody = new ValidateRequestModel();
             requestBody.setToken(validToken);
@@ -374,10 +370,10 @@ public class OktaOauth2Test {
     }
 
     @Nested
-    class GivenInvalidOktaToken {
+    class GivenInvalidOidcToken {
 
         @ParameterizedTest
-        @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+        @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OidcOauth2Test#invalidTokens")
         void thenValidateReturns401(String invalidToken) {
             ValidateRequestModel requestBody = new ValidateRequestModel();
             requestBody.setToken(invalidToken);
@@ -394,7 +390,7 @@ public class OktaOauth2Test {
             private final URI DC_url = HttpRequestUtils.getUriFromGateway(ZOWE_JWT_REQUEST);
 
             @ParameterizedTest
-            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OidcOauth2Test#invalidTokens")
             void whenTokenInHeader_thenZoweAuthFailure(String invalidToken) {
                 given()
                     .contentType(ContentType.JSON)
@@ -408,7 +404,7 @@ public class OktaOauth2Test {
             }
 
             @ParameterizedTest
-            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OidcOauth2Test#invalidTokens")
             void whenTokenInCookie_thenZoweAuthFailure(String invalidToken) {
                 given()
                     .contentType(ContentType.JSON)
@@ -427,7 +423,7 @@ public class OktaOauth2Test {
             private final URI DC_url = HttpRequestUtils.getUriFromGateway(ZOSMF_REQUEST);
 
             @ParameterizedTest
-            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OidcOauth2Test#invalidTokens")
             void whenTokenInHeader_thenZoweAuthFailure(String invalidToken) {
                 given()
                     .contentType(ContentType.JSON)
@@ -441,7 +437,7 @@ public class OktaOauth2Test {
             }
 
             @ParameterizedTest
-            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OidcOauth2Test#invalidTokens")
             void whenTokenInCookie_thenZoweAuthFailure(String invalidToken) {
                 given()
                     .contentType(ContentType.JSON)
@@ -460,7 +456,7 @@ public class OktaOauth2Test {
             private final URI DC_url = HttpRequestUtils.getUriFromGateway(SAF_IDT_REQUEST);
 
             @ParameterizedTest
-            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OidcOauth2Test#invalidTokens")
             void whenTokenInHeader_thenZoweAuthFailure(String invalidToken) {
                 given()
                     .contentType(ContentType.JSON)
@@ -474,7 +470,7 @@ public class OktaOauth2Test {
             }
 
             @ParameterizedTest
-            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OidcOauth2Test#invalidTokens")
             void whenTokenInCookie_thenZoweAuthFailure(String invalidToken) {
                 given()
                     .contentType(ContentType.JSON)
@@ -492,7 +488,7 @@ public class OktaOauth2Test {
             private final URI DC_url = HttpRequestUtils.getUriFromGateway(REQUEST_INFO_ENDPOINT);
 
             @ParameterizedTest
-            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OidcOauth2Test#invalidTokens")
             void whenTokenInHeader_thenZoweAuthFailure(String invalidToken) {
                 given()
                     .contentType(ContentType.JSON)
@@ -507,7 +503,7 @@ public class OktaOauth2Test {
             }
 
             @ParameterizedTest
-            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OktaOauth2Test#invalidTokens")
+            @MethodSource("org.zowe.apiml.integration.authentication.oauth2.OidcOauth2Test#invalidTokens")
             void whenTokenInCookie_thenZoweAuthFailure(String invalidToken) {
                 given()
                     .contentType(ContentType.JSON)
