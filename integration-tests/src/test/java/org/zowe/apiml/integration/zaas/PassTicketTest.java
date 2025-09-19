@@ -45,13 +45,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_TICKET_URI;
-import static org.zowe.apiml.util.SecurityUtils.USERNAME;
-import static org.zowe.apiml.util.SecurityUtils.generateZoweJwtWithLtpa;
-import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
-import static org.zowe.apiml.util.SecurityUtils.getZosmfJwtTokenFromGw;
-import static org.zowe.apiml.util.SecurityUtils.getZosmfLtpaToken;
-import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
-import static org.zowe.apiml.util.SecurityUtils.validOktaAccessToken;
+import static org.zowe.apiml.util.SecurityUtils.*;
 
 /**
  * Verify integration of the API ML PassTicket support with the zOS provider of the PassTicket.
@@ -151,7 +145,7 @@ class PassTicketTest implements TestWithStartedInstances {
 
         @Test
         void givenValidOAuthToken() {
-            String oAuthToken = validOktaAccessToken(true);
+            String oAuthToken = validOidcAccessToken(true);
 
             //@formatter:off
             given()

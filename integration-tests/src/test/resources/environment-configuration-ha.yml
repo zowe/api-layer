@@ -56,9 +56,8 @@ zosmfServiceConfiguration:
     serviceId: mockzosmf
 auxiliaryUserList:
     value: 'servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
-idpConfiguration:
+oidcConfiguration:
+    providerName: okta
     host: https://dev-95727686.okta.com
 safIdtConfiguration:
     enabled: true
-oidcConfiguration:
-    clientId:
