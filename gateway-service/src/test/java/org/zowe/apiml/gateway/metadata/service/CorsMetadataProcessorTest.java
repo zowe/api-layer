@@ -20,6 +20,8 @@ import org.zowe.apiml.util.CorsUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -29,14 +31,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 class CorsMetadataProcessorTest {
-    private CorsUtils corsUtils = new CorsUtils(true, null);
+    private CorsUtils corsUtils;
     private UrlBasedCorsConfigurationSource configurationSource;
     private ArgumentCaptor<CorsConfiguration> configurationCaptor = ArgumentCaptor.forClass(CorsConfiguration.class);
 
     @BeforeEach
     void setUp() {
         configurationSource = mock(UrlBasedCorsConfigurationSource.class);
-        corsUtils = new CorsUtils(true, null);
+        corsUtils = new CorsUtils(true, Stream.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS").collect(Collectors.toList()), null);
     }
 
     @Nested
@@ -80,7 +82,7 @@ class CorsMetadataProcessorTest {
         private void assertDefaultConfiguration(CorsConfiguration provided) {
             assertThat(provided.getAllowedHeaders(), hasSize(1));
             assertThat(provided.getAllowedHeaders().get(0), is("*"));
-            assertThat(provided.getAllowedMethods(), hasSize(6));
+            assertThat(provided.getAllowedMethods(), hasSize(7));
             assertThat(provided.getAllowedMethods().get(0), is("GET"));
         }
     }

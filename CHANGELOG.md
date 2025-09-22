@@ -2,13 +2,17 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `APIML 2.18.14 / Zowe 2.18.2 (2025-06-09)`
+## `APIML 2.18.16 / Zowe 2.18.2 (2025-07-22)`
 
-* Feature:  New configuration property **`apiml.security.forwardHeader.trustedProxies`** added to specify the regular expression pattern used to identify trusted proxies from which `X-Forwarded-*` headers are accepted and forwarded. Mitigates CVE-2025-41235. (#4148) ([55c9db6](https://github.com/zowe/api-layer/commit/55c9db6)), closes [#4148](https://github.com/zowe/api-layer/pull/4148)
+* Feature:  New configuration property **`apiml.security.forwardHeader.trustedProxies`** added to specify the regular expression pattern used to identify trusted proxies from which `X-Forwarded-*` headers are accepted and forwarded. Mitigates CVE-2025-41235. (#4148) ([55c9db6](https://github.com/zowe/api-layer/commit/55c9db6)), closes [#4148](https://github.com/zowe/api-layer/pull/4148), (#4188) ([d9dfd17](https://github.com/zowe/api-layer/commit/d9dfd17)), closes [#4188](https://github.com/zowe/api-layer/pull/4188)
 * Feature:  Add Java sample app to authenticate client certificate. (#4009) ([0808c65](https://github.com/zowe/api-layer/commit/0808c65)), closes [#4009](https://github.com/zowe/api-layer/issues/4009)
 * Feature:  Users can now configure the connect and read timeout for Eureka HTTP client. (#4046) ([6a1f73e](https://github.com/zowe/api-layer/commit/6a1f73e)), closes [#4046](https://github.com/zowe/api-layer/issues/4046)
 * Feature:  Support Java 21. (#4027) ([6a554ba](https://github.com/zowe/api-layer/commit/6a554ba)), closes [#4027](https://github.com/zowe/api-layer/issues/4027)
 
+* Bugfix:  Gateway returns empty auth keys from z/OSMF when **`apiml.security.auth.zosmf.jwtAutoconfiguration`** is set to **`jwt`**. (#4221) ([259996f](https://github.com/zowe/api-layer/pull/4221/commits/259996f)), closes [#4092](https://github.com/zowe/api-layer/issues/4092)
+* BugFix:  NPE in ApimlPeerEurekaNode stops heartbeats. (#4195) ([6fba33d](https://github.com/zowe/api-layer/commit/6fba33d)), closes [#4195](https://github.com/zowe/api-layer/pull/4195)
+* BugFix:  Logout in API Catalog call to Gateway. (#4185) ([cbce1ea](https://github.com/zowe/api-layer/commit/cbce1ea)), closes [#4185](https://github.com/zowe/api-layer/pull/4185)
+* BugFix:  Disable infinispan diagnostics by default. (#4170) ([a80a2f9](https://github.com/zowe/api-layer/commit/a80a2f9)), closes [#4170](https://github.com/zowe/api-layer/pull/4170)
 * Bugfix:  Resource leak in the http client. (#4153) ([1acce27](https://github.com/zowe/api-layer/commit/1acce27)), closes [#4153](https://github.com/zowe/api-layer/pull/4153)
 * Bugfix:  Adding HSTS header when AT-TLS is enabled. (#4071) ([9fdf3e6](https://github.com/zowe/api-layer/commit/9fdf3e6)), closes [#4071](https://github.com/zowe/api-layer/issues/4071)
 * Bugfix:  Change error code SERVICE_UNAVAILABLE to INTERNAL_SERVER_ERROR when ticket generation fails. (#4043 ([f7f78dd](https://github.com/zowe/api-layer/commit/f7f78dd)), closes [#4043](https://github.com/zowe/api-layer/issues/4043)

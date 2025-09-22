@@ -17,7 +17,8 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.DiscoveryClient;
-import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.util.DefaultResourceRetriever;
+import com.nimbusds.jose.util.Resource;
 import org.hamcrest.collection.IsMapContaining;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,8 +30,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.slf4j.LoggerFactory;
@@ -65,10 +64,9 @@ import org.zowe.apiml.zaas.ZaasTokenResponse;
 
 import javax.management.ServiceNotFoundException;
 import javax.net.ssl.SSLHandshakeException;
+import java.io.IOException;
 import java.net.ConnectException;
-import java.net.URL;
 import java.nio.charset.Charset;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -147,6 +145,7 @@ class ZosmfServiceTest {
             applicationContext,
             authenticationService,
             tokenCreationService,
+            null,
             null);
         ZosmfService zosmfService = spy(zosmfServiceObj);
         doReturn(ZOSMF_ID).when(zosmfService).getZosmfServiceId();
@@ -163,7 +162,8 @@ class ZosmfServiceTest {
             applicationContext,
             authenticationService,
             tokenCreationService,
-            validationStrategyList);
+            validationStrategyList,
+            null);
 
         ZosmfService zosmfService = spy(zosmfServiceObj);
         doReturn("http://host:1433").when(zosmfService).getURI(any());
@@ -731,20 +731,22 @@ class ZosmfServiceTest {
             "}";
 
         @Test
-        void thenSuccess() throws JSONException, ParseException {
+        void thenSuccess() throws JSONException, IOException {
             String zosmfJwtUrl = "/jwt/ibm/api/zOSMFBuilder/jwk";
             when(authConfigurationProperties.getZosmf().getJwtEndpoint()).thenReturn(zosmfJwtUrl);
             ZosmfService zosmfService = getZosmfServiceSpy();
-            JWKSet jwkSet = JWKSet.parse(ZOSMF_PUBLIC_KEY_JSON);
-            try (MockedStatic<JWKSet> mockedStatic = Mockito.mockStatic(JWKSet.class)) {
-                mockedStatic.when(() -> JWKSet.load(any(URL.class))).thenReturn(jwkSet);
-                JSONAssert.assertEquals(ZOSMF_PUBLIC_KEY_JSON, new JSONObject(zosmfService.getPublicKeys().toString()), true);
-            }
+            DefaultResourceRetriever resourceRetriever = mock(DefaultResourceRetriever.class);
+            ReflectionTestUtils.setField(zosmfService, "resourceRetriever", resourceRetriever);
+
+            when(resourceRetriever.retrieveResource(any())).thenReturn(new Resource(ZOSMF_PUBLIC_KEY_JSON, null));
+
+            JSONAssert.assertEquals(ZOSMF_PUBLIC_KEY_JSON, new JSONObject(zosmfService.getPublicKeys().toString()), true);
         }
 
         @Test
         void thenReturnNull() {
             assertNull(new ZosmfService(null,
+                null,
                 null,
                 null,
                 null,
@@ -783,6 +785,7 @@ class ZosmfServiceTest {
                 applicationContext,
                 authenticationService,
                 tokenCreationService,
+                null,
                 null
             );
 
@@ -924,6 +927,7 @@ class ZosmfServiceTest {
                 applicationContext,
                 authenticationService,
                 tokenCreationService,
+                null,
                 null
             );
 
@@ -962,6 +966,7 @@ class ZosmfServiceTest {
                 applicationContext,
                 authenticationService,
                 tokenCreationService,
+                null,
                 null
             );
         }

@@ -24,9 +24,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.Ssl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.util.CorsUtils;
+
+import java.lang.reflect.Field;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -107,6 +114,54 @@ class ConnectionsConfigTest {
             assertThat(ReflectionTestUtils.getField(connectionsConfig, "trustStorePath")).isEqualTo("/path2");
             assertThat(ReflectionTestUtils.getField(connectionsConfig, "keyStorePassword")).isNull();
             assertThat(ReflectionTestUtils.getField(connectionsConfig, "trustStorePassword")).isNull();
+        }
+    }
+
+    @Nested
+    @SpringBootTest(
+        properties = {"apiml.service.corsEnabled=true"}
+    )
+    class GivenCorsEnabled {
+
+        @Nested
+        public class WhenCorsAllowedMethodsIsNotSet {
+
+            @Autowired
+            private ConnectionsConfig connectionsConfig;
+
+            @Test
+            void validateDefaultCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
+                CorsUtils corsUtils = connectionsConfig.corsUtils();
+
+                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
+                field.setAccessible(true);
+                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
+                assertEquals(7, corsAllowedMethods.size());
+            }
+        }
+
+        @Nested
+        @TestPropertySource(properties = {
+            "apiml.service.corsAllowedMethods=GET,POST, PATCH"
+        })
+        @DirtiesContext
+        public class WhenCorsAllowedMethodsIsSet {
+
+            @Autowired
+            private ConnectionsConfig connectionsConfig;
+
+            @Test
+            void validateCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
+                CorsUtils corsUtils = connectionsConfig.corsUtils();
+
+                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
+                field.setAccessible(true);
+                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
+                assertEquals(3, corsAllowedMethods.size());
+                assertEquals("GET", corsAllowedMethods.get(0));
+                assertEquals("POST", corsAllowedMethods.get(1));
+                assertEquals("PATCH", corsAllowedMethods.get(2));
+            }
         }
     }
 }
