@@ -31,7 +31,9 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.LTPA_COOKIE;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_ZOSMF_URI;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
 @ZaasTest
@@ -115,7 +117,7 @@ class ZosmfTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenValidOAuthToken() {
-            String oAuthToken = validOktaAccessToken(true);
+            String oAuthToken = validOidcAccessToken(true);
 
             //@formatter:off
             given()
