@@ -14,10 +14,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.commons.codec.binary.Base64;
 import org.hamcrest.core.Is;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -36,10 +33,7 @@ import org.zowe.apiml.zaasclient.service.ZaasClient;
 import org.zowe.apiml.zaasclient.service.ZaasToken;
 import org.zowe.apiml.zaasclient.service.internal.ZaasClientImpl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.CertificateException;
@@ -264,10 +258,10 @@ class ZaasClientIntegrationTest implements TestWithStartedInstances {
     }
 
     @Nested
-    @Tag("OktaOauth2Test")
+    @Tag("OidcOauth2Test")
     class WhenOidcQuery {
 
-        private static final String VALID_TOKEN_NO_MAPPING = SecurityUtils.validOktaAccessToken(false);
+        private static final String VALID_TOKEN_NO_MAPPING = SecurityUtils.validOidcAccessToken(false);
 
         @Test
         void givenValidOidcToken_thenValidDetailsAreProvided() throws ZaasClientException {
