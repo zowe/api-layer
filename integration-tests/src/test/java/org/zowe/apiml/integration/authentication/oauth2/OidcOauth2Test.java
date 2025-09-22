@@ -27,6 +27,7 @@ import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.integration.authentication.oauth2.model.ZssResponse;
 import org.zowe.apiml.integration.authentication.pat.ValidateRequestModel;
@@ -560,9 +561,10 @@ public class OidcOauth2Test {
                 .body("headers", not(hasKey("cookie")));
         }
 
-        @Test
-        void testOtherMappingError() {
-            setZssResponse(200, ZssResponse.ZssError.MAPPING_OTHER);
+        @ParameterizedTest
+        @ValueSource(ints = {200, 401, 404, 500})
+        void testOtherZaasResponse(int responseStatusCode) {
+            setZssResponse(responseStatusCode, ZssResponse.ZssError.MAPPING_OTHER);
 
             given()
                 .contentType(ContentType.JSON)
@@ -575,50 +577,6 @@ public class OidcOauth2Test {
                 .body("headers", not(hasKey("cookie")));
         }
 
-        @Test
-        void testZssReturns401() {
-            setZssResponse(401, ZssResponse.ZssError.MAPPING_OTHER);
-
-            given()
-                .contentType(ContentType.JSON)
-                .header(HttpHeaders.AUTHORIZATION,
-                    ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_WITH_MAPPING)
-                .when()
-                .get(DC_url)
-                .then().statusCode(200)
-                .body("headers", hasKey("x-zowe-auth-failure"))
-                .body("headers", not(hasKey("cookie")));
-        }
-
-        @Test
-        void testZssReturns404() {
-            setZssResponse(404, ZssResponse.ZssError.MAPPING_OTHER);
-
-            given()
-                .contentType(ContentType.JSON)
-                .header(HttpHeaders.AUTHORIZATION,
-                    ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_WITH_MAPPING)
-                .when()
-                .get(DC_url)
-                .then().statusCode(200)
-                .body("headers", hasKey("x-zowe-auth-failure"))
-                .body("headers", not(hasKey("cookie")));
-        }
-
-        @Test
-        void testZssReturns500() {
-            setZssResponse(500, ZssResponse.ZssError.MAPPING_OTHER);
-
-            given()
-                .contentType(ContentType.JSON)
-                .header(HttpHeaders.AUTHORIZATION,
-                    ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_TOKEN_WITH_MAPPING)
-                .when()
-                .get(DC_url)
-                .then().statusCode(200)
-                .body("headers", hasKey("x-zowe-auth-failure"))
-                .body("headers", not(hasKey("cookie")));
-        }
     }
 
     private void setZssResponse(int statusCode, ZssResponse.ZssError zssError) {
