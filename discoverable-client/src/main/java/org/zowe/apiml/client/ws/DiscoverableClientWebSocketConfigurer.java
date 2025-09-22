@@ -31,12 +31,15 @@ public class DiscoverableClientWebSocketConfigurer implements WebSocketConfigure
 
         logger.log("org.zowe.apiml.sampleservice.log.registeringWebSocket", webSocketEndpoint);
 
-        registry.addHandler(new WebSocketServerHandler(), webSocketEndpoint).setAllowedOrigins("*");
+        registry.addHandler(new WebSocketServerHandler(), webSocketEndpoint)
+            .addInterceptors(new JwtHandshakeInterceptor())
+            .setAllowedOrigins("*");
 
         webSocketEndpoint = "/ws/header";
         logger.log(MessageType.DEBUG, "Registering WebSocket handler to {}", webSocketEndpoint);
 
-        registry.addHandler(new HeaderSocketServerHandler(), webSocketEndpoint);
+        registry.addHandler(new HeaderSocketServerHandler(), webSocketEndpoint)
+            .addInterceptors(new JwtHandshakeInterceptor());
     }
 
     // Configure buffer sizes for inbound messages
