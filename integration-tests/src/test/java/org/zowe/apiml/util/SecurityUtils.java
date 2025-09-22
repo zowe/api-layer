@@ -107,6 +107,10 @@ public class SecurityUtils {
     public static final String OIDC_ALT_PASSWORD = ConfigReader.environmentConfiguration().getOidcConfiguration().getAlternatePassword();
     public static final String OIDC_PROVIDER_NAME = ConfigReader.environmentConfiguration().getOidcConfiguration().getProviderName();
 
+    public static final String OKTA_AUTHENTICATE_SESSION_URL = "/api/v1/authn";
+    public static final String OKTA_GENERATE_TOKEN_URL = "/oauth2/v1/authorize";
+    public static final String KEYCLOAK_GENERATE_TOKEN_URL = "/realms/apiml/protocol/openid-connect/token";
+
     public static final String COOKIE_NAME = "apimlAuthenticationToken";
     public static final String PAT_COOKIE_AUTH_NAME = "personalAccessToken";
 
@@ -440,7 +444,7 @@ public class SecurityUtils {
         // retrieve the access token from Okta using session token
 
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) {
-            var uriBuilder = new URIBuilder(OIDC_HOSTNAME + "/oauth2/v1/authorize");
+            var uriBuilder = new URIBuilder(OIDC_HOSTNAME + OKTA_GENERATE_TOKEN_URL);
             uriBuilder.setParameter("client_id", OIDC_CLIENT_ID)
                 .setParameter("redirect_uri", "https://localhost:10010/login/oauth2/code/okta")
                 .setParameter("response_type", "token")
@@ -478,9 +482,9 @@ public class SecurityUtils {
     public static String validKeycloakToken(boolean userHasMappingDefined) {
         assertNotNull(OIDC_HOSTNAME, "Keycloak host name is not set.");
         assertNotNull(OIDC_CLIENT_ID, "Keycloak client id is not set.");
-        // retrieve the access token from Okta using session token
+
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) {
-            var uri = new URI(OIDC_HOSTNAME + "/realms/apiml/protocol/openid-connect/token");
+            var uri = new URI(OIDC_HOSTNAME + KEYCLOAK_GENERATE_TOKEN_URL);
             var request = new HttpPost(uri);
             var form = new StringBuilder();
             form.append("grant_type=password");
@@ -510,8 +514,7 @@ public class SecurityUtils {
                 assertNotNull(accessToken, "Failed to locate access token in the Keycloak /authorize response.");
                 return (String)accessToken;
             } else {
-                throw new RuntimeException("Failed obtaining Keycloak access token: " + response.getStatusLine().getStatusCode() + ": " + EntityUtils.toString(response.getEntity()) +
-                    "; form: " + form + " request headers: " + Arrays.toString(request.getAllHeaders()));
+                throw new RuntimeException("Failed obtaining Keycloak access token: " + response.getStatusLine().getStatusCode() + ": " + EntityUtils.toString(response.getEntity()));
             }
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
@@ -530,7 +533,7 @@ public class SecurityUtils {
         }
 
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) {
-            var uriBuilder = new URIBuilder(OIDC_HOSTNAME + "/api/v1/authn");
+            var uriBuilder = new URIBuilder(OIDC_HOSTNAME + OKTA_AUTHENTICATE_SESSION_URL);
 
             var request = new HttpPost(uriBuilder.build());
             request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
