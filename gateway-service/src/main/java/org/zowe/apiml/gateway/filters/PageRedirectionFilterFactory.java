@@ -135,7 +135,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
         var locationUri = URI.create(location);
         var targetInstance = getInstance(locationUri, instance);
-        if (targetInstance.isPresent() && targetInstance.get().getServiceId().equalsIgnoreCase(CoreService.GATEWAY.getServiceId())) {
+        if (isGateway(targetInstance)) {
             return Mono.empty();
         }
         var defaultRoute = config.getRoutedService();
@@ -187,6 +187,12 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
         // in case url was not transformed leave it as it is (routing could be outside the Zowe)
         return Mono.empty();
+    }
+
+    boolean isGateway(Optional<ServiceInstance> targetInstance) {
+        return targetInstance.isPresent() &&
+            StringUtils.isNoneEmpty(targetInstance.get().getServiceId()) &&
+            targetInstance.get().getServiceId().equalsIgnoreCase(CoreService.GATEWAY.getServiceId());
     }
 
     @Data
