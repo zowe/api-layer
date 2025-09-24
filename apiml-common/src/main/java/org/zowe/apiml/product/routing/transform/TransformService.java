@@ -59,7 +59,7 @@ public class TransformService {
         }
 
         URI serviceUri = URI.create(serviceUrl);
-        String serviceUriPath = serviceUri.getPath();
+        String serviceUriPath = serviceUri.getRawPath();
         if (serviceUriPath == null) {
             String message = String.format("The URI %s is not valid.", serviceUri);
             throw new URLTransformationException(message);
@@ -106,6 +106,26 @@ public class TransformService {
         return String.format("%s://%s/%s%s%s",
             scheme,
             gatewayConfigProperties.getHostname(),
+            serviceId,
+            StringUtils.isEmpty(route.getGatewayUrl()) ? "" : "/" + route.getGatewayUrl(),
+            endPoint);
+    }
+
+    public String transformAbsoluteURL(String serviceId,
+                                       String serviceUriPath,
+                                       RoutedService route,
+                                       URI originalUri
+    ) throws URLTransformationException {
+        if (!gatewayClient.isInitialized()) {
+            apimlLog.log("org.zowe.apiml.common.gatewayNotFoundForTransformRequest");
+            throw new URLTransformationException("Gateway not found yet, transform service cannot perform the request");
+        }
+
+        String endPoint = getShortEndPoint(route.getServiceUrl(), serviceUriPath);
+        if (!endPoint.isEmpty() && !endPoint.startsWith("/")) {
+            throw new URLTransformationException("The path " + originalUri.getPath() + " of the service URL " + originalUri + " is not valid.");
+        }
+        return String.format("/%s%s%s",
             serviceId,
             StringUtils.isEmpty(route.getGatewayUrl()) ? "" : "/" + route.getGatewayUrl(),
             endPoint);

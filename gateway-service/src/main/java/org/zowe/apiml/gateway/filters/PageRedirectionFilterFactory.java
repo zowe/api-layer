@@ -117,7 +117,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
     private boolean isMatching(RoutedService route, URI uri) {
         var servicePath = normalizePath(route.getServiceUrl());
-        var locationPath = normalizePath(uri.getPath());
+        var locationPath = normalizePath(uri.getRawPath());
         return locationPath.startsWith(servicePath);
     }
 
@@ -144,11 +144,10 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
         if (targetInstance == instance && isMatching(defaultRoute, locationUri)) {
             // try the preferable route on the same instance (the same as in the original request)
             try {
-                newUrl.set(transformService.transformURL(
+                newUrl.set(transformService.transformAbsoluteURL(
                     StringUtils.toRootLowerCase(config.serviceId),
                     UriComponentsBuilder.fromPath(locationUri.getPath()).query(locationUri.getRawQuery()).build().toUriString(),
                     defaultRoute,
-                    false,
                     locationUri
                 ));
             } catch (URLTransformationException e) {
