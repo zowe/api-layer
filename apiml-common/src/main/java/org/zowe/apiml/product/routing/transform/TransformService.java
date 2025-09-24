@@ -40,10 +40,10 @@ public class TransformService {
     /**
      * Construct the URL using gateway hostname and route
      *
-     * @param type       the type of the route
-     * @param serviceId  the service id
-     * @param serviceUrl the service URL
-     * @param routes     the routes
+     * @param type        the type of the route
+     * @param serviceId   the service id
+     * @param serviceUrl  the service URL
+     * @param routes      the routes
      * @param httpsScheme https scheme flag
      * @return the new URL
      * @throws URLTransformationException if the path of the service URL is not valid
@@ -71,8 +71,8 @@ public class TransformService {
             throw new URLTransformationException(message);
         }
 
-        if (serviceUri.getQuery() != null) {
-            serviceUriPath += "?" + serviceUri.getQuery();
+        if (serviceUri.getRawQuery() != null) {
+            serviceUriPath += "?" + serviceUri.getRawQuery();
         }
 
         return transformURL(serviceId, serviceUriPath, route, httpsScheme, serviceUri);
@@ -95,13 +95,19 @@ public class TransformService {
         }
 
         ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
-
+        if (originalUri != null && originalUri.toString().startsWith("//")) {
+            return String.format("//%s/%s%s%s",
+                gatewayConfigProperties.getHostname(),
+                serviceId,
+                StringUtils.isEmpty(route.getGatewayUrl()) ? "" : "/" + route.getGatewayUrl(),
+                endPoint);
+        }
         String scheme = httpsScheme ? "https" : gatewayConfigProperties.getScheme();
-        return String.format("%s://%s/%s/%s%s",
+        return String.format("%s://%s/%s%s%s",
             scheme,
             gatewayConfigProperties.getHostname(),
             serviceId,
-            route.getGatewayUrl(),
+            StringUtils.isEmpty(route.getGatewayUrl()) ? "" : "/" + route.getGatewayUrl(),
             endPoint);
     }
 

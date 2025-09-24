@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.ServiceType;
@@ -134,6 +135,9 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
         var locationUri = URI.create(location);
         var targetInstance = getInstance(locationUri, instance);
+        if (targetInstance.isPresent() && targetInstance.get().getServiceId().equalsIgnoreCase(CoreService.GATEWAY.getServiceId())) {
+            return Mono.empty();
+        }
         var defaultRoute = config.getRoutedService();
 
         AtomicReference<String> newUrl = new AtomicReference<>();
@@ -142,7 +146,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
             try {
                 newUrl.set(transformService.transformURL(
                     StringUtils.toRootLowerCase(config.serviceId),
-                    UriComponentsBuilder.fromPath(locationUri.getPath()).query(locationUri.getQuery()).build().toUri().toString(),
+                    UriComponentsBuilder.fromPath(locationUri.getPath()).query(locationUri.getRawQuery()).build().toUriString(),
                     defaultRoute,
                     false,
                     locationUri
