@@ -190,9 +190,8 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
     }
 
     boolean isGateway(Optional<ServiceInstance> targetInstance) {
-        return targetInstance.isPresent() &&
-            StringUtils.isNoneEmpty(targetInstance.get().getServiceId()) &&
-            targetInstance.get().getServiceId().equalsIgnoreCase(CoreService.GATEWAY.getServiceId());
+        return targetInstance.filter(target -> CoreService.GATEWAY.getServiceId().equalsIgnoreCase(target.getServiceId()))
+            .isPresent();
     }
 
     @Data

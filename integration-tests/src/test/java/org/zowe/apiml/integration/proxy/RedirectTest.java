@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 import static io.restassured.RestAssured.given;
 
 @DiscoverableClientDependentTest
-public class RedirectTest {
+class RedirectTest {
 
     GatewayServiceConfiguration gwConf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
@@ -41,12 +41,12 @@ public class RedirectTest {
 
     static Stream<Arguments> headerValues() {
         return Stream.of(
-            Arguments.of("absolut URL with encoding doesn't match service route", "%2Fapi%2Frequest", "%2Fapi%2Frequest"),
-            Arguments.of("absolut URL doesn't match service route", "/api/request", "/api/request"),
+            Arguments.of("absolute URL with encoding doesn't match service route", "%2Fapi%2Frequest", "%2Fapi%2Frequest"),
+            Arguments.of("absolute URL doesn't match service route", "/api/request", "/api/request"),
             Arguments.of("relative URL", "api/request", "api/request"),
-            Arguments.of("absolut URL containing encoded characters matches service route", "/discoverableclient/api/v1/login?returnUrl=%2Fapi%2Frequest", "https://localhost:10010/discoverableclient/api/v1/login?returnUrl=%2Fapi%2Frequest"),
+            Arguments.of("absolute URL containing encoded characters matches service route", "/discoverableclient/api/v1/login?returnUrl=%2Fapi%2Frequest", "https://localhost:10010/discoverableclient/api/v1/login?returnUrl=%2Fapi%2Frequest"),
             Arguments.of("relative URL that contains service ID", "discoverableclient/api/v1/login?returnUrl=%2Fapi%2Frequest", "discoverableclient/api/v1/login?returnUrl=%2Fapi%2Frequest"),
-            Arguments.of("absolut URL matches service route", "/discoverableclient/api/v1/request", "https://localhost:10010/discoverableclient/api/v1/request"),
+            Arguments.of("absolute URL matches service route", "/discoverableclient/api/v1/request", "https://localhost:10010/discoverableclient/api/v1/request"),
             Arguments.of("Full URL contains service host and port", "https://localhost:10012/discoverableclient/api/v1/request", "https://localhost:10010/discoverableclient/api/v1/request"),
             Arguments.of("Full URL contains gateway host and port", "https://localhost:10010/discoverableclient/api/v3/request", "https://localhost:10010/discoverableclient/api/v3/request"),
             Arguments.of("scheme-relative URL contains service host and port", "//localhost:10012/discoverableclient/api/v1/request", "//localhost:10010/discoverableclient/api/v1/request"),

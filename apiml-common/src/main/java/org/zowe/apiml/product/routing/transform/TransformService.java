@@ -71,7 +71,7 @@ public class TransformService {
             throw new URLTransformationException(message);
         }
 
-        if (serviceUri.getRawQuery() != null) {
+        if (StringUtils.isNotBlank(serviceUri.getRawQuery())) {
             serviceUriPath += "?" + serviceUri.getRawQuery();
         }
 
