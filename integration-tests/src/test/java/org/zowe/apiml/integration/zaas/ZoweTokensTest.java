@@ -31,7 +31,8 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_ZOWE_URI;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
 @ZaasTest
@@ -113,14 +114,16 @@ class ZoweTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenValidOAuthToken() {
-            String oAuthToken = validOktaAccessToken(true);
+            String oAuthToken = validOidcAccessToken(true);
 
             //@formatter:off
             given()
+                .log().all()
                 .cookie(COOKIE, oAuthToken)
             .when()
                 .post(ZAAS_ZOWE_URI)
             .then()
+                .log().all()
                 .statusCode(SC_OK)
                 .body("cookieName", is(COOKIE))
                 .body("token", not(isEmptyOrNullString()));
