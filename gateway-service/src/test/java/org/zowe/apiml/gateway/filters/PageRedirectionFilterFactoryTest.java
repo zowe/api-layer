@@ -93,7 +93,7 @@ class PageRedirectionFilterFactoryTest {
 
         @Test
         void whenNoAttls_thenAddRedirectionUrl() {
-            var expectedUrl = GW_BASE_URL + "/gateway/api/v1/api/v1/redirected_url";
+            var expectedUrl = "/gateway/api/v1/api/v1/redirected_url";
             var factory = new PageRedirectionFilterFactory(gatewayClient, discoveryClient);
 
             var chain = mock(GatewayFilterChain.class);
@@ -118,7 +118,7 @@ class PageRedirectionFilterFactoryTest {
 
         @Test
         void whenAttls_thenAddRedirectionUrl() {
-            var expectedUrl = GW_BASE_URL + "/gateway/api/v1/api/v1/redirected_url?arg=1&arg=2";
+            var expectedUrl = "/gateway/api/v1/api/v1/redirected_url?arg=1&arg=2";
             var factory = new PageRedirectionFilterFactory(gatewayClient, discoveryClient);
             var chain = mock(GatewayFilterChain.class);
             var exchange = mock(ServerWebExchange.class);

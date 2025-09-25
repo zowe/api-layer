@@ -177,7 +177,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
         if (newUrl.get() != null) {
             // if the new URL was defined, decorate (scheme by AT-TLS) and set
-            if (isServerAttlsEnabled) {
+            if (isServerAttlsEnabled && newUrl.get().startsWith("http")) {
                 newUrl.set(UriComponentsBuilder.fromUriString(newUrl.get()).scheme("https").build().toUriString());
             }
 
