@@ -113,6 +113,10 @@ class PageRedirectionFilterFactoryTest {
             return Stream.of(
                 Arguments.of("/discoverableclient/api/v1/login?redirected_url=%2Fsome%2Fpath", "https://localhost:10010/discoverableclient/login?redirected_url=%2Fsome%2Fpath", false),
                 Arguments.of("discoverableclient/api/v1/login?redirected_url=%2Fsome%2Fpath", "discoverableclient/api/v1/login?redirected_url=%2Fsome%2Fpath", false),
+                Arguments.of("http://localhost:10010/api/v1/redirected_url?arg=1&arg=2", "http://localhost:10010/api/v1/redirected_url?arg=1&arg=2", true),
+                Arguments.of("%2Fdiscoverableclient%2Fapi%2Fv1%2Frequest", "%2Fdiscoverableclient%2Fapi%2Fv1%2Frequest", true),
+                Arguments.of("api/request", "api/request", true),
+                Arguments.of("//localhost:10010/api/v1/request", "//localhost:10010/api/v1/request", true),
                 Arguments.of("/discoverableclient/api/v1/api/v1/redirected_url?arg=1&arg=2", "http://localhost:10010/discoverableclient/api/v1/redirected_url?arg=1&arg=2", true)
 
             );
