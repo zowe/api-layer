@@ -18,10 +18,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import org.zowe.apiml.util.config.ItSslConfigFactory;
-import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.*;
 
 import java.util.stream.Stream;
 
@@ -30,28 +27,71 @@ import static io.restassured.RestAssured.given;
 @DiscoverableClientDependentTest
 class RedirectTest {
 
-    GatewayServiceConfiguration gwConf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    static GatewayServiceConfiguration gwConf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    static DiscoverableClientConfiguration dcConf = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration();
+    static String gatewayUrl;
+    static String dcUrl;
 
     @BeforeAll
     static void init() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
-
+        gatewayUrl = String.format("%s:%d", gwConf.getHost(), gwConf.getPort());
+        dcUrl = String.format("%s:%d", dcConf.getHost(), dcConf.getPort());
     }
 
     static Stream<Arguments> headerValues() {
         return Stream.of(
-            Arguments.of("absolute URL with encoding doesn't match service route", "%2Fapi%2Frequest", "%2Fapi%2Frequest"),
-            Arguments.of("absolute URL with encoding doesn't match service route", "%2Fdiscoverableclient%2Fapi%2Fv1%2Frequest", "%2Fdiscoverableclient%2Fapi%2Fv1%2Frequest"),
-            Arguments.of("absolute URL doesn't match service route", "/api/request", "/api/request"),
-            Arguments.of("relative URL", "api/request", "api/request"),
-            Arguments.of("absolute URL containing encoded characters matches service route", "/discoverableclient/api/v1/login?returnUrl=%2Fapi%2Frequest", "/discoverableclient/api/v1/login?returnUrl=%2Fapi%2Frequest"),
-            Arguments.of("relative URL that contains service ID", "discoverableclient/api/v1/login?returnUrl=%2Fapi%2Frequest", "discoverableclient/api/v1/login?returnUrl=%2Fapi%2Frequest"),
-            Arguments.of("absolute URL matches service route", "/discoverableclient/api/v1/request", "/discoverableclient/api/v1/request"),
-            Arguments.of("Full URL contains service host and port", "https://localhost:10012/discoverableclient/api/v1/request", "/discoverableclient/api/v1/request"),
-            Arguments.of("Full URL contains gateway host and port", "https://localhost:10010/discoverableclient/api/v3/request", "https://localhost:10010/discoverableclient/api/v3/request"),
-            Arguments.of("scheme-relative URL contains service host and port", "//localhost:10012/discoverableclient/api/v1/request", "/discoverableclient/api/v1/request"),
-            Arguments.of("scheme-relative URL contains gateway host and port", "//localhost:10010/discoverableclient/api/v1/request", "//localhost:10010/discoverableclient/api/v1/request")
+            Arguments.of(
+                "absolute URL with encoding doesn't match service route",
+                "%2Fapi%2Frequest",
+                "%2Fapi%2Frequest"
+            ),
+            Arguments.of(
+                "absolute URL with encoding doesn't match service route",
+                "%2Fdiscoverableclient%2Fapi%2Fv1%2Frequest",
+                "%2Fdiscoverableclient%2Fapi%2Fv1%2Frequest"
+            ),
+            Arguments.of(
+                "absolute URL doesn't match service route", "/api/request", "/api/request"),
+            Arguments.of(
+                "relative URL",
+                "api/request",
+                "api/request"),
+            Arguments.of(
+                "absolute URL containing encoded characters matches service route",
+                "/discoverableclient/api/v1/login?returnUrl=%2Fapi%2Frequest",
+                "/discoverableclient/api/v1/login?returnUrl=%2Fapi%2Frequest"
+            ),
+            Arguments.of(
+                "relative URL that contains service ID",
+                "discoverableclient/api/v1/login?returnUrl=%2Fapi%2Frequest",
+                "discoverableclient/api/v1/login?returnUrl=%2Fapi%2Frequest"
+            ),
+            Arguments.of(
+                "absolute URL matches service route",
+                "/discoverableclient/api/v1/request",
+                "/discoverableclient/api/v1/request"),
+            Arguments.of(
+                "Full URL contains service host and port",
+                String.format("https://%s/discoverableclient/api/v1/request", dcUrl),
+                "/discoverableclient/api/v1/request"
+            ),
+            Arguments.of(
+                "Full URL contains gateway host and port",
+                String.format("https://%s/discoverableclient/api/v3/request", gatewayUrl),
+                String.format("https://%s/discoverableclient/api/v3/request", gatewayUrl)
+            ),
+            Arguments.of(
+                "scheme-relative URL contains service host and port",
+                String.format("//%s/discoverableclient/api/v1/request", dcUrl),
+                "/discoverableclient/api/v1/request"
+            ),
+            Arguments.of(
+                "scheme-relative URL contains gateway host and port",
+                String.format("//%s/discoverableclient/api/v1/request", gatewayUrl),
+                String.format("//%s/discoverableclient/api/v1/request", gatewayUrl)
+            )
         );
     }
 
