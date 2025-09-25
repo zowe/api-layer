@@ -109,6 +109,29 @@ class RedirectTest {
             .statusCode(307);
     }
 
+    static Stream<Arguments> urlsWithoutContextPath() {
+        return Stream.of(
+            Arguments.of(
+                "absolute URL matches / as a service route ",
+                "/common/login?returnUrl=%2Fdiscoverableclient%2Fapi%2Fv1%2Frequest",
+                "/redirectclient/ui/common/login?returnUrl=%2Fdiscoverableclient%2Fapi%2Fv1%2Frequest")
+        );
+    }
+
+    @ParameterizedTest(name = "given {0} then Location header value {1} was transform to {2}")
+    @MethodSource("urlsWithoutContextPath")
+    void giveLocationHeaderFromServiceWithoutContextPath(String msg, String original, String translated) {
+        var baseUrl = String.format("%s://%s:%d", gwConf.getScheme(), gwConf.getHost(), gwConf.getPort());
+        var targetUrl = baseUrl + "/redirectclient/ui/api/v1/redirect";
+        given()
+            .body(new LocationReq(original))
+            .contentType(ContentType.JSON)
+            .post(targetUrl)
+            .then().log().ifValidationFails()
+            .header("Location", translated)
+            .statusCode(302);
+    }
+
     @Data
     static class LocationReq {
         final String location;
