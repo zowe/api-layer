@@ -45,6 +45,10 @@ services:
           apiml:
               enableUrlEncodedCharacters: true
               headersToIgnore: Origin
+              service:
+                scheme: ${ZOSMF_SCHEME}
+                nonSecurePortEnabled: ${ZOSMF_NON_SECURE_PORT_ENABLED:-false}
+                securePortEnabled: ${ZOSMF_SECURE_PORT_ENABLED:-true}
 catalogUiTiles:
     zosmf:
         title: z/OSMF services
