@@ -89,7 +89,7 @@ public class TransformService {
             throw new URLTransformationException("Gateway not found yet, transform service cannot perform the request");
         }
 
-        String endPoint = getShortEndPoint(route.getServiceUrl(), serviceUriPath);
+        String endPoint = getShortEndpoint(route.getServiceUrl(), serviceUriPath);
         if (!endPoint.isEmpty() && !endPoint.startsWith("/")) {
             throw new URLTransformationException("The path " + originalUri.getPath() + " of the service URL " + originalUri + " is not valid.");
         }
@@ -112,23 +112,22 @@ public class TransformService {
     }
 
     public String transformAbsoluteURL(String serviceId,
-                                       String serviceUriPath,
-                                       RoutedService route,
-                                       URI originalUri
+                                       String locationUri,
+                                       RoutedService route
     ) throws URLTransformationException {
-        if (!gatewayClient.isInitialized()) {
-            apimlLog.log("org.zowe.apiml.common.gatewayNotFoundForTransformRequest");
-            throw new URLTransformationException("Gateway not found yet, transform service cannot perform the request");
-        }
 
-        String endPoint = getShortEndPoint(route.getServiceUrl(), serviceUriPath);
-        if (!endPoint.isEmpty() && !endPoint.startsWith("/")) {
-            throw new URLTransformationException("The path " + originalUri.getPath() + " of the service URL " + originalUri + " is not valid.");
+        String endpoint = getShortEndpoint(route.getServiceUrl(), locationUri);
+        if (isRelative(endpoint)) {
+            throw new URLTransformationException("The path " + locationUri + " of the service " + serviceId + " is not valid.");
         }
         return String.format("/%s%s%s",
             serviceId,
             StringUtils.isEmpty(route.getGatewayUrl()) ? "" : "/" + route.getGatewayUrl(),
-            endPoint);
+            endpoint);
+    }
+
+    boolean isRelative(String endpoint) {
+        return !endpoint.isEmpty() && !endpoint.startsWith("/");
     }
 
     /**
@@ -172,7 +171,7 @@ public class TransformService {
      * @param endPoint        the endpoint of method
      * @return short endpoint
      */
-    private String getShortEndPoint(String routeServiceUrl, String endPoint) {
+    private String getShortEndpoint(String routeServiceUrl, String endPoint) {
         String shortEndPoint = endPoint;
         if (!SEPARATOR.equals(routeServiceUrl) && StringUtils.isNotBlank(routeServiceUrl)) {
             shortEndPoint = shortEndPoint.replaceFirst(UrlUtils.removeLastSlash(routeServiceUrl), "");

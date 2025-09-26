@@ -43,12 +43,12 @@ class RedirectTest {
     static Stream<Arguments> headerValues() {
         return Stream.of(
             Arguments.of(
-                "absolute URL with encoding doesn't match service route",
+                "relative URL with encoding",
                 "%2Fapi%2Frequest",
                 "%2Fapi%2Frequest"
             ),
             Arguments.of(
-                "absolute URL with encoding doesn't match service route",
+                "relative URL with encoding and service route",
                 "%2Fdiscoverableclient%2Fapi%2Fv1%2Frequest",
                 "%2Fdiscoverableclient%2Fapi%2Fv1%2Frequest"
             ),
