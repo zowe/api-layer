@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Reads OIDC Client configuration from environment variables or application configuration file.
+ * Reads OIDC Client configuration from Zowe launcher environment variables or application configuration file.
  */
 @Data
 @Component
@@ -104,6 +104,19 @@ public class ClientConfiguration {
         for (String registrationId : getRegistrationsIdsFromSystemEnv()) {
             update(registrationId, registration.computeIfAbsent(registrationId, k -> new Registration()));
             update(registrationId, provider.computeIfAbsent(registrationId, k -> new Provider()));
+        }
+        processDefaults();
+    }
+
+    /*
+     * redirectUri was originally set as a property but for Okta provider only, without it it can be a breaking change.
+     * This makes sure any provider has a default redirectUri if no explicit one is provided
+     */
+    private void processDefaults() {
+        for (Map.Entry<String, Registration> entry : registration.entrySet()) {
+            if (StringUtils.isBlank(entry.getValue().getRedirectUri())) {
+                entry.getValue().setRedirectUri(DEFAULT_REDIRECT_URI);
+            }
         }
     }
 
