@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import reactor.core.publisher.Mono;
@@ -46,6 +47,8 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 class PageRedirectionFilterFactoryTest {
 
+    public static final String DISCOVERABLECLIENT = "DISCOVERABLECLIENT";
+    public static final String GATEWAY = CoreService.GATEWAY.toString();
     private GatewayClient gatewayClient;
     private DiscoveryClient discoveryClient;
     private static final String GW_HOSTNAME = "gateway";
@@ -79,25 +82,27 @@ class PageRedirectionFilterFactoryTest {
     }
 
 
-    private PageRedirectionFilterFactory.Config createConfig() {
+    private PageRedirectionFilterFactory.Config createConfig(String serviceId) {
         var config = new PageRedirectionFilterFactory.Config();
-        config.setInstanceId("localhost:discoverableclient:10012");
-        config.setServiceId("DISCOVERABLECLIENT");
+        config.setInstanceId("localhost:" + serviceId.toLowerCase() + ":10012");
+        config.setServiceId(serviceId);
         config.setGatewayUrl("api/v1");
         config.setServiceUrl("/discoverableclient");
         return config;
     }
 
-    private void mockServiceInstance() {
+    private void mockServiceInstance(String serviceId) {
 
         Map<String, String> metadata = new HashMap<>();
         metadata.put(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL, "api/v1");
         metadata.put(ROUTES + ".api-v1." + ROUTES_SERVICE_URL, "/");
         when(serviceInstance.getMetadata()).thenReturn(metadata);
         when(serviceInstance.getInstanceId()).thenReturn("instanceId");
+        when(serviceInstance.getServiceId()).thenReturn(serviceId);
         when(serviceInstance.getHost()).thenReturn("localhost");
         when(serviceInstance.getPort()).thenReturn(10010);
-        when(discoveryClient.getInstances("DISCOVERABLECLIENT")).thenReturn(new ArrayList<>(Collections.singletonList(serviceInstance)));
+        when(discoveryClient.getInstances(serviceId)).thenReturn(new ArrayList<>(Collections.singletonList(serviceInstance)));
+        when(discoveryClient.getServices()).thenReturn(Collections.singletonList(serviceId));
     }
 
     void mockLocationHeaderResponse(String url) {
@@ -128,7 +133,7 @@ class PageRedirectionFilterFactoryTest {
             ReflectionTestUtils.setField(factory, "isServerAttlsEnabled", attlsEnabled);
 
             mockLocationHeaderResponse(originalUrl);
-            var config = createConfig();
+            var config = createConfig(DISCOVERABLECLIENT);
 
             GatewayFilter gatewayFilter = factory.apply(config);
             StepVerifier.create(gatewayFilter.filter(exchange, chain))
@@ -136,6 +141,20 @@ class PageRedirectionFilterFactoryTest {
                 .expectComplete()
                 .verify();
             assertEquals(expectedUrl, res.getHeaders().getFirst(HttpHeaders.LOCATION));
+        }
+
+        @Test
+        void whenTargetInstanceIsGateway_thenDoNotUpdate() {
+            var url = "https://localhost:10010/discoverableclient/api/v1/redirected_url?arg=1&arg=2";
+            mockLocationHeaderResponse(url);
+            var config = createConfig(GATEWAY);
+            mockServiceInstance(GATEWAY);
+            GatewayFilter gatewayFilter = factory.apply(config);
+            StepVerifier.create(gatewayFilter.filter(exchange, chain))
+                .thenAwait()
+                .expectComplete()
+                .verify();
+            assertEquals(url, res.getHeaders().getFirst(HttpHeaders.LOCATION));
         }
 
     }
@@ -148,8 +167,8 @@ class PageRedirectionFilterFactoryTest {
             var expectedUrl = GW_BASE_URL + "/api/v1/redirected_url";
 
             mockLocationHeaderResponse(expectedUrl);
-            mockServiceInstance();
-            var config = createConfig();
+            mockServiceInstance(DISCOVERABLECLIENT);
+            var config = createConfig(DISCOVERABLECLIENT);
             when(gatewayClient.isInitialized()).thenReturn(false);
 
             StepVerifier.create(factory.apply(config).filter(exchange, chain)).expectComplete().verify();
@@ -165,7 +184,7 @@ class PageRedirectionFilterFactoryTest {
             var header = new HttpHeaders();
             header.put(HttpHeaders.LOCATION, Collections.emptyList());
             when(res.getHeaders()).thenReturn(header);
-            var config = createConfig();
+            var config = createConfig(DISCOVERABLECLIENT);
 
             StepVerifier.create(factory.apply(config).filter(exchange, chain)).expectComplete().verify();
             assertNull(res.getHeaders().getFirst(HttpHeaders.LOCATION));
@@ -182,8 +201,8 @@ class PageRedirectionFilterFactoryTest {
             when(res.getHeaders()).thenReturn(header);
             when(res.getStatusCode()).thenReturn(HttpStatusCode.valueOf(HttpStatus.SC_CONTINUE));
 
-            mockServiceInstance();
-            var config = createConfig();
+            mockServiceInstance(DISCOVERABLECLIENT);
+            var config = createConfig(DISCOVERABLECLIENT);
 
             StepVerifier.create(factory.apply(config).filter(exchange, chain)).expectComplete().verify();
             assertNull(res.getHeaders().getFirst(HttpHeaders.LOCATION));
