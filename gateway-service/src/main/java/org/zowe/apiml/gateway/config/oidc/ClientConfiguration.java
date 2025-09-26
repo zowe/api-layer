@@ -20,7 +20,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,22 +60,16 @@ public class ClientConfiguration {
     }
 
     private void update(String id, String type, String base, Consumer<String> setter) {
-        update(id, type, base, null, setter);
-    }
-
-    private void update(String id, String type, String base, String defaultValue, Consumer<String> setter) {
         String systemEnv = getSystemEnv(id, type, base);
         if (systemEnv != null) {
             setter.accept(systemEnv);
-        } else if (StringUtils.isNotBlank(defaultValue)) {
-            setter.accept(defaultValue);
         }
     }
 
     private void update(String id, Registration registration) {
         update(id, REGISTRATION_ENV_TYPE, "clientId", registration::setClientId);
         update(id, REGISTRATION_ENV_TYPE, "clientSecret", registration::setClientSecret);
-        update(id, REGISTRATION_ENV_TYPE, "redirectUri", DEFAULT_REDIRECT_URI, registration::setRedirectUri);
+        update(id, REGISTRATION_ENV_TYPE, "redirectUri", registration::setRedirectUri);
 
         String scope = getSystemEnv(id, REGISTRATION_ENV_TYPE, "scope");
         if (scope != null) {
