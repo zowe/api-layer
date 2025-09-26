@@ -16,6 +16,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 @ConfigurationProperties(prefix = "spring.security.oauth2.client", ignoreInvalidFields = true)
 public class ClientConfiguration {
 
+    private static final String DEFAULT_REDIRECT_URI = "{baseUrl}/gateway/{action}/oauth2/code/{registrationId}";
     private static final String SYSTEM_ENV_PREFIX = "ZWE_configs_spring_security_oauth2_client_";
     private static final Pattern REGISTRATION_ID_PATTERN = Pattern.compile(
         "^" + SYSTEM_ENV_PREFIX + "(registration|provider)_([^_]+)_.*$"
@@ -42,9 +44,9 @@ public class ClientConfiguration {
     public static final String REGISTRATION_ENV_TYPE = "registration";
     public static final String PROVIDER_ENV_TYPE = "provider";
 
-
     private Map<String, Registration> registration = new HashMap<>();
     private Map<String, Provider> provider = new HashMap<>();
+
 
     private String getSystemEnv(String id, String type, String name) {
         StringBuilder sb = new StringBuilder();
@@ -53,16 +55,22 @@ public class ClientConfiguration {
     }
 
     private void update(String id, String type, String base, Consumer<String> setter) {
+        update(id, type, base, null, setter);
+    }
+
+    private void update(String id, String type, String base, String defaultValue, Consumer<String> setter) {
         String systemEnv = getSystemEnv(id, type, base);
         if (systemEnv != null) {
             setter.accept(systemEnv);
+        } else if (StringUtils.isNotBlank(defaultValue)) {
+            setter.accept(defaultValue);
         }
     }
 
     private void update(String id, Registration registration) {
         update(id, REGISTRATION_ENV_TYPE, "clientId", registration::setClientId);
         update(id, REGISTRATION_ENV_TYPE, "clientSecret", registration::setClientSecret);
-        update(id, REGISTRATION_ENV_TYPE, "redirectUri", registration::setRedirectUri);
+        update(id, REGISTRATION_ENV_TYPE, "redirectUri", DEFAULT_REDIRECT_URI, registration::setRedirectUri);
 
         String scope = getSystemEnv(id, REGISTRATION_ENV_TYPE, "scope");
         if (scope != null) {
