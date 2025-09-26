@@ -78,16 +78,12 @@ public class TransformService {
         return transformURL(serviceId, serviceUriPath, route, httpsScheme, serviceUri);
     }
 
-    public String transformURL(String serviceId,
-                               String serviceUriPath,
-                               RoutedService route,
-                               boolean httpsScheme,
-                               URI originalUri
+    private String transformURL(String serviceId,
+                                String serviceUriPath,
+                                RoutedService route,
+                                boolean httpsScheme,
+                                URI originalUri
     ) throws URLTransformationException {
-        if (!gatewayClient.isInitialized()) {
-            apimlLog.log("org.zowe.apiml.common.gatewayNotFoundForTransformRequest");
-            throw new URLTransformationException("Gateway not found yet, transform service cannot perform the request");
-        }
 
         String endPoint = getShortEndpoint(route.getServiceUrl(), serviceUriPath);
         if (!endPoint.isEmpty() && !endPoint.startsWith("/")) {

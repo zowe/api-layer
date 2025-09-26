@@ -37,7 +37,7 @@ class TransformServiceTest {
     void setup() {
         ServiceAddress gatewayConfig = ServiceAddress.builder()
             .scheme("https")
-            .hostname("localhost")
+            .hostname("localhost:10010")
             .build();
         gatewayClient = new GatewayClient(gatewayConfig);
         transformService = new TransformService(gatewayClient);
@@ -80,6 +80,16 @@ class TransformServiceTest {
         assertEquals(expectedUrl(SERVICE_ID, prefix, extraPath), actual);
     }
 
+    @Test
+    void givenSchemeRelativeUrl_whenTransform_thenKeepSchemeRelativeUrl() throws URLTransformationException {
+        RoutedServices routes = buildRoutedServices(
+            new RoutedService(SERVICE_ID, "api", "/api"),
+            new RoutedService(SERVICE_ID, "api/v1", "/")
+        );
+        String actual = transformService.transformURL(ServiceType.API, SERVICE_ID, "//localhost:8080/api", routes, false);
+        assertEquals("//localhost:10010/service/api", actual);
+    }
+
     @ParameterizedTest
     @CsvSource({
         "https://localhost:8080/,WS,ws,'/'",
@@ -105,7 +115,7 @@ class TransformServiceTest {
 
         String actual = transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routes, true);
 
-        assertEquals("https://localhost/service/ui", actual);
+        assertEquals("https://localhost:10010/service/ui", actual);
     }
 
     @Test
