@@ -23,6 +23,10 @@ services:
           apiml:
               enableUrlEncodedCharacters: true
               headersToIgnore: Origin
+              service:
+                scheme: ${ZOSMF_SCHEME}
+                nonSecurePortEnabled: ${ZOSMF_NON_SECURE_PORT_ENABLED:-false}
+                securePortEnabled: ${ZOSMF_SECURE_PORT_ENABLED:-true}
 
     - serviceId: ibmzosmf
       title: IBM z/OSMF
