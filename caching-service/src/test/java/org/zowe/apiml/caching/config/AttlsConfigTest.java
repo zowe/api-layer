@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 @ActiveProfiles("AttlsConfigTestCachingService")
 @TestPropertySource(
     properties = {
-        "server.attls.enabled=true",
+        "server.attlsServer.enabled=true",
         "server.ssl.enabled=false"
     }
 )

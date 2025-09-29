@@ -56,7 +56,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "server.attls.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "server.attlsServer.enabled", havingValue = "true")
 public class AttlsHttpHandler implements BeanPostProcessor {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();

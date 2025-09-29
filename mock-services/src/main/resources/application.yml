@@ -1,3 +1,10 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
+logging:
+    level:
+        ROOT: INFO
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
 spring:
     application:
         name: Mock services
@@ -42,14 +49,16 @@ zss:
             "[zoweson@zowe.com]": USER
 
 ---
-spring:
-    profiles: attls
+spring.config.activate.on-profile: attlsServer
 
 server:
     attls:
         enabled: true
     ssl:
         enabled: false
+
+---
+spring.config.activate.on-profile: attlsClient
 apiml:
     service:
         scheme: http

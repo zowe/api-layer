@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 logging:
     level:
         ROOT: INFO
@@ -340,13 +343,10 @@ logbackServiceName: ZWEAGW1
 
 ---
 spring:
-    profiles: attls
+    profiles: attlsServer
 
 server:
-    internal:
-        ssl:
-            enabled: false
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
@@ -357,6 +357,20 @@ apiml:
     service:
         corsEnabled: true
         scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
+apiml:
+    service:
+        discoveryServiceUrls: http://localhost:10011/eureka/
+
 eureka:
     instance:
         metadata-map:

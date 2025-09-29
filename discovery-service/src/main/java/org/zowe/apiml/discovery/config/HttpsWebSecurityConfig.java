@@ -48,7 +48,7 @@ import java.util.Collections;
 @RequiredArgsConstructor
 @EnableWebSecurity
 @EnableApimlAuth
-@Profile({"https", "attls"})
+@Profile({"https", "attlsServer"})
 public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
 
     private final HandlerInitializer handlerInitializer;
@@ -56,8 +56,8 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private final GatewayLoginProvider gatewayLoginProvider;
     private final GatewayTokenProvider gatewayTokenProvider;
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
 
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
@@ -104,12 +104,12 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
                 "/application/**",
                 "/*"
         )))
-                .authenticationProvider(gatewayLoginProvider)
-                .authenticationProvider(gatewayTokenProvider)
-                .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/**").authenticated())
-                .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
-        if (isAttlsEnabled) {
+            .authenticationProvider(gatewayLoginProvider)
+            .authenticationProvider(gatewayTokenProvider)
+            .authorizeHttpRequests(requests -> requests
+                .requestMatchers("/**").authenticated())
+            .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
+        if (isServerAttlsEnabled) {
             http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
         }
 
@@ -126,7 +126,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
             http.authorizeHttpRequests(requests -> requests
                     .anyRequest().authenticated()).x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
-            if (isAttlsEnabled) {
+            if (isServerAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
@@ -149,7 +149,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
             http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
                     .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
-            if (isAttlsEnabled) {
+            if (isServerAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }

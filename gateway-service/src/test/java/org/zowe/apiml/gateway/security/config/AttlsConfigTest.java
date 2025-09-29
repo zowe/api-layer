@@ -38,7 +38,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 @TestPropertySource(
     properties = {
         "server.internal.ssl.enabled=false",
-        "server.attls.enabled=true",
+        "server.attlsServer.enabled=true",
         "server.ssl.enabled=false",
         "server.service.scheme=http"
     }

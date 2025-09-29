@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 spring:
     config:
         useLegacyProcessing: true
@@ -80,7 +83,7 @@ apiml:
         id: apimediationlayer
         title: API Mediation Layer API
         description: The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.
-        version:  1.0.0
+        version: 1.0.0
         # Configuration to customize the style of Catalog UI
         customStyle:
             logo:
@@ -234,10 +237,10 @@ spring:
 
 ---
 spring:
-    profiles: attls
+    profiles: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
@@ -255,9 +258,28 @@ eureka:
                     - apiId: zowe.apiml.apicatalog
                       version: 1.0.0
                       gatewayUrl: api/v1
-                      swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
-apiml:
-    service:
-        scheme: http
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
+---
+spring:
+    profiles: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
+eureka:
+    instance:
+        securePort: 0
         nonSecurePortEnabled: true
         securePortEnabled: false
+        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/apicatalog/application/health
+        metadata-map:
+            apiml:
+                corsEnabled: true
+                corsAllowedOrigins: https://${apiml.service.hostname}:${apiml.service.port},${apiml.service.externalUrl}
+                apiInfo:
+                    -   apiId: zowe.apiml.apicatalog
+                        version: 1.0.0
+                        gatewayUrl: api/v1
+                        swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/apicatalog/v3/api-docs
+

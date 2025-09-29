@@ -111,8 +111,8 @@ public class NewSecurityConfiguration {
     private final AuthSourceService authSourceService;
     private final AuthExceptionHandler authExceptionHandler;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
 
     @Value("${apiml.metrics.enabled:false}")
     private boolean isMetricsEnabled;
@@ -519,7 +519,7 @@ public class NewSecurityConfiguration {
                         .anyRequest().authenticated())
                         .logout(logout -> logout.disable());  // logout filter in this chain not needed
 
-                if (isAttlsEnabled) {
+                if (isServerAttlsEnabled) {
                     http.x509(withDefaults())
                             // filter out API ML certificate
                             .addFilterBefore(reversedCategorizeCertFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
@@ -645,7 +645,7 @@ public class NewSecurityConfiguration {
      * Common configuration for all filterchains
      */
     protected HttpSecurity baseConfigure(HttpSecurity http) throws Exception {
-        if (isAttlsEnabled) {
+        if (isServerAttlsEnabled) {
             http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
             http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
         }
