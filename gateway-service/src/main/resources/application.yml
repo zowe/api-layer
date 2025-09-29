@@ -68,12 +68,6 @@ spring:
                             frame-options: sameorigin
     application:
         name: gateway
-    security:
-        oauth2:
-            client:
-                registration:
-                    okta:
-                        redirectUri: "{baseUrl}/gateway/{action}/oauth2/code/{registrationId}"
     main:
         allow-circular-references: true
         banner-mode: ${apiml.banner:"off"}
@@ -200,7 +194,6 @@ management:
                 include: health,info,gateway
 ---
 spring.config.activate.on-profile: wiretap
-
 spring:
     cloud:
         gateway:
