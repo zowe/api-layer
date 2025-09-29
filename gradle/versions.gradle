@@ -33,7 +33,7 @@ dependencyResolutionManagement {
             version('caffeine', '2.9.3')
             version('commonsCodec', '1.17.2')
             version('commonsConfiguration', '1.10')
-            version('commonsLang3', '3.18.0')
+            version('commonsLang3', '3.19.0')
             version('commonsLogging', '1.3.5')
             version('commonsText', '1.12.0')
             version('commonsIo', '2.16.1')
@@ -107,6 +107,7 @@ dependencyResolutionManagement {
             version('openApiDiff', '2.0.1')
             version('ow2asm', '9.7.1')
             version('picocli', '4.7.7')
+            version('protostream', '4.4.5.Final')
 
             // version 2.4 has a breaking change, ie. missing DefaultClientConfigImpl
             version('ribbon', '2.3.0')
@@ -338,6 +339,7 @@ dependencyResolutionManagement {
             library('ow2asm', 'org.ow2.asm', 'asm').versionRef('ow2asm')
             library('picocli', 'info.picocli', 'picocli').versionRef('picocli')
             library('picocliCodegen', 'info.picocli', 'picocli-codegen').versionRef('picocli')
+            library('protostream', 'org.infinispan.protostream', 'protostream').versionRef('protostream')
             library('reactor', 'io.projectreactor', 'reactor-core').versionRef('reactor')
             library('reactorTest', 'io.projectreactor', 'reactor-test').versionRef('reactor')
             library('rhino', 'org.mozilla', 'rhino').versionRef('rhino')
