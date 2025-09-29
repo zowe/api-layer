@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 eureka:
     instance:
         instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
@@ -115,17 +118,32 @@ logging:
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
 
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
 
     service:
         scheme: http
+    apiml:
+        service:
+            corsEnabled: true
+            scheme: http
+            nonSecurePortEnabled: true
+            securePortEnabled: false
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
 apiml:
     service:
-        corsEnabled: true
-        scheme: http
+        discoveryServiceUrls: http://localhost:10011/eureka/
+
+

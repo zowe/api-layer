@@ -45,8 +45,8 @@ public class HttpConfig {
 
     private static final char[] KEYRING_PASSWORD = "password".toCharArray();
 
-    @Value("${server.attls.enabled:false}")
-    private boolean attlsEnabled;
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
     @Value("${server.ssl.protocol:TLSv1.2}")
     private String protocol;
     @Value("${apiml.httpclient.ssl.enabled-protocols:TLSv1.2,TLSv1.3}")
@@ -297,7 +297,7 @@ public class HttpConfig {
 
     @Bean
     public Supplier<EurekaJerseyClientBuilder> eurekaJerseyClientBuilder() {
-        return () -> factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId, attlsEnabled);
+        return () -> factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId, isClientAttlsEnabled);
     }
 
 }

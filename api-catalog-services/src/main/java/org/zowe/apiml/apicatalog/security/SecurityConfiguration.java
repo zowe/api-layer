@@ -77,8 +77,8 @@ public class SecurityConfiguration {
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
 
     @Value("${apiml.service.internalProtocol:https}") // Based on AT-TLS
     private String internalProtocol;
@@ -118,7 +118,7 @@ public class SecurityConfiguration {
                 .authenticationProvider(new CertificateAuthenticationProvider());
 
             if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
-                if (isAttlsEnabled) {
+                if (isServerAttlsEnabled) {
                     http.x509(x509 -> x509
                             .userDetailsService(x509UserDetailsService()))
                             .addFilterBefore(reversedCategorizeCertFilter(), X509AuthenticationFilter.class)
@@ -189,7 +189,7 @@ public class SecurityConfiguration {
 
             http.authorizeHttpRequests(requests -> requests.requestMatchers("/application/**").authenticated());
 
-            if (isAttlsEnabled) {
+            if (isServerAttlsEnabled) {
                 http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
             }
             return http.build();

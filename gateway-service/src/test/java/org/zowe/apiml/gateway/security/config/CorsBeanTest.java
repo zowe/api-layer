@@ -45,7 +45,7 @@ class CorsBeanTest {
         @Test
         void whenGetDefaultOrigins_thenAllowHttps() throws URISyntaxException {
             CorsBeans corsBeans = new CorsBeans(new ZuulProperties());
-            when(environment.getActiveProfiles()).thenReturn(new String[]{"attls"});
+            when(environment.getActiveProfiles()).thenReturn(new String[]{"attlsClient"});
 
             List<String> allowedOrigins = corsBeans.getDefaultAllowedOrigins(environment, "https://dvipahost:10010", "lparhost", 10010);
             assertEquals(2, allowedOrigins.size());
