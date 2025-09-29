@@ -1,7 +1,7 @@
 # Static definition for z/OSMF
 #
 # Once configured you can access z/OSMF via the API gateway:
-# curl -k -X GET -H "X-CSRF-ZOSMF-HEADER: *" https://${ZWE_zowe_externalDomains_0}:${GATEWAY_PORT}/zosmf/api/v1/info
+# curl -k -X GET -H "X-CSRF-ZOSMF-HEADER: *" https://${ZWE_zowe_externalDomains_0}:${GATEWAY_PORT}/ibmzosmf/api/v1/info
 #
 services:
     - serviceId: ibmzosmf
