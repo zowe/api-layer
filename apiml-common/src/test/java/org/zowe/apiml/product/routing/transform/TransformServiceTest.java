@@ -28,293 +28,192 @@ class TransformServiceTest {
     private static final String UI_PREFIX = "ui";
     private static final String API_PREFIX = "api";
     private static final String WS_PREFIX = "ws";
-
     private static final String SERVICE_ID = "service";
 
     private GatewayClient gatewayClient;
+    private TransformService transformService;
 
     @BeforeEach
     void setup() {
-        ServiceAddress gatewayConfigProperties = ServiceAddress.builder()
+        ServiceAddress gatewayConfig = ServiceAddress.builder()
             .scheme("https")
-            .hostname("localhost")
+            .hostname("localhost:10010")
             .build();
-        gatewayClient = new GatewayClient(gatewayConfigProperties);
+        gatewayClient = new GatewayClient(gatewayConfig);
+        transformService = new TransformService(gatewayClient);
     }
 
-    @Test
-    void givenHomePageAndUIRoute_whenTransform_thenUseNewUrl() throws URLTransformationException {
-        String url = "https://localhost:8080/ui";
-
+    private RoutedServices buildRoutedServices(RoutedService... routes) {
         RoutedServices routedServices = new RoutedServices();
-        RoutedService routedService1 = new RoutedService(SERVICE_ID, UI_PREFIX, "/ui");
-        RoutedService routedService2 = new RoutedService(SERVICE_ID, "api/v1", "/");
-        routedServices.addRoutedService(routedService1);
-        routedServices.addRoutedService(routedService2);
+        for (RoutedService route : routes) {
+            routedServices.addRoutedService(route);
+        }
+        return routedServices;
+    }
 
-        TransformService transformService = new TransformService(gatewayClient);
-        String actualUrl = transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices, false);
-
-        String expectedUrl = String.format("%s://%s/%s/%s",
+    private String expectedUrl(String serviceId, String prefix, String path) {
+        return String.format("%s://%s/%s/%s%s",
             gatewayClient.getGatewayConfigProperties().getScheme(),
             gatewayClient.getGatewayConfigProperties().getHostname(),
-            SERVICE_ID,
-            UI_PREFIX);
-        assertEquals(expectedUrl, actualUrl);
+            serviceId,
+            prefix,
+            path == null ? "" : path
+        );
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "https://localhost:8080/ui,UI,ui,''",
+        "https://localhost:8080/ws,WS,ws,''",
+        "https://localhost:8080/api,API,api,''",
+        "https://locahost:8080/ui/service/login.do?action=secure,UI,ui,'/login.do?action=secure'"
+    })
+    void givenValidRoutes_whenTransform_thenReturnExpectedUrl(
+        String url, ServiceType type, String prefix, String extraPath
+    ) throws URLTransformationException {
+        RoutedServices routes = buildRoutedServices(
+            new RoutedService(SERVICE_ID, prefix, url.contains("/ui/service") ? "/ui/service" : "/" + prefix),
+            new RoutedService(SERVICE_ID, "api/v1", "/")
+        );
+
+        String actual = transformService.transformURL(type, SERVICE_ID, url, routes, false);
+        assertEquals(expectedUrl(SERVICE_ID, prefix, extraPath), actual);
     }
 
     @Test
-    void givenHomePageWithAttlsEnabled_whenTransform_thenUseNewUrlWithHttps() throws URLTransformationException {
+    void givenSchemeRelativeUrl_whenTransform_thenKeepSchemeRelativeUrl() throws URLTransformationException {
+        RoutedServices routes = buildRoutedServices(
+            new RoutedService(SERVICE_ID, "api", "/api"),
+            new RoutedService(SERVICE_ID, "api/v1", "/")
+        );
+        String actual = transformService.transformURL(ServiceType.API, SERVICE_ID, "//localhost:8080/api", routes, false);
+        assertEquals("//localhost:10010/service/api", actual);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "https://localhost:8080/,WS,ws,'/'",
+        "https://locahost:8080/test,UI,ui,'/test'",
+    })
+    void givenMissingRoutes_whenTransform_thenThrow(
+        String url, ServiceType type, String prefix, String extraPath
+    ) {
+        RoutedServices routes = buildRoutedServices(
+            new RoutedService(SERVICE_ID, prefix, url.contains("/ui/service") ? "/ui/service" : "/" + prefix),
+            new RoutedService(SERVICE_ID, "api/v1", "/")
+        );
+        assertThrows(URLTransformationException.class, () -> transformService.transformURL(type, SERVICE_ID, url, routes, false));
+    }
+
+    @Test
+    void givenHttpUrlAndAttlsEnabled_whenTransform_thenForceHttps() throws URLTransformationException {
         String url = "http://localhost:8080/ui";
-        RoutedServices routedServices = new RoutedServices();
-        RoutedService routedService1 = new RoutedService(SERVICE_ID, UI_PREFIX, "/ui");
-        RoutedService routedService2 = new RoutedService(SERVICE_ID, "api/v1", "/");
-        routedServices.addRoutedService(routedService1);
-        routedServices.addRoutedService(routedService2);
+        RoutedServices routes = buildRoutedServices(
+            new RoutedService(SERVICE_ID, UI_PREFIX, "/ui"),
+            new RoutedService(SERVICE_ID, "api/v1", "/")
+        );
 
-        TransformService transformService = new TransformService(gatewayClient);
-        String actualUrl = transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices, true);
+        String actual = transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routes, true);
 
-        String expectedUrl = String.format("%s://%s/%s/%s",
-            "https",
-            gatewayClient.getGatewayConfigProperties().getHostname(),
-            SERVICE_ID,
-            UI_PREFIX);
-        assertEquals(expectedUrl, actualUrl);
+        assertEquals("https://localhost:10010/service/ui", actual);
     }
 
     @Test
-    void givenHomePage_whenRouteNotFound_thenThrowException() {
+    void givenRouteNotFound_whenTransform_thenThrowException() {
         String url = "https://localhost:8080/u";
+        RoutedServices routes = buildRoutedServices(
+            new RoutedService(SERVICE_ID, UI_PREFIX, "/ui"),
+            new RoutedService(SERVICE_ID, "api/v1", "/")
+        );
 
-        RoutedServices routedServices = new RoutedServices();
-        RoutedService routedService1 = new RoutedService(SERVICE_ID, UI_PREFIX, "/ui");
-        RoutedService routedService2 = new RoutedService(SERVICE_ID, "api/v1", "/");
-        routedServices.addRoutedService(routedService1);
-        routedServices.addRoutedService(routedService2);
+        URLTransformationException ex = assertThrows(URLTransformationException.class,
+            () -> transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routes, false));
 
-        TransformService transformService = new TransformService(gatewayClient);
-
-        Exception exception = assertThrows(URLTransformationException.class, () -> {
-            transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices, false);
-        });
-        assertEquals("Not able to select route for url https://localhost:8080/u of the service service. Original url used.", exception.getMessage());
+        assertEquals("Not able to select route for url https://localhost:8080/u of the service service. Original url used.",
+            ex.getMessage());
     }
 
     @Test
-    void givenHomePageAndWSRoute_whenTransform_thenUseNewUrl() throws URLTransformationException {
-        String url = "https://localhost:8080/ws";
-
-        RoutedServices routedServices = new RoutedServices();
-        RoutedService routedService1 = new RoutedService(SERVICE_ID, WS_PREFIX, "/ws");
-        RoutedService routedService2 = new RoutedService(SERVICE_ID, "api/v1", "/");
-        routedServices.addRoutedService(routedService1);
-        routedServices.addRoutedService(routedService2);
-
-        TransformService transformService = new TransformService(gatewayClient);
-        String actualUrl = transformService.transformURL(ServiceType.WS, SERVICE_ID, url, routedServices, false);
-
-        String expectedUrl = String.format("%s://%s/%s/%s",
-            gatewayClient.getGatewayConfigProperties().getScheme(),
-            gatewayClient.getGatewayConfigProperties().getHostname(),
-            SERVICE_ID,
-            WS_PREFIX);
-        assertEquals(expectedUrl, actualUrl);
-    }
-
-    @Test
-    void givenHomePageAndAPIRoute_whenTransform_thenUseNewUrl() throws URLTransformationException {
-        String url = "https://localhost:8080/api";
-
-        RoutedServices routedServices = new RoutedServices();
-        RoutedService routedService1 = new RoutedService(SERVICE_ID, API_PREFIX, "/api");
-        RoutedService routedService2 = new RoutedService(SERVICE_ID, "api/v1", "/");
-        routedServices.addRoutedService(routedService1);
-        routedServices.addRoutedService(routedService2);
-
-        TransformService transformService = new TransformService(gatewayClient);
-        String actualUrl = transformService.transformURL(ServiceType.API, SERVICE_ID, url, routedServices, false);
-
-        String expectedUrl = String.format("%s://%s/%s/%s",
-            gatewayClient.getGatewayConfigProperties().getScheme(),
-            gatewayClient.getGatewayConfigProperties().getHostname(),
-            SERVICE_ID,
-            API_PREFIX);
-        assertEquals(expectedUrl, actualUrl);
-    }
-
-
-    @Test
-    void givenInvalidHomePage_thenThrowException() {
+    void givenInvalidUrl_whenTransform_thenThrowException() {
         String url = "https:localhost:8080/wss";
+        TransformService service = new TransformService(gatewayClient);
 
-        TransformService transformService = new TransformService(gatewayClient);
+        URLTransformationException ex = assertThrows(URLTransformationException.class,
+            () -> service.transformURL(null, null, url, null, false));
 
-        Exception exception = assertThrows(URLTransformationException.class, () -> {
-            transformService.transformURL(null, null, url, null, false);
-        });
-        assertEquals("The URI " + url + " is not valid.", exception.getMessage());
+        assertEquals("The URI " + url + " is not valid.", ex.getMessage());
     }
 
     @Test
-    void givenEmptyGatewayClient_thenThrowException() {
+    void givenEmptyGatewayClient_whenTransform_thenThrowException() {
+        GatewayClient emptyClient = new GatewayClient(null);
+        TransformService service = new TransformService(emptyClient);
+
+        URLTransformationException ex = assertThrows(URLTransformationException.class,
+            () -> service.transformURL(null, null, "https://localhost:8080/wss", null, false));
+
+        assertEquals("Gateway not found yet, transform service cannot perform the request", ex.getMessage());
+    }
+
+    @Test
+    void givenInvalidPath_whenTransform_thenThrowException() {
         String url = "https://localhost:8080/wss";
+        RoutedServices routes = buildRoutedServices(
+            new RoutedService(SERVICE_ID, WS_PREFIX, "/ws"),
+            new RoutedService(SERVICE_ID, "api/v1", "/")
+        );
 
-        GatewayClient emptyGatewayClient = new GatewayClient(null);
-        TransformService transformService = new TransformService(emptyGatewayClient);
+        URLTransformationException ex = assertThrows(URLTransformationException.class,
+            () -> transformService.transformURL(ServiceType.WS, SERVICE_ID, url, routes, false));
 
-        Exception exception = assertThrows(URLTransformationException.class, () -> {
-            transformService.transformURL(null, null, url, null, false);
-        });
-        assertEquals("Gateway not found yet, transform service cannot perform the request", exception.getMessage());
+        assertEquals("The path /wss of the service URL https://localhost:8080/wss is not valid.", ex.getMessage());
     }
 
+    @ParameterizedTest
+    @CsvSource({
+        // url, routePath, expected
+        "https://localhost:8080/service/api/v1,/service/api,/service/api/{api-version}",
+        "https://localhost:8080/service/api/v1,/service/api/v1,/service/api/{api-version}"
+    })
+    void givenApiRoute_whenRetrieveApiBasePath_thenReturnExpected(
+        String url, String routePath, String expected
+    ) throws URLTransformationException {
+        RoutedServices routes = buildRoutedServices(
+            new RoutedService(SERVICE_ID, API_PREFIX + "/v1", routePath)
+        );
 
-    @Test
-    void givenHomePage_whenPathIsNotValid_thenThrowException() {
-        String url = "https://localhost:8080/wss";
+        TransformService service = new TransformService(null);
+        String actual = service.retrieveApiBasePath(SERVICE_ID, url, routes);
 
-        RoutedServices routedServices = new RoutedServices();
-        RoutedService routedService1 = new RoutedService(SERVICE_ID, WS_PREFIX, "/ws");
-        RoutedService routedService2 = new RoutedService(SERVICE_ID, "api/v1", "/");
-        routedServices.addRoutedService(routedService1);
-        routedServices.addRoutedService(routedService2);
-
-        TransformService transformService = new TransformService(gatewayClient);
-
-        Exception exception = assertThrows(URLTransformationException.class, () -> {
-            transformService.transformURL(ServiceType.WS, SERVICE_ID, url, routedServices, false);
-        });
-        assertEquals("The path /wss of the service URL https://localhost:8080/wss is not valid.", exception.getMessage());
-    }
-
-    @Test
-    void givenEmptyPathInHomePage_whenTransform_thenUseNewUrl() throws URLTransformationException {
-        String url = "https://localhost:8080/";
-
-        RoutedServices routedServices = new RoutedServices();
-        RoutedService routedService1 = new RoutedService(SERVICE_ID, WS_PREFIX, "/");
-        RoutedService routedService2 = new RoutedService(SERVICE_ID, "api/v1", "/");
-        routedServices.addRoutedService(routedService1);
-        routedServices.addRoutedService(routedService2);
-
-        TransformService transformService = new TransformService(gatewayClient);
-
-        String actualUrl = transformService.transformURL(ServiceType.WS, SERVICE_ID, url, routedServices, false);
-        String expectedUrl = String.format("%s://%s/%s/%s%s",
-            gatewayClient.getGatewayConfigProperties().getScheme(),
-            gatewayClient.getGatewayConfigProperties().getHostname(),
-            SERVICE_ID,
-            WS_PREFIX,
-            "/");
-        assertEquals(expectedUrl, actualUrl);
+        assertEquals(expected, actual);
     }
 
     @Test
-    void givenServiceUrl_whenItsRoot_thenKeepHomePagePathSame() throws URLTransformationException {
-        String url = "https://locahost:8080/test";
-        RoutedServices routedServices = new RoutedServices();
-        RoutedService routedService1 = new RoutedService(SERVICE_ID, UI_PREFIX, "/");
-        RoutedService routedService2 = new RoutedService(SERVICE_ID, "api/v1", "/");
-        routedServices.addRoutedService(routedService1);
-        routedServices.addRoutedService(routedService2);
-
-        TransformService transformService = new TransformService(gatewayClient);
-
-        String actualUrl = transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices, false);
-        String expectedUrl = String.format("%s://%s/%s/%s%s",
-            gatewayClient.getGatewayConfigProperties().getScheme(),
-            gatewayClient.getGatewayConfigProperties().getHostname(),
-            SERVICE_ID,
-            UI_PREFIX,
-            "/test");
-        assertEquals(expectedUrl, actualUrl);
-    }
-
-    @Test
-    void givenUrlContainingPathAndQuery_whenTransform_thenKeepQueryPartInTheNewUrl() throws URLTransformationException {
-        String url = "https://locahost:8080/ui/service/login.do?action=secure";
-        String path = "/login.do?action=secure";
-        RoutedServices routedServices = new RoutedServices();
-        RoutedService routedService1 = new RoutedService(SERVICE_ID, UI_PREFIX, "/ui/service");
-        RoutedService routedService2 = new RoutedService(SERVICE_ID, "api/v1", "/");
-        routedServices.addRoutedService(routedService1);
-        routedServices.addRoutedService(routedService2);
-
-        TransformService transformService = new TransformService(gatewayClient);
-
-        String actualUrl = transformService.transformURL(ServiceType.UI, SERVICE_ID, url, routedServices, false);
-        String expectedUrl = String.format("%s://%s/%s/%s%s",
-            gatewayClient.getGatewayConfigProperties().getScheme(),
-            gatewayClient.getGatewayConfigProperties().getHostname(),
-            SERVICE_ID,
-            UI_PREFIX,
-            path);
-        assertEquals(expectedUrl, actualUrl);
-    }
-
-    @Test
-    void givenServiceAndApiRoute_whenGetApiBasePath_thenReturnApiPath() throws URLTransformationException {
-        String url = "https://localhost:8080/" + SERVICE_ID + "/" + API_PREFIX + "/v1";
-
-        String serviceUrl = String.format("/%s/%s", SERVICE_ID, API_PREFIX);
-        RoutedServices routedServices = new RoutedServices();
-        RoutedService routedService = new RoutedService(SERVICE_ID, API_PREFIX, serviceUrl);
-        routedServices.addRoutedService(routedService);
-
-        TransformService transformService = new TransformService(null);
-
-        String actualPath = transformService.retrieveApiBasePath(SERVICE_ID, url, routedServices);
-        String expectedPath = String.format("/%s/%s",
-            SERVICE_ID,
-            API_PREFIX);
-        assertEquals(expectedPath, actualPath);
-    }
-
-    @Test
-    void givenServiceAndApiRouteWithVersion_whenGetApiBasePath_thenReturnApiPath() throws URLTransformationException {
-        String url = "https://localhost:8080/" + SERVICE_ID + "/" + API_PREFIX + "/v1";
-
-        String serviceUrl = String.format("/%s/%s/%s", SERVICE_ID, API_PREFIX, "v1");
-        RoutedServices routedServices = new RoutedServices();
-        RoutedService routedService = new RoutedService(SERVICE_ID, API_PREFIX + "/v1", serviceUrl);
-        routedServices.addRoutedService(routedService);
-
-        TransformService transformService = new TransformService(null);
-
-        String actualPath = transformService.retrieveApiBasePath(SERVICE_ID, url, routedServices);
-        String expectedPath = String.format("/%s/%s/%s", SERVICE_ID, API_PREFIX, "{api-version}");
-        assertEquals(expectedPath, actualPath);
-    }
-
-    @Test
-    void givenInvalidUriPath_whenGetApiBasePath_thenThrowError() {
+    void givenInvalidUrl_whenRetrieveApiBasePath_thenThrowException() {
         String url = "https:localhost:8080/wss";
+        TransformService service = new TransformService(null);
 
-        TransformService transformService = new TransformService(null);
+        URLTransformationException ex = assertThrows(URLTransformationException.class,
+            () -> service.retrieveApiBasePath(null, url, null));
 
-        Exception exception = assertThrows(URLTransformationException.class, () -> {
-            transformService.retrieveApiBasePath(null, url, null);
-        });
-        assertEquals("The URI " + url + " is not valid.", exception.getMessage());
+        assertEquals("The URI " + url + " is not valid.", ex.getMessage());
     }
 
     @Test
-    void givenNoRoutes_whenGetApiBasePath_thenThrowError() {
+    void givenNoMatchingRoute_whenRetrieveApiBasePath_thenThrowException() {
         String url = "https://localhost:8080/u";
+        RoutedServices routes = buildRoutedServices(
+            new RoutedService(SERVICE_ID, UI_PREFIX, "/ui"),
+            new RoutedService(SERVICE_ID, "api/v1", "/api")
+        );
 
-        RoutedServices routedServices = new RoutedServices();
-        RoutedService routedService1 = new RoutedService(SERVICE_ID, UI_PREFIX, "/ui");
-        RoutedService routedService2 = new RoutedService(SERVICE_ID, "api/v1", "/api");
-        routedServices.addRoutedService(routedService1);
-        routedServices.addRoutedService(routedService2);
+        TransformService service = new TransformService(null);
 
-        TransformService transformService = new TransformService(null);
+        URLTransformationException ex = assertThrows(URLTransformationException.class,
+            () -> service.retrieveApiBasePath(SERVICE_ID, url, routes));
 
-        Exception exception = assertThrows(URLTransformationException.class, () -> {
-            transformService.retrieveApiBasePath(SERVICE_ID, url, routedServices);
-        });
-        assertEquals("Not able to select API base path for the service " + SERVICE_ID + ". Original url used.", exception.getMessage());
+        assertEquals("Not able to select API base path for the service " + SERVICE_ID + ". Original url used.",
+            ex.getMessage());
     }
 
     @ParameterizedTest
@@ -324,21 +223,42 @@ class TransformServiceTest {
         "srv,wrong/url,api/v1,api/v1,",
         "srv,apiV1/home/page.html,api/v1,apiV1,/srv/api/{api-version}"
     })
-    void testRetrieveApiBasePath(String serviceId, String url, String gatewayUrl, String serviceUrl, String expectedBasePath) {
-        RoutedService route = new RoutedService("api", gatewayUrl, serviceUrl);
+    void testRetrieveApiBasePathParameterized(
+        String serviceId, String url, String gatewayUrl, String serviceUrl, String expectedBasePath
+    ) {
+        RoutedServices routes = buildRoutedServices(
+            new RoutedService("api", gatewayUrl, serviceUrl)
+        );
 
-        RoutedServices routedServices = new RoutedServices();
-        routedServices.addRoutedService(route);
-
-        TransformService transformService = new TransformService(null);
+        TransformService service = new TransformService(null);
         String basePath;
         try {
-            basePath = transformService.retrieveApiBasePath(serviceId, url, routedServices);
+            basePath = service.retrieveApiBasePath(serviceId, url, routes);
         } catch (URLTransformationException e) {
             basePath = null;
         }
 
         assertEquals(expectedBasePath, basePath);
+    }
+
+    @Test
+    void givenLocationUriNotMatchingServiceRoutes_whenTransformAbsoluteURL_thenThrowException() {
+
+        RoutedService route = new RoutedService("dcpassticket", "api", "/api");
+
+        var ex = assertThrows(URLTransformationException.class, () ->
+            transformService.transformAbsoluteURL("dcpassticket", "/apisome-path", route));
+
+        assertEquals("The path /apisome-path of the service dcpassticket is not valid.", ex.getMessage());
+    }
+
+    @Test
+    void givenMatchingLocation_whenTransformAbsoluteURL_thenReturnAbsoluteURL() throws URLTransformationException {
+
+        RoutedService route = new RoutedService("dcpassticket", "api", "/api");
+
+        var result = transformService.transformAbsoluteURL("dcpassticket", "/api/v1/some-path", route);
+        assertEquals("/dcpassticket/api/v1/some-path", result);
     }
 
 }

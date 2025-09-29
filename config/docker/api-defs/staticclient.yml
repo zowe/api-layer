@@ -216,6 +216,26 @@ services:
             gatewayUrl: api/v1
             version: 1.0.0
 
+    - serviceId: redirectclient  # unique lowercase ID of the service
+      catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
+      title: Redirect client  # Title of the service in the API catalog
+      description: REST API in the mockservices to test redirect on a service without context path.
+      instanceBaseUrls:  # list of base URLs for each instance
+          - https://mock-services:10013/  # scheme://hostname:port/contextPath
+      homePageRelativeUrl: /api/v1 # Normally used for informational purposes for other services to use it as a landing page
+      statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
+      healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
+      routes:
+          - gatewayUrl: ui  # [api/ui/ws]/v{majorVersion}
+            serviceRelativeUrl: # relativePath that is added to baseUrl of an instance
+      authentication:
+          scheme: zosmf
+      apiInfo:
+          - apiId: zowe.apiml.redirectclient
+            gatewayUrl: api/v1
+            version: 1.0.0
+            swaggerUrl: https://mock-services:10013/zosmf/api/docs
+
 # Additional metadata that will be added to existing dynamically registered services:
 additionalServiceMetadata:
     - serviceId: staticclient  # The staticclient service metadata will be extended
