@@ -144,7 +144,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
             log.debug("Location header is empty");
             return Mono.empty();
         }
-
+        log.debug("Location header in response: {}", location);
         var locationUri = URI.create(location);
         var targetInstance = getInstance(locationUri, instance);
         if (isGateway(targetInstance)) {
