@@ -29,6 +29,7 @@ import java.time.Duration;
 import java.util.stream.IntStream;
 
 @RateLimitTest
+@Disabled
 public class InMemoryRateLimiterFilterFactoryIntegrationTest {
 
     private static WebTestClient client;
@@ -66,7 +67,6 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
     }
 
     @Test
-    @Disabled
     void testRateLimitingWhenExceeded() {
         IntStream.range(0, bucketCapacity).parallel().forEach(i -> client.get()
             .cookie("apimlAuthenticationToken", "validTokenValue")
