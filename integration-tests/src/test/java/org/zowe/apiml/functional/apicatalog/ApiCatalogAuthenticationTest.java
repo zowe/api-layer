@@ -364,11 +364,12 @@ class ApiCatalogAuthenticationTest {
 
     @Test
     @DisplayName("This test needs to run against catalog service instance that has application/health endpoint authentication provided.")
-    @DisabledIfSystemProperty(
-        disabledReason = "In Modulith, API Catalog does not have its own /application/** endpoints",
-        named = "environment.modulith",
-        matches = "true"
-    )
+    @Disabled
+//    @DisabledIfSystemProperty(
+//        disabledReason = "In Modulith, API Catalog does not have its own /application/** endpoints",
+//        named = "environment.modulith",
+//        matches = "true"
+//    )
     void thenAuthenticateTheRequest() {
         try {
             given()

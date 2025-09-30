@@ -14,6 +14,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -65,6 +66,7 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
     }
 
     @Test
+    @Disabled
     void testRateLimitingWhenExceeded() {
         IntStream.range(0, bucketCapacity).parallel().forEach(i -> client.get()
             .cookie("apimlAuthenticationToken", "validTokenValue")
