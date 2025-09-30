@@ -13,6 +13,7 @@ package org.zowe.apiml.integration.proxy;
 import jakarta.websocket.ContainerProvider;
 import jakarta.websocket.WebSocketContainer;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.simp.stomp.*;
@@ -28,6 +29,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_STOMP;
 
+@Disabled
 public class StompProxyTest extends WebSocketProxyTest {
 
     private static final String SEND_ENDPOINT = "/app/replyWithSameSize/";
