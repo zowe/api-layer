@@ -131,8 +131,10 @@
         "yaml": "1.10.2"
     },
     "overrides": {
+        "brace-expansion": "2.0.2",
         "nth-check": "2.1.1",
         "jsdom": "16.6.0",
+        "form-data": "3.0.4",
         "got": "12.1.0",
         "react-error-overlay": "6.0.11",
         "tough-cookie": "4.1.4",
@@ -145,9 +147,10 @@
         "dompurify": "3.2.7",
         "serve-static": "1.16.2",
         "body-parser": "1.20.3",
-        "axios": "1.8.4",
+        "axios": "1.12.2",
         "path-to-regexp": "1.9.0",
         "cookie": "0.7.2",
+        "sha.js": "2.4.12",
         "tar-fs": "2.1.4",
         "prismjs": "1.30.0",
         "@babel/helpers": "7.26.10",
