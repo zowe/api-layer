@@ -1,7 +1,4 @@
 dependencies {
-/*    api project(':common-service-core')
-    implementation libs.netty.reactor.http
-    implementation libs.apache.commons.lang3*/
     api libs.spring.boot.starter.web
     api libs.zowe.zos.utils
 

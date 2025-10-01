@@ -178,16 +178,16 @@ server:
 spring.config.activate.on-profile: attlsClient
 
 server:
-  attlsClient:
-    enabled: true
+    attlsClient:
+        enabled: true
 
 apiml:
     service:
         scheme: http
 
 eureka:
-  instance:
-    nonSecurePortEnabled: true
-    securePortEnabled: false
+    instance:
+        nonSecurePortEnabled: true
+        securePortEnabled: false
 
 

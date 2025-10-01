@@ -210,51 +210,52 @@ class ConnectionsConfigTest {
 
         }
 
+    }
+
+    @Nested
+    @SpringBootTest(
+        properties = {"apiml.service.corsEnabled=true"}
+    )
+    class GivenCorsEnabled {
+
         @Nested
-        @SpringBootTest(
-            properties = {"apiml.service.corsEnabled=true"}
-        )
-        class GivenCorsEnabled {
+        public class WhenCorsAllowedMethodsIsNotSet {
 
-            @Nested
-            public class WhenCorsAllowedMethodsIsNotSet {
+            @Autowired
+            private ConnectionsConfig connectionsConfig;
 
-                @Autowired
-                private ConnectionsConfig connectionsConfig;
+            @Test
+            void validateDefaultCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
+                CorsUtils corsUtils = connectionsConfig.corsUtils();
 
-                @Test
-                void validateDefaultCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
-                    CorsUtils corsUtils = connectionsConfig.corsUtils();
-
-                    Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
-                    field.setAccessible(true);
-                    List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
-                    assertEquals(7, corsAllowedMethods.size());
-                }
+                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
+                field.setAccessible(true);
+                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
+                assertEquals(7, corsAllowedMethods.size());
             }
+        }
 
-            @Nested
-            @TestPropertySource(properties = {
-                "apiml.service.corsAllowedMethods=GET,POST, PATCH"
-            })
-            @DirtiesContext
-            public class WhenCorsAllowedMethodsIsSet {
+        @Nested
+        @TestPropertySource(properties = {
+            "apiml.service.corsAllowedMethods=GET,POST, PATCH"
+        })
+        @DirtiesContext
+        public class WhenCorsAllowedMethodsIsSet {
 
-                @Autowired
-                private ConnectionsConfig connectionsConfig;
+            @Autowired
+            private ConnectionsConfig connectionsConfig;
 
-                @Test
-                void validateCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
-                    CorsUtils corsUtils = connectionsConfig.corsUtils();
+            @Test
+            void validateCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
+                CorsUtils corsUtils = connectionsConfig.corsUtils();
 
-                    Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
-                    field.setAccessible(true);
-                    List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
-                    assertEquals(3, corsAllowedMethods.size());
-                    assertEquals("GET", corsAllowedMethods.get(0));
-                    assertEquals("POST", corsAllowedMethods.get(1));
-                    assertEquals("PATCH", corsAllowedMethods.get(2));
-                }
+                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
+                field.setAccessible(true);
+                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
+                assertEquals(3, corsAllowedMethods.size());
+                assertEquals("GET", corsAllowedMethods.get(0));
+                assertEquals("POST", corsAllowedMethods.get(1));
+                assertEquals("PATCH", corsAllowedMethods.get(2));
             }
         }
     }
