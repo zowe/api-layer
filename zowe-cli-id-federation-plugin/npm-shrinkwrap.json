@@ -32,7 +32,7 @@
         "jest-environment-node-debug": "2.0.0",
         "jest-html-reporter": "3.7.0",
         "jest-junit": "15.0.0",
-        "jest-stare": "2.5.2",
+        "jest-stare": "2.5.3",
         "madge": "6.0.0",
         "ts-jest": "29.0.5",
         "ts-node": "10.9.2",
@@ -9691,9 +9691,9 @@
       }
     },
     "node_modules/jest-stare": {
-      "version": "2.5.2",
-      "resolved": "https://zowe.jfrog.io/artifactory/api/npm/npm-org/jest-stare/-/jest-stare-2.5.2.tgz",
-      "integrity": "sha512-dvxHXOsiJlvBi0n2dK9pz6RWFTdPB6njc2ZoMpyjmWI+aIL+X1W8OW5mTm1pkv/quy2ocKO/G+GsTe7Bv07xkQ==",
+      "version": "2.5.3",
+      "resolved": "https://zowe.jfrog.io/artifactory/api/npm/npm-org/jest-stare/-/jest-stare-2.5.3.tgz",
+      "integrity": "sha512-HXykqTNNxguOQZiWCEcUPC5HleaVngQysyyniG6LzoeBsM4dtq4YDw/JruS2ChfRBS/9PUcG04eAx6NdcbFDDg==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
@@ -9789,14 +9789,24 @@
       "dev": true,
       "license": "MIT"
     },
+    "node_modules/jest-stare/node_modules/diff": {
+      "version": "7.0.0",
+      "resolved": "https://zowe.jfrog.io/artifactory/api/npm/npm-org/diff/-/diff-7.0.0.tgz",
+      "integrity": "sha512-PJWHUb1RFevKCwaFA9RlG5tCd+FO5iRh9A8HEtkmBH2Li03iJriB6m6JIN4rGz3K3JLawI7/veA1xzRKP6ISBw==",
+      "dev": true,
+      "license": "BSD-3-Clause",
+      "engines": {
+        "node": ">=0.3.1"
+      }
+    },
     "node_modules/jest-stare/node_modules/diff2html": {
-      "version": "3.4.48",
-      "resolved": "https://zowe.jfrog.io/artifactory/api/npm/npm-org/diff2html/-/diff2html-3.4.48.tgz",
-      "integrity": "sha512-1lzNSg0G0VPKZPTyi4knzV2nAWTXBy/QaWCKzDto6iEIlcuOJEG0li4bElJfpHNz+pBqPu4AcC1i9ZCo9KMUOg==",
+      "version": "3.4.52",
+      "resolved": "https://zowe.jfrog.io/artifactory/api/npm/npm-org/diff2html/-/diff2html-3.4.52.tgz",
+      "integrity": "sha512-qhMg8/I3sZ4zm/6R/Kh0xd6qG6Vm86w6M+C9W+DuH1V8ACz+1cgEC8/k0ucjv6AGqZWzHm/8G1gh7IlrUqCMhg==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
-        "diff": "5.1.0",
+        "diff": "^7.0.0",
         "hogan.js": "3.0.2"
       },
       "engines": {
