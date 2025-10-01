@@ -13,7 +13,6 @@ package org.zowe.apiml.product.web;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl.EurekaJerseyClientBuilder;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.config.Registry;
@@ -59,41 +58,33 @@ public class HttpConfig implements InitializingBean {
     private String[] ciphers;
 
     @Value("${server.ssl.trustStore:#{null}}")
-    @Getter
     private String trustStore;
 
     @Value("${server.ssl.trustStorePassword:#{null}}")
-    @Getter
     private char[] trustStorePassword;
 
     @Value("${server.ssl.trustStoreType:PKCS12}")
-    @Getter
     private String trustStoreType;
 
     @Value("${server.ssl.keyAlias:#{null}}")
     private String keyAlias;
 
     @Value("${server.ssl.keyStore:#{null}}")
-    @Getter
     private String keyStore;
 
     @Value("${server.ssl.keyStorePassword:#{null}}")
-    @Getter
     private char[] keyStorePassword;
 
     @Value("${server.ssl.keyPassword:#{null}}")
     private char[] keyPassword;
 
     @Value("${server.ssl.keyStoreType:PKCS12}")
-    @Getter
     private String keyStoreType;
 
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
-    @Getter
     private boolean verifySslCertificatesOfServices;
 
     @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
-    @Getter
     private boolean nonStrictVerifySslCertificatesOfServices;
 
     @Value("${spring.application.name}")
