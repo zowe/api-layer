@@ -46,9 +46,9 @@ class AttlsConfigTest {
             assertThrows(IOException.class, () -> {
                 given()
                     .log().all()
-                    .when()
+                .when()
                     .get(getDiscoveryUriWithPath("/application/info"))
-                    .then()
+                .then()
                     .log().all();
             });
         }
@@ -61,9 +61,9 @@ class AttlsConfigTest {
             protocol = "http";
             given()
                 .log().all()
-                .when()
+            .when()
                 .get(getDiscoveryUriWithPath("/eureka/apps"))
-                .then()
+            .then()
                 .log().all()
                 .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR))
                 .body(containsString("Connection is not secure."))
@@ -93,9 +93,9 @@ class AttlsConfigTest {
             protocol = "http";
             given()
                 .log().all()
-                .when()
+            .when()
                 .get(getDiscoveryUriWithPath("/eureka/apps"))
-                .then()
+            .then()
                 .log().all()
                 .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR))
                 .body(containsString("Connection is not secure."))

@@ -193,8 +193,7 @@ hystrix.command.default.execution.timeout.enabled: false
 
 logbackServiceName: ZWEAAC1
 ---
-spring:
-    profiles: debug
+spring.config.activate.on-profile: debug
 
 management:
     endpoints:
@@ -217,8 +216,7 @@ logging:
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
 
 ---
-spring:
-    profiles: diag
+spring.config.activate.on-profile: diag
 
 management:
     endpoints:
@@ -230,14 +228,16 @@ management:
 
 ---
 spring:
-    profiles: dev
-    profiles.include:
-        - debug
-        - diag
+    config:
+        activate:
+            on-profile: dev
+    profiles:
+        include:
+            - debug
+            - diag
 
 ---
-spring:
-    profiles: attlsServer
+spring.config.activate.on-profile: attlsServer
 
 server:
     attlsServer:
@@ -260,8 +260,7 @@ eureka:
                       gatewayUrl: api/v1
                       swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
 ---
-spring:
-    profiles: attlsClient
+spring.config.activate.on-profile: attlsClient
 
 server:
     attlsClient:

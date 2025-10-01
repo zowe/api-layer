@@ -129,7 +129,7 @@ public class WebSecurity {
         return defaultCookieAttr(ResponseCookie.from(name, value)).build();
     }
 
-     /**
+    /**
      * Security chain for oauth2 client. To enable this chain, please refer to Zowe OIDC configuration.
      */
     @Bean
@@ -452,7 +452,7 @@ public class WebSecurity {
     @Bean
     @Primary
     @ConditionalOnProperty(name = "spring.cloud.gateway.x-forwarded.enabled", matchIfMissing = true)
-    XForwardedHeadersFilter xForwardedHeadersFilter(
+    public XForwardedHeadersFilter xForwardedHeadersFilter(
         @Value("${apiml.security.forwardHeader.trustedProxies:#{null}}") String trustedProxies,
         HttpsConfig httpsConfig,
         AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry

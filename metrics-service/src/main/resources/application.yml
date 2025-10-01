@@ -135,8 +135,7 @@ turbine:
     appConfig: apicatalog,cachingservice,gateway,discovery # lowercase serviceId
 
 ---
-spring:
-    profiles: debug
+spring.config.activate.on-profile: debug
 
 logging:
     level:
@@ -152,21 +151,22 @@ logging:
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
 
 ---
-spring:
-    profiles: diag
+spring.config.activate.on-profile: diag
 
 ---
 spring:
-    profiles: dev
-    profiles.include:
-        - debug
-        - diag
+    config:
+        activate:
+            on-profile: dev
+    profiles:
+        include:
+            - debug
+            - diag
 
 logbackServiceName: ZWEAMS1
 
 ---
-spring:
-    profiles: attlsServer
+spring.config.activate.on-profile: attlsServer
 
 server:
     attlsServer:
@@ -175,8 +175,7 @@ server:
         enabled: false
 
 ---
-spring:
-  profiles: attlsClient
+spring.config.activate.on-profile: attlsClient
 
 server:
   attlsClient:

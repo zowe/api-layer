@@ -26,6 +26,7 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
 
     private final String username;
     private final String token;
+    // TODO add the type if needed
 
     public TokenAuthentication(String token) {
         super(Collections.emptyList());

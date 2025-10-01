@@ -101,8 +101,8 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Order(3)
     public SecurityFilterChain basicAuthOrTokenFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
-                "/application/**",
-                "/*"
+            "/application/**",
+            "/*"
         )))
             .authenticationProvider(gatewayLoginProvider)
             .authenticationProvider(gatewayTokenProvider)
@@ -125,7 +125,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
         baseConfigure(http.securityMatcher("/eureka/**"));
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
             http.authorizeHttpRequests(requests -> requests
-                    .anyRequest().authenticated()).x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
+                .anyRequest().authenticated()).x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
             if (isServerAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
@@ -143,12 +143,12 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Order(1)
     public SecurityFilterChain basicAuthOrTokenOrCertFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatcher("/discovery/**"))
-                .authenticationProvider(gatewayLoginProvider)
-                .authenticationProvider(gatewayTokenProvider)
-                .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
+            .authenticationProvider(gatewayLoginProvider)
+            .authenticationProvider(gatewayTokenProvider)
+            .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
             http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
-                    .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
+                .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
             if (isServerAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);

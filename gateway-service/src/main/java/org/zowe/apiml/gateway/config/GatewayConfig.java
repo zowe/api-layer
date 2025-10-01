@@ -35,6 +35,8 @@ import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.gateway.GatewayConfigProperties;
 import org.zowe.apiml.product.routing.transform.TransformService;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Map;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
@@ -51,9 +53,26 @@ public class GatewayConfig {
     private final ConfigurableEnvironment env;
 
     @Bean
-    public GatewayConfigProperties getGatewayConfigProperties(@Value("${apiml.gateway.hostname}") String hostname,
-                                                              @Value("${apiml.service.port}") String port, @Value("${apiml.service.scheme}") String scheme) {
-        return GatewayConfigProperties.builder().scheme(scheme).hostname(hostname + ":" + port).build();
+    public GatewayConfigProperties getGatewayConfigProperties(
+        @Value("${apiml.service.externalUrl:#{null}}") String externalUrl,
+        @Value("${server.attlsServer.enabled:false}") boolean serverAttlsEnabled,
+        @Value("${server.attlsClient.enabled:false}") boolean clientAttlsEnabled,
+        @Value("${server.ssl.enabled:true}") boolean sslEnabled,
+        @Value("${apiml.gateway.hostname}") String hostname,
+        @Value("${apiml.service.port}") String port) throws URISyntaxException {
+
+        if (externalUrl != null) {
+            URI uri = new URI(externalUrl);
+            return GatewayConfigProperties.builder()
+                .scheme(clientAttlsEnabled ? "http" : uri.getScheme())
+                .hostname(uri.getHost() + ":" + uri.getPort())
+                .build();
+        }
+
+        return GatewayConfigProperties.builder()
+            .scheme(determineScheme(serverAttlsEnabled, clientAttlsEnabled, sslEnabled))
+            .hostname(hostname + ":" + port)
+            .build();
     }
 
     @Bean
@@ -173,5 +192,16 @@ public class GatewayConfig {
         } else {
             return resolver.getProperty("apiml.service.port");
         }
+    }
+
+    private String determineScheme(boolean serverAttlsEnabled, boolean clientAttlsEnabled, boolean sslEnabled) {
+        String scheme;
+        if (clientAttlsEnabled) {
+            scheme = "http";
+        } else {
+            scheme = serverAttlsEnabled || sslEnabled ? "https" : "http";
+        }
+
+        return scheme;
     }
 }

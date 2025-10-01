@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.acceptance;
+package org.zowe.apiml.cloudgatewayservice.acceptance;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -27,28 +27,25 @@ import org.mockito.Mock;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.zowe.apiml.filter.AttlsHttpHandler;
-import org.zowe.apiml.gateway.GatewayServiceApplication;
+import org.zowe.apiml.cloudgatewayservice.CloudGatewayServiceApplication;
+import org.zowe.apiml.cloudgatewayservice.attls.AttlsHttpHandler;
 import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
 
 import javax.net.ssl.SSLException;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.hc.core5.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @TestInstance(Lifecycle.PER_CLASS)
 class AttlsConfigTest {
@@ -58,10 +55,10 @@ class AttlsConfigTest {
     }
 
     @Nested
-    @ActiveProfiles({ "attlsServer", "attlsClient" })
+    @ActiveProfiles({"attlsServer", "attlsClient"})
     @DirtiesContext
     @SpringBootTest(
-        classes = GatewayServiceApplication.class,
+        classes = CloudGatewayServiceApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
     class GivenAttlsProfile {
@@ -78,7 +75,7 @@ class AttlsConfigTest {
         @Captor
         private ArgumentCaptor<LoggingEvent> loggingEventCaptor;
 
-        @MockitoBean
+        @MockBean
         private ApimlTomcatCustomizer apimlTomcatCustomizer;
 
         @Test
@@ -95,7 +92,7 @@ class AttlsConfigTest {
 
         @Test
         void requestFailsWithAttlsReasonWithHttp() {
-            var logger = (Logger) LoggerFactory.getLogger(AttlsHttpHandler.class);
+            Logger logger = (Logger) LoggerFactory.getLogger(AttlsHttpHandler.class);
             logger.addAppender(mockedAppender);
             logger.setLevel(Level.ERROR);
 
@@ -103,18 +100,18 @@ class AttlsConfigTest {
             doNothing().when(apimlTomcatCustomizer).customize(any());
 
             given()
-                    .log().all()
-                .when()
-                    .get(getGatewayUrlWithPath(hostname, port, "http", "application/version"))
-                .then()
-                    .log().all()
-                    .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-                    .body(containsString("org.zowe.apiml.common.internalServerError"));
+                .log().all()
+            .when()
+                .get(getGatewayUrlWithPath(hostname, port, "http", "application/version"))
+            .then()
+                .log().all()
+                .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+                .body(containsString("org.zowe.apiml.common.internalServerError"));
 
-                verify(mockedAppender, atLeast(1)).doAppend(loggingEventCaptor.capture());
-                assertThat(loggingEventCaptor.getAllValues())
-                    .filteredOn(element -> element.getMessage().contains("Cannot verify AT-TLS status"))
-                    .isNotEmpty();
+            verify(mockedAppender, atLeast(1)).doAppend(loggingEventCaptor.capture());
+            assertThat(loggingEventCaptor.getAllValues())
+                .filteredOn(element -> element.getMessage().contains("Cannot verify AT-TLS status"))
+                .isNotEmpty();
         }
 
     }
@@ -132,15 +129,15 @@ class AttlsConfigTest {
             "server.ssl.keyStore="
         }
     )
-    @ActiveProfiles({ "attlsServer", "attlsClient" })
+    @ActiveProfiles({"attlsServer", "attlsClient"})
     @DirtiesContext
     @SpringBootTest(
-        classes = GatewayServiceApplication.class,
+        classes = CloudGatewayServiceApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
     class GivenSslDisabled {
 
-        @MockitoBean
+        @MockBean
         private AttlsHttpHandler attlsHttpHandler;
 
         @LocalServerPort
@@ -149,7 +146,7 @@ class AttlsConfigTest {
         @Value("${apiml.service.hostname:localhost}")
         private String hostname;
 
-        @MockitoBean
+        @MockBean
         private ApimlTomcatCustomizer apimlTomcatCustomizer;
 
         @BeforeEach

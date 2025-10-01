@@ -30,8 +30,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.zowe.apiml.caching.CachingServiceApplication;
-import org.zowe.apiml.filter.AttlsHttpHandler;
+import org.zowe.apiml.caching.CachingService;
+import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.util.config.SslContext;
 
 import javax.net.ssl.SSLException;
@@ -51,10 +51,10 @@ class AttlsConfigTest {
     }
 
     @SpringBootTest(
-        classes = CachingServiceApplication.class,
+        classes = CachingService.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
-    @ActiveProfiles({ "AttlsConfigTestCachingService", "attlsClient", "attlsServer" })
+    @ActiveProfiles({"AttlsConfigTestCachingService", "attlsClient", "attlsServer"})
     @TestPropertySource(
         properties = {
             "caching.storage.mode=inMemory"
@@ -66,6 +66,7 @@ class AttlsConfigTest {
 
         @Value("${apiml.service.hostname:localhost}")
         String hostname;
+
         @LocalServerPort
         int port;
 
@@ -80,22 +81,22 @@ class AttlsConfigTest {
 
             @Test
             void requestFailsWithHttps() {
-                assertThrows(SSLException.class, () -> {
+                assertThrows(SSLException.class, () ->
                     given()
                         .config(SslContext.clientCertUnknownUser)
                         .header("Content-type", "application/json")
                     .when()
                         .get(getUri(hostname, port, "https"))
                     .then()
-                        .log().all();
-                });
+                        .log().all());
             }
 
             @Test
             void requestFailsWithAttlsReasonWithHttp() {
-                var logger = (Logger) LoggerFactory.getLogger(AttlsHttpHandler.class);
+                Logger logger = (Logger) LoggerFactory.getLogger(SecureConnectionFilter.class);
                 logger.addAppender(mockedAppender);
                 logger.setLevel(Level.ERROR);
+
                 given()
                     .config(SslContext.clientCertUnknownUser)
                     .header("Content-type", "application/json")
@@ -103,11 +104,11 @@ class AttlsConfigTest {
                     .get(getUri(hostname, port, "http"))
                 .then()
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .body(containsString("org.zowe.apiml.common.internalServerError"));
+                    .body(containsString("Connection is not secure."));
 
                 verify(mockedAppender, atLeast(1)).doAppend(loggingEventCaptor.capture());
                 assertThat(loggingEventCaptor.getAllValues())
-                    .filteredOn(element -> element.getMessage().contains("Cannot verify AT-TLS status"))
+                    .filteredOn(element -> element.getMessage().contains("Can't read from AT-TLS context"))
                     .isNotEmpty();
             }
 
@@ -129,16 +130,17 @@ class AttlsConfigTest {
             "apiml.service.discoveryServiceUrls=http://localhost:10011/eureka/" // Caching-service loads onboarding-enabler, which validates SSL configuration for Eureka client if it starts in https
         }
     )
-    @ActiveProfiles({ "attlsClient", "attlsServer" })
+    @ActiveProfiles({"attlsClient", "attlsServer"})
     @DirtiesContext
     @SpringBootTest(
-        classes = CachingServiceApplication.class,
+        classes = CachingService.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
     class GivenSslDisabled {
 
         @Value("${apiml.service.hostname:localhost}")
         String hostname;
+
         @LocalServerPort
         int port;
 
@@ -150,7 +152,7 @@ class AttlsConfigTest {
 
         @Test
         void whenNoKeystore_thenStartupSuccess() {
-            var logger = (Logger) LoggerFactory.getLogger(AttlsHttpHandler.class);
+            Logger logger = (Logger) LoggerFactory.getLogger(SecureConnectionFilter.class);
             logger.addAppender(mockedAppender);
             logger.setLevel(Level.ERROR);
 
@@ -161,11 +163,11 @@ class AttlsConfigTest {
             .then()
                 .log().all()
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .body(containsString("org.zowe.apiml.common.internalServerError"));
+                .body(containsString("Connection is not secure."));
 
             verify(mockedAppender, atLeast(1)).doAppend(loggingEventCaptor.capture());
             assertThat(loggingEventCaptor.getAllValues())
-                .filteredOn(element -> element.getMessage().contains("Cannot verify AT-TLS status"))
+                .filteredOn(element -> element.getMessage().contains("Can't read from AT-TLS context"))
                 .isNotEmpty();
         }
 

@@ -26,12 +26,12 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.apicatalog.ApiCatalogApplication;
-import org.zowe.apiml.filter.AttlsHttpHandler;
+import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
 
 import javax.net.ssl.SSLException;
@@ -41,10 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @TestInstance(Lifecycle.PER_CLASS)
 class AttlsConfigTest {
@@ -65,31 +62,31 @@ class AttlsConfigTest {
             assertThrows(SSLException.class, () -> {
                 given()
                     .log().all()
-                    .when()
-                    .get(getCatalogUriWithPath("apicatalog/containers"))
-                    .then()
+                .when()
+                    .get(getCatalogUriWithPath("containers"))
+                .then()
                     .log().all();
             });
         }
 
         @Test
         void requestFailsWithAttlsContextReasonWithHttp() {
-            var logger = (Logger) LoggerFactory.getLogger(AttlsHttpHandler.class);
+            Logger logger = (Logger) LoggerFactory.getLogger(SecureConnectionFilter.class);
             logger.addAppender(mockedAppender);
             logger.setLevel(Level.ERROR);
 
             given()
                 .log().all()
-                .when()
+            .when()
                 .get(getCatalogUriWithPath("http", "apicatalog/api/v1/containers"))
-                .then()
+            .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-                .body(containsString("org.zowe.apiml.common.internalServerError"));
+                .body(containsString("Connection is not secure. "));
 
             verify(mockedAppender, atLeast(1)).doAppend(loggingEventCaptor.capture());
             assertThat(loggingEventCaptor.getAllValues())
-                .filteredOn(element -> element.getMessage().contains("Cannot verify AT-TLS status"))
+                .filteredOn(element -> element.getMessage().contains("Can't read from AT-TLS context"))
                 .isNotEmpty();
         }
 
@@ -119,7 +116,7 @@ class AttlsConfigTest {
         @Captor
         private ArgumentCaptor<LoggingEvent> loggingEventCaptor;
 
-        @MockitoBean
+        @MockBean
         private ApimlTomcatCustomizer apimlTomcatCustomizer;
 
         @BeforeEach
@@ -130,23 +127,23 @@ class AttlsConfigTest {
 
         @Test
         void whenNoKeystore_thenStartupSuccess() {
-            var logger = (Logger) LoggerFactory.getLogger(AttlsHttpHandler.class);
+            Logger logger = (Logger) LoggerFactory.getLogger(SecureConnectionFilter.class);
             logger.addAppender(mockedAppender);
             logger.setLevel(Level.ERROR);
 
             given()
                 .log().all()
-                .when()
+            .when()
                 .get(getCatalogUriWithPath("http", "apicatalog/api/v1/containers"))
-                .then()
+            .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-                .body(containsString("org.zowe.apiml.common.internalServerError"));
+                .body(containsString("Connection is not secure."));
 
             verify(apimlTomcatCustomizer, times(1)).customize(any());
             verify(mockedAppender, atLeast(1)).doAppend(loggingEventCaptor.capture());
             assertThat(loggingEventCaptor.getAllValues())
-                .filteredOn(element -> element.getMessage().contains("Cannot verify AT-TLS status"))
+                .filteredOn(element -> element.getMessage().contains("Can't read from AT-TLS context"))
                 .isNotEmpty();
         }
 

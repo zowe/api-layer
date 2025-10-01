@@ -10,45 +10,59 @@
 
 package org.zowe.apiml.gateway.security.config;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.LoggingEvent;
+import ch.qos.logback.core.Appender;
 import org.apache.http.HttpStatus;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.zowe.apiml.zaas.ZaasApplication;
-import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
+import org.zowe.apiml.filter.SecureConnectionFilter;
+import org.zowe.apiml.gateway.GatewayApplication;
+import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
 
 import javax.net.ssl.SSLException;
+import javax.servlet.ServletException;
+import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.StringContains.containsString;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-@AcceptanceTest
 @TestInstance(Lifecycle.PER_CLASS)
 class AttlsConfigTest {
 
-    /**
-     * Simple Spring Context test to verify AT-TLS filter chain setup is in place with the right properties being sent
-     */
-    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+    private String getGatewayUrlWithPath(String hostname, int port, String scheme) {
+        return String.format("%s://%s:%d/%s", scheme, hostname, port, "application/version");
+    }
+
+    @Nested
     @ActiveProfiles({"attlsServer", "attlsClient"})
     @DirtiesContext
-    @Nested
-    class GivenAttlsModeEnabled {
-
-        @MockitoBean(name = "x509Mapper")
-        private AuthenticationMapper x509Mapper;
+    @SpringBootTest(
+        classes = GatewayApplication.class,
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+    )
+    class GivenAttlsProfile {
 
         @LocalServerPort
         private int port;
@@ -56,32 +70,48 @@ class AttlsConfigTest {
         @Value("${apiml.service.hostname:localhost}")
         private String hostname;
 
+        @Mock
+        private Appender<ILoggingEvent> mockedAppender;
+
+        @Captor
+        private ArgumentCaptor<LoggingEvent> loggingEventCaptor;
+
+        @MockBean
+        private ApimlTomcatCustomizer apimlTomcatCustomizer;
+
         @Test
-        void requestFailsWithHttps() {
-            assertThrows(SSLException.class, () -> {
+        void whenContextLoads_requestFailsWithHttps() {
+            assertThrows(SSLException.class, () ->
                 given()
                     .log().all()
-                    .cookie(COOKIE_AUTH_NAME, "jwttoken")
-                    .when()
-                    .get(String.format("https://%s:%d", hostname, port))
-                    .then()
-                    .log().all();
-                fail("Expected SSL failure");
-            });
+                .when()
+                    .get(getGatewayUrlWithPath(hostname, port, "https"))
+                .then()
+                    .log().all());
         }
 
         @Test
-        void requestFailsWithAttlsContextReasonWithHttp() {
+        void requestFailsWithAttlsReasonWithHttp() {
+            Logger logger = (Logger) LoggerFactory.getLogger(SecureConnectionFilter.class);
+            logger.addAppender(mockedAppender);
+            logger.setLevel(Level.ERROR);
+
+            // Prevent use of native code but verify it calls the customizer
+            doNothing().when(apimlTomcatCustomizer).customize(any());
+
             given()
                 .log().all()
-                .cookie(COOKIE_AUTH_NAME, "jwttoken")
-                .when()
-                .get(String.format("http://%s:%d", hostname, port))
-                .then()
+            .when()
+                .get(getGatewayUrlWithPath(hostname, port, "http"))
+            .then()
                 .log().all()
-                .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR))
-                .body(containsString("Connection is not secure."))
-                .body(containsString("AttlsContext.getStatConn"));
+                .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
+                .body(containsString("Connection is not secure. "));
+
+            verify(mockedAppender, atLeast(1)).doAppend(loggingEventCaptor.capture());
+            assertThat(loggingEventCaptor.getAllValues())
+                .filteredOn(element -> element.getMessage().contains("Can't read from AT-TLS context"))
+                .isNotEmpty();
         }
 
     }
@@ -96,20 +126,19 @@ class AttlsConfigTest {
             "server.ssl.keyStorePassword=",
             "server.ssl.keyPassword=",
             "server.ssl.keyAlias=",
-            "server.ssl.keyStore=",
-            "apiml.security.auth.provider=zosmf"
+            "server.ssl.keyStore="
         }
     )
     @ActiveProfiles({"attlsServer", "attlsClient"})
     @DirtiesContext
     @SpringBootTest(
-        classes = ZaasApplication.class,
+        classes = GatewayApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
     class GivenSslDisabled {
 
-        @MockitoBean(name = "x509Mapper")
-        private AuthenticationMapper x509Mapper;
+        @MockBean
+        private SecureConnectionFilter secureConnectionFilter;
 
         @LocalServerPort
         private int port;
@@ -117,18 +146,25 @@ class AttlsConfigTest {
         @Value("${apiml.service.hostname:localhost}")
         private String hostname;
 
+        @MockBean
+        private ApimlTomcatCustomizer apimlTomcatCustomizer;
+
+        @BeforeEach
+        void setUp() {
+            doNothing().when(apimlTomcatCustomizer).customize(any());
+        }
+
         @Test
-        void whenNoKeystore_thenStartupSuccess() {
+        void whenNoKeystore_thenStartupSuccess() throws ServletException, IOException {
             given()
                 .log().all()
-                .cookie(COOKIE_AUTH_NAME, "jwttoken")
-                .when()
-                .get(String.format("http://%s:%d", hostname, port))
-                .then()
-                .log().all()
-                .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR))
-                .body(containsString("Connection is not secure."))
-                .body(containsString("AttlsContext.getStatConn"));
+            .when()
+                .get(getGatewayUrlWithPath(hostname, port, "http"))
+            .then()
+                .statusCode(SC_OK);
+
+            verify(apimlTomcatCustomizer, times(1)).customize(any());
+            verify(secureConnectionFilter, times(1)).doFilterInternal(any(), any(), any());
         }
 
     }

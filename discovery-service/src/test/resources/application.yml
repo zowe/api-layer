@@ -70,8 +70,7 @@ logging:
         org.springframework: DEBUG
 
 ---
-spring:
-    profiles: https
+spring.config.activate.on-profile: https
 
 server:
     ssl:

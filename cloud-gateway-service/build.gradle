@@ -61,6 +61,7 @@ configurations.all {
 
 dependencies {
     api project(':common-service-core')
+    api project(':apiml-common')
     api project(':apiml-utility')
     api project(':apiml-tomcat-common')
 
