@@ -136,7 +136,7 @@ management:
 spring:
     profiles: dev
     profiles.include:
-            diag
+        diag
 
 logging:
     level:

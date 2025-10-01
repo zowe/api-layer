@@ -240,7 +240,7 @@ zuul.debug.request: true
 spring:
     profiles: dev
     profiles.include:
-            - debug
-            - diag
+        - debug
+        - diag
 
 logbackServiceName: ZWEAGW1
