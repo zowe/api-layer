@@ -36,9 +36,6 @@ import org.zowe.apiml.gateway.GatewayApplication;
 import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
 
 import javax.net.ssl.SSLException;
-import javax.servlet.ServletException;
-
-import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
@@ -166,7 +163,7 @@ class AttlsConfigTest {
         }
 
         @Test
-        void whenNoKeystore_thenStartupSuccess() throws ServletException, IOException {
+        void whenNoKeystore_thenStartupSuccess() {
             Logger logger = (Logger) LoggerFactory.getLogger(SecureConnectionFilter.class);
             logger.addAppender(mockedAppender);
             logger.setLevel(Level.ERROR);
