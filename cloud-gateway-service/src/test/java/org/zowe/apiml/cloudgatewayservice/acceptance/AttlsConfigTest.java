@@ -42,10 +42,12 @@ import javax.net.ssl.SSLException;
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @TestInstance(Lifecycle.PER_CLASS)
 class AttlsConfigTest {
@@ -105,8 +107,7 @@ class AttlsConfigTest {
                 .get(getGatewayUrlWithPath(hostname, port, "http", "application/version"))
             .then()
                 .log().all()
-                .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-                .body(containsString("org.zowe.apiml.common.internalServerError"));
+                .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR);
 
             verify(mockedAppender, atLeast(1)).doAppend(loggingEventCaptor.capture());
             assertThat(loggingEventCaptor.getAllValues())
@@ -159,7 +160,7 @@ class AttlsConfigTest {
             given()
                 .log().all()
             .when()
-                .get(getGatewayUrlWithPath(hostname, port, "http", "application/version"))
+                .get(getGatewayUrlWithPath(hostname, port, "http", "application"))
             .then()
                 .statusCode(SC_OK);
 

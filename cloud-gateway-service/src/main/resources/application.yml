@@ -145,5 +145,3 @@ server:
 apiml:
     service:
         discoveryServiceUrls: http://localhost:10011/eureka/
-
-

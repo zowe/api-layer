@@ -67,3 +67,32 @@ management:
             base-path: /application
             exposure:
                 include: health,gateway
+
+---
+spring.config.activate.on-profile: attlsServer
+
+server:
+    attlsServer:
+        enabled: true
+    ssl:
+        enabled: false
+
+    service:
+        scheme: http
+    apiml:
+        service:
+            corsEnabled: true
+            scheme: http
+            nonSecurePortEnabled: true
+            securePortEnabled: false
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
+apiml:
+    service:
+        discoveryServiceUrls: http://localhost:10011/eureka/
