@@ -103,7 +103,7 @@ logging:
         org.springframework: DEBUG
 
 ---
-spring.config.activate.on-profile: attlsServer
+spring.profiles: attlsServer
 
 server:
     attlsServer:
@@ -112,7 +112,7 @@ server:
         enabled: false
 
 ---
-spring.config.activate.on-profile: attlsClient
+spring.profiles: attlsClient
 
 apiml:
     service:

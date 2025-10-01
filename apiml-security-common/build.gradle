@@ -30,7 +30,6 @@ dependencies {
     testImplementation libs.json.smart
 
     testCompileOnly libs.lombok
-    testImplementation libs.netty.reactor.http
     testImplementation libs.gson
     testAnnotationProcessor libs.lombok
 }
