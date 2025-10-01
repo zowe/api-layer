@@ -42,9 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.zowe.apiml.util.SecurityUtils.generateJwtWithRandomSignature;
-import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
-import static org.zowe.apiml.util.SecurityUtils.validOktaAccessToken;
+import static org.zowe.apiml.util.SecurityUtils.*;
 import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
 import static org.zowe.apiml.util.requests.Endpoints.SAF_IDT_REQUEST;
 import static org.zowe.apiml.util.requests.Endpoints.ZOSMF_REQUEST;
@@ -158,7 +156,7 @@ public class CloudGatewayAuthTest implements TestWithStartedInstances {
         @ParameterizedTest(name = "givenValidRequest_thenOidcIsTransformed {0} [{index}]")
         @MethodSource("org.zowe.apiml.integration.authentication.schemes.CloudGatewayAuthTest#validToBeTransformed")
         void givenValidRequest_thenOidcIsTransformed(String title, String basePath, Consumer<Response> assertions) {
-            String oAuthToken = validOktaAccessToken(true);
+            String oAuthToken = validOidcAccessToken(true);
 
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + oAuthToken)
