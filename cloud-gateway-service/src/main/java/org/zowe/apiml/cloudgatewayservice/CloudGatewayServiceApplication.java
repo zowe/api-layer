@@ -18,7 +18,6 @@ import org.springframework.cloud.gateway.config.GatewayReactiveOAuth2AutoConfigu
 @SpringBootApplication(
     scanBasePackages = {
         "org.zowe.apiml.cloudgatewayservice",
-        "org.zowe.apiml.filter",
         "org.zowe.apiml.product.web"
     },
     exclude = {ReactiveOAuth2ClientAutoConfiguration.class, GatewayReactiveOAuth2AutoConfiguration.class}

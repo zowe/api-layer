@@ -35,7 +35,6 @@ import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;
 @EnableCircuitBreaker
 @ComponentScan(
     value = {
-        "org.zowe.apiml.filter",
         "org.zowe.apiml.gateway",
         "org.zowe.apiml.product",
         "org.zowe.apiml.security.common"
