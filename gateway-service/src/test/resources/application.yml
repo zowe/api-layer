@@ -272,7 +272,8 @@ spring:
 logbackServiceName: ZWEAGW1
 
 ---
-spring.profiles: attlsServer
+spring:
+    profiles: attlsServer
 
 server:
     attlsServer:
@@ -290,7 +291,8 @@ apiml:
         securePortEnabled: false
 
 ---
-spring.profiles: attlsClient
+spring:
+    profiles: attlsClient
 
 server:
     attlsClient:
