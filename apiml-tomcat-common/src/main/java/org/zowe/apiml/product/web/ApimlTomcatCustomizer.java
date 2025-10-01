@@ -10,17 +10,13 @@
 
 package org.zowe.apiml.product.web;
 
-
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.AbstractProtocol;
 import org.apache.coyote.http11.Http11NioProtocol;
-import org.apache.tomcat.util.net.AbstractEndpoint;
-import org.apache.tomcat.util.net.Nio2Channel;
-import org.apache.tomcat.util.net.NioChannel;
-import org.apache.tomcat.util.net.SocketEvent;
-import org.apache.tomcat.util.net.SocketWrapperBase;
+import org.apache.tomcat.util.net.*;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.stereotype.Component;
@@ -28,7 +24,6 @@ import org.zowe.apiml.exception.AttlsHandlerException;
 import org.zowe.commons.attls.ContextIsNotInitializedException;
 import org.zowe.commons.attls.InboundAttls;
 
-import javax.annotation.PostConstruct;
 import java.io.FileDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -39,11 +34,11 @@ import java.nio.channels.SocketChannel;
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "server.attlsServer.enabled", havingValue = "true")
-public class ApimlTomcatCustomizer implements TomcatConnectorCustomizer {
+public class ApimlTomcatCustomizer implements TomcatConnectorCustomizer, InitializingBean {
 
     private static final String INCOMPATIBLE_VERSION_MESSAGE = "AT-TLS-Incompatible configuration. Verify AT-TLS requirements: Java version, Tomcat version. Exception message: ";
 
-    @PostConstruct
+    @Override
     public void afterPropertiesSet() {
         log.debug("AT-TLS mode is enabled");
         InboundAttls.setAlwaysLoadCertificate(true);
@@ -73,7 +68,7 @@ public class ApimlTomcatCustomizer implements TomcatConnectorCustomizer {
 
         // this field cannot be final for testing purpose, but using is the same as final
         @SuppressWarnings("squid:S3008")
-        private static  /*final*/ Field ASYNCHRONOUS_SOCKET_CHANNEL_FD;
+        private static /*final*/ Field ASYNCHRONOUS_SOCKET_CHANNEL_FD;
         private static Field FILE_DESCRIPTOR_FD;
 
         private static Method SOCKET_CHANNEL_GET_FDVAL_METHOD;

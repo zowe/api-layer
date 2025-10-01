@@ -53,9 +53,7 @@ public class HttpsFactory {
         this.apimlLog = ApimlLogger.of(HttpsFactory.class, YamlMessageServiceInstance.getInstance());
     }
 
-
     public CloseableHttpClient createSecureHttpClient(HttpClientConnectionManager connectionManager) {
-
         RequestConfig requestConfig = RequestConfig.custom()
             .setConnectTimeout(config.getRequestConnectionTimeout())
             .setSocketTimeout(config.getRequestConnectionTimeout())
@@ -67,7 +65,6 @@ public class HttpsFactory {
             .setConnectionManager(connectionManager).disableCookieManagement().setUserTokenHandler(userTokenHandler)
             .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
             .disableAuthCaching().build();
-
     }
 
     public ConnectionSocketFactory createSslSocketFactory() {

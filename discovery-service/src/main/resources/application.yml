@@ -108,8 +108,7 @@ management:
 
 hystrix.command.default.execution.timeout.enabled: false
 ---
-spring:
-    profiles: https
+spring.config.activate.on-profile: https
 
 apiml:
     discovery:
@@ -147,8 +146,7 @@ eureka:
             defaultZone: ${apiml.discovery.allPeersUrls}
 
 ---
-spring:
-    profiles: debug
+spring.config.activate.on-profile: debug
 
 management:
     endpoints:
@@ -176,8 +174,7 @@ logging:
         com.netflix.discovery.shared.transport.decorator: DEBUG
 
 ---
-spring:
-    profiles: diag
+spring.config.activate.on-profile: diag
 
 management:
     endpoints:
@@ -189,16 +186,18 @@ management:
 
 ---
 spring:
-    profiles: dev
-    profiles.include:
-        - debug
-        - diag
+    config:
+        activate:
+            on-profile: dev
+    profiles:
+        include:
+            - debug
+            - diag
 
 logbackServiceName: ZWEADS1
 
 ---
-spring:
-    profiles: attlsServer
+spring.config.activate.on-profile: attlsServer
 
 server:
     attlsServer:
@@ -207,8 +206,7 @@ server:
         enabled: false
 
 ---
-spring:
-    profiles: attlsClient
+spring.config.activate.on-profile: attlsClient
 
 server:
     attlsClient:

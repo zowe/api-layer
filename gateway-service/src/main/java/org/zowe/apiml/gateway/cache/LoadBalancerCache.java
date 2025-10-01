@@ -25,18 +25,19 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Cache for storing Load Balancer related information. The initial goal was to support user based instance load
  * balancing
- *
+ * <p>
  * Supports optional CachingServiceClient inject through constructor, which gives acts as remote cache. Remote cache
  * entries have preference to local ones.
  */
 @Getter
 @Slf4j
 public class LoadBalancerCache {
+
+    public static final String LOAD_BALANCER_KEY_PREFIX = "lb.";
+
     private final Map<String, LoadBalancerCacheRecord> localCache;
     private final CachingServiceClient remoteCache;
     private final ObjectMapper mapper = new ObjectMapper();
-
-    public static final String LOAD_BALANCER_KEY_PREFIX = "lb.";
 
     public LoadBalancerCache(CachingServiceClient cachingServiceClient) {
         this.remoteCache = cachingServiceClient;
@@ -48,9 +49,9 @@ public class LoadBalancerCache {
      * Store information about instance the user is balanced towards.
      * If there is already existing record, it will be updated
      *
-     * @param user     User being routed towards southbound service
-     * @param service  Service towards which is the user routed
-     * @param loadBalancerCacheRecord  Object containing the selected instance and its creation time
+     * @param user                    User being routed towards southbound service
+     * @param service                 Service towards which is the user routed
+     * @param loadBalancerCacheRecord Object containing the selected instance and its creation time
      * @return True if storing succeeded, otherwise false
      */
     public boolean store(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
@@ -64,8 +65,8 @@ public class LoadBalancerCache {
 
     private void storeToRemoteCache(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
         try {
-        String serializedRecord = mapper.writeValueAsString(loadBalancerCacheRecord);
-        CachingServiceClient.KeyValue toStore = new CachingServiceClient.KeyValue(getKey(user, service), serializedRecord);
+            String serializedRecord = mapper.writeValueAsString(loadBalancerCacheRecord);
+            CachingServiceClient.KeyValue toStore = new CachingServiceClient.KeyValue(getKey(user, service), serializedRecord);
             createToRemoteCache(user, service, loadBalancerCacheRecord, toStore);
         } catch (JsonProcessingException e) {
             log.debug("Failed to serialize record for user: {}, service: {}, record {},  with exception: {}", user, service, loadBalancerCacheRecord, e);
@@ -74,8 +75,8 @@ public class LoadBalancerCache {
 
     private void createToRemoteCache(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord, CachingServiceClient.KeyValue toStore) {
         try {
-        remoteCache.create(toStore);
-        log.debug("Created record to remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
+            remoteCache.create(toStore);
+            log.debug("Created record to remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
         } catch (CachingServiceClientException createException) {
             if (isCausedByCacheConflict(createException)) {
                 updateToRemoteCache(user, service, loadBalancerCacheRecord, toStore);

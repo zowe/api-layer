@@ -23,6 +23,7 @@ import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -85,6 +86,7 @@ import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DE
 public class ConnectionsConfig {
 
     private static final char[] KEYRING_PASSWORD = "password".toCharArray();
+    private static final ApimlLogger apimlLog = ApimlLogger.of(ConnectionsConfig.class, YamlMessageServiceInstance.getInstance());
 
     @Value("${server.ssl.protocol:TLSv1.2}")
     private String protocol;
@@ -133,12 +135,14 @@ public class ConnectionsConfig {
 
     @Value("${apiml.gateway.timeout:60}")
     private int requestTimeout;
+
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
+
     @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
     private List<String> corsAllowedMethods;
+
     private final ApplicationContext context;
-    private static final ApimlLogger apimlLog = ApimlLogger.of(ConnectionsConfig.class, YamlMessageServiceInstance.getInstance());
 
     public ConnectionsConfig(ApplicationContext context) {
         this.context = context;
@@ -190,9 +194,11 @@ public class ConnectionsConfig {
      */
     @Bean
     public BeanPostProcessor routingFilterHandler(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
+        boolean isKeyLoadPrevented = StringUtils.isBlank(keyStorePath) && isClientAttlsEnabled;
+
         // obtain SSL contexts (one with keystore to support client cert sign and truststore, second just with truststore)
         SslContext justTruststore = sslContext(false);
-        SslContext withKeystore = sslContext(true);
+        SslContext withKeystore = sslContext(!isKeyLoadPrevented);
 
         return new BeanPostProcessor() {
             @Override
@@ -211,7 +217,7 @@ public class ConnectionsConfig {
     /**
      * @return io.netty.handler.ssl.SslContext for http client.
      */
-    SslContext sslContext(boolean setKeystore) {
+    public SslContext sslContext(boolean setKeystore) {
         try {
             SslContextBuilder builder = SslContextBuilder.forClient();
 
@@ -326,12 +332,16 @@ public class ConnectionsConfig {
     @Bean
     @Primary
     public WebClient webClient(HttpClient httpClient) {
-        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
+        return WebClient.builder()
+            .clientConnector(new ReactorClientHttpConnector(httpClient))
+            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
+            .build();
     }
 
     @Bean
     public WebClient webClientClientCert(HttpClient httpClient) {
-        httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext(true)));
+        boolean isKeyLoadPrevented = StringUtils.isBlank(keyStorePath) && isClientAttlsEnabled;
+        httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext(!isKeyLoadPrevented)));
         return webClient(httpClient);
     }
 

@@ -8,9 +8,9 @@ dependencies {
     implementation libs.spring.security.web
     implementation libs.spring.security.config
     implementation libs.apache.commons.lang3
-    implementation libs.bcprov;
-    implementation libs.bcpkix;
-    implementation libs.http.client;
+    implementation libs.bcprov
+    implementation libs.bcpkix
+    implementation libs.http.client
 
     implementation libs.spring.aop
     implementation libs.spring.beans
@@ -30,6 +30,7 @@ dependencies {
     testImplementation libs.json.smart
 
     testCompileOnly libs.lombok
+    testImplementation libs.netty.reactor.http
     testImplementation libs.gson
     testAnnotationProcessor libs.lombok
 }

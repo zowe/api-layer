@@ -201,7 +201,9 @@ eureka:
 
 ---
 spring:
-    profiles: debug
+    config:
+        activate:
+            on-profile: debug
     mvc:
         throw-exception-if-no-handler-found: true
 
@@ -226,8 +228,7 @@ logging:
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
 
 ---
-spring:
-    profiles: diag
+spring.config.activate.on-profile: diag
 
 management:
     endpoints:
@@ -238,9 +239,12 @@ management:
 zuul.debug.request: true
 ---
 spring:
-    profiles: dev
-    profiles.include:
-        - debug
-        - diag
+    config:
+        activate:
+            on-profile: dev
+    profiles:
+        include:
+            - debug
+            - diag
 
 logbackServiceName: ZWEAGW1
