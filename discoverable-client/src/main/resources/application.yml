@@ -188,7 +188,8 @@ hystrix:
     command.default.execution.timeout.enabled: false
 
 ---
-spring.config.activate.on-profile: diag
+spring:
+    profiles: diag
 
 management:
     endpoints:
@@ -203,11 +204,8 @@ management:
 
 ---
 spring:
-    config:
-        activate:
-            on-profile: dev
-    profiles:
-        include:
+    profiles: dev
+    profiles.include:
             diag
 
 logging:
@@ -221,7 +219,8 @@ logging:
 logbackServiceName: ZWEADC1
 
 ---
-spring.config.activate.on-profile: attlsServer
+spring:
+    profiles: attlsServer
 
 server:
     attlsServer:
@@ -230,7 +229,8 @@ server:
         enabled: false
 
 ---
-spring.config.activate.on-profile: attlsClient
+spring:
+    profiles: attlsClient
 
 apiml:
     service:

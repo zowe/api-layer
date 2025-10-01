@@ -19,7 +19,7 @@ spring:
             enabled: always
 
 ---
-spring.config.activate.on-profile: https
+spring.profiles: https
 eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1

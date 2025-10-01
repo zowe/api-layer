@@ -156,7 +156,8 @@ management:
 hystrix.command.default.execution.timeout.enabled: false
 
 ---
-spring.config.activate.on-profile: debug
+spring:
+    profiles: debug
 
 logging:
     level:
@@ -177,22 +178,21 @@ logging:
         com.netflix.discovery.shared.transport.decorator: DEBUG
 
 ---
-spring.config.activate.on-profile: diag
+spring:
+    profiles: diag
 
 ---
 spring:
-    config:
-        activate:
-            on-profile: dev
-    profiles:
-        include:
+    profiles: dev
+    profiles.include:
             - debug
             - diag
 
 logbackServiceName: ZWEACS1
 
 ---
-spring.config.activate.on-profile: attlsServer
+spring:
+    profiles: attlsServer
 
 server:
     attlsServer:
@@ -201,7 +201,8 @@ server:
         enabled: false
 
 ---
-spring.config.activate.on-profile: attlsClient
+spring:
+    profiles: attlsClient
 
 apiml:
     service:
