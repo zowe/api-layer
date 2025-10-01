@@ -6,13 +6,10 @@ logging:
         ROOT: INFO
         org.zowe.apiml: INFO
         org.springframework: WARN
-        org.springframework.beans: WARN
         com.netflix: WARN
         com.netflix.discovery: ERROR
         com.netflix.config: ERROR
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
-        io.netty.resolver.dns: WARN
-        io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.springframework.web.socket: WARN
@@ -286,9 +283,7 @@ eureka:
 
 ---
 spring:
-    config:
-        activate:
-            on-profile: debug
+    profiles: debug
     mvc:
         throw-exception-if-no-handler-found: true
 
@@ -310,23 +305,19 @@ logging:
         org.springframework: INFO
         org.apache: INFO
         org.apache.http: DEBUG
-        org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
-        com.netflix: DEBUG
-        javax.net.ssl: ERROR
+        com.netflix: INFO
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
-        org.springframework.boot.autoconfigure.web: DEBUG
         org.ehcache: INFO
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
-        org.springframework.security: DEBUG
         com.netflix.discovery.shared.transport.decorator: DEBUG
         org.springframework.web.socket: DEBUG
         org.zowe.apiml.gateway.ws: DEBUG
-        reactor.netty: TRACE
 
 ---
-spring.config.activate.on-profile: diag
+spring:
+    profiles: diag
 
 management:
     endpoints:
@@ -343,31 +334,16 @@ zuul.debug.request: true
 
 ---
 spring:
-    config:
-        activate:
-            on-profile: dev
-    profiles:
-        include:
+    profiles: dev
+    profiles.include:
             - debug
             - diag
 
 logbackServiceName: ZWEAGW1
 
 ---
-spring.config.activate.on-profile: wiretap
-
 spring:
-    cloud:
-        gateway:
-            server:
-                webflux:
-                    httpserver:
-                        wiretap: true
-                    httpclient:
-                        wiretap: true
-
----
-spring.config.activate.on-profile: attlsServer
+    profiles: attlsServer
 
 server:
     attlsServer:
@@ -385,7 +361,8 @@ apiml:
         securePortEnabled: false
 
 ---
-spring.config.activate.on-profile: attlsClient
+spring:
+    profiles: attlsClient
 
 server:
     attlsClient:
@@ -406,7 +383,8 @@ eureka:
                         documentationUrl: https://zowe.github.io/docs-site/
 
 ---
-spring.config.activate.on-profile: securityFilterchainDebug
+spring:
+    profiles: securityFilterchainDebug
 
 logging:
     level:
@@ -415,7 +393,8 @@ logging:
         org.zowe.apiml.gateway.security: DEBUG
 
 ---
-spring.config.activate.on-profile: zosmfDebug
+spring:
+    profiles: zosmfDebug
 
 logging:
     level:

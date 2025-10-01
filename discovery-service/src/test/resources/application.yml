@@ -70,7 +70,8 @@ logging:
         org.springframework: DEBUG
 
 ---
-spring.config.activate.on-profile: https
+spring:
+    profiles: https
 
 server:
     ssl:
@@ -90,7 +91,8 @@ server:
         trustStorePassword: password
 
 ---
-spring.config.activate.on-profile: attlsServer
+spring:
+    profiles: attlsServer
 
 server:
     attlsServer:
@@ -99,7 +101,8 @@ server:
         enabled: false
 
 ---
-spring.config.activate.on-profile: attlsClient
+spring:
+    profiles: attlsClient
 
 server:
     attlsClient:
