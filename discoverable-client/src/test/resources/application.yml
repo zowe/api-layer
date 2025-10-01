@@ -122,7 +122,8 @@ management:
             enabled: false
 
 ---
-spring.config.activate.on-profile: diag
+spring:
+    profiles: diag
 
 management:
     endpoints:
@@ -133,11 +134,8 @@ management:
 
 ---
 spring:
-    config:
-        activate:
-            on-profile: dev
-    profile:
-        include:
+    profiles: dev
+    profiles.include:
             diag
 
 logging:

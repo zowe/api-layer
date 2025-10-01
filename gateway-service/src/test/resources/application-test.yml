@@ -201,9 +201,7 @@ eureka:
 
 ---
 spring:
-    config:
-        activate:
-            on-profile: debug
+    profiles: debug
     mvc:
         throw-exception-if-no-handler-found: true
 
@@ -228,7 +226,8 @@ logging:
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
 
 ---
-spring.config.activate.on-profile: diag
+spring:
+    profiles: diag
 
 management:
     endpoints:
@@ -239,11 +238,8 @@ management:
 zuul.debug.request: true
 ---
 spring:
-    config:
-        activate:
-            on-profile: dev
-    profiles:
-        include:
+    profiles: dev
+    profiles.include:
             - debug
             - diag
 
