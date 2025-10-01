@@ -11,7 +11,7 @@
 package org.zowe.apiml.product.web;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.AbstractConfigurableWebServerFactory;
 import org.springframework.boot.web.server.Ssl;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
@@ -20,7 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
-public class TomcatKeyringFix implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
+public class TomcatKeyringFix implements WebServerFactoryCustomizer<AbstractConfigurableWebServerFactory> {
 
     private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)/(.+)$");
     private static final String KEYRING_PASSWORD = "password";
@@ -59,7 +59,7 @@ public class TomcatKeyringFix implements WebServerFactoryCustomizer<TomcatServle
     }
 
     @Override
-    public void customize(TomcatServletWebServerFactory factory) {
+    public void customize(AbstractConfigurableWebServerFactory factory) {
         Ssl ssl = factory.getSsl();
         if (isKeyring(keyStore)) {
             ssl.setKeyStore(formatKeyringUrl(keyStore));

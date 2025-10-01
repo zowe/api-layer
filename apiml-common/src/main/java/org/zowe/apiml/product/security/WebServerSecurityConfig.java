@@ -12,8 +12,7 @@ package org.zowe.apiml.product.security;
 
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
-import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -27,11 +26,11 @@ import java.util.Arrays;
 public class WebServerSecurityConfig {
 
     @Bean
-    public WebServerFactoryCustomizer<TomcatServletWebServerFactory> servletContainerCustomizer() {
-        return factory -> factory.addConnectorCustomizers(connector -> {
+    public TomcatConnectorCustomizer servletContainerCustomizer() {
+        return connector -> {
             AbstractHttp11Protocol<?> abstractProtocol = (AbstractHttp11Protocol<?>) connector.getProtocolHandler();
             Arrays.stream(abstractProtocol.findSslHostConfigs()).forEach(sslHost -> sslHost.setHonorCipherOrder(true));
-        });
+        };
     }
 
 }
