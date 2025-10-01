@@ -173,7 +173,8 @@ management:
 
 logbackServiceName: ZWEAAC1
 ---
-spring.config.activate.on-profile: debug
+spring:
+    profiles: debug
 
 management:
     endpoints:
@@ -185,16 +186,17 @@ management:
 
 logging:
     level:
-        ROOT: DEBUG
+        ROOT: INFO
         org.zowe.apiml: DEBUG
-        org.springframework: DEBUG
+        org.springframework: INFO
         org.apache: INFO
         org.apache.http: DEBUG
         com.netflix: INFO
         org.ehcache: INFO
 
 ---
-spring.config.activate.on-profile: diag
+spring:
+    profiles: diag
 
 management:
     endpoints:
@@ -206,15 +208,14 @@ management:
 
 ---
 spring:
-    config:
-        activate.on-profile: dev
-    profiles:
-        include:
+    profiles: dev
+    profiles.include:
             - debug
             - diag
 
 ---
-spring.config.activate.on-profile: attlsServer
+spring:
+    profiles: attlsServer
 
 server:
     attlsServer:
@@ -236,7 +237,8 @@ eureka:
                       swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
 
 ---
-spring.config.activate.on-profile: attlsClient
+spring:
+    profiles: attlsClient
 
 server:
     attlsClient:

@@ -103,7 +103,8 @@ logging:
         org.springframework: DEBUG
 
 ---
-spring.profiles: attlsServer
+spring:
+    profiles: attlsServer
 
 server:
     attlsServer:
@@ -112,7 +113,8 @@ server:
         enabled: false
 
 ---
-spring.profiles: attlsClient
+spring:
+    profiles: attlsClient
 
 apiml:
     service:
