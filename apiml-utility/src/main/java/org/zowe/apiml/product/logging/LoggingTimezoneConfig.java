@@ -37,7 +37,7 @@ public class LoggingTimezoneConfig {
     @InjectApimlLogger
     private ApimlLogger apimlLog = ApimlLogger.empty();
 
-    @Value("${logging.timezone:UTC}")
+    @Value("${apiml.logging.timezone:UTC}")
     private String configuredTimezone;
 
     @PostConstruct
