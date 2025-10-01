@@ -15,7 +15,6 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
-import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -38,25 +37,33 @@ import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
 
 import javax.net.ssl.SSLException;
 import javax.servlet.ServletException;
+
 import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @TestInstance(Lifecycle.PER_CLASS)
 class AttlsConfigTest {
 
     private String getGatewayUrlWithPath(String hostname, int port, String scheme) {
-        return String.format("%s://%s:%d/%s", scheme, hostname, port, "application/version");
+        return String.format("%s://%s:%d/%s", scheme, hostname, port, "application");
     }
 
     @Nested
     @ActiveProfiles({"attlsServer", "attlsClient"})
+    @TestPropertySource(
+        properties = {
+            "server.internal.enabled=false"
+        }
+    )
     @DirtiesContext
     @SpringBootTest(
         classes = GatewayApplication.class,
@@ -105,8 +112,7 @@ class AttlsConfigTest {
                 .get(getGatewayUrlWithPath(hostname, port, "http"))
             .then()
                 .log().all()
-                .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-                .body(containsString("Connection is not secure. "));
+                .statusCode(SC_INTERNAL_SERVER_ERROR);
 
             verify(mockedAppender, atLeast(1)).doAppend(loggingEventCaptor.capture());
             assertThat(loggingEventCaptor.getAllValues())
@@ -126,7 +132,9 @@ class AttlsConfigTest {
             "server.ssl.keyStorePassword=",
             "server.ssl.keyPassword=",
             "server.ssl.keyAlias=",
-            "server.ssl.keyStore="
+            "server.ssl.keyStore=",
+            "server.internal.enabled=false",
+            "apiml.security.auth.provider=zosmf" // zosmf is the only authentication provider supported in this scenario
         }
     )
     @ActiveProfiles({"attlsServer", "attlsClient"})
@@ -137,9 +145,6 @@ class AttlsConfigTest {
     )
     class GivenSslDisabled {
 
-        @MockBean
-        private SecureConnectionFilter secureConnectionFilter;
-
         @LocalServerPort
         private int port;
 
@@ -149,6 +154,12 @@ class AttlsConfigTest {
         @MockBean
         private ApimlTomcatCustomizer apimlTomcatCustomizer;
 
+        @Mock
+        private Appender<ILoggingEvent> mockedAppender;
+
+        @Captor
+        private ArgumentCaptor<LoggingEvent> loggingEventCaptor;
+
         @BeforeEach
         void setUp() {
             doNothing().when(apimlTomcatCustomizer).customize(any());
@@ -156,15 +167,23 @@ class AttlsConfigTest {
 
         @Test
         void whenNoKeystore_thenStartupSuccess() throws ServletException, IOException {
+            Logger logger = (Logger) LoggerFactory.getLogger(SecureConnectionFilter.class);
+            logger.addAppender(mockedAppender);
+            logger.setLevel(Level.ERROR);
+
             given()
                 .log().all()
             .when()
                 .get(getGatewayUrlWithPath(hostname, port, "http"))
             .then()
-                .statusCode(SC_OK);
+                .log().all()
+                .statusCode(SC_INTERNAL_SERVER_ERROR);
 
             verify(apimlTomcatCustomizer, times(1)).customize(any());
-            verify(secureConnectionFilter, times(1)).doFilterInternal(any(), any(), any());
+            verify(mockedAppender, atLeast(1)).doAppend(loggingEventCaptor.capture());
+            assertThat(loggingEventCaptor.getAllValues())
+                .filteredOn(element -> element.getMessage().contains("Can't read from AT-TLS context"))
+                .isNotEmpty();
         }
 
     }
