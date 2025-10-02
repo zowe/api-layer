@@ -131,6 +131,14 @@ if [ "$(uname)" = "OS/390" ]; then
     fi
 fi
 
+add_profile() {
+    new_profile=$1
+    if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+    fi
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}${new_profile}"
+}
+
 # Begin AT-TLS section
 ATTLS_SERVER_ENABLED="false"
 ATTLS_CLIENT_ENABLED="false"
