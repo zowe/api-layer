@@ -65,8 +65,8 @@ public class CorsBeans {
         String hostname,
         int port
     ) throws URISyntaxException {
-        boolean isAttls = Arrays.asList(environment.getActiveProfiles()).contains("attls");
-        if (corsEnabled || !isAttls) {
+        boolean isClientAttlsEnabled = Arrays.asList(environment.getActiveProfiles()).contains("attlsClient");
+        if (corsEnabled || !isClientAttlsEnabled) {
             return null; // NOSONAR
         }
 

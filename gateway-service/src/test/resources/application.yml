@@ -270,3 +270,42 @@ spring:
 
 
 logbackServiceName: ZWEAGW1
+
+---
+spring:
+    profiles: attlsServer
+
+server:
+    attlsServer:
+        enabled: true
+    ssl:
+        enabled: false
+
+apiml:
+    service:
+        corsEnabled: true
+
+---
+spring:
+    profiles: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
+apiml:
+    service:
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+        discoveryServiceUrls: http://localhost:10011/eureka/
+
+eureka:
+    instance:
+        metadata-map:
+            apiml:
+                apiInfo:
+                    -   apiId: zowe.apiml.gateway
+                        gatewayUrl: api/v1
+                        swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/api-doc
+                        documentationUrl: https://zowe.github.io/docs-site/

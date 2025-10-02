@@ -67,3 +67,32 @@ management:
             base-path: /application
             exposure:
                 include: health,gateway
+
+---
+spring:
+    profiles: attlsServer
+
+server:
+    attlsServer:
+        enabled: true
+    ssl:
+        enabled: false
+
+    apiml:
+        service:
+            corsEnabled: true
+
+---
+spring:
+    profiles: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
+apiml:
+    service:
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+        discoveryServiceUrls: http://localhost:10011/eureka/

@@ -128,7 +128,7 @@ class CachedProductFamilyServiceTest {
                 }
                 @Test
                 void givenAttlsEnabled_thenGetInstanceHomePageUrl() throws URLTransformationException {
-                    ReflectionTestUtils.setField(underTest, "isAttlsEnabled", true);
+                    ReflectionTestUtils.setField(underTest, "isClientAttlsEnabled", true);
                     when(transformService.transformURL(
                         any(ServiceType.class), any(String.class), any(String.class), any(RoutedServices.class), eq(true)))
                         .thenReturn(instance.getHomePageUrl());

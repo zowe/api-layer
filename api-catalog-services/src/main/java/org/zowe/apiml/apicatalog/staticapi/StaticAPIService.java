@@ -44,8 +44,8 @@ public class StaticAPIService {
     @Qualifier("secureHttpClientWithKeystore")
     private final CloseableHttpClient httpClient;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
 
     private final DiscoveryConfigProperties discoveryConfigProperties;
 
@@ -83,7 +83,7 @@ public class StaticAPIService {
         boolean isHttp = discoveryServiceUrl.startsWith("http://");
         HttpPost post = new HttpPost(discoveryServiceUrl);
         post.addHeader("Accept", "application/json");
-        if (isHttp && !isAttlsEnabled) {
+        if (isHttp && !isServerAttlsEnabled) {
             String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
             post.addHeader("Authorization", basicToken);
         }
