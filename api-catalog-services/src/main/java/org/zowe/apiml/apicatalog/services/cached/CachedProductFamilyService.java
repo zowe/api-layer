@@ -64,8 +64,8 @@ public class CachedProductFamilyService {
     @Value("${apiml.catalog.hide.serviceInfo:false}")
     private boolean hideServiceInfo;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
 
     public CachedProductFamilyService(CachedServicesService cachedServicesService,
                                       TransformService transformService,
@@ -285,7 +285,7 @@ public class CachedProductFamilyService {
                     instanceInfo.getVIPAddress(),
                     instanceHomePage,
                     routes,
-                    isAttlsEnabled);
+                    isClientAttlsEnabled);
             } catch (URLTransformationException | IllegalArgumentException e) {
                 if (!ApiLayerServices.isApiLayerService(instanceInfo.getAppName())) {
                     apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", instanceInfo.getAppName(), e.getMessage());

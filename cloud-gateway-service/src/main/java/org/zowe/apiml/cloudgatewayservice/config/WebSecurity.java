@@ -129,7 +129,7 @@ public class WebSecurity {
         return defaultCookieAttr(ResponseCookie.from(name, value)).build();
     }
 
-     /**
+    /**
      * Security chain for oauth2 client. To enable this chain, please refer to Zowe OIDC configuration.
      */
     @Bean

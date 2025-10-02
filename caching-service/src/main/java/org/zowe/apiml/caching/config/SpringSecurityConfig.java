@@ -36,8 +36,8 @@ public class SpringSecurityConfig {
     @Value("${apiml.service.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifyCerts;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
 
     @Value("${apiml.metrics.enabled:false}")
     private boolean isMetricsEnabled;
@@ -67,7 +67,7 @@ public class SpringSecurityConfig {
         if (verifyCertificates || !nonStrictVerifyCerts) {
             http.authorizeRequests(requests -> requests.anyRequest().authenticated())
                     .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
-            if (isAttlsEnabled) {
+            if (isServerAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }

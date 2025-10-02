@@ -215,13 +215,35 @@ spring:
 
 ---
 spring:
-    profiles: attls
+    profiles: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
+
+eureka:
+    instance:
+        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
+        metadata-map:
+            apiml:
+                corsEnabled: true
+                corsAllowedOrigins: https://${apiml.service.hostname}:${apiml.service.port},${apiml.service.externalUrl}
+                apiInfo:
+                    - apiId: zowe.apiml.apicatalog
+                      version: 1.0.0
+                      gatewayUrl: api/v1
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
+
+---
+spring:
+    profiles: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
 eureka:
     instance:
         securePort: 0
@@ -231,13 +253,9 @@ eureka:
         metadata-map:
             apiml:
                 corsEnabled: true
+                corsAllowedOrigins: https://${apiml.service.hostname}:${apiml.service.port},${apiml.service.externalUrl}
                 apiInfo:
                     - apiId: zowe.apiml.apicatalog
                       version: 1.0.0
                       gatewayUrl: api/v1
                       swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
-apiml:
-    service:
-        scheme: http
-        nonSecurePortEnabled: true
-        securePortEnabled: false

@@ -37,9 +37,12 @@ import java.util.Map;
 public class CachingServiceClient {
 
     private final RestTemplate restTemplate;
+
     private final String gatewayProtocolHostPort;
+
     @Value("${apiml.cachingServiceClient.apiPath}")
     private static final String CACHING_API_PATH = "/cachingservice/api/v1/cache"; //NOSONAR parametrization provided by @Value annotation
+
     @Value("${apiml.cachingServiceClient.list.apiPath}")
     private static final String CACHING_LIST_API_PATH = "/cachingservice/api/v1/cache-list/"; //NOSONAR parametrization provided by @Value annotation
 

@@ -53,9 +53,7 @@ public class HttpsFactory {
         this.apimlLog = ApimlLogger.of(HttpsFactory.class, YamlMessageServiceInstance.getInstance());
     }
 
-
     public CloseableHttpClient createSecureHttpClient(HttpClientConnectionManager connectionManager) {
-
         RequestConfig requestConfig = RequestConfig.custom()
             .setConnectTimeout(config.getRequestConnectionTimeout())
             .setSocketTimeout(config.getRequestConnectionTimeout())
@@ -67,7 +65,6 @@ public class HttpsFactory {
             .setConnectionManager(connectionManager).disableCookieManagement().setUserTokenHandler(userTokenHandler)
             .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
             .disableAuthCaching().build();
-
     }
 
     public ConnectionSocketFactory createSslSocketFactory() {
@@ -237,7 +234,7 @@ public class HttpsFactory {
         }
     }
 
-    public EurekaJerseyClientBuilder createEurekaJerseyClientBuilder(String eurekaServerUrl, String serviceId, boolean attlsEnabled) {
+    public EurekaJerseyClientBuilder createEurekaJerseyClientBuilder(String eurekaServerUrl, String serviceId, boolean isClientAttlsEnabled) {
         EurekaJerseyClientBuilder builder = new EurekaJerseyClientBuilder();
         builder.withClientName(serviceId);
         builder.withMaxTotalConnections(10);
@@ -248,7 +245,7 @@ public class HttpsFactory {
         // See:
         // https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
         if (eurekaServerUrl.startsWith("http://")) {
-            if (!attlsEnabled) {
+            if (!isClientAttlsEnabled) {
                 apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
             }
         } else {
