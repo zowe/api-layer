@@ -281,14 +281,9 @@ server:
     ssl:
         enabled: false
 
-    service:
-        scheme: http
 apiml:
     service:
         corsEnabled: true
-        scheme: http
-        nonSecurePortEnabled: true
-        securePortEnabled: false
 
 ---
 spring:
@@ -300,11 +295,17 @@ server:
 
 apiml:
     service:
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
         discoveryServiceUrls: http://localhost:10011/eureka/
 
 eureka:
     instance:
         metadata-map:
             apiml:
-                apiInfo[0]:
-                    swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/api-docs
+                apiInfo:
+                    -   apiId: zowe.apiml.gateway
+                        gatewayUrl: api/v1
+                        swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/api-doc
+                        documentationUrl: https://zowe.github.io/docs-site/

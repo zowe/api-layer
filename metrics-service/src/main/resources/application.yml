@@ -185,8 +185,11 @@ server:
 apiml:
     service:
         scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
 
 eureka:
     instance:
         nonSecurePortEnabled: true
         securePortEnabled: false
+

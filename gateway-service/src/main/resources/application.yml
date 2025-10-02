@@ -351,14 +351,9 @@ server:
     ssl:
         enabled: false
 
-    service:
-        scheme: http
 apiml:
     service:
         corsEnabled: true
-        scheme: http
-        nonSecurePortEnabled: true
-        securePortEnabled: false
 
 ---
 spring:
@@ -370,6 +365,9 @@ server:
 
 apiml:
     service:
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
         discoveryServiceUrls: http://localhost:10011/eureka/
 
 eureka:

@@ -244,11 +244,9 @@ server:
         enabled: true
     ssl:
         enabled: false
+
 eureka:
     instance:
-        securePort: 0
-        nonSecurePortEnabled: true
-        securePortEnabled: false
         secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
         metadata-map:
             apiml:
@@ -272,7 +270,7 @@ eureka:
         securePort: 0
         nonSecurePortEnabled: true
         securePortEnabled: false
-        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/apicatalog/application/health
+        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
         metadata-map:
             apiml:
                 corsEnabled: true
@@ -281,5 +279,5 @@ eureka:
                     -   apiId: zowe.apiml.apicatalog
                         version: 1.0.0
                         gatewayUrl: api/v1
-                        swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/apicatalog/v3/api-docs
+                        swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
 

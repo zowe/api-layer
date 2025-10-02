@@ -239,4 +239,3 @@ apiml:
 server:
     attlsClient:
         enabled: true
-
