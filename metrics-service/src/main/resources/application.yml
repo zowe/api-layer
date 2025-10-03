@@ -16,9 +16,6 @@ logging:
         javax.net.ssl: ERROR # For running with java 17
 
 eureka:
-    instance:
-        nonSecurePortEnabled: ${apiml.service.nonSecurePortEnabled}
-        securePortEnabled: ${apiml.service.securePortEnabled}
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
         registryFetchIntervalSeconds: 1
@@ -40,8 +37,6 @@ apiml:
         discoveryServiceUrls: https://localhost:10011/eureka/
 
         scheme: https
-        nonSecurePortEnabled: false
-        securePortEnabled: true
 
         hostname: localhost
         port: 10019
@@ -178,6 +173,17 @@ server:
         enabled: true
     ssl:
         enabled: false
+
+apiml:
+    service:
+        nonSecurePortEnabled: false
+        securePortEnabled: true
+
+eureka:
+    instance:
+        securePort: ${apiml.service.port}
+        nonSecurePortEnabled: false
+        securePortEnabled: true
 
 ---
 spring:
