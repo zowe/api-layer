@@ -153,3 +153,9 @@ apiml:
         nonSecurePortEnabled: true
         securePortEnabled: false
         discoveryServiceUrls: http://localhost:10011/eureka/
+
+eureka:
+    instance:
+        securePort: 0
+        nonSecurePortEnabled: true
+        securePortEnabled: false
