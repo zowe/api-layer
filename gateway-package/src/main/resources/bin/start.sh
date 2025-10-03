@@ -219,20 +219,17 @@ fi
 if [ "${ATTLS_SERVER_ENABLED}" = "true" ]; then
   add_profile "attlsServer"
   ZWE_configs_server_ssl_enabled="false"
+  ZWE_configs_server_internal_ssl_enabled="${ZWE_configs_server_internal_ssl_enabled:-false}"
+  ZWE_configs_apiml_service_corsEnabled=true
 fi
 
 # Verify discovery service URL in case AT-TLS client is enabled
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
 internalProtocol=https
-if [ "${ATTLS_CLIENT_ENABLED}" = "true" -o "${ATTLS_SERVER_ENABLED}" = "true" ]; then
-    # Keep current behaviour, change in v3
-    ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
-    ZWE_configs_server_internal_ssl_enabled="${ZWE_configs_server_internal_ssl_enabled:-false}"
-    ZWE_configs_apiml_service_corsEnabled=true
-fi
-
 if [ "${ATTLS_CLIENT_ENABLED}" = "true" ]; then
+    # Keep current behaviour, change in v3
     add_profile "attlsClient"
+    ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
     internalProtocol=http
 fi
 

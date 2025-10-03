@@ -353,7 +353,15 @@ server:
 
 apiml:
     service:
+        nonSecurePortEnabled: false
+        securePortEnabled: true
         corsEnabled: true
+
+eureka:
+    instance:
+        securePort: ${apiml.service.port}
+        nonSecurePortEnabled: false
+        securePortEnabled: true
 
 ---
 spring:
@@ -372,6 +380,9 @@ apiml:
 
 eureka:
     instance:
+        securePort: 0
+        nonSecurePortEnabled: true
+        securePortEnabled: false
         metadata-map:
             apiml:
                 apiInfo:
