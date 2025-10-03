@@ -47,6 +47,8 @@ apiml:
         port: 10010  # Default port name for gateway service
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
         scheme: https  # "https" or "http"
+        nonSecurePortEnabled: false
+        securePortEnabled: true
         preferIpAddress: false
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
         additionalRegistration: # List of additional Apiml Discovery Services metadata to register with
@@ -247,6 +249,8 @@ eureka:
         statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info
         healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
         secureHealthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        nonSecurePortEnabled: ${apiml.service.nonSecurePortEnabled}
+        securePortEnabled: ${apiml.service.securePortEnabled}
         metadata-map:
             apiml:
                 catalog:

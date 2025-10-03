@@ -7,6 +7,8 @@ eureka:
         #ports are computed in code
         homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/
         healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        nonSecurePortEnabled: ${apiml.service.nonSecurePortEnabled}
+        securePortEnabled: ${apiml.service.securePortEnabled}
         metadata-map:
             apiml:
                 service:
@@ -44,6 +46,8 @@ apiml:
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
         port: 10023
         scheme: https  # "https" or "http"
+        nonSecurePortEnabled: false
+        securePortEnabled: true
     security:
         ssl:
             nonStrictVerifySslCertificatesOfServices: true
