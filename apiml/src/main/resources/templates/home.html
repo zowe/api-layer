@@ -174,8 +174,12 @@
         <li class="list-item">
             <div class="wrap"><img class="status-icon"
                                    th:src="@{${'/images/icon-notification-intent-' + authIconName + '.png'}}"
-                                   alt="API ML running icon"/>
+                                   alt="Authentication service running icon"/>
                 <p class="status-text" th:text="${authStatusText}"/></div>
+        </li>
+        <li class="list-item">
+            <div class="wrap">
+                <p class="status-text" th:text="${apimlStatusText}"/></div>
         </li>
     </ul>
 </div>

@@ -16,12 +16,15 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.product.version.BuildInfoDetails;
+import org.zowe.apiml.zaas.security.login.Providers;
+import org.zowe.apiml.zaas.security.service.JwtSecurity;
 
 import java.util.List;
 
@@ -34,11 +37,14 @@ import java.util.List;
 public class ApimlHomepageController {
 
     private static final String SUCCESS_ICON_NAME = "success";
+    private static final String WARNING_ICON_NAME = "warning";
 
     private final DiscoveryClient discoveryClient;
     private final BuildInfo buildInfo;
 
     private final ApplicationInfo applicationInfo;
+    private final ApplicationContext applicationContext;
+
     private String buildString;
 
     @PostConstruct
@@ -64,15 +70,31 @@ public class ApimlHomepageController {
 
     private void initializeParameters(Model model) {
         long apimlInstances = apimlInstancesCount();
-        var authStatusText = "Number of API ML instances: " + apimlInstances;
-        model.addAttribute("authStatusText", authStatusText);
-        model.addAttribute("authIconName", SUCCESS_ICON_NAME);
+        var apimlStatusText = "Number of API ML instances: " + apimlInstances;
+        model.addAttribute("apimlStatusText", apimlStatusText);
+        if (isAuthReady()) {
+            model.addAttribute("authStatusText", "Authentication service is ready");
+            model.addAttribute("authIconName", SUCCESS_ICON_NAME);
+        } else {
+            model.addAttribute("authStatusText", "Authentication service is not ready");
+            model.addAttribute("authIconName", WARNING_ICON_NAME);
+        }
+
         model.addAttribute("catalogLink", "/apicatalog/ui/v1");
         model.addAttribute("isAnyCatalogAvailable", true);
         model.addAttribute("catalogIconName", SUCCESS_ICON_NAME);
         model.addAttribute("catalogLinkEnabled", true);
         model.addAttribute("catalogStatusText", "The API Catalog");
         model.addAttribute("buildInfoText", buildString);
+    }
+
+    private boolean isAuthReady() {
+        var jwtSec = applicationContext.getBean(JwtSecurity.class);
+        var providers = applicationContext.getBean(Providers.class);
+        if (!providers.isZosfmUsed()) {
+            return true;
+        }
+        return jwtSec.getZosmfListener().isZosmfReady();
     }
 
     private int apimlInstancesCount() {
