@@ -64,3 +64,16 @@ jgroups:
         port: 7600
         address: localhost
 
+otel:
+    resource:
+        attributes:
+            deployment.environment: dev
+            service:
+                name: apiml
+                namespace: lparX
+    traces:
+        exporter: logging-otlp
+    metrics:
+        exporter: logging-otlp
+    logs:
+        exporter: none

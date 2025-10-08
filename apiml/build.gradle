@@ -74,6 +74,10 @@ dependencies {
     implementation libs.nimbus.jose.jwt
     implementation libs.spring.doc.webflux.ui
 
+    //OpenTelemetry Spring Boot Starter
+    implementation libs.opentelemetry.spring.boot.starter
+    implementation libs.opentelemetry.exporter.logging.otlp
+
     testImplementation(testFixtures(project(":apiml-common")))
     testImplementation(testFixtures(project(":gateway-service")))
     testImplementation libs.spring.boot.starter.test
