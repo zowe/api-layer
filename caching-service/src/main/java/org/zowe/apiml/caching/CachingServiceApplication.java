@@ -12,19 +12,14 @@ package org.zowe.apiml.caching;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Import;
 import org.springframework.retry.annotation.EnableRetry;
 import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
-import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
-import org.zowe.apiml.product.web.TomcatAcceptFixConfig;
-import org.zowe.apiml.product.web.TomcatKeyringFix;
 
 @SpringBootApplication
 @EnableApiDiscovery
 @EnableRetry
 @EnableApimlLogger
-@Import({TomcatKeyringFix.class, TomcatAcceptFixConfig.class, ApimlTomcatCustomizer.class})
 public class CachingServiceApplication {
 
     public static void main(String[] args) {
