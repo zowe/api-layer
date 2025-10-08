@@ -114,10 +114,10 @@ public class ModulithConfig implements InitializingBean {
 
     private InstanceInfo getInstanceInfo(String serviceId) {
         var leaseInfo = LeaseInfo.Builder.newBuilder()
-            .setDurationInSecs(Integer.MAX_VALUE)
+            .setDurationInSecs(90)
             .setRegistrationTimestamp(System.currentTimeMillis())
             .setRenewalTimestamp(System.currentTimeMillis())
-            .setRenewalIntervalInSecs(Integer.MAX_VALUE)
+            .setRenewalIntervalInSecs(30)
             .setServiceUpTimestamp(System.currentTimeMillis())
             .build();
 

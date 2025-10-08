@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Controller;
@@ -34,6 +35,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 @Tag(name = "Home page")
 @RequiredArgsConstructor
 @Controller
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class GatewayHomepageController {
 
     private static final String SUCCESS_ICON_NAME = "success";
