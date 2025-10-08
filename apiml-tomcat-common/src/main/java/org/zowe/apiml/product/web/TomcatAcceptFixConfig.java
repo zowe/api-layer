@@ -129,6 +129,8 @@ public class TomcatAcceptFixConfig {
         return connector -> connector.addLifecycleListener(event -> {
             if (event.getLifecycle().getState() == LifecycleState.STARTED) {
                 update(connector);
+
+                log.debug("TomcatAcceptFixConfig applied");
             }
         });
     }

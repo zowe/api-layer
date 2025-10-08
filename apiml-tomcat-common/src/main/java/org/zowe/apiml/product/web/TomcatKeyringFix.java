@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.product.web;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.server.AbstractConfigurableWebServerFactory;
 import org.springframework.boot.web.server.Ssl;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Component
 public class TomcatKeyringFix implements WebServerFactoryCustomizer<AbstractConfigurableWebServerFactory> {
 
@@ -72,6 +74,8 @@ public class TomcatKeyringFix implements WebServerFactoryCustomizer<AbstractConf
             ssl.setTrustStore(formatKeyringUrl(trustStore));
             ssl.setTrustStorePassword(trustStorePassword == null ? KEYRING_PASSWORD : String.valueOf(trustStorePassword));
         }
+
+        log.debug("TomcatKeyringFix applied");
     }
 
 }
