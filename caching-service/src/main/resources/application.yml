@@ -33,7 +33,8 @@ logging:
         org.springdoc: WARN
         org.springframework: WARN
         org.springframework.boot: OFF
-        org.jgroups.protocols: ERROR
+        org.infinispan: ERROR
+        org.jgroups: ERROR
         com.netflix: WARN
         com.netflix.discovery: ERROR
         com.netflix.config: ERROR
