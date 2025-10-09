@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <property name="MAX_INDEX" value="${rollingPolicy.maxIndex:-12}"/>
-    <property name="MIN_INDEX" value="${rollingPolicy.minIndex:-1}"/>
-    <property name="MAX_FILE_SIZE" value="${rollingPolicy.file.maxSize:-50MB}"/>
-    <property name="STORAGE_LOCATION" value="${apiml.logs.location}"/>
     <property name="apimlLogPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} %clr&lt;${logbackService:-${logbackServiceName}}:%thread:${PID:- }&gt; %magenta(%X{userid:-}) %cyan(%-5level) %clr\(\(%logger{15}\)\) %msg%n"/>
 
     <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter"/>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <charset>${CONSOLE_LOG_CHARSET:-${logging.charset.console:-${file.encoding:-UTF-8}}}</charset>
+            <charset>UTF-8</charset>
             <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
                 <pattern>${apimlLogPattern}</pattern>
             </layout>
@@ -21,6 +17,8 @@
 
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
+    </root>
+    <root level="DEBUG">
         <appender-ref ref="testLogger"/>
     </root>
 
