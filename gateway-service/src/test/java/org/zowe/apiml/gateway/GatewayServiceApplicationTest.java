@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.caching;
+package org.zowe.apiml.gateway;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import org.junit.jupiter.api.AfterAll;
@@ -24,7 +24,7 @@ import org.zowe.apiml.util.TestLogger;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class CachingServiceApplicationTest {
+class GatewayServiceApplicationTest {
 
     private Recorder<ILoggingEvent> recorder = TestLogger.getHandler();
 

@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.caching;
+package org.zowe.apiml.discovery;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import org.junit.jupiter.api.AfterAll;
@@ -21,10 +21,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.zowe.apiml.util.Recorder;
 import org.zowe.apiml.util.TestLogger;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class CachingServiceApplicationTest {
+class DiscoveryServiceApplicationTest {
 
     private Recorder<ILoggingEvent> recorder = TestLogger.getHandler();
 
