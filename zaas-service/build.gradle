@@ -101,6 +101,9 @@ dependencies {
 
     implementation libs.jjwt.impl
     implementation libs.jjwt.jackson
+    // implementation("com.ibm.websphere.appserver.api:com.ibm.websphere.appserver.api.jwt:1.1.106")
+    // implementation("io.openliberty.api:io.openliberty.jwt:1.1.106")
+    implementation("org.bitbucket.b_c:jose4j:0.9.6")
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

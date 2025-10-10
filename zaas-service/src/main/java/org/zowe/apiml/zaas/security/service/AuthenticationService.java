@@ -25,6 +25,14 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.jose4j.jwa.AlgorithmConstraints;
+import org.jose4j.jwa.AlgorithmConstraints.ConstraintType;
+import org.jose4j.jwe.ContentEncryptionAlgorithmIdentifiers;
+import org.jose4j.jwe.JsonWebEncryption;
+import org.jose4j.jwe.KeyManagementAlgorithmIdentifiers;
+import org.jose4j.keys.AesKey;
+import org.jose4j.lang.ByteUtil;
+import org.jose4j.lang.JoseException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
@@ -42,14 +50,26 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.*;
+import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 import org.zowe.apiml.zaas.controllers.AuthController;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
-import java.util.*;
+import java.security.Key;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.zowe.apiml.zaas.security.service.JwtUtils.getJwtClaims;
 import static org.zowe.apiml.zaas.security.service.JwtUtils.handleJwtParserException;
@@ -121,14 +141,73 @@ public class AuthenticationService {
     }
 
     private String createJWT(String username, String issuer, Map<String, Object> claims, long issuedAt, long expiration) {
-        return Jwts.builder()
-            .subject(username)
-            .issuedAt(new Date(issuedAt))
-            .expiration(new Date(expiration))
-            .issuer(issuer)
-            .id(UUID.randomUUID().toString())
-            .claims(claims)
-            .signWith(jwtSecurityInitializer.getJwtSecret(), jwtSecurityInitializer.getSignatureAlgorithm()).compact();
+        // try {
+        //     SignatureAlgorithm alg = Jwts.SIG.RS256;
+
+        //     RsaPrivateJwk privateJwk = Jwks.builder().key((RSAPrivateKey)jwtSecurityInitializer.getJwtSecret()).publicKey(((RSAPublicKey)jwtSecurityInitializer.getJwtPublicKey())).build();
+
+        //     // String jws = Jwts.builder().subject("Alice")
+        //     //     .signWith(pair.getPrivate(), alg) // <-- Bob's RSA private key
+        //     //     .compact();
+
+        //     return Jwts.builder()
+        //         .subject(username)
+        //         .issuedAt(new Date(issuedAt))
+        //         .expiration(new Date(expiration))
+        //         .issuer(issuer)
+        //         .id(UUID.randomUUID().toString())
+        //         .claims(claims)
+        //         .signWith(privateJwk.toKey(), alg).compact();
+        //         //.signWith(jwtSecurityInitializer.getJwtSecret(), jwtSecurityInitializer.getSignatureAlgorithm()).compact();
+        // } catch (Exception e) {
+        //     log.error("Exception in io.jsonwebtoken implementation: {}", e.getMessage(), e);
+        // }
+
+
+        // try {
+        //     return JwtBuilder.create()
+        //         .subject(username)
+        //         .expirationTime(new Date(expiration).getTime())
+        //         .issuer(issuer)
+        //         .claim(claims)
+        //         .signWith(jwtSecurityInitializer.getSignatureAlgorithm().getId(), jwtSecurityInitializer.getJwtSecret())
+        //         .buildJwt().compact();
+        // } catch (JwtException e) {
+        //     log.error("Jwt exception: {}", e.getMessage(), e);
+        //     return null;
+        // } catch (InvalidBuilderException e) {
+        //     log.error("InvalidBuilder exception: {}", e.getMessage(), e);
+        //     return null;
+        // } catch (InvalidClaimException e) {
+        //     log.error("InvalidClaim exception: {}", e.getMessage(), e);
+        //     return null;
+        // } catch (KeyException e) {
+        //     log.error("Key exception: {}", e.getMessage(), e);
+        //     return null;
+        // } catch (Exception e ) {
+        //     log.error("Exception: {}", e.getMessage(), e);
+        //     return null;
+        // }
+        try {
+            JsonWebEncryption jwe = new JsonWebEncryption();
+            jwe.setPayload("Hello World!");
+            jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.RSA_OAEP_256); // RS256
+            jwe.setEncryptionMethodHeaderParameter(ContentEncryptionAlgorithmIdentifiers.AES_128_CBC_HMAC_SHA_256); // RS256
+            jwe.setKey(jwtSecurityInitializer.getJwtSecret());
+            String serializedJwe = jwe.getCompactSerialization();
+            System.out.println("Serialized Encrypted JWE: " + serializedJwe);
+            jwe = new JsonWebEncryption();
+            jwe.setAlgorithmConstraints(new AlgorithmConstraints(ConstraintType.PERMIT,
+                    KeyManagementAlgorithmIdentifiers.A128KW)); // RS256
+            jwe.setContentEncryptionAlgorithmConstraints(new AlgorithmConstraints(ConstraintType.PERMIT,
+                    ContentEncryptionAlgorithmIdentifiers.AES_128_CBC_HMAC_SHA_256));
+            jwe.setKey(jwtSecurityInitializer.getJwtSecret());
+            jwe.setCompactSerialization(serializedJwe);
+            System.out.println("Payload: " + jwe.getPayload()); // payload is the jwt
+            return jwe.getPayload();
+        } catch (JoseException e) {
+            log.error("JoseException: {}", e.getMessage(), e);
+        }
     }
 
     @SuppressWarnings("java:S5659")
