@@ -4,15 +4,14 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 ## `2.18.3 (2025-10-23)`
 
-* Feature:  adding PATCH to the list of CORS allowed methods (v2.x.x) (#4255) ([1d86960](https://github.com/zowe/api-layer/commit/1d86960)), closes [#4255](https://github.com/zowe/api-layer/issues/4255)
-* Feature:  Support Keycloak as OIDC provider in integration tests (#4323) ([197dfed](https://github.com/zowe/api-layer/commit/197dfed)), closes [#4323](https://github.com/zowe/api-layer/issues/4323)
+* Feature:  Support PATCH method in CORS. (#4255) ([1d86960](https://github.com/zowe/api-layer/commit/1d86960)), closes [#4255](https://github.com/zowe/api-layer/issues/4255)
+* Feature:  Support Keycloak as OIDC provider in integration tests. (#4323) ([197dfed](https://github.com/zowe/api-layer/commit/197dfed)), closes [#4323](https://github.com/zowe/api-layer/issues/4323)
 
-* Bugfix:  default eureka intervals (#4225) ([5cd6898](https://github.com/zowe/api-layer/commit/5cd6898)), closes [#4225](https://github.com/zowe/api-layer/issues/4225)
-* Bugfix:  backport tests for swagger redirection (#4288) ([a951be7](https://github.com/zowe/api-layer/commit/a951be7)), closes [#4288](https://github.com/zowe/api-layer/issues/4288)
-* Bugfix:  V2 API ML services log cleanup (#4292) ([e75539d](https://github.com/zowe/api-layer/commit/e75539d)), closes [#4292](https://github.com/zowe/api-layer/issues/4292)
-* Bugfix:  z/OSMF static definition for AT-TLS (v2.18.x) (#4330) ([262a654](https://github.com/zowe/api-layer/commit/262a654)), closes [#4330](https://github.com/zowe/api-layer/issues/4330)
-* Bugfix:  Fix URLs for onboarding when AT-TLS is enabled and gateway trying to read a keyring with empty  ([823006f](https://github.com/zowe/api-layer/commit/823006f)), closes [#4337](https://github.com/zowe/api-layer/issues/4337)
-* Bugfix:  Ensure correct scheme is set in hybrid AT-TLS setup  (#4338) ([631bf96](https://github.com/zowe/api-layer/commit/631bf96)), closes [#4338](https://github.com/zowe/api-layer/issues/4338)
+* Bugfix:  Fix default eureka intervals of Caching Service. (#4225) ([5cd6898](https://github.com/zowe/api-layer/commit/5cd6898)), closes [#4225](https://github.com/zowe/api-layer/issues/4225)
+* Bugfix:  The API ML services log cleanup. (#4292) ([e75539d](https://github.com/zowe/api-layer/commit/e75539d)), closes [#4292](https://github.com/zowe/api-layer/issues/4292)
+* Bugfix:  Fix z/OSMF static definition for AT-TLS. (#4330) ([262a654](https://github.com/zowe/api-layer/commit/262a654)), closes [#4330](https://github.com/zowe/api-layer/issues/4330)
+* Bugfix:  Fix URLs for onboarding when AT-TLS is enabled and gateway read a keyring with empty values. ([823006f](https://github.com/zowe/api-layer/commit/823006f)), closes [#4337](https://github.com/zowe/api-layer/issues/4337)
+* Bugfix:  Fix correct protocol scheme in hybrid AT-TLS setup. (#4338) ([631bf96](https://github.com/zowe/api-layer/commit/631bf96)), closes [#4338](https://github.com/zowe/api-layer/issues/4338)
 
 ## `APIML 2.18.16 / Zowe 2.18.2 (2025-07-22)`
 
