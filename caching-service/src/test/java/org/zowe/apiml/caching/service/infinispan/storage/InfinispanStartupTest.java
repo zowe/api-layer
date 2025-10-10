@@ -14,11 +14,18 @@ import org.infinispan.manager.DefaultCacheManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SpringBootTest(properties = {"caching.storage.mode=infinispan",
-    "jgroups.bind.port=7600", "jgroups.bind.address=localhost", "apiml.enabled=false"})
+@SpringBootTest(properties = {
+    "caching.storage.mode=infinispan",
+    "infinispan.embedded.enabled=true",
+    "jgroups.bind.port=7600",
+    "jgroups.bind.address=localhost",
+    "apiml.enabled=false"
+})
+@DirtiesContext // infinispan.embedded.enabled register JMXBeans. There could be registered only once
 class InfinispanStartupTest {
 
     @Autowired

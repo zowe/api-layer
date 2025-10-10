@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.caching.CachingServiceApplication;
@@ -55,12 +54,6 @@ class AttlsConfigTest {
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
     @ActiveProfiles({ "AttlsConfigTestCachingService", "attlsClient", "attlsServer" })
-    @TestPropertySource(
-        properties = {
-            "caching.storage.mode=inMemory"
-        }
-    )
-    @DirtiesContext
     @Nested
     class GivenAttlsModeEnabled {
 
@@ -130,7 +123,6 @@ class AttlsConfigTest {
         }
     )
     @ActiveProfiles({ "attlsClient", "attlsServer" })
-    @DirtiesContext
     @SpringBootTest(
         classes = CachingServiceApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
