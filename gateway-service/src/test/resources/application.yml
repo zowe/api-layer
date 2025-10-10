@@ -34,6 +34,7 @@ server:
         clientKeyStore: ../keystore/client_cert/client-certs.p12
         clientCN: apimtst # case-sensitive
         clientKeyStorePassword: password
+    max-http-request-header-size: 48000
 
 #For testing forwarded headers with (un)trusted proxies
 test:
@@ -58,11 +59,13 @@ spring:
 
 logging:
     level:
+        ROOT: DEBUG
+        org.springframework: DEBUG
+        org.springframework.web: TRACE
         org.springframework.cloud.gateway: DEBUG
-        reactor.netty: DEBUG
         org.springframework.security: DEBUG
         org.springframework.beans: WARN
-
+        reactor.netty: DEBUG
 
 management:
     endpoint:
@@ -73,3 +76,39 @@ management:
             base-path: /application
             exposure:
                 include: health,gateway
+
+---
+spring.config.activate.on-profile: attlsServer
+
+server:
+    attlsServer:
+        enabled: true
+    ssl:
+        enabled: false
+
+    service:
+        scheme: http
+apiml:
+    service:
+        corsEnabled: true
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
+apiml:
+    service:
+        discoveryServiceUrls: http://localhost:10011/eureka/
+
+eureka:
+    instance:
+        metadata-map:
+            apiml:
+                apiInfo[0]:
+                    swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/gateway/api-docs

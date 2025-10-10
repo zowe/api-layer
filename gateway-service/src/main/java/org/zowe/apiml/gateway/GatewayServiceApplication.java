@@ -16,12 +16,14 @@ import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.Re
 
 @SpringBootApplication(
     scanBasePackages = {
+        "org.zowe.apiml.filter",
         "org.zowe.apiml.gateway",
         "org.zowe.apiml.product.web",
         "org.zowe.apiml.product.config",
         "org.zowe.apiml.product.gateway",
         "org.zowe.apiml.product.version",
         "org.zowe.apiml.product.logging",
+        "org.zowe.apiml.product.security",
         "org.zowe.apiml.product.service",
         "org.zowe.apiml.security"
     },

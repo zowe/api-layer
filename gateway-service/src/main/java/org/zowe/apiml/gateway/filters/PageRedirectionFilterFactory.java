@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.ServiceType;
@@ -47,8 +48,8 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
     private static final String SLASH = "/";
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
 
     private static final EurekaMetadataParser EUREKA_METADATA_PARSER = new EurekaMetadataParser();
 
@@ -73,14 +74,14 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
             .then(Mono.defer(() -> processNewLocationUrl(exchange, config, instance)));
     }
 
-    private URI getHostUri(ServiceInstance instance) {
+    private URI getHostAndPortUri(ServiceInstance instance) {
         return UriComponentsBuilder.newInstance()
             .host(instance.getHost())
             .port(instance.getPort())
             .build().toUri();
     }
 
-    private URI getHostUri(URI uri) {
+    private URI getHostAndPortUri(URI uri) {
         return UriComponentsBuilder.newInstance()
             .host(uri.getHost())
             .port(uri.getPort())
@@ -92,16 +93,27 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
             return instance;
         }
 
-        URI hostUri = getHostUri(locationUri);
-        if (instance.map(i -> getHostUri(i).equals(hostUri)).orElse(false)) {
+        var locationHostAndPortUri = getHostAndPortUri(locationUri);
+        if (matchesInstance(instance, locationHostAndPortUri)) {
             return instance;
         }
 
         return discoveryClient.getServices().stream()
             .map(discoveryClient::getInstances)
             .flatMap(List::stream)
-            .filter(i -> hostUri.equals(getHostUri(i)))
+            .filter(i -> locationHostAndPortUri.equals(getHostAndPortUri(i)))
             .findFirst();
+    }
+
+    /**
+     * Compares URI with instance
+     *
+     * @param instance
+     * @param hostAndPortUri
+     * @return true if URI equals URI from instance
+     */
+    private boolean matchesInstance(Optional<ServiceInstance> instance, URI hostAndPortUri) {
+        return instance.map(i -> getHostAndPortUri(i).equals(hostAndPortUri)).orElse(false);
     }
 
     private String normalizePath(String path) {
@@ -116,7 +128,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
     private boolean isMatching(RoutedService route, URI uri) {
         var servicePath = normalizePath(route.getServiceUrl());
-        var locationPath = normalizePath(uri.getPath());
+        var locationPath = normalizePath(uri.getRawPath());
         return locationPath.startsWith(servicePath);
     }
 
@@ -129,24 +141,28 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
         var location = response.getHeaders().getFirst(HttpHeaders.LOCATION);
         if (StringUtils.isBlank(location)) {
+            log.debug("Location header is empty");
             return Mono.empty();
         }
-
+        log.debug("Location header in response: {}", location);
         var locationUri = URI.create(location);
         var targetInstance = getInstance(locationUri, instance);
+        if (isGateway(targetInstance)) {
+            log.debug("Target instance is Gateway. Location header was not translated. {}", locationUri);
+            return Mono.empty();
+        }
         var defaultRoute = config.getRoutedService();
 
         AtomicReference<String> newUrl = new AtomicReference<>();
         if (targetInstance == instance && isMatching(defaultRoute, locationUri)) {
             // try the preferable route on the same instance (the same as in the original request)
             try {
-                newUrl.set(transformService.transformURL(
+                newUrl.set(transformService.transformAbsoluteURL(
                     StringUtils.toRootLowerCase(config.serviceId),
-                    UriComponentsBuilder.fromPath(locationUri.getPath()).query(locationUri.getQuery()).build().toUri().toString(),
-                    defaultRoute,
-                    false,
-                    locationUri
+                    UriComponentsBuilder.fromPath(locationUri.getPath()).query(locationUri.getRawQuery()).build().toUriString(),
+                    defaultRoute
                 ));
+                log.debug("Location is matching service URL. New Location header value is: {}", newUrl.get());
             } catch (URLTransformationException e) {
                 log.debug("Cannot transform URL on the same route", e);
                 return Mono.empty();
@@ -166,6 +182,7 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
                         routes,
                         false
                     ));
+                    log.debug("Target instance: {}. New Location header value is: {}", i.getInstanceId(), newUrl.get());
                 } catch (URLTransformationException e) {
                     log.debug("Cannot transform URL", e);
                 }
@@ -174,8 +191,9 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
         if (newUrl.get() != null) {
             // if the new URL was defined, decorate (scheme by AT-TLS) and set
-            if (isAttlsEnabled) {
+            if (isServerAttlsEnabled && newUrl.get().startsWith("http://")) {
                 newUrl.set(UriComponentsBuilder.fromUriString(newUrl.get()).scheme("https").build().toUriString());
+                log.debug("AT-TLS server is enabled. Location url was updated with: {}", newUrl.get());
             }
 
             exchange.getResponse().getHeaders().set(HttpHeaders.LOCATION, newUrl.toString());
@@ -183,6 +201,11 @@ public class PageRedirectionFilterFactory extends AbstractGatewayFilterFactory<P
 
         // in case url was not transformed leave it as it is (routing could be outside the Zowe)
         return Mono.empty();
+    }
+
+    boolean isGateway(Optional<ServiceInstance> targetInstance) {
+        return targetInstance.filter(target -> CoreService.GATEWAY.getServiceId().equalsIgnoreCase(target.getServiceId()))
+            .isPresent();
     }
 
     @Data

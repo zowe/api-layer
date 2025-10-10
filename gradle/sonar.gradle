@@ -53,6 +53,12 @@ project(":zowe-cli-id-federation-plugin") {
     }
 }
 
+project(":discoverable-client") {
+    sonar {
+        skipProject = true
+    }
+}
+
 project(":onboarding-enabler-nodejs") {
     sonar {
         skipProject = true

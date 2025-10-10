@@ -2,6 +2,36 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `3.3.0 (2025-08-18)`
+
+* Feature:  New configuration property **`apiml.security.forwardHeader.trustedProxies`** added to specify the regular expression pattern used to identify trusted proxies from which `X-Forwarded-*` headers are accepted and forwarded. Mitigates CVE-2025-41235. (#4171) ([ff8c81d](https://github.com/zowe/api-layer/commit/ff8c81d)), closes [#4171](https://github.com/zowe/api-layer/pull/4171)
+* Feature:  Support independent response time route setting (#3981) ([aba1b0f](https://github.com/zowe/api-layer/commit/aba1b0f)), closes [#3981](https://github.com/zowe/api-layer/issues/3981)
+* Feature:  Apiml Spring-Modulith based module with ZAAS service (#4108) ([738915e](https://github.com/zowe/api-layer/commit/738915e)), closes [#4108](https://github.com/zowe/api-layer/issues/4108)
+* Feature:  Add check of certificate signing algorithm in Certificate Analyzer tool (#4121) ([39274e7](https://github.com/zowe/api-layer/commit/39274e7)), closes [#4121](https://github.com/zowe/api-layer/issues/4121)
+* Feature:  Apiml Spring-Modulith based module with Gateway and Discovery services (#4051) ([47c3e60](https://github.com/zowe/api-layer/commit/47c3e60)), closes [#4051](https://github.com/zowe/api-layer/issues/4051)
+* Feature:  Certificate validation improvements (#4017) ([b45747f](https://github.com/zowe/api-layer/commit/b45747f)), closes [#4017](https://github.com/zowe/api-layer/issues/4017)
+* Feature:  Onboarding Python Enabler (#4068) ([3f966f3](https://github.com/zowe/api-layer/commit/3f966f3)), closes [#4068](https://github.com/zowe/api-layer/issues/4068)
+* Feature:  Eureka client connection timeout (#4045) ([0e3c116](https://github.com/zowe/api-layer/commit/0e3c116)), closes [#4045](https://github.com/zowe/api-layer/issues/4045)
+
+
+* Bugfix:  Gateway returns empty auth keys from z/OSMF when **`apiml.security.auth.zosmf.jwtAutoconfiguration`** is set to **`jwt`**. (#4108) ([738915e](https://github.com/zowe/api-layer/commit/738915e)), closes [#4092](https://github.com/zowe/api-layer/issues/4092)
+* Bugfix:  Update start.sh settings for caching service (#4226) ([328a4c6](https://github.com/zowe/api-layer/commit/328a4c6)), closes [#4226](https://github.com/zowe/api-layer/issues/4226)
+* Bugfix:  API ML startup message in modulith mode (#4216) ([fbd3356](https://github.com/zowe/api-layer/commit/fbd3356)), closes [#4216](https://github.com/zowe/api-layer/issues/4216)
+* Bugfix:  Fix SAF auth check in non-modulith (#4212) ([b2ddf07](https://github.com/zowe/api-layer/commit/b2ddf07)), closes [#4212](https://github.com/zowe/api-layer/issues/4212)
+* Bugfix:  Unresponsive eureka (#4223) ([4e28a83](https://github.com/zowe/api-layer/commit/4e28a83)), closes [#4223](https://github.com/zowe/api-layer/issues/4223)
+* Bugfix:  Modulith mode does not distribute logout (#4191) ([82b96f5](https://github.com/zowe/api-layer/commit/82b96f5)), closes [#4191](https://github.com/zowe/api-layer/issues/4191)
+* Bugfix:  Disable infinispan diagnostics by default (#4157) ([d1b6972](https://github.com/zowe/api-layer/commit/d1b6972)), closes [#4157](https://github.com/zowe/api-layer/issues/4157)
+* Bugfix:  Fix obtaining public keys if there is unsupported type of key (#4154) ([a7d3700](https://github.com/zowe/api-layer/commit/a7d3700)), closes [#4154](https://github.com/zowe/api-layer/issues/4154)
+* Bugfix:  Generate git properties file before release build  (#4173) ([2ce6e5b](https://github.com/zowe/api-layer/commit/2ce6e5b)), closes [#4173](https://github.com/zowe/api-layer/issues/4173)
+* Bugfix:  Release build without cache  (#4179) ([5898329](https://github.com/zowe/api-layer/commit/5898329)), closes [#4179](https://github.com/zowe/api-layer/issues/4179)
+* Bugfix:  Remove duplicate log messages (#4147) ([d57f9c0](https://github.com/zowe/api-layer/commit/d57f9c0)), closes [#4147](https://github.com/zowe/api-layer/issues/4147)
+* Bugfix:  Fix detection of connection issue (#4142) ([e33d27a](https://github.com/zowe/api-layer/commit/e33d27a)), closes [#4142](https://github.com/zowe/api-layer/issues/4142)
+* Bugfix:  Set memory limit for javap (#4141) ([fcb021f](https://github.com/zowe/api-layer/commit/fcb021f)), closes [#4141](https://github.com/zowe/api-layer/issues/4141)
+* Bugfix:  Config change for Gateway Endlessly Spamming Issue (#4095) ([08bd675](https://github.com/zowe/api-layer/commit/08bd675)), closes [#4095](https://github.com/zowe/api-layer/issues/4095)
+* Bugfix:  Adding HSTS header when AT-TLS enabled V3 (#4052) ([143d73f](https://github.com/zowe/api-layer/commit/143d73f)), closes [#4052](https://github.com/zowe/api-layer/issues/4052)
+* Bugfix:  Non-strict hostname verification in Jetty client for WebSockets (#4073) ([a4768e2](https://github.com/zowe/api-layer/commit/a4768e2)), closes [#4073](https://github.com/zowe/api-layer/issues/4073)
+* Bugfix:  Fix SSO issue in the API Catalog (#4070) ([fb52fa6](https://github.com/zowe/api-layer/commit/fb52fa6)), closes [#4070](https://github.com/zowe/api-layer/issues/4070)
+
 ## `APIML 3.2.3 / Zowe 3.2.0 (2025-04-16)`
 
 * Feature:  v3 with Java 21 (#4028) ([59ea8ee](https://github.com/zowe/api-layer/commit/59ea8ee)), closes [#4028](https://github.com/zowe/api-layer/issues/4028)
@@ -85,6 +115,7 @@ __Breaking changes in API ML__
 | Configuration of keyrings now requires transformation from safkeyring://// to safkeyring://                                   | If your Zowe configuration contains safkeyring:////, change this part to safkeyring://.
 | Support access to z/OSMF only through /ibmzosmf route. V3 will not support access through the /zosmf route                    | If you use z/OSMF via {apimlUrl}/zosmf/{zosmfEndpoint} you need to move to {apimlUrl}/ibmzosmf/{zosmfEndpoint}.
 | Error code change for nonexistent services | Nonexistent service returns 404 with error code ZWEAO404E
+| Service ids with underscore in service id won't be routed | Replace underscor with another character like - or remove it altogether from the service id |
 
 __New features and enhancements in API ML__
 

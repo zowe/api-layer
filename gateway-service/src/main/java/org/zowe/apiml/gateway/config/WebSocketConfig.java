@@ -10,7 +10,9 @@
 
 package org.zowe.apiml.gateway.config;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.gateway.config.HttpClientProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -27,9 +29,11 @@ import reactor.netty.http.client.WebsocketClientSpec;
 
 @Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class WebSocketConfig {
 
     private static final ApimlLogger apimlLog = ApimlLogger.empty();
+    private final HttpClientProperties httpClientProperties;
 
     @Bean
     @Primary
@@ -43,7 +47,13 @@ public class WebSocketConfig {
                 HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config.httpsConfig());
         }
         var spec = WebsocketClientSpec.builder()
-            .handlePing(true);
+            .handlePing(httpClientProperties.getWebsocket().isProxyPing());
+
+        //Set the gateway outbound frame limit for websockets
+        var maxFramePayloadLength = httpClientProperties.getWebsocket().getMaxFramePayloadLength();
+        if (maxFramePayloadLength != null) {
+            spec.maxFramePayloadLength(httpClientProperties.getWebsocket().getMaxFramePayloadLength());
+        }
 
         var client = new ReactorNettyWebSocketClient(secureClient, () -> spec);
         return client;
@@ -52,7 +62,7 @@ public class WebSocketConfig {
     @Bean
     @Primary
     RequestUpgradeStrategy requestUpgradeStrategy() {
-        return new ApimlRequestUpgradeStrategy();
+        return new ApimlRequestUpgradeStrategy(httpClientProperties);
     }
 
 }

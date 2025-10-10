@@ -12,8 +12,6 @@
 
 /// <reference types="Cypress" />
 
-const isModulith = Cypress.env('modulith');
-
 // api-diff-form is now a floating window.
 const PATH_TO_VERSION_SELECTORS = '.api-diff-form > div:nth-child(2) > div > div';
 const PATH_TO_VERSION_SELECTORS2 = '.api-diff-form > div:nth-child(4) > div > div';
@@ -40,8 +38,7 @@ describe('>>> Service version compare Test', () => {
             'exist'
         );
 
-        // FIXME modulith mode does not support multi tenancy yet
-        let expectedServicesCount = 16;
+        const expectedServicesCount = 18;
 
         cy.get('div.MuiTabs-flexContainer.MuiTabs-flexContainerVertical') // Select the parent div
             .find('a.MuiTab-root') // Find all the anchor elements within the div

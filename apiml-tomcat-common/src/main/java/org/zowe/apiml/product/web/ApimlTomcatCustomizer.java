@@ -10,13 +10,13 @@
 
 package org.zowe.apiml.product.web;
 
-import jakarta.annotation.PostConstruct;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.AbstractProtocol;
 import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.tomcat.util.net.*;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.stereotype.Component;
@@ -33,12 +33,12 @@ import java.nio.channels.SocketChannel;
 
 @Slf4j
 @Component
-@ConditionalOnProperty(name = "server.attls.enabled", havingValue = "true")
-public class ApimlTomcatCustomizer implements TomcatConnectorCustomizer {
+@ConditionalOnProperty(name = "server.attlsServer.enabled", havingValue = "true")
+public class ApimlTomcatCustomizer implements TomcatConnectorCustomizer, InitializingBean {
 
     private static final String INCOMPATIBLE_VERSION_MESSAGE = "AT-TLS-Incompatible configuration. Verify AT-TLS requirements: Java version, Tomcat version. Exception message: ";
 
-    @PostConstruct
+    @Override
     public void afterPropertiesSet() {
         log.debug("AT-TLS mode is enabled");
         InboundAttls.setAlwaysLoadCertificate(true);

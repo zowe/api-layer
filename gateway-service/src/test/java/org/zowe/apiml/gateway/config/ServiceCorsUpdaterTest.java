@@ -30,8 +30,8 @@ import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -48,18 +48,19 @@ class ServiceCorsUpdaterTest {
     private static final String SERVICE_ID = "myserviceid";
     private static final String APIML_ID = "apimlid";
 
-    private CorsUtils corsUtils = spy(new CorsUtils(true, Collections.emptyList()));
+    private CorsUtils corsUtils = spy(new CorsUtils(true, List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS")));
 
-    @Mock private ReactiveDiscoveryClient discoveryClient;
+    @Mock
+    private ReactiveDiscoveryClient discoveryClient;
 
     private ServiceCorsUpdater serviceCorsUpdater;
 
     private UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         serviceCorsUpdater = new ServiceCorsUpdater(corsUtils, discoveryClient, mock(RoutePredicateHandlerMapping.class), mock(GlobalCorsProperties.class));
-        serviceCorsUpdater.initCorsConfigurationSource();
+        serviceCorsUpdater.afterPropertiesSet();
         urlBasedCorsConfigurationSource = spy((UrlBasedCorsConfigurationSource) ReflectionTestUtils.getField(serviceCorsUpdater, "urlBasedCorsConfigurationSource"));
         ReflectionTestUtils.setField(serviceCorsUpdater, "urlBasedCorsConfigurationSource", urlBasedCorsConfigurationSource);
     }

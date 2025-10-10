@@ -11,14 +11,8 @@
 package org.zowe.apiml.caching.functional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -30,9 +24,7 @@ import org.zowe.apiml.util.config.SslContextConfigurer;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(Lifecycle.PER_CLASS)
 public class InMemoryFunctionalTest {
 
@@ -55,6 +47,11 @@ public class InMemoryFunctionalTest {
 
     String getUri(String endpoint) {
         return String.format("https://%s:%s%s%s", hostname, port, contextPath, endpoint);
+    }
+
+    @BeforeAll
+    void init() {
+        SslContext.reset();
     }
 
     @BeforeEach

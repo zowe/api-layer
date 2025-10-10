@@ -20,6 +20,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.apicatalog.config.ApiLayerServices;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.model.CustomStyleConfig;
@@ -62,8 +63,8 @@ public class ContainerService {
     @Value("${apiml.catalog.hide.serviceInfo:false}")
     private boolean hideServiceInfo;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -141,9 +142,11 @@ public class ContainerService {
                     serviceId,
                     instanceHomePage,
                     routes,
-                    isAttlsEnabled);
+                    isClientAttlsEnabled);
             } catch (URLTransformationException | IllegalArgumentException e) {
-                apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", serviceId, e.getMessage());
+                if (!ApiLayerServices.isApiLayerService(serviceId)) {
+                    apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", serviceId, e.getMessage());
+                }
             }
         }
 
@@ -171,7 +174,9 @@ public class ContainerService {
                     getHomePageUrl(serviceInstance),
                     routes);
             } catch (URLTransformationException e) {
-                apimlLog.log("org.zowe.apiml.apicatalog.getApiBasePathFailed", serviceInstance.getServiceId(), e.getMessage());
+                if (!ApiLayerServices.isApiLayerService(serviceInstance.getServiceId())) {
+                    apimlLog.log("org.zowe.apiml.apicatalog.getApiBasePathFailed", serviceInstance.getServiceId(), e.getMessage());
+                }
             }
         }
         return "";

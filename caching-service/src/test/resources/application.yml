@@ -13,10 +13,14 @@ spring:
 
 caching:
     storage:
+        mode: inMemory
         infinispan:
             initialHosts: localhost[7600]
             persistence:
                 dataLocation: data
+
+infinispan.embedded.enabled: false
+
 apiml:
     enabled: true
     service:
@@ -92,3 +96,33 @@ server:
         keyStorePassword: password
         trustStore: ../keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
+
+logging:
+    level:
+        ROOT: DEBUG
+        org.springframework: DEBUG
+
+---
+spring.config.activate.on-profile: attlsServer
+
+server:
+    attlsServer:
+        enabled: true
+    ssl:
+        enabled: false
+
+---
+spring.config.activate.on-profile: attlsClient
+
+apiml:
+    service:
+        scheme: http
+
+server:
+    attlsClient:
+        enabled: true
+
+eureka:
+    instance:
+        nonSecurePortEnabled: true
+        securePortEnabled: false

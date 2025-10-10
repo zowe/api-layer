@@ -67,7 +67,8 @@ public class ApiDocRetrievalServiceRest {
      * @throws ApiDocNotFoundException if the response is error
      */
     private Mono<String> getApiDocContentByUrl(@NonNull String serviceId, String apiDocUrl) {
-        return webClient.get().uri(apiDocUrl)
+        return webClient.get()
+            .uri(apiDocUrl)
             .header(ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .retrieve()
             .onStatus(httpStatusCode -> httpStatusCode.value() != SC_OK, response -> Mono.error(

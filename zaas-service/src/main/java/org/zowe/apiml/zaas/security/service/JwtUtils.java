@@ -10,14 +10,22 @@
 
 package org.zowe.apiml.zaas.security.service;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @UtilityClass
@@ -32,7 +40,7 @@ public class JwtUtils {
      * This method reads the claims without validating the token signature. It should be used only if the validity was checked in the calling code.
      *
      * @param jwt token to be parsed
-     * @return parsed claims or empty object if the jwt is null
+     * @return parsed claims
      * @throws TokenNotValidException in case of invalid input, or TokenExpireException if JWT is expired
      */
     public static Claims getJwtClaims(String jwt) {
@@ -85,6 +93,70 @@ public class JwtUtils {
 
         log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
         return new TokenNotValidException("An internal error occurred while validating the token therefore the token is no longer valid.", exception);
+    }
+
+    /**
+     * Extracts value of a field from an OIDC token. The value is extracted from a custom path which supports nested objects.
+     * @param token to extract the field from
+     * @param pathToField list of strings representing path to the field
+     * @return list of values extracted from the token field
+     *
+     * @throws TokenFormatNotValidException in case of the field value cannot be extracted from the token, is null, or empty
+     */
+    public static List<String> getFieldValuesFromToken(String token, List<String> pathToField) throws TokenFormatNotValidException {
+        if (token == null || pathToField == null || pathToField.isEmpty() || StringUtils.isBlank(pathToField.get(0))) {
+            throw new IllegalArgumentException("Token and field path must not be null or empty");
+        }
+
+        try {
+            Claims claims = getJwtClaims(token);
+            List<String> fieldValues;
+            if (pathToField.size() == 1) {
+                fieldValues = extractHighLevelField(claims, pathToField);
+            } else {
+               fieldValues = extractNestedFields(claims, pathToField);
+            }
+
+            fieldValues = fieldValues.stream().filter(StringUtils::isNotBlank).toList();
+            if (fieldValues.isEmpty()) {
+                throw new IllegalArgumentException();
+            } else {
+                return fieldValues;
+            }
+        } catch (Exception e) {
+            throw new TokenFormatNotValidException(
+                String.format("Cannot extract value from field %s. The field does not exist, is empty, or is an object.", String.join(".", pathToField)));
+        }
+    }
+
+    private List<String> extractHighLevelField(Claims claims, List<String> pathToField) {
+        return extractValueAsList(claims.get(pathToField.get(0)));
+    }
+
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+    private List<String> extractNestedFields(Claims claims, List<String> pathToField) {
+        var iterator = pathToField.iterator();
+        var key = iterator.next();
+        Map<String, Object> val = claims.get(key, Map.class);
+        while (iterator.hasNext()) {
+            key = iterator.next();
+            if (iterator.hasNext()) {
+                val = (Map) val.get(key);
+            }
+        }
+
+        return extractValueAsList(val.get(key));
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> extractValueAsList(Object rawValue) {
+        if (rawValue instanceof String value) {
+            return List.of(value);
+        } else if (rawValue instanceof List values) {
+            return values;
+        } else {
+            throw new IllegalArgumentException("Field value is neither String nor List of Strings");
+        }
     }
 
 }

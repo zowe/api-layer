@@ -15,6 +15,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 /**
  * Implementation of OIDC token source of authentication.
  */
@@ -38,5 +40,5 @@ public class OIDCAuthSource implements AuthSource {
     }
 
     @Setter
-    private String distributedId;
+    private List<String> distributedId;
 }

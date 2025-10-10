@@ -14,11 +14,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.gateway.MockService;
-import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
-
-import java.io.IOException;
+import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
@@ -28,26 +27,40 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @MicroservicesAcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestPropertySource(properties = {
+    "apiml.gateway.servicesToDisableRetry=no-retry-service,no-RETRY-Service-2"
+})
 class RetryPerServiceTest extends AcceptanceTestWithMockServices {
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
 
     private MockService mockService;
+    private MockService mockNoRetryService;
+    private MockService mockNoRetryService2;
 
     @BeforeAll
-    void startMockService() throws IOException {
+    void startMockService() {
         mockService = mockService("serviceid1").scope(MockService.Scope.CLASS)
                 .addEndpoint("/503").responseCode(503)
             .and()
                 .addEndpoint("/401").responseCode(401)
             .and().start();
+
+        mockNoRetryService = mockService("no-retry-service").scope(MockService.Scope.CLASS)
+            .addEndpoint("/503").responseCode(503)
+            .and().start();
+
+        mockNoRetryService2 = mockService("No-Retry-Service-2").scope(MockService.Scope.CLASS)
+            .addEndpoint("/503").responseCode(503)
+            .and().start();
     }
 
     @Nested
     class GivenRetryOnAllOperationsIsDisabled {
+        //Only default GET method remains active
 
         @Test
-        void whenGetReturnsUnavailable_thenRetry() throws Exception {
+        void whenGetReturnsUnavailable_thenRetry() {
             given()
                 .header(HEADER_X_FORWARD_TO, "serviceid1")
             .when()
@@ -58,7 +71,7 @@ class RetryPerServiceTest extends AcceptanceTestWithMockServices {
         }
 
         @Test
-        void whenRequestReturnsUnauthorized_thenDontRetry() throws Exception {
+        void whenRequestReturnsUnauthorized_thenDontRetry() {
             for (int i = 1; i < 6; i++) {
                 given()
                     .header(HEADER_X_FORWARD_TO, "serviceid1")
@@ -71,7 +84,7 @@ class RetryPerServiceTest extends AcceptanceTestWithMockServices {
         }
 
         @Test
-        void whenPostReturnsUnavailable_thenDontRetry() throws Exception {
+        void whenPostReturnsUnavailable_thenDontRetry() {
             given()
                 .header(HEADER_X_FORWARD_TO, "serviceid1")
             .when()
@@ -79,6 +92,29 @@ class RetryPerServiceTest extends AcceptanceTestWithMockServices {
             .then()
                 .statusCode(is(SC_SERVICE_UNAVAILABLE));
             assertEquals(1, mockService.getCounter());
+        }
+
+        @Test
+        void whenRetryForServiceIsDisabled_andGetReturnsUnavailable_thenDontRetry() {
+            given()
+                .header(HEADER_X_FORWARD_TO, "no-retry-service")
+                .when()
+                .get(basePath + "/503")
+                .then()
+                .statusCode(is(SC_SERVICE_UNAVAILABLE));
+            assertEquals(1, mockNoRetryService.getCounter());
+        }
+
+        @Test
+        void whenRetryForServiceIsDisabled_andGetReturnsUnavailable_onMixedCaseServiceId_thenDontRetry() {
+            given()
+                .header(HEADER_X_FORWARD_TO, "no-retry-service-2")
+                .when()
+                .get(basePath + "/503")
+                .then()
+                .statusCode(is(SC_SERVICE_UNAVAILABLE));
+
+            assertEquals(1, mockNoRetryService2.getCounter());
         }
 
     }
