@@ -25,13 +25,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.jose4j.jwa.AlgorithmConstraints;
-import org.jose4j.jwa.AlgorithmConstraints.ConstraintType;
-import org.jose4j.jwe.ContentEncryptionAlgorithmIdentifiers;
-import org.jose4j.jwe.JsonWebEncryption;
-import org.jose4j.jwe.KeyManagementAlgorithmIdentifiers;
-import org.jose4j.keys.AesKey;
-import org.jose4j.lang.ByteUtil;
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwt.JwtClaims;
 import org.jose4j.lang.JoseException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.CacheManager;
@@ -61,7 +57,6 @@ import org.zowe.apiml.zaas.controllers.AuthController;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
-import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -189,24 +184,30 @@ public class AuthenticationService {
         //     return null;
         // }
         try {
-            JsonWebEncryption jwe = new JsonWebEncryption();
-            jwe.setPayload("Hello World!");
-            jwe.setAlgorithmHeaderValue(KeyManagementAlgorithmIdentifiers.RSA_OAEP_256); // RS256
-            jwe.setEncryptionMethodHeaderParameter(ContentEncryptionAlgorithmIdentifiers.AES_128_CBC_HMAC_SHA_256); // RS256
-            jwe.setKey(jwtSecurityInitializer.getJwtSecret());
-            String serializedJwe = jwe.getCompactSerialization();
-            System.out.println("Serialized Encrypted JWE: " + serializedJwe);
-            jwe = new JsonWebEncryption();
-            jwe.setAlgorithmConstraints(new AlgorithmConstraints(ConstraintType.PERMIT,
-                    KeyManagementAlgorithmIdentifiers.A128KW)); // RS256
-            jwe.setContentEncryptionAlgorithmConstraints(new AlgorithmConstraints(ConstraintType.PERMIT,
-                    ContentEncryptionAlgorithmIdentifiers.AES_128_CBC_HMAC_SHA_256));
-            jwe.setKey(jwtSecurityInitializer.getJwtSecret());
-            jwe.setCompactSerialization(serializedJwe);
-            System.out.println("Payload: " + jwe.getPayload()); // payload is the jwt
-            return jwe.getPayload();
+                // Create the Claims, which will be the content of the JWT
+            JwtClaims newClaims = new JwtClaims();
+            newClaims.setIssuer("APIML");  // who creates the token and signs it
+            newClaims.setAudience("Audience"); // to whom the token is intended to be sent
+            newClaims.setExpirationTimeMinutesInTheFuture(10); // time when the token will expire (10 minutes from now)
+            newClaims.setGeneratedJwtId(); // a unique identifier for the token
+            newClaims.setIssuedAtToNow();  // when the token was issued/created (now)
+            newClaims.setNotBeforeMinutesInThePast(2); // time before which the token is not yet valid (2 minutes ago)
+            newClaims.setSubject("PROD001"); // the subject/principal is whom the token is about
+            List<String> groups = Arrays.asList("IZUADM");
+            newClaims.setStringListClaim("groups", groups); // multi-valued claims work too and will end up as a JSON array
+
+            // A JWT is a JWS and/or a JWE with JSON claims as the payload.
+            // In this example it is a JWS so we create a JsonWebSignature object.
+            JsonWebSignature jws = new JsonWebSignature();
+            jws.setPayload(newClaims.toJson());
+            jws.setKey(jwtSecurityInitializer.getJwtSecret());
+            jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+            String jwt = jws.getCompactSerialization();
+            log.error("created jwt: {}", jwt);
+            return jwt;
         } catch (JoseException e) {
             log.error("JoseException: {}", e.getMessage(), e);
+            return null;
         }
     }
 
