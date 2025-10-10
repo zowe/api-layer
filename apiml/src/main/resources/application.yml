@@ -303,8 +303,8 @@ logging:
         reactor.netty: WARN
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
-        org.infinispan: WARN
-        org.jgroups: WARN
+        org.infinispan: ERROR
+        org.jgroups: ERROR
 
 management:
     endpoint:

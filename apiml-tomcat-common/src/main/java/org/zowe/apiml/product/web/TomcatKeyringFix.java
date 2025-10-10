@@ -10,8 +10,9 @@
 
 package org.zowe.apiml.product.web;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.AbstractConfigurableWebServerFactory;
 import org.springframework.boot.web.server.Ssl;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
@@ -19,8 +20,9 @@ import org.springframework.stereotype.Component;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Component
-public class TomcatKeyringFix implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
+public class TomcatKeyringFix implements WebServerFactoryCustomizer<AbstractConfigurableWebServerFactory> {
 
     private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)/(.+)$");
     private static final String KEYRING_PASSWORD = "password";
@@ -59,7 +61,7 @@ public class TomcatKeyringFix implements WebServerFactoryCustomizer<TomcatServle
     }
 
     @Override
-    public void customize(TomcatServletWebServerFactory factory) {
+    public void customize(AbstractConfigurableWebServerFactory factory) {
         Ssl ssl = factory.getSsl();
         if (isKeyring(keyStore)) {
             ssl.setKeyStore(formatKeyringUrl(keyStore));
@@ -72,6 +74,8 @@ public class TomcatKeyringFix implements WebServerFactoryCustomizer<TomcatServle
             ssl.setTrustStore(formatKeyringUrl(trustStore));
             ssl.setTrustStorePassword(trustStorePassword == null ? KEYRING_PASSWORD : String.valueOf(trustStorePassword));
         }
+
+        log.debug("TomcatKeyringFix applied");
     }
 
 }

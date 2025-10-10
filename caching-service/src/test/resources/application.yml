@@ -13,10 +13,14 @@ spring:
 
 caching:
     storage:
+        mode: inMemory
         infinispan:
             initialHosts: localhost[7600]
             persistence:
                 dataLocation: data
+
+infinispan.embedded.enabled: false
+
 apiml:
     enabled: true
     service:
