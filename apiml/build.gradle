@@ -77,6 +77,7 @@ dependencies {
     //OpenTelemetry Spring Boot Starter
     implementation libs.opentelemetry.spring.boot.starter
     implementation libs.opentelemetry.exporter.logging.otlp
+    implementation libs.micrometer.context.propagation //needed only if logs are enriched for custom attributes
 
     testImplementation(testFixtures(project(":apiml-common")))
     testImplementation(testFixtures(project(":gateway-service")))

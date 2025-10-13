@@ -10,6 +10,9 @@
 
 package org.zowe.apiml;
 
+import io.micrometer.context.ContextRegistry;
+import io.micrometer.context.ThreadLocalAccessor;
+import org.slf4j.MDC;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.ReactiveOAuth2ClientAutoConfiguration;
@@ -20,6 +23,9 @@ import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.zowe.apiml.enable.config.EnableApiDiscoveryConfig;
 import org.zowe.apiml.enable.register.RegisterToApiLayer;
 import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
+import reactor.core.publisher.Hooks;
+
+import java.util.Map;
 
 @SpringBootApplication(exclude = {ReactiveOAuth2ClientAutoConfiguration.class},
     scanBasePackages = {
@@ -53,6 +59,45 @@ import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
 public class ApimlApplication {
 
     public static void main(String[] args) {
+
+        //registerMDCContextPropagation();
+
         SpringApplication.run(ApimlApplication.class, args);
+    }
+
+    static void registerMDCContextPropagation() {
+
+        // Register the MDC TO CONTEXT PROPAGATION
+        ContextRegistry.getInstance().registerThreadLocalAccessor(new ThreadLocalAccessor<Map<String, String>>() {
+            @Override
+            public Object key() {
+                return "mdc-context";
+            }
+
+            @Override
+            public Map<String, String> getValue() {
+                var mdc = MDC.getCopyOfContextMap();
+                System.out.println(">>>>>>>>>>>>>>> ThreadLocalAccessor " + Thread.currentThread().getName() + ": Retrieving MDC: " + mdc);
+                return MDC.getCopyOfContextMap();
+            }
+
+            @Override
+            public void setValue(Map<String, String> value) {
+                System.out.println(">>>>>>>>>>>>>>> ThreadLocalAccessor " + Thread.currentThread().getName() + ": Setting MDC: " + value);
+                MDC.setContextMap(value);
+                System.out.println(">>>>>>>>>>>>>>> ThreadLocalAccessor " + Thread.currentThread().getName() + ": Current MDC: " + MDC.getCopyOfContextMap());
+            }
+
+            @Override
+            public void setValue() {
+                MDC.clear();
+            }});
+
+//        ContextRegistry.getInstance()
+//            .registerThreadLocalAccessor("mdc-context", MDC::getCopyOfContextMap, MDC::setContextMap, MDC::clear);
+
+
+        // Now enable automatic propagation
+        Hooks.enableAutomaticContextPropagation();
     }
 }
