@@ -28,6 +28,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
+import org.jose4j.jwt.NumericDate;
 import org.jose4j.lang.JoseException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.CacheManager;
@@ -186,22 +187,22 @@ public class AuthenticationService {
         try {
                 // Create the Claims, which will be the content of the JWT
             JwtClaims newClaims = new JwtClaims();
-            newClaims.setIssuer("APIML");  // who creates the token and signs it
-            newClaims.setAudience("Audience"); // to whom the token is intended to be sent
-            newClaims.setExpirationTimeMinutesInTheFuture(10); // time when the token will expire (10 minutes from now)
+
+            newClaims.setIssuer(issuer);  // who creates the token and signs it
+            newClaims.setExpirationTime(NumericDate.fromMilliseconds(expiration)); // time when the token will expire (10 minutes from now)
             newClaims.setGeneratedJwtId(); // a unique identifier for the token
-            newClaims.setIssuedAtToNow();  // when the token was issued/created (now)
-            newClaims.setNotBeforeMinutesInThePast(2); // time before which the token is not yet valid (2 minutes ago)
-            newClaims.setSubject("PROD001"); // the subject/principal is whom the token is about
-            List<String> groups = Arrays.asList("IZUADM");
-            newClaims.setStringListClaim("groups", groups); // multi-valued claims work too and will end up as a JSON array
+            newClaims.setIssuedAt(NumericDate.fromMilliseconds(issuedAt));  // when the token was issued/created (now)
+            newClaims.setSubject(username); // the subject/principal is whom the token is about
+            newClaims.getClaimsMap().putAll(claims);
 
             // A JWT is a JWS and/or a JWE with JSON claims as the payload.
             // In this example it is a JWS so we create a JsonWebSignature object.
             JsonWebSignature jws = new JsonWebSignature();
             jws.setPayload(newClaims.toJson());
             jws.setKey(jwtSecurityInitializer.getJwtSecret());
+            jws.setHeader("typ", "JWT");
             jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+            jws.setDoKeyValidation(false);
             String jwt = jws.getCompactSerialization();
             log.error("created jwt: {}", jwt);
             return jwt;
