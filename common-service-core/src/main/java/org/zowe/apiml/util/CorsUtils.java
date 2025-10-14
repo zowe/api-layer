@@ -24,11 +24,12 @@ public class CorsUtils {
     private final List<String> allowedCorsHttpMethods;
     private final boolean corsEnabled;
     private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes\\.[^.]*\\.gateway\\S*");
-    private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/*/*/gateway/**", "/gateway/*/*/**", "/gateway/version");
+    private final List<String> corsAllowedEndpoints;
 
-    public CorsUtils(boolean corsEnabled, List<String> corsAllowedMethods) {
+    public CorsUtils(boolean corsEnabled, List<String> corsAllowedMethods, List<String> allowedEndpoints) {
         this.corsEnabled = corsEnabled;
         this.allowedCorsHttpMethods = corsAllowedMethods;
+        this.corsAllowedEndpoints = allowedEndpoints;
     }
 
     public boolean isCorsEnabledForService(Map<String, String> metadata) {
@@ -75,7 +76,7 @@ public class CorsUtils {
             config.addAllowedOriginPattern(CorsConfiguration.ALL); //NOSONAR this is a replication of existing code
             config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
             config.setAllowedMethods(allowedCorsHttpMethods);
-            pathsToEnable = CORS_ENABLED_ENDPOINTS;
+            pathsToEnable = corsAllowedEndpoints;
         } else {
             pathsToEnable = Collections.singletonList("/**");
         }

@@ -99,6 +99,9 @@ public class ConnectionsConfig {
     @Value("${apiml.service.externalUrl:}")
     private String externalUrl;
 
+    @Value("${apiml.service.corsAllowedEndpoints:/*/*/gateway/**,/gateway/*/*/**,/gateway/version,/v3/api-docs/**}")
+    private final List<String> CORS_ENABLED_ENDPOINTS;
+
     /**
      * @param httpClient             default http client
      * @param headersFiltersProvider header filter for spring gateway router
@@ -277,7 +280,7 @@ public class ConnectionsConfig {
 
     @Bean
     CorsUtils corsUtils() {
-        return new CorsUtils(corsEnabled, corsAllowedMethods);
+        return new CorsUtils(corsEnabled, corsAllowedMethods, CORS_ENABLED_ENDPOINTS);
     }
 
     @Bean

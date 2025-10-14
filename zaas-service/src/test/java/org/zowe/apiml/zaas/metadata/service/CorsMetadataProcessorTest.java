@@ -18,6 +18,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.util.CorsUtils;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,11 +34,12 @@ class CorsMetadataProcessorTest {
     private CorsUtils corsUtils;
     private UrlBasedCorsConfigurationSource configurationSource;
     private ArgumentCaptor<CorsConfiguration> configurationCaptor = ArgumentCaptor.forClass(CorsConfiguration.class);
+    List<String> allowedEndpoints = Arrays.asList("/*/*/gateway/**", "/gateway/*/*/**", "/gateway/version");
 
     @BeforeEach
     void setUp() {
         configurationSource = mock(UrlBasedCorsConfigurationSource.class);
-        corsUtils = new CorsUtils(true, List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"));
+        corsUtils = new CorsUtils(true, List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"), allowedEndpoints);
     }
 
     @Nested
