@@ -294,7 +294,7 @@ class ConnectionsConfigTest {
 
         @Test
         void givenInvalidUrl_whenCreate_thenThrowAnException() {
-            var connectionsConfig = new ConnectionsConfig(null, null);
+            var connectionsConfig = new ConnectionsConfig(null, null, null);
             ReflectionTestUtils.setField(connectionsConfig, "externalUrl", "invalidUrl");
             var e = assertThrows(RuntimeException.class, () -> connectionsConfig.create(createConfig()));
             assertInstanceOf(MalformedURLException.class, e.getCause());
@@ -303,7 +303,7 @@ class ConnectionsConfigTest {
         @Test
         void givenValidInputs_whenCreate_thenCreateIt() {
             var config = createConfig();
-            var connectionsConfig = new ConnectionsConfig(null, null);
+            var connectionsConfig = new ConnectionsConfig(null, null, null);
             ReflectionTestUtils.setField(connectionsConfig, "externalUrl", "https://domain:1234/");
 
             InstanceInfo instanceInfo = connectionsConfig.create(config);
@@ -323,7 +323,7 @@ class ConnectionsConfigTest {
             var config = createConfig();
             doReturn(metadata).when(config).getMetadataMap();
 
-            var connectionsConfig = new ConnectionsConfig(null, null);
+            var connectionsConfig = new ConnectionsConfig(null, null, null);
             ReflectionTestUtils.setField(connectionsConfig, "externalUrl", "https://domain:1234/");
 
             InstanceInfo instanceInfo = connectionsConfig.create(config);
