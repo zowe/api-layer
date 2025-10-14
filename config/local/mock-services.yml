@@ -1,5 +1,7 @@
 zosmf:
     timeout: 1800
+    username: testuser
+    password: testpass
 
 server:
     ssl:

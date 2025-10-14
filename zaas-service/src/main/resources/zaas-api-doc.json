@@ -223,6 +223,32 @@
                     }
                 }
             }
+        },
+        "/zaas/api/v1/auth/delegate/ticket": {
+            "post": {
+                "tags": ["Security"],
+                "summary": "Generate a passticket for the  given emailId and applId.",
+                "description": "Issues a new passticket for the given emailId, and api authenticated via X509 cert token.",
+                "operationId": "issueDelegatedPassticket",
+                "requestBody": {
+                "content": {
+                    "application/json": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                        "emailId": { "type": "string" },
+                        "applid":{"type":"string"}
+                        }
+                    }
+                    }
+                }
+                },
+                "security": [{ "Bearer": [] }],
+                "responses": {
+                "200": { "description": "PassTicket issued successfully","passticket":"", "userid":"" },
+                "401": { "description": "Unauthorized" }
+                }
+            }
         }
     },
     "servers": [

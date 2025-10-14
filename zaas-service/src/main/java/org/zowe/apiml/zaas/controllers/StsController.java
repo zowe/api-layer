@@ -10,25 +10,15 @@
 
 package org.zowe.apiml.zaas.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.SchemaProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
@@ -41,9 +31,8 @@ import java.util.Map;
 @Slf4j
 public class StsController {
 
-    public static final String CONTROLLER_PATH = "/zaas/api/v1/sts";
-    public static final String ISSUE_TOKEN_PATH = "/issue-token";
-    public static final String ISSUE_PASSTICKET_PATH = "/issue-passticket";
+    public static final String CONTROLLER_PATH = "/zaas/api/v1/auth/delegate";    
+    public static final String ISSUE_PASSTICKET_PATH = "/ticket";
 
 
     /**
@@ -52,7 +41,7 @@ public class StsController {
     @PostMapping(path = ISSUE_TOKEN_PATH)
     @ResponseBody
     @Operation(summary = "Issue a new security token.",
-        tags = {"STS"},
+        tags = {"Security"},
         operationId = "issueSecurityToken",
         description = "Issues a new security token for the authenticated user.",
         security = {
@@ -60,7 +49,7 @@ public class StsController {
         }
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Token issued successfully"),
+        @ApiResponse(responseCode = "200", description = "Token issued successfully","passticket":"","userid":""),
         @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     public ResponseEntity<String> issueToken(@RequestBody Map<String, String> request) {
