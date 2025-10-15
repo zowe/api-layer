@@ -5,7 +5,6 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 ## `APIML 2.18.18 / Zowe 2.18.3 (2025-10-23)`
 
 * Feature:  Support PATCH method in CORS. (#4255) ([1d86960](https://github.com/zowe/api-layer/commit/1d86960)), closes [#4255](https://github.com/zowe/api-layer/issues/4255)
-* Feature:  Support Keycloak as OIDC provider in integration tests. (#4323) ([197dfed](https://github.com/zowe/api-layer/commit/197dfed)), closes [#4323](https://github.com/zowe/api-layer/issues/4323)
 
 * Bugfix:  Fix default eureka intervals of Caching Service. (#4225) ([5cd6898](https://github.com/zowe/api-layer/commit/5cd6898)), closes [#4225](https://github.com/zowe/api-layer/issues/4225)
 * Bugfix:  The API ML services log cleanup. (#4292) ([e75539d](https://github.com/zowe/api-layer/commit/e75539d)), closes [#4292](https://github.com/zowe/api-layer/issues/4292)
