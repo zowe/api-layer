@@ -80,10 +80,9 @@ dependencies {
     }
     implementation libs.netty.reactor.http
     implementation libs.google.gson
-    implementation libs.jjwt
-    implementation libs.jjwt.impl
-    implementation libs.jjwt.jackson
-    implementation libs.nimbus.jose.jwt
+
+    implementation libs.jose4j.jwt
+
     implementation libs.bcpkix
     implementation libs.caffeine
     implementation libs.bucket4j.core

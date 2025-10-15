@@ -13,11 +13,13 @@ package org.zowe.apiml.zaas.security.service;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwsHeader;
-import io.jsonwebtoken.Jwt;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.SignatureException;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWTParser;
+import com.nimbusds.jwt.SignedJWT;
+import com.nimbusds.jwt.proc.BadJWTException;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,6 +60,8 @@ import org.zowe.apiml.zaas.controllers.AuthController;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
+import java.text.ParseException;
+import java.time.Clock;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,8 +71,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.zowe.apiml.zaas.security.service.JwtUtils.getJwtClaims;
-import static org.zowe.apiml.zaas.security.service.JwtUtils.handleJwtParserException;
+import static org.zowe.apiml.security.common.util.JwtUtils.getJwtClaims;
+import static org.zowe.apiml.security.common.util.JwtUtils.handleJwtParserException;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
@@ -98,6 +102,7 @@ public class AuthenticationService {
     private final RestTemplate restTemplate;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
+    private final Clock clock;
 
     // to force calling inside methods with aspects - ie. ehCache aspect
     private AuthenticationService meAsProxy;
@@ -214,14 +219,10 @@ public class AuthenticationService {
 
     @SuppressWarnings("java:S5659")
     // It is checking the signature securely - https://github.com/zowe/api-layer/issues/3191
-    public QueryResponse parseJwtWithSignature(String jwt) throws SignatureException {
+    public QueryResponse parseJwtWithSignature(String jwt) {
         try {
-            Jwt<JwsHeader, Claims> parsedJwt = (Jwt<JwsHeader, Claims>) Jwts.parser()
-                .verifyWith(jwtSecurityInitializer.getJwtPublicKey())
-                .build()
-                .parse(jwt);
-
-            return parseQueryResponse(parsedJwt.getPayload());
+            var claims = validateAndParseLocalJwtToken(jwt);
+            return parseQueryResponse(claims);
         } catch (RuntimeException exception) {
             throw handleJwtParserException(exception);
         }
@@ -344,15 +345,28 @@ public class AuthenticationService {
         return Boolean.FALSE;
     }
 
-
-    private Claims validateAndParseLocalJwtToken(String jwtToken) {
+    private JWTClaimsSet validateAndParseLocalJwtToken(String jwtToken) {
         try {
-            return Jwts.parser()
-                .verifyWith(jwtSecurityInitializer.getJwtPublicKey())
-                .build()
-                .parseSignedClaims(jwtToken)
-                .getPayload();
-        } catch (RuntimeException exception) {
+            var parsedJwt = JWTParser.parse(jwtToken);
+            if (parsedJwt instanceof SignedJWT signedJwt) {
+                var header = JWSHeader.parse(signedJwt.getSignature());
+                var verifier = new DefaultJWSVerifierFactory().createJWSVerifier(header, jwtSecurityInitializer.getJwtPublicKey());
+                var verified = signedJwt.verify(verifier);
+                if (verified) {
+                    var claims = parsedJwt.getJWTClaimsSet();
+                    if (claims.getExpirationTime().toInstant().isBefore(clock.instant())) {
+                        log.debug("OIDC Token is expired");
+                        return null;
+                    }
+                    return claims;
+                }
+                throw new BadJWTException("Token signature is invalid for public key");
+            } else {
+                throw new BadJWTException("Token is not signed");
+            }
+        } catch (ParseException e) {
+            throw handleJwtParserException(new BadJWTException(e.getMessage()));
+        } catch (RuntimeException | BadJWTException | JOSEException exception) {
             throw handleJwtParserException(exception);
         }
     }
@@ -460,25 +474,29 @@ public class AuthenticationService {
      * @return the query response
      */
     public QueryResponse parseJwtToken(String jwtToken) {
-        Claims claims = getJwtClaims(jwtToken);
+        var claims = getJwtClaims(jwtToken);
         return parseQueryResponse(claims);
     }
 
-    public QueryResponse parseQueryResponse(Claims claims) {
-        Object scopesObject = claims.get(SCOPES);
+    public QueryResponse parseQueryResponse(JWTClaimsSet claims) {
+        Object scopesObject = claims.getClaim(SCOPES);
         List<String> scopes = Collections.emptyList();
         if (scopesObject instanceof List<?>) {
             scopes = (List<String>) scopesObject;
         }
-        return new QueryResponse(
-            claims.get(DOMAIN_CLAIM_NAME, String.class),
-            claims.getSubject(),
-            claims.getIssuedAt(),
-            claims.getExpiration(),
-            claims.getIssuer(),
-            scopes,
-            QueryResponse.Source.valueByIssuer(claims.getIssuer())
-        );
+        try {
+            return new QueryResponse(
+                claims.getClaimAsString(DOMAIN_CLAIM_NAME),
+                claims.getSubject(),
+                claims.getIssueTime(),
+                claims.getExpirationTime(),
+                claims.getIssuer(),
+                scopes,
+                QueryResponse.Source.valueByIssuer(claims.getIssuer())
+            );
+        } catch (ParseException e) {
+            throw new TokenNotValidException(e.getMessage(), e);
+        }
     }
 
     /**
@@ -488,7 +506,7 @@ public class AuthenticationService {
      * @return AuthSource.Origin value based on the iss token claim.
      */
     public AuthSource.Origin getTokenOrigin(String jwtToken) {
-        Claims claims = getJwtClaims(jwtToken);
+        var claims = getJwtClaims(jwtToken);
         QueryResponse.Source source = QueryResponse.Source.valueByIssuer(claims.getIssuer());
         return AuthSource.Origin.valueByTokenSource(source);
     }
@@ -501,7 +519,11 @@ public class AuthenticationService {
      * @return LTPA token extracted from JWT
      */
     public String getLtpaTokenWithValidation(String jwtToken) {
-        return validateAndParseLocalJwtToken(jwtToken).get(LTPA_CLAIM_NAME, String.class);
+        try {
+            return validateAndParseLocalJwtToken(jwtToken).getClaimAsString(LTPA_CLAIM_NAME);
+        } catch (ParseException e) {
+            throw new TokenNotValidException(e.getMessage(), e);
+        }
     }
 
     /**
@@ -512,9 +534,13 @@ public class AuthenticationService {
      * @throws TokenNotValidException if the JWT token is not valid
      */
     public String getLtpaToken(String jwtToken) {
-        Claims claims = getJwtClaims(jwtToken);
+        var claims = getJwtClaims(jwtToken);
 
-        return claims.get(LTPA_CLAIM_NAME, String.class);
+        try {
+            return claims.getClaimAsString(LTPA_CLAIM_NAME);
+        } catch (ParseException e) {
+            throw new TokenNotValidException(e.getMessage(), e);
+        }
     }
 
     /**

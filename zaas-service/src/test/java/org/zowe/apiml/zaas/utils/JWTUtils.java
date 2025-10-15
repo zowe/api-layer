@@ -42,6 +42,7 @@ public class JWTUtils {
         long now = System.currentTimeMillis();
         long expiration = now + 100_000L;
         Key jwtSecret = SecurityUtils.loadKey(config);
+
         return Jwts.builder()
             .subject(username)
             .claim("dom", domain)

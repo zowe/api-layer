@@ -64,6 +64,7 @@ dependencyResolutionManagement {
             version('jettison', '1.5.4')
             //0.12.x version contains breaking changes
             version('jjwt', '0.13.0')
+            version('jose4j', '0.9.6')
             version('jodaTime', '2.14.0')
             version('jsonPath', '2.9.0')
             version('jsonSmart', '2.6.0')
@@ -205,6 +206,7 @@ dependencyResolutionManagement {
             library('jjwt', 'io.jsonwebtoken', 'jjwt-api').versionRef('jjwt')
             library('jjwt_impl', 'io.jsonwebtoken', 'jjwt-impl').versionRef('jjwt')
             library('jjwt_jackson', 'io.jsonwebtoken', 'jjwt-jackson').versionRef('jjwt')
+            library('jose4j_jwt', 'org.bitbucket.b_c', 'jose4j').versionRef('jose4j')
             library('json_path', 'com.jayway.jsonpath', 'json-path').versionRef('jsonPath')
             library('junit_jupiter', 'org.junit.jupiter', 'junit-jupiter').versionRef('junitJupiter')
             library('junit_platform_launcher', 'org.junit.platform', 'junit-platform-launcher').versionRef('junitPlatform')

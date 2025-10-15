@@ -73,6 +73,7 @@ dependencies {
     implementation libs.spring.boot.starter.security
     implementation libs.nimbus.jose.jwt
     implementation libs.spring.doc.webflux.ui
+    implementation libs.jose4j.jwt // Signing, with support for JCA with ICSF
 
     testImplementation(testFixtures(project(":apiml-common")))
     testImplementation(testFixtures(project(":gateway-service")))

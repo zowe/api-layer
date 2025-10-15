@@ -12,6 +12,8 @@ dependencies {
     implementation libs.apache.commons.lang3
     implementation libs.http.client5
 
+    implementation libs.nimbus.jose.jwt // Parsing
+
     testImplementation libs.spring.boot.starter.test
     testImplementation(testFixtures(project(":apiml-common")))
 

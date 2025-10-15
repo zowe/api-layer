@@ -74,8 +74,6 @@ dependencies {
     implementation libs.jackson.databind
     implementation libs.jaxbApi
     implementation libs.spring.cloud.commons
-    implementation libs.jjwt
-    implementation libs.nimbus.jose.jwt
     implementation libs.spring.doc
     implementation libs.swagger3.parser
 
@@ -99,11 +97,8 @@ dependencies {
 
     implementation libs.caffeine
 
-    implementation libs.jjwt.impl
-    implementation libs.jjwt.jackson
-    // implementation("com.ibm.websphere.appserver.api:com.ibm.websphere.appserver.api.jwt:1.1.106")
-    // implementation("io.openliberty.api:io.openliberty.jwt:1.1.106")
-    implementation("org.bitbucket.b_c:jose4j:0.9.6")
+    implementation libs.nimbus.jose.jwt // Parsing
+    implementation libs.jose4j.jwt // Signing, with support for JCA with ICSF
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
@@ -117,6 +112,7 @@ dependencies {
     testImplementation libs.rest.assured
     testImplementation libs.rest.assured.json.path
     testImplementation libs.rest.assured.xml.path
+    testImplementation libs.jjwt
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok

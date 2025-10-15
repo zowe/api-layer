@@ -8,13 +8,12 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas.security.service;
+package org.zowe.apiml.security.common.util;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWTParser;
+import com.nimbusds.jwt.proc.BadJWTException;
+import com.nimbusds.jwt.proc.ExpiredJWTException;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -23,6 +22,8 @@ import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -43,17 +44,21 @@ public class JwtUtils {
      * @return parsed claims
      * @throws TokenNotValidException in case of invalid input, or TokenExpireException if JWT is expired
      */
-    public static Claims getJwtClaims(String jwt) {
+    public JWTClaimsSet getJwtClaims(String jwt) {
         /*
          * Removes signature, because we don't have key to verify z/OS tokens, and we just need to read claim.
          * Verification is done by SAF itself. JWT library doesn't parse signed key without verification.
          */
         try {
-            String withoutSign = removeJwtSign(jwt);
-            return Jwts.parser().unsecured().build()
-                .parseUnsecuredClaims(withoutSign)
-                .getPayload();
-        } catch (RuntimeException exception) {
+            String jwtWithoutSignature = removeJwtSign(jwt);
+            var token = JWTParser.parse(jwtWithoutSignature);
+            var claims = token.getJWTClaimsSet();
+
+            if (claims.getExpirationTime().toInstant().isBefore(Instant.now())) {
+                throw new ExpiredJWTException("JWT token is expired");
+            }
+            return token.getJWTClaimsSet();
+        } catch (RuntimeException | ParseException | BadJWTException exception) {
             throw handleJwtParserException(exception);
         }
     }
@@ -64,13 +69,16 @@ public class JwtUtils {
      *
      * @param jwtToken token to modify
      * @return unsigned jwt token
+     * @throws BadJWTException
      */
-    public static String removeJwtSign(String jwtToken) {
+    public String removeJwtSign(String jwtToken) throws BadJWTException {
         if (jwtToken == null) return null;
 
         int firstDot = jwtToken.indexOf('.');
         int lastDot = jwtToken.lastIndexOf('.');
-        if ((firstDot < 0) || (firstDot >= lastDot)) throw new MalformedJwtException("Invalid JWT format");
+        if ((firstDot < 0) || (firstDot >= lastDot)) {
+            throw new BadJWTException("Invalid JWT format");
+        }
 
         return HEADER_NONE_SIGNATURE + jwtToken.substring(firstDot, lastDot + 1);
     }
@@ -81,18 +89,22 @@ public class JwtUtils {
      * @param exception original exception
      * @return translated exception (better messaging and allow subsequent handling)
      */
-    public static RuntimeException handleJwtParserException(RuntimeException exception) {
-        if (exception instanceof ExpiredJwtException expiredJwtException) {
-            log.debug("Token with id '{}' for user '{}' is expired.", expiredJwtException.getClaims().getId(), expiredJwtException.getClaims().getSubject());
+    public RuntimeException handleJwtParserException(Exception exception) {
+        if (exception instanceof ExpiredJWTException) {
+            log.debug("Token is expired.");
             return new TokenExpireException("Token is expired.", exception);
         }
-        if (exception instanceof JwtException) {
+        if (exception instanceof BadJWTException) {
             log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
             return new TokenNotValidException("Token is not valid.", exception);
         }
 
         log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
         return new TokenNotValidException("An internal error occurred while validating the token therefore the token is no longer valid.", exception);
+    }
+
+    boolean verifyJwtSignatureWithJwk() {
+        return false;
     }
 
     /**
@@ -103,18 +115,18 @@ public class JwtUtils {
      *
      * @throws TokenFormatNotValidException in case of the field value cannot be extracted from the token, is null, or empty
      */
-    public static List<String> getFieldValuesFromToken(String token, List<String> pathToField) throws TokenFormatNotValidException {
+    public List<String> getFieldValuesFromToken(String token, List<String> pathToField) throws TokenFormatNotValidException {
         if (token == null || pathToField == null || pathToField.isEmpty() || StringUtils.isBlank(pathToField.get(0))) {
             throw new IllegalArgumentException("Token and field path must not be null or empty");
         }
 
         try {
-            Claims claims = getJwtClaims(token);
+            var claims = getJwtClaims(token);
             List<String> fieldValues;
             if (pathToField.size() == 1) {
                 fieldValues = extractHighLevelField(claims, pathToField);
             } else {
-               fieldValues = extractNestedFields(claims, pathToField);
+                fieldValues = extractNestedFields(claims, pathToField);
             }
 
             fieldValues = fieldValues.stream().filter(StringUtils::isNotBlank).toList();
@@ -129,23 +141,26 @@ public class JwtUtils {
         }
     }
 
-    private List<String> extractHighLevelField(Claims claims, List<String> pathToField) {
-        return extractValueAsList(claims.get(pathToField.get(0)));
+    private List<String> extractHighLevelField(JWTClaimsSet claims, List<String> pathToField) {
+        return extractValueAsList(claims.getClaim(pathToField.get(0)));
     }
 
-        @SuppressWarnings({ "unchecked", "rawtypes" })
-    private List<String> extractNestedFields(Claims claims, List<String> pathToField) {
+    @SuppressWarnings({ "rawtypes" })
+    private List<String> extractNestedFields(JWTClaimsSet claims, List<String> pathToField) {
         var iterator = pathToField.iterator();
         var key = iterator.next();
-        Map<String, Object> val = claims.get(key, Map.class);
+
+        var claim = claims.getClaim(key);
         while (iterator.hasNext()) {
             key = iterator.next();
             if (iterator.hasNext()) {
-                val = (Map) val.get(key);
+                if (claim instanceof Map val) {
+                    claim = val.get(key);
+                }
             }
         }
 
-        return extractValueAsList(val.get(key));
+        return extractValueAsList(((Map) claim).get(key));
     }
 
     @SuppressWarnings("unchecked")
@@ -157,6 +172,7 @@ public class JwtUtils {
         } else {
             throw new IllegalArgumentException("Field value is neither String nor List of Strings");
         }
+
     }
 
 }
