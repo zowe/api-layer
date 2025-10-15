@@ -189,6 +189,7 @@ apiml:
     service:
         apimlId: apiml1
         corsEnabled: true
+        corsAllowedEndpoints: /gateway/**,/v3/api-docs/**
         allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
         forwardClientCertEnabled: false
