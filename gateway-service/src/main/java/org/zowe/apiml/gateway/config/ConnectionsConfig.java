@@ -99,7 +99,7 @@ public class ConnectionsConfig {
     @Value("${apiml.service.externalUrl:}")
     private String externalUrl;
 
-    @Value("${apiml.service.corsAllowedEndpoints:/gateway/**,/gateway/api-docs}")
+    @Value("${apiml.service.corsAllowedEndpoints:/gateway/**}")
     private final List<String> CORS_ENABLED_ENDPOINTS;
 
     /**

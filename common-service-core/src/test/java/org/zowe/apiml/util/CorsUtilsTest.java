@@ -96,7 +96,7 @@ class CorsUtilsTest {
 
     @Nested
     class GivenCorsDisabled {
-        CorsUtils corsUtils = new CorsUtils(false, null, null);
+        CorsUtils corsUtils = new CorsUtils(false, null, Arrays.asList("/gateway/**", "/api-docs"));
 
         @Test
         void registerEmptyDefaultConfig() {
