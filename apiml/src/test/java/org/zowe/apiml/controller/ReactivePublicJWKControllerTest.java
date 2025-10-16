@@ -10,10 +10,15 @@
 
 package org.zowe.apiml.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.JsonWebKeySet;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,12 +41,14 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -61,49 +68,73 @@ class ReactivePublicJWKControllerTest {
     @InjectMocks
     private ReactivePublicJWKController controller;
 
+    private ObjectMapper mapper = new ObjectMapper();
+
     @Test
     void getAllPublicKeys_zosmfProducer_withOidc() throws Exception {
-        JWK zosmfJwk = new RSAKey.Builder((RSAPublicKey) generateKeyPair().getPublic()).keyID("zosmfKey").build();
-        JWKSet zosmfKeySet = new JWKSet(zosmfJwk);
-        JWK apimlJwk = new RSAKey.Builder((RSAPublicKey) generateKeyPair().getPublic()).keyID("apimlKey").build();
-        JWK oidcJwk = new RSAKey.Builder((RSAPublicKey) generateKeyPair().getPublic()).keyID("oidcKey").build();
-        JWKSet oidcKeySet = new JWKSet(oidcJwk);
+        var zosmfJwk = JsonWebKey.Factory.newJwk((RSAPublicKey) generateKeyPair().getPublic());
+        zosmfJwk.setKeyId("zosmfKey");
+        var zosmfKeySet = new JsonWebKeySet(zosmfJwk);
+        var apimlJwk = JsonWebKey.Factory.newJwk((RSAPublicKey) generateKeyPair().getPublic());
+        apimlJwk.setKeyId("apimlKey");
+        var oidcJwk = JsonWebKey.Factory.newJwk((RSAPublicKey) generateKeyPair().getPublic());
+        oidcJwk.setKeyId("oidcKey");
+        var oidcKeySet = new JsonWebKeySet(oidcJwk);
 
         OIDCTokenProvider mockOidcProviderJwk = mock(OIDCTokenProvider.class);
 
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
+
+
+        new JsonWebKeySet();
+
         when(zosmfService.getPublicKeys()).thenReturn(zosmfKeySet);
         when(jwtSecurity.getJwkPublicKey()).thenReturn(Optional.of(apimlJwk));
         var testControllerWithOidc = new ReactivePublicJWKController(mockOidcProviderJwk, jwtSecurity, zosmfService, messageService);
 
         when(mockOidcProviderJwk.getJwkSet()).thenReturn(oidcKeySet);
 
-        Mono<Map<String, Object>> result = testControllerWithOidc.getAllPublicKeys();
+        var result = testControllerWithOidc.getAllPublicKeys();
 
         StepVerifier.create(result)
-            .expectNextMatches(jsonObject -> {
-                List<Map<String, Object>> keys = (List<Map<String, Object>>) jsonObject.get("keys");
-                assertEquals(3, keys.size()); // zosmf, apiml, oidc
-                return keys.stream().anyMatch(k -> "zosmfKey".equals(k.get("kid"))) &&
-                    keys.stream().anyMatch(k -> "apimlKey".equals(k.get("kid"))) &&
-                    keys.stream().anyMatch(k -> "oidcKey".equals(k.get("kid")));
+            .expectNextMatches(responseEntity -> {
+                HashMap<String, Object> jsonObject;
+                try {
+                    jsonObject = mapper.readValue(responseEntity.getBody(), new TypeReference<HashMap<String,Object>>() {});
+                    List<Map<String, Object>> keys = (List<Map<String, Object>>) jsonObject.get("keys");
+                    assertEquals(3, keys.size()); // zosmf, apiml, oidc
+                    return keys.stream().anyMatch(k -> "zosmfKey".equals(k.get("kid"))) &&
+                        keys.stream().anyMatch(k -> "apimlKey".equals(k.get("kid"))) &&
+                        keys.stream().anyMatch(k -> "oidcKey".equals(k.get("kid")));
+                } catch (JsonProcessingException e) {
+                    fail(e);
+                    return false;
+                }
             })
             .verifyComplete();
     }
 
     @Test
     void getAllPublicKeys_apimlProducer_noOidc() throws Exception {
-        var apimlJwk = new RSAKey.Builder((RSAPublicKey) generateKeyPair().getPublic()).keyID("apimlKey").build();
+        var apimlJwk = JsonWebKey.Factory.newJwk((RSAPublicKey) generateKeyPair().getPublic());
+        apimlJwk.setKeyId("apimlKey");
 
         var testControllerNoOidc = new ReactivePublicJWKController(null, jwtSecurity, zosmfService, messageService);
 
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
         when(jwtSecurity.getJwkPublicKey()).thenReturn(Optional.of(apimlJwk));
 
-        Mono<Map<String, Object>> result = testControllerNoOidc.getAllPublicKeys();
+        var result = testControllerNoOidc.getAllPublicKeys();
 
         StepVerifier.create(result)
-            .expectNextMatches(jsonObject -> {
+            .expectNextMatches(responseEntity -> {
+                HashMap<String, Object> jsonObject;
+                try {
+                    jsonObject = mapper.readValue(responseEntity.getBody(), new TypeReference<HashMap<String,Object>>() {});
+                } catch (JsonProcessingException e) {
+                    fail(e);
+                    return false;
+                }
                 List<Map<String, Object>> keys = (List<Map<String, Object>>) jsonObject.get("keys");
                 assertEquals(1, keys.size());
                 return "apimlKey".equals(keys.get(0).get("kid"));
@@ -115,16 +146,24 @@ class ReactivePublicJWKControllerTest {
 
     @Test
     void getCurrentPublicKeys_apimlProducer() throws Exception {
-        JWK apimlJwk = new RSAKey.Builder((RSAPublicKey) generateKeyPair().getPublic()).keyID("currentApimlKey").build();
-        JWKSet apimlKeySet = new JWKSet(apimlJwk);
+        var apimlJwk = JsonWebKey.Factory.newJwk((RSAPublicKey) generateKeyPair().getPublic());
+        apimlJwk.setKeyId("currentApimlKey");
+        var apimlKeySet = new JsonWebKeySet(apimlJwk);
 
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
         when(jwtSecurity.getPublicKeyInSet()).thenReturn(apimlKeySet);
 
-        Mono<Map<String, Object>> result = controller.getCurrentPublicKeys();
+        var result = controller.getCurrentPublicKeys();
 
         StepVerifier.create(result)
-            .expectNextMatches(jsonObject -> {
+            .expectNextMatches(responseEntity -> {
+                HashMap<String, Object> jsonObject;
+                try {
+                    jsonObject = mapper.readValue(responseEntity.getBody(), new TypeReference<HashMap<String,Object>>() {});
+                } catch (JsonProcessingException e) {
+                    fail(e);
+                    return false;
+                }
                 List<Map<String, Object>> keys = (List<Map<String, Object>>) jsonObject.get("keys");
                 assertEquals(1, keys.size());
                 return "currentApimlKey".equals(keys.get(0).get("kid"));
@@ -134,16 +173,24 @@ class ReactivePublicJWKControllerTest {
 
     @Test
     void getCurrentPublicKeys_zosmfProducer() throws Exception {
-        JWK zosmfJwk = new RSAKey.Builder((RSAPublicKey) generateKeyPair().getPublic()).keyID("currentZosmfKey").build();
-        JWKSet zosmfKeySet = new JWKSet(zosmfJwk);
+        var zosmfJwk = JsonWebKey.Factory.newJwk((RSAPublicKey) generateKeyPair().getPublic());
+        zosmfJwk.setKeyId("currentZosmfKey");
+        var zosmfKeySet = new JsonWebKeySet(zosmfJwk);
 
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
         when(zosmfService.getPublicKeys()).thenReturn(zosmfKeySet);
 
-        Mono<Map<String, Object>> result = controller.getCurrentPublicKeys();
+        var result = controller.getCurrentPublicKeys();
 
         StepVerifier.create(result)
-            .expectNextMatches(jsonObject -> {
+            .expectNextMatches(responseEntity -> {
+                HashMap<String, Object> jsonObject;
+                try {
+                    jsonObject = mapper.readValue(responseEntity.getBody(), new TypeReference<HashMap<String,Object>>() {});
+                } catch (JsonProcessingException e) {
+                    fail(e);
+                    return false;
+                }
                 List<Map<String, Object>> keys = (List<Map<String, Object>>) jsonObject.get("keys");
                 assertEquals(1, keys.size());
                 return "currentZosmfKey".equals(keys.get(0).get("kid"));
@@ -155,10 +202,17 @@ class ReactivePublicJWKControllerTest {
     void getCurrentPublicKeys_unknownProducer() {
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.UNKNOWN); // Or any other not APIML/ZOSMF
 
-        Mono<Map<String, Object>> result = controller.getCurrentPublicKeys();
+        var result = controller.getCurrentPublicKeys();
 
         StepVerifier.create(result)
-            .expectNextMatches(jsonObject -> {
+            .expectNextMatches(responseEntity -> {
+                HashMap<String, Object> jsonObject;
+                try {
+                    jsonObject = mapper.readValue(responseEntity.getBody(), new TypeReference<HashMap<String,Object>>() {});
+                } catch (JsonProcessingException e) {
+                    fail(e);
+                    return false;
+                }
                 List<Map<String, Object>> keys = (List<Map<String, Object>>) jsonObject.get("keys");
                 return keys.isEmpty();
             })
@@ -168,9 +222,10 @@ class ReactivePublicJWKControllerTest {
 
     @Test
     void getPublicKeyUsedForSigning_success() throws Exception {
-        KeyPair keyPair = generateKeyPair();
-        JWK jwk = new RSAKey.Builder((RSAPublicKey) keyPair.getPublic()).keyID("signingKey").build();
-        JWKSet keySet = new JWKSet(jwk);
+        var keyPair = generateKeyPair();
+        var jwk = JsonWebKey.Factory.newJwk((RSAPublicKey) keyPair.getPublic());
+        jwk.setKeyId("signingKey");
+        var keySet = new JsonWebKeySet(jwk);
 
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
         when(jwtSecurity.getPublicKeyInSet()).thenReturn(keySet);
@@ -202,11 +257,15 @@ class ReactivePublicJWKControllerTest {
 
     @Test
     void givenMultipleKeys_thenReturnErrorWithCorrectMessage() throws Exception {
-        KeyPair kp1 = generateKeyPair();
-        KeyPair kp2 = generateKeyPair();
-        JWK jwk1 = new RSAKey.Builder((RSAPublicKey) kp1.getPublic()).keyID("key1").build();
-        JWK jwk2 = new RSAKey.Builder((RSAPublicKey) kp2.getPublic()).keyID("key2").build();
-        JWKSet keySet = new JWKSet(List.of(jwk1, jwk2));
+        var kp1 = generateKeyPair();
+        var kp2 = generateKeyPair();
+
+        var jwk1 = JsonWebKey.Factory.newJwk((RSAPublicKey) kp1.getPublic());
+        jwk1.setKeyId("key1");
+        var jwk2 = JsonWebKey.Factory.newJwk((RSAPublicKey) kp2.getPublic());
+        jwk2.setKeyId("key2");
+
+        var keySet = new JsonWebKeySet(List.of(jwk1, jwk2));
 
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
         when(jwtSecurity.getPublicKeyInSet()).thenReturn(keySet);
@@ -218,7 +277,6 @@ class ReactivePublicJWKControllerTest {
         ApiMessage expectedApiMessage = new ApiMessage("org.zowe.apiml.zaas.keys.wrongAmount", MessageType.ERROR, "ZWEAG715E", "cnt", null, null);
 
         lenient().when(mockApiMessage.mapToApiMessage()).thenReturn(expectedApiMessage);
-
 
         Mono<ResponseEntity<Object>> result = controller.getPublicKeyUsedForSigning();
 
@@ -233,13 +291,15 @@ class ReactivePublicJWKControllerTest {
 
     @Test
     void getPublicKeyUsedForSigning_joseException() throws Exception {
-        KeyPair keyPair = KeyPairGenerator.getInstance("RSA").generateKeyPair();
-        RSAKey realRsaKey = new RSAKey.Builder((RSAPublicKey) keyPair.getPublic()).build();
+        var keyPair = KeyPairGenerator.getInstance("RSA").generateKeyPair();
+        var realRsaKey = new RSAKey.Builder((RSAPublicKey) keyPair.getPublic()).build();
 
-        RSAKey spyRsaKey = spy(realRsaKey);
+        var spyRsaKey = spy(realRsaKey);
         doThrow(new JOSEException("Test JOSE Exception")).when(spyRsaKey).toPublicKey();
 
-        JWKSet keySet = new JWKSet(List.of(spyRsaKey));
+        var jwk = JsonWebKey.Factory.newJwk(keyPair.getPublic());
+
+        var keySet = new JsonWebKeySet(List.of(jwk));
 
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
         when(jwtSecurity.getPublicKeyInSet()).thenReturn(keySet);
@@ -249,7 +309,7 @@ class ReactivePublicJWKControllerTest {
         when(messageService.createMessage("org.zowe.apiml.zaas.keys.unknown")).thenReturn(mockApiMessage);
         when(mockApiMessage.mapToApiMessage()).thenReturn(expectedApiMessage);
 
-        Mono<ResponseEntity<Object>> result = controller.getPublicKeyUsedForSigning();
+        var result = controller.getPublicKeyUsedForSigning();
 
         StepVerifier.create(result)
             .expectNextMatches(responseEntity -> {

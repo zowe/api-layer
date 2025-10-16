@@ -141,7 +141,6 @@ class ZosmfServiceTest {
             securityObjectMapper,
             applicationContext,
             authenticationService,
-            null,
             null);
         ZosmfService zosmfService = spy(zosmfServiceObj);
         doReturn(ZOSMF_ID).when(zosmfService).getZosmfServiceId();
@@ -156,8 +155,7 @@ class ZosmfServiceTest {
             securityObjectMapper,
             applicationContext,
             authenticationService,
-            validationStrategyList,
-            null);
+            validationStrategyList);
 
         ZosmfService zosmfService = spy(zosmfServiceObj);
         doReturn("http://host:1433").when(zosmfService).getURI(any());
@@ -736,7 +734,6 @@ class ZosmfServiceTest {
                 null,
                 null,
                 null,
-                null,
                 null)
                 .readTokenFromCookie(null, null));
         }
@@ -748,7 +745,7 @@ class ZosmfServiceTest {
         @Test
         void givenExceptionInTheResponse_thenPublicKeysAreEmpty() {
             ZosmfService zosmfService = getZosmfServiceSpy();
-            assertTrue(zosmfService.getPublicKeys().getKeys().isEmpty());
+            assertTrue(zosmfService.getPublicKeys().getJsonWebKeys().isEmpty());
         }
     }
 
@@ -767,7 +764,6 @@ class ZosmfServiceTest {
                 securityObjectMapper,
                 applicationContext,
                 authenticationService,
-                null,
                 null
             );
 
@@ -907,7 +903,6 @@ class ZosmfServiceTest {
                 securityObjectMapper,
                 applicationContext,
                 authenticationService,
-                null,
                 null
             );
 
@@ -944,7 +939,6 @@ class ZosmfServiceTest {
                 securityObjectMapper,
                 applicationContext,
                 authenticationService,
-                null,
                 null
             );
             ReflectionTestUtils.setField(underTest, "tokenCreationService", tokenCreationService);

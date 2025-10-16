@@ -107,8 +107,7 @@ class ZosmfAuthenticationProviderTest {
             securityObjectMapper,
             applicationContext,
             authenticationService,
-            new ArrayList<>(),
-            null);
+            new ArrayList<>());
         ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
         ReflectionTestUtils.setField(zosmfService, "discovery", new CompositeDiscoveryClient(Collections.singletonList(new EurekaDiscoveryClient(eurekaClient, clientConfig))));
         ReflectionTestUtils.setField(zosmfService, "tokenCreationService", tokenCreationService);

@@ -22,6 +22,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.util.JwtUtils;
 
 import java.util.Arrays;
 import java.util.Collections;

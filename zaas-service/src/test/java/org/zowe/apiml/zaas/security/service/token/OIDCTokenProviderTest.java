@@ -15,7 +15,6 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.util.DefaultResourceRetriever;
 import com.nimbusds.jose.util.Resource;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.impl.DefaultClock;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -37,6 +36,7 @@ import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,7 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -98,7 +98,7 @@ class OIDCTokenProviderTest {
 
     @BeforeEach
     void setup() throws CachingServiceClientException, IOException {
-        oidcTokenProvider = new OIDCTokenProvider(new DefaultClock(), resourceRetriever, httpClient);
+        oidcTokenProvider = new OIDCTokenProvider(Clock.systemUTC(), httpClient);
         ReflectionTestUtils.setField(oidcTokenProvider, "jwkRefreshInterval", 1);
         oktaJwks = Resources.toString(Resources.getResource(OKTA_JWKS_RESOURCE), StandardCharsets.UTF_8);
     }
@@ -186,7 +186,7 @@ class OIDCTokenProviderTest {
 
         @BeforeEach
         public void setUp() {
-            oidcTokenProvider = new OIDCTokenProvider(new DefaultClock(), resourceRetriever, httpClient);
+            oidcTokenProvider = new OIDCTokenProvider(Clock.systemUTC(), httpClient);
             ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", List.of("https://jwksurl"));
             ReflectionTestUtils.setField(oidcTokenProvider, "resourceRetriever", resourceRetriever);
         }
