@@ -14,8 +14,19 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jose.crypto.factories.DefaultJWSSignerFactory;
 import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
+import com.nimbusds.jose.crypto.impl.RSAKeyUtils;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.gen.JWKGenerator;
+import com.nimbusds.jose.produce.JWSSignerFactory;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.SignedJWT;
@@ -27,10 +38,12 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.bouncycastle.crypto.generators.RSAKeyPairGenerator;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.NumericDate;
+import org.jose4j.keys.RsaKeyUtil;
 import org.jose4j.lang.JoseException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.CacheManager;
@@ -60,11 +73,13 @@ import org.zowe.apiml.zaas.controllers.AuthController;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
+import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.time.Clock;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -191,29 +206,56 @@ public class AuthenticationService {
         // }
         try {
                 // Create the Claims, which will be the content of the JWT
-            JwtClaims newClaims = new JwtClaims();
 
-            newClaims.setIssuer(issuer);  // who creates the token and signs it
-            newClaims.setExpirationTime(NumericDate.fromMilliseconds(expiration)); // time when the token will expire (10 minutes from now)
-            newClaims.setGeneratedJwtId(); // a unique identifier for the token
-            newClaims.setIssuedAt(NumericDate.fromMilliseconds(issuedAt));  // when the token was issued/created (now)
-            newClaims.setSubject(username); // the subject/principal is whom the token is about
-            newClaims.getClaimsMap().putAll(claims);
+                // This one works,
+            // JwtClaims newClaims = new JwtClaims();
 
-            // A JWT is a JWS and/or a JWE with JSON claims as the payload.
-            // In this example it is a JWS so we create a JsonWebSignature object.
-            JsonWebSignature jws = new JsonWebSignature();
-            jws.setPayload(newClaims.toJson());
-            jws.setKey(jwtSecurityInitializer.getJwtSecret());
-            jws.setHeader("typ", "JWT");
-            jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
-            jws.setDoKeyValidation(false);
-            String jwt = jws.getCompactSerialization();
-            log.error("created jwt: {}", jwt);
-            return jwt;
-        } catch (JoseException e) {
-            log.error("JoseException: {}", e.getMessage(), e);
-            return null;
+            // newClaims.setIssuer(issuer);  // who creates the token and signs it
+            // newClaims.setExpirationTime(NumericDate.fromMilliseconds(expiration)); // time when the token will expire (10 minutes from now)
+            // newClaims.setGeneratedJwtId(); // a unique identifier for the token
+            // newClaims.setIssuedAt(NumericDate.fromMilliseconds(issuedAt));  // when the token was issued/created (now)
+            // newClaims.setSubject(username); // the subject/principal is whom the token is about
+            // newClaims.getClaimsMap().putAll(claims);
+
+            // // A JWT is a JWS and/or a JWE with JSON claims as the payload.
+            // // In this example it is a JWS so we create a JsonWebSignature object.
+            // JsonWebSignature jws = new JsonWebSignature();
+            // jws.setPayload(newClaims.toJson());
+            // jws.setKey(jwtSecurityInitializer.getJwtSecret());
+            // jws.setHeader("typ", "JWT");
+            // jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+            // jws.setDoKeyValidation(false);
+            // String jwt = jws.getCompactSerialization();
+            // log.error("created jwt: {}", jwt);
+            // return jwt;
+
+
+            RSAKey rsaJWK = new RSAKey.Builder((RSAPublicKey)jwtSecurityInitializer.getJwtPublicKey())
+                .privateKey(jwtSecurityInitializer.getJwtSecret()).build();
+            JWSSigner signer = new RSASSASigner(rsaJWK);
+            JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .subject("alice")
+                .issuer("https://c2id.com")
+                .expirationTime(new Date(new Date().getTime() + 60 * 1000))
+                .build();
+            SignedJWT signedJWT = new SignedJWT(
+                new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(rsaJWK.getKeyID()).build(),
+                claimsSet);
+
+            signedJWT.sign(signer);
+
+            String s = signedJWT.serialize();
+            log.error("created jwt: {}", s);
+
+            signedJWT = SignedJWT.parse(s);
+
+            JWSVerifier verifier = new RSASSAVerifier((RSAPublicKey) jwtSecurityInitializer.getJwtPublicKey());
+
+            log.error("token is valid for public key: {}", signedJWT.verify(verifier));
+
+        } catch (JOSEException | ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
