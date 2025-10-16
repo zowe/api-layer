@@ -26,7 +26,7 @@ class CorsUtilsTest {
     Map<String, String> metadata = new HashMap<>();
     List<String> defaultCorsMethods = List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS");
 
-    List<String> allowedEndpoints = Arrays.asList("/*/*/gateway/**", "/gateway/*/*/**", "/gateway/version");
+    List<String> allowedEndpoints = List.of("/gateway/**");
 
     @BeforeEach
     void setup() {
