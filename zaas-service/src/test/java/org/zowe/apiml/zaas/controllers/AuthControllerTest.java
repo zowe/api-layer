@@ -164,7 +164,7 @@ class AuthControllerTest {
         var jwkSet = new JsonWebKeySet(Arrays.asList(zosmfJwk, apimlJwk));
         this.mockMvc.perform(get("/zaas/api/v1/auth/keys/public/all"))
             .andExpect(status().is(SC_OK))
-            .andExpect(content().json(jwkSet.toString()));
+            .andExpect(content().json(jwkSet.toJson()));
     }
 
     @Test
@@ -174,7 +174,7 @@ class AuthControllerTest {
         var jwkSet = new JsonWebKeySet(Collections.singletonList(apimlJwk));
         this.mockMvc.perform(get("/zaas/api/v1/auth/keys/public/all"))
             .andExpect(status().is(SC_OK))
-            .andExpect(content().json(jwkSet.toString()));
+            .andExpect(content().json(jwkSet.toJson()));
     }
 
     @Test
@@ -188,7 +188,7 @@ class AuthControllerTest {
         var jwkSet = new JsonWebKeySet(Arrays.asList(apimlJwk, oidcJwk));
         this.mockMvc.perform(get("/zaas/api/v1/auth/keys/public/all"))
             .andExpect(status().is(SC_OK))
-            .andExpect(content().json(jwkSet.toString()));
+            .andExpect(content().json(jwkSet.toJson()));
     }
 
     @Nested
@@ -200,17 +200,17 @@ class AuthControllerTest {
             var jwkSet = new JsonWebKeySet(Collections.singletonList(apimlJwk));
             mockMvc.perform(get("/zaas/api/v1/auth/keys/public/current"))
                 .andExpect(status().is(SC_OK))
-                .andExpect(content().json(jwkSet.toString()));
+                .andExpect(content().json(jwkSet.toJson()));
         }
 
         @Test
         void returnEmptyWhenUnknown() throws Exception {
             initPublicKeys();
             when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.UNKNOWN);
-            JWKSet jwkSet = new JWKSet(Collections.emptyList());
+            var jwkSet = new JsonWebKeySet(Collections.emptyList());
             mockMvc.perform(get("/zaas/api/v1/auth/keys/public/current"))
                 .andExpect(status().is(SC_OK))
-                .andExpect(content().json(jwkSet.toString()));
+                .andExpect(content().json(jwkSet.toJson()));
         }
 
         @Test
