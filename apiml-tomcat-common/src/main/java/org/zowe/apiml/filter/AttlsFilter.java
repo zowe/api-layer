@@ -39,7 +39,9 @@ public class AttlsFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        if (!isClientCertificateIgnored(request)) {
+        if (isClientCertificateIgnored(request)) {
+            log.debug("Client certificate is ignored.");
+        } else {
             log.debug("Updating request with client certificate from the AT-TLS context.");
             try {
                 byte[] certificate = InboundAttls.getCertificate();
