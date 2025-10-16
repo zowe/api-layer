@@ -47,6 +47,8 @@ zosmf:
 zss:
     userMapping:
             "[zoweson@zowe.com]": USER
+            "/apiml": prod001
+
 
 ---
 spring.config.activate.on-profile: attlsServer
