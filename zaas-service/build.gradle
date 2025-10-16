@@ -113,6 +113,8 @@ dependencies {
     testImplementation libs.rest.assured.json.path
     testImplementation libs.rest.assured.xml.path
     testImplementation libs.jjwt
+    testImplementation libs.jjwt.impl
+    testImplementation libs.jjwt.jackson
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
