@@ -522,13 +522,30 @@ class CategorizeCertsFilterTest {
         }
 
         @Test
-        void whenClientCertHeaderNotDefined_thenReturnFalse() {
-            filter = new CategorizeCertsFilter(null, null);
-            request = new MockHttpServletRequest();
+        void whenClientCertHeaderNotDefined_thenReturnFalse() throws ServletException, IOException {
 
-            boolean result = filter.isClientCertificateIgnored(request);
+            filter = new CategorizeCertsFilter(new HashSet<>(), certificateValidator);
 
-            assertFalse(result, "Expected false when Client-Cert header is not defined");
+            X509Certificate[] certs = new X509Certificate[]{
+                X509Utils.getCertificate(X509Utils.correctBase64("foreignCert1"))
+            };
+            request.setAttribute(CategorizeCertsFilter.ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, certs);
+            request.setAttribute(CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, certs);
+
+            request.addHeader(CategorizeCertsFilter.CLIENT_CERT_HEADER, "");
+
+            filter.doFilter(request, response, chain);
+
+            assertNull(
+                request.getAttribute(CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE),
+                "Expected client.auth.X509Certificate attribute to be removed"
+            );
+            assertNull(
+                request.getAttribute(CategorizeCertsFilter.ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE),
+                "Expected jakarta.servlet.request.X509Certificate attribute to be removed"
+            );
+
+            assertNotNull(chain.getRequest(), "Filter chain should continue normally");
         }
     }
 }

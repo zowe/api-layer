@@ -35,6 +35,8 @@ import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.function.Predicate;
 
+import static org.zowe.apiml.util.ServletRequestUtils.isClientCertificateIgnored;
+
 /**
  * This filter processes certificates on request. It decides, which certificates are considered for client authentication
  */
@@ -91,17 +93,6 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
 
             log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, httpServletRequest.getAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE));
         }
-    }
-
-    boolean isClientCertificateIgnored(HttpServletRequest request) {
-        var forwardedClientCertificate = request.getHeader(CLIENT_CERT_HEADER);
-        if (forwardedClientCertificate == null) {
-            // no header means the certificate shouldn't be removed
-            log.debug("Request header Client-Cert was not defined.");
-            return false;
-        }
-        // empty header means to ignore the certificate from the request
-        return StringUtils.isBlank(forwardedClientCertificate);
     }
 
     private Optional<Certificate> getClientCertFromHeader(HttpServletRequest request) {

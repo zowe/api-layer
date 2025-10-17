@@ -15,9 +15,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.zowe.apiml.util.ServletRequestUtils;
 import org.zowe.commons.attls.InboundAttls;
 
 import java.io.ByteArrayInputStream;
@@ -39,7 +39,7 @@ public class AttlsFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        if (isClientCertificateIgnored(request)) {
+        if (ServletRequestUtils.isClientCertificateIgnored(request)) {
             log.debug("Client certificate is ignored.");
         } else {
             log.debug("Updating request with client certificate from the AT-TLS context.");
@@ -55,17 +55,6 @@ public class AttlsFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
-    }
-
-    boolean isClientCertificateIgnored(HttpServletRequest request) {
-        var forwardedClientCertificate = request.getHeader(CLIENT_CERT_HEADER);
-        if (forwardedClientCertificate == null) {
-            // no header means the certificate shouldn't be removed
-            log.debug("Request header Client-Cert was not defined.");
-            return false;
-        }
-        // empty header means to ignore the certificate from the request
-        return StringUtils.isBlank(forwardedClientCertificate);
     }
 
     public void populateRequestWithCertificate(HttpServletRequest request, byte[] rawCertificate) throws CertificateException {
