@@ -60,6 +60,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.text.ParseException;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -382,8 +383,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void givenExpiredJWT_thenThrowTokenExpireException() {
-            String expiredJwtToken = createExpiredJwtToken(privateKey);
+            var expiredJwtToken = createExpiredJwtToken(privateKey);
             when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
+            when(clock.instant()).thenReturn(Instant.now());
             assertThrows(
                 TokenExpireException.class,
                 () -> authService.getLtpaTokenWithValidation(expiredJwtToken)

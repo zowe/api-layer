@@ -14,12 +14,12 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.BadJWTException;
+import com.nimbusds.jwt.proc.ExpiredJWTException;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -61,6 +61,7 @@ import org.zowe.apiml.zaas.controllers.AuthController;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
+import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.time.Clock;
 import java.util.Arrays;
@@ -297,14 +298,13 @@ public class AuthenticationService {
         try {
             var parsedJwt = JWTParser.parse(jwtToken);
             if (parsedJwt instanceof SignedJWT signedJwt) {
-                var header = JWSHeader.parse(signedJwt.getSignature());
-                var verifier = new DefaultJWSVerifierFactory().createJWSVerifier(header, jwtSecurityInitializer.getJwtPublicKey());
-                var verified = signedJwt.verify(verifier);
+                var rsaVerifier = new RSASSAVerifier((RSAPublicKey) jwtSecurityInitializer.getJwtPublicKey());
+                var verified = signedJwt.verify(rsaVerifier);
                 if (verified) {
                     var claims = parsedJwt.getJWTClaimsSet();
                     if (claims.getExpirationTime().toInstant().isBefore(clock.instant())) {
                         log.debug("OIDC Token is expired");
-                        return null;
+                        throw new ExpiredJWTException("OIDC Token is expired");
                     }
                     return claims;
                 }
