@@ -20,13 +20,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.zowe.apiml.filter.AttlsHttpHandler;
+import org.zowe.apiml.product.security.WebServerSecurityConfig;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
 import org.zowe.apiml.product.web.TomcatAcceptFixConfig;
 import org.zowe.apiml.product.web.TomcatKeyringFix;
 
 @Configuration
-@Import({TomcatKeyringFix.class, TomcatAcceptFixConfig.class, ApimlTomcatCustomizer.class, AttlsHttpHandler.class,})
+@Import({TomcatKeyringFix.class, TomcatAcceptFixConfig.class, ApimlTomcatCustomizer.class, AttlsHttpHandler.class, WebServerSecurityConfig.class})
 @Data
 @ToString
 public class GeneralConfig implements WebMvcConfigurer {

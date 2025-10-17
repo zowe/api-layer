@@ -98,6 +98,7 @@ dependencies {
     testImplementation libs.rest.assured
     testImplementation libs.rest.assured.web.test.client
 
+    testImplementation(testFixtures(project(":apiml-common")))
     testFixturesImplementation libs.spring.boot.starter.test
     testFixturesImplementation libs.commons.io
     testFixturesImplementation libs.http.client5

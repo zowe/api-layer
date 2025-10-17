@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.caching.CachingServiceApplication;
 import org.zowe.apiml.util.config.SslContext;
@@ -49,7 +48,6 @@ public class SecurityConfigTest {
             "apiml.service.ssl.verifySslCertificatesOfServices=false"
         }
     )
-    @DirtiesContext
     @SpringBootTest(
         classes = CachingServiceApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -78,7 +76,6 @@ public class SecurityConfigTest {
             "apiml.service.ssl.verifySslCertificatesOfServices=true"
         }
     )
-    @DirtiesContext
     @SpringBootTest(
         classes = CachingServiceApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
