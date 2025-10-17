@@ -100,7 +100,7 @@ public class ConnectionsConfig {
     private String externalUrl;
 
     @Value("${apiml.service.corsAllowedEndpoints:/gateway/**}")
-    private final List<String> CORS_ENABLED_ENDPOINTS;
+    private final List<String> corsEnabledEndpoints;
 
     /**
      * @param httpClient             default http client
