@@ -280,7 +280,7 @@ public class ConnectionsConfig {
 
     @Bean
     CorsUtils corsUtils() {
-        return new CorsUtils(corsEnabled, corsAllowedMethods, CORS_ENABLED_ENDPOINTS);
+        return new CorsUtils(corsEnabled, corsAllowedMethods, corsEnabledEndpoints);
     }
 
     @Bean
