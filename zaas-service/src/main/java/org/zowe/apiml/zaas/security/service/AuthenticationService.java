@@ -152,7 +152,9 @@ public class AuthenticationService {
             newClaims.setGeneratedJwtId();
             newClaims.setIssuedAt(NumericDate.fromMilliseconds(issuedAt));
             newClaims.setSubject(username);
-            newClaims.getClaimsMap().putAll(claims);
+            if (claims != null) {
+                claims.entrySet().forEach(entry -> newClaims.setClaim(entry.getKey(), entry.getValue()));
+            }
 
             var jws = new JsonWebSignature();
             jws.setPayload(newClaims.toJson());

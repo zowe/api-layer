@@ -79,6 +79,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -144,6 +145,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         scopes.add("Service1");
         scopes.add("Service2");
         ReflectionTestUtils.setField(authService, "meAsProxy", authService);
+        lenient().when(clock.instant()).thenReturn(Instant.now());
     }
 
     @Nested
@@ -555,7 +557,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     }
 
     void stubJWTSecurityForSign() {
-        when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
+        lenient().when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
     }
 
