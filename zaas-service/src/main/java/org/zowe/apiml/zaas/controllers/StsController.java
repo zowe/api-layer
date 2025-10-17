@@ -20,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.zaas.security.mapping.NativeMapperWrapper;
 
 /**
  * Controller for Security Token Service (STS) operations, similar to AuthController.
@@ -32,6 +34,9 @@ public class StsController {
 
     public static final String CONTROLLER_PATH = "/zaas/api/v1/auth/delegations";
     public static final String ISSUE_PASSTICKET_PATH = "/ticket";
+     
+    private final NativeMapperWrapper nativeMapper;
+    private final PassTicketService passTicketService;
 
     /**
      * Public API: Issue a new passticket for the given emailId and applid.
@@ -55,12 +60,39 @@ public class StsController {
         String emailId = request.getEmailId();
         String applid = request.getApplid();
         // ...passticket issuing logic using emailId and applid...
-        PassticketResponse response = new PassticketResponse();
-        // Implement  actual logic
-        response.setPassticket(String.format("havenkat-passticket-for-%s-%s", emailId, applid)); 
-        response.setUserid("12345678"); 
+        var uid = getUserId(emailId)
+        if (uid != null ) {
+            return new ResponseEntity<>(null, HttpStatus.Unauthorized);
+        }
+        var ticket = passTicketService.generate(zosUserId, applID);        
+        response.setPassticket(ticket); 
+        response.setUserid(uid);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    private String getUserId(String emailId) {
+        try {
+            
+            MapperResponse response = nativeMapper.getUserIDForDN(emailId, "registry");
+
+            if (response.getRc() == 0 && StringUtils.isNotEmpty(response.getUserId())) {
+                return response.getUserId();
+            }
+
+            if (response.getRc() != 0) {
+                 logger.warn("Mapping failed for email ID: {} with Return Code: {}", emailId, response.getRc());
+            } else {
+                 logger.warn("Mapping returned empty userId for email ID: {}", emailId);
+            }
+            return null; 
+
+        } catch (Exception exp) {
+            logger.error("Internal error during user ID mapping for email ID: {}", emailId, exp);
+            return null;
+        }
+    }
+
+
 
     @Data
     public static class PassticketRequest {
