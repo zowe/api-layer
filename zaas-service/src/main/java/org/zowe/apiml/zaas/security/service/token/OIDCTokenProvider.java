@@ -11,8 +11,7 @@
 package org.zowe.apiml.zaas.security.service.token;
 
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
@@ -25,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.http.HttpHeaders;
-import org.jose4j.jwk.HttpsJwks;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.lang.JoseException;
@@ -40,6 +38,7 @@ import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 
 import java.io.IOException;
+import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.time.Clock;
 import java.util.List;
@@ -66,12 +65,12 @@ public class OIDCTokenProvider implements OIDCProvider {
     @Value("${apiml.security.oidc.userInfo.uri}")
     private String endpointUrl;
 
+    private final JWKResolver jwkResolver;
     private final CloseableHttpClient secureHttpClientWithKeystore;
     @Getter
     private final Map<String, JsonWebKey> publicKeys = new ConcurrentHashMap<>();
     @Getter
     private JsonWebKeySet jwkSet;
-
 
     @PostConstruct
     public void afterPropertiesSet() {
@@ -91,9 +90,7 @@ public class OIDCTokenProvider implements OIDCProvider {
         for (String url : jwksUri) {
             log.debug("Refreshing JWK endpoints {}", url);
             try {
-                var httpsJwks = new HttpsJwks(url);
-
-                var keySet = new JsonWebKeySet(httpsJwks.getJsonWebKeys());
+                var keySet = jwkResolver.resolve(url);
                 keySet.getJsonWebKeys().forEach(jwk -> publicKeys.put(jwk.getKeyId(), jwk));
             } catch (IOException | IllegalStateException | JoseException e) {
                 log.error("Error processing response from URI {} message: {}", url, e.getMessage());
@@ -156,9 +153,8 @@ public class OIDCTokenProvider implements OIDCProvider {
         log.debug("Validating the token with JWK");
         var jwt = JWTParser.parse(token);
         if (jwt instanceof SignedJWT signedJwt) {
-            var header = JWSHeader.parse(signedJwt.getSignature());
-            var verifier = new DefaultJWSVerifierFactory().createJWSVerifier(header, publicKeys.get(header.getKeyID()).getKey());
-            var verified = signedJwt.verify(verifier);
+            var rsaVerifier = new RSASSAVerifier((RSAPublicKey) publicKeys.get(signedJwt.getHeader().getKeyID()).getKey());
+            var verified = signedJwt.verify(rsaVerifier);
             if (verified) {
                 var claims = jwt.getJWTClaimsSet();
                 if (claims.getExpirationTime().toInstant().isBefore(clock.instant())) {

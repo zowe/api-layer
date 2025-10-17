@@ -16,8 +16,6 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.util.DefaultResourceRetriever;
-import com.nimbusds.jose.util.Resource;
 import org.hamcrest.collection.IsMapContaining;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -719,10 +717,6 @@ class ZosmfServiceTest {
             String zosmfJwtUrl = "/jwt/ibm/api/zOSMFBuilder/jwk";
             when(authConfigurationProperties.getZosmf().getJwtEndpoint()).thenReturn(zosmfJwtUrl);
             ZosmfService zosmfService = getZosmfServiceSpy();
-            DefaultResourceRetriever resourceRetriever = mock(DefaultResourceRetriever.class);
-            ReflectionTestUtils.setField(zosmfService, "resourceRetriever", resourceRetriever);
-
-            when(resourceRetriever.retrieveResource(any())).thenReturn(new Resource(ZOSMF_PUBLIC_KEY_JSON, null));
 
             JSONAssert.assertEquals(ZOSMF_PUBLIC_KEY_JSON, new JSONObject(zosmfService.getPublicKeys().toString()), true);
         }

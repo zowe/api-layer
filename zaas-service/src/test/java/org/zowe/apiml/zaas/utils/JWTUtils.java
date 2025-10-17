@@ -10,10 +10,10 @@
 
 package org.zowe.apiml.zaas.utils;
 
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
 import io.jsonwebtoken.Jwts;
 import lombok.SneakyThrows;
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.JsonWebKeySet;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.SecurityUtils;
 
@@ -60,7 +60,7 @@ public class JWTUtils {
         var now = Instant.now();
         var jwkAndSet = loadPrivateKey("../keystore/localhost/localhost.keystore.p12", "localhost", "password");
         return Jwts.builder()
-            .header().keyId("0987").and()
+            .header().keyId("Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4").and()
             .subject("oidc.username")
             .claim("email", "username@oidc.org")
             .claim("nullValue", null)
@@ -91,13 +91,14 @@ public class JWTUtils {
         var cert = ks.getCertificate(alias);
         var pubKey = cert.getPublicKey();
         if (pubKey instanceof RSAPublicKey rsaPublicKey) {
-            var k = new RSAKey.Builder(rsaPublicKey).keyID("0987").build().toPublicJWK();
-            return new JwkAndSet((PrivateKey) key, new JWKSet(k));
+            var jwk = JsonWebKey.Factory.newJwk(rsaPublicKey);
+            jwk.setKeyId("Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4");
+            return new JwkAndSet((PrivateKey) key, new JsonWebKeySet(jwk));
         }
 
         return new JwkAndSet((PrivateKey) key, null);
     }
 
-    public record JwkAndSet(PrivateKey privateKey, JWKSet jwkSet) {
+    public record JwkAndSet(PrivateKey privateKey, JsonWebKeySet jwkSet) {
     }
 }

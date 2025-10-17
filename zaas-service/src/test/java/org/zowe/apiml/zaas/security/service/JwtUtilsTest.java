@@ -10,9 +10,7 @@
 
 package org.zowe.apiml.zaas.security.service;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Header;
+import com.nimbusds.jwt.proc.ExpiredJWTException;
 import io.jsonwebtoken.JwtException;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -32,7 +30,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.zowe.apiml.zaas.utils.JWTUtils.createTokenWithUserFields;
 
 class JwtUtilsTest {
@@ -41,15 +38,13 @@ class JwtUtilsTest {
 
     @Test
     void testHandleJwtParserExceptionForExpiredToken() {
-
-        Exception exception = JwtUtils.handleJwtParserException(new ExpiredJwtException(mock(Header.class), mock(Claims.class), "msg"));
+        Exception exception = JwtUtils.handleJwtParserException(new ExpiredJWTException("msg"));
         assertTrue(exception instanceof TokenExpireException);
         assertEquals("Token is expired.", exception.getMessage());
     }
 
     @Test
     void testHandleJwtParserExceptionForInvalidToken() {
-
         Exception exception = JwtUtils.handleJwtParserException(new JwtException("msg"));
         assertTrue(exception instanceof TokenNotValidException);
         assertEquals("Token is not valid.", exception.getMessage());

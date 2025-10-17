@@ -219,7 +219,7 @@ class AuthControllerTest {
             when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
             mockMvc.perform(get("/zaas/api/v1/auth/keys/public/current"))
                 .andExpect(status().is(SC_OK))
-                .andExpect(content().json(jwkSet.toString()));
+                .andExpect(content().json(jwkSet.toJson()));
         }
     }
 
