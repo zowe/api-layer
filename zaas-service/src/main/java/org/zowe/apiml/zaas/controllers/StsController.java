@@ -30,39 +30,48 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class StsController {
 
-    public static final String CONTROLLER_PATH = "/zaas/api/v1/auth/delegate";    
+    public static final String CONTROLLER_PATH = "/zaas/api/v1/auth/delegations";
     public static final String ISSUE_PASSTICKET_PATH = "/ticket";
 
     /**
-     * Public API: Issue a new passticket
+     * Public API: Issue a new passticket for the given emailId and applid.
      */
     @PostMapping(path = ISSUE_PASSTICKET_PATH)
     @ResponseBody
-    @Operation(summary = "Issue a new passticket.",
+    @Operation(
+        summary = "Generate a passticket for the given emailId and applId.",
         tags = {"Security"},
         operationId = "issueDelegatedPassticket",
-        description = "Issues a new passticket for the authenticated user.",
+        description = "Issues a new passticket for the given emailId, and api authenticated via X509 cert token.",
         security = {
             @SecurityRequirement(name = "Bearer")
         }
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Passticket issued successfully"),
+        @ApiResponse(responseCode = "200", description = "PassTicket issued successfully"),
         @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    public ResponseEntity<String> issuePassticket(@RequestBody PassticketRequest request) {
-        // Extract email_id and application_id from payload
+    public ResponseEntity<PassticketResponse> issuePassticket(@RequestBody PassticketRequest request) {
         String emailId = request.getEmailId();
-        String applicationId = request.getApplicationId();
-        // ...passticket issuing logic using emailId and applicationId...
-        String passticket = String.format("dummy-passticket-for-%s-%s", emailId, applicationId); // Replace with actual logic
-        return new ResponseEntity<>(passticket, HttpStatus.OK);
+        String applid = request.getApplid();
+        // ...passticket issuing logic using emailId and applid...
+        PassticketResponse response = new PassticketResponse();
+        // Implement  actual logic
+        response.setPassticket(String.format("havenkat-passticket-for-%s-%s", emailId, applid)); 
+        response.setUserid("12345678"); 
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @Data
     public static class PassticketRequest {
         private String emailId;
-        private String applicationId;
+        private String applid;
+    }
+
+    @Data
+    public static class PassticketResponse {
+        private String passticket;
+        private String userid;
     }
 
     @Data
