@@ -16,16 +16,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.zowe.commons.attls.ContextIsNotInitializedException;
+import org.zowe.commons.attls.InboundAttls;
 
 import java.io.IOException;
 import java.security.cert.CertificateException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 class AttlsFilterTest {
 
@@ -69,6 +71,40 @@ class AttlsFilterTest {
         HttpServletResponse response = new MockHttpServletResponse();
         filter.doFilterInternal(new MockHttpServletRequest(), response, chain);
         assertEquals(500, response.getStatus());
+    }
+
+    @Test
+    void whenClientCertIsEmpty_thenIgnoreCertAndContinueWithChain() throws ServletException, IOException {
+        AttlsFilter filter = new AttlsFilter();
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Client-Cert", "");
+
+        FilterChain chain = mock(FilterChain.class);
+        HttpServletResponse response = new MockHttpServletResponse();
+        filter.doFilterInternal(request, response, chain);
+        assertEquals(200, response.getStatus());
+    }
+
+    @Test
+    void whenValidCertificateFromInboundAttls_thenPopulateRequestAndContinueChain() throws ServletException, IOException, CertificateException {
+        AttlsFilter filter = spy(new AttlsFilter());
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+
+        byte[] dummyCert = "dummyCertificate".getBytes();
+
+        try (MockedStatic<InboundAttls> mockedInboundAttls = mockStatic(InboundAttls.class)) {
+            mockedInboundAttls.when(InboundAttls::getCertificate).thenReturn(dummyCert);
+
+            doNothing().when(filter).populateRequestWithCertificate(eq(request), eq(dummyCert));
+
+            filter.doFilterInternal(request, response, chain);
+
+            mockedInboundAttls.verify(InboundAttls::getCertificate);
+            verify(filter, times(1)).populateRequestWithCertificate(eq(request), eq(dummyCert));
+            verify(chain, times(1)).doFilter(request, response);
+        }
     }
 
 }
