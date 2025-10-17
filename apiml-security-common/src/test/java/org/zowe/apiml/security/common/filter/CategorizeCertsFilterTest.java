@@ -523,8 +523,8 @@ class CategorizeCertsFilterTest {
 
         @Test
         void whenClientCertHeaderNotDefined_thenReturnFalse() {
-            var filter = new CategorizeCertsFilter(null, null);
-            var request = new MockHttpServletRequest();
+            filter = new CategorizeCertsFilter(null, null);
+            request = new MockHttpServletRequest();
 
             boolean result = filter.isClientCertificateIgnored(request);
 

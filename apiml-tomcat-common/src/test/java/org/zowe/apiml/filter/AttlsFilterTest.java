@@ -14,16 +14,15 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.zowe.commons.attls.ContextIsNotInitializedException;
 import org.zowe.commons.attls.InboundAttls;
 
 import java.io.IOException;
 import java.security.cert.CertificateException;
+import java.util.Base64;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -32,7 +31,7 @@ import static org.mockito.Mockito.*;
 class AttlsFilterTest {
 
     @Test
-    void providedCertificateInCorrectFormat_thenPopulateRequest() throws CertificateException, ContextIsNotInitializedException {
+    void providedCertificateInCorrectFormat_thenPopulateRequest() throws CertificateException {
         AttlsFilter attlsFilter = new AttlsFilter();
         String certificate = """
             MIID8TCCAtmgAwIBAgIUVyBCWfHF/ZwZKVsBEpTNIBj9mQcwDQYJKoZIhvcNAQEL
@@ -60,7 +59,8 @@ class AttlsFilterTest {
             """.stripIndent();
 
         HttpServletRequest request = new MockHttpServletRequest();
-        attlsFilter.populateRequestWithCertificate(request, Base64.decodeBase64(certificate));
+        byte[] decoded = Base64.getMimeDecoder().decode(certificate);
+        attlsFilter.populateRequestWithCertificate(request, decoded);
         assertNotNull(request.getAttribute("jakarta.servlet.request.X509Certificate"));
     }
 
@@ -97,7 +97,7 @@ class AttlsFilterTest {
         try (MockedStatic<InboundAttls> mockedInboundAttls = mockStatic(InboundAttls.class)) {
             mockedInboundAttls.when(InboundAttls::getCertificate).thenReturn(dummyCert);
 
-            doNothing().when(filter).populateRequestWithCertificate(eq(request), eq(dummyCert));
+            doNothing().when(filter).populateRequestWithCertificate(request, dummyCert);
 
             filter.doFilterInternal(request, response, chain);
 
