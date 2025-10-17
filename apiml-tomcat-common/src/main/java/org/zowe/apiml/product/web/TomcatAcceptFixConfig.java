@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * This bean is related only to z/OS.
  */
 @Slf4j
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class TomcatAcceptFixConfig {
 
     @Value("${server.tomcat.retryRebindTimeoutSecs:10}")
