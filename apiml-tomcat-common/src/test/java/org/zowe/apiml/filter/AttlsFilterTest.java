@@ -102,7 +102,7 @@ class AttlsFilterTest {
             filter.doFilterInternal(request, response, chain);
 
             mockedInboundAttls.verify(InboundAttls::getCertificate);
-            verify(filter, times(1)).populateRequestWithCertificate(eq(request), eq(dummyCert));
+            verify(filter, times(1)).populateRequestWithCertificate(request, dummyCert);
             verify(chain, times(1)).doFilter(request, response);
         }
     }
