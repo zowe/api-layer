@@ -112,6 +112,7 @@ public class AttlsHttpHandler implements BeanPostProcessor {
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if (bean instanceof HttpHandler httpHandler) {
             return (HttpHandler) (request, response) -> {
+                log.debug("Initialize reactive AT-TLS handler");
                 try {
                     var attlsContext = InboundAttls.get();
 
