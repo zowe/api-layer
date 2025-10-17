@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
 
 /**
  * Controller for Security Token Service (STS) operations, similar to AuthController.
@@ -34,38 +33,14 @@ public class StsController {
     public static final String CONTROLLER_PATH = "/zaas/api/v1/auth/delegate";    
     public static final String ISSUE_PASSTICKET_PATH = "/ticket";
 
-
-    /**
-     * Public API: Issue a new security token
-     */
-    @PostMapping(path = ISSUE_TOKEN_PATH)
-    @ResponseBody
-    @Operation(summary = "Issue a new security token.",
-        tags = {"Security"},
-        operationId = "issueSecurityToken",
-        description = "Issues a new security token for the authenticated user.",
-        security = {
-            @SecurityRequirement(name = "Bearer")
-        }
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Token issued successfully","passticket":"","userid":""),
-        @ApiResponse(responseCode = "401", description = "Unauthorized")
-    })
-    public ResponseEntity<String> issueToken(@RequestBody Map<String, String> request) {
-        // ...token issuing logic...
-        String token = "dummy-token"; // Replace with actual logic
-        return new ResponseEntity<>(token, HttpStatus.OK);
-    }
-
     /**
      * Public API: Issue a new passticket
      */
     @PostMapping(path = ISSUE_PASSTICKET_PATH)
     @ResponseBody
     @Operation(summary = "Issue a new passticket.",
-        tags = {"STS"},
-        operationId = "issuePassticket",
+        tags = {"Security"},
+        operationId = "issueDelegatedPassticket",
         description = "Issues a new passticket for the authenticated user.",
         security = {
             @SecurityRequirement(name = "Bearer")

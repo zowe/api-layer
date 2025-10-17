@@ -144,9 +144,8 @@ public class AuthEndpointConfig {
             .andRoute(path("/gateway/api/v1/auth/keys/public/current"), resendTo("/api/v1/auth/keys/public/current"))
             .andRoute(path("/gateway/api/v1/auth/oidc-token/validate"), resendTo("/api/v1/auth/oidc-token/validate"))
             .andRoute(path("/gateway/api/v1/auth/oidc/webfinger"), resendTo("/api/v1/auth/oidc/webfinger"))
-            .andRoute(path("/gateway/auth/check"), resendTo("/auth/check"))
-            .andRoute(path("/gateway/auth/sts/token"), resendTo("/api/v1/sts/token"))
-            .andRoute(path("/gateway/auth/sts/passticket"), resendTo("/api/v1/sts/passticket"));
+            .andRoute(path("/gateway/auth/check"), resendTo("/auth/check"))            
+            .andRoute(path("/gateway/auth/delegations/ticket"), resendTo("/api/v1/auth/delegations/ticket"));
     }
 
 }

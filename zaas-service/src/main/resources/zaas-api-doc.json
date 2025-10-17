@@ -224,7 +224,7 @@
                 }
             }
         },
-        "/zaas/api/v1/auth/delegate/ticket": {
+        "/zaas/api/v1/auth/delegations/ticket": {
             "post": {
                 "tags": ["Security"],
                 "summary": "Generate a passticket for the  given emailId and applId.",
