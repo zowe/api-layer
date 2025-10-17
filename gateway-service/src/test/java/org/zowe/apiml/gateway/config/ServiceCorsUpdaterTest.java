@@ -30,7 +30,6 @@ import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,10 +37,7 @@ import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ServiceCorsUpdaterTest {
@@ -49,7 +45,7 @@ class ServiceCorsUpdaterTest {
     private static final String SERVICE_ID = "myserviceid";
     private static final String APIML_ID = "apimlid";
 
-    List<String> allowedEndpoints = Arrays.asList("/*/*/gateway/**", "/gateway/*/*/**", "/gateway/version");
+    List<String> allowedEndpoints = List.of("/gateway/**");
     private CorsUtils corsUtils = spy(new CorsUtils(true, List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"), allowedEndpoints));
 
     @Mock

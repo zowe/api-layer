@@ -47,7 +47,6 @@ zosmf:
 zss:
     userMapping:
             "[zoweson@zowe.com]": USER
-            "/apiml": prod001
 
 
 ---

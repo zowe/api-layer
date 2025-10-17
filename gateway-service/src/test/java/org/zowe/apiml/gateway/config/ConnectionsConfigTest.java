@@ -52,6 +52,7 @@ import java.net.Socket;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -294,7 +295,7 @@ class ConnectionsConfigTest {
 
         @Test
         void givenInvalidUrl_whenCreate_thenThrowAnException() {
-            var connectionsConfig = new ConnectionsConfig(null, null, null);
+            var connectionsConfig = new ConnectionsConfig(null, null, Collections.emptyList());
             ReflectionTestUtils.setField(connectionsConfig, "externalUrl", "invalidUrl");
             var e = assertThrows(RuntimeException.class, () -> connectionsConfig.create(createConfig()));
             assertInstanceOf(MalformedURLException.class, e.getCause());
@@ -303,7 +304,7 @@ class ConnectionsConfigTest {
         @Test
         void givenValidInputs_whenCreate_thenCreateIt() {
             var config = createConfig();
-            var connectionsConfig = new ConnectionsConfig(null, null, null);
+            var connectionsConfig = new ConnectionsConfig(null, null, Collections.emptyList());
             ReflectionTestUtils.setField(connectionsConfig, "externalUrl", "https://domain:1234/");
 
             InstanceInfo instanceInfo = connectionsConfig.create(config);
@@ -323,7 +324,7 @@ class ConnectionsConfigTest {
             var config = createConfig();
             doReturn(metadata).when(config).getMetadataMap();
 
-            var connectionsConfig = new ConnectionsConfig(null, null, null);
+            var connectionsConfig = new ConnectionsConfig(null, null, Collections.emptyList());
             ReflectionTestUtils.setField(connectionsConfig, "externalUrl", "https://domain:1234/");
 
             InstanceInfo instanceInfo = connectionsConfig.create(config);
