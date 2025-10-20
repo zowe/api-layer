@@ -166,6 +166,52 @@ subprojects {
     }
 }
 
+ext.enablers = [
+    'onboarding-enabler-spring',
+    'onboarding-enabler-java',
+    //'onboarding-enabler-micronaut'
+    'zaas-client',
+]
+
+ext.javaLibraries = [
+    'apiml-utility',
+    'apiml-common',
+    'apiml-security-common',
+    'apiml-tomcat-common',
+    'certificate-analyser',
+    'common-service-core',
+    'security-service-client-spring',
+    'apiml-sample-extension',
+    'apiml-sample-extension-package',
+    'apiml-extension-loader'
+]
+
+ext.servicesToPublish = [
+    'apiml',
+    'apiml-package',
+    'apiml-common-lib-package',
+    'api-catalog-services',
+    'api-catalog-package',
+    'caching-service',
+    'caching-service-package',
+    'discovery-service',
+    'discovery-package',
+    'zaas-service',
+    'zaas-package',
+    'gateway-service',
+    'gateway-package'
+]
+ext.projectsToPublish = ext.servicesToPublish + ext.javaLibraries
+
+task 'buildZoweServer' {
+    group 'Zowe Server components'
+    description 'Builds only main zowe server components.'
+    dependsOn projectsToPublish.collect { "$it:build" }
+    doLast {
+        println "Successfully built all 'Zowe Server components' modules."
+    }
+}
+
 task buildCore(dependsOn: [':discovery-service:build', ':api-catalog-services:build', ':api-catalog-ui:build',
                            ':discoverable-client:build', ':zaas-client:build', ':apiml-sample-extension:build', ':gateway-service:build']) {
     description "Build core components"
@@ -266,7 +312,8 @@ task runChaoticHATests(dependsOn: ":integration-tests:runChaoticHATests") {
 
 clean.dependsOn nodejsClean
 
-publishAllVersions.dependsOn publishSdkArtifacts
+publishAllVersions.dependsOn publishZoweServerArtifacts
+//publishAllSDKVersions.dependsOn publishSDKArtifacts
 
 //-----------Release part start
 apply plugin: 'net.researchgate.release'
@@ -286,6 +333,7 @@ release {
     tagTemplate = 'v${version}'
     newVersionCommitMessage = 'Create new version:'
     versionPropertyFile = 'gradle.properties'
+    buildTasks = ['buildZoweServer']
 
     if (releaseScope == 'minor') {
         versionPatterns = [
