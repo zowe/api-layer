@@ -4,22 +4,13 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 ## `3.3.1 (2025-10-20)`
 
-* Feature:  Support Keycloak as OIDC provider in integration tests (#4321) ([686061c](https://github.com/zowe/api-layer/commit/686061c)), closes [#4321](https://github.com/zowe/api-layer/issues/4321)
-* Feature:  (enabler-nodejs) Expose Eureka class directly to pass config (#4311) ([ab71686](https://github.com/zowe/api-layer/commit/ab71686)), closes [#4311](https://github.com/zowe/api-layer/issues/4311)
-* Feature:  Support configurable username field for oidc tokens (#4300) ([f9711b2](https://github.com/zowe/api-layer/commit/f9711b2)), closes [#4300](https://github.com/zowe/api-layer/issues/4300)
+* Feature:  Support configurable username field for OIDC tokens (#4300) ([f9711b2](https://github.com/zowe/api-layer/commit/f9711b2)), closes [#4300](https://github.com/zowe/api-layer/issues/4300)
+* Feature:  Support multiple OIDC providers at the same time (#4321) ([686061c](https://github.com/zowe/api-layer/commit/801927)), closes [#4321](https://github.com/zowe/api-layer/issues/4295)
 
-
-* Bugfix:  Fix of Tomcat customizers to be supported also by reactive stuff (#4336) ([3bff245](https://github.com/zowe/api-layer/commit/3bff245)), closes [#4336](https://github.com/zowe/api-layer/issues/4336)
-* Bugfix:  Requirement of client certificate on ZAAS call when AT-TLS is used & add AT-TLS support to DC ( ([47525ee](https://github.com/zowe/api-layer/commit/47525ee)), closes [#4347](https://github.com/zowe/api-layer/issues/4347)
-* Bugfix:  avoid duplicate startup message (#4339) ([b4ef830](https://github.com/zowe/api-layer/commit/b4ef830)), closes [#4339](https://github.com/zowe/api-layer/issues/4339)
-* Bugfix:  keep all gateways registered (#4345) ([5a87991](https://github.com/zowe/api-layer/commit/5a87991)), closes [#4345](https://github.com/zowe/api-layer/issues/4345)
-* Bugfix:  update modulith version of z/OSMF static definition (#4333) ([ae110f4](https://github.com/zowe/api-layer/commit/ae110f4)), closes [#4333](https://github.com/zowe/api-layer/issues/4333)
-* Bugfix:  respect encoded slashes in redirect header (#4328) ([da9ee87](https://github.com/zowe/api-layer/commit/da9ee87)), closes [#4328](https://github.com/zowe/api-layer/issues/4328)
-* Bugfix:  set redirectUri default in java code (#4329) ([644c9c9](https://github.com/zowe/api-layer/commit/644c9c9)), closes [#4329](https://github.com/zowe/api-layer/issues/4329)
+* Bugfix:  Respect encoded slashes in redirect header (#4328) ([da9ee87](https://github.com/zowe/api-layer/commit/da9ee87)), closes [#4328](https://github.com/zowe/api-layer/issues/4328)
+* Bugfix:  OIDC redirectUri default in java code to prevent startup error (#4329) ([644c9c9](https://github.com/zowe/api-layer/commit/644c9c9)), closes [#4329](https://github.com/zowe/api-layer/issues/4329)
 * Bugfix:  z/OSMF static definition for AT-TLS (#4327) ([ca8a9ad](https://github.com/zowe/api-layer/commit/ca8a9ad)), closes [#4327](https://github.com/zowe/api-layer/issues/4327)
-* Bugfix:  API ML services log cleanup (#4284) ([c30ad60](https://github.com/zowe/api-layer/commit/c30ad60)), closes [#4284](https://github.com/zowe/api-layer/issues/4284)
-* Bugfix:  Custom Disk Health Configuration (#4269) ([808ec13](https://github.com/zowe/api-layer/commit/808ec13)), closes [#4269](https://github.com/zowe/api-layer/issues/4269)
-* Bugfix:  cherry pick apiml.gateway.servicesToDisableRetry to modulith (#4307) ([7a5dae4](https://github.com/zowe/api-layer/commit/7a5dae4)), closes [#4307](https://github.com/zowe/api-layer/issues/4307)
+* Bugfix:  Custom Disk Health Configuration to work properly on zOS (#4269) ([808ec13](https://github.com/zowe/api-layer/commit/808ec13)), closes [#4269](https://github.com/zowe/api-layer/issues/4268)
 
 ## `3.3.0 (2025-08-18)`
 
