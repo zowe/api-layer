@@ -1,5 +1,5 @@
 # This workflow will release project with Gradle
-name: Automated binary release
+name: Automated publish of nodejs enabler
 
 on:
     workflow_dispatch:
