@@ -67,7 +67,7 @@ public class AdditionalRegistrationTest {
 
     @BeforeEach
     void setUp() {
-        connectionsConfig = new ConnectionsConfig(context, config);
+        connectionsConfig = new ConnectionsConfig(context, config, Arrays.asList("/gateway/**", "/apicatalog/**"));
     }
 
     @ExtendWith(MockitoExtension.class)
