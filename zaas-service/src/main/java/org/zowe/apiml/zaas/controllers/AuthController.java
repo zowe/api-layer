@@ -30,6 +30,8 @@ import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKeySet;
+import org.jose4j.jwk.RsaJsonWebKey;
+import org.jose4j.lang.JoseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -435,10 +437,10 @@ public class AuthController {
             return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.zaas.keys.wrongAmount", publicKeys.size()).mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         try {
-            PublicKey key = (PublicKey) publicKeys.get(0)
-                .getKey();
+            RsaJsonWebKey jwk = (RsaJsonWebKey) JsonWebKey.Factory.newJwk(publicKeys.get(0).toJson());
+            PublicKey key = jwk.getPublicKey();
             return new ResponseEntity<>(getPublicKeyAsPem(key), HttpStatus.OK);
-        } catch (IOException ex) {
+        } catch (IOException | JoseException ex) {
             log.error("It was not possible to get public key for JWK, exception message: {}", ex.getMessage());
             return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.zaas.keys.unknown").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

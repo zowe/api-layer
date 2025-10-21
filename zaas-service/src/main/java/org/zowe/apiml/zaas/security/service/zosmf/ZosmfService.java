@@ -20,7 +20,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.jose4j.jwk.HttpsJwks;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -55,9 +54,9 @@ import org.zowe.apiml.zaas.ZaasTokenResponse;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
+import org.zowe.apiml.zaas.security.service.token.JWKResolver;
 
 import javax.management.ServiceNotFoundException;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -125,17 +124,19 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     private final List<TokenValidationStrategy> tokenValidationStrategy;
-
+    private final AuthenticationService authenticationService;
+    private final JWKResolver jwkResolver;
     private ZosmfService meAsProxy;
     private TokenCreationService tokenCreationService;
 
     public ZosmfService(
-            final AuthConfigurationProperties authConfigurationProperties,
-            final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
-            final ObjectMapper securityObjectMapper,
-            final ApplicationContext applicationContext,
-            final AuthenticationService authenticationService,
-            List<TokenValidationStrategy> tokenValidationStrategy
+        final AuthConfigurationProperties authConfigurationProperties,
+        final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
+        final ObjectMapper securityObjectMapper,
+        final ApplicationContext applicationContext,
+        final AuthenticationService authenticationService,
+        List<TokenValidationStrategy> tokenValidationStrategy,
+        JWKResolver jwkResolver
     ) {
         super(
                 applicationContext,
@@ -145,9 +146,8 @@ public class ZosmfService extends AbstractZosmfService {
         );
         this.tokenValidationStrategy = tokenValidationStrategy;
         this.authenticationService = authenticationService;
+        this.jwkResolver = jwkResolver;
     }
-
-    private final AuthenticationService authenticationService;
 
     @PostConstruct
     @Override
@@ -560,10 +560,8 @@ public class ZosmfService extends AbstractZosmfService {
 
     public JsonWebKeySet getPublicKeys() {
         var jwkZosmfUrl = getURI(getZosmfServiceId(), authConfigurationProperties.getZosmf().getJwtEndpoint());
-        var httpsJwks = new HttpsJwks(jwkZosmfUrl);
-
         try {
-            return new JsonWebKeySet(httpsJwks.getJsonWebKeys());
+            return jwkResolver.resolve(jwkZosmfUrl);
         } catch (JoseException | IOException e) {
             log.debug("Unable to get JWKs from z/OSMF: {}", e.getMessage(), e);
             return new JsonWebKeySet(Collections.emptyList());

@@ -94,7 +94,7 @@ public class JwtUtils {
             log.debug("Token is expired.");
             return new TokenExpireException("Token is expired.", exception);
         }
-        if (exception instanceof BadJWTException) {
+        if (exception instanceof BadJWTException || exception instanceof ParseException) {
             log.debug(TOKEN_IS_NOT_VALID_DUE_TO, exception.getMessage());
             return new TokenNotValidException("Token is not valid.", exception);
         }

@@ -102,7 +102,8 @@ class SuccessfulQueryHandlerTest {
             new ObjectMapper(),
             applicationContext,
             authenticationService,
-            new ArrayList<>());
+            new ArrayList<>(),
+            null);
         ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
         ReflectionTestUtils.setField(zosmfService, "discovery", discoveryClient);
         ReflectionTestUtils.setField(zosmfService, "tokenCreationService", tokenCreationService);

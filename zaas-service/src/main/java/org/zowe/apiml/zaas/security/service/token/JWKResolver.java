@@ -25,8 +25,7 @@ public class JWKResolver {
 
     public JsonWebKeySet resolve(String url) throws JoseException, IOException {
         var httpsJwks = provider.getFor(url);
-        var keySet = new JsonWebKeySet(httpsJwks.getJsonWebKeys());
-        return keySet;
+        return new JsonWebKeySet(httpsJwks.getJsonWebKeys());
     }
 
 }

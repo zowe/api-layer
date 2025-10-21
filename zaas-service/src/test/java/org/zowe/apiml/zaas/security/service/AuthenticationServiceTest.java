@@ -581,6 +581,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @MockitoBean(name = "restTemplateWithKeystore")
         private RestTemplate restTemplateWithKeystore;
 
+        @MockitoBean
+        private Clock clock;
+
         @Autowired
         private AuthenticationService authService;
 
@@ -592,6 +595,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
             when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
             when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
+            when(clock.instant()).thenReturn(Instant.now());
             String jwtToken01 = authService.createJwtToken("user01", "domain01", "ltpa01");
             String jwtToken02 = authService.createJwtToken("user02", "domain02", "ltpa02");
 
