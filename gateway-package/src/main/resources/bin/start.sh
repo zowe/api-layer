@@ -89,12 +89,14 @@ else
 fi
 echo "jar file: "${JAR_FILE}
 # script assumes it's in the gateway component directory and common_lib needs to be relative path
-
 if [ -z "${CMMN_LB}" ]; then
     COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
 else
     COMMON_LIB="${CMMN_LB}"
 fi
+
+# script assumes it's in the gateway component directory and jvm.security.override.properties needs to be relative path
+JVM_SECURITY="../apiml-common-lib/bin/jvm.security.override.properties"
 
 if [ -z "${LIBRARY_PATH}" ]; then
     LIBRARY_PATH="../common-java-lib/bin/"
@@ -344,6 +346,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Djava.library.path=${LIBPATH} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+    -Djava.security.properties="${JVM_SECURITY}" \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
     -Dloader.path=${GATEWAY_LOADER_PATH} \

@@ -56,13 +56,15 @@ else
 fi
 echo "jar file: "${JAR_FILE}
 # script assumes it's in the catalog component directory and common_lib needs to be relative path
-
 if [ -z "${CMMN_LB}" ]
 then
     COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
 else
     COMMON_LIB=${CMMN_LB}
 fi
+
+# script assumes it's in the api-catalog component directory and jvm.security.override.properties needs to be relative path
+JVM_SECURITY="../apiml-common-lib/bin/jvm.security.override.properties"
 
 if [ -z "${LIBRARY_PATH}" ]
 then
@@ -323,6 +325,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.ssl.trustStoreType="${truststore_type}" \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+    -Djava.security.properties="${JVM_SECURITY}" \
     -Dloader.path=${COMMON_LIB} \
     -Djava.library.path=${LIBPATH} \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \

@@ -81,14 +81,17 @@ else
     JAR_FILE="$(pwd)/bin/zaas-service-lite.jar"
 fi
 echo "jar file: "${JAR_FILE}
-# script assumes it's in the ZAAS component directory and common_lib needs to be relative path
 
+# script assumes it's in the ZAAS component directory and common_lib needs to be relative path
 if [ -z "${CMMN_LB}" ]
 then
     COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
 else
     COMMON_LIB=${CMMN_LB}
 fi
+
+# script assumes it's in the zaas component directory and jvm.security.override.properties needs to be relative path
+JVM_SECURITY="../apiml-common-lib/bin/jvm.security.override.properties"
 
 if [ -z "${LIBRARY_PATH}" ]
 then
@@ -381,6 +384,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.oidc.validationType=${ZWE_configs_apiml_security_oidc_validationType:-${ZWE_components_gateway_apiml_security_oidc_validationType:-"JWK"}} \
     -Dapiml.security.allowTokenRefresh=${ZWE_configs_apiml_security_allowtokenrefresh:-${ZWE_components_gateway_apiml_security_allowtokenrefresh:-false}} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+    -Djava.security.properties="${JVM_SECURITY}" \
     -Dloader.path=${ZAAS_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \

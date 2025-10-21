@@ -63,6 +63,9 @@ then
     ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}debug"
 fi
 
+# script assumes it's in the caching-service component directory and jvm.security.override.properties needs to be relative path
+JVM_SECURITY="../apiml-common-lib/bin/jvm.security.override.properties"
+
 if [ -z "${LIBRARY_PATH}" ]
 then
     LIBRARY_PATH="../common-java-lib/bin/"
@@ -289,6 +292,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Dserver.ssl.trustStoreType="${truststore_type}" \
   -Dserver.ssl.trustStorePassword="${truststore_pass}" \
   -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+  -Djava.security.properties="${JVM_SECURITY}" \
   -Djava.net.preferIPv4Stack=true \
   -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
   -Djava.library.path=${LIBPATH} \
