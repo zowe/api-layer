@@ -268,9 +268,17 @@ task runIdPrefixReplacerTests(dependsOn: [":integration-tests:runIdPrefixReplace
 
 task publishAllVersions {
     group 'Zowe Publishing'
-    description 'Publish ZIP file and SDK libraries to Zowe Artifactory'
+    description 'Publish Zowe server ZIP files and libraries to Zowe Artifactory'
     doLast {
-        println 'Published ZIP file and libraries'
+        println 'Published Zowe server ZIP files and libraries'
+    }
+}
+
+task publishAllSDKVersions {
+    group 'Zowe Publishing'
+    description 'Publish SDK libraries to Zowe Artifactory'
+    doLast {
+        println 'Published SDK libraries'
     }
 }
 
@@ -321,7 +329,7 @@ task runChaoticHATests(dependsOn: ":integration-tests:runChaoticHATests") {
 clean.dependsOn nodejsClean
 
 publishAllVersions.dependsOn publishZoweServerArtifacts
-//publishAllSDKVersions.dependsOn publishSDKArtifacts
+publishAllSDKVersions.dependsOn publishSDKArtifacts
 
 //-----------Release part start
 apply plugin: 'net.researchgate.release'
@@ -340,8 +348,8 @@ release {
     tagCommitMessage = 'Release:'
     tagTemplate = 'v${version}'
     newVersionCommitMessage = 'Create new version:'
-    versionPropertyFile = 'gradle.properties'
-    buildTasks = [project.property('buildTasksList')]
+    versionPropertyFile = project.hasProperty('releaseEnablers') ? 'enabler.properties' : 'gradle.properties'
+    buildTasks = project.hasProperty('releaseEnablers') ? ['buildEnablers'] : ['buildZoweServer']
 
     if (releaseScope == 'minor') {
         versionPatterns = [
@@ -370,7 +378,11 @@ release {
     }
 }
 
-afterReleaseBuild.dependsOn publishAllVersions
+if(project.hasProperty('releaseEnablers')) {
+    afterReleaseBuild.dependsOn publishAllSDKVersions
+} else {
+    afterReleaseBuild.dependsOn publishAllVersions
+}
 //-----------Release part end
 
 
