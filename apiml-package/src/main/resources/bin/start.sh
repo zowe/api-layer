@@ -135,7 +135,11 @@ add_profile() {
     ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}${new_profile}"
 }
 
-if [ "${ZWE_configs_debug:-${ZWE_components_gateway_debug:-${ZWE_components_discovery_debug:-false}}}" = "true" ]; then
+if [ "${ZWE_components_gateway_debug:-${ZWE_configs_debug:-false}}" = "true" ]; then
+    # TODO should this be a merge of the profiles in gateway and discovery (and other modules later added?)
+    if [ -n "${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}" ]; then
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}},"
+    fi
     add_profile "debug"
 fi
 
