@@ -13,8 +13,6 @@ package org.zowe.apiml.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.jwk.RSAKey;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.junit.jupiter.api.Test;
@@ -35,6 +33,7 @@ import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -47,13 +46,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ReactivePublicJWKControllerTest {
@@ -70,12 +63,12 @@ class ReactivePublicJWKControllerTest {
 
     @Test
     void getAllPublicKeys_zosmfProducer_withOidc() throws Exception {
-        var zosmfJwk = JsonWebKey.Factory.newJwk((RSAPublicKey) generateKeyPair().getPublic());
+        var zosmfJwk = JsonWebKey.Factory.newJwk(generateKeyPair().getPublic());
         zosmfJwk.setKeyId("zosmfKey");
         var zosmfKeySet = new JsonWebKeySet(zosmfJwk);
-        var apimlJwk = JsonWebKey.Factory.newJwk((RSAPublicKey) generateKeyPair().getPublic());
+        var apimlJwk = JsonWebKey.Factory.newJwk(generateKeyPair().getPublic());
         apimlJwk.setKeyId("apimlKey");
-        var oidcJwk = JsonWebKey.Factory.newJwk((RSAPublicKey) generateKeyPair().getPublic());
+        var oidcJwk = JsonWebKey.Factory.newJwk(generateKeyPair().getPublic());
         oidcJwk.setKeyId("oidcKey");
         var oidcKeySet = new JsonWebKeySet(oidcJwk);
 
@@ -114,7 +107,7 @@ class ReactivePublicJWKControllerTest {
 
     @Test
     void getAllPublicKeys_apimlProducer_noOidc() throws Exception {
-        var apimlJwk = JsonWebKey.Factory.newJwk((RSAPublicKey) generateKeyPair().getPublic());
+        var apimlJwk = JsonWebKey.Factory.newJwk(generateKeyPair().getPublic());
         apimlJwk.setKeyId("apimlKey");
 
         var testControllerNoOidc = new ReactivePublicJWKController(null, jwtSecurity, zosmfService, messageService);
@@ -144,7 +137,7 @@ class ReactivePublicJWKControllerTest {
 
     @Test
     void getCurrentPublicKeys_apimlProducer() throws Exception {
-        var apimlJwk = JsonWebKey.Factory.newJwk((RSAPublicKey) generateKeyPair().getPublic());
+        var apimlJwk = JsonWebKey.Factory.newJwk(generateKeyPair().getPublic());
         apimlJwk.setKeyId("currentApimlKey");
         var apimlKeySet = new JsonWebKeySet(apimlJwk);
 
@@ -171,7 +164,7 @@ class ReactivePublicJWKControllerTest {
 
     @Test
     void getCurrentPublicKeys_zosmfProducer() throws Exception {
-        var zosmfJwk = JsonWebKey.Factory.newJwk((RSAPublicKey) generateKeyPair().getPublic());
+        var zosmfJwk = JsonWebKey.Factory.newJwk(generateKeyPair().getPublic());
         zosmfJwk.setKeyId("currentZosmfKey");
         var zosmfKeySet = new JsonWebKeySet(zosmfJwk);
 
@@ -221,7 +214,7 @@ class ReactivePublicJWKControllerTest {
     @Test
     void getPublicKeyUsedForSigning_success() throws Exception {
         var keyPair = generateKeyPair();
-        var jwk = JsonWebKey.Factory.newJwk((RSAPublicKey) keyPair.getPublic());
+        var jwk = JsonWebKey.Factory.newJwk(keyPair.getPublic());
         jwk.setKeyId("signingKey");
         var keySet = new JsonWebKeySet(jwk);
 
@@ -258,9 +251,9 @@ class ReactivePublicJWKControllerTest {
         var kp1 = generateKeyPair();
         var kp2 = generateKeyPair();
 
-        var jwk1 = JsonWebKey.Factory.newJwk((RSAPublicKey) kp1.getPublic());
+        var jwk1 = JsonWebKey.Factory.newJwk(kp1.getPublic());
         jwk1.setKeyId("key1");
-        var jwk2 = JsonWebKey.Factory.newJwk((RSAPublicKey) kp2.getPublic());
+        var jwk2 = JsonWebKey.Factory.newJwk(kp2.getPublic());
         jwk2.setKeyId("key2");
 
         var keySet = new JsonWebKeySet(List.of(jwk1, jwk2));
@@ -288,19 +281,20 @@ class ReactivePublicJWKControllerTest {
     }
 
     @Test
-    void getPublicKeyUsedForSigning_joseException() throws Exception {
-        var keyPair = KeyPairGenerator.getInstance("RSA").generateKeyPair();
-        var realRsaKey = new RSAKey.Builder((RSAPublicKey) keyPair.getPublic()).build();
+    void whenNewJwkThrowsException_thenReturnsInternalServerError() throws Exception {
+        byte[] badModulus = new byte[]{0};
 
-        var spyRsaKey = spy(realRsaKey);
-        doThrow(new JOSEException("Test JOSE Exception")).when(spyRsaKey).toPublicKey();
+        var badKey = mock(RSAPublicKey.class);
+        when(badKey.getModulus()).thenReturn(new BigInteger(badModulus));
+        when(badKey.getPublicExponent()).thenReturn(BigInteger.ONE);
+        lenient().when(badKey.getAlgorithm()).thenReturn("RSA");
+        lenient().when(badKey.getFormat()).thenReturn(null);
+        lenient().when(badKey.getEncoded()).thenReturn(new byte[0]);
 
-        var jwk = JsonWebKey.Factory.newJwk(keyPair.getPublic());
-
-        var keySet = new JsonWebKeySet(List.of(jwk));
+        var badJwk = JsonWebKey.Factory.newJwk(badKey);
 
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
-        when(jwtSecurity.getPublicKeyInSet()).thenReturn(keySet);
+        when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JsonWebKeySet(List.of(badJwk)));
 
         ApiMessage expectedApiMessage = new ApiMessage("org.zowe.apiml.zaas.keys.unknown", MessageType.ERROR, "ZWEAG717E", "cnt", null, null);
         var mockApiMessage = mock(Message.class);

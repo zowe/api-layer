@@ -45,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -112,7 +113,7 @@ class SuccessfulQueryHandlerTest {
             applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
             eurekaClient, restTemplate, cacheManager, new CacheUtils(), clock
         );
-        when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
+        lenient().when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
 
         jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
