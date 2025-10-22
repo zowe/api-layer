@@ -33,11 +33,12 @@ class CorsMetadataProcessorTest {
     private CorsUtils corsUtils;
     private UrlBasedCorsConfigurationSource configurationSource;
     private ArgumentCaptor<CorsConfiguration> configurationCaptor = ArgumentCaptor.forClass(CorsConfiguration.class);
+    List<String> allowedEndpoints = List.of("/gateway/**");
 
     @BeforeEach
     void setUp() {
         configurationSource = mock(UrlBasedCorsConfigurationSource.class);
-        corsUtils = new CorsUtils(true, List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"));
+        corsUtils = new CorsUtils(true, List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"), allowedEndpoints);
     }
 
     @Nested

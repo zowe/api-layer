@@ -113,6 +113,7 @@ else
 fi
 echo "jar file: "${JAR_FILE}
 # script assumes it's in the apiml component directory and common_lib needs to be relative path
+
 if [ -z "${CMMN_LB}" ]; then
     COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
 else

@@ -14,7 +14,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 @Data
@@ -36,7 +38,7 @@ public class MapperResponse {
     private int racfRs;
 
     @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
+    private final ApimlLogger apimlLog = ApimlLogger.of(EurekaMetadataParser.class, YamlMessageServiceInstance.getInstance());
 
     public String toString() {
         return "User: " + userId + ", rc=" + rc + ", safRc=" + safRc + ", racfRc=" + racfRc + ", racfRs=" + racfRs;

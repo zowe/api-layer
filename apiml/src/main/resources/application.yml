@@ -189,6 +189,7 @@ apiml:
     service:
         apimlId: apiml1
         corsEnabled: true
+        corsAllowedEndpoints: /gateway/**,/apicatalog/**,/cachingservice/**,/v3/api-docs/**
         allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
         forwardClientCertEnabled: false
@@ -343,6 +344,7 @@ logging:
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.springframework.security: TRACE
         org.springframework.security.web: TRACE
+        org.springdoc.core: DEBUG
         org.zowe.apiml: DEBUG
         reactor.netty: DEBUG
         reactor.netty.http.client: DEBUG

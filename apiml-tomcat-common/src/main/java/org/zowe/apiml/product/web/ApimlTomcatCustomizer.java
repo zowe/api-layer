@@ -31,6 +31,18 @@ import java.lang.reflect.Method;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.nio.channels.SocketChannel;
 
+/**
+ * Customizes Tomcat connectors to enable AT-TLS support.
+ * <p>
+ * This component replaces the default Tomcat socket handler with a custom
+ * {@link ApimlAttlsHandler} that initializes and disposes AT-TLS contexts for
+ * each incoming connection. It allows the API ML to operate in AT-TLS mode on z/OS.
+ * </p>
+ *
+ * <p>
+ * Activated when <code>server.attlsServer.enabled=true</code> is set.
+ * </p>
+ */
 @Slf4j
 @Component
 @ConditionalOnProperty(name = "server.attlsServer.enabled", havingValue = "true")
@@ -61,6 +73,10 @@ public class ApimlTomcatCustomizer implements TomcatConnectorCustomizer, Initial
         }
     }
 
+    /**
+     * Custom Tomcat socket handler that wraps request processing with AT-TLS context
+     * initialization and cleanup.
+     */
     public static class ApimlAttlsHandler<S> implements AbstractEndpoint.Handler<S> {
 
         @Delegate(excludes = Overridden.class)
