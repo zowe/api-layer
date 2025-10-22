@@ -166,6 +166,60 @@ subprojects {
     }
 }
 
+ext.enablers = [
+    'onboarding-enabler-spring',
+    'onboarding-enabler-java',
+    //'onboarding-enabler-micronaut'
+    'zaas-client',
+]
+
+ext.javaLibraries = [
+    'apiml-utility',
+    'apiml-common',
+    'apiml-security-common',
+    'apiml-tomcat-common',
+    'certificate-analyser',
+    'common-service-core',
+    'security-service-client-spring',
+    'apiml-sample-extension',
+    'apiml-sample-extension-package',
+    'apiml-extension-loader'
+]
+
+ext.servicesToPublish = [
+    'apiml',
+    'apiml-package',
+    'apiml-common-lib-package',
+    'api-catalog-services',
+    'api-catalog-package',
+    'caching-service',
+    'caching-service-package',
+    'discovery-service',
+    'discovery-package',
+    'zaas-service',
+    'zaas-package',
+    'gateway-service',
+    'gateway-package'
+]
+ext.projectsToPublish = ext.servicesToPublish + ext.javaLibraries
+
+task 'buildZoweServer' {
+    group 'Zowe Server components'
+    description 'Builds only main zowe server components.'
+    dependsOn projectsToPublish.collect { "$it:build" }
+    doLast {
+        println "Successfully built all 'Zowe Server components' modules."
+    }
+}
+task 'buildEnablers' {
+    group 'Enablers'
+    description 'Builds only enablers.'
+    dependsOn enablers.collect { "$it:build" }
+    doLast {
+        println "Successfully built all 'Enabler' modules."
+    }
+}
+
 task buildCore(dependsOn: [':discovery-service:build', ':api-catalog-services:build', ':api-catalog-ui:build',
                            ':discoverable-client:build', ':zaas-client:build', ':apiml-sample-extension:build', ':gateway-service:build']) {
     description "Build core components"
@@ -214,9 +268,17 @@ task runIdPrefixReplacerTests(dependsOn: [":integration-tests:runIdPrefixReplace
 
 task publishAllVersions {
     group 'Zowe Publishing'
-    description 'Publish ZIP file and SDK libraries to Zowe Artifactory'
+    description 'Publish Zowe server ZIP files and libraries to Zowe Artifactory'
     doLast {
-        println 'Published ZIP file and libraries'
+        println 'Published Zowe server ZIP files and libraries'
+    }
+}
+
+task publishAllSDKVersions {
+    group 'Zowe Publishing'
+    description 'Publish SDK libraries to Zowe Artifactory'
+    doLast {
+        println 'Published SDK libraries'
     }
 }
 
@@ -266,7 +328,8 @@ task runChaoticHATests(dependsOn: ":integration-tests:runChaoticHATests") {
 
 clean.dependsOn nodejsClean
 
-publishAllVersions.dependsOn publishSdkArtifacts
+publishAllVersions.dependsOn publishZoweServerArtifacts
+publishAllSDKVersions.dependsOn publishSDKArtifacts
 
 //-----------Release part start
 apply plugin: 'net.researchgate.release'
@@ -285,7 +348,8 @@ release {
     tagCommitMessage = 'Release:'
     tagTemplate = 'v${version}'
     newVersionCommitMessage = 'Create new version:'
-    versionPropertyFile = 'gradle.properties'
+    versionPropertyFile = project.hasProperty('releaseEnablers') ? 'enabler.properties' : 'gradle.properties'
+    buildTasks = project.hasProperty('releaseEnablers') ? ['buildEnablers'] : ['buildZoweServer']
 
     if (releaseScope == 'minor') {
         versionPatterns = [
@@ -314,7 +378,11 @@ release {
     }
 }
 
-afterReleaseBuild.dependsOn publishAllVersions
+if(project.hasProperty('releaseEnablers')) {
+    afterReleaseBuild.dependsOn publishAllSDKVersions
+} else {
+    afterReleaseBuild.dependsOn publishAllVersions
+}
 //-----------Release part end
 
 
