@@ -1,5 +1,5 @@
 # This workflow will release project with Gradle
-name: Automated publish of nodejs enabler
+name: Automated publish of nodejs and python enabler
 
 on:
     workflow_dispatch:
@@ -106,7 +106,7 @@ jobs:
 
             - name: Build Python Package
               run: |
-                  export SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.release_version }}
+                  export SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.version }}
                   ./gradlew onboarding-enabler-python:buildPython
 
             - name: Upload wheels
