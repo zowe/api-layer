@@ -1,7 +1,8 @@
 ext.enablers = [
     'onboarding-enabler-spring',
-    'onboarding-enabler-java'
+    'onboarding-enabler-java',
     //'onboarding-enabler-micronaut'
+    'zaas-client',
 ]
 
 ext.javaLibraries = [
@@ -12,7 +13,6 @@ ext.javaLibraries = [
     'certificate-analyser',
     'common-service-core',
     'security-service-client-spring',
-    'zaas-client',
     'apiml-sample-extension',
     'apiml-sample-extension-package',
     'apiml-extension-loader'
@@ -34,8 +34,10 @@ ext.servicesToPublish = [
     'gateway-package'
 ]
 
+ext.zoweComponentsToPublish = ext.servicesToPublish + ext.javaLibraries
+ext.projectsToPublish = ext.zoweComponentsToPublish + ext.enablers
+
 ext.sdksToPublish = ext.enablers + ext.javaLibraries
-ext.projectsToPublish = ext.servicesToPublish + ext.sdksToPublish
 
 configure(subprojects.findAll { it.name in projectsToPublish }) {
     apply plugin: 'maven-publish'
@@ -133,17 +135,32 @@ configure(subprojects.findAll { it.name in servicesToPublish }) {
 
 }
 
-ext.publishTasksList = projectsToPublish.collect {
+ext.publishZoweServerTasksList = zoweComponentsToPublish.collect {
+    ":" + it + ":publish"
+} + ":platform:publish"
+
+ext.publishTasksList = enablers.collect {
     ":" + it + ":publish"
 } + ":platform:publish"
 
 //noinspection GroovyAssignabilityCheck
-task publishSdkArtifacts {
+tasks.register('publishZoweServerArtifacts') {
     doLast {
-        println 'Published SDK libraries for main version of Spring Boot to Zowe Artifactory'
+        println 'Published Zowe Server component libraries to Zowe Artifactory'
     }
 
     group 'Zowe Publishing'
-    description 'Publish SDK libraries for main version of Spring Boot to Zowe Artifactory'
+    description 'Publish Zowe Server component libraries to Zowe Artifactory'
+    dependsOn publishZoweServerTasksList
+}
+
+//noinspection GroovyAssignabilityCheck
+tasks.register('publishSDKArtifacts') {
+    doLast {
+        println 'Published SDK libraries to Zowe Artifactory'
+    }
+
+    group 'Zowe Publishing'
+    description 'Publish SDK libraries to Zowe Artifactory'
     dependsOn publishTasksList
 }
