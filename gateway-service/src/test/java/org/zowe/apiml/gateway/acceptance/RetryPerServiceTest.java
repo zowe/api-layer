@@ -14,14 +14,17 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 
+import java.io.IOException;
+
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -44,6 +47,8 @@ class RetryPerServiceTest extends AcceptanceTestWithMockServices {
                 .addEndpoint("/503").responseCode(503)
             .and()
                 .addEndpoint("/401").responseCode(401)
+            .and()
+                .addEndpoint("/200").responseCode(200)
             .and().start();
 
         mockNoRetryService = mockService("no-retry-service").scope(MockService.Scope.CLASS)
@@ -115,6 +120,46 @@ class RetryPerServiceTest extends AcceptanceTestWithMockServices {
                 .statusCode(is(SC_SERVICE_UNAVAILABLE));
 
             assertEquals(1, mockNoRetryService2.getCounter());
+        }
+
+    }
+
+    @Nested
+    class ConnectionReset {
+
+        @ParameterizedTest(name = "givenConnectionInPool_whenServerWasRestarted_thenRetry({0}, {1})")
+        @CsvSource({
+            "GET,CLOSE",
+            "GET,CLOSE_CHANNEL",
+            "GET,KILL_CHANNEL",
+            "GET,MARK_CHANNEL_AS_CLOSED",
+            "POST,CLOSE",
+            "POST,CLOSE_CHANNEL",
+            "POST,KILL_CHANNEL",
+            "POST,MARK_CHANNEL_AS_CLOSED"
+        })
+        void givenConnectionInPool_whenServerWasRestarted_thenRetry(String method, MockService.ConnectionCleanupType cleanupType) {
+            var port = mockService.getPort();
+
+            given()
+                .header(HEADER_X_FORWARD_TO, "serviceid1")
+            .when()
+                .get(basePath + "/200")
+            .then()
+                .statusCode(is(SC_OK));
+
+            mockService.cleanConnections(cleanupType);
+            mockService.zombie();
+
+            var port2 = mockService.getPort();
+            assertEquals(port, port2);
+
+            given()
+                .header(HEADER_X_FORWARD_TO, "serviceid1")
+            .when()
+                .request(method, basePath + "/200")
+            .then()
+                .statusCode(is(SC_OK));
         }
 
     }

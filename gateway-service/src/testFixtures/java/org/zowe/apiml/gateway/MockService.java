@@ -24,16 +24,14 @@ import org.apache.http.HttpHeaders;
 import org.assertj.core.error.MultipleAssertionsError;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.http.MediaType;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -221,6 +219,38 @@ public class MockService implements AutoCloseable {
             server.stop(0);
         }
         setStatus(Status.STOPPED);
+    }
+
+
+    /**
+     * To close and clean all open connection on the server
+     * @throws IOException in case of error during closing a connection
+     */
+    public void cleanConnections(ConnectionCleanupType cleanupType) {
+        Object serverImpl = ReflectionTestUtils.getField(server, "server");
+        Set<Object> allConnections = (Set<Object>) ReflectionTestUtils.getField(serverImpl, "allConnections");
+        Set<Object> idleConnections = (Set<Object>) ReflectionTestUtils.getField(serverImpl, "idleConnections");
+        synchronized (allConnections) {
+            for (Object connection : allConnections) {
+                var channel = ReflectionTestUtils.invokeMethod(connection, "getChannel");
+                switch (cleanupType) {
+                    case CLOSE:
+                        ReflectionTestUtils.invokeMethod(connection, "close");
+                        break;
+                    case CLOSE_CHANNEL:
+                        ReflectionTestUtils.invokeMethod(channel, "close");
+                        break;
+                    case KILL_CHANNEL:
+                        ReflectionTestUtils.invokeMethod(channel, "kill");
+                        break;
+                    case MARK_CHANNEL_AS_CLOSED:
+                        ReflectionTestUtils.setField(channel, "closed", false);
+                        break;
+                }
+            }
+        }
+        allConnections.clear();
+        idleConnections.clear();
     }
 
     /**
@@ -538,6 +568,15 @@ public class MockService implements AutoCloseable {
         public boolean isUp() {
             return this == STARTED;
         }
+
+    }
+
+    public enum ConnectionCleanupType {
+
+        CLOSE,
+        CLOSE_CHANNEL,
+        KILL_CHANNEL,
+        MARK_CHANNEL_AS_CLOSED
 
     }
 

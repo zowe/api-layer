@@ -158,6 +158,11 @@ bootRun {
     systemProperties = System.properties
 }
 
+test {
+    useJUnitPlatform()
+    jvmArgs '--add-opens=jdk.httpserver/sun.net.httpserver=ALL-UNNAMED'
+}
+
 publishing {
     publications {
         mavenJavaFat(MavenPublication) {
