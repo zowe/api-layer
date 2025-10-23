@@ -149,7 +149,6 @@ class RetryPerServiceTest extends AcceptanceTestWithMockServices {
                 .statusCode(is(SC_OK));
 
             mockService.cleanConnections(cleanupType);
-            mockService.zombie();
 
             var port2 = mockService.getPort();
             assertEquals(port, port2);
