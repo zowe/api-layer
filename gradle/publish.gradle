@@ -84,7 +84,7 @@ if (enablerPropsFile.exists()) {
 }
 
 // 4. Get the version, or use the rootProject.version as a fallback
-def sdkVersion = enablerProps.getProperty("version", rootProject.version)
+def sdkVersion = enablerProps.getProperty("version")
 
 configure(subprojects.findAll { it.name in sdksToPublish }) {
     apply plugin: 'maven-publish'
