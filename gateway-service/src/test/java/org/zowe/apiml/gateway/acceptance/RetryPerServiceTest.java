@@ -21,48 +21,43 @@ import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 
-import java.io.IOException;
-
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@MicroservicesAcceptanceTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestPropertySource(properties = {
-    "apiml.gateway.servicesToDisableRetry=no-retry-service,no-RETRY-Service-2"
-})
-class RetryPerServiceTest extends AcceptanceTestWithMockServices {
+class RetryPerServiceTest {
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
 
-    private MockService mockService;
-    private MockService mockNoRetryService;
-    private MockService mockNoRetryService2;
-
-    @BeforeAll
-    void startMockService() {
-        mockService = mockService("serviceid1").scope(MockService.Scope.CLASS)
-                .addEndpoint("/503").responseCode(503)
-            .and()
-                .addEndpoint("/401").responseCode(401)
-            .and()
-                .addEndpoint("/200").responseCode(200)
-            .and().start();
-
-        mockNoRetryService = mockService("no-retry-service").scope(MockService.Scope.CLASS)
-            .addEndpoint("/503").responseCode(503)
-            .and().start();
-
-        mockNoRetryService2 = mockService("No-Retry-Service-2").scope(MockService.Scope.CLASS)
-            .addEndpoint("/503").responseCode(503)
-            .and().start();
-    }
-
     @Nested
-    class GivenRetryOnAllOperationsIsDisabled {
-        //Only default GET method remains active
+    @MicroservicesAcceptanceTest
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @TestPropertySource(properties = {
+        "apiml.gateway.servicesToDisableRetry=no-retry-service,no-RETRY-Service-2"
+    })
+    class GivenRetryOnAllOperationsIsDisabled extends AcceptanceTestWithMockServices {
+
+        private MockService mockService;
+        private MockService mockNoRetryService;
+        private MockService mockNoRetryService2;
+
+        @BeforeAll
+        void startMockService() {
+            mockService = mockService("serviceid1").scope(MockService.Scope.CLASS)
+                .addEndpoint("/503").responseCode(503)
+                .and()
+                .addEndpoint("/401").responseCode(401)
+                .and().start();
+
+            mockNoRetryService = mockService("no-retry-service").scope(MockService.Scope.CLASS)
+                .addEndpoint("/503").responseCode(503)
+                .and().start();
+
+            mockNoRetryService2 = mockService("No-Retry-Service-2").scope(MockService.Scope.CLASS)
+                .addEndpoint("/503").responseCode(503)
+                .and().start();
+        }
 
         @Test
         void whenGetReturnsUnavailable_thenRetry() {
@@ -125,20 +120,31 @@ class RetryPerServiceTest extends AcceptanceTestWithMockServices {
     }
 
     @Nested
-    class ConnectionReset {
+    @MicroservicesAcceptanceTest
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    class ConnectionReset extends AcceptanceTestWithMockServices {
+
+        private MockService mockService;
+
+        @BeforeAll
+        void startMockService() {
+            mockService = mockService("serviceid1").scope(MockService.Scope.CLASS)
+                .addEndpoint("/200").responseCode(200)
+                .and().start();
+        }
 
         @ParameterizedTest(name = "givenConnectionInPool_whenServerWasRestarted_thenRetry({0}, {1})")
         @CsvSource({
-            "GET,CLOSE",
-            "GET,CLOSE_CHANNEL",
-            "GET,KILL_CHANNEL",
-            "GET,MARK_CHANNEL_AS_CLOSED",
-            "POST,CLOSE",
-            "POST,CLOSE_CHANNEL",
-            "POST,KILL_CHANNEL",
-            "POST,MARK_CHANNEL_AS_CLOSED"
+            "GET,CLOSE,200",
+            "GET,CLOSE_CHANNEL,200",
+            "GET,KILL_CHANNEL,200",
+            "GET,MARK_CHANNEL_AS_CLOSED,200",
+            "POST,CLOSE,200",
+            "POST,CLOSE_CHANNEL,200",
+            "POST,KILL_CHANNEL,500",
+            "POST,MARK_CHANNEL_AS_CLOSED,500"
         })
-        void givenConnectionInPool_whenServerWasRestarted_thenRetry(String method, MockService.ConnectionCleanupType cleanupType) {
+        void givenConnectionInPool_whenServerWasRestarted_thenRetry(String method, MockService.ConnectionCleanupType cleanupType, int responseStatus) {
             var port = mockService.getPort();
 
             given()
@@ -158,7 +164,7 @@ class RetryPerServiceTest extends AcceptanceTestWithMockServices {
             .when()
                 .request(method, basePath + "/200")
             .then()
-                .statusCode(is(SC_OK));
+                .statusCode(is(responseStatus));
         }
 
     }
