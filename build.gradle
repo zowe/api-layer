@@ -336,21 +336,20 @@ apply plugin: 'net.researchgate.release'
 
 ext.releaseScope = project.hasProperty('release.scope') ? project.getProperty('release.scope') : 'patch'
 
-def enablerProps = new Properties()
 
-// 2. Define the path to the file.
-//    This assumes enabler.properties is in your ROOT project directory.
-//    If it's in the subproject's directory, use project.projectDir instead.
+
+//1. Define properties for enablers
+def enablerProps = new Properties()
 def enablerPropsFile = new File(rootProject.projectDir, "enabler.properties")
 
-// 3. Load the file if it exists
+//2. Load the file if it exists
 if (enablerPropsFile.exists()) {
     enablerPropsFile.withInputStream { stream ->
         enablerProps.load(stream)
     }
 }
 
-// 4. Get the version, or use the rootProject.version as a fallback
+//3. Get the version, or use the rootProject.version as a fallback
 def sdkVersion = enablerProps.getProperty("version")
 release {
     failOnCommitNeeded = true
