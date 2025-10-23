@@ -346,7 +346,7 @@ release {
     preCommitText = '[Gradle Release plugin]'
     preTagCommitMessage = '[skip ci] Before tag commit'
     tagCommitMessage = 'Release:'
-    tagTemplate = 'v${version}'
+    tagTemplate = project.hasProperty('releaseEnablers') ? 'enablers-v${version}' : 'v${version}'
     newVersionCommitMessage = 'Create new version:'
     versionPropertyFile = project.hasProperty('releaseEnablers') ? 'enabler.properties' : 'gradle.properties'
     buildTasks = project.hasProperty('releaseEnablers') ? ['buildEnablers'] : ['buildZoweServer']
