@@ -145,7 +145,7 @@ public class RauditxService {
         builder.rauditx.setFmid(fmid);
     }
 
-    Rauditx createMock() {
+    protected Rauditx createMock() {
         return (Rauditx) Proxy.newProxyInstance(
             RauditxService.class.getClassLoader(),
             new Class[] { Rauditx.class },

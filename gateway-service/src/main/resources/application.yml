@@ -112,6 +112,9 @@ apiml:
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
+        rauditx:
+            onOidcUserIsMapped: false
+
     health:
         protected: true
     webClientConfig.enabled: true

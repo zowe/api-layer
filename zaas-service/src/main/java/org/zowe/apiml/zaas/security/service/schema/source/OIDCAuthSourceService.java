@@ -21,11 +21,8 @@ import org.springframework.stereotype.Service;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
-import org.zowe.apiml.security.common.token.OIDCProvider;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.audit.RauditxService;
+import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
@@ -49,6 +46,10 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
     private final AuthenticationService authenticationService;
     private final OIDCProvider oidcProvider;
     private final TokenCreationService tokenService;
+    private final RauditxService rauditxService;
+
+    @Value("${apiml.security.rauditx.onOidcUserIsMapped:false}")
+    private boolean rauditxOnOidcUserIsMapped;
 
     @Value("${apiml.security.oidc.userIdField:sub}")
     protected String userIdFieldPathProperty;
@@ -137,6 +138,15 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
         if (StringUtils.isEmpty(mappedUser)) {
             logger.log(MessageType.DEBUG, "No mainframe user id retrieved. Cancel parsing of OIDC token.");
             throw new NoMainframeIdentityException("No mainframe identity found.", token, true);
+        } else {
+            if (rauditxOnOidcUserIsMapped) {
+                rauditxService.builder()
+                    .alwaysLogSuccesses()
+                    .userId(mappedUser)
+                    .messageSegment("The OIDC token was mapped to the user account")
+                    .success()
+                    .issue();
+            }
         }
         logger.log(MessageType.DEBUG, "Parsing OIDC token.");
         QueryResponse response = authenticationService.parseJwtToken(token);
