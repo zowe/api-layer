@@ -336,6 +336,22 @@ apply plugin: 'net.researchgate.release'
 
 ext.releaseScope = project.hasProperty('release.scope') ? project.getProperty('release.scope') : 'patch'
 
+def enablerProps = new Properties()
+
+// 2. Define the path to the file.
+//    This assumes enabler.properties is in your ROOT project directory.
+//    If it's in the subproject's directory, use project.projectDir instead.
+def enablerPropsFile = new File(rootProject.projectDir, "enabler.properties")
+
+// 3. Load the file if it exists
+if (enablerPropsFile.exists()) {
+    enablerPropsFile.withInputStream { stream ->
+        enablerProps.load(stream)
+    }
+}
+
+// 4. Get the version, or use the rootProject.version as a fallback
+def sdkVersion = enablerProps.getProperty("version")
 release {
     failOnCommitNeeded = true
     failOnPublishNeeded = true
@@ -350,7 +366,9 @@ release {
     newVersionCommitMessage = 'Create new version:'
     versionPropertyFile = project.hasProperty('releaseEnablers') ? 'enabler.properties' : 'gradle.properties'
     buildTasks = project.hasProperty('releaseEnablers') ? ['buildEnablers'] : ['buildZoweServer']
-
+    if(project.hasProperty('releaseEnablers')){
+        project.setVersion(sdkVersion)
+    }
     if (releaseScope == 'minor') {
         versionPatterns = [
             /[.]*\.(\d+)\.(\d+)[.]*/: { Matcher m, Project p -> m.replaceAll(".${(m[0][1] as int) + 1}.0") }
