@@ -447,6 +447,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.webSocket.requestBufferSize=${ZWE_components_gateway_server_webSocket_requestBufferSize:-${ZWE_configs_server_webSocket_requestBufferSize:-8192}} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -Dapiml.security.rauditx.onOidcUserIsMapped=${ZWE_configs_apiml_security_rauditx_onOidcUserIsMapped:${ZWE_components_gateway_apiml_security_rauditx_onOidcUserIsMapped:-false}} \
+    -Dapiml.security.rauditx.oidcSourceUserPaths=${ZWE_configs_apiml_security_rauditx_oidcSourceUserPaths:${ZWE_components_gateway_apiml_security_rauditx_oidcSourceUserPaths:-sub}} \
     -jar "${JAR_FILE}" &
 
 pid=$!

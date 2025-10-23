@@ -67,6 +67,7 @@ public class RauditxService {
 
     // documented types at https://www.ibm.com/docs/en/zos/2.2.0?topic=records-smf-record-type-83-subtype-2
     private static final int RELOCATED_RECORD_TYPE_BIND_USER = 103;
+    private static final int RELOCATED_RECORD_TYPE_BIND_SOURCE_USER = 107;
 
     @Value("${rauditx.fmid:AZWE001}")
     private String fmid;
@@ -317,6 +318,16 @@ public class RauditxService {
          */
         public RauditxBuilder userId(String userId) {
             rauditx.addRelocateSection(RELOCATED_RECORD_TYPE_BIND_USER, userId);
+            return this;
+        }
+
+        /**
+         * Set source userId.
+         * @param userId source userId to be audited
+         * @return builder to next action
+         */
+        public RauditxBuilder sourceUserId(String userId) {
+            rauditx.addRelocateSection(RELOCATED_RECORD_TYPE_BIND_SOURCE_USER, userId);
             return this;
         }
 

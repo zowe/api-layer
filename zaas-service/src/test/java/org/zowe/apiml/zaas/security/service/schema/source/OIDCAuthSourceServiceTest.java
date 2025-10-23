@@ -300,10 +300,28 @@ class OIDCAuthSourceServiceTest {
             @Test
             void givenEnabledSmf_whenUserIsMapper_thenIssueSmf() {
                 ReflectionTestUtils.setField(service, "rauditxOnOidcUserIsMapped", true);
+                ReflectionTestUtils.setField(service, "oidcSourceUserPaths", Collections.singletonList("sub"));
 
                 service.parse(authSource);
 
-                verify(rauditx).addRelocateSection(103, MF_USER); // setUserId
+                verify(rauditx).addRelocateSection(103, MF_USER); // userId
+                verify(rauditx).addRelocateSection(107, SUB_USER); // sourceUserId
+                verify(rauditx).setAlwaysLogSuccesses();
+                verify(rauditx).addMessageSegment("The OIDC token was mapped to the user account");
+                verify(rauditx).setEventSuccess();
+                verify(rauditx).setQualifier(0);
+                verify(rauditx).issue();
+            }
+
+            @Test
+            void givenInvalidSourceUserPaths_whenParsing_thenOmitThemInSmf() {
+                ReflectionTestUtils.setField(service, "rauditxOnOidcUserIsMapped", true);
+                ReflectionTestUtils.setField(service, "oidcSourceUserPaths", Collections.emptyList());
+
+                service.parse(authSource);
+
+                verify(rauditx).addRelocateSection(103, MF_USER); // userId
+                verify(rauditx, never()).addRelocateSection(eq(107), (String) any()); // sourceUserId
                 verify(rauditx).setAlwaysLogSuccesses();
                 verify(rauditx).addMessageSegment("The OIDC token was mapped to the user account");
                 verify(rauditx).setEventSuccess();
@@ -319,6 +337,7 @@ class OIDCAuthSourceServiceTest {
             @Test
             void givenAnOidcToken_whenThereIsNoMapping_thenDoNotCutSmf() {
                 ReflectionTestUtils.setField(service, "rauditxOnOidcUserIsMapped", true);
+                ReflectionTestUtils.setField(service, "oidcSourceUserPaths", Collections.singletonList("sub"));
                 when(provider.isValid(TOKEN_WITH_USERNAME_FIELDS)).thenReturn(true);
                 OIDCAuthSource authSource = new OIDCAuthSource(TOKEN_WITH_USERNAME_FIELDS);
                 when(mapper.mapToMainframeUserId(authSource)).thenReturn(null);
