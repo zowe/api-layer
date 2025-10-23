@@ -13,7 +13,6 @@ package org.zowe.apiml.gateway.config;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -48,8 +47,14 @@ import static org.zowe.apiml.product.constants.CoreService.ZAAS;
 @ConditionalOnMissingBean(name = "modulithConfig")
 @RequiredArgsConstructor
 @OpenAPIDefinition(
-    security = @SecurityRequirement(name = "LoginBasicAuth"),
-    info = @Info(title = "API Gateway", description = "REST API for the API Gateway, which is a component of the API\nMediation Layer. Use this API to perform tasks such as logging in with the\nmainframe credentials and checking authorization to mainframe resources.")
+    security = {
+        @SecurityRequirement(name = "LoginBasicAuth"),
+        @SecurityRequirement(name = "ClientCert")
+    },
+    info = @Info(title = "API Gateway", description = """
+        REST API for the API Gateway, which is a component of the API Mediation Layer.
+        Use this API to perform tasks such as logging in with the mainframe credentials and checking authorization to mainframe resources.
+        """)
 )
 @SecurityScheme(
     name = "LoginBasicAuth",
@@ -57,19 +62,7 @@ import static org.zowe.apiml.product.constants.CoreService.ZAAS;
     scheme = "basic"
 )
 @SecurityScheme(
-    name = "Bearer",
-    type = SecuritySchemeType.HTTP,
-    scheme = "bearer",
-    bearerFormat = "JWT"
-)
-@SecurityScheme(
-    name = "CookieAuth",
-    type = SecuritySchemeType.APIKEY,
-    in = SecuritySchemeIn.COOKIE,
-    paramName = "apimlAuthenticationToken"
-)
-@SecurityScheme(
-    type = SecuritySchemeType.HTTP,
+    type = SecuritySchemeType.MUTUALTLS,
     name = "ClientCert",
     description = "Client certificate X509"
 )

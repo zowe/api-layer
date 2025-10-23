@@ -20,6 +20,13 @@ import org.springframework.stereotype.Component;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Customizer for Tomcat SSL configuration that fixes SAF keyring URLs.
+ * <p>
+ * If a keyStore or trustStore uses a SAF keyring (e.g. {@code safkeyring:///USER/KEYRING}),
+ * this class reformats the URL and sets default passwords if none are provided.
+ * </p>
+ */
 @Slf4j
 @Component
 public class TomcatKeyringFix implements WebServerFactoryCustomizer<AbstractConfigurableWebServerFactory> {
@@ -51,6 +58,17 @@ public class TomcatKeyringFix implements WebServerFactoryCustomizer<AbstractConf
         return matcher.matches();
     }
 
+    /**
+     * Normalizes the given keyring URL into a Tomcat-compatible format.
+     * <p>
+     * For example, converts:
+     * <pre>
+     * safkeyring:///USER/KEYRING → safkeyring://USER/KEYRING
+     * </pre>
+     *
+     * @param keyringUrl the original keyring URL
+     * @return the normalized URL or {@code null} if the input was {@code null}
+     */
     static String formatKeyringUrl(String keyringUrl) {
         if (keyringUrl == null) return null;
         Matcher matcher = KEYRING_PATTERN.matcher(keyringUrl);
@@ -60,6 +78,16 @@ public class TomcatKeyringFix implements WebServerFactoryCustomizer<AbstractConf
         return keyringUrl;
     }
 
+    /**
+     * Customizes the Tomcat {@link Ssl} configuration before the web server starts.
+     * <p>
+     * If keyring-based stores are detected, this method updates their configuration
+     * (URL format, alias, and password) to ensure that Tomcat can correctly access
+     * the keyring at runtime.
+     * </p>
+     *
+     * @param factory the Tomcat web server factory being customized
+     */
     @Override
     public void customize(AbstractConfigurableWebServerFactory factory) {
         Ssl ssl = factory.getSsl();
