@@ -162,15 +162,23 @@ public class OIDCTokenProvider implements OIDCProvider {
             if (StringUtils.isBlank(signedJwt.getHeader().getKeyID())) {
                 throw new JWKException("Token does not provide kid. It uses an unsupported type of signature.");
             }
-            var rsaVerifier = new RSASSAVerifier((RSAPublicKey) publicKeys.get(signedJwt.getHeader().getKeyID()).getKey());
-            var verified = signedJwt.verify(rsaVerifier);
-            if (verified) {
-                var claims = jwt.getJWTClaimsSet();
-                if (claims.getExpirationTime().toInstant().isBefore(clock.instant())) {
-                    log.debug("OIDC Token is expired");
-                    return null;
+
+            var jsonWebKey = publicKeys.get(signedJwt.getHeader().getKeyID());
+            if (jsonWebKey != null) {
+                var rsaVerifier = new RSASSAVerifier((RSAPublicKey) jsonWebKey.getKey());
+                var verified = signedJwt.verify(rsaVerifier);
+                if (verified) {
+                    var claims = jwt.getJWTClaimsSet();
+                    if (claims.getExpirationTime().toInstant().isBefore(clock.instant())) {
+                        log.debug("OIDC Token is expired");
+                        return null;
+                    }
+                    return claims;
+                } else {
+                    throw new BadJOSEException("Provided OIDC JWT token has invalid signature");
                 }
-                return claims;
+            } else {
+                throw new JWKException("Key with id " + signedJwt.getHeader().getKeyID() + " is null in JWK");
             }
         } else {
             log.debug("OIDC Token is not signed");
