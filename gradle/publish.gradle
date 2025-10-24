@@ -36,8 +36,6 @@ ext.servicesToPublish = [
 
 ext.zoweComponentsToPublish = ext.servicesToPublish + ext.javaLibraries
 
-ext.sdksToPublish = ext.enablers + ext.javaLibraries
-
 configure(subprojects.findAll { it.name in zoweComponentsToPublish }) {
     apply plugin: 'maven-publish'
     apply plugin: 'java'
@@ -84,7 +82,7 @@ if (enablerPropsFile.exists()) {
 //3. Get the version, or use the rootProject.version as a fallback
 def sdkVersion = enablerProps.getProperty("version")
 
-configure(subprojects.findAll { it.name in sdksToPublish }) {
+configure(subprojects.findAll { it.name in enablers }) {
     apply plugin: 'maven-publish'
     apply plugin: 'java'
 
@@ -116,7 +114,7 @@ configure(subprojects.findAll { it.name in sdksToPublish }) {
     }
 }
 
-configure(subprojects.findAll { it.name in sdksToPublish }) {
+configure(subprojects.findAll { it.name in enablers }) {
     publishing {
         publications {
             mavenJava(MavenPublication) {
@@ -145,6 +143,41 @@ configure(subprojects.findAll { it.name in sdksToPublish }) {
 
             attributes "Implementation-Title": project.name
             attributes "Implementation-Version": sdkVersion
+            attributes "Implementation-Vendor": "Zowe org"
+            attributes "Implementation-Vendor-Id": "org.zowe.apiml.sdk"
+        }
+    }
+
+}
+configure(subprojects.findAll { it.name in javaLibraries }) {
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                groupId 'org.zowe.apiml.sdk'
+                version rootProject.version
+                artifactId "${project.name}"
+
+                from components.java
+
+                pom.withXml {
+                    asNode().dependencies.'*'.findAll() {
+                        it.scope.text() == 'runtime' && project.configurations.implementation.allDependencies.find { dep ->
+                            dep.name == it.artifactId.text()
+                        }
+                    }.each { it.scope*.value = 'compile' }
+                }
+            }
+        }
+    }
+
+    tasks.withType(Jar) {
+        manifest {
+            attributes "Specification-Title": project.name
+            attributes "Specification-Version": rootProject.version
+            attributes "Specification-Vendor": "Zowe org"
+
+            attributes "Implementation-Title": project.name
+            attributes "Implementation-Version": rootProject.version
             attributes "Implementation-Vendor": "Zowe org"
             attributes "Implementation-Vendor-Id": "org.zowe.apiml.sdk"
         }
