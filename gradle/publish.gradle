@@ -186,7 +186,7 @@ ext.publishZoweServerTasksList = zoweComponentsToPublish.collect {
 
 ext.publishTasksList = enablers.collect {
     ":" + it + ":publish"
-} + ":platform:publish"
+}
 
 //noinspection GroovyAssignabilityCheck
 tasks.register('publishZoweServerArtifacts') {
