@@ -12,6 +12,7 @@ package org.zowe.apiml.zaas.security.service.token;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jose.jwk.JWKException;
 import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
@@ -147,12 +148,20 @@ public class OIDCTokenProvider implements OIDCProvider {
             fetchJWKSet();
         }
 
+        if (jwkSet == null || jwkSet.getJsonWebKeys().isEmpty()) {
+            throw new JWKException("Could not validate the token due to missing public key.");
+        }
+
         if (StringUtils.isBlank(token)) {
             throw new BadJOSEException("Empty string provided instead of a token.");
         }
+
         log.debug("Validating the token with JWK");
         var jwt = JWTParser.parse(token);
         if (jwt instanceof SignedJWT signedJwt) {
+            if (StringUtils.isBlank(signedJwt.getHeader().getKeyID())) {
+                throw new JWKException("Token does not provide kid. It uses an unsupported type of signature.");
+            }
             var rsaVerifier = new RSASSAVerifier((RSAPublicKey) publicKeys.get(signedJwt.getHeader().getKeyID()).getKey());
             var verified = signedJwt.verify(rsaVerifier);
             if (verified) {
