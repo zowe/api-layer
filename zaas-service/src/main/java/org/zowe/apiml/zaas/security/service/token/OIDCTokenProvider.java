@@ -44,6 +44,7 @@ import java.text.ParseException;
 import java.time.Clock;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -98,7 +99,7 @@ public class OIDCTokenProvider implements OIDCProvider {
             }
         }
 
-        jwkSet = new JsonWebKeySet(publicKeys.entrySet().stream().map(entry -> entry.getValue()).toList());
+        jwkSet = new JsonWebKeySet(publicKeys.entrySet().stream().map(Entry::getValue).toList());
     }
 
     @Override
@@ -144,6 +145,10 @@ public class OIDCTokenProvider implements OIDCProvider {
     }
 
     JWTClaimsSet getClaims(String token) throws ParseException, BadJOSEException, JOSEException {
+        if (StringUtils.isBlank(token)) {
+            throw new BadJOSEException("Empty string provided instead of a token.");
+        }
+
         if (jwkSet == null || jwkSet.getJsonWebKeys().isEmpty()) {
             fetchJWKSet();
         }
@@ -152,39 +157,40 @@ public class OIDCTokenProvider implements OIDCProvider {
             throw new JWKException("Could not validate the token due to missing public key.");
         }
 
-        if (StringUtils.isBlank(token)) {
-            throw new BadJOSEException("Empty string provided instead of a token.");
-        }
-
         log.debug("Validating the token with JWK");
         var jwt = JWTParser.parse(token);
         if (jwt instanceof SignedJWT signedJwt) {
-            if (StringUtils.isBlank(signedJwt.getHeader().getKeyID())) {
-                throw new JWKException("Token does not provide kid. It uses an unsupported type of signature.");
-            }
-
-            var jsonWebKey = publicKeys.get(signedJwt.getHeader().getKeyID());
-            if (jsonWebKey != null) {
-                var rsaVerifier = new RSASSAVerifier((RSAPublicKey) jsonWebKey.getKey());
-                var verified = signedJwt.verify(rsaVerifier);
-                if (verified) {
-                    var claims = jwt.getJWTClaimsSet();
-                    if (claims.getExpirationTime().toInstant().isBefore(clock.instant())) {
-                        log.debug("OIDC Token is expired");
-                        return null;
-                    }
-                    return claims;
-                } else {
-                    throw new BadJOSEException("Provided OIDC JWT token has invalid signature");
-                }
-            } else {
-                throw new JWKException("Key with id " + signedJwt.getHeader().getKeyID() + " is null in JWK");
-            }
+            return getClaims(signedJwt);
         } else {
             log.debug("OIDC Token is not signed");
         }
         return null;
 
+    }
+
+    private JWTClaimsSet getClaims(SignedJWT jwt) throws JOSEException, ParseException, BadJOSEException {
+        var keyId = jwt.getHeader().getKeyID();
+        if (StringUtils.isBlank(keyId)) {
+            throw new JWKException("Token does not provide kid. It uses an unsupported type of signature.");
+        }
+
+        var jsonWebKey = publicKeys.get(keyId);
+        if (jsonWebKey != null) {
+            var rsaVerifier = new RSASSAVerifier((RSAPublicKey) jsonWebKey.getKey());
+            var verified = jwt.verify(rsaVerifier);
+            if (verified) {
+                var claims = jwt.getJWTClaimsSet();
+                if (claims.getExpirationTime().toInstant().isBefore(clock.instant())) {
+                    log.debug("OIDC Token is expired");
+                    return null;
+                }
+                return claims;
+            } else {
+                throw new BadJOSEException("Provided OIDC JWT token has invalid signature");
+            }
+        } else {
+            throw new JWKException("Key with id " + keyId + " is null in JWK");
+        }
     }
 
 }

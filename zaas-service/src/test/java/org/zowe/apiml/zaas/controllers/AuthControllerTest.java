@@ -136,7 +136,7 @@ class AuthControllerTest {
         this.mockMvc.perform(get("/zaas/api/v1/auth/distribute/instance2")).andExpect(status().is(SC_NO_CONTENT));
     }
 
-    private JsonWebKey getJwk(int i) throws ParseException, JoseException {
+    private JsonWebKey getJwk(int i) throws JoseException {
         return JsonWebKey.Factory.newJwk("{" +
             "\"e\":\"AQAB\"," +
             "\"n\":\"kWp2zRA23Z3vTL4uoe8kTFptxBVFunIoP4t_8TDYJrOb7D1iZNDXVeEsYKp6ppmrTZDAgd-cNOTKLd4M39WJc5FN0maTAVKJc7NxklDeKc4dMe1BGvTZNG4MpWBo-taKULlYUu0ltYJuLzOjIrTHfarucrGoRWqM0sl3z2-fv9k\",\n" +

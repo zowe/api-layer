@@ -51,8 +51,8 @@ public class JWKResolverTest {
         @Test
         void givenMissingParameterInJWK_doNotThrowException() throws IOException {
             var url = "https://localhost/jwk";
-            var httpsJwks = new HttpsJwks(url);
-            httpsJwks.setSimpleHttpGet(simpleGet);
+            var jwks = new HttpsJwks(url);
+            jwks.setSimpleHttpGet(simpleGet);
 
             var json = """
                 {
@@ -69,7 +69,7 @@ public class JWKResolverTest {
                 }
                 """;
 
-            when(provider.getFor(url)).thenReturn(httpsJwks);
+            when(provider.getFor(url)).thenReturn(jwks);
             when(simpleGet.get(url)).thenReturn(new Response(200, "", Map.of(), json));
 
             assertDoesNotThrow(() -> jwkResolver.resolve(url));
@@ -78,8 +78,8 @@ public class JWKResolverTest {
         @Test
         void giveValidJWK_setPublicKey() throws IOException {
             var url = "https://localhost/jwk";
-            var httpsJwks = new HttpsJwks(url);
-            httpsJwks.setSimpleHttpGet(simpleGet);
+            var jwks = new HttpsJwks(url);
+            jwks.setSimpleHttpGet(simpleGet);
 
             var json = """
                 {
@@ -95,7 +95,7 @@ public class JWKResolverTest {
                     ]
                 }
                 """;
-            when(provider.getFor(url)).thenReturn(httpsJwks);
+            when(provider.getFor(url)).thenReturn(jwks);
             when(simpleGet.get(url)).thenReturn(new Response(200, "", Map.of(), json));
 
             assertDoesNotThrow(() -> jwkResolver.resolve(url));

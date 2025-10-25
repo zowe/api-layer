@@ -53,7 +53,6 @@ import static org.zowe.apiml.zaas.utils.JWTUtils.loadPrivateKey;
 @ExtendWith(MockitoExtension.class)
 class OIDCTokenProviderTest {
 
-    private static final String OKTA_JWKS_RESOURCE = "test_samples/okta_jwks.json";
     private static final String EXPIRED_TOKEN = "eyJraWQiOiJMY3hja2tvcjk0cWtydW54SFA3VGtpYjU0N3J6bWtYdnNZVi1uYzZVLU40IiwiYWxnIjoiUlMyNTYifQ.eyJ2ZXIiOjEsImp0aSI6IkFULlExakp2UkZ0dUhFUFpGTXNmM3A0enQ5aHBRRHZrSU1CQ3RneU9IcTdlaEkiLCJpc3MiOiJodHRwczovL2Rldi05NTcyNzY4Ni5va3RhLmNvbS9vYXV0aDIvZGVmYXVsdCIsImF1ZCI6ImFwaTovL2RlZmF1bHQiLCJpYXQiOjE2OTcwNjA3NzMsImV4cCI6MTY5NzA2NDM3MywiY2lkIjoiMG9hNmE0OG1uaVhBcUVNcng1ZDciLCJ1aWQiOiIwMHU5OTExOGgxNmtQT1dBbTVkNyIsInNjcCI6WyJvcGVuaWQiXSwiYXV0aF90aW1lIjoxNjk3MDYwMDY0LCJzdWIiOiJzajg5NTA5MkBicm9hZGNvbS5uZXQiLCJncm91cHMiOlsiRXZlcnlvbmUiXX0.Cuf1JVq_NnfBxaCwiLsR5O6DBmVV1fj9utAfKWIF1hlek2hCJsDLQM4ii_ucQ0MM1V3nVE1ZatPB-W7ImWPlGz7NeNBv7jEV9DkX70hchCjPHyYpaUhAieTG75obdufiFpI55bz3qH5cPRvsKv0OKKI9T8D7GjEWsOhv6CevJJZZvgCFLGFfnacKLOY5fEBN82bdmCulNfPVrXF23rOregFjOBJ1cKWfjmB0UGWgI8VBGGemMNm3ACX3OYpTOek2PBfoCIZWOSGnLZumFTYA0F_3DsWYhIJNoFv16_EBBJcp_C0BYE_fiuXzeB0fieNUXASsKp591XJMflDQS_Zt1g";
     private static final String MALFORMED_TOKEN = "token";
 
@@ -89,7 +88,7 @@ class OIDCTokenProviderTest {
     }
 
     @BeforeEach
-    void setup() throws CachingServiceClientException, IOException {
+    void setup() throws CachingServiceClientException {
         oidcTokenProvider = new OIDCTokenProvider(Clock.systemUTC(), jwkResolver, httpClient);
         ReflectionTestUtils.setField(oidcTokenProvider, "jwkRefreshInterval", 1);
     }
@@ -105,7 +104,7 @@ class OIDCTokenProviderTest {
         }
 
         @Test
-        void shouldNotModifyJwksUri() throws IOException {
+        void shouldNotModifyJwksUri() {
             assertDoesNotThrow(() -> oidcTokenProvider.fetchJWKSet());
             assertTrue(oidcTokenProvider.getPublicKeys().isEmpty());
         }
@@ -119,7 +118,7 @@ class OIDCTokenProviderTest {
         class WhenJWKValidation {
 
             @BeforeEach
-            void init() throws Exception {
+            void init() {
                 ReflectionTestUtils.setField(oidcTokenProvider, "jwksUri", Arrays.asList("https://localjwk", "https://jwksurl"));
             }
 

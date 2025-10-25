@@ -153,10 +153,8 @@ public class JwtUtils {
         var claim = claims.getClaim(key);
         while (iterator.hasNext()) {
             key = iterator.next();
-            if (iterator.hasNext()) {
-                if (claim instanceof Map val) {
-                    claim = val.get(key);
-                }
+            if (iterator.hasNext() && claim instanceof Map val) {
+                claim = val.get(key);
             }
         }
 
