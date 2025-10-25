@@ -44,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -125,8 +126,8 @@ class OIDCTokenProviderTest {
             @ParameterizedTest(name = "#{index} return invalid when given invalid token: {0}")
             @MethodSource("org.zowe.apiml.zaas.security.service.token.OIDCTokenProviderTest#invalidTokens")
             void whenInvalidToken_thenReturnInvalid(String token) throws JoseException, IOException {
-                when(jwkResolver.resolve("https://localjwk")).thenReturn(localJwkSet);
-                when(jwkResolver.resolve("https://jwksurl")).thenReturn(localJwkSet);
+                lenient().when(jwkResolver.resolve("https://localjwk")).thenReturn(localJwkSet);
+                lenient().when(jwkResolver.resolve("https://jwksurl")).thenReturn(localJwkSet);
                 assertFalse(oidcTokenProvider.isValid(token));
             }
 
