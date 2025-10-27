@@ -64,7 +64,10 @@ else
 fi
 
 # script assumes it's in the api-catalog component directory and jvm.security.override.properties needs to be relative path
-JVM_SECURITY="../apiml-common-lib/bin/jvm.security.override.properties"
+JVM_SECURITY_PROPERTIES=""
+if [ "${JVM_SECURITY_PROPERTIES_OVERRIDE:-false}" = "true" ]; then
+    JVM_SECURITY_PROPERTIES="-Djava.security.properties=../apiml-common-lib/bin/jvm.security.override.properties"
+fi
 
 if [ -z "${LIBRARY_PATH}" ]
 then
@@ -281,6 +284,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     ${QUICK_START} \
     ${ADD_OPENS} \
     ${LOGBACK} \
+    ${JVM_SECURITY_PROPERTIES} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
@@ -325,7 +329,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.ssl.trustStoreType="${truststore_type}" \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Djava.security.properties="${JVM_SECURITY}" \
     -Dloader.path=${COMMON_LIB} \
     -Djava.library.path=${LIBPATH} \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \

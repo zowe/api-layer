@@ -121,7 +121,10 @@ else
 fi
 
 # script assumes it's in the apiml component directory and jvm.security.override.properties needs to be relative path
-JVM_SECURITY="../apiml-common-lib/bin/jvm.security.override.properties"
+JVM_SECURITY_PROPERTIES=""
+if [ "${JVM_SECURITY_PROPERTIES_OVERRIDE:-false}" = "true" ]; then
+    JVM_SECURITY_PROPERTIES="-Djava.security.properties=../apiml-common-lib/bin/jvm.security.override.properties"
+fi
 
 if [ -z "${LIBRARY_PATH}" ]; then
     LIBRARY_PATH="../common-java-lib/bin/"
@@ -332,6 +335,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     ${QUICK_START} \
     ${ADD_OPENS} \
     ${LOGBACK} \
+    ${JVM_SECURITY_PROPERTIES} \
     -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_haInstance_id:-localhost} \
     -Dapiml.catalog.customStyle.backgroundColor=${ZWE_components_apicatalog_apiml_catalog_customStyle_backgroundColor:-${ZWE_configs_apiml_catalog_customStyle_backgroundColor:-}} \
     -Dapiml.catalog.customStyle.docLink=${ZWE_components_apicatalog_apiml_catalog_customStyle_docLink:-${ZWE_configs_apiml_catalog_customStyle_docLink:-}} \
@@ -421,7 +425,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Djava.library.path=${LIBPATH} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Djava.security.properties="${JVM_SECURITY}" \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-${ZWE_components_gateway_sslDebug:-${ZWE_components_discovery_sslDebug:-""}}} \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
     -Djgroups.bind.address=${ZWE_components_caching_service_storage_infinispan_jgroups_host:-${ZWE_configs_storage_infinispan_jgroups_host:-${ZWE_haInstance_hostname:-localhost}}} \

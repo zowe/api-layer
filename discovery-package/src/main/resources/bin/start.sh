@@ -66,7 +66,10 @@ else
 fi
 
 # script assumes it's in the discovery component directory and jvm.security.override.properties needs to be relative path
-JVM_SECURITY="../apiml-common-lib/bin/jvm.security.override.properties"
+JVM_SECURITY_PROPERTIES=""
+if [ "${JVM_SECURITY_PROPERTIES_OVERRIDE:-false}" = "true" ]; then
+    JVM_SECURITY_PROPERTIES="-Djava.security.properties=../apiml-common-lib/bin/jvm.security.override.properties"
+fi
 
 if [ -z "${LIBRARY_PATH}" ]; then
     LIBRARY_PATH="../common-java-lib/bin/"
@@ -267,6 +270,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     ${QUICK_START} \
     ${ADD_OPENS} \
     ${LOGBACK} \
+    ${JVM_SECURITY_PROPERTIES_OVERRIDE} \
     -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.discovery.password=password \
     -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer} \
@@ -285,7 +289,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Djava.library.path=${LIBPATH} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Djava.security.properties="${JVM_SECURITY}" \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
     -Dloader.path=${DISCOVERY_LOADER_PATH} \
