@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas.utils;
+package org.zowe.apiml.security.common.util;
 
 import io.jsonwebtoken.Jwts;
 import lombok.SneakyThrows;
@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class JWTUtils {
+public class JWTTestUtils {
 
     public static String createZoweJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
         return createToken(username, domain, ltpaToken, config, "APIML");

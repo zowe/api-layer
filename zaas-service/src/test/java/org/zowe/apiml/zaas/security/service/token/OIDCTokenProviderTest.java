@@ -49,7 +49,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.zowe.apiml.zaas.utils.JWTUtils.loadPrivateKey;
+import static org.zowe.apiml.security.common.util.JWTTestUtils.loadPrivateKey;
 
 @ExtendWith(MockitoExtension.class)
 class OIDCTokenProviderTest {

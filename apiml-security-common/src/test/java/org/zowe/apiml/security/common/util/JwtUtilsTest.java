@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.zaas.security.service;
+package org.zowe.apiml.security.common.util;
 
 import com.nimbusds.jwt.proc.BadJWTException;
 import com.nimbusds.jwt.proc.ExpiredJWTException;
@@ -20,7 +20,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
-import org.zowe.apiml.security.common.util.JwtUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,7 +29,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.zowe.apiml.zaas.utils.JWTUtils.createTokenWithUserFields;
+import static org.zowe.apiml.security.common.util.JWTTestUtils.createTokenWithUserFields;
 
 class JwtUtilsTest {
 

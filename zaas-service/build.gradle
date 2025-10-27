@@ -120,6 +120,7 @@ dependencies {
     testAnnotationProcessor libs.lombok
 
     testImplementation(testFixtures(project(":apiml-common")))
+    testImplementation(testFixtures(project(":apiml-security-common")))
 }
 
 bootJar {
