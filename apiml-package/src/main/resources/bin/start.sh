@@ -106,6 +106,14 @@
 # - ZWE_configs_storage_vsam_name
 # Optional variables:
 
+add_profile() {
+    new_profile=$1
+    if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+    fi
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}${new_profile}"
+}
+
 if [ -n "${LAUNCH_COMPONENT}" ]; then
     JAR_FILE="${LAUNCH_COMPONENT}/apiml-lite.jar"
 else
@@ -179,14 +187,6 @@ LOGBACK=""
 if [ -n "${ZWE_configs_logging_config}" ]; then
     LOGBACK="-Dlogging.config=${ZWE_configs_logging_config}"
 fi
-
-add_profile() {
-    new_profile=$1
-    if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
-        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
-    fi
-    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}${new_profile}"
-}
 
 ATTLS_SERVER_ENABLED="false"
 ATTLS_CLIENT_ENABLED="false"
