@@ -40,7 +40,7 @@ dependencyResolutionManagement {
             version('commonsFileUpload', '1.6.0')
             version('ehCache', '3.10.8')
             version('eureka', '1.10.18')
-            version('findBugs', '3.0.2')
+            version('githubClassgraph', '4.8.181')
             version('githubClassgraph', '4.8.184')
             version('gradleGitProperties', '2.3.1') // Used in classpath dependencies
             version('gradleNode', '3.6.0') // Used in classpath dependencies
@@ -62,6 +62,7 @@ dependencyResolutionManagement {
             version('jakartaInject', '1.0.5')
             version('javaxServletApi', '4.0.1')
             version('jaxbApi', '2.3.1')
+            version('jcip', '1.0')
             version('jersey', '2.44')
             version('jerseySun', '1.19.4')
             version('jettyWebSocketClient', '9.4.58.v20250814')
@@ -246,7 +247,6 @@ dependencyResolutionManagement {
             library('eh_cache', 'org.ehcache', 'ehcache').versionRef('ehCache')
             library('eureka_client', 'com.netflix.eureka', 'eureka-client').versionRef('eureka')
             library('eureka_core', 'com.netflix.eureka', 'eureka-core').versionRef('eureka')
-            library('findbugs', 'com.google.code.findbugs', 'jsr305').versionRef('findBugs')
             library('gson', 'com.google.code.gson', 'gson').versionRef('gson')
             library('guava', 'com.google.guava', 'guava').versionRef('guava')
             library('hamcrest', 'org.hamcrest', 'hamcrest-all').versionRef('hamcrest')
@@ -268,6 +268,7 @@ dependencyResolutionManagement {
             library('jakarta_inject', 'jakarta.inject', 'jakarta.inject-api').versionRef('jakartaInject')
             library('javax_servlet_api', 'javax.servlet', 'javax.servlet-api').versionRef('javaxServletApi')
             library('jaxb_api', 'javax.xml.bind', 'jaxb-api').versionRef('jaxbApi')
+            library('jcip', 'net.jcip', 'jcip-annotations').versionRef('jcip')
             library('jetty_client', 'org.eclipse.jetty', 'jetty-client').versionRef('jettyWebSocketClient')
             library('jetty_http', 'org.eclipse.jetty', 'jetty-http').versionRef('jettyWebSocketClient')
             library('jetty_io', 'org.eclipse.jetty', 'jetty-io').versionRef('jettyWebSocketClient')
@@ -409,6 +410,8 @@ dependencyResolutionManagement {
             plugin('shadow', 'com.github.johnrengelman.shadow').versionRef('shadow')
             plugin('gradle_tomcat', 'com.bmuschko.tomcat').versionRef('gradleTomcatPlugin')
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
+
+            bundle('findbugreplacement', ['javax.annotation', 'jcip', 'jsr305'])
         }
     }
 }

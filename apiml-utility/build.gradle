@@ -10,7 +10,7 @@ dependencies {
     compileOnly libs.spring.boot.starter.web
     compileOnly libs.spring.cloud.starter.eureka
     compileOnly libs.spring.boot.configuration.processor
-    implementation libs.findbugs
+    implementation libs.jsr305
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
