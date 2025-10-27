@@ -45,7 +45,6 @@ import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.interfaces.RSAPublicKey;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -101,7 +100,7 @@ class AuthControllerTest {
     private JSONObject body;
 
     @BeforeEach
-    void setUp() throws ParseException, JSONException, JoseException {
+    void setUp() throws JSONException, JoseException {
         messageService = new YamlMessageService("/zaas-log-messages.yml");
         authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService, tokenProvider, oidcProvider, webFingerProvider);
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();

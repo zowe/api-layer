@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class JWKResolverTest {
+class JWKResolverTest {
 
     @Mock
     private HttpsJwks httpsJwks;
