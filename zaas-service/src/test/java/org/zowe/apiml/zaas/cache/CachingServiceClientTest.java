@@ -20,6 +20,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.models.AccessTokenContainer;
@@ -44,6 +45,8 @@ class CachingServiceClientTest {
         ServiceAddress gatewayAddress = ServiceAddress.builder().scheme("https").hostname("localhost:10010").build();
         GatewayClient gatewayClient = new GatewayClient(gatewayAddress);
         underTest = new CachingServiceClient(restTemplate, gatewayClient);
+        ReflectionTestUtils.setField(underTest,"CACHING_API_PATH","/cachingservice/api/v1/cache");
+        ReflectionTestUtils.setField(underTest,"CACHING_LIST_API_PATH","/cachingservice/api/v1/cache-list/");
     }
 
     @Nested

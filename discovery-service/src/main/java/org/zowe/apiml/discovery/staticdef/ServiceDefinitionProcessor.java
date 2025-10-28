@@ -27,6 +27,7 @@ import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.discovery.*;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.util.MapUtils;
 import org.zowe.apiml.util.UrlUtils;
@@ -256,7 +257,7 @@ public class ServiceDefinitionProcessor {
                 setInstanceAttributes(builder, service, instanceId, instanceBaseUrl, url, ipAddress, tile);
 
                 setPort(builder, service, instanceBaseUrl, url);
-                log.info("Adding static instance {} for service ID {} mapped to URL {}", instanceId, serviceId,
+                log.debug("Adding static instance {} for service ID {} mapped to URL {}", instanceId, serviceId,
                     url);
 
                 final InstanceInfo instance = builder.build();

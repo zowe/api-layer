@@ -7,6 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
+/* eslint-disable no-undef */
+
 describe('>>> Service version change Test', () => {
     beforeEach(() => {
         cy.login(Cypress.env('username'), Cypress.env('password'));
@@ -15,7 +18,7 @@ describe('>>> Service version change Test', () => {
 
         cy.contains('Service Spring Onboarding Enabler sample application API').click();
 
-        cy.visit(`${Cypress.env('catalogHomePage')}/#/service/discoverableclient`);
+        cy.visit(`${Cypress.env('catalogHomePage')}/index.html#/service/discoverableclient`);
     });
 
     it('Should contain version tabs', () => {

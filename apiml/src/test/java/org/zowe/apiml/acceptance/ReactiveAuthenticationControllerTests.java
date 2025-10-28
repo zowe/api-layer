@@ -10,22 +10,34 @@
 
 package org.zowe.apiml.acceptance;
 
+import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.zowe.apiml.enable.register.RegisterToApiLayer;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 @AcceptanceTest
+@Import(ReactiveAuthenticationControllerTests.MockRegisterToApiLayerConfig.class)
 class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServices {
 
     private static final String REFRESH_ENDPOINT = "/gateway/api/v1/auth/refresh";
+    private static final String LOGIN_ENDPOINT = "/gateway/api/v1/auth/login";
     private static final String AUTH_COOKIE = "apimlAuthenticationToken";
+    private static final String DISTRIBUTE_INVALIDATE_ENDPOINT = "/gateway/api/v1/auth/distribute";
+    private static final String INVALIDATE_JWT_ENDPOINT = "/gateway/api/v1/auth/invalidate";
 
     @Value("${server.ssl.keyPassword}")
     char[] password;
@@ -43,6 +55,7 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
 
     private String login() {
         return given()
+            .contentType(ContentType.JSON)
             .body("""
                 {
                     "username": "USER",
@@ -51,7 +64,7 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
             """)
             .log().all()
         .when()
-            .post(URI.create(basePath + "/gateway/api/v1/auth/login"))
+            .post(URI.create(basePath + LOGIN_ENDPOINT))
         .then()
             .statusCode(204)
             .cookie(AUTH_COOKIE)
@@ -66,7 +79,7 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
     }
 
     @Test
-    void whenRefreshPATWithoutCert_then403() {
+    void whenRefreshTokenWithoutCert_then403() {
         given()
         .when()
             .post(URI.create(basePath + REFRESH_ENDPOINT))
@@ -83,4 +96,85 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
             .statusCode(405);
     }
 
+    @Test
+    void whenRefreshTokenWithCert_thenSuccess() {
+        var token = login();
+
+        var newToken = given()
+            .config(SslContext.clientCertApiml)
+            .cookie(AUTH_COOKIE, token)
+        .when()
+            .post(URI.create(basePath + REFRESH_ENDPOINT))
+        .then()
+            .statusCode(200)
+            .cookie(AUTH_COOKIE)
+        .extract()
+            .cookie(AUTH_COOKIE);
+
+        assertNotEquals(token, newToken);
+    }
+
+    @Test
+    void whenDistributeInvalidate_thenRequireCertificateAuthentication() {
+        given()
+            .log()
+            .all()
+        .when()
+            .get(URI.create(basePath + DISTRIBUTE_INVALIDATE_ENDPOINT + "/instanceId"))
+        .then()
+            .statusCode(403);
+    }
+
+    @Test
+    void whenDistributeInvalidate_withCert_thenSuccess() {
+        given()
+            .config(SslContext.clientCertApiml)
+        .when()
+            .get(URI.create(basePath + DISTRIBUTE_INVALIDATE_ENDPOINT + "/instanceId"))
+        .then()
+            .statusCode(204);
+    }
+
+    @Test
+    void whenInvalidateJwt_thenRequireCertificateAuthentication() {
+        var token = login();
+
+        given()
+            .log()
+            .all()
+        .when()
+            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT + "/" + token))
+        .then()
+            .statusCode(403);
+    }
+
+    @Test
+    void whenInvalidate_wrongMethod_thenFail() {
+        var token = login();
+
+        given()
+        .when()
+            .get(URI.create(basePath + INVALIDATE_JWT_ENDPOINT + "/" + token))
+        .then()
+            .statusCode(SC_METHOD_NOT_ALLOWED);
+    }
+
+    @Test
+    void whenInvalidateJwt_withCert_thenSuccess() {
+        var token = login();
+
+        given()
+            .config(SslContext.clientCertApiml)
+        .when()
+            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT + "/" + token))
+        .then()
+            .statusCode(200);
+    }
+    @TestConfiguration
+    public static class MockRegisterToApiLayerConfig {
+        @Bean
+        public RegisterToApiLayer registerToApiLayer() {
+            return mock(RegisterToApiLayer.class);
+        }
+    }
 }

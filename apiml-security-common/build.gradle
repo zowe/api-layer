@@ -4,6 +4,10 @@ dependencies {
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.security
     implementation libs.reactor
+    implementation libs.spring.webflux
+    implementation libs.guava
+    compileOnly libs.netty.reactor.http
+    compileOnly libs.spring.cloud.gateway.server
 
     implementation libs.apache.commons.lang3
     implementation libs.http.client5
@@ -15,5 +19,6 @@ dependencies {
     annotationProcessor libs.lombok
 
     testCompileOnly libs.lombok
+    testImplementation libs.netty.reactor.http
     testAnnotationProcessor libs.lombok
 }

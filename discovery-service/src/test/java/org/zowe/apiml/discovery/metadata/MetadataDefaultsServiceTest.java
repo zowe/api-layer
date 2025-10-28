@@ -23,7 +23,7 @@ import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegis
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.discovery.EurekaInstanceRegisteredListener;
 import org.zowe.apiml.discovery.staticdef.ServiceDefinitionProcessor;
-import org.zowe.apiml.discovery.staticdef.StaticRegistrationResult;
+import org.zowe.apiml.product.discovery.StaticRegistrationResult;
 import org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService;
 
 import java.io.File;
@@ -72,7 +72,7 @@ class MetadataDefaultsServiceTest {
             when(event.getInstanceInfo()).thenReturn(x.getArgument(0));
             eurekaInstanceRegisteredListener.listen(event);
             return mockRegistry;
-        }).when(mockRegistry).registerStatically(any(), anyBoolean());
+        }).when(mockRegistry).registerStatically(any(), anyBoolean(), anyBoolean());
 
         EurekaServerContext mockEurekaServerContext = mock(EurekaServerContext.class);
         when(mockEurekaServerContext.getRegistry()).thenReturn(mockRegistry);

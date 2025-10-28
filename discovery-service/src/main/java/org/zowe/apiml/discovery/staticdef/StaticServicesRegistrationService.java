@@ -15,12 +15,14 @@ import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.registry.InstanceRegistry;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.discovery.EurekaRegistryAvailableListener;
 import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
+import org.zowe.apiml.product.discovery.ServiceOverrideData;
+import org.zowe.apiml.product.discovery.StaticRegistrationResult;
+import org.zowe.apiml.product.discovery.StaticServicesRegistration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +36,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 @Slf4j
 @Component
-public class StaticServicesRegistrationService {
+public class StaticServicesRegistrationService implements StaticServicesRegistration {
     @Value("${apiml.discovery.staticApiDefinitionsDirectories:#{null}}")
     private String staticApiDefinitionsDirectories;
 
@@ -43,7 +45,6 @@ public class StaticServicesRegistrationService {
 
     private final List<InstanceInfo> staticInstances = new CopyOnWriteArrayList<>();
 
-    @Autowired
     public StaticServicesRegistrationService(ServiceDefinitionProcessor serviceDefinitionProcessor, MetadataDefaultsService metadataDefaultsService) {
         this.serviceDefinitionProcessor = serviceDefinitionProcessor;
         this.metadataDefaultsService = metadataDefaultsService;
@@ -99,7 +100,7 @@ public class StaticServicesRegistrationService {
         for (InstanceInfo instanceInfo : result.getInstances()) {
             result.getRegisteredServices().add(instanceInfo.getInstanceId());
             staticInstances.add(instanceInfo);
-            registry.registerStatically(instanceInfo, false);
+            registry.registerStatically(instanceInfo, false, false);
         }
 
         return result;

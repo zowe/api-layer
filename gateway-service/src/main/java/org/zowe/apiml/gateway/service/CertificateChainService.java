@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.gateway.config.ConnectionsConfig;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.security.HttpsConfig;
@@ -36,7 +35,7 @@ public class CertificateChainService {
     private static final ApimlLogger apimlLog = ApimlLogger.of(CertificateChainService.class, YamlMessageServiceInstance.getInstance());
     Certificate[] certificates;
 
-    private final ConnectionsConfig connectionsConfig;
+    private final HttpsConfig config;
 
     public String getCertificatesInPEMFormat() {
         StringWriter stringWriter = new StringWriter();
@@ -56,7 +55,6 @@ public class CertificateChainService {
 
     @PostConstruct
     void loadCertChain() {
-        HttpsConfig config = connectionsConfig.factory().getConfig();
         try {
             certificates = SecurityUtils.loadCertificateChain(config);
         } catch (Exception e) {

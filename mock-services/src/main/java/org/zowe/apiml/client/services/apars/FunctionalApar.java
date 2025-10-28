@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.client.services.apars;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +19,6 @@ import org.springframework.util.StringUtils;
 import org.zowe.apiml.client.model.LoginBody;
 import org.zowe.apiml.client.services.JwtTokenService;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +29,7 @@ public class FunctionalApar implements Apar {
     private static final String COOKIE_HEADER = "cookie";
     private static final String JWT_TOKEN_NAME = "jwtToken";
     private static final String LTPA_TOKEN_NAME = "LtpaToken2";
+    private static final String LTPA_TOKEN_VALUE = "paMypL7yRO/IBroQtro21/uSC2LTrJvOuYebHaPc6JAUNWQ7lEHHt1l3CYeXa/nP6aKLFHTuyWy3qlRXvt10PjVdVl+7Q+wavgIsro7odz+PvTaJBp/+r0AH+DHYcdZikKe8dytGYZRH2c2gw8Gv3PliDIMd1iPEazY4HeYTU5VCFM5cBJkeIoTXCfL5ud9wTzrkY2c4h1PQPtx+hYCF4kEpiVkqIypVwjQLzWdJGV1Ihz7NqH/UU9MMJRXY1xMqsWZSibs2fX5MVK77dnyBrNYjVXA7PqYL6U/v5/1UCvuYQ/iEU9+Uy95J+xFEsnTX";
 
     protected static final String AUTHORIZATION_HEADER = "authorization";
 
@@ -225,11 +226,15 @@ public class FunctionalApar implements Apar {
         }
 
         if (authHeader.startsWith("Bearer")) {
-            var jwtToken = authHeader.length() > 8 ? authHeader.substring(7) : "";
-            return jwtTokenService.validateJwtToken(jwtToken);
+            return isValidTokenInAuthHeader(authHeader);
         }
 
         return true;
+    }
+
+    public boolean isValidTokenInAuthHeader(String authHeader) {
+        var jwtToken = authHeader.length() > 8 ? authHeader.substring(7) : "";
+        return jwtTokenService.validateJwtToken(jwtToken);
     }
 
     private String getAuthCookie(Map<String, String> headers) {
@@ -237,7 +242,7 @@ public class FunctionalApar implements Apar {
     }
 
     protected void setLtpaToken(HttpServletResponse response) {
-        Cookie ltpaToken = new Cookie(LTPA_TOKEN_NAME, "paMypL7yRO/IBroQtro21/uSC2LTrJvOuYebHaPc6JAUNWQ7lEHHt1l3CYeXa/nP6aKLFHTuyWy3qlRXvt10PjVdVl+7Q+wavgIsro7odz+PvTaJBp/+r0AH+DHYcdZikKe8dytGYZRH2c2gw8Gv3PliDIMd1iPEazY4HeYTU5VCFM5cBJkeIoTXCfL5ud9wTzrkY2c4h1PQPtx+hYCF4kEpiVkqIypVwjQLzWdJGV1Ihz7NqH/UU9MMJRXY1xMqsWZSibs2fX5MVK77dnyBrNYjVXA7PqYL6U/v5/1UCvuYQ/iEU9+Uy95J+xFEsnTX");
+        Cookie ltpaToken = new Cookie(LTPA_TOKEN_NAME, LTPA_TOKEN_VALUE);
 
         ltpaToken.setSecure(true);
         ltpaToken.setHttpOnly(true);

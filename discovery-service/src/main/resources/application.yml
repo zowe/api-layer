@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 logging:
     level:
         ROOT: INFO
@@ -20,7 +23,7 @@ logging:
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         javax.net.ssl: ERROR
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
-    #    com.netflix.eureka.resources: WARN
+        com.netflix.eureka: ERROR
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
@@ -89,7 +92,7 @@ eureka:
         serviceUrl:
             defaultZone: ${apiml.discovery.allPeersUrls}
     server:
-        max-threads-for-peer-replication: 2
+        max-threads-for-peer-replication: 6
         useReadOnlyResponseCache: false
 
 management:
@@ -170,6 +173,7 @@ logging:
         org.ehcache: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
         javax.net.ssl: ERROR
+        com.netflix.eureka: DEBUG
 
 ---
 spring.config.activate.on-profile: diag
@@ -185,15 +189,26 @@ management:
 logbackServiceName: ZWEADS1
 
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
 
 eureka:
     instance:
         nonSecurePortEnabled: true
         securePortEnabled: false
+
+apiml:
+    discovery:
+        allPeersUrls: http://${apiml.service.hostname}:${apiml.service.port}/eureka/

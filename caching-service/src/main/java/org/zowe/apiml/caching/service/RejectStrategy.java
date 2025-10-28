@@ -12,6 +12,7 @@ package org.zowe.apiml.caching.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.message.log.ApimlLogger;
 
 @RequiredArgsConstructor

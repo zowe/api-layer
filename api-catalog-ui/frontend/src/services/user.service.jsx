@@ -69,7 +69,7 @@ function query() {
         }
     };
 
-    return fetch(`/gateway/api/v1/auth/query`, requestOptions)
+    return fetch(`/apicatalog/api/v1/auth/query`, requestOptions)
         .then(async (response) => {
             const data = await response.json();
             return {

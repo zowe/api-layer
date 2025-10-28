@@ -66,3 +66,5 @@ export function unregisterFromEureka() {
   console.log('\nUnregistering the service from Eureka...');
   client.stop();
 }
+
+export const EurekaClient = Eureka;

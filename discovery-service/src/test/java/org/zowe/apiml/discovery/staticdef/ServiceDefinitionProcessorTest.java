@@ -20,6 +20,9 @@ import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.product.discovery.ServiceOverride;
+import org.zowe.apiml.product.discovery.ServiceOverrideData;
+import org.zowe.apiml.product.discovery.StaticRegistrationResult;
 
 import java.net.URISyntaxException;
 import java.nio.file.Paths;

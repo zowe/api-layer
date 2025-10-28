@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 logging:
     level:
         ROOT: INFO
@@ -30,8 +33,8 @@ server:
 
 eureka:
     client:
-        initialInstanceInfoReplicationIntervalSeconds: 1
-        registryFetchIntervalSeconds: 1
+        instanceInfoReplicationIntervalSeconds: 30
+        registryFetchIntervalSeconds: 30
 zosmf:
     enableMock: true
     username: USER,APIMTST,USER1,USER2
@@ -45,14 +48,18 @@ zss:
     userMapping:
             "[zoweson@zowe.com]": USER
 
+
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: attlsServer
 
 server:
     attls:
         enabled: true
     ssl:
         enabled: false
+
+---
+spring.config.activate.on-profile: attlsClient
 apiml:
     service:
         scheme: http

@@ -1,9 +1,13 @@
 spring.profiles.active: debug,diag
 
+logging:
+    level:
+        web: debug
+
 eureka:
     client:
-        initialInstanceInfoReplicationIntervalSeconds: 1
-        registryFetchIntervalSeconds: 1
+        instanceInfoReplicationIntervalSeconds: 30
+        registryFetchIntervalSeconds: 30
     instance:
         leaseExpirationDurationInSeconds: 6
         leaseRenewalIntervalInSeconds: 1

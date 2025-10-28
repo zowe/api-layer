@@ -58,11 +58,13 @@ configurations.all {
 dependencies {
     api project(':apiml-tomcat-common')
     api project(':onboarding-enabler-spring')
+    api project(':apiml-security-common')
 
     implementation libs.spring.boot.starter.aop
+    implementation libs.spring.boot.starter.webflux
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.actuator
-    implementation libs.spring.doc
+    implementation libs.spring.doc.webflux.ui
     implementation libs.spring.retry
 
     implementation libs.bundles.infinispan
@@ -76,7 +78,7 @@ dependencies {
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.spring.boot.starter
     testImplementation libs.rest.assured
-
+    testImplementation libs.reactor.test
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

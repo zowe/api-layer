@@ -25,7 +25,7 @@ configurations.all {
 dependencies {
     testImplementation project(':apiml-security-common')
     testImplementation project(':zaas-client')
-    testImplementation group: 'org.springframework.graphql', name: 'spring-graphql-test', version: '1.4.0'
+    testImplementation group: 'org.springframework.graphql', name: 'spring-graphql-test', version: '1.4.1'
 
 
     testImplementation libs.spring.boot.starter.actuator
@@ -123,7 +123,7 @@ task runLocalIntegrationTests(type: Test) {
             'AdditionalLocalTest',
             'HATest',
             'ChaoticHATest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'MultipleRegistrationsTest'
         )
     }
@@ -145,7 +145,7 @@ task runAllIntegrationTestsNormal(type: Test) {
             'HATest',
             'ChaoticHATest',
             'NotAttlsTest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'MultipleRegistrationsTest'
         )
 
@@ -193,12 +193,13 @@ task runAllIntegrationTestsForZoweNonHaTestingOnZos(type: Test) {
             'DiscoverableClientDependentTest',
             'HATest',
             'ChaoticHATest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'MultipleRegistrationsTest',
             'NotForMainframeTest',
             'ApiCatalogStandaloneTest',
             'SAFProviderTest',
             'GatewayProxyTest',
+            'GatewayCentralRegistry',
             'SafIdTokenTest'
         )
     }
@@ -234,15 +235,110 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
             'AdditionalLocalTest',
             'TestsNotMeantForZowe',
             'DiscoverableClientDependentTest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'MultipleRegistrationsTest',
             'NotForMainframeTest',
             'ApiCatalogStandaloneTest',
             'SAFProviderTest',
             'GatewayProxyTest',
+            'GatewayCentralRegistry',
             'SafIdTokenTest',
             'ChaoticHATest',
             'GraphQLTest'
+        )
+    }
+
+    debugOptions {
+        port = 5005
+        suspend = true
+        server = true
+    }
+
+    outputs.upToDateWhen { false }
+    outputs.cacheIf { false }
+}
+
+task runAllIntegrationTestsForZoweModulithNonHaTestingOnZos(type: Test) {
+    // This task is intended to run on z/OS systems with some limitations:
+    // Only 1 Gateway (Non-HA mode)
+    // z/OSMF Authentication provider only
+    // No support for SAF ID Tokens
+
+    group "Integration tests"
+    description "Run all integration tests for Zowe Non-HA testing on z/OS with modulith mode (limited)"
+
+    def targetSystem = System.getenv("ZOS_TARGET_SYS") ? "-" + System.getenv("ZOS_TARGET_SYS") : ""
+    systemProperty "environment.config", targetSystem
+    systemProperty "environment.zos.target", "true"
+    systemProperty "environment.modulith", "true"
+    systemProperties System.properties
+    systemProperties.remove('java.endorsed.dirs')
+
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'AdditionalLocalTest',
+            'TestsNotMeantForZowe',
+            'DiscoverableClientDependentTest',
+            'HATest',
+            'ChaoticHATest',
+            'OidcOauth2Test',
+            'MultipleRegistrationsTest',
+            'NotForMainframeTest',
+            'ApiCatalogStandaloneTest',
+            'SAFProviderTest',
+            'GatewayProxyTest',
+            'GatewayCentralRegistry',
+            'SafIdTokenTest',
+            'ZaasTest', // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
+            'NonModulithTest'
+        )
+    }
+
+    debugOptions {
+        port = 5005
+        suspend = true
+        server = true
+    }
+    outputs.upToDateWhen { false }
+}
+
+task runAllIntegrationTestsForZoweModulithHaTestingOnZos(type: Test) {
+    // This task is intended to run on z/OS systems with some limitations:
+    // More than 1 Gateway (HA mode)
+    // z/OSMF Authentication provider only
+    // No support for SAF ID Tokens
+
+    group "Integration tests"
+    description "Run all integration tests for Zowe HA testing on z/OS with modulith mode (limited)"
+
+    def targetSystem = System.getenv("ZOS_TARGET_SYS") ? "-" + System.getenv("ZOS_TARGET_SYS") : ""
+    systemProperty "environment.config", targetSystem
+    systemProperty "environment.zos.target", "true"
+    systemProperty "environment.ha", true
+    systemProperty "environment.modulith", true
+    systemProperties System.properties
+    systemProperties.remove('java.endorsed.dirs')
+
+    useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'AdditionalLocalTest',
+            'TestsNotMeantForZowe',
+            'DiscoverableClientDependentTest',
+            'OidcOauth2Test',
+            'MultipleRegistrationsTest',
+            'NotForMainframeTest',
+            'ApiCatalogStandaloneTest',
+            'SAFProviderTest',
+            'GatewayProxyTest',
+            'GatewayCentralRegistry',
+            'SafIdTokenTest',
+            'ChaoticHATest',
+            'GraphQLTest',
+            'ZaasTest' // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
         )
     }
 
@@ -271,7 +367,7 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
             'DiscoverableClientDependentTest',
             'HATest',
             'ChaoticHATest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'MultipleRegistrationsTest',
             'NotForMainframeTest'
         )
@@ -301,7 +397,7 @@ task runCITests(type: Test) {
             'DeterministicLbHaTest',
             'StickySessionLbHaTest',
             'ChaoticHATest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'MultipleRegistrationsTest'
         )
     }
@@ -330,19 +426,20 @@ task runContainerModulithTests(type: Test) {
             'HATest',
             'ChaoticHATest',
             'InfinispanStorageTest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'GatewayProxyTest',
             'GatewayServiceRouting',
             'GatewayCentralRegistry',
             'ZaasTest',
-            'ApiCatalogStandaloneTest'
+            'ApiCatalogStandaloneTest',
+            'NonModulithTest'
         )
     }
 }
 
 task runContainerTests(type: Test) {
     group "Integration tests"
-    description "Run only tests without long tests"
+    description "Run only tests without long tests. These tests run in Github Actions CITests workflow"
 
     outputs.cacheIf { false }
     def envConfig = System.getenv("ENV_CONFIG") ? System.getenv("ENV_CONFIG") : "docker"
@@ -364,12 +461,27 @@ task runContainerTests(type: Test) {
             'HATest',
             'ChaoticHATest',
             'InfinispanStorageTest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'GatewayProxyTest',
             'GatewayServiceRouting',
             'GatewayCentralRegistry',
-            'ZaasTest',
-            'SAFAuthResourceCheckTest'
+            'ZaasTest'
+        )
+    }
+}
+
+task runContainerSAFProviderTests(type: Test) {
+    group "Integration tests"
+    description "Run only tests that verify SAF (non z/OSMF) authentication scenarios"
+
+    outputs.cacheIf { false }
+    def envConfig = System.getenv("ENV_CONFIG") ? System.getenv("ENV_CONFIG") : "docker"
+    systemProperty "environment.config", "-$envConfig"
+
+    systemProperties System.properties
+    useJUnitPlatform {
+        includeTags(
+            'SAFProviderTest'
         )
     }
 }
@@ -399,7 +511,7 @@ task runBaseTests(type: Test) {
             'HATest',
             'ChaoticHATest',
             'InfinispanStorageTest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'GatewayProxyTest',
             'GatewayServiceRouting',
             'GatewayCentralRegistry',
@@ -431,24 +543,12 @@ task runGatewayProxyTest(type: Test) {
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'GatewayProxyTest'
-        )
-    }
-}
-
-task runGatewayServiceRoutingTest(type: Test) {
-    group "integration tests"
-    description "Run tests verifying central gateway can locate service and translate auth scheme"
-
-    outputs.cacheIf { false }
-
-    systemProperties System.getProperties()
-    useJUnitPlatform {
-        includeTags(
+            'GatewayProxyTest',
             'GatewayServiceRouting'
         )
     }
 }
+
 
 task runGatewayCentralRegistryTest(type: Test) {
     group "integration tests"
@@ -460,20 +560,6 @@ task runGatewayCentralRegistryTest(type: Test) {
     useJUnitPlatform {
         includeTags(
             'GatewayCentralRegistry'
-        )
-    }
-}
-
-task runOidcTests(type: Test) {
-    group "integration tests"
-    description "Run tests verifying integration with oauth2 provider(okta)"
-
-    outputs.cacheIf { false }
-
-    systemProperties System.getProperties()
-    useJUnitPlatform {
-        includeTags(
-            'OktaOauth2Test'
         )
     }
 }
@@ -518,7 +604,8 @@ task runZaasTest(type: Test) {
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'ZaasTest'
+            'ZaasTest',
+            'OidcOauth2Test'
         )
     }
 }
@@ -551,6 +638,24 @@ task runInfinispanServiceTests(type: Test) {
         includeTags(
             'CachingServiceTest',
             'InfinispanStorageTest'
+        )
+    }
+}
+
+task runModulithInfinispanServiceTests(type: Test) {
+    group "integration tests"
+    description "Run APIML(modulith) with infinispan storage tests"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'CachingServiceTest',
+            'InfinispanStorageTest'
+        )
+        excludeTags(
+            'NonModulithTest'
         )
     }
 }

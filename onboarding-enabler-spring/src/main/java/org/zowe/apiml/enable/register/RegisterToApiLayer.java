@@ -10,20 +10,19 @@
 
 package org.zowe.apiml.enable.register;
 
-import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
-import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
-
-import org.zowe.apiml.exception.ServiceDefinitionException;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-
-import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
+import org.zowe.apiml.exception.ServiceDefinitionException;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 
 
 @Slf4j
@@ -40,20 +39,25 @@ public class RegisterToApiLayer {
     private final ApiMediationClient apiMediationClient;
 
     private final ApiMediationServiceConfig newConfig;
-    private ApiMediationServiceConfig  config;
+    private ApiMediationServiceConfig config;
 
     @Value("${apiml.enabled:true}")
     private boolean apimlEnabled;
 
-    @InjectApimlLogger
-    private final ApimlLogger logger = ApimlLogger.empty();
+    private static final MessageService messages = new YamlMessageService();
+    private static final ApimlLogger logger;
+
+    static {
+        messages.loadMessages("/onboarding-enabler-spring-messages.yml");
+        logger = new ApimlLogger(RegisterToApiLayer.class, messages);
+    }
 
     @EventListener(ContextRefreshedEvent.class)
     public void onContextRefreshedEventEvent() {
         if (apimlEnabled) {
             if (apiMediationClient.getEurekaClient() != null) {
                 if (config != null) {
-                    logger.log( "org.zowe.apiml.enabler.registration.renew"
+                    logger.log("org.zowe.apiml.enabler.registration.renew"
                         , config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls()
                         , newConfig.getBaseUrl(), newConfig.getServiceIpAddress(), newConfig.getDiscoveryServiceUrls()
                     );

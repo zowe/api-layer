@@ -103,4 +103,18 @@ class HttpUtilsTest {
         assertTrue(cookie.isSecure());
     }
 
+    @Test
+    void testCreateResponseCookieRemoval() { // test defaults
+        when(authProperties.getCookieProperties()).thenReturn(new CookieProperties());
+        httpUtils.readConfig();
+        ResponseCookie cookie = httpUtils.createResponseCookieRemoval();
+        assertEquals("apimlAuthenticationToken", cookie.getName());
+        assertEquals("", cookie.getValue());
+        assertEquals("/", cookie.getPath());
+        assertEquals("Strict", cookie.getSameSite());
+        assertEquals(0, cookie.getMaxAge().getSeconds());
+        assertTrue(cookie.isHttpOnly());
+        assertTrue(cookie.isSecure());
+    }
+
 }

@@ -1,6 +1,6 @@
 {
   "name": "@zowe/apiml-onboarding-enabler-nodejs",
-  "version": "3.2.2",
+  "version": "3.2.3",
   "description": "NodeJS enabler for Zowe API Mediation Layer",
   "type": "module",
   "main": "src/index.js",
@@ -27,12 +27,12 @@
     "babel-core": "6.26.3",
     "babel-istanbul": "0.12.2",
     "babel-preset-env": "1.7.0",
-    "chai": "5.2.0",
+    "chai": "5.3.3",
     "coveralls": "3.1.1",
     "eslint": "2.13.1",
     "eslint-config-airbnb-base": "3.0.1",
     "eslint-plugin-import": "1.16.0",
-    "gulp": "5.0.0",
+    "gulp": "5.0.1",
     "gulp-babel": "7.0.1",
     "gulp-env": "0.4.0",
     "gulp-eslint": "6.0.0",
@@ -40,7 +40,7 @@
     "gulp-mocha": "10.0.1",
     "nock": "13.5.6",
     "sinon": "19.0.5",
-    "sinon-chai": "4.0.0"
+    "sinon-chai": "4.0.1"
   },
   "greenkeeper": {
     "ignore": [
@@ -52,7 +52,7 @@
     ]
   },
   "engines": {
-    "npm": "=10.9.2",
-    "node": "=20.19.2"
+    "npm": ">=10.9.2",
+    "node": ">=20.19.2"
   }
 }

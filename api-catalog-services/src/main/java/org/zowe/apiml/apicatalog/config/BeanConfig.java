@@ -10,9 +10,12 @@
 
 package org.zowe.apiml.apicatalog.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.gateway.GatewayClient;
@@ -21,11 +24,12 @@ import org.zowe.apiml.product.routing.transform.TransformService;
 /**
  * General configuration of the API Catalog.
  */
-@Configuration
+@Configuration("catalogBeanConfig")
 public class BeanConfig {
 
     @Bean
     @Primary
+    @ConditionalOnMissingBean(name = "modulithConfig")
     public MessageService messageServiceCatalog() {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/security-client-log-messages.yml");
@@ -37,8 +41,15 @@ public class BeanConfig {
     }
 
     @Bean
+    @Lazy
     public TransformService transformService(GatewayClient gatewayClient) {
         return new TransformService(gatewayClient);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ApplicationInfo applicationInfo() {
+        return ApplicationInfo.builder().isModulith(false).build();
     }
 
 }

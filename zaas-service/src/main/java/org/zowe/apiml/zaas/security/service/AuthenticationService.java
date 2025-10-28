@@ -25,6 +25,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -63,6 +64,7 @@ import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.
 @RequiredArgsConstructor
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @EnableAspectJAutoProxy(proxyTargetClass = true)
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class AuthenticationService {
 
     public static final String LTPA_CLAIM_NAME = "ltpa";
@@ -129,7 +131,8 @@ public class AuthenticationService {
             .signWith(jwtSecurityInitializer.getJwtSecret(), jwtSecurityInitializer.getSignatureAlgorithm()).compact();
     }
 
-    @SuppressWarnings("java:S5659") // It is checking the signature securely - https://github.com/zowe/api-layer/issues/3191
+    @SuppressWarnings("java:S5659")
+    // It is checking the signature securely - https://github.com/zowe/api-layer/issues/3191
     public QueryResponse parseJwtWithSignature(String jwt) throws SignatureException {
         try {
             Jwt<JwsHeader, Claims> parsedJwt = (Jwt<JwsHeader, Claims>) Jwts.parser()
@@ -147,6 +150,8 @@ public class AuthenticationService {
      * Method will invalidate jwtToken. It could be called from two reasons:
      * - on logout phase (distribute = true)
      * - from another ZAAS instance to notify about change (distribute = false)
+     * <p>
+     * Note: This method should not be called from modulith-mode
      *
      * @param jwtToken   token to invalidate
      * @param distribute distribute invalidation to another instances?
@@ -213,18 +218,29 @@ public class AuthenticationService {
         return invalidate(jwtToken, distribute, app);
     }
 
-    private boolean invalidateTokenOnAnotherInstance(String jwtToken, Application application) {
+    /**
+     * Obtain URL to use to invalidate a JWT
+     *
+     * @param instanceInfo Registration data for the authentication service used
+     * @param jwtToken     JWT token to invalidate
+     * @return
+     */
+    protected String getInvalidateUrl(InstanceInfo instanceInfo, String jwtToken) {
+        return EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/" + jwtToken;
+    }
 
-        // wrong state, ZAAS have to exists (at least this current instance), return false like unsuccessful
+    private boolean invalidateTokenOnAnotherInstance(String jwtToken, Application application) {
         if (application == null) {
             return Boolean.FALSE;
         }
 
         final String myInstanceId = eurekaClient.getApplicationInfoManager().getInfo().getInstanceId();
         for (final InstanceInfo instanceInfo : application.getInstances()) {
-            if (StringUtils.equals(myInstanceId, instanceInfo.getInstanceId())) continue;
+            if (StringUtils.equals(myInstanceId, instanceInfo.getInstanceId())) {
+                continue;
+            }
 
-            final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/" + jwtToken;
+            final String url = getInvalidateUrl(instanceInfo, jwtToken);
             try {
                 restTemplate.delete(url);
             } catch (HttpClientErrorException e) {
@@ -278,19 +294,14 @@ public class AuthenticationService {
     @Cacheable(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken", condition = "#jwtToken != null")
     public TokenAuthentication validateJwtToken(String jwtToken) {
         QueryResponse queryResponse = parseJwtToken(jwtToken);
-        boolean isValid;
-        switch (queryResponse.getSource()) {
-            case ZOWE:
+        boolean isValid = switch (queryResponse.getSource()) {
+            case ZOWE -> {
                 validateAndParseLocalJwtToken(jwtToken);
-                isValid = true;
-                break;
-            case ZOSMF:
-                isValid = zosmfService.validate(jwtToken);
-                break;
-            default:
-                throw new TokenNotValidException("Unknown token type.");
-        }
-
+                yield true;
+            }
+            case ZOSMF -> zosmfService.validate(jwtToken);
+            default -> throw new TokenNotValidException("Unknown token type.");
+        };
         TokenAuthentication tokenAuthentication = new TokenAuthentication(queryResponse.getUserId(), jwtToken, TokenAuthentication.Type.JWT);
         // without a proxy cache aspect is not working, thus it is necessary get bean from application context
         final boolean authenticated = !meAsProxy.isInvalidated(jwtToken);
@@ -320,18 +331,21 @@ public class AuthenticationService {
      * This method get all invalidated JWT token in the cache and distributes them to instance of ZAAS with name
      * in argument toInstanceId. If instance cannot be find it return false. A notification can throw an runtime
      * exception. In all other cases all invalidated token are distributed and method returns true.
+     * <p>
+     * Node: This method should not be used in modulith-mode
      *
      * @param toInstanceId instanceId of ZAAS where invalidated JWT token should be sent
      * @return true if all token were sent, otherwise false
      */
     public boolean distributeInvalidate(String toInstanceId) {
-        final Application application = eurekaClient.getApplication(CoreService.ZAAS.getServiceId());
-        if (application == null) return false;
+        var zaas = eurekaClient.getApplication(CoreService.ZAAS.getServiceId());
 
-        final InstanceInfo instanceInfo = application.getByInstanceId(toInstanceId);
+        if (zaas == null) return false;
+
+        final InstanceInfo instanceInfo = zaas.getByInstanceId(toInstanceId);
         if (instanceInfo == null) return false;
 
-        final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/{}";
+        var url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/{}";
 
         final Collection<String> invalidated = cacheUtils.getAllRecords(cacheManager, CACHE_INVALIDATED_JWT_TOKENS);
         for (final String invalidatedToken : invalidated) {
@@ -388,6 +402,7 @@ public class AuthenticationService {
 
     /**
      * This method resolves the token origin directly by decoding token claims.
+     *
      * @param jwtToken the JWT token
      * @return AuthSource.Origin value based on the iss token claim.
      */

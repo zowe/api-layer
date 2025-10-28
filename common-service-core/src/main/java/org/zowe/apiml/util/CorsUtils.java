@@ -10,9 +10,8 @@
 
 package org.zowe.apiml.util;
 
-import lombok.RequiredArgsConstructor;
+import lombok.NonNull;
 import org.apache.logging.log4j.util.TriConsumer;
-import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Arrays;
@@ -22,20 +21,16 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
-@RequiredArgsConstructor
 public class CorsUtils {
-    private static final List<String> allowedCorsHttpMethods;
+    private final List<String> allowedCorsHttpMethods;
     private final boolean corsEnabled;
-    private final List<String> allowedOrigins;
     private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes\\.[^.]*\\.gateway\\S*");
+    private final List<String> corsAllowedEndpoints;
 
-    private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/*/*/gateway/**", "/gateway/*/*/**", "/gateway/version");
-
-    static {
-        allowedCorsHttpMethods = Collections.unmodifiableList(Arrays.asList(
-            HttpMethod.GET.name(), HttpMethod.HEAD.name(), HttpMethod.POST.name(),
-            HttpMethod.DELETE.name(), HttpMethod.PUT.name(), HttpMethod.OPTIONS.name()
-        ));
+    public CorsUtils(boolean corsEnabled, List<String> corsAllowedMethods, @NonNull List<String> allowedEndpoints) {
+        this.corsEnabled = corsEnabled;
+        this.allowedCorsHttpMethods = corsAllowedMethods;
+        this.corsAllowedEndpoints = allowedEndpoints;
     }
 
     public boolean isCorsEnabledForService(Map<String, String> metadata) {
@@ -69,8 +64,6 @@ public class CorsUtils {
             config.setAllowCredentials(true);
             config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
             config.setAllowedMethods(allowedCorsHttpMethods);
-        } else {
-            config.setAllowedOrigins(allowedOrigins);
         }
         return config;
     }
@@ -79,13 +72,12 @@ public class CorsUtils {
         final CorsConfiguration config = new CorsConfiguration();
         List<String> pathsToEnable;
 
-        config.setAllowedOrigins(allowedOrigins);
         if (corsEnabled) {
             config.setAllowCredentials(true);
             config.addAllowedOriginPattern(CorsConfiguration.ALL); //NOSONAR this is a replication of existing code
             config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
             config.setAllowedMethods(allowedCorsHttpMethods);
-            pathsToEnable = CORS_ENABLED_ENDPOINTS;
+            pathsToEnable = corsAllowedEndpoints;
         } else {
             pathsToEnable = Collections.singletonList("/**");
         }

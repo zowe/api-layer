@@ -1,0 +1,73 @@
+spring.profiles.active: debug
+logging:
+    level:
+        org.springframework.web.socket.client.standard.AnnotatedEndpointConnectionManager: DEBUG
+        org.springframework.web.reactive.socket.client.StandardWebSocketClient: TRACE
+        com.netflix.eureka: DEBUG
+        com.netflix.discovery.DiscoveryClient: DEBUG
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: DEBUG
+        # org.apache.tomcat.websocket.WsWebSocketContainer: TRACE
+        # org.apache.tomcat: DEBUG
+        # org.apache.coyote: DEBUG
+
+server:
+    max-http-request-header-size: 16348
+    webSocket:
+        requestBufferSize: 16348
+    ssl:
+        clientAuth: want
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        keyStoreType: PKCS12
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
+        trustStoreType: PKCS12
+
+apiml:
+    cache:
+        storage:
+            location: /tmp
+    service:
+        discoveryServiceUrls: https://localhost:10011/eureka,https://localhost:10021/eureka
+    internal-discovery:
+        port: 10011
+    health:
+        protected: false
+    gateway:
+        servicesToLimitRequestRate: discoverableclient
+        cookieNameForRateLimiter: apimlAuthenticationToken
+    discovery:
+        allPeersUrls: https://localhost:10011/eureka,https://localhost:10021/eureka
+    security:
+        # ssl:
+        #     verifySslCertificatesOfServices: false
+        x509:
+            enabled: true
+            certificatesUrl: https://localhost:10010/gateway/certificates
+        allowTokenRefresh: true
+        webfinger:
+            fileLocation: config/local/webfinger.yml
+        personalAccessToken:
+            enabled: true
+        oidc:
+            enabled: false
+            clientId:
+            clientSecret:
+            registry: zowe.okta.com
+            identityMapperUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/zss/api/v1/certificate/dn
+            identityMapperUser: APIMTST
+            jwks:
+                uri:
+        auth:
+            jwt:
+                customAuthHeader: customJwtHeader
+            passticket:
+                customUserHeader: customUserHeader
+                customAuthHeader: customPassticketHeader
+            provider: dummy
+            zosmf:
+                serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
+
+

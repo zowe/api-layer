@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Controller;
@@ -34,6 +35,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 @Tag(name = "Home page")
 @RequiredArgsConstructor
 @Controller
+@ConditionalOnMissingBean(name = "modulithConfig")
 public class GatewayHomepageController {
 
     private static final String SUCCESS_ICON_NAME = "success";
@@ -154,9 +156,13 @@ public class GatewayHomepageController {
     }
 
     private String getCatalogLink(ServiceInstance catalogInstance) {
-        String gatewayUrl = catalogInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_GATEWAY_URL));
-        String serviceUrl = catalogInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_SERVICE_URL));
-        return serviceUrl + gatewayUrl;
+        if (applicationInfo.isModulith()) {
+            return "/apicatalog/ui/v1";
+        } else {
+            String gatewayUrl = catalogInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_GATEWAY_URL));
+            String serviceUrl = catalogInstance.getMetadata().get(String.format(UI_V1_ROUTE, ROUTES, ROUTES_SERVICE_URL));
+            return serviceUrl + gatewayUrl;
+        }
     }
 
 }

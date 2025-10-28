@@ -10,22 +10,31 @@
 
 package org.zowe.apiml.client;
 
+import org.springframework.context.annotation.Import;
 import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 import org.zowe.apiml.product.version.BuildInfo;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
+import org.zowe.apiml.product.web.TomcatAcceptFixConfig;
+import org.zowe.apiml.product.web.TomcatKeyringFix;
 
 @SpringBootApplication
 @EnableApiDiscovery
 @EnableWebSocket
 @EnableApimlLogger
+@RequiredArgsConstructor
+@Import({TomcatKeyringFix.class, TomcatAcceptFixConfig.class, ApimlTomcatCustomizer.class})
 public class DiscoverableClientSampleApplication implements ApplicationListener<ApplicationReadyEvent> {
+
+    private final ServiceStartupEventHandler handler;
 
     public static void main(String[] args) {
         SpringApplication app = new SpringApplication(DiscoverableClientSampleApplication.class);
@@ -37,7 +46,7 @@ public class DiscoverableClientSampleApplication implements ApplicationListener<
 
     @Override
     public void onApplicationEvent(final ApplicationReadyEvent event) {
-        new ServiceStartupEventHandler().onServiceStartup("Discoverable Client Service",
+        handler.onServiceStartup("Discoverable Client Service",
                 ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
 }

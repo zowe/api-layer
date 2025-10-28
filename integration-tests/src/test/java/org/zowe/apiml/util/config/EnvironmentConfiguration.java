@@ -34,7 +34,6 @@ public class EnvironmentConfiguration {
     private ZosmfServiceConfiguration zosmfServiceConfiguration;
     private AuxiliaryUserList auxiliaryUserList;
     private Map<String, String> instanceEnv;
-    private IDPConfiguration idpConfiguration;
-    private SafIdtConfiguration safIdtConfiguration;
     private OidcConfiguration oidcConfiguration;
+    private SafIdtConfiguration safIdtConfiguration;
 }

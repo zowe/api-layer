@@ -41,14 +41,16 @@ public class ResourceAccessExceptionHandler extends AbstractExceptionHandler {
      * @throws RuntimeException Fallback exception if exception cannot be handled
      */
     @Override
-    public void handleException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, RuntimeException ex) {
+    public void handleException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, BiConsumer<String, String> addHeader, Exception ex) {
         ErrorType errorType;
         if (ex instanceof GatewayNotAvailableException) {
             errorType = ErrorType.GATEWAY_NOT_AVAILABLE;
         } else if (ex instanceof ServiceNotAccessibleException) {
             errorType = ErrorType.SERVICE_UNAVAILABLE;
+        } else if (ex instanceof RuntimeException re) {
+            throw re;
         } else {
-            throw ex;
+            throw new RuntimeException(ex);
         }
 
         log.debug(MESSAGE_FORMAT, HttpStatus.SERVICE_UNAVAILABLE.value(), ex.getMessage());

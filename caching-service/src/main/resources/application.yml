@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 caching:
     storage:
         mode: inMemory
@@ -30,7 +33,8 @@ logging:
         org.springdoc: WARN
         org.springframework: WARN
         org.springframework.boot: OFF
-        org.jgroups.protocols: ERROR
+        org.infinispan: ERROR
+        org.jgroups: ERROR
         com.netflix: WARN
         com.netflix.discovery: ERROR
         com.netflix.config: ERROR
@@ -44,8 +48,8 @@ logging:
 
 eureka:
     client:
-        initialInstanceInfoReplicationIntervalSeconds: 1
-        registryFetchIntervalSeconds: 1
+        instanceInfoReplicationIntervalSeconds: 30
+        registryFetchIntervalSeconds: 30
 apiml:
     enabled: true
     service:
@@ -115,23 +119,19 @@ spring:
             enabled: false
     application:
         name: Caching service
-    mvc:
-        pathmatch:
-            matchingStrategy: ant-path-matcher # used to resolve spring fox path matching issue
     output.ansi.enabled: always
     main:
         allow-circular-references: true
         banner-mode: ${apiml.banner:"off"}
-        web-application-type: servlet
-
+        web-application-type: reactive
+        allow-bean-definition-overriding: true
 springdoc:
     pathsToMatch: /api/v1/**
+    api-docs:
+        path: /cachingservice/v3/api-docs
 
 server:
     port: ${apiml.service.port}
-
-    servlet:
-        contextPath: /${apiml.service.serviceId}
 
     ssl:
         enabled: true
@@ -153,7 +153,7 @@ management:
     endpoints:
         migrate-legacy-ids: true
         web:
-            base-path: /application
+            base-path: /cachingservice/application
             exposure:
                 include: health,info
     health:
@@ -179,7 +179,7 @@ logging:
         org.springframework.web.servlet.PageNotFound: WARN
         org.ehcache: INFO
         org.apache.tomcat.util.net: DEBUG
-        org.springframework.security.web: INFO
+        org.springframework.security.web: DEBUG
         javax.net.ssl: ERROR
 
 spring.config.activate.on-profile: dev
@@ -187,13 +187,20 @@ spring.config.activate.on-profile: dev
 logbackServiceName: ZWEACS1
 
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
+
+---
+spring.config.activate.on-profile: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
 
 apiml:
     service:

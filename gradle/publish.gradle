@@ -1,7 +1,8 @@
 ext.enablers = [
     'onboarding-enabler-spring',
-    'onboarding-enabler-java'
+    'onboarding-enabler-java',
     //'onboarding-enabler-micronaut'
+    'zaas-client',
 ]
 
 ext.javaLibraries = [
@@ -12,7 +13,6 @@ ext.javaLibraries = [
     'certificate-analyser',
     'common-service-core',
     'security-service-client-spring',
-    'zaas-client',
     'apiml-sample-extension',
     'apiml-sample-extension-package',
     'apiml-extension-loader'
@@ -34,10 +34,9 @@ ext.servicesToPublish = [
     'gateway-package'
 ]
 
-ext.sdksToPublish = ext.enablers + ext.javaLibraries
-ext.projectsToPublish = ext.servicesToPublish + ext.sdksToPublish
+ext.zoweComponentsToPublish = ext.servicesToPublish + ext.javaLibraries
 
-configure(subprojects.findAll { it.name in projectsToPublish }) {
+configure(subprojects.findAll { it.name in zoweComponentsToPublish }) {
     apply plugin: 'maven-publish'
     apply plugin: 'java'
 
@@ -69,7 +68,88 @@ configure(subprojects.findAll { it.name in projectsToPublish }) {
     }
 }
 
-configure(subprojects.findAll { it.name in sdksToPublish }) {
+//1. Define properties for enablers
+def enablerProps = new Properties()
+def enablerPropsFile = new File(rootProject.projectDir, "enabler.properties")
+
+//2. Load the file if it exists
+if (enablerPropsFile.exists()) {
+    enablerPropsFile.withInputStream { stream ->
+        enablerProps.load(stream)
+    }
+}
+
+//3. Get the version, or use the rootProject.version as a fallback
+def sdkVersion = enablerProps.getProperty("version")
+
+configure(subprojects.findAll { it.name in enablers }) {
+    apply plugin: 'maven-publish'
+    apply plugin: 'java'
+
+    publishing {
+        repositories.maven {
+            credentials {
+                username project.hasProperty("zowe.deploy.username") ? project.getProperty("zowe.deploy.username") : ""
+                password project.hasProperty("zowe.deploy.password") ? project.getProperty("zowe.deploy.password") : ""
+            }
+            if (sdkVersion.endsWith("-SNAPSHOT")) {
+                setUrl(artifactoryPublishingMavenSnapshotRepo)
+            } else {
+                setUrl(artifactoryPublishingMavenRepo)
+            }
+        }
+
+        publications {
+            mavenJava(MavenPublication) {
+                pom {
+                    licenses {
+                        license {
+                            name = 'Eclipse Public License, v2.0'
+                            url = 'https://www.eclipse.org/legal/epl-2.0/'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+configure(subprojects.findAll { it.name in enablers }) {
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                groupId 'org.zowe.apiml.sdk'
+                version sdkVersion
+                artifactId "${project.name}"
+
+                from components.java
+
+                pom.withXml {
+                    asNode().dependencies.'*'.findAll() {
+                        it.scope.text() == 'runtime' && project.configurations.implementation.allDependencies.find { dep ->
+                            dep.name == it.artifactId.text()
+                        }
+                    }.each { it.scope*.value = 'compile' }
+                }
+            }
+        }
+    }
+
+    tasks.withType(Jar) {
+        manifest {
+            attributes "Specification-Title": project.name
+            attributes "Specification-Version": sdkVersion
+            attributes "Specification-Vendor": "Zowe org"
+
+            attributes "Implementation-Title": project.name
+            attributes "Implementation-Version": sdkVersion
+            attributes "Implementation-Vendor": "Zowe org"
+            attributes "Implementation-Vendor-Id": "org.zowe.apiml.sdk"
+        }
+    }
+
+}
+configure(subprojects.findAll { it.name in javaLibraries }) {
     publishing {
         publications {
             mavenJava(MavenPublication) {
@@ -133,17 +213,32 @@ configure(subprojects.findAll { it.name in servicesToPublish }) {
 
 }
 
-ext.publishTasksList = projectsToPublish.collect {
+ext.publishZoweServerTasksList = zoweComponentsToPublish.collect {
     ":" + it + ":publish"
 } + ":platform:publish"
 
+ext.publishTasksList = enablers.collect {
+    ":" + it + ":publish"
+}
+
 //noinspection GroovyAssignabilityCheck
-task publishSdkArtifacts {
+tasks.register('publishZoweServerArtifacts') {
     doLast {
-        println 'Published SDK libraries for main version of Spring Boot to Zowe Artifactory'
+        println 'Published Zowe Server component libraries to Zowe Artifactory'
     }
 
     group 'Zowe Publishing'
-    description 'Publish SDK libraries for main version of Spring Boot to Zowe Artifactory'
+    description 'Publish Zowe Server component libraries to Zowe Artifactory'
+    dependsOn publishZoweServerTasksList
+}
+
+//noinspection GroovyAssignabilityCheck
+tasks.register('publishSDKArtifacts') {
+    doLast {
+        println 'Published SDK libraries to Zowe Artifactory'
+    }
+
+    group 'Zowe Publishing'
+    description 'Publish SDK libraries to Zowe Artifactory'
     dependsOn publishTasksList
 }

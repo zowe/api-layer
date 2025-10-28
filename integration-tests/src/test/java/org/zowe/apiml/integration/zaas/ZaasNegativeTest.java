@@ -26,10 +26,7 @@ import org.zowe.apiml.util.categories.ZaasTest;
 import org.zowe.apiml.util.config.*;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
@@ -141,11 +138,11 @@ public class ZaasNegativeTest {
 
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
-        void givenOKTATokenWithNoMapping(URI uri, RequestSpecification requestSpecification) {
-            String oktaTokenNoMapping = SecurityUtils.validOktaAccessToken(false);
+        void givenOidcTokenWithNoMapping(URI uri, RequestSpecification requestSpecification) {
+            String oidcTokenNoMapping = SecurityUtils.validOidcAccessToken(false);
             //@formatter:off
             requestSpecification
-                .header("Authorization", "Bearer " + oktaTokenNoMapping)
+                .header("Authorization", "Bearer " + oidcTokenNoMapping)
             .when()
                 .post(uri)
             .then()

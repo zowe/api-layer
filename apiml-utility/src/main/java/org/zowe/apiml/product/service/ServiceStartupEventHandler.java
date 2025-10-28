@@ -13,20 +13,33 @@ package org.zowe.apiml.product.service;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
+import lombok.NoArgsConstructor;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
-import org.slf4j.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+@Component
+@NoArgsConstructor
 public class ServiceStartupEventHandler {
+
     public static final int DEFAULT_DELAY_FACTOR = 5;
 
     private final ApimlLogger apimlLog = ApimlLogger.of(ServiceStartupEventHandler.class,
-            YamlMessageServiceInstance.getInstance());
+        YamlMessageServiceInstance.getInstance());
+
+    private final Set<String> registeredServices = ConcurrentHashMap.newKeySet();
 
     @SuppressWarnings("squid:S1172")
     public void onServiceStartup(String serviceName, int delayFactor) {
+        if (registeredServices.contains(serviceName)) {
+            return;
+        }
+        registeredServices.add(serviceName);
         long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
         apimlLog.log("org.zowe.apiml.common.serviceStarted", serviceName, uptime / 1000.0);
 
@@ -43,5 +56,7 @@ public class ServiceStartupEventHandler {
                 }
             }
         }, uptime * delayFactor);
+
     }
+
 }

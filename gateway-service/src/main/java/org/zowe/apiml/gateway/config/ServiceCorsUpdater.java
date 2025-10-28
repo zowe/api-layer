@@ -10,9 +10,9 @@
 
 package org.zowe.apiml.gateway.config;
 
-import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.gateway.config.GlobalCorsProperties;
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent;
@@ -22,13 +22,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.util.pattern.PathPatternParser;
 import org.zowe.apiml.util.CorsUtils;
-import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 
 @Component
 @RequiredArgsConstructor
-public class ServiceCorsUpdater {
+public class ServiceCorsUpdater implements InitializingBean {
 
     private final CorsUtils corsUtils;
     private final ReactiveDiscoveryClient discoveryClient;
@@ -38,8 +38,8 @@ public class ServiceCorsUpdater {
     @Getter
     private UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource;
 
-    @PostConstruct
-    void initCorsConfigurationSource() {
+    @Override
+    public void afterPropertiesSet() throws Exception {
         urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource(new PathPatternParser());
         urlBasedCorsConfigurationSource.setCorsConfigurations(globalCorsProperties.getCorsConfigurations());
         corsUtils.registerDefaultCorsConfiguration(urlBasedCorsConfigurationSource::registerCorsConfiguration);
@@ -47,21 +47,21 @@ public class ServiceCorsUpdater {
     }
 
     @EventListener(RefreshRoutesEvent.class)
-    public void onRefreshRoutesEvent(RefreshRoutesEvent event) {
-        discoveryClient.getServices()
-            .flatMap(service -> discoveryClient.getInstances(service).collectList())
-            .flatMap(Flux::fromIterable)
-            .toIterable()
-            .forEach(serviceInstance ->
-                corsUtils.setCorsConfiguration(
-                    serviceInstance.getServiceId().toLowerCase(),
-                    serviceInstance.getMetadata(),
+    public Mono<Void> onRefreshRoutesEvent(RefreshRoutesEvent event) {
+        return discoveryClient.getServices()
+            .flatMap(discoveryClient::getInstances)
+            .map(instance -> {
+                    corsUtils.setCorsConfiguration(
+                    instance.getServiceId().toLowerCase(),
+                    instance.getMetadata(),
                     (prefix, serviceId, config) -> {
-                        serviceId = serviceInstance.getMetadata().getOrDefault(APIML_ID, serviceInstance.getServiceId().toLowerCase());
+                        serviceId = instance.getMetadata().getOrDefault(APIML_ID, instance.getServiceId().toLowerCase());
                         urlBasedCorsConfigurationSource.registerCorsConfiguration("/" + serviceId + "/**", config);
                     }
-                )
-            );
+                );
+                return instance;
+            }).then();
+
     }
 
 }

@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 logging:
     level:
         ROOT: INFO
@@ -37,8 +40,8 @@ spring:
 
 eureka:
     client:
-        initialInstanceInfoReplicationIntervalSeconds: 1
-        registryFetchIntervalSeconds: 1
+        instanceInfoReplicationIntervalSeconds: 30
+        registryFetchIntervalSeconds: 30
 apiml:
     enabled: true
     service:
@@ -106,7 +109,7 @@ apiml:
             -   apiId: zowe.apiml.discoverableclient.rest
                 version: 2.0.0
                 gatewayUrl: api/v2
-                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs/apiv2
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/docs/redirect
                 documentationUrl: https://www.zowe.org
         catalog:
             tile:
@@ -128,7 +131,10 @@ apiml:
             trustStore: ${server.ssl.trustStore}
             trustStorePassword: ${server.ssl.trustStorePassword}
         customMetadata:
+
             apiml:
+                responseTimeout: 10000
+                connectTimeout: 6500
                 enableUrlEncodedCharacters: true
                 gatewayPort: 10010
                 gatewayAuthEndpoint: /gateway/api/v1/auth
@@ -217,13 +223,26 @@ logging:
 logbackServiceName: ZWEADC1
 
 ---
-spring.config.activate.on-profile: attls
+spring.config.activate.on-profile: attlsServer
+
+server:
+    attlsServer:
+        enabled: true
+    ssl:
+        enabled: false
+
+---
+spring.config.activate.on-profile: attlsClient
 
 apiml:
     service:
         scheme: http
 
 server:
-    ssl:
-        enabled: false
+    attlsClient:
+        enabled: true
 
+eureka:
+    instance:
+        nonSecurePortEnabled: true
+        securePortEnabled: false

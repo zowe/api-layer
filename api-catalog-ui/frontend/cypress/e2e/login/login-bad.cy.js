@@ -7,13 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-/* eslint-disable spaced-comment */
+/* eslint-disable no-undef */
 /// <reference types="Cypress" />
 
 describe('>>> Login bad test', () => {
-
     it('should not display header', () => {
-        cy.visit(`${Cypress.env('catalogHomePage')}/`);
+        cy.visit(`${Cypress.env('catalogHomePage')}/index.html`);
         cy.get('.header').should('not.exist');
     });
 

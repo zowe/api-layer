@@ -14,10 +14,16 @@ import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.LeaseInfo;
 import com.netflix.discovery.CacheRefreshedEvent;
+import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Application;
+import com.netflix.discovery.shared.Applications;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
-import jakarta.annotation.PostConstruct;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.servlet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,31 +31,44 @@ import org.apache.catalina.Context;
 import org.apache.catalina.Host;
 import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
+import org.springframework.boot.web.embedded.tomcat.TomcatProtocolHandlerCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
-import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.TomcatHttpHandlerAdapter;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.context.ServletContextAware;
+import org.zowe.apiml.apicatalog.ApiCatalogServiceAvailableEvent;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
+import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.filter.PreFluxFilter;
+import org.zowe.apiml.gateway.services.ServicesInfoService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.services.BasicInfoService;
+import org.zowe.apiml.services.ServiceInfo;
+import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import reactor.core.publisher.Flux;
 
@@ -58,16 +77,43 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
+import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
+
 @EnableScheduling
 @Configuration
 @RequiredArgsConstructor
 @EnableConfigurationProperties
+@DependsOn(value = {"gatewayHealthIndicator"})
 @Slf4j
-public class ModulithConfig {
+@OpenAPIDefinition(
+    security = {
+        @SecurityRequirement(name = "LoginBasicAuth"),
+        @SecurityRequirement(name = "ClientCert")
+    },
+    info = @Info(title = "API Mediation Layer", description = "The API Mediation Layer REST API.")
+)
+@SecurityScheme(
+    name = "LoginBasicAuth",
+    type = SecuritySchemeType.HTTP,
+    scheme = "basic"
+)
+@SecurityScheme(
+    type = SecuritySchemeType.MUTUALTLS,
+    name = "ClientCert",
+    description = "Client certificate X509"
+)
+public class ModulithConfig implements InitializingBean {
 
     private final ApplicationContext applicationContext;
     private final Map<String, InstanceInfo> instances = new HashMap<>();
     private final GatewayEurekaInstanceConfigBean eurekaInstanceGw;
+    private final CatalogEurekaInstanceConfigBean catalogEurekaInstanceConfigBean;
+    private final EurekaClientConfig eurekaConfig;
+    private final CachingServiceEurekaInstanceConfigBean cachingServiceEurekaInstanceConfigBean;
+    private final ApplicationEventPublisher eventPublisher;
+
+    private final Timer timer = new Timer("PeerReplicated-StaticServices");
 
     @Value("${server.ssl.enabled:true}")
     private boolean https;
@@ -84,35 +130,35 @@ public class ModulithConfig {
     @Bean
     ApplicationInfo applicationInfo() {
         return ApplicationInfo.builder()
-                .isModulith(true)
-                .authServiceId(CoreService.GATEWAY.getServiceId()).build();
+            .isModulith(true)
+            .authServiceId(CoreService.GATEWAY.getServiceId()).build();
     }
 
     private InstanceInfo getInstanceInfo(String serviceId) {
         var leaseInfo = LeaseInfo.Builder.newBuilder()
-            .setDurationInSecs(Integer.MAX_VALUE)
+            .setDurationInSecs(90)
             .setRegistrationTimestamp(System.currentTimeMillis())
             .setRenewalTimestamp(System.currentTimeMillis())
-            .setRenewalIntervalInSecs(Integer.MAX_VALUE)
+            .setRenewalIntervalInSecs(30)
             .setServiceUpTimestamp(System.currentTimeMillis())
             .build();
 
         var scheme = https ? "https" : "http";
 
-        Map<String, String> metadata = new HashMap<>();
-        switch (serviceId) {
-            case "gateway":
-                metadata = eurekaInstanceGw.getMetadataMap();
-                metadata.put("management.port", "10010");
-                break;
-            default:
-        }
+        Map<String, String> metadata = switch (serviceId) {
+            case "gateway" -> eurekaInstanceGw.getMetadataMap();
+            case "cachingservice" -> cachingServiceEurekaInstanceConfigBean.getMetadataMap();
+            case "apicatalog" -> catalogEurekaInstanceConfigBean.getMetadataMap();
+            default -> new HashMap<>();
+        };
+
+        String homePagePath = metadata.getOrDefault("apiml.homePagePath", "/");
 
         return InstanceInfo.Builder.newBuilder()
             .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
             .setAppName(serviceId)
             .setHostName(hostname)
-            .setHomePageUrl(null, String.format("%s://%s:%d", scheme, hostname, port))
+            .setHomePageUrl(null, String.format("%s://%s:%d%s", scheme, hostname, port, homePagePath))
             .setStatus(InstanceInfo.InstanceStatus.UP)
             .setIPAddr(ipAddress)
             .setPort(port)
@@ -128,7 +174,7 @@ public class ModulithConfig {
             .build();
     }
 
-    private ApimlInstanceRegistry getRegistry() {
+    static ApimlInstanceRegistry getRegistry() {
         return Optional.ofNullable(EurekaServerContextHolder.getInstance())
             .map(EurekaServerContextHolder::getServerContext)
             .map(EurekaServerContext::getRegistry)
@@ -136,24 +182,52 @@ public class ModulithConfig {
             .orElse(null);
     }
 
-    @PostConstruct
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        createLocalInstances();
+    }
+
     void createLocalInstances() {
         instances.put(CoreService.GATEWAY.getServiceId(), getInstanceInfo(CoreService.GATEWAY.getServiceId()));
         instances.put(CoreService.DISCOVERY.getServiceId(), getInstanceInfo(CoreService.DISCOVERY.getServiceId()));
+        instances.put(CoreService.CACHING.getServiceId(), getInstanceInfo(CoreService.CACHING.getServiceId()));
+        instances.put(CoreService.API_CATALOG.getServiceId(), getInstanceInfo(CoreService.API_CATALOG.getServiceId()));
         EurekaServerContextHolder.initialize(applicationContext.getBean(EurekaServerContext.class));
+
+        ApimlInstanceRegistry registry = getRegistry();
+        instances.forEach((key, value) -> registry.registerStatically(instances.get(key), false, CoreService.GATEWAY.getServiceId().equalsIgnoreCase(key)));
     }
 
-    @EventListener
-    public void onApplicationEvent(EurekaRegistryAvailableEvent event) {
-        ApimlInstanceRegistry registry = getRegistry();
-        instances.forEach((key, value) -> registry.registerStatically(instances.get(key), CoreService.GATEWAY.getServiceId().equals(key)));
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationStart() {
+        log.info("Initialize timer for static services peer-replicated heartbeats");
+        eventPublisher.publishEvent(new ApiCatalogServiceAvailableEvent(new Object()));
 
+        // This timer calls Eureka registry's peerReplicate method to accumulate all heartbeats of statically-onboarded services once
+        timer.scheduleAtFixedRate(new TimerTask() {
+
+            @Override
+            public void run() {
+                var registry = getRegistry();
+                if (registry != null) {
+                    registry.peerAwareHeartbeat(instances.get(CoreService.GATEWAY.getServiceId()));
+                } else {
+                    log.debug("Eureka registry is not available yet.");
+                }
+            }
+
+        }, eurekaConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L, eurekaConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L);
+
+    }
+
+    @Scheduled(initialDelay = 3000, fixedRate = 20_000) // TODO find better solution but DON'T JUST REMOVE!
+    public void periodicJwtInit() {
         var jwtSec = applicationContext.getBean(JwtSecurity.class);
-        if (!jwtSec.getZosmfListener().isZosmfReady()) {
+        var providers = applicationContext.getBean(Providers.class);
+        if (providers.isZosfmUsed() && !jwtSec.getZosmfListener().isZosmfReady()) {
             jwtSec.getZosmfListener().getZosmfRegisteredListener().onEvent(new CacheRefreshedEvent());
         }
     }
-
 
     @Bean
     ReactiveDiscoveryClient registryReactiveDiscoveryClient(DiscoveryClient registryDiscoveryClient) {
@@ -209,38 +283,65 @@ public class ModulithConfig {
                 if (registry == null) {
                     return Collections.emptyList();
                 }
-                return registry.getApplications().getRegisteredApplications()
-                    .stream()
-                    .map(Application::getName)
-                    .distinct()
-                    .toList();
+
+                return Optional.ofNullable(registry.getApplications())
+                    .map(Applications::getRegisteredApplications)
+                    .map(applications -> applications.stream().map(Application::getName).distinct().toList())
+                    .orElse(List.of());
             }
         };
     }
 
     @Bean
+    @Primary
     MessageService messageService() {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/utility-log-messages.yml");
         messageService.loadMessages("/common-log-messages.yml");
+        messageService.loadMessages("/security-common-log-messages.yml");
 
         messageService.loadMessages("/discovery-log-messages.yml");
         messageService.loadMessages("/gateway-log-messages.yml");
+        messageService.loadMessages("/apicatalog-log-messages.yml");
 
-        messageService.loadMessages("/apiml-log-messages.yml");
         messageService.loadMessages("/zaas-log-messages.yml");
+
+        messageService.loadMessages("/caching-log-messages.yml");
         return messageService;
+    }
+
+    @Bean
+    public BasicInfoService basicInfoService(DiscoveryClient discoveryClient, EurekaMetadataParser eurekaMetadataParser) {
+
+        return new BasicInfoService(null, eurekaMetadataParser) {
+            @Override
+            public List<ServiceInfo> getServicesInfo() {
+                var serviceInfos = new ArrayList<ServiceInfo>();
+                for (var serviceId : discoveryClient.getServices()) {
+                    var instances = discoveryClient.getInstances(serviceId);
+                    var instanceInfos = ServicesInfoService.extractInstanceInfo(instances);
+                    serviceInfos.add(ServiceInfo.builder()
+                        .serviceId(serviceId)
+                        .status(getStatus(instanceInfos))
+                        .apiml(getApiml(instanceInfos))
+                        .instances(getInstances(instanceInfos))
+                        .build());
+                }
+                return serviceInfos;
+            }
+        };
     }
 
     @Bean
     @Primary
     TomcatReactiveWebServerFactory tomcatReactiveWebServerWithFiltersFactory(
         HttpHandler httpHandler,
-        List<PreFluxFilter> preFluxFilters,
-        List<ServletContextAware> servletContextAwareListeners
-    ) {
+        List<PreFluxFilter> preFluxFilters, ObjectProvider<TomcatConnectorCustomizer> connectorCustomizers,
+        ObjectProvider<TomcatContextCustomizer> contextCustomizers,
+        ObjectProvider<TomcatProtocolHandlerCustomizer<?>> protocolHandlerCustomizers,
+        List<ServletContextAware> servletContextAwareListeners) {
 
-        return new TomcatReactiveWebServerFactory() {
+        var factory = new TomcatReactiveWebServerFactory() {
             @Override
             protected void prepareContext(Host host, TomcatHttpHandlerAdapter servlet) {
                 super.prepareContext(host, new ServletWithFilters(httpHandler, servlet, preFluxFilters));
@@ -252,24 +353,31 @@ public class ModulithConfig {
                 super.configureContext(context);
             }
         };
+        factory.getTomcatConnectorCustomizers().addAll(connectorCustomizers.orderedStream().toList());
+        factory.getTomcatContextCustomizers().addAll(contextCustomizers.orderedStream().toList());
+        factory.getTomcatProtocolHandlerCustomizers().addAll(protocolHandlerCustomizers.orderedStream().toList());
+        return factory;
     }
 
+
     /**
-     * Create a custom Tomcat connector with same customizations as the main external (GW) connector to handle
+     * Create a custom Tomcat connector with same customizations as the main
+     * external (GW) connector to handle
      * "legacy" connections in v3 meant to go to Eureka / Discovery Service
      *
-     * @param internalDiscoveryPort port that will handle legacy Discovery Service connections
+     * @param internalDiscoveryPort port that will handle legacy Discovery Service
+     *                              connections
      * @return
      */
     @Bean
     WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> internalPortCustomizer(
-        @Value("${apiml.internal-discovery.port:10011}") int internalDiscoveryPort
-    ) {
+        @Value("${apiml.internal-discovery.port:10011}") int internalDiscoveryPort, List<TomcatConnectorCustomizer> connectorCustomizers) {
         return factory -> {
             var connector = new Connector();
 
             try {
-                Method method = TomcatReactiveWebServerFactory.class.getDeclaredMethod("customizeConnector", Connector.class);
+                Method method = TomcatReactiveWebServerFactory.class.getDeclaredMethod("customizeConnector",
+                    Connector.class);
                 method.setAccessible(true);
                 method.invoke(factory, connector);
             } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
@@ -279,6 +387,7 @@ public class ModulithConfig {
             connector.setPort(internalDiscoveryPort);
 
             factory.addAdditionalTomcatConnectors(connector);
+            factory.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
         };
 
     }
@@ -288,7 +397,8 @@ public class ModulithConfig {
         private final Servlet servlet;
         private final FilterChain filterChain;
 
-        public ServletWithFilters(HttpHandler httpHandler, TomcatHttpHandlerAdapter servlet, Collection<? extends Filter> filters) {
+        public ServletWithFilters(HttpHandler httpHandler, TomcatHttpHandlerAdapter servlet,
+                                  Collection<? extends Filter> filters) {
             super(httpHandler);
             this.servlet = servlet;
 

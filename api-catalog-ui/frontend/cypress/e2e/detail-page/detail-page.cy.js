@@ -7,7 +7,7 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-/* eslint-disable spaced-comment */
+/* eslint-disable no-undef */
 
 /// <reference types="Cypress" />
 
@@ -36,7 +36,7 @@ describe('>>> Detail page test', () => {
         cy.contains('Version: ');
         cy.get('#grid-container').contains('API Catalog').click();
 
-        cy.visit(`${Cypress.env('catalogHomePage')}/#/service/apicatalog`);
+        cy.visit(`${Cypress.env('catalogHomePage')}/index.html#/service/apicatalog`);
 
         const baseUrl = `${Cypress.env('catalogHomePage')}`;
 
@@ -70,7 +70,7 @@ describe('>>> Detail page test', () => {
         cy.contains('Version: ');
         cy.contains('API Gateway').click();
 
-        cy.visit(`${Cypress.env('catalogHomePage')}/#/service/gateway`);
+        cy.visit(`${Cypress.env('catalogHomePage')}/index.html#/service/gateway`);
 
         const baseUrl = `${Cypress.env('catalogHomePage')}`;
 
@@ -116,6 +116,8 @@ describe('>>> Detail page test', () => {
 
         cy.get('#search > div > div > input').as('search').type('API Gateway');
 
-        cy.get('.grid-tile').should('have.length', 2).should('contain', 'API Gateway');
+        const expectedGatewaysCount = 2;
+
+        cy.get('.grid-tile').should('have.length', expectedGatewaysCount).should('contain', 'API Gateway'); // FIXME in modulith multi tenancy is not working
     });
 });

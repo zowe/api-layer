@@ -13,7 +13,10 @@ package org.zowe.apiml.gateway.config;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.gateway.config.GlobalCorsProperties;
@@ -25,9 +28,10 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
 
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -35,22 +39,26 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class ServiceCorsUpdaterTest {
 
     private static final String SERVICE_ID = "myserviceid";
     private static final String APIML_ID = "apimlid";
 
-    private CorsUtils corsUtils = spy(new CorsUtils(true, Collections.emptyList()));
-    private ReactiveDiscoveryClient discoveryClient = mock(ReactiveDiscoveryClient.class);
+    List<String> allowedEndpoints = List.of("/gateway/**");
+    private CorsUtils corsUtils = spy(new CorsUtils(true, List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"), allowedEndpoints));
+
+    @Mock
+    private ReactiveDiscoveryClient discoveryClient;
 
     private ServiceCorsUpdater serviceCorsUpdater;
 
     private UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         serviceCorsUpdater = new ServiceCorsUpdater(corsUtils, discoveryClient, mock(RoutePredicateHandlerMapping.class), mock(GlobalCorsProperties.class));
-        serviceCorsUpdater.initCorsConfigurationSource();
+        serviceCorsUpdater.afterPropertiesSet();
         urlBasedCorsConfigurationSource = spy((UrlBasedCorsConfigurationSource) ReflectionTestUtils.getField(serviceCorsUpdater, "urlBasedCorsConfigurationSource"));
         ReflectionTestUtils.setField(serviceCorsUpdater, "urlBasedCorsConfigurationSource", urlBasedCorsConfigurationSource);
     }
@@ -70,13 +78,15 @@ class ServiceCorsUpdaterTest {
         return serviceInstance;
     }
 
+    @SuppressWarnings("unchecked")
     private TriConsumer<String, String, CorsConfiguration> getCorsLambda(Consumer<Map<String, String>> metadataProcessor) {
-        ServiceInstance serviceInstance = createServiceInstance(SERVICE_ID);
+        var serviceInstance = createServiceInstance(SERVICE_ID);
         metadataProcessor.accept(serviceInstance.getMetadata());
 
         doReturn(Flux.just(SERVICE_ID)).when(discoveryClient).getServices();
 
-        serviceCorsUpdater.onRefreshRoutesEvent(new RefreshRoutesEvent(this));
+        StepVerifier.create(serviceCorsUpdater.onRefreshRoutesEvent(new RefreshRoutesEvent(this)))
+            .verifyComplete();
         ArgumentCaptor<TriConsumer<String, String, CorsConfiguration>> lambdaCaptor = ArgumentCaptor.forClass(TriConsumer.class);
         verify(corsUtils).setCorsConfiguration(anyString(), any(), lambdaCaptor.capture());
 
@@ -94,7 +104,8 @@ class ServiceCorsUpdaterTest {
 
     @Test
     void givenNoApimlId_whenSetCors_thenServiceIdIsUsed() {
-        TriConsumer<String, String, CorsConfiguration> corsLambda = getCorsLambda(md -> {});
+        TriConsumer<String, String, CorsConfiguration> corsLambda = getCorsLambda(md -> {
+        });
 
         corsLambda.accept(null, SERVICE_ID, null);
 

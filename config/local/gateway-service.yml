@@ -8,13 +8,14 @@ apiml:
         hostname: localhost
         port: 10010
     banner: console
+    security:
+        x509:
+            enabled: true
 eureka:
     client:
         serviceUrl:
             defaultZone: https://localhost:10011/eureka/
 server:
-    webSocket:
-        requestBufferSize: 16348
     max-http-request-header-size: 16348
 
     ssl:
@@ -32,3 +33,10 @@ spring:
             enabled: always
     profiles:
         include: debug
+    cloud:
+        gateway:
+            server:
+                webflux:
+                    httpclient:
+                        websocket:
+                            max-frame-payload-length: 3145728

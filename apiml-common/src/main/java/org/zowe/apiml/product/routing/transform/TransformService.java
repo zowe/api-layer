@@ -11,6 +11,7 @@
 package org.zowe.apiml.product.routing.transform;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
@@ -39,10 +40,10 @@ public class TransformService {
     /**
      * Construct the URL using gateway hostname and route
      *
-     * @param type       the type of the route
-     * @param serviceId  the service id
-     * @param serviceUrl the service URL
-     * @param routes     the routes
+     * @param type        the type of the route
+     * @param serviceId   the service id
+     * @param serviceUrl  the service URL
+     * @param routes      the routes
      * @param httpsScheme https scheme flag
      * @return the new URL
      * @throws URLTransformationException if the path of the service URL is not valid
@@ -52,14 +53,13 @@ public class TransformService {
                                String serviceUrl,
                                RoutedServices routes,
                                boolean httpsScheme) throws URLTransformationException {
-
         if (!gatewayClient.isInitialized()) {
             apimlLog.log("org.zowe.apiml.common.gatewayNotFoundForTransformRequest");
             throw new URLTransformationException("Gateway not found yet, transform service cannot perform the request");
         }
 
         URI serviceUri = URI.create(serviceUrl);
-        String serviceUriPath = serviceUri.getPath();
+        String serviceUriPath = serviceUri.getRawPath();
         if (serviceUriPath == null) {
             String message = String.format("The URI %s is not valid.", serviceUri);
             throw new URLTransformationException(message);
@@ -71,25 +71,59 @@ public class TransformService {
             throw new URLTransformationException(message);
         }
 
-
-        if (serviceUri.getQuery() != null) {
-            serviceUriPath += "?" + serviceUri.getQuery();
+        if (StringUtils.isNotBlank(serviceUri.getRawQuery())) {
+            serviceUriPath += "?" + serviceUri.getRawQuery();
         }
 
-        String endPoint = getShortEndPoint(route.getServiceUrl(), serviceUriPath);
+        return transformURL(serviceId, serviceUriPath, route, httpsScheme, serviceUri);
+    }
+
+    private String transformURL(String serviceId,
+                                String serviceUriPath,
+                                RoutedService route,
+                                boolean httpsScheme,
+                                URI originalUri
+    ) throws URLTransformationException {
+
+        String endPoint = getShortEndpoint(route.getServiceUrl(), serviceUriPath);
         if (!endPoint.isEmpty() && !endPoint.startsWith("/")) {
-            throw new URLTransformationException("The path " + serviceUri.getPath() + " of the service URL " + serviceUri + " is not valid.");
+            throw new URLTransformationException("The path " + originalUri.getPath() + " of the service URL " + originalUri + " is not valid.");
         }
 
         ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
-
+        if (originalUri != null && originalUri.toString().startsWith("//")) {
+            return String.format("//%s/%s%s%s",
+                gatewayConfigProperties.getHostname(),
+                serviceId,
+                StringUtils.isEmpty(route.getGatewayUrl()) ? "" : "/" + route.getGatewayUrl(),
+                endPoint);
+        }
         String scheme = httpsScheme ? "https" : gatewayConfigProperties.getScheme();
-        return String.format("%s://%s/%s/%s%s",
+        return String.format("%s://%s/%s%s%s",
             scheme,
             gatewayConfigProperties.getHostname(),
             serviceId,
-            route.getGatewayUrl(),
+            StringUtils.isEmpty(route.getGatewayUrl()) ? "" : "/" + route.getGatewayUrl(),
             endPoint);
+    }
+
+    public String transformAbsoluteURL(String serviceId,
+                                       String locationUri,
+                                       RoutedService route
+    ) throws URLTransformationException {
+
+        String endpoint = getShortEndpoint(route.getServiceUrl(), locationUri);
+        if (isRelative(endpoint)) {
+            throw new URLTransformationException("The path " + locationUri + " of the service " + serviceId + " is not valid.");
+        }
+        return String.format("/%s%s%s",
+            serviceId,
+            StringUtils.isEmpty(route.getGatewayUrl()) ? "" : "/" + route.getGatewayUrl(),
+            endpoint);
+    }
+
+    boolean isRelative(String endpoint) {
+        return !endpoint.isEmpty() && !endpoint.startsWith("/");
     }
 
     /**
@@ -119,7 +153,7 @@ public class TransformService {
         }
 
         // Make base path version a template so user can understand base path when looking at different API versions
-        String templatedVersionRoute = route.getGatewayUrl().replaceAll("/v\\d", "/{api-version}");
+        String templatedVersionRoute = route.getGatewayUrl().replaceAll("/v\\d+", "/{api-version}");
 
         return String.format("/%s/%s",
             serviceId,
@@ -133,11 +167,12 @@ public class TransformService {
      * @param endPoint        the endpoint of method
      * @return short endpoint
      */
-    private String getShortEndPoint(String routeServiceUrl, String endPoint) {
+    private String getShortEndpoint(String routeServiceUrl, String endPoint) {
         String shortEndPoint = endPoint;
-        if (!routeServiceUrl.equals(SEPARATOR)) {
+        if (!SEPARATOR.equals(routeServiceUrl) && StringUtils.isNotBlank(routeServiceUrl)) {
             shortEndPoint = shortEndPoint.replaceFirst(UrlUtils.removeLastSlash(routeServiceUrl), "");
         }
         return shortEndPoint;
     }
+
 }

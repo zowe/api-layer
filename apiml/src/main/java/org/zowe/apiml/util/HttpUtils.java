@@ -20,8 +20,8 @@ import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import reactor.core.publisher.Mono;
 
-import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 import static org.zowe.apiml.constants.ApimlConstants.BEARER_AUTHENTICATION_PREFIX;
+import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
 @Component
 @RequiredArgsConstructor
@@ -33,7 +33,7 @@ public class HttpUtils {
     private int cookieMaxAge = -1;
 
     @PostConstruct
-    void readConfig() {
+    protected void readConfig() {
         cp = authConfigurationProperties.getCookieProperties();
         if (cp.getCookieMaxAge() != null) {
             cookieMaxAge = cp.getCookieMaxAge();
@@ -45,6 +45,16 @@ public class HttpUtils {
             .path(cp.getCookiePath())
             .sameSite(cp.getCookieSameSite().getValue())
             .maxAge(cookieMaxAge)
+            .httpOnly(true)
+            .secure(cp.isCookieSecure())
+            .build();
+    }
+
+    public ResponseCookie createResponseCookieRemoval() {
+        return ResponseCookie.from(cp.getCookieName())
+            .path(cp.getCookiePath())
+            .sameSite(cp.getCookieSameSite().getValue())
+            .maxAge(0L)
             .httpOnly(true)
             .secure(cp.isCookieSecure())
             .build();

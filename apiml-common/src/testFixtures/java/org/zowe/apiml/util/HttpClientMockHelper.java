@@ -16,6 +16,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.BasicHttpEntity;
 import org.mockito.ArgumentMatchers;
@@ -34,9 +35,12 @@ public class HttpClientMockHelper {
     }
 
     @SneakyThrows
-    public static OngoingStubbing<?> mockExecuteWithResponse(CloseableHttpClient httpClientMock, ClassicHttpResponse responseMock) {
-        return Mockito.when(httpClientMock.execute(ArgumentMatchers.any(ClassicHttpRequest.class), ArgumentMatchers.any(HttpClientResponseHandler.class)))
-                .thenAnswer((InvocationOnMock invocation) -> invokeResponseHandler(invocation, responseMock));
+    public static OngoingStubbing<?> mockExecuteWithResponse(CloseableHttpClient httpClientMock, ClassicHttpResponse... responseMocks) {
+        var stubbing = Mockito.when(httpClientMock.execute(ArgumentMatchers.any(ClassicHttpRequest.class), ArgumentMatchers.any(HttpClientResponseHandler.class)));
+        for (ClassicHttpResponse responseMock : responseMocks) {
+            stubbing = stubbing.thenAnswer((InvocationOnMock invocation) -> invokeResponseHandler(invocation, responseMock));
+        }
+        return stubbing;
     }
 
     @SneakyThrows
@@ -46,6 +50,12 @@ public class HttpClientMockHelper {
                 = (HttpClientResponseHandler<T>) invocation.getArguments()[1];
         return handler.handleResponse(responseMock);
 
+    }
+
+    public static void mockResponse(ClassicHttpResponse responseMock, int statusCode, String responseBody, Header... headers) {
+        mockResponse(responseMock, statusCode);
+        mockResponse(responseMock, responseBody);
+        mockResponse(responseMock, headers);
     }
 
     public static void mockResponse(ClassicHttpResponse responseMock, int statusCode, String responseBody) {
@@ -60,5 +70,9 @@ public class HttpClientMockHelper {
 
     public static void mockResponse(ClassicHttpResponse responseMock, int statusCode) {
         Mockito.when(responseMock.getCode()).thenReturn(statusCode);
+    }
+
+    public static void mockResponse(ClassicHttpResponse responseMock, Header... headers) {
+        Mockito.when(responseMock.getHeaders()).thenReturn(headers);
     }
 }

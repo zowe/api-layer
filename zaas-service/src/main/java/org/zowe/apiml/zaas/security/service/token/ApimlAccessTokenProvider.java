@@ -16,9 +16,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.zaas.cache.CachingClient;
 import org.zowe.apiml.zaas.cache.CachingServiceClient;
 import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
@@ -43,7 +45,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     static final String INVALID_USERS_KEY = "invalidUsers";
     static final String INVALID_SCOPES_KEY = "invalidScopes";
 
-    private final CachingServiceClient cachingServiceClient;
+    private final CachingClient cachingServiceClient;
     private final AuthenticationService authenticationService;
     @Qualifier("oidcJwkMapper")
     private final ObjectMapper objectMapper;
@@ -149,12 +151,12 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return getSecurePassword(token, getSalt());
     }
 
-    private String initializeSalt() throws CachingServiceClientException,SecureTokenInitializationException {
+    private String initializeSalt() throws CachingServiceClientException, SecureTokenInitializationException {
         String localSalt;
         try {
             CachingServiceClient.KeyValue keyValue = cachingServiceClient.read("salt");
             localSalt = keyValue.getValue();
-        } catch (CachingServiceClientException e) {
+        } catch (CachingServiceClientException | StorageException e) {
             byte[] newSalt = generateSalt();
             storeSalt(newSalt);
             localSalt = new String(newSalt);

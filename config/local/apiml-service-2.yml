@@ -1,0 +1,81 @@
+spring.profiles.active: diag
+logging:
+    level:
+        org.springframework.web.socket.client.standard.AnnotatedEndpointConnectionManager: DEBUG
+        org.springframework.web.reactive.socket.client.StandardWebSocketClient: TRACE
+
+server:
+    max-http-request-header-size: 16348
+    webSocket:
+        requestBufferSize: 16348
+
+eureka:
+    server:
+        myUrl: https://localhost:10021/eureka/
+apiml:
+    discovery:
+        staticApiDefinitionsDirectories: config/local/api-defs
+        # Not used in HTTPS mode and not applicable for Zowe
+        # The `apiml.discovery` node contains discovery-service only configuration
+        userid: eureka  # Userid that Eureka server will use to check authentication of its clients (other services)
+        password: password  # Password that Eureka server will use to check authentication of its clients (other services)
+        allPeersUrls: https://localhost:10011/eureka/
+    internal-discovery:
+        port: 10021
+    health:
+        protected: false
+    gateway:
+        registry:
+            enabled: true
+        servicesToLimitRequestRate: discoverableclient
+        cookieNameForRateLimiter: apimlAuthenticationToken
+    service:
+        apimlId: apiml2
+
+        discoveryServiceUrls: https://localhost:10021/eureka/
+        forwardClientCertEnabled: false
+        hostname: localhost
+        id: ${spring.application.name}
+        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
+        port: 10020
+        externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
+        title: API ML 2
+    security:
+        x509:
+            enabled: true
+            certificatesUrl: https://localhost:10010/gateway/certificates
+        allowTokenRefresh: true
+        webfinger:
+            fileLocation: config/local/webfinger.yml
+        personalAccessToken:
+            enabled: true
+        oidc:
+            enabled: false
+            clientId:
+            clientSecret:
+            registry: zowe.okta.com
+            identityMapperUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/zss/api/v1/certificate/dn
+            identityMapperUser: APIMTST
+            jwks:
+                uri:
+        auth:
+            jwt:
+                customAuthHeader: customJwtHeader
+            passticket:
+                customUserHeader: customUserHeader
+                customAuthHeader: customPassticketHeader
+            provider: zosmf
+            zosmf:
+                serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
+        useDummyCNMapper: true
+caching:
+    storage:
+        mode: infinispan
+        infinispan:
+            initialHosts: localhost[7600]
+
+jgroups:
+    bind:
+        port: 7601
+        address: localhost
+

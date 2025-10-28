@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
+import org.zowe.apiml.product.discovery.StaticRegistrationResult;
 
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
@@ -153,7 +154,7 @@ class StaticServicesRegistrationServiceTest {
         StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
         registrationService.registerServices(directory);
 
-        verify(mockRegistry, times(1)).registerStatically(instance, false);
+        verify(mockRegistry, times(1)).registerStatically(instance, false, false);
     }
 
 }

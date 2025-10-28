@@ -42,7 +42,7 @@ public class RunningService {
     }
 
     public void start(String... envs) throws IOException {
-        log.info("Starting new Service with JAR file {} and ID {}", jarFile, id);
+        log.info("Starting new Service via shell command with JAR file {} and ID {}", jarFile, id);
         stop();
 
         ArrayList<String> shellCommand = new ArrayList<>();
@@ -57,6 +57,16 @@ public class RunningService {
         }
 
         shellCommand.add(path + "java");
+        shellCommand.addAll(Arrays.asList(
+            "--add-opens=java.base/java.lang=ALL-UNNAMED",
+            "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
+            "--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED",
+            "--add-opens=java.base/java.util=ALL-UNNAMED",
+            "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
+            "--add-opens=java.base/javax.net.ssl=ALL-UNNAMED",
+            "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
+            "--add-opens=java.base/java.io=ALL-UNNAMED"
+        ));
         parametersBefore
             .forEach((key1, value1) -> shellCommand.add(key1 + '=' + value1));
 
@@ -76,7 +86,7 @@ public class RunningService {
     }
 
     public void startWithScript(String binPath, Map<String, String> env) {
-        log.info("Starting new Service with JAR file {} and ID {}", jarFile, id);
+        log.info("Starting new Service via start.sh script with JAR file {} and ID {}", jarFile, id);
         ProcessBuilder builder1 = new ProcessBuilder(binPath + "/start.sh");
         Map<String, String> envVariables = builder1.environment();
         envVariables.putAll(env);

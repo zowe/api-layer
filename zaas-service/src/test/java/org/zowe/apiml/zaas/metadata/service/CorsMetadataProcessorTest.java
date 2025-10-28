@@ -19,6 +19,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.util.CorsUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -29,14 +30,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 class CorsMetadataProcessorTest {
-    private CorsUtils corsUtils = new CorsUtils(true, null);
+    private CorsUtils corsUtils;
     private UrlBasedCorsConfigurationSource configurationSource;
     private ArgumentCaptor<CorsConfiguration> configurationCaptor = ArgumentCaptor.forClass(CorsConfiguration.class);
+    List<String> allowedEndpoints = List.of("/gateway/**");
 
     @BeforeEach
     void setUp() {
         configurationSource = mock(UrlBasedCorsConfigurationSource.class);
-        corsUtils = new CorsUtils(true, null);
+        corsUtils = new CorsUtils(true, List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"), allowedEndpoints);
     }
 
     @Nested
@@ -80,7 +82,7 @@ class CorsMetadataProcessorTest {
         private void assertDefaultConfiguration(CorsConfiguration provided) {
             assertThat(provided.getAllowedHeaders(), hasSize(1));
             assertThat(provided.getAllowedHeaders().get(0), is("*"));
-            assertThat(provided.getAllowedMethods(), hasSize(6));
+            assertThat(provided.getAllowedMethods(), hasSize(7));
             assertThat(provided.getAllowedMethods().get(0), is("GET"));
         }
     }

@@ -18,15 +18,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.zowe.apiml.apicatalog.ApiCatalogApplication;
 import org.zowe.apiml.product.web.HttpConfig;
+import org.zowe.apiml.util.config.TestConfig;
 
 @SpringBootTest(
     classes = ApiCatalogApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @ContextConfiguration
+@Import(TestConfig.class)
 public abstract class ApiCatalogFunctionalTest {
 
     @LocalServerPort
@@ -53,4 +56,5 @@ public abstract class ApiCatalogFunctionalTest {
     protected String getCatalogUriWithPath(String scheme, String path) {
         return String.format("%s://%s:%d/%s", scheme, hostname, port, path);
     }
+
 }
