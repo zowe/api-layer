@@ -99,6 +99,9 @@ public class ConnectionsConfig {
     @Value("${apiml.service.externalUrl:}")
     private String externalUrl;
 
+    @Value("${apiml.service.corsAllowedEndpoints:/gateway/**}")
+    private final List<String> corsEnabledEndpoints;
+
     /**
      * @param httpClient             default http client
      * @param headersFiltersProvider header filter for spring gateway router
@@ -149,7 +152,7 @@ public class ConnectionsConfig {
     @RefreshScope
     @ConditionalOnMissingBean(EurekaClient.class)
     CloudEurekaClient primaryEurekaClient(ApplicationInfoManager manager, EurekaClientConfig config,
-                                                 @Autowired(required = false) HealthCheckHandler healthCheckHandler) {
+                                          @Autowired(required = false) HealthCheckHandler healthCheckHandler) {
         ApplicationInfoManager appManager;
         if (AopUtils.isAopProxy(manager)) {
             appManager = ProxyUtils.getTargetObject(manager);
@@ -242,7 +245,7 @@ public class ConnectionsConfig {
         return StringUtils.startsWith(key, ROUTES + ".") &&
             (
                 StringUtils.endsWith(key, "." + ROUTES_GATEWAY_URL) ||
-                StringUtils.endsWith(key, "." + ROUTES_SERVICE_URL)
+                    StringUtils.endsWith(key, "." + ROUTES_SERVICE_URL)
             );
     }
 
@@ -272,12 +275,12 @@ public class ConnectionsConfig {
             .timeLimiterConfig(
                 TimeLimiterConfig.custom()
                     .timeoutDuration(Duration.ofMillis(config.getRequestConnectionTimeout()))
-                .build()).build());
+                    .build()).build());
     }
 
     @Bean
     CorsUtils corsUtils() {
-        return new CorsUtils(corsEnabled, corsAllowedMethods);
+        return new CorsUtils(corsEnabled, corsAllowedMethods, corsEnabledEndpoints);
     }
 
     @Bean
@@ -285,7 +288,7 @@ public class ConnectionsConfig {
         return new CorsWebFilter(serviceCorsUpdater.getUrlBasedCorsConfigurationSource());
     }
 
-    public InstanceInfo create(EurekaInstanceConfig config)  {
+    public InstanceInfo create(EurekaInstanceConfig config) {
         LeaseInfo.Builder leaseInfoBuilder = LeaseInfo.Builder.newBuilder()
             .setRenewalIntervalInSecs(config.getLeaseRenewalIntervalInSeconds())
             .setDurationInSecs(config.getLeaseExpirationDurationInSeconds());
@@ -321,7 +324,7 @@ public class ConnectionsConfig {
             .setSecureVIPAddress(config.getSecureVirtualHostName())
             .setHomePageUrl(null, UriComponentsBuilder.fromUriString(externalUrl).path(config.getHomePageUrlPath()).toUriString())
             .setStatusPageUrl(null, UriComponentsBuilder.fromUriString(externalUrl).path(config.getStatusPageUrlPath()).toUriString())
-            .setHealthCheckUrls(config.getHealthCheckUrlPath(), null,null)
+            .setHealthCheckUrls(config.getHealthCheckUrlPath(), null, null)
             .setASGName(config.getASGName());
 
         // Start off with the STARTING state to avoid traffic
@@ -331,8 +334,7 @@ public class ConnectionsConfig {
                 log.info("Setting initial instance status as: " + initialStatus);
             }
             builder.setStatus(initialStatus);
-        }
-        else {
+        } else {
             if (log.isInfoEnabled()) {
                 log.info("Setting initial instance status as: " + InstanceInfo.InstanceStatus.UP
                     + ". This may be too early for the instance to advertise itself as available. "
@@ -398,9 +400,13 @@ public class ConnectionsConfig {
         interface NonDelegated {
 
             String getHostName(boolean refresh);
+
             String getHealthCheckUrl();
+
             String getSecureHealthCheckUrl();
+
             String getHomePageUrl();
+
             String getStatusPageUrl();
 
         }

@@ -19,7 +19,15 @@ eureka:
     server:
         max-threads-for-peer-replication: 2
         useReadOnlyResponseCache: false
-
+management:
+    endpoint:
+        gateway:
+            access: unrestricted
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: "*"
 apiml:
     catalog:
         serviceId: apicatalog

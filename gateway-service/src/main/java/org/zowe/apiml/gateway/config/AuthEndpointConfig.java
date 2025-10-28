@@ -87,17 +87,18 @@ public class AuthEndpointConfig {
             .headers(headers -> headers.addAll(serverRequest.headers().asHttpHeaders()))
             .headers(headers -> headers.remove(CLIENT_CERT_HEADER));
 
-        if (sslInfo != null) {
-            return request.headers(headers -> {
+        return request.headers(headers -> {
+            if (sslInfo != null) {
                 try {
                     headers.add(CLIENT_CERT_HEADER, X509Util.getEncodedClientCertificate(sslInfo));
                 } catch (CertificateEncodingException e) {
                     throw new IllegalStateException("Cannot forward client certificate", e);
                 }
-            });
-        }
-
-        return request;
+            } else {
+                // this empty certificate is to mark request as without x509 because AT-TLS adds client certificate
+                headers.add(CLIENT_CERT_HEADER, "");
+            }
+        });
     }
 
     private Mono<ServerResponse> resend(ServerRequest request, String path, String body) {
