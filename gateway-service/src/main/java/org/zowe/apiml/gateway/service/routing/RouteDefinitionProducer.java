@@ -18,10 +18,10 @@ import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.SimpleEvaluationContext;
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.springframework.util.StringUtils;
 import org.zowe.apiml.product.routing.RoutedService;
-
-import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -58,6 +58,31 @@ public abstract class RouteDefinitionProducer {
         Map<String, String> metadata = serviceInstance.getMetadata();
         if (metadata != null) {
             output = metadata.get(SERVICE_EXTERNAL_URL);
+
+            // If we have an external URL, ensure IPv6 addresses are properly formatted
+            if (output != null) {
+                try {
+                    URI uri = new URI(output);
+                    String host = uri.getHost();
+
+                    // Check if the host is an IPv6 address (contains colons) and needs brackets
+                    if (host != null && host.contains(":") && !host.startsWith("[")) {
+                        // Rebuild the URI with properly formatted IPv6 address
+                        URI newUri = new URI(
+                            uri.getScheme(),
+                            uri.getUserInfo(),
+                            "[" + host + "]",
+                            uri.getPort(),
+                            uri.getPath(),
+                            uri.getQuery(),
+                            uri.getFragment()
+                        );
+                        output = newUri.toString();
+                    }
+                } catch (URISyntaxException e) {
+                    // If there's an error parsing the URI, keeping the original URL
+                }
+            }
         }
         if (output == null) {
             output = evalHostname(serviceInstance);
@@ -83,7 +108,46 @@ public abstract class RouteDefinitionProducer {
         RouteDefinition routeDefinition = new RouteDefinition();
         routeDefinition.setId(serviceInstance.getInstanceId() + ":" + routeId);
         routeDefinition.setOrder(getOrder());
-        routeDefinition.setUri(URI.create(getHostname(serviceInstance)));
+        String hostname = getHostname(serviceInstance);
+
+        // Handle IPv6 formatted URLs properly
+        if (hostname.startsWith("lb://")) {
+            // If Load balancer URL format found,keeping it intact
+            routeDefinition.setUri(URI.create(hostname));
+        } else {
+            // For regular URL ensuring proper formatting for IPv6 addresses
+            try {
+                URI uri = new URI(hostname);
+                String scheme = uri.getScheme();
+                String host = uri.getHost();
+                int port = uri.getPort();
+                String userInfo = uri.getUserInfo();
+                String path = uri.getPath();
+                String query = uri.getQuery();
+                String fragment = uri.getFragment();
+
+                // Checking if the host is an IPv6 address and adding brackets if needed
+                String formattedHost = host;
+                if (host != null && host.contains(":") && !host.startsWith("[")) {
+                    formattedHost = "[" + host + "]";
+                }
+
+                // Reconstructing the URI with formatted IPv6 address
+                URI safeUri = new URI(
+                    scheme,
+                    userInfo,
+                    formattedHost,
+                    port,
+                    path,
+                    query,
+                    fragment
+                );
+                routeDefinition.setUri(safeUri);
+            } catch (URISyntaxException e) {
+                // Fallback to direct creation if URI parsing fails
+                routeDefinition.setUri(URI.create(hostname));
+            }
+        }
 
         // add instance metadata
         routeDefinition.setMetadata(new LinkedHashMap<>(serviceInstance.getMetadata()));

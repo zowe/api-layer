@@ -19,6 +19,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.util.UrlUtils;
 import reactor.core.publisher.Mono;
 
 import static reactor.core.publisher.Mono.empty;
@@ -55,7 +56,10 @@ public class CachingServiceClientRest implements CachingServiceClient {
 
     void updateUrl() {
         // Lazy initialization of GatewayClient's ServerAddress may bring invalid URL during initialization
-        this.cachingBalancerUrl = String.format("%s://%s/%s", gatewayClient.getGatewayConfigProperties().getScheme(), gatewayClient.getGatewayConfigProperties().getHostname(), CACHING_API_PATH);
+        this.cachingBalancerUrl = UrlUtils.getUrl(
+            gatewayClient.getGatewayConfigProperties().getScheme(),
+            gatewayClient.getGatewayConfigProperties().getHostname()
+        ) + "/" + CACHING_API_PATH;
     }
 
     public Mono<Void> create(ApiKeyValue keyValue) {

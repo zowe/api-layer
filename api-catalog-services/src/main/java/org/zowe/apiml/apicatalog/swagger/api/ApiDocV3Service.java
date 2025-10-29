@@ -41,6 +41,7 @@ import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedService;
+import org.zowe.apiml.util.UrlUtils;
 
 import java.net.URI;
 import java.util.Collections;
@@ -106,7 +107,7 @@ public class ApiDocV3Service extends AbstractApiDocService<OpenAPI, PathItem> {
         if (openAPI.getServers() != null) {
             openAPI.getServers()
                 .forEach(server -> server.setUrl(
-                    String.format("%s://%s/%s", scheme, getHostname(), server.getUrl())));
+                    UrlUtils.getUrl(scheme, UrlUtils.formatHostnameForUrl(getHostname())) + "/" + server.getUrl()));
         }
     }
 

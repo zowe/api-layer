@@ -33,6 +33,7 @@ import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.util.UrlUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
@@ -78,7 +79,7 @@ public class ApiDocRetrievalServiceLocal {
                     @Override
                     protected String getServerUrl(ServerHttpRequest serverHttpRequest, String apiDocsUrl) {
                         var gw = gatewayClient.getGatewayConfigProperties();
-                        return String.format("%s://%s%s", gw.getScheme(), gw.getHostname(), apiDocsUrl);
+                        return UrlUtils.getUrl(gw.getScheme(), gw.getHostname()) + apiDocsUrl;
                     }
                 };
 

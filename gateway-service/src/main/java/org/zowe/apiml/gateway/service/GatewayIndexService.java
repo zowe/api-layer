@@ -29,6 +29,7 @@ import org.zowe.apiml.gateway.services.ServicesInfoService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.services.ServiceInfo;
+import org.zowe.apiml.util.UrlUtils;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
@@ -67,7 +68,7 @@ public class GatewayIndexService {
     }
 
     private WebClient buildWebClient(ServiceInstance registration) {
-        final String baseUrl = String.format("%s://%s:%d", registration.getScheme(), registration.getHost(), registration.getPort());
+        final String baseUrl = UrlUtils.getUrl(registration.getScheme(), registration.getHost(), registration.getPort());
 
         return webClient.mutate()
             .baseUrl(baseUrl)

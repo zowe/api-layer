@@ -25,6 +25,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
+import org.zowe.apiml.util.UrlUtils;
 
 import java.util.Map;
 
@@ -67,7 +68,7 @@ public class CachingServiceClient implements CachingClient {
         if (gatewayAddress.getScheme() == null || gatewayAddress.getHostname() == null) {
             throw new IllegalStateException("zaasProtocolHostPort has to have value in format <protocol>://<host>:<port> and not be null");
         }
-        return String.format("%s://%s", gatewayAddress.getScheme(), gatewayAddress.getHostname());
+        return UrlUtils.getUrl(gatewayAddress.getScheme(), gatewayAddress.getHostname());
     }
 
     /**

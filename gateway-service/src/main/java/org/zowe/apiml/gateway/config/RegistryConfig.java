@@ -42,15 +42,26 @@ public class RegistryConfig {
     ) throws URISyntaxException {
         if (externalUrl != null) {
             URI uri = new URI(externalUrl);
+            String host = uri.getHost();
+            // Handle IPv6 address format
+            if (host != null && host.contains(":")) {
+                host = "[" + host + "]";
+            }
             return ServiceAddress.builder()
                 .scheme(clientAttlsEnabled ? "http" : uri.getScheme())
-                .hostname(uri.getHost() + ":" + uri.getPort())
+                .hostname(host + ":" + uri.getPort())
                 .build();
+        }
+
+        // Handle IPv6 address format
+        String formattedHostname = hostname;
+        if (hostname != null && hostname.contains(":") && !hostname.startsWith("[")) {
+            formattedHostname = "[" + hostname + "]";
         }
 
         return ServiceAddress.builder()
             .scheme(determineScheme(serverAttlsEnabled, clientAttlsEnabled, sslEnabled))
-            .hostname(hostname + ":" + port)
+            .hostname(formattedHostname + ":" + port)
             .build();
     }
 

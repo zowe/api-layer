@@ -28,6 +28,7 @@ import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
+import org.zowe.apiml.util.UrlUtils;
 import org.zowe.apiml.services.ServiceInfo;
 import org.zowe.apiml.services.ServiceInfoUtils;
 
@@ -92,8 +93,8 @@ public class ServicesInfoService {
 
     private String getBaseUrl(ApiInfo apiInfo, InstanceInfo instanceInfo) {
         ServiceAddress gatewayAddress = gatewayClient.getGatewayConfigProperties();
-        return String.format("%s://%s%s",
-                gatewayAddress.getScheme(), gatewayAddress.getHostname(), getBasePath(apiInfo, instanceInfo));
+        return UrlUtils.getUrl(gatewayAddress.getScheme(), gatewayAddress.getHostname()) +
+               getBasePath(apiInfo, instanceInfo);
     }
 
     static List<InstanceInfo> getPrimaryInstances(Application application) {

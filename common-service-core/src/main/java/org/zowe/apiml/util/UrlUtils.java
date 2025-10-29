@@ -112,4 +112,77 @@ public class UrlUtils {
             return false;
         }
     }
+
+    /**
+     * Formats a hostname properly, ensuring IPv6 addresses are enclosed in square brackets.
+     * If the input is already a properly formatted IPv6 address (with brackets), it remains unchanged.
+     *
+     * @param hostname The hostname or IP address to format
+     * @return Properly formatted hostname, with IPv6 addresses enclosed in square brackets
+     */
+    public String formatHostnameForUrl(String hostname) {
+        if (hostname == null) return null;
+
+        // If hostname already has IPv6 brackets, don't add them again
+        if (hostname.startsWith("[") && hostname.contains("]")) {
+            return hostname;
+        }
+
+        // Check if this is an IPv6 address (contains multiple colons)
+        if (hostname.contains(":") && !hostname.startsWith("[")) {
+            return "[" + hostname + "]";
+        }
+
+        return hostname;
+    }
+
+    /**
+     * Creates a proper URL string with scheme, hostname, and port,
+     * handling IPv6 addresses correctly.
+     *
+     * @param scheme The URL scheme (http, https, etc.)
+     * @param hostname The hostname or IP address
+     * @param port The port number
+     * @return A properly formatted URL string with IPv6 address handling
+     */
+    public String getUrl(String scheme, String hostname, int port) {
+        String formattedHostname = formatHostnameForUrl(hostname);
+        return String.format("%s://%s:%d", scheme, formattedHostname, port);
+    }
+
+    /**
+     * Creates a proper URL string with scheme and host (which may include port),
+     * handling IPv6 addresses correctly.
+     *
+     * @param scheme The URL scheme (http, https, etc.)
+     * @param hostWithPort The hostname or IP address, possibly including a port
+     * @return A properly formatted URL string with IPv6 address handling
+     */
+    public String getUrl(String scheme, String hostWithPort) {
+        // If host already includes port
+        if (hostWithPort.contains(":") && !hostWithPort.endsWith("]")) {
+            // Handle IPv6 address with port
+            if (hostWithPort.contains("]:")) {
+                // Already properly formatted IPv6 with port
+                return String.format("%s://%s", scheme, hostWithPort);
+            } else if (hostWithPort.contains("[") && hostWithPort.contains("]")) {
+                // IPv6 without port, just wrap in scheme
+                return String.format("%s://%s", scheme, hostWithPort);
+            } else {
+                // Might be IPv6 without brackets or IPv4 with port
+                int lastColonIndex = hostWithPort.lastIndexOf(':');
+                if (hostWithPort.substring(0, lastColonIndex).contains(":")) {
+                    // It's an IPv6 address with port, but without brackets
+                    String host = hostWithPort.substring(0, lastColonIndex);
+                    String port = hostWithPort.substring(lastColonIndex);
+                    return String.format("%s://[%s]%s", scheme, host, port);
+                }
+                // IPv4 with port, no special handling needed
+                return String.format("%s://%s", scheme, hostWithPort);
+            }
+        }
+
+        // just hostname without port
+        return String.format("%s://%s", scheme, formatHostnameForUrl(hostWithPort));
+    }
 }

@@ -28,6 +28,7 @@ import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.ticket.TicketResponse;
+import org.zowe.apiml.util.UrlUtils;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 import reactor.core.publisher.Mono;
 
@@ -129,7 +130,8 @@ public class ZaasSchemeTransformRest implements ZaasSchemeTransform {
     }
 
     private String getUrl(String pattern, ServiceInstance instance) {
-        return String.format(pattern, instance.getScheme(), instance.getHost(), instance.getPort(), instance.getServiceId().toLowerCase());
+        String host = UrlUtils.formatHostnameForUrl(instance.getHost());
+        return String.format(pattern, instance.getScheme(), host, instance.getPort(), instance.getServiceId().toLowerCase());
     }
 
     @Override

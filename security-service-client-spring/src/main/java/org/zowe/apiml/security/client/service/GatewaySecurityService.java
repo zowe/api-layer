@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.security.client.handler.RestResponseHandler;
+import org.zowe.apiml.util.UrlUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.login.LoginRequest;
@@ -58,8 +59,8 @@ public class GatewaySecurityService implements GatewaySecurity {
     @Override
     public Optional<String> login(String username, char[] password, char[] newPassword) {
         ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
-        String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
-            gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayLoginEndpoint());
+        String uri = UrlUtils.getUrl(gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname()) +
+            authConfigurationProperties.getGatewayLoginEndpoint();
 
         LoginRequest loginRequest = new LoginRequest(username, password);
         if (!ArrayUtils.isEmpty(newPassword)) {
@@ -95,8 +96,8 @@ public class GatewaySecurityService implements GatewaySecurity {
     @Override
     public QueryResponse query(String token) {
         ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
-        String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
-            gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayQueryEndpoint());
+        String uri = UrlUtils.getUrl(gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname()) +
+            authConfigurationProperties.getGatewayQueryEndpoint();
         String cookie = String.format("%s=%s", authConfigurationProperties.getCookieProperties().getCookieName(), token);
 
         try {
@@ -126,8 +127,8 @@ public class GatewaySecurityService implements GatewaySecurity {
     @Override
     public QueryResponse verifyOidc(String token) {
         ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
-        String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
-            gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayOidcValidateEndpoint());
+        String uri = UrlUtils.getUrl(gatewayConfigProperties.getScheme(), gatewayConfigProperties.getHostname()) +
+            authConfigurationProperties.getGatewayOidcValidateEndpoint();
 
         try {
             HttpPost post = new HttpPost(uri);
