@@ -13,11 +13,13 @@ package org.zowe.apiml.zaas.security.service;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwsHeader;
-import io.jsonwebtoken.Jwt;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.SignatureException;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWTParser;
+import com.nimbusds.jwt.SignedJWT;
+import com.nimbusds.jwt.proc.BadJWTException;
+import com.nimbusds.jwt.proc.ExpiredJWTException;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +27,12 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwt.JwtClaims;
+import org.jose4j.jwt.NumericDate;
+import org.jose4j.lang.JoseException;
+import org.jose4j.lang.UncheckedJoseException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
@@ -42,17 +50,31 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.*;
+import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenExpireException;
+import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 import org.zowe.apiml.zaas.controllers.AuthController;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
-import java.util.*;
+import java.security.interfaces.RSAPublicKey;
+import java.text.ParseException;
+import java.time.Clock;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
-import static org.zowe.apiml.zaas.security.service.JwtUtils.getJwtClaims;
-import static org.zowe.apiml.zaas.security.service.JwtUtils.handleJwtParserException;
+import static org.zowe.apiml.security.common.util.JwtUtils.getJwtClaims;
+import static org.zowe.apiml.security.common.util.JwtUtils.handleJwtParserException;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
@@ -82,6 +104,7 @@ public class AuthenticationService {
     private final RestTemplate restTemplate;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
+    private final Clock clock;
 
     // to force calling inside methods with aspects - ie. ehCache aspect
     private AuthenticationService meAsProxy;
@@ -121,26 +144,36 @@ public class AuthenticationService {
     }
 
     private String createJWT(String username, String issuer, Map<String, Object> claims, long issuedAt, long expiration) {
-        return Jwts.builder()
-            .subject(username)
-            .issuedAt(new Date(issuedAt))
-            .expiration(new Date(expiration))
-            .issuer(issuer)
-            .id(UUID.randomUUID().toString())
-            .claims(claims)
-            .signWith(jwtSecurityInitializer.getJwtSecret(), jwtSecurityInitializer.getSignatureAlgorithm()).compact();
+        try {
+            var newClaims = new JwtClaims();
+
+            newClaims.setIssuer(issuer);  // who creates the token and signs it
+            newClaims.setExpirationTime(NumericDate.fromMilliseconds(expiration));
+            newClaims.setGeneratedJwtId();
+            newClaims.setIssuedAt(NumericDate.fromMilliseconds(issuedAt));
+            newClaims.setSubject(username);
+            if (claims != null) {
+                claims.entrySet().forEach(entry -> newClaims.setClaim(entry.getKey(), entry.getValue()));
+            }
+
+            var jws = new JsonWebSignature();
+            jws.setPayload(newClaims.toJson());
+            jws.setKey(jwtSecurityInitializer.getJwtSecret());
+            jws.setHeader("typ", "JWT");
+            jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+            jws.setDoKeyValidation(false);
+            return jws.getCompactSerialization();
+        } catch (JoseException e) {
+            throw new UncheckedJoseException(e.getMessage(), e);
+        }
     }
 
     @SuppressWarnings("java:S5659")
     // It is checking the signature securely - https://github.com/zowe/api-layer/issues/3191
-    public QueryResponse parseJwtWithSignature(String jwt) throws SignatureException {
+    public QueryResponse parseJwtWithSignature(String jwt) {
         try {
-            Jwt<JwsHeader, Claims> parsedJwt = (Jwt<JwsHeader, Claims>) Jwts.parser()
-                .verifyWith(jwtSecurityInitializer.getJwtPublicKey())
-                .build()
-                .parse(jwt);
-
-            return parseQueryResponse(parsedJwt.getPayload());
+            var claims = validateAndParseLocalJwtToken(jwt);
+            return parseQueryResponse(claims);
         } catch (RuntimeException exception) {
             throw handleJwtParserException(exception);
         }
@@ -263,15 +296,27 @@ public class AuthenticationService {
         return Boolean.FALSE;
     }
 
-
-    private Claims validateAndParseLocalJwtToken(String jwtToken) {
+    private JWTClaimsSet validateAndParseLocalJwtToken(String jwtToken) {
         try {
-            return Jwts.parser()
-                .verifyWith(jwtSecurityInitializer.getJwtPublicKey())
-                .build()
-                .parseSignedClaims(jwtToken)
-                .getPayload();
-        } catch (RuntimeException exception) {
+            var parsedJwt = JWTParser.parse(jwtToken);
+            if (parsedJwt instanceof SignedJWT signedJwt) {
+                var rsaVerifier = new RSASSAVerifier((RSAPublicKey) jwtSecurityInitializer.getJwtPublicKey());
+                var verified = signedJwt.verify(rsaVerifier);
+                if (verified) {
+                    var claims = parsedJwt.getJWTClaimsSet();
+                    if (claims.getExpirationTime().toInstant().isBefore(clock.instant())) {
+                        log.debug("OIDC Token is expired");
+                        throw new ExpiredJWTException("OIDC Token is expired");
+                    }
+                    return claims;
+                }
+                throw new BadJWTException("Token signature is invalid for public key");
+            } else {
+                throw new BadJWTException("Token is not signed");
+            }
+        } catch (ParseException e) {
+            throw handleJwtParserException(new BadJWTException(e.getMessage()));
+        } catch (RuntimeException | BadJWTException | JOSEException exception) {
             throw handleJwtParserException(exception);
         }
     }
@@ -379,25 +424,29 @@ public class AuthenticationService {
      * @return the query response
      */
     public QueryResponse parseJwtToken(String jwtToken) {
-        Claims claims = getJwtClaims(jwtToken);
+        var claims = getJwtClaims(jwtToken);
         return parseQueryResponse(claims);
     }
 
-    public QueryResponse parseQueryResponse(Claims claims) {
-        Object scopesObject = claims.get(SCOPES);
+    public QueryResponse parseQueryResponse(JWTClaimsSet claims) {
+        Object scopesObject = claims.getClaim(SCOPES);
         List<String> scopes = Collections.emptyList();
         if (scopesObject instanceof List<?>) {
             scopes = (List<String>) scopesObject;
         }
-        return new QueryResponse(
-            claims.get(DOMAIN_CLAIM_NAME, String.class),
-            claims.getSubject(),
-            claims.getIssuedAt(),
-            claims.getExpiration(),
-            claims.getIssuer(),
-            scopes,
-            QueryResponse.Source.valueByIssuer(claims.getIssuer())
-        );
+        try {
+            return new QueryResponse(
+                claims.getClaimAsString(DOMAIN_CLAIM_NAME),
+                claims.getSubject(),
+                claims.getIssueTime(),
+                claims.getExpirationTime(),
+                claims.getIssuer(),
+                scopes,
+                QueryResponse.Source.valueByIssuer(claims.getIssuer())
+            );
+        } catch (ParseException e) {
+            throw new TokenNotValidException(e.getMessage(), e);
+        }
     }
 
     /**
@@ -407,7 +456,7 @@ public class AuthenticationService {
      * @return AuthSource.Origin value based on the iss token claim.
      */
     public AuthSource.Origin getTokenOrigin(String jwtToken) {
-        Claims claims = getJwtClaims(jwtToken);
+        var claims = getJwtClaims(jwtToken);
         QueryResponse.Source source = QueryResponse.Source.valueByIssuer(claims.getIssuer());
         return AuthSource.Origin.valueByTokenSource(source);
     }
@@ -420,7 +469,11 @@ public class AuthenticationService {
      * @return LTPA token extracted from JWT
      */
     public String getLtpaTokenWithValidation(String jwtToken) {
-        return validateAndParseLocalJwtToken(jwtToken).get(LTPA_CLAIM_NAME, String.class);
+        try {
+            return validateAndParseLocalJwtToken(jwtToken).getClaimAsString(LTPA_CLAIM_NAME);
+        } catch (ParseException e) {
+            throw new TokenNotValidException(e.getMessage(), e);
+        }
     }
 
     /**
@@ -431,9 +484,13 @@ public class AuthenticationService {
      * @throws TokenNotValidException if the JWT token is not valid
      */
     public String getLtpaToken(String jwtToken) {
-        Claims claims = getJwtClaims(jwtToken);
+        var claims = getJwtClaims(jwtToken);
 
-        return claims.get(LTPA_CLAIM_NAME, String.class);
+        try {
+            return claims.getClaimAsString(LTPA_CLAIM_NAME);
+        } catch (ParseException e) {
+            throw new TokenNotValidException(e.getMessage(), e);
+        }
     }
 
     /**

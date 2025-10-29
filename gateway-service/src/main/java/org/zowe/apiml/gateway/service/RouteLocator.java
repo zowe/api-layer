@@ -49,11 +49,11 @@ public class RouteLocator implements RouteDefinitionLocator {
     @Value("${apiml.service.forwardClientCertEnabled:false}")
     private boolean forwardingClientCertEnabled;
 
-    @Value("${apiml.gateway.servicesToLimitRequestRate:-}")
+    @Value("${apiml.gateway.servicesToLimitRequestRate:}")
     List<String> servicesToLimitRequestRateProperty;
     List<String> servicesToLimitRequestRate;
 
-    @Value("${apiml.gateway.servicesToDisableRetry:-}")
+    @Value("${apiml.gateway.servicesToDisableRetry:}")
     List<String> servicesToDisableRetryProperty;
     List<String> servicesToDisableRetry;
 
