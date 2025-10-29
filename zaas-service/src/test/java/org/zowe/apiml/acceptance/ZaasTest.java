@@ -20,10 +20,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.product.web.HttpConfig;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 import org.zowe.apiml.zaas.ZaasApplication;
-import org.zowe.apiml.zaas.utils.JWTUtils;
 
 import static io.restassured.RestAssured.config;
 import static io.restassured.RestAssured.given;
@@ -74,7 +74,7 @@ class ZaasTest {
 
     @Test
     void givenZosmfCookieAndDummyAuthProvider_whenZoweJwtRequest_thenUnavailable() {
-        String zosmfJwt = JWTUtils.createZosmfJwtToken("user", "z/OS", "Ltpa", httpConfig.getHttpsConfig());
+        String zosmfJwt = JWTTestUtils.createZosmfJwtToken("user", "z/OS", "Ltpa", httpConfig.getHttpsConfig());
 
         //@formatter:off
         given().config(config().sslConfig(new SSLConfig().sslSocketFactory(

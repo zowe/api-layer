@@ -1,3 +1,7 @@
+plugins {
+    id "java-test-fixtures"
+}
+
 dependencies {
     api project(':apiml-common')
 
@@ -12,6 +16,8 @@ dependencies {
     implementation libs.apache.commons.lang3
     implementation libs.http.client5
 
+    implementation libs.nimbus.jose.jwt // Parsing
+
     testImplementation libs.spring.boot.starter.test
     testImplementation(testFixtures(project(":apiml-common")))
 
@@ -21,4 +27,13 @@ dependencies {
     testCompileOnly libs.lombok
     testImplementation libs.netty.reactor.http
     testAnnotationProcessor libs.lombok
+
+    testFixturesImplementation libs.nimbus.jose.jwt
+    testFixturesImplementation libs.jose4j.jwt
+    testFixturesImplementation libs.jjwt
+    testFixturesImplementation libs.jjwt.impl
+    testFixturesImplementation libs.jjwt.jackson
+
+    testFixturesCompileOnly libs.lombok
+    testFixturesAnnotationProcessor libs.lombok
 }

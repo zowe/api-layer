@@ -44,7 +44,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.zowe.apiml.zaas.utils.JWTUtils.createTokenWithUserFields;
+import static org.zowe.apiml.security.common.util.JWTTestUtils.createTokenWithUserFields;
 
 @ExtendWith(MockitoExtension.class)
 class OIDCAuthSourceServiceTest {

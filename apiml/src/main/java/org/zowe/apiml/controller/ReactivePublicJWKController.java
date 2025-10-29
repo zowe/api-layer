@@ -10,10 +10,7 @@
 
 package org.zowe.apiml.controller;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,6 +20,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.JsonWebKeySet;
+import org.jose4j.jwk.RsaJsonWebKey;
+import org.jose4j.lang.JoseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -43,8 +44,6 @@ import java.security.PublicKey;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import static org.zowe.apiml.zaas.controllers.AuthController.ALL_PUBLIC_KEYS_PATH;
 import static org.zowe.apiml.zaas.controllers.AuthController.CURRENT_PUBLIC_KEYS_PATH;
@@ -81,23 +80,23 @@ public class ReactivePublicJWKController {
             )
         )
     })
-    public Mono<Map<String, Object>> getAllPublicKeys() {
+    public Mono<ResponseEntity<String>> getAllPublicKeys() {
         return Mono.fromSupplier(() -> {
-            List<JWK> keys;
+            List<JsonWebKey> keys;
             if (jwtSecurity.actualJwtProducer() == JwtSecurity.JwtProducer.ZOSMF) {
-                keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
+                keys = new LinkedList<>(zosmfService.getPublicKeys().getJsonWebKeys());
             } else {
                 keys = new LinkedList<>();
             }
-            Optional<JWK> key = jwtSecurity.getJwkPublicKey();
+            var key = jwtSecurity.getJwkPublicKey();
             key.ifPresent(keys::add);
             if ((oidcProvider != null) && (oidcProvider instanceof OIDCTokenProvider oidcTokenProvider)) {
-                JWKSet oidcSet = oidcTokenProvider.getJwkSet();
+                var oidcSet = oidcTokenProvider.getJwkSet();
                 if (oidcSet != null) {
-                    keys.addAll(oidcSet.getKeys());
+                    keys.addAll(oidcSet.getJsonWebKeys());
                 }
             }
-            return new JWKSet(keys).toJSONObject(true);
+            return ResponseEntity.ok(new JsonWebKeySet(keys).toJson());
         });
     }
 
@@ -121,10 +120,10 @@ public class ReactivePublicJWKController {
             )
         )
     })
-    public Mono<Map<String, Object>> getCurrentPublicKeys() {
+    public Mono<ResponseEntity<String>> getCurrentPublicKeys() {
         return Mono.fromSupplier(() -> {
-            final List<JWK> keys = getCurrentKey();
-            return new JWKSet(keys).toJSONObject(true);
+            var keys = getCurrentKey();
+            return ResponseEntity.ok(new JsonWebKeySet(keys).toJson());
         });
     }
 
@@ -152,9 +151,9 @@ public class ReactivePublicJWKController {
     })
     public Mono<ResponseEntity<Object>> getPublicKeyUsedForSigning() {
        return Mono.fromSupplier(() -> {
-           List<JWK> publicKeys = getCurrentKey().stream()
-               .filter(RSAKey.class::isInstance)
-               .toList();
+           var publicKeys = getCurrentKey().stream()
+                .filter(RsaJsonWebKey.class::isInstance)
+                .toList();
             if (publicKeys.isEmpty()) {
                 log.debug("JWT setup was not yet initialized so there is no public key for response.");
                 return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.zaas.keys.unknownState").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -164,11 +163,10 @@ public class ReactivePublicJWKController {
                 return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.zaas.keys.wrongAmount", publicKeys.size()).mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
             }
             try {
-                PublicKey key = publicKeys.get(0)
-                    .toRSAKey()
-                    .toPublicKey();
+                RsaJsonWebKey jwk = (RsaJsonWebKey) JsonWebKey.Factory.newJwk(publicKeys.get(0).toJson());
+                PublicKey key = jwk.getPublicKey();
                 return new ResponseEntity<>(getPublicKeyAsPem(key), HttpStatus.OK);
-            } catch (IOException | JOSEException ex) {
+            } catch (IOException | JoseException ex) {
                 log.error("It was not possible to get public key for JWK, exception message: {}", ex.getMessage());
                 return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.zaas.keys.unknown").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
             }
@@ -184,10 +182,10 @@ public class ReactivePublicJWKController {
         return stringWriter.toString();
     }
 
-    private List<JWK> getCurrentKey() {
+    private List<JsonWebKey> getCurrentKey() {
         JwtSecurity.JwtProducer producer = jwtSecurity.actualJwtProducer();
 
-        JWKSet currentKey;
+        JsonWebKeySet currentKey;
         switch (producer) {
             case ZOSMF:
                 currentKey = zosmfService.getPublicKeys();
@@ -199,7 +197,7 @@ public class ReactivePublicJWKController {
                 //return 500 as we just don't know yet.
                 return Collections.emptyList();
         }
-        return currentKey.getKeys();
+        return currentKey.getJsonWebKeys();
     }
 
 }

@@ -14,8 +14,6 @@ import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaEventListener;
 import com.netflix.discovery.StatusChangeEvent;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -25,13 +23,18 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.zaas.security.login.Providers;
 
-import java.util.Optional;
-
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 class JwtSecurityTest {
@@ -200,22 +203,22 @@ class JwtSecurityTest {
         @Test
         void asSet() {
             underTest.loadAppropriateJwtKeyOrFail();
-            JWKSet result = underTest.getPublicKeyInSet();
+            var result = underTest.getPublicKeyInSet();
 
-            assertThat(result.getKeys().size(), is(1));
+            assertThat(result.getJsonWebKeys().size(), is(1));
         }
 
         @Test
         void whenOnePresent_asOneKey() {
             underTest.loadAppropriateJwtKeyOrFail();
-            Optional<JWK> result = underTest.getJwkPublicKey();
+            var result = underTest.getJwkPublicKey();
 
             assertThat(result.isPresent(), is(true));
         }
 
         @Test
         void whenKeyNotLoaded_Empty() {
-            Optional<JWK> result = underTest.getJwkPublicKey();
+            var result = underTest.getJwkPublicKey();
 
             assertThat(result.isPresent(), is(false));
         }

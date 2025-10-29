@@ -15,14 +15,13 @@ import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.EurekaEventListener;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.SignatureAlgorithm;
+import com.nimbusds.jose.JWSAlgorithm;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.JsonWebKeySet;
+import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -37,7 +36,14 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * JWT Security related configuration. Distinguishes between methods used to generate JWT tokens provided by ZAAS.
@@ -65,7 +71,7 @@ public class JwtSecurity {
     @Value("${apiml.security.jwtInitializerTimeout:5}")
     private int timeout;
 
-    private SignatureAlgorithm signatureAlgorithm;
+    private JWSAlgorithm signatureAlgorithm;
     private PrivateKey jwtSecret;
     private PublicKey jwtPublicKey;
 
@@ -164,7 +170,7 @@ public class JwtSecurity {
      * Load the JWT secret. If there is a configuration issue the keys are not loaded and the error is logged.
      */
     private void loadJwtSecret() {
-        signatureAlgorithm = Jwts.SIG.RS256;
+        signatureAlgorithm = JWSAlgorithm.RS256;
 
         HttpsConfig config = currentConfig();
         try {
@@ -216,7 +222,8 @@ public class JwtSecurity {
     /*
      * Start of the actual API for the security class
      */
-    public SignatureAlgorithm getSignatureAlgorithm() {
+    @VisibleForTesting
+    public JWSAlgorithm getSignatureAlgorithm() {
         return signatureAlgorithm;
     }
 
@@ -228,22 +235,25 @@ public class JwtSecurity {
         return jwtPublicKey;
     }
 
-    public JWKSet getPublicKeyInSet() {
-        final List<JWK> keys = new LinkedList<>();
+    public JsonWebKeySet getPublicKeyInSet() {
+        List<JsonWebKey> keys = new ArrayList<>();
 
-        Optional<JWK> publicKey = getJwkPublicKey();
-        publicKey.ifPresent(keys::add);
+        var publicKeyOptional = getJwkPublicKey();
+        publicKeyOptional.ifPresent(keys::add);
 
-        return new JWKSet(keys);
+        return new JsonWebKeySet(keys);
     }
 
-    public Optional<JWK> getJwkPublicKey() {
+    public Optional<JsonWebKey> getJwkPublicKey() {
         if (jwtPublicKey instanceof RSAPublicKey rsaPublicKey) {
-            return Optional.of(
-                new RSAKey.Builder(rsaPublicKey).build().toPublicJWK()
-            );
+            try {
+                return Optional.of(JsonWebKey.Factory.newJwk(rsaPublicKey));
+            } catch (JoseException e) {
+                log.debug("Unable to create JWK {}", e.getMessage(), e);
+            }
+        } else {
+            log.debug("Unsupported type of public key: {}", jwtPublicKey == null ? null : jwtPublicKey.getClass());
         }
-        log.debug("Unsupported type of public key: {}", jwtPublicKey == null ? null : jwtPublicKey.getClass());
 
         return Optional.empty();
     }
