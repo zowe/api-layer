@@ -25,7 +25,7 @@ import java.util.List;
 @Service
 public class StaticWebFingerProvider implements WebFingerProvider {
 
-    @Value("${apiml.security.webfinger.fileLocation:-}")
+    @Value("${apiml.security.webfinger.fileLocation:}")
     private String webfingerDefinition;
     private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
 
