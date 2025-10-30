@@ -13,9 +13,6 @@ package org.zowe.apiml.zaas.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,13 +28,24 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.JsonWebKeySet;
+import org.jose4j.jwk.RsaJsonWebKey;
+import org.jose4j.lang.JoseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
@@ -53,9 +61,14 @@ import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.PublicKey;
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 
 /**
  * Controller offer method to control security. It can contain method for user and also method for calling services
@@ -341,26 +354,27 @@ public class AuthController {
         @ApiResponse(responseCode = "200", description = "OK",
             content = @Content(
                 mediaType = MediaType.APPLICATION_JSON_VALUE,
-                schema = @Schema(implementation = JWKSet.class)
+                schema = @Schema(implementation = JsonWebKeySet.class)
             )
         )
     })
-    public Map<String, Object> getAllPublicKeys() {
-        List<JWK> keys;
+    public ResponseEntity<String> getAllPublicKeys() {
+        List<JsonWebKey> keys;
+
         if (jwtSecurity.actualJwtProducer() == JwtSecurity.JwtProducer.ZOSMF) {
-            keys = new LinkedList<>(zosmfService.getPublicKeys().getKeys());
+            keys = new LinkedList<>(zosmfService.getPublicKeys().getJsonWebKeys());
         } else {
             keys = new LinkedList<>();
         }
-        Optional<JWK> key = jwtSecurity.getJwkPublicKey();
+        var key = jwtSecurity.getJwkPublicKey();
         key.ifPresent(keys::add);
         if ((oidcProvider != null) && (oidcProvider instanceof OIDCTokenProvider oidcTokenProvider)) {
-            JWKSet oidcSet = oidcTokenProvider.getJwkSet();
+            var oidcSet = oidcTokenProvider.getJwkSet();
             if (oidcSet != null) {
-                keys.addAll(oidcSet.getKeys());
+                keys.addAll(oidcSet.getJsonWebKeys());
             }
         }
-        return new JWKSet(keys).toJSONObject(true);
+        return ResponseEntity.ok().body(new JsonWebKeySet(keys).toJson());
     }
 
     /**
@@ -380,13 +394,13 @@ public class AuthController {
         @ApiResponse(responseCode = "200", description = "OK",
             content = @Content(
                 mediaType = MediaType.APPLICATION_JSON_VALUE,
-                schema = @Schema(implementation = JWKSet.class)
+                schema = @Schema(implementation = JsonWebKeySet.class)
             )
         )
     })
-    public Map<String, Object> getCurrentPublicKeys() {
-        final List<JWK> keys = getCurrentKey();
-        return new JWKSet(keys).toJSONObject(true);
+    public ResponseEntity<String> getCurrentPublicKeys() {
+        final List<JsonWebKey> keys = getCurrentKey();
+        return ResponseEntity.ok(new JsonWebKeySet(keys).toJson());
     }
 
     /**
@@ -413,7 +427,7 @@ public class AuthController {
         )
     })
     public ResponseEntity<Object> getPublicKeyUsedForSigning() {
-        List<JWK> publicKeys = getCurrentKey();
+        var publicKeys = getCurrentKey();
         if (publicKeys.isEmpty()) {
             log.debug("JWT setup was not yet initialized so there is no public key for response.");
             return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.zaas.keys.unknownState").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -423,20 +437,19 @@ public class AuthController {
             return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.zaas.keys.wrongAmount", publicKeys.size()).mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         try {
-            PublicKey key = publicKeys.get(0)
-                .toRSAKey()
-                .toPublicKey();
+            RsaJsonWebKey jwk = (RsaJsonWebKey) JsonWebKey.Factory.newJwk(publicKeys.get(0).toJson());
+            PublicKey key = jwk.getPublicKey();
             return new ResponseEntity<>(getPublicKeyAsPem(key), HttpStatus.OK);
-        } catch (IOException | JOSEException ex) {
+        } catch (IOException | JoseException ex) {
             log.error("It was not possible to get public key for JWK, exception message: {}", ex.getMessage());
             return new ResponseEntity<>(messageService.createMessage("org.zowe.apiml.zaas.keys.unknown").mapToApiMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    private List<JWK> getCurrentKey() {
+    private List<JsonWebKey> getCurrentKey() {
         JwtSecurity.JwtProducer producer = jwtSecurity.actualJwtProducer();
 
-        JWKSet currentKey;
+        JsonWebKeySet currentKey;
         switch (producer) {
             case ZOSMF:
                 currentKey = zosmfService.getPublicKeys();
@@ -448,7 +461,7 @@ public class AuthController {
                 //return 500 as we just don't know yet.
                 return Collections.emptyList();
         }
-        return currentKey.getKeys();
+        return currentKey.getJsonWebKeys();
     }
 
     @PostMapping(path = OIDC_TOKEN_VALIDATE)
