@@ -303,7 +303,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     ${QUICK_START} \
     ${ADD_OPENS} \
     ${LOGBACK} \
-    ${JVM_SECURITY_PROPERTIES_OVERRIDE} \
+    ${JVM_SECURITY_PROPERTIES} \
     -Dapiml.connection.idleConnectionTimeoutSeconds=${ZWE_configs_apiml_connection_idleConnectionTimeoutSeconds:-5} \
     -Dapiml.connection.timeout=${ZWE_configs_apiml_connection_timeout:-60000} \
     -Dapiml.connection.timeToLive=${ZWE_configs_apiml_connection_timeToLive:-10000} \
