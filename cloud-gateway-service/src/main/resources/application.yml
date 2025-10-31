@@ -89,11 +89,14 @@ logging:
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
         javax.net.ssl: ERROR # For running with java 17
+        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
 
 management:
     endpoint:
       gateway:
-          enabled: false
+              enabled: false
     endpoints:
         web:
             base-path: /application
@@ -115,6 +118,9 @@ logging:
         reactor.netty.http.client.HttpClient: DEBUG
         reactor.netty.http.client.HttpClientConnect: DEBUG
         com.netflix: DEBUG
+        org.apache: INFO
+        org.apache.http: DEBUG
+        org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
 
 ---
