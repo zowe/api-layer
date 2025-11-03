@@ -26,7 +26,6 @@ import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
-import org.zowe.apiml.zaas.security.service.JwtUtils;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 
 import java.util.Arrays;
@@ -122,7 +121,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
     public AuthSource.Parsed parse(AuthSource authSource) {
         if (authSource instanceof OIDCAuthSource oidcAuthSource) {
             if (isValid(oidcAuthSource)) {
-                return parseOIDCToken( oidcAuthSource, mapper);
+                return parseOIDCToken(oidcAuthSource, mapper);
             }
             throw new TokenNotValidException("OIDC token is not valid.");
         }
@@ -133,7 +132,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
      * Parse OIDC token
      *
      * @param oidcAuthSource{@link OIDCAuthSource} object which hold original source of authentication - OIDC token.
-     * @param mapper     instance of {@link AuthenticationMapper} to use for parsing.
+     * @param mapper               instance of {@link AuthenticationMapper} to use for parsing.
      * @return parsed authentication source.
      */
     private AuthSource.Parsed parseOIDCToken(OIDCAuthSource oidcAuthSource, AuthenticationMapper mapper) {
@@ -153,7 +152,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
                     .messageSegment("The OIDC token was mapped to the user account")
                     .success();
                 try {
-                    JwtUtils.getFieldValuesFromToken(token, oidcSourceUserPaths).stream()
+                    getFieldValuesFromToken(token, oidcSourceUserPaths)
                         .forEach(rauditx::sourceUserId);
                 } catch (Exception e) {
                     log.debug("Cannot obtain source users from the OIDC token", e);
