@@ -64,36 +64,15 @@ public class CertificateValidator {
             .map(trustedCertificatesProvider::getTrustedCerts)
             .flatMap(List::stream)
             .toList();
-        for (X509Certificate cert : certs) {
 
-            if (isTrusted(cert, trustedCerts)) {
-                continue;
-            } else {
+        for (X509Certificate cert : certs) {
+            if (!trustedCerts.contains(cert)) {
+                log.debug("Certificate is not trusted by endpoint {}. Untrusted certificate is {}", proxyCertificatesEndpoints, cert);
                 return false;
             }
         }
-
         log.debug("The whole certificate chain is trusted.");
         return true;
-    }
-
-    private boolean isTrusted(X509Certificate cert, List<Certificate> trustedCerts) {
-        for (var trustedCert : trustedCerts) {
-            if (trustedCert instanceof X509Certificate trustedX509Cert) {
-                if (cert.getSerialNumber().equals(trustedX509Cert.getSerialNumber())) {
-                    log.debug("Cert is the same serial number");
-                    if (!cert.equals(trustedX509Cert)) {
-                        log.debug("they don't equal");
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }
-            } else {
-                log.debug("trusted cert is not an X509Certificate");
-            }
-        }
-        return false;
     }
 
     /**
