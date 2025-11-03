@@ -34,6 +34,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.security.common.util.JWTTestUtils.createTokenWithUserFields;
 import static org.zowe.apiml.zaas.utils.JWTUtils.createTokenWithUserFields;
 
 @ExtendWith(MockitoExtension.class)

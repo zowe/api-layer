@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static org.zowe.apiml.zaas.security.service.JwtUtils.getFieldValuesFromToken;
+import static org.zowe.apiml.security.common.util.JwtUtils.getFieldValuesFromToken;
 
 @Slf4j
 @Service

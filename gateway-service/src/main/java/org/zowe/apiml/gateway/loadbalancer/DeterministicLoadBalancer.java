@@ -10,10 +10,10 @@
 
 package org.zowe.apiml.gateway.loadbalancer;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Clock;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWTParser;
+import com.nimbusds.jwt.proc.BadJWTException;
+import com.nimbusds.jwt.proc.ExpiredJWTException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
@@ -32,6 +32,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Collections;
@@ -55,18 +57,18 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
     private static final String HEADER_NONE_SIGNATURE = Base64.getEncoder().encodeToString("{\"typ\":\"JWT\",\"alg\":\"none\"}".getBytes(StandardCharsets.UTF_8));
 
     private final LoadBalancerCache cache;
-    private final Clock clock;
     private final int expirationTime;
+    private final Clock clock;
 
     public DeterministicLoadBalancer(ServiceInstanceListSupplier delegate,
                                      ReactiveLoadBalancer.Factory<ServiceInstance> loadBalancerClientFactory,
                                      LoadBalancerCache cache,
-                                     Clock clock,
-                                     int expirationTime) {
+                                     int expirationTime,
+                                     Clock clock) {
         super(delegate, loadBalancerClientFactory);
         this.cache = cache;
-        this.clock = clock;
         this.expirationTime = expirationTime;
+        this.clock = clock;
         log.debug("StickySessionLoadBalancer instantiated");
     }
 
@@ -264,38 +266,41 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
         return false;
     }
 
-    private String removeJwtSign(String jwtToken) {
+    private String removeJwtSign(String jwtToken) throws BadJWTException {
         if (jwtToken == null) return null;
 
         int firstDot = jwtToken.indexOf('.');
         int lastDot = jwtToken.lastIndexOf('.');
-        if ((firstDot < 0) || (firstDot >= lastDot)) throw new MalformedJwtException("Invalid JWT format");
+        if ((firstDot < 0) || (firstDot >= lastDot)) {
+            throw new BadJWTException("Invalid JWT format");
+        }
 
         return HEADER_NONE_SIGNATURE + jwtToken.substring(firstDot, lastDot + 1);
     }
 
-    private Claims getJwtClaims(String jwt) {
+    private JWTClaimsSet getJwtClaims(String jwt) {
         /*
          * Removes signature, because we don't have key to verify z/OS tokens, and we just need to read claim.
          * Verification is done by SAF itself. JWT library doesn't parse signed key without verification.
          */
         try {
-            String withoutSign = removeJwtSign(jwt);
-            return Jwts.parser()
-                .unsecured()
-                .clock(clock)
-                .build()
-                .parseUnsecuredClaims(withoutSign)
-                .getPayload();
-        } catch (RuntimeException exception) {
-            log.debug("Exception when trying to parse the JWT token {}", jwt);
+            var jwtWithoutSignature = removeJwtSign(jwt);
+
+            var claims = JWTParser.parse(jwtWithoutSignature)
+                .getJWTClaimsSet();
+            if (claims.getExpirationTime().toInstant().isBefore(clock.instant())) {
+                throw new ExpiredJWTException("JWT Token is expired");
+            }
+            return claims;
+        } catch (RuntimeException | ParseException | BadJWTException exception) {
+            log.debug("Exception when trying to parse the JWT token {}: {}", jwt, exception.getMessage());
             return null; // NOSONAR
         }
     }
 
     private String extractSubFromToken(String token) {
         if (StringUtils.isNotEmpty(token)) {
-            Claims claims = getJwtClaims(token);
+            var claims = getJwtClaims(token);
             if (claims != null) {
                 return claims.getSubject();
             }
