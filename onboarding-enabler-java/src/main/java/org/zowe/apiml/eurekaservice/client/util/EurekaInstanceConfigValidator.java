@@ -19,6 +19,7 @@ import org.zowe.apiml.exception.MetadataValidationException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Class that validates a service configuration before the registration with API ML
@@ -33,6 +34,8 @@ public class EurekaInstanceConfigValidator {
     private final List<String> missingRoutesParameters = new ArrayList<>();
     private final List<String> poorlyFormedRelativeUrlParameters = new ArrayList<>();
 
+    private static final Pattern SERVICE_ID_PATTERN = Pattern.compile("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$");
+
     /**
      * Validates mandatory and non-mandatory parameters
      *
@@ -40,6 +43,7 @@ public class EurekaInstanceConfigValidator {
      * @throws MetadataValidationException if the validation fails
      */
     public void validate(ApiMediationServiceConfig config) {
+        validateServiceId(config.getServiceId());
         validateRoutes(config.getRoutes());
         if (config.getDiscoveryServiceUrls().stream().anyMatch(url -> url.toLowerCase().startsWith("https"))) {
             validateSsl(config.getSsl());
@@ -52,6 +56,17 @@ public class EurekaInstanceConfigValidator {
 
         if (config.getApiInfo() == null || config.getApiInfo().isEmpty()) {
             log.warn("The API info configuration is not provided. Try to add apiml.service.apiInfo section.");
+        }
+    }
+
+    // "-" should be excluded also in v4 probably, as it's not conformant according to RFC0952
+    private void validateServiceId(String serviceId) {
+        if (!SERVICE_ID_PATTERN.matcher(serviceId).matches()) {
+            String message = String.format(
+                "Invalid serviceId [%s]: must comply with RFC 952 and RFC 1123 — only lowercase letters, digits, and hyphens allowed, must not start or end with a hyphen, and must not exceed 63 characters.",
+                serviceId
+            );
+            throw new MetadataValidationException(message);
         }
     }
 

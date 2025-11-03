@@ -25,6 +25,7 @@ import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
 import org.zowe.apiml.discovery.config.EurekaConfig;
+import org.zowe.apiml.exception.MetadataValidationException;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -34,11 +35,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
@@ -55,6 +52,7 @@ import java.util.regex.Pattern;
 public class ApimlInstanceRegistry extends InstanceRegistry {
 
     private static final String EXCEPTION_MESSAGE = "Implementation of InstanceRegistry changed, please verify fix of order sending events";
+    private static final Pattern SERVICE_ID_PATTERN = Pattern.compile("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$");
 
     private MethodHandle handleRegistrationMethod;
     private MethodHandle handlerResolveInstanceLeaseDurationMethod;
@@ -229,6 +227,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      */
     @Override
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
+            isServiceIdConformant(info);
             info = changeServiceId(info);
         try {
             register3ArgsMethodHandle.invokeWithArguments(this, info, leaseDuration, isReplication);
@@ -244,6 +243,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, final boolean isReplication) {
+            isServiceIdConformant(info);
             info = changeServiceId(info);
         try {
             register2ArgsMethodHandle.invokeWithArguments(this, info, isReplication);
@@ -254,6 +254,28 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
             throw re;
         } catch (Throwable t) {
             throw new IllegalArgumentException(EXCEPTION_MESSAGE, t);
+        }
+    }
+
+    // "-" should also be probably excluded in v4, since it's not conformant according to RFC0952
+    /**
+     * Validate whether the service ID is conformant.
+     * If not, the method will throw an exception and reject registration.
+     * @param info the instance info
+     * @throws MetadataValidationException exception in case of non-conformant service ID.
+     */
+    private void isServiceIdConformant(InstanceInfo info) {
+        String instanceId = info.getInstanceId();
+
+        String[] parts = instanceId.split(":");
+        if (parts.length != 3) {
+            throw new MetadataValidationException(
+                "The instance ID '" + instanceId + "' must have the format 'hostname:serviceId:port'."
+            );
+        }
+        String serviceIdPart = parts[1];
+        if (!SERVICE_ID_PATTERN.matcher(serviceIdPart).matches()) {
+            throw new MetadataValidationException("The service ID '" + serviceIdPart + "' is not a conformant.");
         }
     }
 
