@@ -12,7 +12,6 @@ package org.zowe.apiml.security.common.verify;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -42,8 +41,6 @@ public class CertificateValidator {
     private String[] proxyCertificatesEndpoints;
     private final Set<String> publicKeyCertificatesBase64;
 
-
-    @Autowired
     public CertificateValidator(TrustedCertificatesProvider trustedCertificatesProvider,
                                 @Qualifier("publicKeyCertificatesBase64") Set<String> publicKeyCertificatesBase64) {
         this.trustedCertificatesProvider = trustedCertificatesProvider;
@@ -68,13 +65,35 @@ public class CertificateValidator {
             .flatMap(List::stream)
             .toList();
         for (X509Certificate cert : certs) {
-            if (!trustedCerts.contains(cert)) {
-                log.debug("Certificate is not trusted by endpoint {}. Untrusted certificate is {}", proxyCertificatesEndpoints, cert);
+
+            if (isTrusted(cert, trustedCerts)) {
+                continue;
+            } else {
                 return false;
             }
         }
+
         log.debug("The whole certificate chain is trusted.");
         return true;
+    }
+
+    private boolean isTrusted(X509Certificate cert, List<Certificate> trustedCerts) {
+        for (var trustedCert : trustedCerts) {
+            if (trustedCert instanceof X509Certificate trustedX509Cert) {
+                if (cert.getSerialNumber().equals(trustedX509Cert.getSerialNumber())) {
+                    log.debug("Cert is the same serial number");
+                    if (!cert.equals(trustedX509Cert)) {
+                        log.debug("they don't equal");
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            } else {
+                log.debug("trusted cert is not an X509Certificate");
+            }
+        }
+        return false;
     }
 
     /**
