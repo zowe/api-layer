@@ -331,7 +331,7 @@ class ServiceDefinitionProcessorTest {
 
         assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
             result,
-            "ServiceId is not defined in the file 'test.yml'. The instance will not be created."
+            "ServiceId is either not defined in the file 'test.yml' or not conformant. The instance will not be created."
         );
     }
 
