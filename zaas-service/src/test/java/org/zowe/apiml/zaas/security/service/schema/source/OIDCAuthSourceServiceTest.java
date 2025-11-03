@@ -35,7 +35,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.security.common.util.JWTTestUtils.createTokenWithUserFields;
-import static org.zowe.apiml.zaas.utils.JWTUtils.createTokenWithUserFields;
 
 @ExtendWith(MockitoExtension.class)
 class OIDCAuthSourceServiceTest {
@@ -173,7 +172,7 @@ class OIDCAuthSourceServiceTest {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = { "nonexistent", "org.nonexistent.foo", "org.dep", "org.dep.nonexistent", "org.dep.nickname", "org.dep.nullValue"})
+        @ValueSource(strings = {"nonexistent", "org.nonexistent.foo", "org.dep", "org.dep.nonexistent", "org.dep.nickname", "org.dep.nullValue"})
         void givenInvalidUserIdFieldProperty_thenThrowException(String preferredUsernameField) {
             when(provider.isValid(TOKEN_WITH_USERNAME_FIELDS)).thenReturn(true);
             OIDCAuthSource authSource = new OIDCAuthSource(TOKEN_WITH_USERNAME_FIELDS);
