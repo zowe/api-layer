@@ -41,6 +41,7 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
@@ -59,6 +60,7 @@ public class ServiceDefinitionProcessor {
     private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
 
     private static final String ERROR_PARSING_STATIC_DEFINITION_DATA = "org.zowe.apiml.discovery.errorParsingStaticDefinitionData";
+    private static final Pattern SERVICE_ID_PATTERN = Pattern.compile("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$");
 
     public ServiceDefinitionProcessor() {
     }
@@ -208,8 +210,8 @@ public class ServiceDefinitionProcessor {
 
     private List<InstanceInfo> createInstances(StaticRegistrationResult context, String ymlFileName, Service service, Map<String, CatalogUiTile> tiles) {
         try {
-            if (service.getServiceId() == null) {
-                throw new ServiceDefinitionException(String.format("ServiceId is not defined in the file '%s'. The instance will not be created.", ymlFileName));
+            if (service.getServiceId() == null || !SERVICE_ID_PATTERN.matcher(service.getServiceId()).matches()) {
+                throw new ServiceDefinitionException(String.format("ServiceId is either not defined in the file '%s' or not conformant. The instance will not be created.", ymlFileName));
             }
 
             if (service.getInstanceBaseUrls() == null) {
