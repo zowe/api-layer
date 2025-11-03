@@ -259,7 +259,8 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     // "-" should also be probably excluded in v4, since it's not conformant according to RFC0952
     /**
-     * Validate whether the service ID is conformant.
+     * Validate whether the service ID is conformant and complies with RFC 952 and RFC 1123. Only lowercase letters, digits,
+     * and hyphens allowed, must not start or end with a hyphen, and must not exceed 63 characters.
      * If not, the method will throw an exception and reject registration.
      * @param info the instance info
      * @throws MetadataValidationException exception in case of non-conformant service ID.
