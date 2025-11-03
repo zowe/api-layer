@@ -32,6 +32,7 @@ import org.springframework.cloud.netflix.eureka.server.InstanceRegistryPropertie
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.discovery.config.EurekaConfig;
+import org.zowe.apiml.exception.MetadataValidationException;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.WrongMethodTypeException;
@@ -66,12 +67,13 @@ class ApimlInstanceRegistryTest {
     @Mock private InstanceRegistryProperties instanceRegistryProperties;
     @Mock private ApplicationContext appCntx;
     private InstanceInfo standardInstance;
+    private InstanceInfo instanceWithWrongServiceId;
 
     private EurekaServerConfig serverConfig;
 
     @BeforeEach
     void setUp() {
-        standardInstance = getStandardInstance();
+        standardInstance = getStandardInstance("hostname:serviceclient:10010");
         serverConfig = new DefaultEurekaServerConfig();
 
         apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
@@ -93,13 +95,60 @@ class ApimlInstanceRegistryTest {
     }
 
     @Nested
+    class GivenInvalidServiceId {
+        @Test
+        void whenContainingUnderscore_thenThrowException() {
+            InstanceInfo wrongInstance = getStandardInstance("hostname:invalid_serviceid:10010");
+
+            apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
+                serverConfig,
+                clientConfig,
+                serverCodecs,
+                eurekaClient,
+                eurekaServerHttpClientFactory,
+                instanceRegistryProperties,
+                appCntx,
+                new EurekaConfig.Tuple("")));
+            MethodHandle methodHandle = mock(MethodHandle.class);
+            ReflectionTestUtils.setField(apimlInstanceRegistry,"register3ArgsMethodHandle",methodHandle);
+            ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod",methodHandle);
+            assertThrows(MetadataValidationException.class, () -> {
+                apimlInstanceRegistry.register(wrongInstance, 1, false);
+            });
+
+        }
+
+        @Test
+        void whenWrongFormat_thenThrowException() {
+            InstanceInfo wrongInstance = getStandardInstance("invalid_serviceid:10010");
+
+            apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
+                serverConfig,
+                clientConfig,
+                serverCodecs,
+                eurekaClient,
+                eurekaServerHttpClientFactory,
+                instanceRegistryProperties,
+                appCntx,
+                new EurekaConfig.Tuple("")));
+            MethodHandle methodHandle = mock(MethodHandle.class);
+            ReflectionTestUtils.setField(apimlInstanceRegistry,"register3ArgsMethodHandle",methodHandle);
+            ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod",methodHandle);
+            assertThrows(MetadataValidationException.class, () -> {
+                apimlInstanceRegistry.register(wrongInstance, 1, false);
+            });
+
+        }
+    }
+
+    @Nested
     class GivenReplacerTuple {
         @Nested
         class WhenChangeServiceId {
             @Test
             void thenChangeServicePrefix() {
                 InstanceInfo info = apimlInstanceRegistry.changeServiceId(standardInstance);
-                assertEquals("helloclient", info.getInstanceId());
+                assertEquals("hostname:helloclient:10010", info.getInstanceId());
                 assertEquals("HELLOCLIENT", info.getAppName());
                 assertEquals("helloclient", info.getVIPAddress());
                 assertEquals("HELLOCLIENT", info.getAppGroupName());
@@ -112,15 +161,15 @@ class ApimlInstanceRegistryTest {
     }
     private static Stream<Arguments> tuples() {
        return Stream.of(
-           Arguments.of("service*,hello", "helloclient"),
-           Arguments.of("service,hello", "helloclient"),
-           Arguments.of("service*,hello*", "helloclient"),
-           Arguments.of("service*,service", "serviceclient"),
-           Arguments.of("service*", "serviceclient"),
-           Arguments.of(",service", "serviceclient"),
-           Arguments.of("service,", "serviceclient"),
-           Arguments.of(null, "serviceclient"),
-           Arguments.of("different*,hello", "serviceclient")
+           Arguments.of("service*,hello", "hostname:helloclient:10010"),
+           Arguments.of("service,hello", "hostname:helloclient:10010"),
+           Arguments.of("service*,hello*", "hostname:helloclient:10010"),
+           Arguments.of("service*,service", "hostname:serviceclient:10010"),
+           Arguments.of("service*", "hostname:serviceclient:10010"),
+           Arguments.of(",service", "hostname:serviceclient:10010"),
+           Arguments.of("service,", "hostname:serviceclient:10010"),
+           Arguments.of(null, "hostname:serviceclient:10010"),
+           Arguments.of("different*,hello", "hostname:serviceclient:10010")
        );
     }
 
@@ -371,10 +420,10 @@ class ApimlInstanceRegistryTest {
     }
 
 
-    private InstanceInfo getStandardInstance() {
+    private InstanceInfo getStandardInstance(String serviceId) {
 
         return InstanceInfo.Builder.newBuilder()
-            .setInstanceId("serviceclient")
+            .setInstanceId(serviceId)
             .setAppName("SERVICECLIENT")
             .setAppGroupName("SERVICECLIENT")
             .setIPAddr("192.168.0.1")
