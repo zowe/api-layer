@@ -90,21 +90,14 @@ export default class Eureka extends EventEmitter {
     const cwd = config.cwd || process.cwd();
     const env = process.env.EUREKA_ENV || process.env.NODE_ENV || 'development';
 
-    // Config can either be passed via config file or as json
-    // Check if config file and cwd was provided
-    if (cwd) {
-      const filename = config.filename || 'eureka-client';
+    const filename = config.filename || 'eureka-client';
 
-      // Load in the configuration files:
-      const defaultYml = getYaml(path.join(cwd, `${filename}.yml`));
-      const envYml = getYaml(path.join(cwd, `${filename}-${env}.yml`));
+    // Load in the configuration files:
+    const defaultYml = getYaml(path.join(cwd, `${filename}.yml`));
+    const envYml = getYaml(path.join(cwd, `${filename}-${env}.yml`));
 
-      // apply config overrides in appropriate order
-      this.config = merge({}, defaultConfig, defaultYml, envYml, config);
-    } else {
-      // config was provided as JSON
-      this.config = config;
-    }
+    // apply config overrides in appropriate order
+    this.config = merge({}, defaultConfig, defaultYml, envYml, config);
 
     // Validate the provided the values we need:
     this.validateConfig(this.config);

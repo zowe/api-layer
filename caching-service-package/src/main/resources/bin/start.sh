@@ -257,7 +257,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   ${QUICK_START} \
   ${ADD_OPENS} \
   ${LOGBACK} \
-  ${JVM_SECURITY_PROPERTIES_OVERRIDE} \
+  ${JVM_SECURITY_PROPERTIES} \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
   -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
