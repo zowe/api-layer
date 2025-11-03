@@ -139,6 +139,29 @@ class ApimlInstanceRegistryTest {
             });
 
         }
+
+        @Test
+        void whenServiceIdLongerThan63Chars_thenThrowException() {
+            String longServiceId = "invalidserviceidididididididididididdididididididididididdidididididididididid";
+            InstanceInfo wrongInstance = getStandardInstance("hostname:" + longServiceId + ":10010");
+
+            apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
+                serverConfig,
+                clientConfig,
+                serverCodecs,
+                eurekaClient,
+                eurekaServerHttpClientFactory,
+                instanceRegistryProperties,
+                appCntx,
+                new EurekaConfig.Tuple("")));
+            MethodHandle methodHandle = mock(MethodHandle.class);
+            ReflectionTestUtils.setField(apimlInstanceRegistry,"register3ArgsMethodHandle",methodHandle);
+            ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod",methodHandle);
+            assertThrows(MetadataValidationException.class, () -> {
+                apimlInstanceRegistry.register(wrongInstance, 1, false);
+            });
+
+        }
     }
 
     @Nested
