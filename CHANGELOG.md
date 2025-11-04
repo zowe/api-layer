@@ -2,6 +2,16 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `APIML 2.18.19 / Zowe 2.18.3 (2025-10-31)`
+
+* Feature:  Support PATCH method in CORS. (#4255) ([1d86960](https://github.com/zowe/api-layer/commit/1d86960)), closes [#4255](https://github.com/zowe/api-layer/issues/4255)
+
+* Bugfix:  Fix default eureka intervals of Caching Service. (#4225) ([5cd6898](https://github.com/zowe/api-layer/commit/5cd6898)), closes [#4225](https://github.com/zowe/api-layer/issues/4225)
+* Bugfix:  Fix API ML services logs so that "URL/Path not transformed" entries omit API ML services. (#4292) ([e75539d](https://github.com/zowe/api-layer/commit/e75539d)), closes [#4292](https://github.com/zowe/api-layer/issues/4292)
+* Bugfix:  Fix z/OSMF static definition for AT-TLS. (#4330) ([262a654](https://github.com/zowe/api-layer/commit/262a654)), closes [#4330](https://github.com/zowe/api-layer/issues/4330)
+* Bugfix:  Fix URLs for onboarding when AT-TLS is enabled and gateway read a keyring with empty values. ([823006f](https://github.com/zowe/api-layer/commit/823006f)), closes [#4337](https://github.com/zowe/api-layer/issues/4337)
+* Bugfix:  Fix correct protocol scheme in hybrid AT-TLS setup. (#4338) ([631bf96](https://github.com/zowe/api-layer/commit/631bf96)), closes [#4338](https://github.com/zowe/api-layer/issues/4338)
+
 ## `APIML 2.18.16 / Zowe 2.18.2 (2025-07-22)`
 
 * Feature:  New configuration property **`apiml.security.forwardHeader.trustedProxies`** added to specify the regular expression pattern used to identify trusted proxies from which `X-Forwarded-*` headers are accepted and forwarded. Mitigates CVE-2025-41235. (#4148) ([55c9db6](https://github.com/zowe/api-layer/commit/55c9db6)), closes [#4148](https://github.com/zowe/api-layer/pull/4148), (#4188) ([d9dfd17](https://github.com/zowe/api-layer/commit/d9dfd17)), closes [#4188](https://github.com/zowe/api-layer/pull/4188)
