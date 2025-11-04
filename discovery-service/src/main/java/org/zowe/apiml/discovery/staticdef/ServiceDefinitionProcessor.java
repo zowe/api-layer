@@ -61,7 +61,6 @@ public class ServiceDefinitionProcessor {
     private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
 
     private static final String ERROR_PARSING_STATIC_DEFINITION_DATA = "org.zowe.apiml.discovery.errorParsingStaticDefinitionData";
-    private static final Pattern SERVICE_ID_PATTERN = Pattern.compile("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$");
 
     public ServiceDefinitionProcessor() {
     }
