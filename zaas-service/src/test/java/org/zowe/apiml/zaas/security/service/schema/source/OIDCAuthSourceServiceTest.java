@@ -20,11 +20,10 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
-import org.zowe.apiml.security.common.token.OIDCProvider;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.security.common.audit.Rauditx;
+import org.zowe.apiml.security.common.audit.RauditxService;
+import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
@@ -33,17 +32,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.security.common.util.JWTTestUtils.createTokenWithUserFields;
 
 @ExtendWith(MockitoExtension.class)
@@ -55,6 +45,8 @@ class OIDCAuthSourceServiceTest {
     private AuthenticationService authenticationService;
     private OIDCProvider provider;
     private AuthenticationMapper mapper;
+    private RauditxService rauditxService;
+    private Rauditx rauditx;
     private static final String DUMMY_TOKEN = "token";
     private static final String TOKEN_WITH_USERNAME_FIELDS = createTokenWithUserFields();
     public static final String SUB_USER = "oidc.username";
@@ -67,7 +59,14 @@ class OIDCAuthSourceServiceTest {
         tokenCreationService = mock(TokenCreationService.class);
         provider = mock(OIDCProvider.class);
         mapper = mock(AuthenticationMapper.class);
-        service = new OIDCAuthSourceService(mapper, authenticationService, provider, tokenCreationService);
+        rauditxService = spy(new RauditxService() {
+            @Override
+            protected Rauditx createMock() {
+                rauditx = spy(super.createMock());
+                return rauditx;
+            }
+        });
+        service = new OIDCAuthSourceService(mapper, authenticationService, provider, tokenCreationService, rauditxService);
         service.userIdFieldPathProperty = DEFAULT_USERID_FIELD;
         service.afterPropertiesSet();
     }
@@ -173,7 +172,7 @@ class OIDCAuthSourceServiceTest {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = { "nonexistent", "org.nonexistent.foo", "org.dep", "org.dep.nonexistent", "org.dep.nickname", "org.dep.nullValue"})
+        @ValueSource(strings = {"nonexistent", "org.nonexistent.foo", "org.dep", "org.dep.nonexistent", "org.dep.nickname", "org.dep.nullValue"})
         void givenInvalidUserIdFieldProperty_thenThrowException(String preferredUsernameField) {
             when(provider.isValid(TOKEN_WITH_USERNAME_FIELDS)).thenReturn(true);
             OIDCAuthSource authSource = new OIDCAuthSource(TOKEN_WITH_USERNAME_FIELDS);
@@ -262,4 +261,94 @@ class OIDCAuthSourceServiceTest {
         when(provider.isValid(TOKEN_WITH_USERNAME_FIELDS)).thenReturn(true);
         return new OIDCAuthSource(TOKEN_WITH_USERNAME_FIELDS);
     }
+
+    @Nested
+    class SmfViaRauditx {
+
+        @BeforeEach
+        void init() {
+            // initialize fields by default values (see annotation @Value)
+            ReflectionTestUtils.setField(rauditxService, "fmid", "AZWE001");
+            ReflectionTestUtils.setField(rauditxService, "component", "ZOWE");
+            ReflectionTestUtils.setField(rauditxService, "subtype", 2);
+            ReflectionTestUtils.setField(rauditxService, "event", 2);
+            ReflectionTestUtils.setField(rauditxService, "qualifierSuccess", 0);
+            ReflectionTestUtils.setField(rauditxService, "qualifierFailed", 1);
+        }
+
+        @Nested
+        class ValidMapping {
+
+            private OIDCAuthSource authSource;
+
+            @BeforeEach
+            void init() {
+                authSource = mockValidAuthSource();
+                when(mapper.mapToMainframeUserId(authSource)).thenReturn(MF_USER);
+            }
+
+            @Test
+            void givenDisabledSmf_whenUserIsMapper_thenDontIssueSmf() {
+                ReflectionTestUtils.setField(service, "rauditxOnOidcUserIsMapped", false);
+
+                AuthSource.Parsed parsedSource = service.parse(authSource);
+
+                verify(rauditxService, never()).builder();
+                assertEquals(MF_USER, parsedSource.getUserId());
+            }
+
+            @Test
+            void givenEnabledSmf_whenUserIsMapper_thenIssueSmf() {
+                ReflectionTestUtils.setField(service, "rauditxOnOidcUserIsMapped", true);
+                ReflectionTestUtils.setField(service, "oidcSourceUserPaths", Collections.singletonList("sub"));
+
+                service.parse(authSource);
+
+                verify(rauditx).addRelocateSection(103, MF_USER); // userId
+                verify(rauditx).addRelocateSection(107, SUB_USER); // sourceUserId
+                verify(rauditx).setAlwaysLogSuccesses();
+                verify(rauditx).addMessageSegment("The OIDC token was mapped to the user account");
+                verify(rauditx).setEventSuccess();
+                verify(rauditx).setQualifier(0);
+                verify(rauditx).issue();
+            }
+
+            @Test
+            void givenInvalidSourceUserPaths_whenParsing_thenOmitThemInSmf() {
+                ReflectionTestUtils.setField(service, "rauditxOnOidcUserIsMapped", true);
+                ReflectionTestUtils.setField(service, "oidcSourceUserPaths", Collections.emptyList());
+
+                service.parse(authSource);
+
+                verify(rauditx).addRelocateSection(103, MF_USER); // userId
+                verify(rauditx, never()).addRelocateSection(eq(107), (String) any()); // sourceUserId
+                verify(rauditx).setAlwaysLogSuccesses();
+                verify(rauditx).addMessageSegment("The OIDC token was mapped to the user account");
+                verify(rauditx).setEventSuccess();
+                verify(rauditx).setQualifier(0);
+                verify(rauditx).issue();
+            }
+
+        }
+
+        @Nested
+        class NotMapped {
+
+            @Test
+            void givenAnOidcToken_whenThereIsNoMapping_thenDoNotCutSmf() {
+                ReflectionTestUtils.setField(service, "rauditxOnOidcUserIsMapped", true);
+                ReflectionTestUtils.setField(service, "oidcSourceUserPaths", Collections.singletonList("sub"));
+                when(provider.isValid(TOKEN_WITH_USERNAME_FIELDS)).thenReturn(true);
+                OIDCAuthSource authSource = new OIDCAuthSource(TOKEN_WITH_USERNAME_FIELDS);
+                when(mapper.mapToMainframeUserId(authSource)).thenReturn(null);
+
+                assertThrows(NoMainframeIdentityException.class, () -> service.parse(authSource));
+
+                verify(rauditxService, never()).builder();
+            }
+
+        }
+
+    }
+
 }
