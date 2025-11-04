@@ -21,11 +21,13 @@ import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
 import org.zowe.apiml.discovery.config.EurekaConfig;
 import org.zowe.apiml.exception.MetadataValidationException;
+import org.zowe.apiml.util.EurekaUtils;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -38,6 +40,8 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
+
+import static org.zowe.apiml.util.EurekaUtils.SERVICE_ID_PATTERN;
 
 /**
  * This implementation of instance registry is solving known problem in Eureka. Discovery service notify about change
@@ -52,7 +56,6 @@ import java.util.regex.Pattern;
 public class ApimlInstanceRegistry extends InstanceRegistry {
 
     private static final String EXCEPTION_MESSAGE = "Implementation of InstanceRegistry changed, please verify fix of order sending events";
-    private static final Pattern SERVICE_ID_PATTERN = Pattern.compile("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$");
 
     private MethodHandle handleRegistrationMethod;
     private MethodHandle handlerResolveInstanceLeaseDurationMethod;
@@ -257,26 +260,49 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         }
     }
 
-    // "-" should also be probably excluded in v4, since it's not conformant according to RFC0952
     /**
-     * Validate whether the service ID is conformant and complies with RFC 952 and RFC 1123. Only lowercase letters, digits,
-     * and hyphens allowed, must not start or end with a hyphen, and must not exceed 63 characters.
-     * If not, the method will throw an exception and reject registration.
+     * Validates that the service identifiers in the {@link InstanceInfo} are conformant and mutually consistent.
+     * The appName and vidAddress must not be null or empty. Both must comply with RFC 952 and RFC 1123.
+     * Only lowercase letters, digits, and hyphens allowed, must not start or end with a hyphen, and must not exceed 63 characters.
+     * The instanceId must follow the format 'hostname:serviceId:port'.
+     * The serviceId extracted from the instanceId must match both appName and vipAddress.
+     * If any of these checks fail, the method will throw an exception and the registration is rejected.
      * @param info the instance info
-     * @throws MetadataValidationException exception in case of non-conformant service ID.
+     * @throws MetadataValidationException exception if any service identifier is invalid or inconsistent
      */
     private void isServiceIdConformant(InstanceInfo info) {
         String instanceId = info.getInstanceId();
-
-        String[] parts = instanceId.split(":");
-        if (parts.length != 3) {
+        String appName = info.getAppName().toLowerCase();
+        String vipAddress = info.getVIPAddress();
+        if (StringUtils.isBlank(appName) ||
+            StringUtils.isBlank(vipAddress)) {
             throw new MetadataValidationException(
-                "The instance ID '" + instanceId + "' must have the format 'hostname:serviceId:port'."
+                "The service ID fields 'appName' and 'vipAddress' must not be null or empty."
             );
         }
-        String serviceIdPart = parts[1];
-        if (!SERVICE_ID_PATTERN.matcher(serviceIdPart).matches()) {
-            throw new MetadataValidationException("The service ID '" + serviceIdPart + "' is not a conformant.");
+        if (!SERVICE_ID_PATTERN.matcher(appName).matches()) {
+            throw new MetadataValidationException(
+                String.format("Invalid appName '%s': must comply with RFC 952/1123 (only lowercase letters, digits, hyphens, max 63 chars).", appName)
+            );
+        }
+        if (!SERVICE_ID_PATTERN.matcher(vipAddress).matches()) {
+            throw new MetadataValidationException(
+                String.format("Invalid vipAddress '%s': must comply with RFC 952/1123 (only lowercase letters, digits, hyphens, max 63 chars).", vipAddress)
+            );
+        }
+        String serviceId = EurekaUtils.getServiceIdFromInstanceId(instanceId);
+        if (serviceId == null) {
+            throw new MetadataValidationException(
+                "The instance ID '" + instanceId + "': must have the format 'hostname:serviceId:port'."
+            );
+        }
+        if (!serviceId.equals(appName) &&
+            !serviceId.equals(vipAddress)) {
+            throw new MetadataValidationException(
+                String.format("Inconsistent service identity: instanceId contains serviceId '%s' but appName='%s' and vipAddress='%s'.",
+                serviceId, appName, vipAddress)
+
+            );
         }
     }
 

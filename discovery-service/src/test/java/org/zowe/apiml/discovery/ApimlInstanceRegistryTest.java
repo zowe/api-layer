@@ -67,13 +67,12 @@ class ApimlInstanceRegistryTest {
     @Mock private InstanceRegistryProperties instanceRegistryProperties;
     @Mock private ApplicationContext appCntx;
     private InstanceInfo standardInstance;
-    private InstanceInfo instanceWithWrongServiceId;
 
     private EurekaServerConfig serverConfig;
 
     @BeforeEach
     void setUp() {
-        standardInstance = getStandardInstance("hostname:serviceclient:10010");
+        standardInstance = getStandardInstance("hostname:serviceclient:10010", "serviceclient");
         serverConfig = new DefaultEurekaServerConfig();
 
         apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
@@ -96,9 +95,20 @@ class ApimlInstanceRegistryTest {
 
     @Nested
     class GivenInvalidServiceId {
-        @Test
-        void whenContainingUnderscore_thenThrowException() {
-            InstanceInfo wrongInstance = getStandardInstance("hostname:invalid_serviceid:10010");
+
+        private static Stream<Arguments> instanceIds() {
+            return Stream.of(
+                Arguments.of( "hostname:service_client:10010", "service_client"),
+                Arguments.of( "hostname:-serviceclient:10010", "-serviceclient"),
+                Arguments.of( "hostname:serviceclient-:10010", "serviceclient-"),
+                Arguments.of( "hostname:invalidserviceidididididididididididdididididididididididdidididididididididid:10010", "invalidserviceidididididididididididdididididididididididdidididididididididid")
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("instanceIds")
+        void whenContainingUnderscore_thenThrowException(String instanceId, String appName) {
+            InstanceInfo wrongInstance = getStandardInstance(instanceId, appName);
 
             apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
                 serverConfig,
@@ -117,11 +127,14 @@ class ApimlInstanceRegistryTest {
             });
 
         }
+    }
+
+    @Nested
+    class GivenValidServiceIdWithDash {
 
         @Test
-        void whenWrongFormat_thenThrowException() {
-            InstanceInfo wrongInstance = getStandardInstance("invalid_serviceid:10010");
-
+        void thenShouldRegister() {
+            standardInstance = getStandardInstance("hostname:service-client:10010", "service-client");
             apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
                 serverConfig,
                 clientConfig,
@@ -130,37 +143,11 @@ class ApimlInstanceRegistryTest {
                 eurekaServerHttpClientFactory,
                 instanceRegistryProperties,
                 appCntx,
-                new EurekaConfig.Tuple("")));
+                new EurekaConfig.Tuple(null)));
             MethodHandle methodHandle = mock(MethodHandle.class);
-            ReflectionTestUtils.setField(apimlInstanceRegistry,"register3ArgsMethodHandle",methodHandle);
-            ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod",methodHandle);
-            assertThrows(MetadataValidationException.class, () -> {
-                apimlInstanceRegistry.register(wrongInstance, 1, false);
-            });
-
-        }
-
-        @Test
-        void whenServiceIdLongerThan63Chars_thenThrowException() {
-            String longServiceId = "invalidserviceidididididididididididdididididididididididdidididididididididid";
-            InstanceInfo wrongInstance = getStandardInstance("hostname:" + longServiceId + ":10010");
-
-            apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
-                serverConfig,
-                clientConfig,
-                serverCodecs,
-                eurekaClient,
-                eurekaServerHttpClientFactory,
-                instanceRegistryProperties,
-                appCntx,
-                new EurekaConfig.Tuple("")));
-            MethodHandle methodHandle = mock(MethodHandle.class);
-            ReflectionTestUtils.setField(apimlInstanceRegistry,"register3ArgsMethodHandle",methodHandle);
-            ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod",methodHandle);
-            assertThrows(MetadataValidationException.class, () -> {
-                apimlInstanceRegistry.register(wrongInstance, 1, false);
-            });
-
+            ReflectionTestUtils.setField(apimlInstanceRegistry,"register2ArgsMethodHandle", methodHandle);
+            ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod", methodHandle);
+            apimlInstanceRegistry.register(standardInstance, false);
         }
     }
 
@@ -443,18 +430,18 @@ class ApimlInstanceRegistryTest {
     }
 
 
-    private InstanceInfo getStandardInstance(String serviceId) {
+    private InstanceInfo getStandardInstance(String instanceId, String appName) {
 
         return InstanceInfo.Builder.newBuilder()
-            .setInstanceId(serviceId)
-            .setAppName("SERVICECLIENT")
-            .setAppGroupName("SERVICECLIENT")
+            .setInstanceId(instanceId)
+            .setAppName(appName.toUpperCase())
+            .setAppGroupName(appName.toUpperCase())
             .setIPAddr("192.168.0.1")
             .enablePort(InstanceInfo.PortType.SECURE, true)
             .setSecurePort(9090)
             .setHostName("localhost")
             .setSecureVIPAddress("localhost")
-            .setVIPAddress("serviceclient")
+            .setVIPAddress(appName)
             .setStatus(InstanceInfo.InstanceStatus.UP)
             .build();
     }

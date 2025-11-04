@@ -32,13 +32,13 @@ class EurekaUtilsTest {
 
     @Test
     void test() {
-        assertEquals("abc", EurekaUtils.getServiceIdFromInstanceId("123:abc:def:::::xyz"));
         assertEquals("abc", EurekaUtils.getServiceIdFromInstanceId("123:abc:def"));
-        assertEquals("", EurekaUtils.getServiceIdFromInstanceId("123::def"));
-        assertEquals("", EurekaUtils.getServiceIdFromInstanceId("::"));
+        assertNull(EurekaUtils.getServiceIdFromInstanceId("123:abc:def:::::xyz"));
+        assertNull(EurekaUtils.getServiceIdFromInstanceId("hostname:123:"));
+        assertNull(EurekaUtils.getServiceIdFromInstanceId("::"));
+        assertNull(EurekaUtils.getServiceIdFromInstanceId("123::def"));
         assertNull(EurekaUtils.getServiceIdFromInstanceId(":"));
         assertNull(EurekaUtils.getServiceIdFromInstanceId(""));
-        assertNull(EurekaUtils.getServiceIdFromInstanceId("abc"));
     }
 
     private InstanceInfo createInstanceInfo(String host, int port, int securePort, boolean isSecureEnabled) {

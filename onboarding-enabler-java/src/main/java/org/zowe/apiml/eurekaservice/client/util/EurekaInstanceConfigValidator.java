@@ -19,7 +19,9 @@ import org.zowe.apiml.exception.MetadataValidationException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
+
+import static org.zowe.apiml.util.EurekaUtils.SERVICE_ID_PATTERN;
+
 
 /**
  * Class that validates a service configuration before the registration with API ML
@@ -33,8 +35,6 @@ public class EurekaInstanceConfigValidator {
     private final List<String> missingSslParameters = new ArrayList<>();
     private final List<String> missingRoutesParameters = new ArrayList<>();
     private final List<String> poorlyFormedRelativeUrlParameters = new ArrayList<>();
-
-    private static final Pattern SERVICE_ID_PATTERN = Pattern.compile("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$");
 
     /**
      * Validates mandatory and non-mandatory parameters
@@ -59,7 +59,6 @@ public class EurekaInstanceConfigValidator {
         }
     }
 
-    // "-" should be excluded also in v4 probably, as it's not conformant according to RFC0952
     private void validateServiceId(String serviceId) {
         if (!SERVICE_ID_PATTERN.matcher(serviceId).matches()) {
             String message = String.format(

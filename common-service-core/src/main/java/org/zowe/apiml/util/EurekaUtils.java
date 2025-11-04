@@ -12,11 +12,13 @@ package org.zowe.apiml.util;
 
 import com.netflix.appinfo.InstanceInfo;
 import lombok.experimental.UtilityClass;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 import static org.zowe.apiml.product.constants.CoreService.GATEWAY;
@@ -28,19 +30,28 @@ import static org.zowe.apiml.product.constants.CoreService.GATEWAY;
 @UtilityClass
 public class EurekaUtils {
 
+    public static final Pattern SERVICE_ID_PATTERN = Pattern.compile("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$");
+
     /**
      * Extract serviceId from instanceId
      * @param instanceId input, instanceId in format "host:service:random number to unique instanceId"
      * @return second part, it means serviceId. If it doesn't exist return null;
      */
     public String getServiceIdFromInstanceId(String instanceId) {
-        final int startIndex = instanceId.indexOf(':');
-        if (startIndex < 0) return null;
+        if (StringUtils.isBlank(instanceId)) {
+            return null;
+        }
+        String[] parts = instanceId.split(":");
+        if (parts.length != 3) {
+            return null;
+        }
 
-        final int endIndex = instanceId.indexOf(':', startIndex + 1);
-        if (endIndex < 0) return null;
+        String serviceId = parts[1].trim();
+        if (serviceId.isEmpty()) {
+            return null;
+        }
 
-        return instanceId.substring(startIndex + 1, endIndex);
+        return serviceId;
     }
 
     /**
