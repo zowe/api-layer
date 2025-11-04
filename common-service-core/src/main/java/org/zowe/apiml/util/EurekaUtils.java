@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
+import org.zowe.apiml.exception.MetadataValidationException;
 
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -52,6 +53,24 @@ public class EurekaUtils {
         }
 
         return serviceId;
+    }
+
+    /**
+     * Validate whether service ID is not null and conformant.
+     * @param serviceId the service ID
+     * @throws MetadataValidationException exception if the service ID is not conformant
+     */
+    public void validateServiceId(String serviceId) {
+        if (StringUtils.isBlank(serviceId)) {
+            throw new MetadataValidationException("The service ID must not be null or empty. The service will not be registered.");
+        }
+        if (!SERVICE_ID_PATTERN.matcher(serviceId).matches()) {
+            String message = String.format(
+                "Invalid serviceId [%s]: must comply with RFC 952/1123 (only lowercase letters, digits, hyphens, max 63 chars). The service will not be registered.",
+                serviceId
+            );
+            throw new MetadataValidationException(message);
+        }
     }
 
     /**

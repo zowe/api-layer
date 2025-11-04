@@ -275,29 +275,29 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         String appName = StringUtils.lowerCase(info.getAppName());
         if (StringUtils.isBlank(appName)) {
             throw new MetadataValidationException(
-                "The service ID fields 'appName' must not be null or empty."
+                "The service ID fields 'appName' must not be null or empty. The service will not be registered."
             );
         }
         if (!SERVICE_ID_PATTERN.matcher(appName).matches()) {
             throw new MetadataValidationException(
-                String.format("Invalid appName '%s': must comply with RFC 952/1123 (only lowercase letters, digits, hyphens, max 63 chars).", appName)
+                String.format("Invalid appName '%s': must comply with RFC 952/1123 (only lowercase letters, digits, hyphens, max 63 chars). The service will not be registered.", appName)
             );
         }
 
         String serviceId = EurekaUtils.getServiceIdFromInstanceId(instanceId);
         if (serviceId == null) {
             throw new MetadataValidationException(
-                "The instance ID '" + instanceId + "': must have the format 'hostname:serviceId:port'."
+                "The instance ID '" + instanceId + "': must have the format 'hostname:serviceId:port'. The service will not be registered."
             );
         }
         if (!SERVICE_ID_PATTERN.matcher(serviceId).matches()) {
             throw new MetadataValidationException(
-                String.format("Invalid serviceId '%s' extracted from instanceId '%s': must comply with RFC 952/1123.", serviceId, instanceId)
+                String.format("Invalid serviceId '%s' extracted from instanceId '%s': must comply with RFC 952/1123. The service will not be registered.", serviceId, instanceId)
             );
         }
         if (!serviceId.equals(appName)) {
             throw new MetadataValidationException(
-                String.format("Inconsistent service identity: instanceId contains serviceId '%s' but appName='%s'.",
+                String.format("Inconsistent service identity: instanceId contains serviceId '%s' but appName='%s'. The service will not be registered.",
                 serviceId, appName)
 
             );
