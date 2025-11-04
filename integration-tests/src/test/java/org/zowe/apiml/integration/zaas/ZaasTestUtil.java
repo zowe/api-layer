@@ -60,7 +60,7 @@ public class ZaasTestUtil {
      * @return a boolean indicating if the test runner is working against an instance with ICSF hardware keyring
      */
     static boolean isTestForICSF() {
-        return Boolean.getBoolean("hwkering");
+        return Boolean.getBoolean("hwkeyring");
     }
 
 }
