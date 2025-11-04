@@ -29,7 +29,6 @@ import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.discovery.*;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.util.EurekaUtils;
 import org.zowe.apiml.util.MapUtils;
 import org.zowe.apiml.util.UrlUtils;
 
@@ -44,6 +43,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.util.EurekaUtils.SERVICE_ID_PATTERN;
 
 /**
  * Processes static definition files and creates service instances
@@ -209,7 +209,9 @@ public class ServiceDefinitionProcessor {
 
     private List<InstanceInfo> createInstances(StaticRegistrationResult context, String ymlFileName, Service service, Map<String, CatalogUiTile> tiles) {
         try {
-            EurekaUtils.validateServiceId(service.getServiceId());
+            if (service.getServiceId() == null || !SERVICE_ID_PATTERN.matcher(service.getServiceId()).matches()) {
+                throw new ServiceDefinitionException(String.format("ServiceId is either not defined in the file '%s' or not conformant. The instance will not be created.", ymlFileName));
+            }
 
             if (service.getInstanceBaseUrls() == null) {
                 throw new ServiceDefinitionException(String.format("The instanceBaseUrls parameter of %s is not defined. The instance will not be created.", service.getServiceId()));
