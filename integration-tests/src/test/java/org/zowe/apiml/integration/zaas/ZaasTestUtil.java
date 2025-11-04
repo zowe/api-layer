@@ -51,4 +51,16 @@ public class ZaasTestUtil {
         }
         return args.stream();
     }
+
+    /**
+     * Some tests are written as integration tests and make the test runner act as the Gateway (they sign tokens for example, or use the server's private key to act as Gateway)
+     * These tests cannot run in an environment where the server has the private key in hardware as it is not available to the runner and the validations fail because the runner
+     * cannot provide valid server credentials.
+     *
+     * @return a boolean indicating if the test runner is working against an instance with ICSF hardware keyring
+     */
+    static boolean isTestForICSF() {
+        return Boolean.getBoolean("hwkering");
+    }
+
 }

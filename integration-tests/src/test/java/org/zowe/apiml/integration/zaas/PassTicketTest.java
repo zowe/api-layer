@@ -36,8 +36,10 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_TICKET_URI;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.isTestForICSF;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
 /**
@@ -79,6 +81,7 @@ class PassTicketTest {
 
         @Test
         void givenValidZoweTokenWithLtpa() throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
+            assumeFalse(isTestForICSF());
             String ltpaToken = getZosmfLtpaToken();
             String zoweToken = generateZoweJwtWithLtpa(ltpaToken);
 
@@ -121,6 +124,7 @@ class PassTicketTest {
         @ParameterizedTest(name = "PassTicketTest.givenX509Certificate {1}")
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasTestUtil#provideClientCertificates")
         void givenX509Certificate(String certificate, String description) {
+            assumeFalse(isTestForICSF());
             //@formatter:off
             given()
                 .header("Client-Cert", certificate)
