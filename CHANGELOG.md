@@ -2,7 +2,7 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `APIML 2.18.19 / Zowe 2.18.3 (2025-10-30)`
+## `APIML 2.18.19 / Zowe 2.18.3 (2025-10-31)`
 
 * Feature:  Support PATCH method in CORS. (#4255) ([1d86960](https://github.com/zowe/api-layer/commit/1d86960)), closes [#4255](https://github.com/zowe/api-layer/issues/4255)
 
