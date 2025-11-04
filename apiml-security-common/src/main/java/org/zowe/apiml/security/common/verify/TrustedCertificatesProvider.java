@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.security.common.verify;
 
+import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -40,8 +41,8 @@ import java.util.List;
 @Slf4j
 public class TrustedCertificatesProvider {
 
-    private static final String BEGIN_CERT = "-----BEGIN CERTIFICATE-----";
-    private static final String END_CERT = "-----END CERTIFICATE-----";
+    static final String BEGIN_CERT = "-----BEGIN CERTIFICATE-----";
+    static final String END_CERT = "-----END CERTIFICATE-----";
 
     private final CloseableHttpClient httpClient;
 
@@ -55,6 +56,11 @@ public class TrustedCertificatesProvider {
     /**
      * Query given rest endpoint to get the certificate chain from remote proxy gateway.
      * The endpoint should be publicly available and should provide the certificate chain in PEM format.
+     *
+     * This method was modified to split the PEM chain of certificates and process them one by one, based on
+     * testing with IBM JCA providers, different behaviours were observed, in IBM Hybrid Provider passing a full chain
+     * resulted in only the leaf certificate being processed by CertificateFactory.generateCertificates.
+     * Using CertificateFactory.generateCertificate individually on each certificate resulted in a JCA provider error.
      *
      * @param certificatesEndpoint Given full URL to the remote proxy gateway certificates endpoint
      * @return List of certificates or empty list
@@ -86,7 +92,8 @@ public class TrustedCertificatesProvider {
         return trustedCerts;
     }
 
-    private List<String> splitCerts(String pem) throws IOException {
+    @VisibleForTesting
+    List<String> splitCerts(String pem) throws IOException {
         String line = null;
         List<String> certs = new ArrayList<>();
 
@@ -94,14 +101,14 @@ public class TrustedCertificatesProvider {
         var certBufferedReader = new BufferedReader(new StringReader(pem));
 
         while ((line = certBufferedReader.readLine()) != null) {
-            if (line.equals(BEGIN_CERT)) {
-                builder.append(line).append("\n");
+            if (line.trim().equals(BEGIN_CERT)) {
+                builder.append(line.trim()).append("\n");
                 try {
                     while ((line = certBufferedReader.readLine()) != null) {
-                        builder.append(line);
-                        if (line.equals(END_CERT)) {
+                        builder.append(line.trim());
+                        if (line.trim().equals(END_CERT)) {
                             certs.add(builder.toString());
-                            builder = new StringBuilder();
+                            builder.setLength(0);
                             break;
                         } else {
                             builder.append("\n");
