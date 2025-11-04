@@ -262,22 +262,20 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     /**
      * Validates that the service identifiers in the {@link InstanceInfo} are conformant and mutually consistent.
-     * The appName and vidAddress must not be null or empty. Both must comply with RFC 952 and RFC 1123.
+     * The appName must not be null or empty. Both must comply with RFC 952 and RFC 1123.
      * Only lowercase letters, digits, and hyphens allowed, must not start or end with a hyphen, and must not exceed 63 characters.
      * The instanceId must follow the format 'hostname:serviceId:port'.
-     * The serviceId extracted from the instanceId must match both appName and vipAddress.
+     * The serviceId extracted from the instanceId must match both appName.
      * If any of these checks fail, the method will throw an exception and the registration is rejected.
      * @param info the instance info
      * @throws MetadataValidationException exception if any service identifier is invalid or inconsistent
      */
     private void isServiceIdConformant(InstanceInfo info) {
         String instanceId = info.getInstanceId();
-        String appName = info.getAppName().toLowerCase();
-        String vipAddress = info.getVIPAddress();
-        if (StringUtils.isBlank(appName) ||
-            StringUtils.isBlank(vipAddress)) {
+        String appName = StringUtils.lowerCase(info.getAppName());
+        if (StringUtils.isBlank(appName)) {
             throw new MetadataValidationException(
-                "The service ID fields 'appName' and 'vipAddress' must not be null or empty."
+                "The service ID fields 'appName' must not be null or empty."
             );
         }
         if (!SERVICE_ID_PATTERN.matcher(appName).matches()) {
@@ -285,22 +283,22 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
                 String.format("Invalid appName '%s': must comply with RFC 952/1123 (only lowercase letters, digits, hyphens, max 63 chars).", appName)
             );
         }
-        if (!SERVICE_ID_PATTERN.matcher(vipAddress).matches()) {
-            throw new MetadataValidationException(
-                String.format("Invalid vipAddress '%s': must comply with RFC 952/1123 (only lowercase letters, digits, hyphens, max 63 chars).", vipAddress)
-            );
-        }
+
         String serviceId = EurekaUtils.getServiceIdFromInstanceId(instanceId);
         if (serviceId == null) {
             throw new MetadataValidationException(
                 "The instance ID '" + instanceId + "': must have the format 'hostname:serviceId:port'."
             );
         }
-        if (!serviceId.equals(appName) &&
-            !serviceId.equals(vipAddress)) {
+        if (!SERVICE_ID_PATTERN.matcher(serviceId).matches()) {
             throw new MetadataValidationException(
-                String.format("Inconsistent service identity: instanceId contains serviceId '%s' but appName='%s' and vipAddress='%s'.",
-                serviceId, appName, vipAddress)
+                String.format("Invalid serviceId '%s' extracted from instanceId '%s': must comply with RFC 952/1123.", serviceId, instanceId)
+            );
+        }
+        if (!serviceId.equals(appName)) {
+            throw new MetadataValidationException(
+                String.format("Inconsistent service identity: instanceId contains serviceId '%s' but appName='%s'.",
+                serviceId, appName)
 
             );
         }
