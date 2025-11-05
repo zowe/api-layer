@@ -89,17 +89,17 @@ class MetadataDefaultsServiceTest {
 
         assertEquals(
             "TSTAPPL4",
-            map.get("STATIC-localhost:toAddAuth:10012").getMetadata().get(AUTHENTICATION_APPLID)
+            map.get("STATIC-localhost:toaddauth:10012").getMetadata().get(AUTHENTICATION_APPLID)
         );
 
         assertEquals(
             "TSTAPPL5",
-            map.get("STATIC-localhost:toReplaceAuth:10012").getMetadata().get(AUTHENTICATION_APPLID)
+            map.get("STATIC-localhost:toreplaceauth:10012").getMetadata().get(AUTHENTICATION_APPLID)
         );
 
         assertEquals(
             "TSTAPPL3",
-            map.get("STATIC-localhost:nowFixedAuth:10012").getMetadata().get(AUTHENTICATION_APPLID)
+            map.get("STATIC-localhost:nowfixedauth:10012").getMetadata().get(AUTHENTICATION_APPLID)
         );
     }
 
