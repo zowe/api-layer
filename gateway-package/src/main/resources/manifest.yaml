@@ -23,5 +23,3 @@ autoEncoding:
 apimlServices:
   dynamic:
     - serviceId: gateway
-configs:
-
