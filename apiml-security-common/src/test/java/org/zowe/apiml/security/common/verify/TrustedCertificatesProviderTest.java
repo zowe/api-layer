@@ -272,6 +272,18 @@ class TrustedCertificatesProviderTest {
                 assertEquals("Certificate is not RFC1421 hex-encoded DER bytes", e.getMessage());
             }
 
+            @Test
+            void whenMissingEnd_thenIgnore() throws IOException {
+                var certificatePEmInvalid = """
+                    -----BEGIN CERTIFICATE-----
+                    MIIDeTCCAv+gAwIBAgIQCwDpLU1tcx/KMFnHyx4YhjAKBggqhkjOPQQDAzBhMQsw
+                    CQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMRkwFwYDVQQLExB3d3cu
+                """;
+
+                var certs = provider.splitCerts(certificatePEmInvalid);
+                assertTrue(certs.isEmpty());
+            }
+
         }
 
         @Nested
