@@ -17,7 +17,7 @@ import org.springframework.security.core.AuthenticationException;
  */
 public class InvalidCertificateException extends AuthenticationException {
 
-    public InvalidCertificateException(String method) {
-        super(method);
+    public InvalidCertificateException(String message) {
+        super(message);
     }
 }

@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.security.common.verify;
 
+import com.google.common.annotations.VisibleForTesting;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -21,21 +22,27 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.common.error.InvalidCertificateException;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @Service
 @Slf4j
 public class TrustedCertificatesProvider {
+
+    static final String BEGIN_CERT = "-----BEGIN CERTIFICATE-----";
+    static final String END_CERT = "-----END CERTIFICATE-----";
 
     private final CloseableHttpClient httpClient;
 
@@ -50,24 +57,72 @@ public class TrustedCertificatesProvider {
      * Query given rest endpoint to get the certificate chain from remote proxy gateway.
      * The endpoint should be publicly available and should provide the certificate chain in PEM format.
      *
+     * This method was modified to split the PEM chain of certificates and process them one by one, based on
+     * testing with IBM JCA providers, different behaviours were observed, in IBM Hybrid Provider passing a full chain
+     * resulted in only the leaf certificate being processed by CertificateFactory.generateCertificates.
+     * Using CertificateFactory.generateCertificate individually on each certificate resulted in a JCA provider error.
+     *
      * @param certificatesEndpoint Given full URL to the remote proxy gateway certificates endpoint
      * @return List of certificates or empty list
      */
     @Cacheable(value = "trustedCertificates", unless = "#result.isEmpty()")
     public List<Certificate> getTrustedCerts(String certificatesEndpoint) {
         List<Certificate> trustedCerts = new ArrayList<>();
-        String pem = callCertificatesEndpoint(certificatesEndpoint);
+        var pem = callCertificatesEndpoint(certificatesEndpoint);
         if (StringUtils.isNotEmpty(pem)) {
             try {
-                Collection<? extends Certificate> certs = CertificateFactory
-                    .getInstance("X.509")
-                    .generateCertificates(new ByteArrayInputStream(pem.getBytes()));
-                trustedCerts.addAll(certs);
+                var splitCertsB64 = splitCerts(pem);
+                log.debug("Parsed {} certificates", splitCertsB64.size());
+                splitCertsB64.forEach(certB64 -> {
+                    try {
+                        var genCerts = CertificateFactory
+                            .getInstance("X.509")
+                            .generateCertificates(new ByteArrayInputStream(certB64.getBytes()));
+                        trustedCerts.addAll(genCerts);
+                    } catch (CertificateException e) {
+                        throw new InvalidCertificateException(e.getMessage());
+                    }
+                });
             } catch (Exception e) {
                 apimlLog.log("org.zowe.apiml.security.common.verify.errorParsingCertificates", certificatesEndpoint, e.getMessage());
             }
+        } else {
+            log.debug("Empty list of trusted certificates");
         }
         return trustedCerts;
+    }
+
+    @VisibleForTesting
+    List<String> splitCerts(String pem) throws IOException {
+        String line = null;
+        List<String> certs = new ArrayList<>();
+
+        var builder = new StringBuilder();
+        var certBufferedReader = new BufferedReader(new StringReader(pem));
+
+        while ((line = certBufferedReader.readLine()) != null) {
+            if (line.trim().equals(BEGIN_CERT)) {
+                builder.append(line.trim()).append("\n");
+                try {
+                    while ((line = certBufferedReader.readLine()) != null) {
+                        builder.append(line.trim());
+                        if (line.trim().equals(END_CERT)) {
+                            certs.add(builder.toString());
+                            builder.setLength(0);
+                            break;
+                        } else {
+                            builder.append("\n");
+                        }
+                    }
+                } catch (IOException ioe2) {
+                    throw new IOException("Unable to parse Certificate: " + ioe2.getMessage());
+                }
+            } else {
+                throw new IOException("Certificate is not RFC1421 hex-encoded DER bytes");
+            }
+        }
+
+        return certs;
     }
 
     private String callCertificatesEndpoint(String url) {
@@ -93,4 +148,5 @@ public class TrustedCertificatesProvider {
         }
         return null;
     }
+
 }
