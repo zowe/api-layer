@@ -391,6 +391,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} ${JAVA_BIN_DIR}java \
     -Dloader.path=${ZAAS_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
+    -Dotel.sdk.disabled=true \
     -jar ${JAR_FILE} &
 
 pid=$!

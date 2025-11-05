@@ -65,6 +65,10 @@ spring:
     profiles.group:
         dev: debug, diag
 
+otel:
+    sdk:
+        disabled: true
+
 server:
     address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}

@@ -332,6 +332,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     -Dloader.path=${COMMON_LIB} \
     -Djava.library.path=${LIBPATH} \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
+    -Dotel.sdk.disabled=true \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"

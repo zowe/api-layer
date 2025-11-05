@@ -22,6 +22,10 @@ spring:
     profiles.group:
             dev: debug, diag
 
+otel:
+    sdk:
+        disabled: true
+
 springdoc:
     packagesToScan: org.zowe.apiml.apicatalog.controllers.api
     api-docs:
