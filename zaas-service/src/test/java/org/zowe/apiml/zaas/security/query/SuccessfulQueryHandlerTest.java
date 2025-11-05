@@ -12,8 +12,7 @@ package org.zowe.apiml.zaas.security.query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.EurekaClient;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.SignatureAlgorithm;
+import com.nimbusds.jose.JWSAlgorithm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,9 +38,14 @@ import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
 import java.security.KeyPair;
 import java.security.PrivateKey;
+import java.time.Clock;
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -79,13 +83,16 @@ class SuccessfulQueryHandlerTest {
     @Mock
     private TokenCreationService tokenCreationService;
 
+    @Mock
+    private Clock clock;
+
     @BeforeEach
     void setup() {
         httpServletRequest = new MockHttpServletRequest();
         httpServletResponse = new MockHttpServletResponse();
         AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
 
-        SignatureAlgorithm algorithm = Jwts.SIG.RS256;
+        var algorithm = JWSAlgorithm.RS256;
         KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
         PrivateKey privateKey = null;
         if (keyPair != null) {
@@ -104,9 +111,9 @@ class SuccessfulQueryHandlerTest {
 
         AuthenticationService authService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
-            eurekaClient, restTemplate, cacheManager, new CacheUtils()
+            eurekaClient, restTemplate, cacheManager, new CacheUtils(), clock
         );
-        when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
+        lenient().when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
 
         jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);

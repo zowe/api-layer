@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.loadbalancer;
 
-import io.jsonwebtoken.Clock;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -36,10 +35,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -101,7 +100,7 @@ class DeterministicLoadBalancerTest {
         when(factory.getProperties(any())).thenReturn(properties);
         when(delegate.getServiceId()).thenReturn("service");
         when(delegate.get(request)).thenReturn(Flux.just(defaultServiceInstancesList));
-        this.loadBalancer = new DeterministicLoadBalancer(delegate, factory, lbCache, clock, DEFAULT_EXPIRATION_HS);
+        this.loadBalancer = new DeterministicLoadBalancer(delegate, factory, lbCache, DEFAULT_EXPIRATION_HS, clock);
     }
 
     @Nested
@@ -157,7 +156,7 @@ class DeterministicLoadBalancerTest {
 
                     when(requestData.getCookies()).thenReturn(cookie);
                     when(request.getContext()).thenReturn(context);
-                    when(clock.now()).thenReturn(Date.from(Instant.ofEpochSecond(1721552753)));
+                    when(clock.instant()).thenReturn(Instant.ofEpochSecond(1721552753));
                 }
 
                 @Test
@@ -317,7 +316,7 @@ class DeterministicLoadBalancerTest {
                     when(requestData.getHeaders()).thenReturn(headers);
                     when(requestData.getCookies()).thenReturn(cookie);
                     when(request.getContext()).thenReturn(context);
-                    when(clock.now()).thenReturn(Date.from(Instant.ofEpochSecond(1721552753)));
+                    when(clock.instant()).thenReturn(Instant.ofEpochSecond(1721552753));
                 }
 
                 @Nested
