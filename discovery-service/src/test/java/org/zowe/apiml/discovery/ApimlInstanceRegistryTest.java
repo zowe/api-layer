@@ -42,10 +42,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -151,7 +148,7 @@ class ApimlInstanceRegistryTest {
             MethodHandle methodHandle = mock(MethodHandle.class);
             ReflectionTestUtils.setField(apimlInstanceRegistry,"register2ArgsMethodHandle", methodHandle);
             ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod", methodHandle);
-            apimlInstanceRegistry.register(standardInstance, false);
+            assertDoesNotThrow(() -> apimlInstanceRegistry.register(standardInstance, false));
         }
     }
 
