@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.zowe.apiml.exception.MetadataValidationException;
 
 import java.util.Collections;
 import java.util.Map;
@@ -110,6 +111,61 @@ class EurekaUtilsTest {
             assertTrue(instance.isEmpty());
         }
 
+    }
+
+    @Nested
+    class WhenValidatingServiceId {
+        @Test
+        void givenServiceIdWithUnderscore_thenThrowMetadataValidationException() {
+            assertThrows(MetadataValidationException.class, () -> {
+                EurekaUtils.validateServiceId("service_id");
+            });
+        }
+
+        @Test
+        void givenEmptyServiceId_thenThrowMetadataValidationException() {
+            assertThrows(MetadataValidationException.class, () -> {
+                EurekaUtils.validateServiceId("");
+            });
+        }
+
+        @Test
+        void givenWhiteSpace_thenThrowMetadataValidationException() {
+            assertThrows(MetadataValidationException.class, () -> {
+                EurekaUtils.validateServiceId(" ");
+            });
+        }
+
+        @Test
+        void givenNonRFCFormat_thenThrowMetadataValidationException() {
+            // Testa quando il serviceId non rispetta il formato RFC
+            assertThrows(MetadataValidationException.class, () -> {
+                EurekaUtils.validateServiceId("Invalid@ServiceId");
+            });
+        }
+
+        @Test
+        void testValidateServiceId_thenDoNotThrowException() {
+            assertDoesNotThrow(() -> {
+                EurekaUtils.validateServiceId("valid-service-id");
+            });
+        }
+
+        @Test
+        void given63characters_thenDoNotThrowException() {
+            String validId = "a".repeat(63);
+            assertDoesNotThrow(() -> {
+                EurekaUtils.validateServiceId(validId);
+            });
+        }
+
+        @Test
+        void givenTooLongString_thenThrowMetadataValidationException() {
+            String tooLongId = "a".repeat(64);
+            assertThrows(MetadataValidationException.class, () -> {
+                EurekaUtils.validateServiceId(tooLongId);
+            });
+        }
     }
 
 }

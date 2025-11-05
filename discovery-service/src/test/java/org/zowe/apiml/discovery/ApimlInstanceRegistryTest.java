@@ -99,9 +99,13 @@ class ApimlInstanceRegistryTest {
         private static Stream<Arguments> instanceIds() {
             return Stream.of(
                 Arguments.of( "hostname:service_client:10010", "service_client"),
+                Arguments.of( "hostname:service_client:10010", ""),
+                Arguments.of( "hostname:10010", "service_client"),
+                Arguments.of( "hostname:service_client:10010", "different_service_client"),
                 Arguments.of( "hostname:-serviceclient:10010", "-serviceclient"),
                 Arguments.of( "hostname:serviceclient-:10010", "serviceclient-"),
-                Arguments.of( "hostname:invalidserviceidididididididididididdididididididididididdidididididididididid:10010", "invalidserviceidididididididididididdididididididididididdidididididididididid")
+                Arguments.of( "hostname:invalidserviceidididididididididididdididididididididididdidididididididididid:10010", "invalidserviceidididididididididididdididididididididididdidididididididididid"),
+                Arguments.of( null, "service")
             );
         }
 

@@ -335,6 +335,28 @@ class ServiceDefinitionProcessorTest {
         );
     }
 
+    @Test
+    void givenInstanceWithInvalidServiceId_whenDefinitionIsLoaded_thenErrorIsReturned() {
+        String yaml =
+            "services:\n" +
+                "    - serviceId: seRvic_E@ \n" +
+                "      title: Title\n" +
+                "      description: Description\n" +
+                "      catalogUiTileId: tileid\n" +
+                "      instanceBaseUrls:\n" +
+                "catalogUiTiles:\n" +
+                "    tileid:\n" +
+                "        title: Tile Title\n" +
+                "        description: Tile Description\n";
+
+        StaticRegistrationResult result = processServicesData(yaml);
+
+        assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
+            result,
+            "ServiceId is either not defined in the file 'test.yml' or not conformant. The instance will not be created."
+        );
+    }
+
     /**
      * Internal helper
      * Verify that no instance was created and that there was exactly one error produced with given message
