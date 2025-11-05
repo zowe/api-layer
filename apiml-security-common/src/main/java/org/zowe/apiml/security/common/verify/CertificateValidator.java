@@ -12,7 +12,6 @@ package org.zowe.apiml.security.common.verify;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -42,8 +41,6 @@ public class CertificateValidator {
     private String[] proxyCertificatesEndpoints;
     private final Set<String> publicKeyCertificatesBase64;
 
-
-    @Autowired
     public CertificateValidator(TrustedCertificatesProvider trustedCertificatesProvider,
                                 @Qualifier("publicKeyCertificatesBase64") Set<String> publicKeyCertificatesBase64) {
         this.trustedCertificatesProvider = trustedCertificatesProvider;
@@ -67,6 +64,7 @@ public class CertificateValidator {
             .map(trustedCertificatesProvider::getTrustedCerts)
             .flatMap(List::stream)
             .toList();
+
         for (X509Certificate cert : certs) {
             if (!trustedCerts.contains(cert)) {
                 log.debug("Certificate is not trusted by endpoint {}. Untrusted certificate is {}", proxyCertificatesEndpoints, cert);
