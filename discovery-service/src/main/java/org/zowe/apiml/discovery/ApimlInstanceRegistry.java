@@ -41,8 +41,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
-import static org.zowe.apiml.util.EurekaUtils.SERVICE_ID_PATTERN;
-
 /**
  * This implementation of instance registry is solving known problem in Eureka. Discovery service notify about change
  * in services before it does it. From this reason listener can try to use services before they are really registered.
@@ -273,18 +271,10 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     private void isServiceIdConformant(InstanceInfo info) {
         String instanceId = info.getInstanceId();
         String appName = StringUtils.lowerCase(info.getAppName());
-        if (StringUtils.isBlank(appName)) {
-            throw new MetadataValidationException(
-                "The service ID fields 'appName' must not be null or empty. The service will not be registered."
-            );
-        }
-        if (!SERVICE_ID_PATTERN.matcher(appName).matches()) {
-            throw new MetadataValidationException(
-                String.format("Invalid appName '%s': must comply with RFC 952/1123 (only lowercase letters, digits, hyphens, max 63 chars). The service will not be registered.", appName)
-            );
-        }
 
+        EurekaUtils.validateServiceId(appName);
         String serviceId = EurekaUtils.getServiceIdFromInstanceId(instanceId);
+
         EurekaUtils.validateServiceId(serviceId);
 
         if (!serviceId.equals(appName)) {
