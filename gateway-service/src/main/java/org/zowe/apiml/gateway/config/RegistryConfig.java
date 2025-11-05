@@ -21,6 +21,7 @@ import org.zowe.apiml.services.BasicInfoService;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.zowe.apiml.util.UrlUtils;
 
 @Configuration
 public class RegistryConfig {
@@ -43,9 +44,9 @@ public class RegistryConfig {
         if (externalUrl != null) {
             URI uri = new URI(externalUrl);
             String host = uri.getHost();
-            // Handle IPv6 address format
-            if (host != null && host.contains(":")) {
-                host = "[" + host + "]";
+            // Handle IPv6 address format using UrlUtils
+            if (host != null) {
+                host = UrlUtils.formatHostnameForUrl(host);
             }
             return ServiceAddress.builder()
                 .scheme(clientAttlsEnabled ? "http" : uri.getScheme())
@@ -53,11 +54,8 @@ public class RegistryConfig {
                 .build();
         }
 
-        // Handle IPv6 address format
-        String formattedHostname = hostname;
-        if (hostname != null && hostname.contains(":") && !hostname.startsWith("[")) {
-            formattedHostname = "[" + hostname + "]";
-        }
+        // Handle IPv6 address format using UrlUtils
+        String formattedHostname = UrlUtils.formatHostnameForUrl(hostname);
 
         return ServiceAddress.builder()
             .scheme(determineScheme(serverAttlsEnabled, clientAttlsEnabled, sslEnabled))

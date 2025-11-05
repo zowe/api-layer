@@ -20,6 +20,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.SimpleEvaluationContext;
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.zowe.apiml.util.UrlUtils;
 import org.springframework.util.StringUtils;
 import org.zowe.apiml.product.routing.RoutedService;
 import java.util.LinkedHashMap;
@@ -59,19 +60,16 @@ public abstract class RouteDefinitionProducer {
         if (metadata != null) {
             output = metadata.get(SERVICE_EXTERNAL_URL);
 
-            // If we have an external URL, ensure IPv6 addresses are properly formatted
-            if (output != null) {
+            // If we have an external URL and it's not a load balancer URL, format it
+            if (output != null && !output.startsWith("lb://")) {
                 try {
                     URI uri = new URI(output);
-                    String host = uri.getHost();
-
-                    // Check if the host is an IPv6 address (contains colons) and needs brackets
-                    if (host != null && host.contains(":") && !host.startsWith("[")) {
-                        // Rebuild the URI with properly formatted IPv6 address
+                    String formattedHost = UrlUtils.formatHostnameForUrl(uri.getHost());
+                    if (formattedHost != null) {
                         URI newUri = new URI(
                             uri.getScheme(),
                             uri.getUserInfo(),
-                            "[" + host + "]",
+                            formattedHost,
                             uri.getPort(),
                             uri.getPath(),
                             uri.getQuery(),
@@ -85,7 +83,28 @@ public abstract class RouteDefinitionProducer {
             }
         }
         if (output == null) {
-            output = evalHostname(serviceInstance);
+            String evalHost = evalHostname(serviceInstance);
+            // Return load balancer URL as is, format others
+            if (!evalHost.startsWith("lb://")) {
+                try {
+                    URI uri = new URI(evalHost);
+                    String formattedHost = UrlUtils.formatHostnameForUrl(uri.getHost());
+                    if (formattedHost != null) {
+                        evalHost = new URI(
+                            uri.getScheme(),
+                            uri.getUserInfo(),
+                            formattedHost,
+                            uri.getPort(),
+                            uri.getPath(),
+                            uri.getQuery(),
+                            uri.getFragment()
+                        ).toString();
+                    }
+                } catch (URISyntaxException e) {
+                    // Keep original if URI parsing fails
+                }
+            }
+            output = evalHost;
         }
         return output;
     }
@@ -110,44 +129,7 @@ public abstract class RouteDefinitionProducer {
         routeDefinition.setOrder(getOrder());
         String hostname = getHostname(serviceInstance);
 
-        // Handle IPv6 formatted URLs properly
-        if (hostname.startsWith("lb://")) {
-            // If Load balancer URL format found,keeping it intact
-            routeDefinition.setUri(URI.create(hostname));
-        } else {
-            // For regular URL ensuring proper formatting for IPv6 addresses
-            try {
-                URI uri = new URI(hostname);
-                String scheme = uri.getScheme();
-                String host = uri.getHost();
-                int port = uri.getPort();
-                String userInfo = uri.getUserInfo();
-                String path = uri.getPath();
-                String query = uri.getQuery();
-                String fragment = uri.getFragment();
-
-                // Checking if the host is an IPv6 address and adding brackets if needed
-                String formattedHost = host;
-                if (host != null && host.contains(":") && !host.startsWith("[")) {
-                    formattedHost = "[" + host + "]";
-                }
-
-                // Reconstructing the URI with formatted IPv6 address
-                URI safeUri = new URI(
-                    scheme,
-                    userInfo,
-                    formattedHost,
-                    port,
-                    path,
-                    query,
-                    fragment
-                );
-                routeDefinition.setUri(safeUri);
-            } catch (URISyntaxException e) {
-                // Fallback to direct creation if URI parsing fails
-                routeDefinition.setUri(URI.create(hostname));
-            }
-        }
+        routeDefinition.setUri(URI.create(hostname));
 
         // add instance metadata
         routeDefinition.setMetadata(new LinkedHashMap<>(serviceInstance.getMetadata()));
