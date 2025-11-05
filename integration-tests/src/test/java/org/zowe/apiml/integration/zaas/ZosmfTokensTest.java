@@ -31,9 +31,11 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.LTPA_COOKIE;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_ZOSMF_URI;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.isTestForICSF;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
 @ZaasTest
@@ -67,6 +69,7 @@ class ZosmfTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenValidZoweTokenWithLtpa() throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
+            assumeFalse(isTestForICSF());
             String ltpaToken = getZosmfLtpaToken();
             String zoweToken = generateZoweJwtWithLtpa(ltpaToken);
 
@@ -103,6 +106,7 @@ class ZosmfTokensTest implements TestWithStartedInstances {
         @ParameterizedTest(name = "ZosmfTokensTest.givenX509Certificate {1}")
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasTestUtil#provideClientCertificates")
         void givenX509Certificate(String certificate, String description) {
+            assumeFalse(isTestForICSF());
             //@formatter:off
             given()
                 .header("Client-Cert", certificate)
