@@ -285,16 +285,8 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         }
 
         String serviceId = EurekaUtils.getServiceIdFromInstanceId(instanceId);
-        if (serviceId == null) {
-            throw new MetadataValidationException(
-                "The instance ID '" + instanceId + "': must have the format 'hostname:serviceId:port'. The service will not be registered."
-            );
-        }
-        if (!SERVICE_ID_PATTERN.matcher(serviceId).matches()) {
-            throw new MetadataValidationException(
-                String.format("Invalid serviceId '%s' extracted from instanceId '%s': must comply with RFC 952/1123. The service will not be registered.", serviceId, instanceId)
-            );
-        }
+        EurekaUtils.validateServiceId(serviceId);
+
         if (!serviceId.equals(appName)) {
             throw new MetadataValidationException(
                 String.format("Inconsistent service identity: instanceId contains serviceId '%s' but appName='%s'. The service will not be registered.",

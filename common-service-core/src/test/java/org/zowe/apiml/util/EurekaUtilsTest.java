@@ -14,6 +14,9 @@ import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
@@ -21,6 +24,7 @@ import org.zowe.apiml.exception.MetadataValidationException;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -115,56 +119,34 @@ class EurekaUtilsTest {
 
     @Nested
     class WhenValidatingServiceId {
-        @Test
-        void givenServiceIdWithUnderscore_thenThrowMetadataValidationException() {
-            assertThrows(MetadataValidationException.class, () -> {
-                EurekaUtils.validateServiceId("service_id");
-            });
+
+        private static Stream<Arguments> validServiceIds() {
+            return Stream.of(
+                Arguments.of("valid-service-id"),
+                Arguments.of("a".repeat(63))
+            );
         }
 
-        @Test
-        void givenEmptyServiceId_thenThrowMetadataValidationException() {
-            assertThrows(MetadataValidationException.class, () -> {
-                EurekaUtils.validateServiceId("");
-            });
+        private static Stream<Arguments> invalidServiceIds() {
+            return Stream.of(
+                Arguments.of("service_id"),
+                Arguments.of(""),
+                Arguments.of(" "),
+                Arguments.of("Invalid@ServiceId"),
+                Arguments.of("a".repeat(64))
+            );
         }
 
-        @Test
-        void givenWhiteSpace_thenThrowMetadataValidationException() {
-            assertThrows(MetadataValidationException.class, () -> {
-                EurekaUtils.validateServiceId(" ");
-            });
+        @ParameterizedTest
+        @MethodSource("invalidServiceIds")
+        void givenServiceIdWithUnderscore_thenThrowMetadataValidationException(String serviceId) {
+            assertThrows(MetadataValidationException.class, () -> EurekaUtils.validateServiceId(serviceId));
         }
 
-        @Test
-        void givenNonRFCFormat_thenThrowMetadataValidationException() {
-            // Testa quando il serviceId non rispetta il formato RFC
-            assertThrows(MetadataValidationException.class, () -> {
-                EurekaUtils.validateServiceId("Invalid@ServiceId");
-            });
-        }
-
-        @Test
-        void testValidateServiceId_thenDoNotThrowException() {
-            assertDoesNotThrow(() -> {
-                EurekaUtils.validateServiceId("valid-service-id");
-            });
-        }
-
-        @Test
-        void given63characters_thenDoNotThrowException() {
-            String validId = "a".repeat(63);
-            assertDoesNotThrow(() -> {
-                EurekaUtils.validateServiceId(validId);
-            });
-        }
-
-        @Test
-        void givenTooLongString_thenThrowMetadataValidationException() {
-            String tooLongId = "a".repeat(64);
-            assertThrows(MetadataValidationException.class, () -> {
-                EurekaUtils.validateServiceId(tooLongId);
-            });
+        @ParameterizedTest
+        @MethodSource("validServiceIds")
+        void testValidateServiceId_thenDoNotThrowException(String serviceId) {
+            assertDoesNotThrow(() -> EurekaUtils.validateServiceId(serviceId));
         }
     }
 
