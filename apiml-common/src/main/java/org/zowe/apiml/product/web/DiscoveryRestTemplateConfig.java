@@ -44,9 +44,10 @@ public class DiscoveryRestTemplateConfig {
     @Value("${server.attlsClient.enabled:false}")
     private boolean isClientAttlsEnabled;
 
-    private static int CONNECT_TIMEOUT = 180_000;
-    private static int REQUEST_TIMEOUT = 180_000;
-    private static int SOCKET_TIMEOUT = 180_000;
+    private static final int CONNECT_TIMEOUT = 180_000;
+    private static final int REQUEST_TIMEOUT = 180_000;
+    private static final int SOCKET_TIMEOUT = 180_000;
+    private static final int IDLE_TIMEOUT = 60;
 
     @Bean
     RestClientTransportClientFactories restTemplateTransportClientFactories(RestClientDiscoveryClientOptionalArgs restClientDiscoveryClientOptionalArgs) {
@@ -78,12 +79,12 @@ public class DiscoveryRestTemplateConfig {
             var httpClientBuilder = HttpClients
                 .custom()
                 .evictExpiredConnections()
-                .evictIdleConnections(TimeValue.ofSeconds(30))
+                .evictIdleConnections(TimeValue.ofSeconds(IDLE_TIMEOUT))
                 .setConnectionManager(buildConnectionManager(sslContext, hostnameVerifier));
             RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
 
             requestConfigBuilder.setConnectionRequestTimeout(
-                Timeout.of(requestTimeout, TimeUnit.MILLISECONDS));
+                Timeout.of(REQUEST_TIMEOUT, TimeUnit.MILLISECONDS));
 
             httpClientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
 
@@ -99,10 +100,10 @@ public class DiscoveryRestTemplateConfig {
             .create();
         connectionManagerBuilder.setTlsSocketStrategy(new DefaultClientTlsStrategy(sslContext, hostnameVerifier));
         connectionManagerBuilder.setDefaultSocketConfig(SocketConfig.custom()
-            .setSoTimeout(Timeout.of(socketTimeout, TimeUnit.MILLISECONDS))
+            .setSoTimeout(Timeout.of(SOCKET_TIMEOUT, TimeUnit.MILLISECONDS))
             .build());
         connectionManagerBuilder.setDefaultConnectionConfig(ConnectionConfig.custom()
-            .setConnectTimeout(Timeout.of(connectTimeout, TimeUnit.MILLISECONDS))
+            .setConnectTimeout(Timeout.of(CONNECT_TIMEOUT, TimeUnit.MILLISECONDS))
             .build());
         return connectionManagerBuilder.build();
     }
