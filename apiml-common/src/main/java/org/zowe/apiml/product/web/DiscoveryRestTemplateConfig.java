@@ -44,9 +44,9 @@ public class DiscoveryRestTemplateConfig {
     @Value("${server.attlsClient.enabled:false}")
     private boolean isClientAttlsEnabled;
 
-    private static int connectTimeout = 180000;
-    private static int requestTimeout = 180000;
-    private static int socketTimeout = 180000;
+    private static int CONNECT_TIMEOUT = 180_000;
+    private static int REQUEST_TIMEOUT = 180_000;
+    private static int SOCKET_TIMEOUT = 180_000;
 
     @Bean
     RestClientTransportClientFactories restTemplateTransportClientFactories(RestClientDiscoveryClientOptionalArgs restClientDiscoveryClientOptionalArgs) {
