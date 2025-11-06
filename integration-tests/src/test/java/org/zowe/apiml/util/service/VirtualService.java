@@ -57,7 +57,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
  * <p>
  * It is recommended to use try-with-resource to be sure, service will be unregistered on the end, ie.:
  * <p>
- * try (final VirtualService service = new VirtualService("testService")) {
+ * try (final VirtualService service = new VirtualService("testservice")) {
  * service
  * // add same servlet and setting of service
  * .start()
