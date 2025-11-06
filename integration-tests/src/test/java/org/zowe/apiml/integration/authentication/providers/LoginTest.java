@@ -64,6 +64,8 @@ class LoginTest implements TestWithStartedInstances {
 
     public static final URI LOGIN_ENDPOINT_URL = HttpRequestUtils.getUriFromGateway(ROUTED_LOGIN);
 
+    private static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
+
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String CLIENT_USER = ConfigReader.environmentConfiguration().getCredentials().getClientUser();
@@ -297,9 +299,15 @@ class LoginTest implements TestWithStartedInstances {
 
 
     private String getPath(URI loginUrl) {
-        String urlPath = loginUrl.getPath();
+        var urlPath = loginUrl.getPath();
 
-        return urlPath.substring(StringUtils.ordinalIndexOf(urlPath, "/", 1))
-            .replace("/gateway/", "/zaas/");
+        if (IS_MODULITH_ENABLED) {
+            urlPath = urlPath.substring(StringUtils.ordinalIndexOf(urlPath, "/", 1));
+        } else {
+            urlPath = urlPath.replace("/gateway/", "/zaas/");
+        }
+        return urlPath;
+
     }
+
 }
