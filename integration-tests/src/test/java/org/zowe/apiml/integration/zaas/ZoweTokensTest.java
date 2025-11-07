@@ -34,7 +34,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_ZOWE_URI;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.isTestForICSF;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
 @ZaasTest

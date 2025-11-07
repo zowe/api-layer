@@ -54,7 +54,7 @@ import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.isTestForICSF;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
 import static org.zowe.apiml.util.SecurityUtils.*;
 import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGIN;
 
@@ -251,7 +251,9 @@ class LoginTest implements TestWithStartedInstances {
                         "messages.find { it.messageNumber == 'ZWEAO405E' }.messageContent", equalTo(expectedMessage)
                     );
             }
+
         }
+
     }
     //@formatter:on
 
