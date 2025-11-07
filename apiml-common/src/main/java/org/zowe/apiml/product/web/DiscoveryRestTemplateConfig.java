@@ -10,20 +10,31 @@
 
 package org.zowe.apiml.product.web;
 
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
+import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy;
+import org.apache.hc.core5.http.io.SocketConfig;
+import org.apache.hc.core5.util.TimeValue;
+import org.apache.hc.core5.util.Timeout;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.netflix.eureka.RestClientTimeoutProperties;
-import org.springframework.cloud.netflix.eureka.http.DefaultEurekaClientHttpRequestFactorySupplier;
+import org.springframework.cloud.netflix.eureka.http.EurekaClientHttpRequestFactorySupplier;
 import org.springframework.cloud.netflix.eureka.http.RestClientDiscoveryClientOptionalArgs;
 import org.springframework.cloud.netflix.eureka.http.RestClientTransportClientFactories;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class DiscoveryRestTemplateConfig {
@@ -33,6 +44,11 @@ public class DiscoveryRestTemplateConfig {
     @Value("${server.attlsClient.enabled:false}")
     private boolean isClientAttlsEnabled;
 
+    private static final int CONNECT_TIMEOUT = 180_000;
+    private static final int REQUEST_TIMEOUT = 180_000;
+    private static final int SOCKET_TIMEOUT = 180_000;
+    private static final int IDLE_TIMEOUT = 60;
+
     @Bean
     RestClientTransportClientFactories restTemplateTransportClientFactories(RestClientDiscoveryClientOptionalArgs restClientDiscoveryClientOptionalArgs) {
         return new RestClientTransportClientFactories(restClientDiscoveryClientOptionalArgs);
@@ -40,8 +56,8 @@ public class DiscoveryRestTemplateConfig {
 
     @Bean
     RestClientDiscoveryClientOptionalArgs defaultArgs(@Value("${eureka.client.serviceUrl.defaultZone}") String eurekaServerUrl,
-                                                             @Qualifier("secureSslContext") SSLContext secureSslContext,
-                                                             HostnameVerifier secureHostnameVerifier
+                                                      @Qualifier("secureSslContext") SSLContext secureSslContext,
+                                                      HostnameVerifier secureHostnameVerifier
     ) {
         RestClientDiscoveryClientOptionalArgs clientArgs = new RestClientDiscoveryClientOptionalArgs(getDefaultEurekaClientHttpRequestFactorySupplier(), RestClient::builder);
 
@@ -57,12 +73,40 @@ public class DiscoveryRestTemplateConfig {
         return clientArgs;
     }
 
-    private static DefaultEurekaClientHttpRequestFactorySupplier getDefaultEurekaClientHttpRequestFactorySupplier() {
-        RestClientTimeoutProperties properties = new RestClientTimeoutProperties();
-        properties.setConnectTimeout(180000);
-        properties.setConnectRequestTimeout(180000);
-        properties.setSocketTimeout(180000);
-        return new DefaultEurekaClientHttpRequestFactorySupplier(properties);
+    public static EurekaClientHttpRequestFactorySupplier getDefaultEurekaClientHttpRequestFactorySupplier() {
+        return (sslContext, hostnameVerifier) -> {
+            var requestFactory = new HttpComponentsClientHttpRequestFactory();
+            var httpClientBuilder = HttpClients
+                .custom()
+                .evictExpiredConnections()
+                .evictIdleConnections(TimeValue.ofSeconds(IDLE_TIMEOUT))
+                .setConnectionManager(buildConnectionManager(sslContext, hostnameVerifier));
+            RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
+
+            requestConfigBuilder.setConnectionRequestTimeout(
+                Timeout.of(REQUEST_TIMEOUT, TimeUnit.MILLISECONDS));
+
+            httpClientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
+
+            CloseableHttpClient httpClient = httpClientBuilder.build();
+
+            requestFactory.setHttpClient(httpClient);
+            return requestFactory;
+        };
     }
+
+    private static HttpClientConnectionManager buildConnectionManager(SSLContext sslContext, HostnameVerifier hostnameVerifier) {
+        PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder = PoolingHttpClientConnectionManagerBuilder
+            .create();
+        connectionManagerBuilder.setTlsSocketStrategy(new DefaultClientTlsStrategy(sslContext, hostnameVerifier));
+        connectionManagerBuilder.setDefaultSocketConfig(SocketConfig.custom()
+            .setSoTimeout(Timeout.of(SOCKET_TIMEOUT, TimeUnit.MILLISECONDS))
+            .build());
+        connectionManagerBuilder.setDefaultConnectionConfig(ConnectionConfig.custom()
+            .setConnectTimeout(Timeout.of(CONNECT_TIMEOUT, TimeUnit.MILLISECONDS))
+            .build());
+        return connectionManagerBuilder.build();
+    }
+
 
 }
