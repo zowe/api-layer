@@ -1,15 +1,15 @@
-///*
-// * This program and the accompanying materials are made available under the terms of the
-// * Eclipse Public License v2.0 which accompanies this distribution, and is available at
-// * https://www.eclipse.org/legal/epl-v20.html
-// *
-// * SPDX-License-Identifier: EPL-2.0
-// *
-// * Copyright Contributors to the Zowe Project.
-// */
-//
-//package org.zowe.apiml.apicatalog.swagger.api;
-//
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
+package org.zowe.apiml.apicatalog.swagger.api;
+
 //import com.fasterxml.jackson.core.JsonProcessingException;
 //import com.fasterxml.jackson.databind.ObjectMapper;
 //import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -21,7 +21,7 @@
 //import io.swagger.v3.oas.models.tags.Tag;
 //import io.swagger.v3.parser.OpenAPIV3Parser;
 //import jakarta.validation.UnexpectedTypeException;
-//import lombok.extern.slf4j.Slf4j;
+import lombok.extern.slf4j.Slf4j;
 //import org.apache.commons.io.IOUtils;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Nested;
@@ -32,7 +32,7 @@
 //import org.zowe.apiml.config.ApiInfo;
 //import org.zowe.apiml.config.ApplicationInfo;
 //import org.zowe.apiml.product.constants.CoreService;
-//import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.gateway.GatewayClient;
 //import org.zowe.apiml.product.instance.ServiceAddress;
 //import org.zowe.apiml.product.routing.RoutedService;
 //import org.zowe.apiml.product.routing.RoutedServices;
@@ -47,24 +47,24 @@
 //import static org.hamcrest.Matchers.*;
 //import static org.junit.jupiter.api.Assertions.*;
 //import static org.mockito.Mockito.mock;
-//
-//@Slf4j
-//class ApiDocV3ServiceTest {
-//
-//    private static final String HIDDEN_TAG = "apimlHidden";
-//    private static final String SERVICE_ID = "serviceId";
-//    private static final String SWAGGER_LOCATION_LINK = "[Swagger/OpenAPI JSON Document]";
-//    private static final String EXTERNAL_DOCUMENTATION = "External documentation";
-//    private static final String CATALOG_VERSION = "/api/v1";
-//    private static final String CATALOG_APIDOC_ENDPOINT = "/apidoc";
-//    private static final String API_ID = "org.zowe.apicatalog";
-//    private static final String API_VERSION = "v3.0.0";
-//    private static final String SEPARATOR = "/";
-//    private static final String URL_ENCODED_SPACE = "%20";
-//
-//    private GatewayClient gatewayClient;
-//    private ApiDocV3Service apiDocV3Service;
-//
+
+@Slf4j
+class ApiDocV3ServiceTest {
+
+    private static final String HIDDEN_TAG = "apimlHidden";
+    private static final String SERVICE_ID = "serviceId";
+    private static final String SWAGGER_LOCATION_LINK = "[Swagger/OpenAPI JSON Document]";
+    private static final String EXTERNAL_DOCUMENTATION = "External documentation";
+    private static final String CATALOG_VERSION = "/api/v1";
+    private static final String CATALOG_APIDOC_ENDPOINT = "/apidoc";
+    private static final String API_ID = "org.zowe.apicatalog";
+    private static final String API_VERSION = "v3.0.0";
+    private static final String SEPARATOR = "/";
+    private static final String URL_ENCODED_SPACE = "%20";
+
+    private GatewayClient gatewayClient;
+    private ApiDocV3Service apiDocV3Service;
+
 //    @BeforeEach
 //    void setUp() {
 //        ServiceAddress gatewayConfigProperties = getProperties();
@@ -366,5 +366,5 @@
 //            .hostname("localhost:10010")
 //            .build();
 //    }
-//
-//}
+
+}

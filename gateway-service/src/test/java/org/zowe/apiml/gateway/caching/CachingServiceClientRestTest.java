@@ -1,30 +1,31 @@
-///*
-// * This program and the accompanying materials are made available under the terms of the
-// * Eclipse Public License v2.0 which accompanies this distribution, and is available at
-// * https://www.eclipse.org/legal/epl-v20.html
-// *
-// * SPDX-License-Identifier: EPL-2.0
-// *
-// * Copyright Contributors to the Zowe Project.
-// */
-//
-//package org.zowe.apiml.gateway.caching;
-//
-//import com.fasterxml.jackson.core.JsonProcessingException;
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
+package org.zowe.apiml.gateway.caching;
+
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 //import org.junit.jupiter.api.BeforeEach;
 //import org.junit.jupiter.api.Nested;
 //import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.mockito.Mock;
-//import org.mockito.junit.jupiter.MockitoExtension;
+//import com.fasterxml.jackson.core.JsonProcessingException;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 //import org.springframework.http.HttpStatusCode;
 //import org.springframework.test.util.ReflectionTestUtils;
 //import org.springframework.web.reactive.function.client.ClientRequest;
-//import org.springframework.web.reactive.function.client.ClientResponse;
-//import org.springframework.web.reactive.function.client.ExchangeFunction;
-//import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.reactive.function.client.ExchangeFunction;
+import org.springframework.web.reactive.function.client.WebClient;
 //import org.zowe.apiml.gateway.caching.CachingServiceClient.ApiKeyValue;
 //import org.zowe.apiml.gateway.caching.LoadBalancerCache.LoadBalancerCacheRecord;
 //import org.zowe.apiml.product.gateway.GatewayClient;
@@ -37,20 +38,20 @@
 //import static org.mockito.Mockito.*;
 //import static reactor.core.publisher.Mono.empty;
 //import static reactor.core.publisher.Mono.just;
-//@ExtendWith(MockitoExtension.class)
-//class CachingServiceClientRestTest {
-//
-//    @Mock
-//    private ExchangeFunction exchangeFunction;
-//
-//    @Mock
-//    private ClientResponse clientResponse;
-//
-//    private CachingServiceClientRest client;
-//    private WebClient webClient;
-//
-//    private ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
-//
+@ExtendWith(MockitoExtension.class)
+class CachingServiceClientRestTest {
+
+    @Mock
+    private ExchangeFunction exchangeFunction;
+
+    @Mock
+    private ClientResponse clientResponse;
+
+    private CachingServiceClientRest client;
+    private WebClient webClient;
+
+    private ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+
 //    @BeforeEach
 //    void setUp() {
 //        webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
@@ -223,5 +224,5 @@
 //        }
 //
 //    }
-//
-//}
+
+}
