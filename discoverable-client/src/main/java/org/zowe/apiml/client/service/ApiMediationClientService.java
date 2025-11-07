@@ -32,7 +32,7 @@ import java.util.Collections;
 @Service
 public class ApiMediationClientService {
     private static final String PORT = "10013";
-    private static final String SERVICE_ID = "registrationTest";
+    private static final String SERVICE_ID = "registrationtest";
     private static final String GATEWAY_URL = "api/v1";
 
     private final DiscoverableClientConfig dcConfig;

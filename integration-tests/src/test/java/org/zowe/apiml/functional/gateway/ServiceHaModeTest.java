@@ -92,8 +92,8 @@ class ServiceHaModeTest implements TestWithStartedInstances {
             void setUp() throws LifecycleException, IOException, JSONException {
                 List<Integer> ports = RandomPorts.generateUniquePorts(2);
 
-                service1 = new VirtualService("testHaModeService1", ports.get(0));
-                service2 = new VirtualService("testHaModeService1", ports.get(1));
+                service1 = new VirtualService("testhamodeservice1", ports.get(0));
+                service2 = new VirtualService("testhamodeservice1", ports.get(1));
 
                 service1.start();
                 service2.start().waitForGatewayRegistration(TIMEOUT);
@@ -151,8 +151,8 @@ class ServiceHaModeTest implements TestWithStartedInstances {
             void setUp() throws LifecycleException, IOException, JSONException {
                 List<Integer> ports = RandomPorts.generateUniquePorts(2);
 
-                service1 = new VirtualService("testHaModeService2", ports.get(0));
-                service2 = new VirtualService("testHaModeService2", ports.get(1));
+                service1 = new VirtualService("testhamodeservice2", ports.get(0));
+                service2 = new VirtualService("testhamodeservice2", ports.get(1));
 
                 service1.addInstanceServlet("Http503", "/httpCode");
                 service2.addHttpStatusCodeServlet(HttpStatus.SC_SERVICE_UNAVAILABLE);
