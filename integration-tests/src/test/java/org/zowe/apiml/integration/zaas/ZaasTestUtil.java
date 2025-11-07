@@ -32,18 +32,18 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 @UtilityClass
 public class ZaasTestUtil {
 
-    static final URI ZAAS_TICKET_URI = HttpRequestUtils.getUriFromZaas(ZAAS_TICKET_ENDPOINT);
-    static final URI ZAAS_ZOSMF_URI = HttpRequestUtils.getUriFromZaas(ZAAS_ZOSMF_ENDPOINT);
-    static final URI ZAAS_ZOWE_URI = HttpRequestUtils.getUriFromZaas(ZAAS_ZOWE_ENDPOINT);
+    final URI ZAAS_TICKET_URI = HttpRequestUtils.getUriFromZaas(ZAAS_TICKET_ENDPOINT);
+    final URI ZAAS_ZOSMF_URI = HttpRequestUtils.getUriFromZaas(ZAAS_ZOSMF_ENDPOINT);
+    final URI ZAAS_ZOWE_URI = HttpRequestUtils.getUriFromZaas(ZAAS_ZOWE_ENDPOINT);
 
-    static final URI ZAAS_SAFIDT_URI = HttpRequestUtils.getUriFromZaas(ZAAS_SAFIDT_ENDPOINT);
+    final URI ZAAS_SAFIDT_URI = HttpRequestUtils.getUriFromZaas(ZAAS_SAFIDT_ENDPOINT);
 
-    static final String COOKIE = "apimlAuthenticationToken";
-    static final String LTPA_COOKIE = "LtpaToken2";
+    final String COOKIE = "apimlAuthenticationToken";
+    final String LTPA_COOKIE = "LtpaToken2";
 
-    static final boolean ZOS_TARGET = Boolean.parseBoolean(System.getProperty("environment.zos.target", "false"));
+    final boolean ZOS_TARGET = Boolean.parseBoolean(System.getProperty("environment.zos.target", "false"));
 
-    static Stream<Arguments> provideClientCertificates() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException {
+    public Stream<Arguments> provideClientCertificates() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException {
         List<Arguments> args = new ArrayList<>();
         args.add(Arguments.of(getClientCertificate(), "client certificate"));
         if (!ZOS_TARGET) {
@@ -59,7 +59,7 @@ public class ZaasTestUtil {
      *
      * @return a boolean indicating if the test runner is working against an instance with ICSF hardware keyring
      */
-    static boolean isTestForICSF() {
+    public boolean isTestForICSF() {
         return Boolean.getBoolean("hwkeyring");
     }
 
