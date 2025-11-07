@@ -15,7 +15,7 @@ module.exports = {
             "matchPackageNames": ["*"],
             "matchUpdateTypes": ["patch"],
             "postUpgradeTasks": {
-                "commands": ["npm install --package-lock-only"],
+                "commands": ["npm install --package-lock-only --registry https://zowe.jfrog.io/artifactory/api/npm/npm-org/"],
                 "fileFilters": ["**/**"],
                 "executionMode": "branch"
             }
@@ -35,7 +35,7 @@ module.exports = {
             "matchPackageNames": ["*"],
             "matchUpdateTypes": ["minor", "patch"],
             "postUpgradeTasks": {
-                "commands": ["npm install --package-lock-only"],
+                "commands": ["npm install --package-lock-only --registry https://zowe.jfrog.io/artifactory/api/npm/npm-org/"],
                 "fileFilters": ["**/**"],
                 "executionMode": "branch"
             }

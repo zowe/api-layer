@@ -307,6 +307,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
     -Dserver.ssl.trustStoreType="${truststore_type}" \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
+    -Dotel.sdk.disabled=true \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"

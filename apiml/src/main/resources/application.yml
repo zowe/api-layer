@@ -39,6 +39,10 @@ spring:
         web-application-type: reactive
         allow-bean-definition-overriding: true
 
+otel:
+    sdk:
+        disabled: true
+
 springdoc:
     api-docs:
         path: /v3/api-docs
@@ -319,6 +323,7 @@ management:
             base-path: /application
             exposure:
                 include: health,info
+
 ---
 spring.config.activate.on-profile: debug
 

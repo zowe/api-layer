@@ -74,8 +74,8 @@ class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
         List<Integer> ports = RandomPorts.generateUniquePorts(2);
 
         try (
-            final VirtualService service1 = new VirtualService("testService", ports.get(0));
-            final VirtualService service2 = new VirtualService("testService", ports.get(1))
+            final VirtualService service1 = new VirtualService("testservice", ports.get(0));
+            final VirtualService service2 = new VirtualService("testservice", ports.get(1))
         ) {
             // start first instance - without passTickets
             service1
@@ -158,9 +158,9 @@ class AuthenticationOnDeploymentTest implements TestWithStartedInstances {
         List<Integer> ports = RandomPorts.generateUniquePorts(3);
 
         try (
-            final VirtualService service1 = new VirtualService("testService3", ports.get(0));
-            final VirtualService service2 = new VirtualService("testService3", ports.get(1));
-            final VirtualService service4 = new VirtualService("testService3", ports.get(2))
+            final VirtualService service1 = new VirtualService("testservice3", ports.get(0));
+            final VirtualService service2 = new VirtualService("testservice3", ports.get(1));
+            final VirtualService service4 = new VirtualService("testservice3", ports.get(2))
         ) {
 
             List<VirtualService> serviceList = Arrays.asList(service1, service2);

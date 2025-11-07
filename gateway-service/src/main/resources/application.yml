@@ -73,6 +73,10 @@ spring:
         banner-mode: ${apiml.banner:"off"}
         web-application-type: reactive
 
+otel:
+    sdk:
+        disabled: true
+
 springdoc:
     api-docs:
         path: /gateway/api-docs

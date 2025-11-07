@@ -299,6 +299,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Djava.net.preferIPv4Stack=true \
   -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
   -Djava.library.path=${LIBPATH} \
+  -Dotel.sdk.disabled=true \
   -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"
