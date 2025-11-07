@@ -53,6 +53,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.isTestForICSF;
 import static org.zowe.apiml.util.SecurityUtils.*;
 import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGIN;
@@ -213,6 +214,7 @@ class LoginTest implements TestWithStartedInstances {
             @ParameterizedTest(name = "givenApimlsCert {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenApimlsCert(URI loginUrl) {
+                assumeFalse(isTestForICSF());
                 given()
                     .config(SslContext.clientCertApiml)
                 .when()
