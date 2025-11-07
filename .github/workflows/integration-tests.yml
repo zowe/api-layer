@@ -838,11 +838,11 @@ jobs:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_PERSONALACCESSTOKEN_ENABLED: true
-                    APIML_SECURITY_OIDC_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
-                    APIML_SECURITY_OIDC_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
+                    APIML_SECURITY_OIDC_CLIENTID: ${{ secrets.AUTH0_CLIENT_ID }}
+                    APIML_SECURITY_OIDC_CLIENTSECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
                     APIML_SECURITY_OIDC_ENABLED: true
                     APIML_SECURITY_OIDC_REGISTRY: zowe.okta.com
-                    APIML_SECURITY_OIDC_JWKS_URI: ${{ secrets.OKTA_JWKSET_URI }}
+                    APIML_SECURITY_OIDC_JWKS_URI: ${{ secrets.AUTH0_JWKSET_URI }}
                     APIML_SECURITY_OIDC_IDENTITYMAPPERUSER: APIMTST
                     APIML_SECURITY_OIDC_IDENTITYMAPPERURL: https://gateway-service:10010/zss/api/v1/certificate/dn
                     APIML_SECURITY_X509_ENABLED: true
@@ -867,9 +867,9 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck :integration-tests:runZaasTest --info -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-                    -Doidc.client.id=${{ secrets.OKTA_CLIENT_ID }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
+                    -Doidc.client.id=${{ secrets.AUTH0_CLIENT_ID }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
                     -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }} -Doidc.test.alt_user=${{ secrets.OKTA_WINNIE_USER }}
-                    -Doidc.test.alt_pass=${{ secrets.OKTA_WINNIE_PASS }} -Doidc.host=${{secrets.OKTA_HOST}}
+                    -Doidc.test.alt_pass=${{ secrets.OKTA_WINNIE_PASS }} -Doidc.host=${{secrets.AUTH0_HOST}}
                     -Ddiscoverableclient.instances=1
 
             -   name: Dump DC jacoco data
@@ -1753,8 +1753,8 @@ jobs:
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTID: ${{ secrets.AUTH0_CLIENT_ID }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTSECRET: ${{ secrets.AUTH0_CLIENT_PASSWORD }}
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_ISSUER: ${{ secrets.OKTA_ISSUER }}
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_AUTHORIZATIONURI: ${{ secrets.OKTA_AUTH_URI }}
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_TOKENURI: ${{ secrets.OKTA_TOKEN_URI }}
@@ -1883,8 +1883,8 @@ jobs:
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://gateway-service:10011/eureka
                     APIML_SERVICE_HOSTNAME: gateway-service
-                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTID: ${{ secrets.OKTA_CLIENT_ID }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTSECRET: ${{ secrets.OKTA_CLIENT_PASSWORD }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTID: ${{ secrets.AUTH0_CLIENT_ID }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTSECRET: ${{ secrets.AUTH0_CLIENT_PASSWORD }}
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_ISSUER: ${{ secrets.OKTA_ISSUER }}
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_AUTHORIZATIONURI: ${{ secrets.OKTA_AUTH_URI }}
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_TOKENURI: ${{ secrets.OKTA_TOKEN_URI }}

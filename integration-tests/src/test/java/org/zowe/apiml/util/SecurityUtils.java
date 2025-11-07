@@ -25,7 +25,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.ParseException;
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.SSLSocketFactory;
@@ -58,7 +61,10 @@ import org.zowe.apiml.util.config.TlsConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import javax.net.ssl.SSLContext;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -110,6 +116,7 @@ public class SecurityUtils {
     public static final String OKTA_AUTHENTICATE_SESSION_URL = "/api/v1/authn";
     public static final String OKTA_GENERATE_TOKEN_URL = "/oauth2/v1/authorize";
     public static final String KEYCLOAK_GENERATE_TOKEN_URL = "/realms/apiml/protocol/openid-connect/token";
+    public static final String AUTH0_GENERATE_TOKEN_URL = "/oauth/token";
 
     public static final String COOKIE_NAME = "apimlAuthenticationToken";
     public static final String PAT_COOKIE_AUTH_NAME = "personalAccessToken";
@@ -424,6 +431,8 @@ public class SecurityUtils {
             return validKeycloakToken(userHasMappingDefined);
         } else if (isOktaProvider()) {
             return validOktaAccessToken(userHasMappingDefined);
+        } else if (isAuth0Provider()) {
+            return validAuth0AccessToken(userHasMappingDefined);
         }
         throw new IllegalArgumentException(String.format("Unsupported OIDC provider: %s", OIDC_PROVIDER_NAME));
     }
@@ -475,6 +484,10 @@ public class SecurityUtils {
         return "keycloak".equalsIgnoreCase(OIDC_PROVIDER_NAME);
     }
 
+    public static boolean isAuth0Provider() {
+        return "auth0".equalsIgnoreCase(OIDC_PROVIDER_NAME);
+    }
+
     public static boolean isOktaProvider() {
         return "okta".equalsIgnoreCase(OIDC_PROVIDER_NAME);
     }
@@ -503,7 +516,7 @@ public class SecurityUtils {
                 ContentType.APPLICATION_FORM_URLENCODED
             );
             request.setEntity(entity);
-            request.addHeader("content-type", "application/x-www-form-urlencoded");
+            request.addHeader(HttpHeaders.CONTENT_TYPE,  ContentType.APPLICATION_FORM_URLENCODED.getMimeType());
 
             var response = httpClient.execute(request);
 
@@ -515,6 +528,48 @@ public class SecurityUtils {
                 return (String)accessToken;
             } else {
                 throw new RuntimeException("Failed obtaining Keycloak access token: " + response.getStatusLine().getStatusCode() + ": " + EntityUtils.toString(response.getEntity()));
+            }
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String validAuth0AccessToken(boolean userHasMappingDefined) {
+        assertNotNull(OIDC_HOSTNAME, "Auth0 host name is not set.");
+        assertNotNull(OIDC_CLIENT_ID, "Auth0 client id is not set.");
+
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) {
+            var uri = new URI(OIDC_HOSTNAME + AUTH0_GENERATE_TOKEN_URL);
+            var request = new HttpPost(uri);
+            var form = new StringBuilder();
+            form.append("grant_type=password");
+            form.append("&scope=discoverableclient");
+            form.append("&client_id=").append(URLEncoder.encode(OIDC_CLIENT_ID, StandardCharsets.UTF_8));
+            form.append("&client_secret=").append(URLEncoder.encode(OIDC_CLIENT_PASSWORD, StandardCharsets.UTF_8));
+            if (userHasMappingDefined) {
+                form.append("&username=").append(URLEncoder.encode(OIDC_USER, StandardCharsets.UTF_8));
+                form.append("&password=").append(URLEncoder.encode(OIDC_PASSWORD, StandardCharsets.UTF_8));
+            } else {
+                form.append("&username=").append(URLEncoder.encode(OIDC_ALT_USER, StandardCharsets.UTF_8));
+                form.append("&password=").append(URLEncoder.encode(OIDC_ALT_PASSWORD, StandardCharsets.UTF_8));
+            }
+            var entity = new StringEntity(
+                form.toString(),
+                ContentType.APPLICATION_FORM_URLENCODED
+            );
+            request.setEntity(entity);
+            request.addHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.getMimeType());
+
+            var response = httpClient.execute(request);
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                // The response is HTML form where access token is hidden input field (this is controlled by response_mode = form_post)
+                var body = EntityUtils.toString(response.getEntity());
+                var accessToken = MAPPER.readValue(body,HashMap.class).get("access_token");
+                assertNotNull(accessToken, "Failed to locate access token in the Auth0 /authorize response.");
+                return (String)accessToken;
+            } else {
+                throw new RuntimeException("Failed obtaining Auth0 access token: " + response.getStatusLine().getStatusCode() + ": " + EntityUtils.toString(response.getEntity()));
             }
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
