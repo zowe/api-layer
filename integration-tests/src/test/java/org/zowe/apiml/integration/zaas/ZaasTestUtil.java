@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.integration.zaas;
 
-import lombok.experimental.UtilityClass;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.junit.jupiter.params.provider.Arguments;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -29,8 +28,11 @@ import static org.zowe.apiml.util.SecurityUtils.getClientCertificate;
 import static org.zowe.apiml.util.SecurityUtils.getDummyClientCertificate;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
-@UtilityClass
 public class ZaasTestUtil {
+
+    private ZaasTestUtil() {
+        super();
+    }
 
     static final URI ZAAS_TICKET_URI = HttpRequestUtils.getUriFromZaas(ZAAS_TICKET_ENDPOINT);
     static final URI ZAAS_ZOSMF_URI = HttpRequestUtils.getUriFromZaas(ZAAS_ZOSMF_ENDPOINT);
@@ -43,7 +45,7 @@ public class ZaasTestUtil {
 
     static final boolean ZOS_TARGET = Boolean.parseBoolean(System.getProperty("environment.zos.target", "false"));
 
-    public Stream<Arguments> provideClientCertificates() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException {
+    public static Stream<Arguments> provideClientCertificates() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException {
         List<Arguments> args = new ArrayList<>();
         args.add(Arguments.of(getClientCertificate(), "client certificate"));
         if (!ZOS_TARGET) {
@@ -59,7 +61,7 @@ public class ZaasTestUtil {
      *
      * @return a boolean indicating if the test runner is working against an instance with ICSF hardware keyring
      */
-    public boolean isTestForICSF() {
+    public static boolean isTestForICSF() {
         return Boolean.getBoolean("hwkeyring");
     }
 
