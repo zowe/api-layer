@@ -12,6 +12,7 @@ gatewayServiceConfiguration:
     instances: 1
     servicesEndpoint: gateway/api/v1/services
     bucketCapacity: 20
+    authProvider: zosmf
 centralGatewayServiceConfiguration:
     scheme: https
     host: localhost
@@ -64,9 +65,6 @@ auxiliaryUserList:
 oidcConfiguration:
     providerName: okta
     host: https://dev-15878923.okta.com
-    clientId: 0oalf0sc35aNKevXs5d7
-    user: zoweson@zowe.com
-    password: hKE6tisHdujbmSg
 safIdtConfiguration:
     enabled: true
 instanceEnv:
