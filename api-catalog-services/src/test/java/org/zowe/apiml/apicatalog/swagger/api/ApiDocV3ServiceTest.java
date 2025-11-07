@@ -250,7 +250,10 @@ class ApiDocV3ServiceTest {
 
         @Test
         void givenInputFile_thenParseItCorrectly() throws IOException {
-            ServiceAddress gatewayConfigProperties = ServiceAddress.builder().scheme("https").hostname("localhost").build();
+            ServiceAddress gatewayConfigProperties = ServiceAddress.builder()
+                .scheme("https")
+                .hostname("localhost:10010")  
+                .build();
             gatewayClient.setGatewayConfigProperties(gatewayConfigProperties);
 
             AtomicReference<OpenAPI> openApiHolder = new AtomicReference<>();
