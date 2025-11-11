@@ -544,6 +544,7 @@ public class SecurityUtils {
             var form = new StringBuilder();
             form.append("grant_type=password");
             form.append("&scope=discoverableclient");
+            form.append("&audience=https://apiml");
             form.append("&client_id=").append(URLEncoder.encode(OIDC_CLIENT_ID, StandardCharsets.UTF_8));
             form.append("&client_secret=").append(URLEncoder.encode(OIDC_CLIENT_PASSWORD, StandardCharsets.UTF_8));
             if (userHasMappingDefined) {
