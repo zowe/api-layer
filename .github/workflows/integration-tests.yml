@@ -867,7 +867,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck :integration-tests:runZaasTest --info -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-                    -Doidc.client.id=${{ secrets.AUTH0_CLIENT_ID }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
+                    -Doidc.client.id=${{ secrets.AUTH0_CLIENT_ID }} -Doidc.client.secret=${{ secrets.AUTH0_CLIENT_SECRET }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
                     -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }} -Doidc.test.alt_user=${{ secrets.OKTA_WINNIE_USER }}
                     -Doidc.test.alt_pass=${{ secrets.OKTA_WINNIE_PASS }} -Doidc.host=${{secrets.AUTH0_HOST}}
                     -Ddiscoverableclient.instances=1
