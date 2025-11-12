@@ -61,7 +61,7 @@ public class RouteLocator implements RouteDefinitionLocator {
 
     private final ReactiveDiscoveryClient discoveryClient;
 
-    @Qualifier("commonNoRetryFilters")
+    @Qualifier("commonFilters")
     private final List<FilterDefinition> commonFilters;
     @Qualifier("commonNoRetryFilters")
     private final List<FilterDefinition> commonNoRetryFilters;
