@@ -13,6 +13,7 @@ package org.zowe.apiml.integration.zaas;
 import lombok.experimental.UtilityClass;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.junit.jupiter.params.provider.Arguments;
+import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
@@ -42,6 +43,7 @@ public class ZaasTestUtil {
     static final String LTPA_COOKIE = "LtpaToken2";
 
     static final boolean ZOS_TARGET = Boolean.parseBoolean(System.getProperty("environment.zos.target", "false"));
+    static final String AUTH_PROVIDER = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getAuthProvider();
 
     static Stream<Arguments> provideClientCertificates() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException {
         List<Arguments> args = new ArrayList<>();
@@ -63,4 +65,7 @@ public class ZaasTestUtil {
         return Boolean.getBoolean("hwkeyring");
     }
 
+    static boolean isTestForZOSMF() {
+        return AUTH_PROVIDER.equalsIgnoreCase("zosmf");
+    }
 }

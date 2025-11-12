@@ -32,10 +32,8 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.LTPA_COOKIE;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_ZOSMF_URI;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.isTestForICSF;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
 import static org.zowe.apiml.util.SecurityUtils.*;
 
 @ZaasTest
@@ -87,6 +85,7 @@ class ZosmfTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenValidAccessToken() {
+            assumeTrue(isTestForZOSMF());
             String serviceId = "gateway";
             String pat = personalAccessToken(Collections.singleton(serviceId));
 
@@ -106,6 +105,7 @@ class ZosmfTokensTest implements TestWithStartedInstances {
         @ParameterizedTest(name = "ZosmfTokensTest.givenX509Certificate {1}")
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasTestUtil#provideClientCertificates")
         void givenX509Certificate(String certificate, String description) {
+            assumeTrue(isTestForZOSMF());
             assumeFalse(isTestForICSF());
             //@formatter:off
             given()
@@ -121,6 +121,7 @@ class ZosmfTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenValidOAuthToken() {
+            assumeTrue(isTestForZOSMF());
             String oAuthToken = validOidcAccessToken(true);
 
             //@formatter:off
