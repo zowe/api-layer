@@ -51,7 +51,7 @@ jobs:
             - name: Release with Gradle automatic
               shell: bash
               run: |
-                  ./gradlew release $RELEASE_ARGS -Prelease.useAutomaticVersion=true -Prelease.scope=${{ github.event.inputs.scope || env.DEFAULT_SCOPE }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                  ./gradlew release -x test $RELEASE_ARGS -Prelease.useAutomaticVersion=true -Prelease.scope=${{ github.event.inputs.scope || env.DEFAULT_SCOPE }} -Pzowe.deploy.username=$ARTIFACTORY_USERNAME -Pzowe.deploy.password=$ARTIFACTORY_PASSWORD -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                   if [ -n "$RELEASE_ARGS" ]; then
                      echo "RELEASE_ARGS is empty. Skipping api catalog .env update."
                   else

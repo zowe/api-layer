@@ -18,8 +18,10 @@ import org.zowe.apiml.gateway.service.TokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import reactor.core.publisher.Mono;
+import org.springframework.context.annotation.Primary;
 
 @Component
+@Primary
 public class LocalTokenProvider extends TokenProvider {
     private final AuthenticationService authenticationService;
 
