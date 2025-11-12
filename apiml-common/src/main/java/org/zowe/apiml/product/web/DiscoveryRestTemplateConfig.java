@@ -98,7 +98,16 @@ public class DiscoveryRestTemplateConfig {
     private static HttpClientConnectionManager buildConnectionManager(SSLContext sslContext, HostnameVerifier hostnameVerifier) {
         PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder = PoolingHttpClientConnectionManagerBuilder
             .create();
-        connectionManagerBuilder.setTlsSocketStrategy(new DefaultClientTlsStrategy(sslContext, hostnameVerifier));
+        DefaultClientTlsStrategy tlsStrategy;
+        if (sslContext != null) {
+            if (hostnameVerifier != null) {
+                tlsStrategy = new DefaultClientTlsStrategy(sslContext, hostnameVerifier);
+            } else {
+                tlsStrategy = new DefaultClientTlsStrategy(sslContext);
+            }
+            connectionManagerBuilder.setTlsSocketStrategy(tlsStrategy);
+        }
+
         connectionManagerBuilder.setDefaultSocketConfig(SocketConfig.custom()
             .setSoTimeout(Timeout.of(SOCKET_TIMEOUT, TimeUnit.MILLISECONDS))
             .build());
