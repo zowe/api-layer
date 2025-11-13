@@ -27,9 +27,9 @@ describe('>>> Login through Auth0 OK', () => {
         cy.get('#username').type(username);
         // cy.get('form input[type="password"]').type(password);
         cy.get('#password').type(password);
-        cy.get('div.c6060c1b0 > button').should('not.be.disabled');
+        cy.get('button[data-action-button-primary="true"]').should('not.be.disabled');
         // cy.get('form input.button-primary').click();
-        cy.get('div.c6060c1b0 > button').click();
+        cy.get('button[data-action-button-primary="true"]').click();
 
         cy.url().should('contain', '/application');
 
