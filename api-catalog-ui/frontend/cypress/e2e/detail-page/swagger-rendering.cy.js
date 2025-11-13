@@ -83,9 +83,9 @@ describe('Swagger rendering', () => {
 
             cy.get('@mainInfo').should('exist');
 
-            cy.get('@mainInfo').get('h2').should('have.class', 'title');
+            cy.get('@mainInfo').get('h1').should('have.class', 'title');
 
-            cy.get('@mainInfo').get('h2').find('pre.version').should('exist');
+            cy.get('@mainInfo').get('h1').find('pre.version').should('exist');
 
             cy.get('@swaggerContainer').get('div.swagger-ui > div:nth-child(2) > div.wrapper').should('exist');
 

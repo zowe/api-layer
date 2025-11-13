@@ -74,8 +74,6 @@ dependencies {
     implementation libs.jackson.databind
     implementation libs.jaxbApi
     implementation libs.spring.cloud.commons
-    implementation libs.jjwt
-    implementation libs.nimbus.jose.jwt
     implementation libs.spring.doc
     implementation libs.swagger3.parser
 
@@ -99,8 +97,8 @@ dependencies {
 
     implementation libs.caffeine
 
-    implementation libs.jjwt.impl
-    implementation libs.jjwt.jackson
+    implementation libs.nimbus.jose.jwt // Parsing
+    implementation libs.jose4j.jwt // Signing, with support for JCA with ICSF
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
@@ -114,11 +112,15 @@ dependencies {
     testImplementation libs.rest.assured
     testImplementation libs.rest.assured.json.path
     testImplementation libs.rest.assured.xml.path
+    testImplementation libs.jjwt
+    testImplementation libs.jjwt.impl
+    testImplementation libs.jjwt.jackson
 
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
 
     testImplementation(testFixtures(project(":apiml-common")))
+    testImplementation(testFixtures(project(":apiml-security-common")))
 }
 
 bootJar {

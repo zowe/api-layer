@@ -25,7 +25,7 @@ configurations.all {
 dependencies {
     testImplementation project(':apiml-security-common')
     testImplementation project(':zaas-client')
-    testImplementation group: 'org.springframework.graphql', name: 'spring-graphql-test', version: '1.4.1'
+    testImplementation group: 'org.springframework.graphql', name: 'spring-graphql-test', version: '1.4.3'
 
 
     testImplementation libs.spring.boot.starter.actuator
@@ -291,7 +291,8 @@ task runAllIntegrationTestsForZoweModulithNonHaTestingOnZos(type: Test) {
             'GatewayProxyTest',
             'GatewayCentralRegistry',
             'SafIdTokenTest',
-            'ZaasTest' // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
+            'ZaasTest', // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
+            'NonModulithTest'
         )
     }
 

@@ -23,7 +23,7 @@ import java.util.Map;
 @Configuration
 public class RoutingConfig {
 
-    @Value("${apiml.service.ignoredHeadersWhenCorsEnabled:-}")
+    @Value("${apiml.service.ignoredHeadersWhenCorsEnabled:}")
     private String ignoredHeadersWhenCorsEnabled;
 
     @Value("${apiml.security.x509.acceptForwardedCert:false}")

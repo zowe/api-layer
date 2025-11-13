@@ -13,6 +13,8 @@ package org.zowe.apiml.gateway.service;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
@@ -49,17 +51,19 @@ public class RouteLocator implements RouteDefinitionLocator {
     @Value("${apiml.service.forwardClientCertEnabled:false}")
     private boolean forwardingClientCertEnabled;
 
-    @Value("${apiml.gateway.servicesToLimitRequestRate:-}")
+    @Value("${apiml.gateway.servicesToLimitRequestRate:}")
     List<String> servicesToLimitRequestRateProperty;
     List<String> servicesToLimitRequestRate;
 
-    @Value("${apiml.gateway.servicesToDisableRetry:-}")
+    @Value("${apiml.gateway.servicesToDisableRetry:}")
     List<String> servicesToDisableRetryProperty;
     List<String> servicesToDisableRetry;
 
     private final ReactiveDiscoveryClient discoveryClient;
 
+    @Qualifier("commonFilters")
     private final List<FilterDefinition> commonFilters;
+    @Qualifier("commonNoRetryFilters")
     private final List<FilterDefinition> commonNoRetryFilters;
     private final List<RouteDefinitionProducer> routeDefinitionProducers;
     private final List<SchemeHandler> schemeHandlersList;

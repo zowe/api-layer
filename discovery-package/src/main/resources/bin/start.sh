@@ -65,6 +65,12 @@ else
     COMMON_LIB="${CMMN_LB}"
 fi
 
+# script assumes it's in the discovery component directory and jvm.security.override.properties needs to be relative path
+JVM_SECURITY_PROPERTIES=""
+if [ "${JVM_SECURITY_PROPERTIES_OVERRIDE:-false}" = "true" ]; then
+    JVM_SECURITY_PROPERTIES="-Djava.security.properties=../apiml-common-lib/bin/jvm.security.override.properties"
+fi
+
 if [ -z "${LIBRARY_PATH}" ]; then
     LIBRARY_PATH="../common-java-lib/bin/"
 fi
@@ -264,6 +270,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     ${QUICK_START} \
     ${ADD_OPENS} \
     ${LOGBACK} \
+    ${JVM_SECURITY_PROPERTIES} \
     -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.discovery.password=password \
     -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer} \
@@ -300,6 +307,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
     -Dserver.ssl.trustStoreType="${truststore_type}" \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
+    -Dotel.sdk.disabled=true \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"

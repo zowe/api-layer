@@ -16,6 +16,8 @@ let certFile = null;
 let keyFile = null;
 let caFile = null;
 let passPhrase = null;
+let client = null;
+let tlsOpts = null;
 
 /**
  * Read ssl service configuration
@@ -31,22 +33,30 @@ function readTlsProps() {
     console.log(e);
   }
 }
-readTlsProps();
 
-export const tlsOptions = {
-  cert: fs.readFileSync(certFile),
-  key: fs.readFileSync(keyFile),
-  passphrase: passPhrase,
-  ca: fs.readFileSync(caFile),
-};
+export const tlsOptions = tlsOpts;
 
-const client = new Eureka({
-  filename: 'service-configuration',
-  cwd: 'config/',
-  requestMiddleware: (requestOpts, done) => {
-    done(Object.assign(requestOpts, tlsOptions));
-  },
-});
+function init () {
+  const defaultFile = fs.existsSync('config/service-configuration.yml', 'utf8');
+  if (defaultFile) {
+    readTlsProps();
+    tlsOpts = {
+      cert: fs.readFileSync(certFile),
+      key: fs.readFileSync(keyFile),
+      passphrase: passPhrase,
+      ca: fs.readFileSync(caFile),
+    };
+    client = new Eureka({
+      filename: 'service-configuration',
+      cwd: 'config/',
+      requestMiddleware: (requestOpts, done) => {
+        done(Object.assign(requestOpts, tlsOpts));
+      },
+    });
+  }
+}
+
+init();
 
 /**
  * Function that uses the eureka-js-client library to register the application to Eureka

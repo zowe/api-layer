@@ -89,11 +89,16 @@ else
 fi
 echo "jar file: "${JAR_FILE}
 # script assumes it's in the gateway component directory and common_lib needs to be relative path
-
 if [ -z "${CMMN_LB}" ]; then
     COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
 else
     COMMON_LIB="${CMMN_LB}"
+fi
+
+# script assumes it's in the gateway component directory and jvm.security.override.properties needs to be relative path
+JVM_SECURITY_PROPERTIES=""
+if [ "${JVM_SECURITY_PROPERTIES_OVERRIDE:-false}" = "true" ]; then
+    JVM_SECURITY_PROPERTIES="-Djava.security.properties=../apiml-common-lib/bin/jvm.security.override.properties"
 fi
 
 if [ -z "${LIBRARY_PATH}" ]; then
@@ -298,6 +303,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     ${QUICK_START} \
     ${ADD_OPENS} \
     ${LOGBACK} \
+    ${JVM_SECURITY_PROPERTIES} \
     -Dapiml.connection.idleConnectionTimeoutSeconds=${ZWE_configs_apiml_connection_idleConnectionTimeoutSeconds:-5} \
     -Dapiml.connection.timeout=${ZWE_configs_apiml_connection_timeout:-60000} \
     -Dapiml.connection.timeToLive=${ZWE_configs_apiml_connection_timeToLive:-10000} \
@@ -368,6 +374,9 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.webSocket.maxIdleTimeout=${ZWE_configs_server_webSocket_maxIdleTimeout:-3600000} \
     -Dspring.cloud.gateway.server.webflux.httpclient.websocket.max-frame-payload-length=${ZWE_configs_server_webSocket_requestBufferSize:-8192} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
+    -Dapiml.security.rauditx.onOidcUserIsMapped=${ZWE_configs_apiml_security_rauditx_onOidcUserIsMapped:-false} \
+    -Dapiml.security.rauditx.oidcSourceUserPaths=${ZWE_configs_apiml_security_rauditx_oidcSourceUserPaths:-sub} \
+    -Dotel.sdk.disabled=true \
     -jar "${JAR_FILE}" &
 
 pid=$!
