@@ -48,6 +48,8 @@ public class DiscoveryRestTemplateConfig {
     private static final int REQUEST_TIMEOUT = 180_000;
     private static final int SOCKET_TIMEOUT = 180_000;
     private static final int IDLE_TIMEOUT = 60;
+    private static final int MAX_CONNECTIONS_TOTAL = 100;
+    private static final int MAX_CONNECTIONS_PER_ROUTE = 10;
 
     @Bean
     RestClientTransportClientFactories restTemplateTransportClientFactories(RestClientDiscoveryClientOptionalArgs restClientDiscoveryClientOptionalArgs) {
@@ -98,7 +100,18 @@ public class DiscoveryRestTemplateConfig {
     private static HttpClientConnectionManager buildConnectionManager(SSLContext sslContext, HostnameVerifier hostnameVerifier) {
         PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder = PoolingHttpClientConnectionManagerBuilder
             .create();
-        connectionManagerBuilder.setTlsSocketStrategy(new DefaultClientTlsStrategy(sslContext, hostnameVerifier));
+        DefaultClientTlsStrategy tlsStrategy;
+        if (sslContext != null) {
+            if (hostnameVerifier != null) {
+                tlsStrategy = new DefaultClientTlsStrategy(sslContext, hostnameVerifier);
+            } else {
+                tlsStrategy = new DefaultClientTlsStrategy(sslContext);
+            }
+            connectionManagerBuilder.setTlsSocketStrategy(tlsStrategy);
+        }
+
+        connectionManagerBuilder.setMaxConnTotal(MAX_CONNECTIONS_TOTAL);
+        connectionManagerBuilder.setMaxConnPerRoute(MAX_CONNECTIONS_PER_ROUTE);
         connectionManagerBuilder.setDefaultSocketConfig(SocketConfig.custom()
             .setSoTimeout(Timeout.of(SOCKET_TIMEOUT, TimeUnit.MILLISECONDS))
             .build());
