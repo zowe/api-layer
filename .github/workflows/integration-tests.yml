@@ -1756,9 +1756,12 @@ jobs:
                     SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTID: ${{ secrets.AUTH0_CLIENT_ID }}
                     SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTSECRET: ${{ secrets.AUTH0_CLIENT_PASSWORD }}
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_ISSUER: ${{ secrets.OKTA_ISSUER }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_AUTHORIZATIONURI: ${{ secrets.OKTA_AUTH_URI }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_TOKENURI: ${{ secrets.OKTA_TOKEN_URI }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_USERINFOURI: ${{ secrets.OKTA_USER_INFO_URI }}
+#                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_AUTHORIZATIONURI: ${{ secrets.OKTA_AUTH_URI }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_AUTHORIZATIONURI: ${{ secrets.AUTH0_AUTH_URI }}
+#                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_TOKENURI: ${{ secrets.OKTA_TOKEN_URI }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_TOKENURI: ${{ secrets.AUTH0_TOKEN_URI }}
+#                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_USERINFOURI: ${{ secrets.OKTA_USER_INFO_URI }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_USERINFOURI: ${{ secrets.AUTH0_USER_INFO_URI }}
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_USERNAMEATTRIBUTE: sub
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_JWKSETURI: ${{ secrets.AUTH0_JWKSET_URI }}
                     APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
@@ -1833,8 +1836,8 @@ jobs:
             -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend
-                    export CYPRESS_OKTA_USERNAME=${{ secrets.OKTA_WINNIE_USER }}
-                    export CYPRESS_OKTA_PASSWORD=${{ secrets.OKTA_WINNIE_PASS }}
+                    export CYPRESS_AUTH0_USERNAME=${{ secrets.OKTA_WINNIE_USER }}
+                    export CYPRESS_AUTH0_PASSWORD=${{ secrets.OKTA_WINNIE_PASS }}
                     npm run cy:e2e:ci
             -   name: Dump CGW jacoco data
                 run: >
@@ -1946,8 +1949,8 @@ jobs:
             -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend
-                    export CYPRESS_OKTA_USERNAME=${{ secrets.OKTA_WINNIE_USER }}
-                    export CYPRESS_OKTA_PASSWORD=${{ secrets.OKTA_WINNIE_PASS }}
+                    export CYPRESS_AUTH0_USERNAME=${{ secrets.OKTA_WINNIE_USER }}
+                    export CYPRESS_AUTH0_PASSWORD=${{ secrets.OKTA_WINNIE_PASS }}
                     npm run cy:e2e:ci:modulith
             -   name: Dump CGW jacoco data
                 run: >

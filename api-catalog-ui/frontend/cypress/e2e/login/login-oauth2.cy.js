@@ -9,18 +9,18 @@
  */
 /* eslint-disable no-undef */
 
-describe('>>> Login through Okta OK', () => {
+describe('>>> Login through Auth0 OK', () => {
     it('should log in user and check session cookie', () => {
         cy.visit(`${Cypress.env('gatewayOktaRedirect')}`);
 
-        const username = Cypress.env('OKTA_USERNAME');
+        const username = Cypress.env('AUTH0_USERNAME');
         if (!username) {
-            cy.log('System env CYPRESS_OKTA_USERNAME is not set');
+            cy.log('System env CYPRESS_AUTH0_USERNAME is not set');
         }
 
-        const password = Cypress.env('OKTA_PASSWORD');
+        const password = Cypress.env('AUTH0_PASSWORD');
         if (!password) {
-            cy.log('System env CYPRESS_OKTA_PASSWORD is not set');
+            cy.log('System env CYPRESS_AUTH0_PASSWORD is not set');
         }
 
         cy.get('form span.o-form-input-name-username input').type(username);
