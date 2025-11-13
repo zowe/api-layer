@@ -30,7 +30,7 @@ describe('>>> Login through Auth0 OK', () => {
         cy.get('button[data-action-button-primary="true"]').should('not.be.disabled');
         // cy.get('form input.button-primary').click();
         cy.get('button[data-action-button-primary="true"]').click();
-
+        cy.contains('button', 'Accept').should('be.visible').click();
         cy.url().should('contain', '/application');
 
         cy.getCookie('apimlAuthenticationToken').should('exist');
