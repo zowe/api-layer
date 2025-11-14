@@ -23,6 +23,7 @@ import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.zowe.apiml.util.SecurityUtils.getClientCertificate;
@@ -35,11 +36,22 @@ public class ZaasTestUtil {
         super();
     }
 
-    static final URI ZAAS_TICKET_URI = HttpRequestUtils.getUriFromZaas(ZAAS_TICKET_ENDPOINT);
-    static final URI ZAAS_ZOSMF_URI = HttpRequestUtils.getUriFromZaas(ZAAS_ZOSMF_ENDPOINT);
-    static final URI ZAAS_ZOWE_URI = HttpRequestUtils.getUriFromZaas(ZAAS_ZOWE_ENDPOINT);
-
-    static final URI ZAAS_SAFIDT_URI = HttpRequestUtils.getUriFromZaas(ZAAS_SAFIDT_ENDPOINT);
+    /**
+     * /zaas/scheme/ticket is not usable when running in single-service mode
+     */
+    static final Optional<URI> ZAAS_TICKET_URI = HttpRequestUtils.getUriFromZaas(ZAAS_TICKET_ENDPOINT);
+    /**
+     * /zaas/scheme/zosmf is not usable when running in single-service mode
+     */
+    static final Optional<URI> ZAAS_ZOSMF_URI = HttpRequestUtils.getUriFromZaas(ZAAS_ZOSMF_ENDPOINT);
+    /**
+     * /zaas/scheme/zoweJwt is not usable when running in single-service mode
+     */
+    static final Optional<URI> ZAAS_ZOWE_URI = HttpRequestUtils.getUriFromZaas(ZAAS_ZOWE_ENDPOINT);
+    /**
+     * /zaas/scheme/safIdt is not usable when running in single-service mode
+     */
+    static final Optional<URI> ZAAS_SAFIDT_URI = HttpRequestUtils.getUriFromZaas(ZAAS_SAFIDT_ENDPOINT);
 
     static final String COOKIE = "apimlAuthenticationToken";
     static final String LTPA_COOKIE = "LtpaToken2";
@@ -70,4 +82,5 @@ public class ZaasTestUtil {
     static boolean isTestForZOSMF() {
         return AUTH_PROVIDER.equalsIgnoreCase("zosmf");
     }
+
 }

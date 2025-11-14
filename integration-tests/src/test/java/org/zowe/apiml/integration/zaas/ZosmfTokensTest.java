@@ -28,7 +28,7 @@ import java.util.Collections;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -54,13 +54,14 @@ class ZosmfTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenValidZosmfToken() {
-            String zosmfToken = getZosmfJwtToken();
+            var zosmfToken = getZosmfJwtToken();
+            assumeTrue(ZAAS_ZOSMF_URI.isPresent());
 
             //@formatter:off
             given()
                 .cookie(COOKIE, zosmfToken)
             .when()
-                .post(ZAAS_ZOSMF_URI)
+                .post(ZAAS_ZOSMF_URI.get())
             .then()
                 .statusCode(SC_OK)
                 .body("cookieName", is(JWT_COOKIE))
@@ -71,14 +72,15 @@ class ZosmfTokensTest implements TestWithStartedInstances {
         @Test
         void givenValidZoweTokenWithLtpa() throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
             assumeFalse(isTestForICSF());
-            String ltpaToken = getZosmfLtpaToken();
-            String zoweToken = generateZoweJwtWithLtpa(ltpaToken);
+            assumeTrue(ZAAS_ZOSMF_URI.isPresent());
+            var ltpaToken = getZosmfLtpaToken();
+            var zoweToken = generateZoweJwtWithLtpa(ltpaToken);
 
             //@formatter:off
             given()
                 .header("Authorization", "Bearer " + zoweToken)
             .when()
-                .post(ZAAS_ZOSMF_URI)
+                .post(ZAAS_ZOSMF_URI.get())
             .then()
                 .statusCode(SC_OK)
                 .body("cookieName", is(LTPA_COOKIE))
@@ -89,53 +91,56 @@ class ZosmfTokensTest implements TestWithStartedInstances {
         @Test
         void givenValidAccessToken() {
             assumeTrue(isTestForZOSMF());
-            String serviceId = "gateway";
-            String pat = personalAccessToken(Collections.singleton(serviceId));
+            assumeTrue(ZAAS_ZOSMF_URI.isPresent());
+            var serviceId = "gateway";
+            var pat = personalAccessToken(Collections.singleton(serviceId));
 
             //@formatter:off
             given()
                 .header("Authorization", "Bearer " + pat)
                 .header("X-Service-Id", serviceId)
             .when()
-                .post(ZAAS_ZOSMF_URI)
+                .post(ZAAS_ZOSMF_URI.get())
             .then()
                 .statusCode(SC_OK)
                 .body("cookieName", is(JWT_COOKIE))
-                .body("token", not(isEmptyOrNullString()));
+                .body("token", not(emptyOrNullString()));
             //@formatter:on
         }
 
         @ParameterizedTest(name = "ZosmfTokensTest.givenX509Certificate {1}")
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasTestUtil#provideClientCertificates")
         void givenX509Certificate(String certificate, String description) {
+            assumeTrue(ZAAS_ZOSMF_URI.isPresent());
             assumeTrue(isTestForZOSMF());
             assumeFalse(isTestForICSF());
             //@formatter:off
             given()
                 .header("Client-Cert", certificate)
             .when()
-                .post(ZAAS_ZOSMF_URI)
+                .post(ZAAS_ZOSMF_URI.get())
             .then()
                 .statusCode(SC_OK)
                 .body("cookieName", is(JWT_COOKIE))
-                .body("token", not(isEmptyOrNullString()));
+                .body("token", not(emptyOrNullString()));
             //@formatter:on
         }
 
         @Test
         void givenValidOAuthToken() {
             assumeTrue(isTestForZOSMF());
-            String oAuthToken = validOidcAccessToken(true);
+            assumeTrue(ZAAS_ZOSMF_URI.isPresent());
+            var oAuthToken = validOidcAccessToken(true);
 
             //@formatter:off
             given()
                 .cookie(COOKIE, oAuthToken)
             .when()
-                .post(ZAAS_ZOSMF_URI)
+                .post(ZAAS_ZOSMF_URI.get())
             .then()
                 .statusCode(SC_OK)
                 .body("cookieName", is(JWT_COOKIE))
-                .body("token", not(isEmptyOrNullString()));
+                .body("token", not(emptyOrNullString()));
             //@formatter:on
         }
     }
