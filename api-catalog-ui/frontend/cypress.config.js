@@ -23,6 +23,7 @@ module.exports = defineConfig({
     viewportWidth: 1400,
     viewportHeight: 980,
     chromeWebSecurity: false,
+    experimentalSessionAndOrigin: true,
     reporter: 'junit',
     defaultCommandTimeout: 30000,
     reporterOptions: {
