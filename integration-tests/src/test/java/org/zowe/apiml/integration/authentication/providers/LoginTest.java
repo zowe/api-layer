@@ -47,15 +47,21 @@ import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
-import static org.zowe.apiml.util.SecurityUtils.*;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.isTestForICSF;
+import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
+import static org.zowe.apiml.util.SecurityUtils.assertThatTokenIsValid;
+import static org.zowe.apiml.util.SecurityUtils.assertValidAuthToken;
+import static org.zowe.apiml.util.SecurityUtils.parseJwtStringUnsecure;
 import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGIN;
 
 /**
@@ -198,6 +204,8 @@ class LoginTest implements TestWithStartedInstances {
                 JSONObject loginRequest = new JSONObject()
                     .put("user", getUsername())
                     .put("pass", getPassword());
+
+                // TODO modulith returns 401 instead of 400 here
 
                 given()
                     .contentType(JSON)
