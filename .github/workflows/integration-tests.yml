@@ -1833,6 +1833,13 @@ jobs:
                     apt install -y apt-transport-https ca-certificates curl software-properties-common
                     curl -k -s https://gateway-service:10010/application/health
                     curl -k -s https://gateway-service-2:10010/application/health
+            -   name: Add docker service hostnames to /etc/hosts
+                run: |
+                    echo "127.0.0.1 gateway-service" | tee -a /etc/hosts
+                    echo "127.0.0.1 gateway-service-2" | tee -a /etc/hosts
+                    echo "127.0.0.1 discovery-service" | tee -a /etc/hosts
+                    echo "127.0.0.1 discovery-service-2" | tee -a /etc/hosts
+
             -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend
