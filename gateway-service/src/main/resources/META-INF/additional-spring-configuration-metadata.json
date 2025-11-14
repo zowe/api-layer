@@ -48,6 +48,18 @@
             "type": "java.util.Set",
             "defaultValue": false,
             "description": "Specifies what custom metadata are displayed in the /registry endpoint."
+        },
+        {
+            "name": "apiml.security.rauditx.onOidcUserIsMapped",
+            "type": "java.lang.Boolean",
+            "defaultValue": false,
+            "description": "Enable cutting SMF record on mapping distributed user from OIDC token to mainframe one."
+        },
+        {
+            "name": "apiml.security.rauditx.oidcSourceUserPaths",
+            "type": "java.lang.String",
+            "defaultValue": "sub",
+            "description": "Comma separated JSON paths to find source user in the OIDC token to be cut in the SMF record."
         }
     ]
 }

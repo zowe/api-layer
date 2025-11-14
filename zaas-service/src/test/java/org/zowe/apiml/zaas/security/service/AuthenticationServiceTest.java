@@ -14,10 +14,10 @@ import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jwt.JWTClaimsSet;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.impl.DefaultClaims;
-import io.jsonwebtoken.security.SignatureAlgorithm;
 import jakarta.servlet.http.Cookie;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,6 +48,7 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.util.JwtUtils;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 import org.zowe.apiml.zaas.config.CacheConfig;
@@ -57,11 +58,33 @@ import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.util.*;
+import java.text.ParseException;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationServiceTest { //NOSONAR, needs to be public
@@ -72,7 +95,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     private Set<String> scopes;
     private static final String DOMAIN = "this.com";
     private static final String LTPA = "ltpaToken";
-    private static final SignatureAlgorithm ALGORITHM = Jwts.SIG.RS256;
+    private static final JWSAlgorithm ALGORITHM = JWSAlgorithm.RS256;
 
     private static PrivateKey privateKey;
     private static PublicKey publicKey;
@@ -97,6 +120,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     private CacheUtils cacheUtils;
     @Mock
     private CacheManager cacheManager;
+    @Mock
+    private Clock clock;
 
 
     static {
@@ -109,18 +134,18 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
     @BeforeEach
     void setup() {
-
         authConfigurationProperties = new AuthConfigurationProperties();
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
         authService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer,
-            zosmfService, eurekaClient, restTemplate, cacheManager, cacheUtils
+            zosmfService, eurekaClient, restTemplate, cacheManager, cacheUtils, clock
         );
         scopes = new HashSet<>();
         scopes.add("Service1");
         scopes.add("Service2");
         ReflectionTestUtils.setField(authService, "meAsProxy", authService);
+        lenient().when(clock.instant()).thenReturn(Instant.now());
     }
 
     @Nested
@@ -360,8 +385,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void givenExpiredJWT_thenThrowTokenExpireException() {
-            String expiredJwtToken = createExpiredJwtToken(privateKey);
+            var expiredJwtToken = createExpiredJwtToken(privateKey);
             when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
+            when(clock.instant()).thenReturn(Instant.now());
             assertThrows(
                 TokenExpireException.class,
                 () -> authService.getLtpaTokenWithValidation(expiredJwtToken)
@@ -386,7 +412,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         return Jwts.builder()
             .setExpiration(new Date(expireAt))
             .setIssuer(authConfigurationProperties.getTokenProperties().getIssuer())
-            .signWith(privateKey, ALGORITHM)
+            .signWith(privateKey, Jwts.SIG.RS256)
             .compact();
     }
 
@@ -495,10 +521,10 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         private static final String TOKEN = "some_token";
 
         @Test
-        void thenReturnCorrectOrigin() {
-            final Map<String, String> map = new HashMap<>();
+        void thenReturnCorrectOrigin() throws ParseException {
+            final Map<String, Object> map = new HashMap<>();
             map.put(Claims.ISSUER, "APIML_PAT");
-            final Claims tokenClaims = new DefaultClaims(map);
+            var tokenClaims = JWTClaimsSet.parse(map);
 
             AuthSource.Origin originResult;
             try (MockedStatic<JwtUtils> jwtUtilsMock = Mockito.mockStatic(JwtUtils.class)) {
@@ -531,7 +557,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     }
 
     void stubJWTSecurityForSign() {
-        when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
+        lenient().when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
     }
 
@@ -555,6 +581,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @MockitoBean(name = "restTemplateWithKeystore")
         private RestTemplate restTemplateWithKeystore;
 
+        @MockitoBean
+        private Clock clock;
+
         @Autowired
         private AuthenticationService authService;
 
@@ -566,6 +595,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
             when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
             when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
+            when(clock.instant()).thenReturn(Instant.now());
             String jwtToken01 = authService.createJwtToken("user01", "domain01", "ltpa01");
             String jwtToken02 = authService.createJwtToken("user02", "domain02", "ltpa02");
 

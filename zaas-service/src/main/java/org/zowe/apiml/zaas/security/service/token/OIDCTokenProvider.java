@@ -10,15 +10,13 @@
 
 package org.zowe.apiml.zaas.security.service.token;
 
-
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.util.DefaultResourceRetriever;
-import com.nimbusds.jose.util.Resource;
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.lang.Collections;
-import io.jsonwebtoken.security.UnsupportedKeyException;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jose.jwk.JWKException;
+import com.nimbusds.jose.proc.BadJOSEException;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWTParser;
+import com.nimbusds.jwt.SignedJWT;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -27,22 +25,26 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.http.HttpHeaders;
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.JsonWebKeySet;
+import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpStatus;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 
 import java.io.IOException;
-import java.net.URL;
-import java.security.Key;
+import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
+import java.time.Clock;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -53,9 +55,6 @@ import java.util.concurrent.TimeUnit;
 @ConditionalOnExpression("'${apiml.security.oidc.enabled:false}' == 'true'")
 public class OIDCTokenProvider implements OIDCProvider {
 
-    private final LocatorAdapterKid keyLocator = new LocatorAdapterKid();
-
-
     @Value("${apiml.security.oidc.jwks.uri}")
     private List<String> jwksUri;
 
@@ -64,17 +63,16 @@ public class OIDCTokenProvider implements OIDCProvider {
 
     @Qualifier("oidcJwtClock")
     private final Clock clock;
-    private final DefaultResourceRetriever resourceRetriever;
 
     @Value("${apiml.security.oidc.userInfo.uri}")
     private String endpointUrl;
 
+    private final JWKResolver jwkResolver;
     private final CloseableHttpClient secureHttpClientWithKeystore;
     @Getter
-    private final Map<String, JWK> publicKeys = new ConcurrentHashMap<>();
+    private final Map<String, JsonWebKey> publicKeys = new ConcurrentHashMap<>();
     @Getter
-    private JWKSet jwkSet;
-
+    private JsonWebKeySet jwkSet;
 
     @PostConstruct
     public void afterPropertiesSet() {
@@ -85,7 +83,7 @@ public class OIDCTokenProvider implements OIDCProvider {
 
     @Retryable
     void fetchJWKSet() {
-        if (Collections.isEmpty(jwksUri)) {
+        if (jwksUri == null || jwksUri.isEmpty()) {
             log.debug("OIDC JWK URI not provided, JWK refresh not performed");
             return;
         }
@@ -94,32 +92,34 @@ public class OIDCTokenProvider implements OIDCProvider {
         for (String url : jwksUri) {
             log.debug("Refreshing JWK endpoints {}", url);
             try {
-                Resource resource = resourceRetriever.retrieveResource(new URL(url));
-                var tmpJwk = JWKSet.parse(resource.getContent());
-                tmpJwk.getKeys().forEach(jwk -> publicKeys.put(jwk.getKeyID(), jwk));
-            } catch (IOException | ParseException | IllegalStateException e) {
+                var keySet = jwkResolver.resolve(url);
+                keySet.getJsonWebKeys().forEach(jwk -> publicKeys.put(jwk.getKeyId(), jwk));
+            } catch (IOException | IllegalStateException | JoseException e) {
                 log.error("Error processing response from URI {} message: {}", url, e.getMessage());
             }
         }
-        jwkSet = new JWKSet(publicKeys.values().stream().toList());
 
+        jwkSet = new JsonWebKeySet(publicKeys.entrySet().stream().map(Entry::getValue).toList());
     }
 
     @Override
     public boolean isValid(String token) {
         try {
-
-            if (Collections.isEmpty(jwksUri) || getClaims(token).isEmpty()) {
+            if (CollectionUtils.isEmpty(jwksUri) || getClaims(token) == null) {
                 return isValidExternal(token);
             }
             return true;
-        } catch (MalformedJwtException jwte) {
-            log.debug("Malformed JWT: {}", jwte.getMessage(), jwte.getCause());
+        } catch (ParseException e) {
+            log.debug("Malformed JWT: {}", e.getMessage(), e.getCause());
             return false;
-        } catch (JwtException jwte) {
-            log.debug("JWK token validation failed with the exception {}", jwte.getMessage(), jwte.getCause());
+        } catch (JOSEException e) {
+            log.debug("JWK token validation failed with the exception {}", e.getMessage(), e.getCause());
             return isValidExternal(token);
+        } catch (BadJOSEException e) {
+            log.debug("Bad JWT: {}", e.getMessage(), e.getCause());
+            return false;
         }
+
     }
 
     public boolean isValidExternal(String token) {
@@ -141,47 +141,56 @@ public class OIDCTokenProvider implements OIDCProvider {
             log.error("An error occurred during validation of OIDC token using userInfo URI {}: {}", endpointUrl, e.getMessage());
             return false;
         }
+
     }
 
-    Claims getClaims(String token) {
-        if (jwkSet == null || jwkSet.isEmpty()) {
+    JWTClaimsSet getClaims(String token) throws ParseException, BadJOSEException, JOSEException {
+        if (StringUtils.isBlank(token)) {
+            throw new BadJOSEException("Empty string provided instead of a token.");
+        }
+
+        if (jwkSet == null || jwkSet.getJsonWebKeys().isEmpty()) {
             fetchJWKSet();
         }
 
-        if (StringUtils.isBlank(token)) {
-            throw new JwtException("Empty string provided instead of a token.");
+        if (jwkSet == null || jwkSet.getJsonWebKeys().isEmpty()) {
+            throw new JWKException("Could not validate the token due to missing public key.");
         }
+
         log.debug("Validating the token with JWK");
-        return Jwts.parser()
-            .clock(clock)
-            .keyLocator(keyLocator)
-            .build()
-            .parseSignedClaims(token)
-            .getPayload();
+        var jwt = JWTParser.parse(token);
+        if (jwt instanceof SignedJWT signedJwt) {
+            return getClaims(signedJwt);
+        } else {
+            log.debug("OIDC Token is not signed");
+        }
+        return null;
+
     }
 
-    class LocatorAdapterKid extends LocatorAdapter<Key> {
-
-        @Override
-        protected Key locate(ProtectedHeader header) {
-            if (jwkSet == null || jwkSet.isEmpty()) {
-                throw new JwtException("Could not validate the token due to missing public key.");
-            }
-            var kid = header.getKeyId();
-            if (kid == null) {
-                throw new UnsupportedKeyException("Token does not provide kid. It uses an unsupported type of signature.");
-            }
-            return Optional.ofNullable(jwkSet.getKeyByKeyId(header.getKeyId()))
-                .map(key -> {
-                    try {
-                        return key.toRSAKey().toPublicKey();
-                    } catch (JOSEException e) {
-                        throw new JwtException("Could not validate the token due to either an invalid token or an invalid public key.", e);
-                    }
-                })
-                .orElseThrow(() -> new UnsupportedKeyException("Key with id " + header.getKeyId() + " is null in JWK"));
+    private JWTClaimsSet getClaims(SignedJWT jwt) throws JOSEException, ParseException, BadJOSEException {
+        var keyId = jwt.getHeader().getKeyID();
+        if (StringUtils.isBlank(keyId)) {
+            throw new JWKException("Token does not provide kid. It uses an unsupported type of signature.");
         }
 
+        var jsonWebKey = publicKeys.get(keyId);
+        if (jsonWebKey != null) {
+            var rsaVerifier = new RSASSAVerifier((RSAPublicKey) jsonWebKey.getKey());
+            var verified = jwt.verify(rsaVerifier);
+            if (verified) {
+                var claims = jwt.getJWTClaimsSet();
+                if (claims.getExpirationTime().toInstant().isBefore(clock.instant())) {
+                    log.debug("OIDC Token is expired");
+                    return null;
+                }
+                return claims;
+            } else {
+                throw new BadJOSEException("Provided OIDC JWT token has invalid signature");
+            }
+        } else {
+            throw new JWKException("Key with id " + keyId + " is null in JWK");
+        }
     }
 
 }

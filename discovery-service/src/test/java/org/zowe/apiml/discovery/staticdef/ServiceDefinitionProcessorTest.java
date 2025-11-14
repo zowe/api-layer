@@ -15,7 +15,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -30,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -313,11 +316,20 @@ class ServiceDefinitionProcessorTest {
         );
     }
 
-    @Test
-    void givenInstanceWithoutServiceId_whenDefinitionIsLoaded_thenErrorIsReturned() {
+    private static Stream<Arguments> serviceIds() {
+        return Stream.of(
+            Arguments.of(""),
+            Arguments.of("seRvic_E@")
+        );
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("serviceIds")
+    void givenInstanceWithWrongServiceId_whenDefinitionIsLoaded_thenErrorIsReturned(String serviceId) {
         String yaml =
             "services:\n" +
-                "    - serviceId: \n" +
+                "    - serviceId: " + serviceId + " \n" +
                 "      title: Title\n" +
                 "      description: Description\n" +
                 "      catalogUiTileId: tileid\n" +
@@ -331,7 +343,7 @@ class ServiceDefinitionProcessorTest {
 
         assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
             result,
-            "ServiceId is not defined in the file 'test.yml'. The instance will not be created."
+            "ServiceId is either not defined in the file 'test.yml' or not conformant. The instance will not be created."
         );
     }
 

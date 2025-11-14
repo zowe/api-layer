@@ -40,7 +40,7 @@ class RauditxServiceTest {
         safResourceAccessVerifying = mock(SafResourceAccessVerifying.class);
         rauditxService = spy(new RauditxService() {
             @Override
-            Rauditx createMock() {
+            protected Rauditx createMock() {
                 if (mockRauditx != null) return mockRauditx;
                 return super.createMock();
             }

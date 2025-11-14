@@ -125,6 +125,11 @@ spring:
         banner-mode: ${apiml.banner:"off"}
         web-application-type: reactive
         allow-bean-definition-overriding: true
+
+otel:
+    sdk:
+        disabled: true
+
 springdoc:
     pathsToMatch: /api/v1/**
     api-docs:

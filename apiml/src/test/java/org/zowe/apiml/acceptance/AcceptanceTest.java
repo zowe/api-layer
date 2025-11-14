@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.acceptance;
 
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.netflix.eureka.server.EurekaController;
@@ -55,6 +57,7 @@ import java.lang.annotation.Target;
         "server.port=40985" // Use specific port due to need to use of apiml.service.port to determine if it's gateway or DS
     }
 )
+@Execution(ExecutionMode.SAME_THREAD)
 @ActiveProfiles("ApimlModulithAcceptanceTest")
 @AutoConfigureWebTestClient
 @DirtiesContext

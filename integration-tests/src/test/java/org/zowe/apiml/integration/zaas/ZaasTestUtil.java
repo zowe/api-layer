@@ -13,6 +13,7 @@ package org.zowe.apiml.integration.zaas;
 import lombok.experimental.UtilityClass;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.junit.jupiter.params.provider.Arguments;
+import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
@@ -42,6 +43,7 @@ public class ZaasTestUtil {
     static final String LTPA_COOKIE = "LtpaToken2";
 
     static final boolean ZOS_TARGET = Boolean.parseBoolean(System.getProperty("environment.zos.target", "false"));
+    static final String AUTH_PROVIDER = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getAuthProvider();
 
     static Stream<Arguments> provideClientCertificates() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException {
         List<Arguments> args = new ArrayList<>();
@@ -50,5 +52,20 @@ public class ZaasTestUtil {
             args.add(Arguments.of(getDummyClientCertificate(), "dummy client certificate"));
         }
         return args.stream();
+    }
+
+    /**
+     * Some tests are written as integration tests and make the test runner act as the Gateway (they sign tokens for example, or use the server's private key to act as Gateway)
+     * These tests cannot run in an environment where the server has the private key in hardware as it is not available to the runner and the validations fail because the runner
+     * cannot provide valid server credentials.
+     *
+     * @return a boolean indicating if the test runner is working against an instance with ICSF hardware keyring
+     */
+    static boolean isTestForICSF() {
+        return Boolean.getBoolean("hwkeyring");
+    }
+
+    static boolean isTestForZOSMF() {
+        return AUTH_PROVIDER.equalsIgnoreCase("zosmf");
     }
 }
