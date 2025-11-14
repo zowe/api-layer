@@ -13,6 +13,8 @@ package org.zowe.apiml.gateway.service;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
@@ -59,7 +61,9 @@ public class RouteLocator implements RouteDefinitionLocator {
 
     private final ReactiveDiscoveryClient discoveryClient;
 
+    @Qualifier("commonFilters")
     private final List<FilterDefinition> commonFilters;
+    @Qualifier("commonNoRetryFilters")
     private final List<FilterDefinition> commonNoRetryFilters;
     private final List<RouteDefinitionProducer> routeDefinitionProducers;
     private final List<SchemeHandler> schemeHandlersList;

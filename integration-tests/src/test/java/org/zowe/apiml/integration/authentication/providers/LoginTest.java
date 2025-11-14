@@ -27,6 +27,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpStatus;
+import org.zowe.apiml.security.common.error.PlatformPwdErrno;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
@@ -79,6 +80,7 @@ class LoginTest implements TestWithStartedInstances {
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String CLIENT_USER = ConfigReader.environmentConfiguration().getCredentials().getClientUser();
+    private static final String AUTH_PROVIDER = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getAuthProvider();
     private final static String INVALID_USERNAME = "incorrectUser";
     private final static String INVALID_PASSWORD = "incorrectPassword";
 
@@ -157,7 +159,11 @@ class LoginTest implements TestWithStartedInstances {
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenInvalidCredentialsInBody(URI loginUrl) {
                 String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
-
+                String expectedMessageNumber = "ZWEAG120E";
+                if (AUTH_PROVIDER.equalsIgnoreCase("saf")) {
+                    expectedMessage = "The platform returned error: " + PlatformPwdErrno.EINVAL.shortErrorName + ": " + PlatformPwdErrno.EINVAL.explanation;
+                    expectedMessageNumber = "ZWEAT416E";
+                }
                 LoginRequest loginRequest = new LoginRequest(INVALID_USERNAME, INVALID_PASSWORD.toCharArray());
 
                 given()
@@ -166,9 +172,10 @@ class LoginTest implements TestWithStartedInstances {
                 .when()
                     .post(loginUrl)
                 .then()
+                    .log().ifValidationFails()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == '" + expectedMessageNumber + "' }.messageContent", equalTo(expectedMessage)
                     );
             }
 
@@ -176,7 +183,11 @@ class LoginTest implements TestWithStartedInstances {
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenInvalidCredentialsInHeader(URI loginUrl) {
                 String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
-
+                String expectedMessageNumber = "ZWEAG120E";
+                if (AUTH_PROVIDER.equalsIgnoreCase("saf")) {
+                    expectedMessage = "The platform returned error: " + PlatformPwdErrno.EINVAL.shortErrorName + ": " + PlatformPwdErrno.EINVAL.explanation;
+                    expectedMessageNumber = "ZWEAT416E";
+                }
                 String headerValue = "Basic " + Base64.getEncoder().encodeToString((INVALID_USERNAME + ":" + INVALID_PASSWORD).getBytes(StandardCharsets.UTF_8));
 
                 given()
@@ -185,9 +196,10 @@ class LoginTest implements TestWithStartedInstances {
                 .when()
                     .post(loginUrl)
                 .then()
+                    .log().ifValidationFails()
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAG120E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == '" + expectedMessageNumber + "' }.messageContent", equalTo(expectedMessage)
                     );
             }
 
