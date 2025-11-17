@@ -44,10 +44,14 @@ public class RegistryConfig {
         if (externalUrl != null) {
             URI uri = new URI(externalUrl);
             String host = uri.getHost();
-            // Handle IPv6 address format using UrlUtils
-            if (host != null) {
-                host = UrlUtils.formatHostnameForUrl(host);
+
+            // Validate that the external URL has a valid host component
+            if (host == null || host.trim().isEmpty()) {
+                throw new IllegalArgumentException("Invalid external URL: '" + externalUrl + "'. The URL must contain a valid host component.");
             }
+            // Handle IPv6 address format using UrlUtils
+            host = UrlUtils.formatHostnameForUrl(host);
+
             return ServiceAddress.builder()
                 .scheme(clientAttlsEnabled ? "http" : uri.getScheme())
                 .hostname(host + ":" + uri.getPort())

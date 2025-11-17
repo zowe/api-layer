@@ -165,7 +165,10 @@ public class UrlUtils {
             return hostname;
         }
 
-        // Check for hostname:port format
+        // Check for hostname:port format by looking at the last colon
+        // We check this BEFORE checking if the entire string is IPv6 because:
+        // 1. "2001:db8::1:8080" could be ambiguous - is 8080 part of IPv6 or a port?
+        // 2. If the last segment after colon is a valid port number, we should treat it as such
         int lastColonIndex = hostname.lastIndexOf(':');
         if (lastColonIndex > -1) {
             String possibleHost = hostname.substring(0, lastColonIndex);
@@ -173,19 +176,20 @@ public class UrlUtils {
 
             // Check if what follows the last colon is a valid port number
             if (isValidPort(possiblePort)) {
-                // If we have a port, check if the host part is IPv6
+                // If we have a valid port, check if the host part is IPv6
                 if (isIPv6Address(possibleHost)) {
                     return "[" + possibleHost + "]:" + possiblePort;
                 }
-                // If the full string is NOT IPv6, return as-is
+                // If the full string is NOT IPv6, return as-is (hostname:port or IPv4:port)
                 if (!isIPv6Address(hostname)) {
-                    return hostname; // Regular hostname:port or IPv4:port
+                    return hostname;
                 }
-                // Otherwise, fall through to check if full hostname is IPv6
+                // Edge case: If full hostname IS IPv6 but possibleHost is not,
+                // fall through to check if it's a plain IPv6 address without port
             }
         }
 
-        // No port number, check if it's a plain IPv6 address
+        // No valid port found, check if it's a plain IPv6 address
         if (isIPv6Address(hostname)) {
             return "[" + hostname + "]";
         }
@@ -225,7 +229,7 @@ public class UrlUtils {
         }   
 
         // Remove any existing scheme if present
-        String cleanHostWithPort = hostWithPort.replaceFirst("^\\w+://", "");
+        String cleanHostWithPort = hostWithPort.replaceFirst("^[a-zA-Z][a-zA-Z0-9+.-]*://", "");
         
         // Format the hostname part properly
         String formattedHost = formatHostnameForUrl(cleanHostWithPort);
