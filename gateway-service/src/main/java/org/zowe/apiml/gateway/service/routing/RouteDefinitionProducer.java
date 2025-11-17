@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.service.routing;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.discovery.DiscoveryLocatorProperties;
 import org.springframework.cloud.gateway.route.RouteDefinition;
@@ -34,6 +35,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_EXTERNAL
  *
  * The producers define an order ({@link #getOrder()}). It allows to create multiple rules with a prioritization.
  */
+@Slf4j
 public abstract class RouteDefinitionProducer {
 
     protected final SimpleEvaluationContext evalCtxt = SimpleEvaluationContext.forReadOnlyDataBinding().withInstanceMethods().build();
@@ -78,7 +80,7 @@ public abstract class RouteDefinitionProducer {
                         output = newUri.toString();
                     }
                 } catch (URISyntaxException e) {
-                    // If there's an error parsing the URI, keeping the original URL
+                    log.error("Error while formatting URI: {}", output, e);
                 }
             }
         }
@@ -101,7 +103,7 @@ public abstract class RouteDefinitionProducer {
                         ).toString();
                     }
                 } catch (URISyntaxException e) {
-                    // Keep original if URI parsing fails
+                    log.error("Error while formatting URI: {}", evalHost, e);
                 }
             }
             output = evalHost;
