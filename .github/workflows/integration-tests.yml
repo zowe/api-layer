@@ -1833,13 +1833,6 @@ jobs:
                     apt install -y apt-transport-https ca-certificates curl software-properties-common
                     curl -k -s https://gateway-service:10010/application/health
                     curl -k -s https://gateway-service-2:10010/application/health
-            -   name: Add docker service hostnames to /etc/hosts
-                run: |
-                    echo "127.0.0.1 gateway-service" | tee -a /etc/hosts
-                    echo "127.0.0.1 gateway-service-2" | tee -a /etc/hosts
-                    echo "127.0.0.1 discovery-service" | tee -a /etc/hosts
-                    echo "127.0.0.1 discovery-service-2" | tee -a /etc/hosts
-
             -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend
@@ -1893,14 +1886,14 @@ jobs:
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://gateway-service:10011/eureka
                     APIML_SERVICE_HOSTNAME: gateway-service
-                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTID: ${{ secrets.AUTH0_CLIENT_ID }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_OKTA_CLIENTSECRET: ${{ secrets.AUTH0_CLIENT_PASSWORD }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_ISSUER: ${{ secrets.OKTA_ISSUER }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_AUTHORIZATIONURI: ${{ secrets.OKTA_AUTH_URI }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_TOKENURI: ${{ secrets.OKTA_TOKEN_URI }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_USERINFOURI: ${{ secrets.OKTA_USER_INFO_URI }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_USERNAMEATTRIBUTE: sub
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_JWKSETURI: ${{ secrets.AUTH0_JWKSET_URI }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTID: ${{ secrets.AUTH0_CLIENT_ID }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTSECRET: ${{ secrets.AUTH0_CLIENT_PASSWORD }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_ISSUER: ${{ secrets.AUTH0_ISSUER }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_AUTHORIZATIONURI: ${{ secrets.AUTH0_AUTH_URI }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_TOKENURI: ${{ secrets.AUTH0_TOKEN_URI }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_USERINFOURI: ${{ secrets.AUTH0_USER_INFO_URI }}
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_USERNAMEATTRIBUTE: sub
+                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_JWKSETURI: ${{ secrets.AUTH0_JWKSET_URI }}
                     APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
                     APIML_HEALTH_PROTECTED: false
                     logbackService: ZWEAGW1
