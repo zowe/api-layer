@@ -35,11 +35,10 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
 import lodash from 'lodash';
-const { findIndex, merge } = lodash;
-import { findInstance, normalizeDelta } from './deltaUtils.js';
+import {findInstance, normalizeDelta} from './deltaUtils.js';
 import path from 'path';
-import { series, waterfall } from 'async';
-import { EventEmitter } from 'events';
+import {series, waterfall} from 'async';
+import {EventEmitter} from 'events';
 
 import AwsMetadata from './AwsMetadata.js';
 import ConfigClusterResolver from './ConfigClusterResolver.js';
@@ -47,6 +46,8 @@ import DnsClusterResolver from './DnsClusterResolver.js';
 import Logger from './Logger.js';
 import defaultConfig from './defaultConfig.js';
 import https from 'https';
+
+const { findIndex, merge } = lodash;
 
 function noop() {}
 
@@ -684,6 +685,10 @@ export default class Eureka extends EventEmitter {
 
       if ((error || responseInvalid) && retryAttempt < this.config.eureka.maxRetries) {
         const nextRetryDelay = this.config.eureka.requestRetryDelay * (retryAttempt + 1);
+        //console.log(JSON.stringify(response));
+        //console.log(`>>>>> RESPONSE:  ${response}`);
+        console.log(`>>>>> ERROR:  ${error}`);
+        console.log(`>>>>> RESPONSE_INVALID:  ${responseInvalid}`);
         this.logger.warn(`Eureka request failed to endpoint ${requestOpts.baseUrl}, ` +
           `next server retry in ${nextRetryDelay}ms`);
 

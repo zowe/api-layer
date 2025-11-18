@@ -10,13 +10,13 @@ eureka:
 
 
 instance:
-  app: hwexpress
+  app: HWExpress
   vipAddress: hwexpress
-  instanceId: localhost:hwexpress:10020
+  instanceId: localhost:HWExpress:10020
   homePageUrl: https://localhost:10020/
   hostName: 'localhost'
   ipAddr: '127.0.0.1'
-  secureVipAddress: hwexpress
+  secureVipAddress: hwwexpress
   port:
     $: 10020
     '@enabled': false

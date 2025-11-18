@@ -28,10 +28,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.reactive.resource.NoResourceFoundException;
-import org.springframework.web.server.MethodNotAllowedException;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.ServerWebInputException;
+import org.springframework.web.server.*;
 import org.springframework.web.server.adapter.DefaultServerWebExchange;
 import org.springframework.web.server.i18n.LocaleContextResolver;
 import org.springframework.web.server.session.DefaultWebSessionManager;
@@ -158,6 +155,12 @@ public class GatewayExceptionHandler {
         log.debug("Unhandled internal error on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
         return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.common.internalServerError");
     }
+
+//    @ExceptionHandler({MetadataValidationException.class})
+//    public Mono<Void> handleMetadataValidationException(ServerWebExchange exchange, Exception ex) {
+//        log.warn("Service provided invalid metadata {}: {}", exchange.getRequest().getURI(), ex.getMessage());
+//        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.gateway.verifier.nonConformant", ex.getMessage());
+//    }
 
     @ExceptionHandler({ResponseStatusException.class})
     public Mono<Void> handleStatusError(ServerWebExchange exchange, ResponseStatusException ex) {
