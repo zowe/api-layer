@@ -12,6 +12,7 @@ gatewayServiceConfiguration:
     instances: 1
     servicesEndpoint: gateway/api/v1/services
     bucketCapacity: 20
+    authProvider: zosmf
 centralGatewayServiceConfiguration:
     scheme: https
     host: central-gateway-service
