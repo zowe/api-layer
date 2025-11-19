@@ -16,6 +16,7 @@ import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.eurekaservice.client.config.Route;
 import org.zowe.apiml.eurekaservice.client.config.Ssl;
 import org.zowe.apiml.exception.MetadataValidationException;
+import org.zowe.apiml.util.EurekaUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +42,7 @@ public class EurekaInstanceConfigValidator {
      * @throws MetadataValidationException if the validation fails
      */
     public void validate(ApiMediationServiceConfig config) {
-        //EurekaUtils.validateServiceId(config.getServiceId());
+        EurekaUtils.validateServiceId(config.getServiceId());
         validateRoutes(config.getRoutes());
         if (config.getDiscoveryServiceUrls().stream().anyMatch(url -> url.toLowerCase().startsWith("https"))) {
             validateSsl(config.getSsl());

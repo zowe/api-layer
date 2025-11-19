@@ -29,14 +29,8 @@ import org.zowe.apiml.discovery.config.EurekaConfig;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.util.EurekaUtils;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.invoke.WrongMethodTypeException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.invoke.*;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -228,7 +222,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      */
     @Override
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
-            isServiceIdConformant(info);
+            validateInstanceInfo(info);
             info = changeServiceId(info);
         try {
             register3ArgsMethodHandle.invokeWithArguments(this, info, leaseDuration, isReplication);
@@ -244,7 +238,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, final boolean isReplication) {
-            isServiceIdConformant(info);
+            validateInstanceInfo(info);
             info = changeServiceId(info);
         try {
             register2ArgsMethodHandle.invokeWithArguments(this, info, isReplication);
@@ -265,23 +259,33 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      * The instanceId must follow the format 'hostname:serviceId:port'.
      * The serviceId extracted from the instanceId must match both appName.
      * If any of these checks fail, the method will throw an exception and the registration is rejected.
+     * For backwards compatibility prints warnings only.
      * @param info the instance info
-     * @throws MetadataValidationException exception if any service identifier is invalid or inconsistent
      */
-    private void isServiceIdConformant(InstanceInfo info) {
+    private void validateInstanceInfo(InstanceInfo info) {
         String instanceId = info.getInstanceId();
         String appName = StringUtils.lowerCase(info.getAppName());
 
-        EurekaUtils.validateServiceId(appName);
+        try {
+            EurekaUtils.validateServiceId(appName);
+        } catch (MetadataValidationException e) {
+            log.warn("Conformance criteria violation in appName: {}", e.getMessage());
+            log.debug("Invalid instance info provided: {}. Cause: {}", info, e.getMessage());
+        }
+
         String serviceId = EurekaUtils.getServiceIdFromInstanceId(instanceId);
+        try {
+            EurekaUtils.validateServiceId(serviceId);
+        } catch (MetadataValidationException e) {
+            log.warn("Conformance criteria violation in instanceId, expected format 'hostname:serviceid:port' but is '{}': {}",
+                info.getInstanceId(), e.getMessage());
+            log.debug("Invalid instance info provided: {}. Cause: {}", info, e.getMessage());
+        }
 
-        EurekaUtils.validateServiceId(serviceId);
-
-        if (!serviceId.equals(appName)) {
-            throw new MetadataValidationException(
-                String.format("Inconsistent service identity: instanceId contains serviceId '%s' but appName='%s'. The service will not be registered.",
-                serviceId, appName)
-
+        if (!Objects.equals(appName, serviceId)) {
+            log.warn(
+                "Inconsistent service identity: instanceId contains serviceId '{}' but appName='{}'. The service will not register in future releases.",
+                serviceId, appName
             );
         }
     }

@@ -685,10 +685,6 @@ export default class Eureka extends EventEmitter {
 
       if ((error || responseInvalid) && retryAttempt < this.config.eureka.maxRetries) {
         const nextRetryDelay = this.config.eureka.requestRetryDelay * (retryAttempt + 1);
-        //console.log(JSON.stringify(response));
-        //console.log(`>>>>> RESPONSE:  ${response}`);
-        console.log(`>>>>> ERROR:  ${error}`);
-        console.log(`>>>>> RESPONSE_INVALID:  ${responseInvalid}`);
         this.logger.warn(`Eureka request failed to endpoint ${requestOpts.baseUrl}, ` +
           `next server retry in ${nextRetryDelay}ms`);
 

@@ -32,6 +32,7 @@ import org.springframework.web.server.*;
 import org.springframework.web.server.adapter.DefaultServerWebExchange;
 import org.springframework.web.server.i18n.LocaleContextResolver;
 import org.springframework.web.server.session.DefaultWebSessionManager;
+import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.gateway.filters.ForbidCharacterException;
 import org.zowe.apiml.gateway.filters.ForbidSlashException;
 import org.zowe.apiml.gateway.filters.ZaasInternalErrorException;
@@ -156,11 +157,11 @@ public class GatewayExceptionHandler {
         return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.common.internalServerError");
     }
 
-//    @ExceptionHandler({MetadataValidationException.class})
-//    public Mono<Void> handleMetadataValidationException(ServerWebExchange exchange, Exception ex) {
-//        log.warn("Service provided invalid metadata {}: {}", exchange.getRequest().getURI(), ex.getMessage());
-//        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.gateway.verifier.nonConformant", ex.getMessage());
-//    }
+    @ExceptionHandler({MetadataValidationException.class})
+    public Mono<Void> handleMetadataValidationException(ServerWebExchange exchange, Exception ex) {
+        log.warn("Service provided invalid metadata {}: {}", exchange.getRequest().getURI(), ex.getMessage());
+        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.gateway.verifier.nonConformant", ex.getMessage());
+    }
 
     @ExceptionHandler({ResponseStatusException.class})
     public Mono<Void> handleStatusError(ServerWebExchange exchange, ResponseStatusException ex) {

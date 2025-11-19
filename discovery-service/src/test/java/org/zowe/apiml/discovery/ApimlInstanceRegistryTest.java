@@ -18,10 +18,7 @@ import com.netflix.eureka.EurekaServerConfig;
 import com.netflix.eureka.lease.Lease;
 import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -32,7 +29,6 @@ import org.springframework.cloud.netflix.eureka.server.InstanceRegistryPropertie
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.discovery.config.EurekaConfig;
-import org.zowe.apiml.exception.MetadataValidationException;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.WrongMethodTypeException;
@@ -45,12 +41,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ApimlInstanceRegistryTest {
@@ -95,6 +86,10 @@ class ApimlInstanceRegistryTest {
 
         private static Stream<Arguments> instanceIds() {
             return Stream.of(
+                Arguments.of( "hostname:service_client:10010", "Service-Client"),
+                Arguments.of( "hostname:10010", "serviceclient"),
+                Arguments.of( "hostname:ServiceClient:10010", "serviceClient"),
+                Arguments.of( "hostname:serviceclient:10010", "serviceClient"),
                 Arguments.of( "hostname:service_client:10010", "service_client"),
                 Arguments.of( "hostname:service_client:10010", ""),
                 Arguments.of( "hostname:10010", "service_client"),
@@ -106,9 +101,10 @@ class ApimlInstanceRegistryTest {
             );
         }
 
+        //we cannot fail for non-conformant services for backwards compatibility
         @ParameterizedTest
         @MethodSource("instanceIds")
-        void whenContainingUnderscore_thenThrowException(String instanceId, String appName) {
+        void thenOnboard(String instanceId, String appName) {
             InstanceInfo wrongInstance = getStandardInstance(instanceId, appName);
 
             apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
@@ -123,9 +119,9 @@ class ApimlInstanceRegistryTest {
             MethodHandle methodHandle = mock(MethodHandle.class);
             ReflectionTestUtils.setField(apimlInstanceRegistry,"register3ArgsMethodHandle",methodHandle);
             ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod",methodHandle);
-            assertThrows(MetadataValidationException.class, () -> {
-                apimlInstanceRegistry.register(wrongInstance, 1, false);
-            });
+            assertDoesNotThrow( () ->
+                apimlInstanceRegistry.register(wrongInstance, 1, false)
+            );
 
         }
     }
