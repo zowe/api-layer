@@ -75,7 +75,8 @@
         "webpack-dev-middleware": "5.3.4",
         "@babel/traverse": "7.24.7",
         "serve-static": "1.16.2",
-        "body-parser": "1.20.3"
+        "body-parser": "1.20.3",
+        "js-yaml": "4.1.1"
     },
     "scripts": {
         "lint": "eslint \"src/**/*.{js,jsx}\"",

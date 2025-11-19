@@ -155,7 +155,8 @@
         "prismjs": "1.30.0",
         "@babel/helpers": "7.26.10",
         "@babel/runtime": "7.26.10",
-        "@babel/runtime-corejs3": "7.26.10"
+        "@babel/runtime-corejs3": "7.26.10",
+        "js-yaml": "4.1.1"
     },
     "engines": {
         "npm": "=9.3.1",
