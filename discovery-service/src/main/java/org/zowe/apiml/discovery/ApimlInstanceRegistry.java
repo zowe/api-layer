@@ -21,6 +21,7 @@ import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
@@ -255,20 +256,21 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      * Validates that the service identifiers in the {@link InstanceInfo} are conformant and mutually consistent.
      * The appName must not be null or empty. Both must comply with RFC 952 and RFC 1123.
      * Only lowercase letters, digits, and hyphens allowed, must not start or end with a hyphen, and must not exceed 63 characters.
+     * Unfortunately the java enabler converts the appName to uppercase when sending the registration request.
+     * Therefore, the validation is case-insensitive.
      * The instanceId must follow the format 'hostname:serviceId:port'.
-     * The serviceId extracted from the instanceId must match both appName.
-     * If any of these checks fail, the method will throw an exception and the registration is rejected.
-     * For backwards compatibility prints warnings only.
+     * The serviceId extracted from the instanceId must match the appName, the check is again case-insensitive for the reason
+     * described above. For backwards compatibility the validation prints warnings only for non-conformant values.
      * @param info the instance info
      */
     private void validateInstanceInfo(InstanceInfo info) {
         String instanceId = info.getInstanceId();
-        String appName = info.getAppName();
+        String appName = StringUtils.lowerCase(info.getAppName());
 
         try {
             EurekaUtils.validateServiceId(appName);
         } catch (MetadataValidationException e) {
-            log.warn("Conformance criteria violation in appName: {}", e.getMessage());
+            log.warn("Conformance criteria violation in serviceId or app: {}", e.getMessage());
             log.debug("Invalid instance info provided: {}. Cause: {}", info, e.getMessage());
         }
 
@@ -276,12 +278,12 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         try {
             EurekaUtils.validateServiceId(serviceId);
         } catch (MetadataValidationException e) {
-            log.warn("Conformance criteria violation in instanceId, expected format 'hostname:serviceid:port' but is '{}': {}",
+            log.warn("Conformance criteria violation in serviceId or instanceId, instanceId expected format is 'hostname:serviceid:port' but is '{}'. Cause: {}",
                 info.getInstanceId(), e.getMessage());
             log.debug("Invalid instance info provided: {}. Cause: {}", info, e.getMessage());
         }
 
-        if (!Objects.equals(appName, serviceId)) {
+        if (!Objects.equals(appName, StringUtils.lowerCase(serviceId))) {
             log.warn(
                 "Inconsistent service identity: instanceId contains serviceId '{}' but appName='{}'. The service will not register in future releases.",
                 serviceId, appName
