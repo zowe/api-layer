@@ -11,7 +11,7 @@
 
 describe('>>> Login through Auth0 OK', () => {
     it('should log in user and check session cookie', () => {
-        cy.visit(`${Cypress.env('gatewayOktaRedirect')}`);
+        cy.visit(`${Cypress.env('gatewayAuth0Redirect')}`);
 
         const username = Cypress.env('AUTH0_USERNAME');
         if (!username) {
