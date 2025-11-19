@@ -21,7 +21,6 @@ import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
@@ -264,7 +263,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      */
     private void validateInstanceInfo(InstanceInfo info) {
         String instanceId = info.getInstanceId();
-        String appName = StringUtils.lowerCase(info.getAppName());
+        String appName = info.getAppName();
 
         try {
             EurekaUtils.validateServiceId(appName);
