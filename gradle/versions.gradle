@@ -77,6 +77,7 @@ dependencyResolutionManagement {
             // force version in build.gradle file - compatibility with Slf4j
             version('log4j', '2.25.2')
             version('lombok', '1.18.42')
+            version('mailapi', '1.6.8')
             version('netty', '4.2.7.Final')
             // netty reactor contains a bug: https://github.com/reactor/reactor-netty/issues/3559 > https://github.com/reactor/reactor-netty/pull/3581
             version('nettyReactor', '1.2.11')
@@ -219,6 +220,7 @@ dependencyResolutionManagement {
             library('log4j_api', 'org.apache.logging.log4j', 'log4j-api').versionRef('log4j')
             library('log4j_to_slf4j', 'org.apache.logging.log4j', 'log4j-to-slf4j').versionRef('log4j')
             library('lombok', 'org.projectlombok', 'lombok').versionRef('lombok')
+            library('mailapi', 'jakarta.mail', 'jakarta.mail-api').versionRef('mailapi')
             library('netty_bom', 'io.netty', 'netty-bom').versionRef('netty')
             library('netty_reactor_http', 'io.projectreactor.netty', 'reactor-netty-http').versionRef('nettyReactor')
             library('nimbus_jose_jwt', 'com.nimbusds', 'nimbus-jose-jwt').versionRef('nimbusJoseJwt')
