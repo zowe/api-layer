@@ -40,24 +40,28 @@ public class TomcatConfiguration {
     @Value("${server.internal.port:10017}")
     private int internalPort;
 
-    @Value("${server.internal.ssl.keyStore:keystore/localhost/localhost.keystore.p12}")
+    @Value("${server.internal.ssl.keyStore:${server.ssl.keyStore:#{null}}}")
     private String keyStorePath;
-    @Value("${server.internal.ssl.keyStorePassword:password}")
+    @Value("${server.internal.ssl.keyStorePassword:${server.ssl.keyStorePassword:#{null}}}")
     private String keyStorePassword;
-    @Value("${server.internal.ssl.keyStoreType:PKCS12}")
+    @Value("${server.internal.ssl.keyStoreType:${server.ssl.keyStoreType:PKCS12}}")
     private String keyStoreType;
 
-    @Value("${server.internal.ssl.keyPassword:password}")
+    @Value("${server.internal.ssl.keyPassword:${server.ssl.keyPassword:#{null}}}")
     private String keyPassword;
-    @Value("${server.internal.ssl.keyAlias:localhost}")
+    @Value("${server.internal.ssl.keyAlias:${server.ssl.keyAlias:#{null}}}")
     private String keyAlias;
 
-    @Value("${server.internal.ssl.trustStore:keystore/localhost/localhost.truststore.p12}")
+    @Value("${server.internal.ssl.trustStore:${server.ssl.trustStore:#{null}}}")
     private String trustStorePath;
-    @Value("${server.internal.ssl.trustStorePassword:password}")
+    @Value("${server.internal.ssl.trustStorePassword:${server.ssl.trustStorePassword:#{null}}}")
     private String trustStorePassword;
-    @Value("${server.internal.ssl.trustStoreType:PKCS12}")
+    @Value("${server.internal.ssl.trustStoreType:${server.ssl.trustStoreType:PKCS12}}")
     private String trustStoreType;
+    @Value("${server.internal.ssl.protocol:${server.ssl.protocol:TLSv1.2}}")
+    private String sslProtocol;
+    @Value("${server.internal.ssl.enabled-protocols:${apiml.httpclient.ssl.enabled-protocols:TLSv1.2,TLSv1.3}}")
+    private String supportedProtocols;
     @Value("${server.ssl.ciphers}")
     private String ciphers;
     @Value("${server.address}")
@@ -77,10 +81,17 @@ public class TomcatConfiguration {
 
     private String getStorePath(String path) {
         if (SecurityUtils.isKeyring(path)) {
-            return path;
+            return SecurityUtils.formatKeyringUrl(path);
         } else {
             return new File(path).getAbsolutePath();
         }
+    }
+
+    private String getPassword(String path, String password) {
+        if (SecurityUtils.isKeyring(path) && password == null) {
+            return "password";
+        }
+        return password;
     }
 
     private Connector createSslConnector() throws UnknownHostException {
@@ -92,20 +103,21 @@ public class TomcatConfiguration {
             connector.setScheme("https");
             connector.setSecure(true);
             protocol.setSSLEnabled(true);
-            protocol.setSslEnabledProtocols("TLSv1.2");
+            protocol.setSSLProtocol(sslProtocol);
+            protocol.setSslEnabledProtocols(supportedProtocols);
             protocol.setSSLHonorCipherOrder(true);
             protocol.setCiphers(ciphers);
             protocol.setClientAuth(clientAuth);
             protocol.setAddress(InetAddress.getByName(address));
 
             protocol.setKeystoreFile(getStorePath(keyStorePath));
-            protocol.setKeystorePass(keyStorePassword);
+            protocol.setKeystorePass(getPassword(keyStorePath, keyStorePassword));
             protocol.setKeystoreType(keyStoreType);
             protocol.setTruststoreFile(getStorePath(trustStorePath));
-            protocol.setTruststorePass(trustStorePassword);
+            protocol.setTruststorePass(getPassword(trustStorePath, trustStorePassword));
             protocol.setTruststoreType(trustStoreType);
             protocol.setKeyAlias(keyAlias);
-            protocol.setKeyPass(keyPassword);
+            protocol.setKeyPass(getPassword(keyStorePath, keyPassword));
         } else {
             connector.setScheme("http");
             connector.setSecure(false);
