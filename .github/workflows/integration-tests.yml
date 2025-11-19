@@ -1842,7 +1842,7 @@ jobs:
             -   name: Dump CGW jacoco data
                 run: >
                     java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
-            -   name: Correct Permisions
+            -   name: Correct Permissions
                 run: |
                     chmod 755 -R .gradle
             -   name: Store results
@@ -1859,6 +1859,12 @@ jobs:
                 with:
                     name: cypress-snapshots
                     path: api-catalog-ui/frontend/cypress/screenshots
+            -   name: Upload Cypress videos
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: cypress-videos
+                    path: api-catalog-ui/frontend/cypress/videos
             -   uses: ./.github/actions/teardown
 
     E2EUITestsModulith:
@@ -1955,7 +1961,7 @@ jobs:
             -   name: Dump CGW jacoco data
                 run: >
                     java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6310 --destfile ./results/gateway-service.exec
-            -   name: Correct Permisions
+            -   name: Correct Permissions
                 run: |
                     chmod 755 -R .gradle
             -   name: Store results

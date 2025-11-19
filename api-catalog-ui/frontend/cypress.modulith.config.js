@@ -15,7 +15,7 @@ module.exports = defineConfig({
         catalogHomePage: 'https://localhost:10010/apicatalog/ui/v1',
         loginUrl: 'https://localhost:10010/gateway/api/v1/auth/login',
         gatewayAuth0Redirect:
-            'https://localhost:10010/gateway/oauth2/authorization/okta?returnUrl=https%3A%2F%2Flocalhost%3A10010%2Fapplication',
+            'https://localhost:10010/gateway/oauth2/authorization/auth0?returnUrl=https%3A%2F%2Flocalhost%3A10010%2Fapplication',
         username: 'USER',
         password: 'validPassword',
     },
