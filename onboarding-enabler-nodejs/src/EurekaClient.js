@@ -35,10 +35,11 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
 import lodash from 'lodash';
-import {findInstance, normalizeDelta} from './deltaUtils.js';
+const { findIndex, merge } = lodash;
+import { findInstance, normalizeDelta } from './deltaUtils.js';
 import path from 'path';
-import {series, waterfall} from 'async';
-import {EventEmitter} from 'events';
+import { series, waterfall } from 'async';
+import { EventEmitter } from 'events';
 
 import AwsMetadata from './AwsMetadata.js';
 import ConfigClusterResolver from './ConfigClusterResolver.js';
@@ -46,8 +47,6 @@ import DnsClusterResolver from './DnsClusterResolver.js';
 import Logger from './Logger.js';
 import defaultConfig from './defaultConfig.js';
 import https from 'https';
-
-const { findIndex, merge } = lodash;
 
 function noop() {}
 
