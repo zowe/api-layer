@@ -196,40 +196,44 @@ else
     GATEWAY_LOADER_PATH=${COMMON_LIB}
 fi
 
+add_profile() {
+    new_profile=$1
+    if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+    fi
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}${new_profile}"
+}
+
 # Begin AT-TLS section
-ATTLS_ENABLED="false"
+ATTLS_SERVER_ENABLED="false"
 ATTLS_CLIENT_ENABLED="false"
 # ZWE_configs_spring_profiles_active for back compatibility, should be removed in v3 - enabling via Spring profile
 if [ "${ZWE_zowe_network_server_tls_attls}" = "true" -o "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
-  ATTLS_ENABLED="true"
+  ATTLS_SERVER_ENABLED="true"
 fi
-internalProtocol=https
+
 if [ "${ZWE_zowe_network_client_tls_attls}" = "true" ]; then
     ATTLS_CLIENT_ENABLED="true"
 fi
 
-if [ "${ATTLS_ENABLED}" = "true" ]; then
+if [ "${ATTLS_SERVER_ENABLED}" = "true" ]; then
+  add_profile "attlsServer"
   ZWE_configs_server_ssl_enabled="false"
-  if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
-    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
-  fi
-  ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}attls"
+  ZWE_configs_server_internal_ssl_enabled="${ZWE_configs_server_internal_ssl_enabled:-false}"
+  ZWE_configs_apiml_service_corsEnabled=true
 fi
 
 # Verify discovery service URL in case AT-TLS client is enabled
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
-if [ "${ATTLS_CLIENT_ENABLED}" = "true" -o "${ATTLS_ENABLED}" = "true" ]; then
-    # Keep current behaviour, change in v3
-    ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
-    ZWE_configs_server_internal_ssl_enabled="${ZWE_configs_server_internal_ssl_enabled:-false}"
-    ZWE_configs_apiml_service_corsEnabled=true
-fi
-
+internalProtocol=https
 if [ "${ATTLS_CLIENT_ENABLED}" = "true" ]; then
+    # Keep current behaviour, change in v3
+    add_profile "attlsClient"
+    ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
     internalProtocol=http
 fi
 
-if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_CLIENT_ENABLED" = "true" ]; then
+if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" -o "$ATTLS_SERVER_ENABLED" = "true" ]; then
     externalProtocol="https"
 else
     externalProtocol="http"
@@ -322,7 +326,7 @@ fi
 
 # Disable Java keyring loading for ICSF hardware private key storage.
 # Only z/OSMF JWT authentication provider is supported with this type of keyrings.
-if [ "${ATTLS_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
+if [ "${ATTLS_SERVER_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
   keystore_type=
   keystore_pass=
   key_pass=
@@ -349,7 +353,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
-    -Dapiml.service.corsAllowedMethods=${ZWE_configs_apiml_service_corsAllowedMethods:-} \
+    -Dapiml.service.corsAllowedMethods=${ZWE_configs_apiml_service_corsAllowedMethods:-GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS} \
     -Dapiml.service.externalUrl="${ZWE_configs_apiml_gateway_externalProtocol:-${externalProtocol}}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
     -Dapiml.catalog.serviceId=${APIML_GATEWAY_CATALOG_ID:-apicatalog} \

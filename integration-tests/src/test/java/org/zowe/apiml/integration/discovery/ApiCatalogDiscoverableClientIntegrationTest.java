@@ -48,6 +48,7 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
     class WhenGettingApiDoc {
         @Nested
         class ReturnRelevantApiDoc {
+
             @Test
             void givenV1ApiDocPath() throws Exception {
                 final HttpResponse response = getResponse(DISCOVERABLE_CLIENT_API_DOC_ENDPOINT, HttpStatus.SC_OK);
@@ -69,11 +70,11 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
                     "\n**************************\n";
                 DocumentContext jsonContext = JsonPath.parse(jsonResponse);
 
-                LinkedHashMap swaggerInfo = jsonContext.read("$.info");
+                LinkedHashMap<Object, Object> swaggerInfo = jsonContext.read("$.info");
                 String swaggerServer = jsonContext.read("$.servers[0].url");
-                LinkedHashMap paths = jsonContext.read("$.paths");
-                LinkedHashMap definitions = jsonContext.read("$.components.schemas");
-                LinkedHashMap externalDoc = jsonContext.read("$.externalDocs");
+                LinkedHashMap<Object, Object> paths = jsonContext.read("$.paths");
+                LinkedHashMap<Object, Object> definitions = jsonContext.read("$.components.schemas");
+                LinkedHashMap<Object, Object> externalDoc = jsonContext.read("$.externalDocs");
 
                 assertTrue(swaggerInfo.get("description").toString().contains("API"), apiCatalogSwagger);
                 assertThat(swaggerServer, endsWith(""));
@@ -101,7 +102,9 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
 
                 validateDiscoverableClientApiV1(dcJsonResponse, dcJsonContext);
             }
+
         }
+
     }
 
     @Test
@@ -112,14 +115,14 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
 
         validateContainer(containerJsonContext);
 
-        LinkedHashMap<String, LinkedHashMap<String, String>> apis = containerJsonContext.read("$[0].services[0].apis");
+        LinkedHashMap<String, LinkedHashMap<Object, Object>> apis = containerJsonContext.read("$[0].services[0].apis");
 
         assertNotNull(apis.get("default"));
         assertNotNull(apis.get("zowe.apiml.discoverableclient.rest v2.0.0"));
         assertNotNull(apis.get("zowe.apiml.discoverableclient.rest v1.0.0"));
         assertNotNull(apis.get("zowe.apiml.discoverableclient.ws v1.0.0"));
 
-        LinkedHashMap defaultApi = apis.get("default");
+        LinkedHashMap<Object, Object> defaultApi = apis.get("default");
         assertEquals("zowe.apiml.discoverableclient.rest", defaultApi.get("apiId"));
         assertEquals("api/v1", defaultApi.get("gatewayUrl"));
         assertEquals("1.0.0", defaultApi.get("version"));
@@ -129,6 +132,7 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
 
         JSONArray codeSnippets = (JSONArray) defaultApi.get("codeSnippet");
         assertEquals(2, codeSnippets.size());
+        @SuppressWarnings("unchecked")
         LinkedHashMap<String, String> codeSnippet = (LinkedHashMap<String, String>) codeSnippets.get(0);
         assertEquals("/greeting", codeSnippet.get("endpoint"));
         assertNotNull(codeSnippet.get("codeBlock"));
@@ -138,6 +142,7 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
 
     @Nested
     class WhenGettingDifferenceBetweenVersions {
+
         @Nested
         class ReturnDifference {
             @Test
@@ -153,10 +158,12 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
                 assertThat(textResponse, containsString(
                     "<div><h2>What&#x27;s Deleted</h2><hr><ol><li><span class=\"GET\">GET</span>"));
             }
+
         }
 
         @Nested
         class ReturnNotFound {
+
             @Test
             void givenWrongVersion() throws Exception {
                 getResponse(API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_VERSION, HttpStatus.SC_NOT_FOUND);
@@ -166,7 +173,9 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
             void givenWrongService() throws Exception {
                 getResponse(API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_SERVICE, HttpStatus.SC_NOT_FOUND);
             }
+
         }
+
     }
 
     // Execute the endpoint and check the response for a return code
@@ -198,11 +207,11 @@ class ApiCatalogDiscoverableClientIntegrationTest implements TestWithStartedInst
             "\n**************************\n";
 
         // When
-        LinkedHashMap swaggerInfo = jsonContext.read("$.info");
+        LinkedHashMap<Object, Object> swaggerInfo = jsonContext.read("$.info");
         String swaggerServer = jsonContext.read("$.servers[0].url");
-        LinkedHashMap paths = jsonContext.read("$.paths");
-        LinkedHashMap definitions = jsonContext.read("$.components.schemas");
-        LinkedHashMap externalDoc = jsonContext.read("$.externalDocs");
+        LinkedHashMap<Object, Object> paths = jsonContext.read("$.paths");
+        LinkedHashMap<Object, Object> definitions = jsonContext.read("$.components.schemas");
+        LinkedHashMap<Object, Object> externalDoc = jsonContext.read("$.externalDocs");
 
         // Then
         assertTrue(swaggerInfo.get("description").toString().contains("API"), apiCatalogSwagger);

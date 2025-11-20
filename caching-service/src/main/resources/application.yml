@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 caching:
     storage:
         mode: inMemory
@@ -36,6 +39,7 @@ logging:
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         javax.net.ssl: ERROR # For running with java 17
@@ -189,17 +193,25 @@ logbackServiceName: ZWEACS1
 
 ---
 spring:
-    profiles: attls
+    profiles: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
 
+---
+spring:
+    profiles: attlsClient
+
 apiml:
     service:
         scheme: http
+
+server:
+    attlsClient:
+        enabled: true
 
 eureka:
     instance:

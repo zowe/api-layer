@@ -17,7 +17,9 @@ import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,12 +41,11 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @ComponentScan(basePackages = "org.zowe.apiml.cloudgatewayservice")
+@ExtendWith(MockitoExtension.class)
 class ConnectionsConfigTest {
 
     @Autowired
     private ConnectionsConfig connectionsConfig;
-    @Autowired
-    private RoutingConfig routingConfig;
 
     @Nested
     class WhenCreateEurekaJerseyClientBuilder {
@@ -164,5 +165,6 @@ class ConnectionsConfigTest {
             }
         }
     }
+
 }
 

@@ -21,6 +21,7 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,7 +30,6 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.*;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -41,16 +41,19 @@ import java.util.function.Supplier;
 
 @Slf4j
 @Configuration
-public class HttpConfig {
+public class HttpConfig implements InitializingBean {
 
     private static final char[] KEYRING_PASSWORD = "password".toCharArray();
 
-    @Value("${server.attls.enabled:false}")
-    private boolean attlsEnabled;
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
+
     @Value("${server.ssl.protocol:TLSv1.2}")
     private String protocol;
+
     @Value("${apiml.httpclient.ssl.enabled-protocols:TLSv1.2,TLSv1.3}")
     private String[] supportedProtocols;
+
     @Value("${server.ssl.ciphers:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384}")
     private String[] ciphers;
 
@@ -101,10 +104,13 @@ public class HttpConfig {
 
     @Value("${apiml.httpclient.conn-pool.idleConnTimeoutSeconds:#{5}}")
     private int idleConnTimeoutSeconds;
+
     @Value("${apiml.httpclient.conn-pool.requestConnectionTimeout:#{10000}}")
     private int requestConnectionTimeout;
+
     @Value("${apiml.httpclient.conn-pool.readTimeout:#{10000}}")
     private int readTimeout;
+
     @Value("${apiml.httpclient.conn-pool.timeToLive:#{10000}}")
     private int timeToLive;
 
@@ -114,8 +120,7 @@ public class HttpConfig {
     private SSLContext secureSslContext;
     private SSLContext secureSslContextWithoutKeystore;
     private HostnameVerifier secureHostnameVerifier;
-    private final Timer connectionManagerTimer = new Timer(
-        "ApimlHttpClientConfiguration.connectionManagerTimer", true);
+    private final Timer connectionManagerTimer = new Timer("ApimlHttpClientConfiguration.connectionManagerTimer", true);
 
     private Set<String> publicKeyCertificatesBase64;
 
@@ -133,7 +138,11 @@ public class HttpConfig {
         }
     }
 
-    @PostConstruct
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        init();
+    }
+
     public void init() {
         updateStorePaths();
 
@@ -297,7 +306,7 @@ public class HttpConfig {
 
     @Bean
     public Supplier<EurekaJerseyClientBuilder> eurekaJerseyClientBuilder() {
-        return () -> factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId, attlsEnabled);
+        return () -> factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId, isClientAttlsEnabled);
     }
 
 }

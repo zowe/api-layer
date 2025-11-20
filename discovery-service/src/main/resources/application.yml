@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 logging:
     level:
         ROOT: INFO
@@ -17,6 +20,7 @@ logging:
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         org.eclipse.jetty: WARN
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         javax.net.ssl: ERROR # For running with java 17
     #    com.netflix.eureka.resources: WARN
@@ -195,16 +199,27 @@ logbackServiceName: ZWEADS1
 
 ---
 spring:
-    profiles: attls
+    profiles: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
+
+---
+spring:
+    profiles: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
 
 eureka:
     instance:
         nonSecurePortEnabled: true
         securePortEnabled: false
 
+apiml:
+    discovery:
+        allPeersUrls: http://${apiml.service.hostname}:${apiml.service.port}/eureka/

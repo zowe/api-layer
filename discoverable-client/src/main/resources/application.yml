@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 logging:
     level:
         ROOT: INFO
@@ -101,7 +104,7 @@ apiml:
             -   apiId: zowe.apiml.discoverableclient.rest
                 version: 2.0.0
                 gatewayUrl: api/v2
-                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs/apiv2
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/docs/redirect
                 documentationUrl: https://www.zowe.org
         catalog:
             tile:
@@ -217,12 +220,22 @@ logbackServiceName: ZWEADC1
 
 ---
 spring:
-    profiles: attls
+    profiles: attlsServer
+
+server:
+    attlsServer:
+        enabled: true
+    ssl:
+        enabled: false
+
+---
+spring:
+    profiles: attlsClient
 
 apiml:
     service:
         scheme: http
 
 server:
-    ssl:
-        enabled: false
+    attlsClient:
+        enabled: true

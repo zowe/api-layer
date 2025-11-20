@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.apicatalog.config.ApiLayerServices;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.model.CustomStyleConfig;
@@ -63,8 +64,8 @@ public class CachedProductFamilyService {
     @Value("${apiml.catalog.hide.serviceInfo:false}")
     private boolean hideServiceInfo;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
 
     public CachedProductFamilyService(CachedServicesService cachedServicesService,
                                       TransformService transformService,
@@ -284,9 +285,11 @@ public class CachedProductFamilyService {
                     instanceInfo.getVIPAddress(),
                     instanceHomePage,
                     routes,
-                    isAttlsEnabled);
+                    isClientAttlsEnabled);
             } catch (URLTransformationException | IllegalArgumentException e) {
-                apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", instanceInfo.getAppName(), e.getMessage());
+                if (!ApiLayerServices.isApiLayerService(instanceInfo.getAppName())) {
+                    apimlLog.log("org.zowe.apiml.apicatalog.homePageTransformFailed", instanceInfo.getAppName(), e.getMessage());
+                }
             }
         }
 
@@ -310,7 +313,9 @@ public class CachedProductFamilyService {
                     instanceInfo.getHomePageUrl(),
                     routes);
             } catch (URLTransformationException e) {
-                apimlLog.log("org.zowe.apiml.apicatalog.getApiBasePathFailed", instanceInfo.getAppName(), e.getMessage());
+                if (!ApiLayerServices.isApiLayerService(instanceInfo.getAppName())) {
+                    apimlLog.log("org.zowe.apiml.apicatalog.getApiBasePathFailed", instanceInfo.getAppName(), e.getMessage());
+                }
             }
         }
         return apiBasePath;

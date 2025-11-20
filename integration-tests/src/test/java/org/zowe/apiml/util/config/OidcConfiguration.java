@@ -20,7 +20,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OidcConfiguration {
-
+    private String providerName;
+    private String host;
     private String clientId;
-
+    private String clientSecret;
+    private String user;
+    private String password;
+    private String alternateUser;
+    private String alternatePassword;
 }
