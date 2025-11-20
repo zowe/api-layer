@@ -19,7 +19,7 @@
   "homepage": ".",
   "dependencies": {
     "async": "3.2.6",
-    "js-yaml": "4.1.0",
+    "js-yaml": "4.1.1",
     "lodash": "4.17.21"
   },
   "devDependencies": {
