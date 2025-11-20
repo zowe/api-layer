@@ -10197,18 +10197,6 @@
       "integrity": "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==",
       "dev": true
     },
-    "node_modules/js-yaml": {
-      "version": "4.1.0",
-      "resolved": "https://zowe.jfrog.io/artifactory/api/npm/npm-org/js-yaml/-/js-yaml-4.1.0.tgz",
-      "integrity": "sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==",
-      "dev": true,
-      "dependencies": {
-        "argparse": "^2.0.1"
-      },
-      "bin": {
-        "js-yaml": "bin/js-yaml.js"
-      }
-    },
     "node_modules/jsbn": {
       "version": "1.1.0",
       "resolved": "https://zowe.jfrog.io/artifactory/api/npm/npm-org/jsbn/-/jsbn-1.1.0.tgz",
