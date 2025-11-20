@@ -35,8 +35,7 @@ import org.springframework.cloud.gateway.config.HttpClientProperties;
 import org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
-import org.springframework.cloud.netflix.eureka.RestClientTimeoutProperties;
-import org.springframework.cloud.netflix.eureka.http.DefaultEurekaClientHttpRequestFactorySupplier;
+import org.springframework.cloud.netflix.eureka.http.EurekaClientHttpRequestFactorySupplier;
 import org.springframework.cloud.netflix.eureka.http.RestClientDiscoveryClientOptionalArgs;
 import org.springframework.cloud.netflix.eureka.http.RestClientTransportClientFactories;
 import org.springframework.cloud.util.ProxyUtils;
@@ -58,6 +57,7 @@ import org.zowe.apiml.gateway.filters.proxyheaders.AdditionalRegistrationGateway
 import org.zowe.apiml.gateway.filters.proxyheaders.X509AndGwAwareXForwardedHeadersFilter;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.web.DiscoveryRestTemplateConfig;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.common.util.ConnectionUtil;
@@ -159,22 +159,14 @@ public class ConnectionsConfig {
         } else {
             appManager = manager;
         }
-        RestClientDiscoveryClientOptionalArgs args1 = defaultArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
+        RestClientDiscoveryClientOptionalArgs args1 = defaultArgs(DiscoveryRestTemplateConfig.getDefaultEurekaClientHttpRequestFactorySupplier());
         RestClientTransportClientFactories factories = new RestClientTransportClientFactories(args1);
         final CloudEurekaClient cloudEurekaClient = new CloudEurekaClient(appManager, config, factories, args1, this.context);
         cloudEurekaClient.registerHealthCheck(healthCheckHandler);
         return cloudEurekaClient;
     }
 
-    private static DefaultEurekaClientHttpRequestFactorySupplier getDefaultEurekaClientHttpRequestFactorySupplier() {
-        RestClientTimeoutProperties properties = new RestClientTimeoutProperties();
-        properties.setConnectTimeout(180000);
-        properties.setConnectRequestTimeout(180000);
-        properties.setSocketTimeout(180000);
-        return new DefaultEurekaClientHttpRequestFactorySupplier(properties);
-    }
-
-    public RestClientDiscoveryClientOptionalArgs defaultArgs(DefaultEurekaClientHttpRequestFactorySupplier factorySupplier) {
+    public RestClientDiscoveryClientOptionalArgs defaultArgs(EurekaClientHttpRequestFactorySupplier factorySupplier) {
         RestClientDiscoveryClientOptionalArgs clientArgs = new RestClientDiscoveryClientOptionalArgs(factorySupplier, RestClient::builder);
 
         if (eurekaServerUrl.startsWith("http://")) {
@@ -236,7 +228,7 @@ public class ConnectionsConfig {
 
         updateMetadata(newInfo, apimlRegistration);
 
-        RestClientDiscoveryClientOptionalArgs args1 = defaultArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
+        RestClientDiscoveryClientOptionalArgs args1 = defaultArgs(DiscoveryRestTemplateConfig.getDefaultEurekaClientHttpRequestFactorySupplier());
         RestClientTransportClientFactories factories = new RestClientTransportClientFactories(args1);
         return eurekaFactory.createCloudEurekaClient(new AdditionalEurekaConfiguration(eurekaInstanceConfig, newInfo), newInfo, configBean, context, factories, args1);
     }
