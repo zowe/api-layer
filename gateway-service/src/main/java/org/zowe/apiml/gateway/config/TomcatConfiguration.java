@@ -62,9 +62,9 @@ public class TomcatConfiguration {
     private String sslProtocol;
     @Value("${server.internal.ssl.enabled-protocols:${apiml.httpclient.ssl.enabled-protocols:TLSv1.2,TLSv1.3}}")
     private String supportedProtocols;
-    @Value("${server.ssl.ciphers}")
+    @Value("${server.internal.ssl.ciphers:${server.ssl.ciphers}}")
     private String ciphers;
-    @Value("${server.address}")
+    @Value("${server.internal.address:${server.address}}")
     private String address;
 
     @Bean
