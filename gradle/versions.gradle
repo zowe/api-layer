@@ -159,6 +159,7 @@ dependencyResolutionManagement {
             version('reactorBom', '2023.0')
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
+            version('mailapi', '1.6.8')
             // version 4.x is not compatible with Java 8
             version('micronaut', '3.10.4')
             version('micronautPlugin', '3.7.10')
@@ -300,6 +301,7 @@ dependencyResolutionManagement {
             library('logback_classic', 'ch.qos.logback', 'logback-classic').versionRef('logback')
             library('logback_core', 'ch.qos.logback', 'logback-core').versionRef('logback')
             library('lombok', 'org.projectlombok', 'lombok').versionRef('lombok')
+            library('mailapi', 'jakarta.mail', 'jakarta.mail-api').versionRef('mailapi')
             library('mockito_core', 'org.mockito', 'mockito-core').versionRef('mockitoCore')
             library('mockito_jupiter', 'org.mockito', 'mockito-junit-jupiter').versionRef('mockitoCore')
             library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInline')
