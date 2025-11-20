@@ -9,10 +9,9 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Feature:  Update z/OSMF template to use the SAF provider as default (#4374) ([9e8c85c](https://github.com/zowe/api-layer/commit/9e8c85c)), closes [#4374](https://github.com/zowe/api-layer/issues/4374)
 * Feature:  Support multiple OIDC providers at the same time (#4295) ([801927f](https://github.com/zowe/api-layer/commit/801927f)), closes [#4295](https://github.com/zowe/api-layer/issues/4295)
 
-
-* Bugfix:  Add service ID validation (#4375) ([ec4000c](https://github.com/zowe/api-layer/commit/ec4000c)), closes [#4375](https://github.com/zowe/api-layer/issues/4375)
+* Bugfix:  Add service ID validation (#4375, #4329) ([ec4000c](https://github.com/zowe/api-layer/commit/ec4000c). [3a20fef](https://github.com/zowe/api-layer/commit/3a20fef364602d38dd7d7934ee090df8eb41320c)), closes [#4375](https://github.com/zowe/api-layer/issues/4375), [#4329](https://github.com/zowe/api-layer/pull/4392)
 * Bugfix:  Certificate chain parsing with Java JCA Hybrid provider (#4376) ([cccd895](https://github.com/zowe/api-layer/commit/cccd895)), closes [#4376](https://github.com/zowe/api-layer/issues/4376)
-* Bugfix:  Close expired connections (#4383) ([abb4c58](https://github.com/zowe/api-layer/commit/abb4c58)), closes [#4383](https://github.com/zowe/api-layer/issues/4383)
+* Bugfix:  Close expired connections (#4383, #4389) ([abb4c58](https://github.com/zowe/api-layer/commit/abb4c58), [0399195](https://github.com/zowe/api-layer/commit/0399195ace862feb863a837379dcaa4a43267574)), closes [#4383](https://github.com/zowe/api-layer/issues/4383), [#4389](https://github.com/zowe/api-layer/pull/4389)
 * Bugfix:  Correct description in API doc (#4348) ([79e67dd](https://github.com/zowe/api-layer/commit/79e67dd)), closes [#4348](https://github.com/zowe/api-layer/issues/4348)
 * Bugfix:  Environment variable in start.sh for ICSF (#4369) ([b607910](https://github.com/zowe/api-layer/commit/b607910)), closes [#4369](https://github.com/zowe/api-layer/issues/4369)
 * Bugfix:  Fix shell script from #4357 (#4382) ([778f45e](https://github.com/zowe/api-layer/commit/778f45e)), closes [#4357](https://github.com/zowe/api-layer/issues/4357) [#4382](https://github.com/zowe/api-layer/issues/4382)
