@@ -39,11 +39,11 @@ describe('>>> Login through Auth0 OK', () => {
                 }, null, 2));
             });
         }).as('authorize');
-        cy.intercept('GET', '**', (req) => {
-            if (req.response && req.response.statusCode === 302) {
-                cy.task('log', '=== REDIRECT 302 === ' + req.url);
-            }
-        });
+        // cy.intercept('GET', '**', (req) => {
+        //     if (req.response && req.response.statusCode === 302) {
+        //         cy.task('log', '=== REDIRECT 302 === ' + req.url);
+        //     }
+        // });
 
         cy.visit(`${Cypress.env('gatewayAuth0Redirect')}`);
 
