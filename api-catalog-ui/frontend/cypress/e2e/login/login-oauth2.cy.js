@@ -66,6 +66,11 @@ describe('>>> Login through Auth0 OK', () => {
         // cy.get('form input.button-primary').click();
         cy.get('button[data-action-button-primary="true"]').click();
         cy.wait('@auth0Login', { timeout: 15000 });
+        cy.task('log', 'Final URL (debug)');
+        cy.location().then((loc) => {
+            cy.task('log', JSON.stringify(loc, null, 2));
+        });
+        cy.task('url', cy.url());
         cy.url().should('contain', '/application');
 
         cy.getCookie('apimlAuthenticationToken').should('exist');
