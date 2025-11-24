@@ -10,6 +10,22 @@
 /* eslint-disable no-undef */
 
 describe('>>> Login through Auth0 OK', () => {
+    beforeEach(() => {
+        cy.intercept({ url: '**', middleware: true }, (req) => {
+            req.on('before:response', (res) => {
+                cy.task('log', 'network debug');
+                cy.task('log', JSON.stringify({
+                    method: req.method,
+                    requestUrl: req.url,
+                    requestHeaders: req.headers,
+                    requestBody: req.body,
+                    responseStatus: res.statusCode,
+                    responseHeaders: res.headers,
+                    responseBody: res.body
+                }, null, 2));
+            });
+        });
+    });
     it('should log in user and check session cookie', () => {
 
         // === DEBUG POST /u/login ===
@@ -39,11 +55,12 @@ describe('>>> Login through Auth0 OK', () => {
                 }, null, 2));
             });
         }).as('authorize');
-        // cy.intercept('GET', '**', (req) => {
-        //     if (req.response && req.response.statusCode === 302) {
-        //         cy.task('log', '=== REDIRECT 302 === ' + req.url);
-        //     }
-        // });
+        cy.intercept('GET', '**', (req) => {
+            if (req.response && req.response.statusCode === 302) {
+                cy.task('log', '=== REDIRECT 302 === ' + req.url);
+                cy.task('log', JSON.stringify(res.headers, null, 2));
+            }
+        });
 
         cy.visit(`${Cypress.env('gatewayAuth0Redirect')}`);
 
