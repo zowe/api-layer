@@ -13,15 +13,13 @@ describe('>>> Login through Auth0 OK', () => {
     it('should log in user and check session cookie', () => {
         cy.visit(`${Cypress.env('gatewayAuth0Redirect')}`);
 
-        // const username = Cypress.env('AUTH0_USERNAME');
-        const username = "winniethepooh@zowe.com";
+        const username = Cypress.env('AUTH0_USERNAME');
 
         if (!username) {
             cy.log('System env CYPRESS_AUTH0_USERNAME is not set');
         }
 
-        // const password = Cypress.env('AUTH0_PASSWORD');
-        const password = "123Heslo!";
+        const password = Cypress.env('AUTH0_PASSWORD');
         if (!password) {
             cy.log('System env CYPRESS_AUTH0_PASSWORD is not set');
         }
