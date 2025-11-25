@@ -22,11 +22,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.ReactiveAuthenticationManagerAdapter;
@@ -34,8 +32,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.filter.BasicLoginFilter;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.QueryResponse;
@@ -50,7 +55,10 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.util.Objects;
 
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 
 
 
@@ -102,45 +110,31 @@ public class ReactiveAuthenticationController {
             "token."),
         @ApiResponse(responseCode = "401", description = "Invalid credentials.")
     })
-    public Mono<ResponseEntity<Object>> login(ServerWebExchange exchange, ServerHttpRequest request) { // To maintain support for wrongly-formed requests (with content-type but no content for example which are used)
+    public Mono<ResponseEntity<Object>> login(ServerWebExchange exchange, @RequestAttribute(name = BasicLoginFilter.BASIC_LOGIN_FILTER_BODY_ATTR, required = false) String loginRequest) {
         return ReactiveSecurityContextHolder.getContext()
             .map(SecurityContext::getAuthentication)
             .filter(Objects::nonNull)
             .filter(Authentication::isAuthenticated)
             .filter(TokenAuthentication.class::isInstance)
             .map(authentication -> replyWithJwt(exchange, authentication))
-            .switchIfEmpty(Mono.<ResponseEntity<Object>>defer(() -> this.authWithBody(exchange, request)))
+            .switchIfEmpty(Mono.<ResponseEntity<Object>>defer(() -> this.authWithBody(exchange, loginRequest)))
             .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatusCode.valueOf(401)).build()));
     }
 
-    private Mono<ResponseEntity<Object>> authWithBody(ServerWebExchange exchange, ServerHttpRequest request) {
-        return readLoginRequestFromBody(request)
-            .flatMap(loginRequest -> {
-                if (loginRequest == null || StringUtils.isBlank(loginRequest.getUsername()) || loginRequest.getPassword() == null || loginRequest.getPassword().length == 0) {
-                    throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
-                }
-                var providerManager = new ProviderManager(compoundAuthProvider);
-                var authAdapter = new ReactiveAuthenticationManagerAdapter(providerManager);
-                return authAdapter.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest))
-                    .map(authentication -> replyWithJwt(exchange, authentication));
-            });
-    }
-
-    private Mono<LoginRequest> readLoginRequestFromBody(ServerHttpRequest request) {
-        return DataBufferUtils.join(request.getBody())
-            .map(buffer -> {
-                var bytes = new byte[buffer.readableByteCount()];
-                buffer.read(bytes);
-                DataBufferUtils.release(buffer);
-                return bytes;
-            })
-            .map(body -> {
-                try {
-                    return objectMapper.readValue(body, LoginRequest.class);
-                } catch (IOException e) {
-                    throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.", e);
-                }
-            });
+    private Mono<ResponseEntity<Object>> authWithBody(ServerWebExchange exchange, String body) {
+        LoginRequest loginRequest;
+        try {
+            loginRequest = objectMapper.readValue(body, LoginRequest.class);
+        } catch (IOException e) {
+            throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.", e);
+        }
+        if (loginRequest == null || StringUtils.isBlank(loginRequest.getUsername()) || loginRequest.getPassword() == null || loginRequest.getPassword().length == 0) {
+            throw new AuthenticationCredentialsNotFoundException("Login object has wrong format.");
+        }
+        var providerManager = new ProviderManager(compoundAuthProvider);
+        var authAdapter = new ReactiveAuthenticationManagerAdapter(providerManager);
+        return authAdapter.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest))
+            .map(authentication -> replyWithJwt(exchange, authentication));
     }
 
     private ResponseEntity<Object> replyWithJwt(ServerWebExchange exchange, Authentication authentication) {

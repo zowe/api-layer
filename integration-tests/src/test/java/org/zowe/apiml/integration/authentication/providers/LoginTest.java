@@ -234,7 +234,7 @@ class LoginTest implements TestWithStartedInstances {
             @ParameterizedTest(name = "givenApimlsCert {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenApimlsCert(URI loginUrl) {
-                assumeFalse(isTestForICSF());
+                assumeFalse(isTestForICSF(), "This test can't run with ICSF hardware keys. Certificate mismatch");
                 given()
                     .config(SslContext.clientCertApiml)
                 .when()

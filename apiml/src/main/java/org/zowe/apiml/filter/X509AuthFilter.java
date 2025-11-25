@@ -24,6 +24,7 @@ import reactor.core.publisher.Mono;
 import reactor.util.context.Context;
 
 import java.security.cert.X509Certificate;
+import java.util.Optional;
 
 import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE;
 
@@ -42,12 +43,15 @@ import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_N
 @RequiredArgsConstructor
 public class X509AuthFilter implements WebFilter {
 
+    static final String SKIP_X509_AUTH_ATTR = "skipX509Auth";
+
     private final ReactiveAuthenticationManager x509AuthenticationProvider;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         X509Certificate[] certs = exchange.getAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
-        if (ArrayUtils.isEmpty(certs)) {
+        var skip = Optional.ofNullable(exchange.getAttribute(SKIP_X509_AUTH_ATTR)).map(value -> Boolean.valueOf(String.valueOf(value))).orElse(false);
+        if (ArrayUtils.isEmpty(certs) || skip) {
             return chain.filter(exchange);
         }
 
