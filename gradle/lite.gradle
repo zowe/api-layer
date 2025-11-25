@@ -1,9 +1,9 @@
 /**
- * This gradle file add task `liteLibJarAll` which combines lite jar library files into one.
+ * This gradle file add task `liteLibJarAll` which copies lite jar library files to a folder.
  * It is helpful if project contains multiple application with different set of dependencies.
  *
  * For `liteLibJarAll` to be used, lite jars of each application must be built first. Then
- * this task will provide a big library file that contains libraries for all applications.
+ * this task will copy all libraries to a folder for all applications.
  * This will reduce the size of data when packaging and deploying.
  **/
 
@@ -43,14 +43,17 @@ def getLiteLibJarOutput(file) {
     return output
 }
 
-task liteLibJarAll(type: Jar) {
-
-    archiveFileName = getBaseNameLite() + ".jar"
-    entryCompression = ZipEntryCompression.STORED
+task liteLibJarAll(type: Copy) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    destinationDir = file("${buildDir}/libs/${getBaseNameLite()}")
+    
     from { rootProject.subprojects.collectMany {
         getLiteLibJarOutput(it.buildDir)
     }.collect() }
+    
+    doFirst {
+        destinationDir.mkdirs()
+    }
 }
 
 liteLibJarAll.dependsOn(":apiml:build")
