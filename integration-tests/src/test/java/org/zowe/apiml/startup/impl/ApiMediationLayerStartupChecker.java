@@ -201,7 +201,7 @@ public class ApiMediationLayerStartupChecker {
     private boolean isAuthUp() {
         HttpGet requestToZaas;
         if (!IS_MODULITH_ENABLED) {
-            requestToZaas = new HttpGet(HttpRequestUtils.getUriFromZaas(healthEndpoint));
+            requestToZaas = new HttpGet(HttpRequestUtils.getUriFromZaas(healthEndpoint).get());
         } else {
             requestToZaas = new HttpGet(HttpRequestUtils.getUriFromGateway(healthEndpoint));
         }

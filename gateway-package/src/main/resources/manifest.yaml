@@ -15,7 +15,6 @@ repository:
   url: https://github.com/zowe/api-layer.git
 commands:
   start: bin/start.sh
-  validate: bin/validate.sh
 # if we need to automatically tag file encoding on z/OS during installation
 autoEncoding:
   # tag all files

@@ -40,6 +40,8 @@ import static org.hamcrest.core.Is.is;
 @zOSMFAuthTest
 @TestInstance(Lifecycle.PER_CLASS)
 class QueryTest implements TestWithStartedInstances {
+
+    private static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
     private static final String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
     private static final String HOST = StringUtils.isBlank(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getDvipaHost()) ? ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost() : ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getDvipaHost();
     private static final int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
@@ -67,8 +69,10 @@ class QueryTest implements TestWithStartedInstances {
 
     @Nested
     class WhenQueryingToken {
+
         @Nested
         class ReturnInfo {
+
             //@formatter:off
             @ParameterizedTest(name = "givenValidTokenInHeader {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
@@ -93,6 +97,7 @@ class QueryTest implements TestWithStartedInstances {
                     .statusCode(is(SC_OK))
                     .body("userId", equalTo(USERNAME));
             }
+
         }
 
         @Nested
@@ -135,8 +140,8 @@ class QueryTest implements TestWithStartedInstances {
             @ParameterizedTest(name = "givenNoToken {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenNoToken(String queryUrl) {
-                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3)).replace("/gateway/", "/zaas/");
-                String expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
+                var queryPath = pathOfAuthService(queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3)));
+                var expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
 
                 given()
                 .when()
@@ -151,9 +156,9 @@ class QueryTest implements TestWithStartedInstances {
             @ParameterizedTest(name = "givenValidTokenInWrongCookie {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenValidTokenInWrongCookie(String queryUrl) {
-                String invalidCookie = "badCookie";
-                String queryPath = queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3)).replace("/gateway/", "/zaas/");
-                String expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
+                var invalidCookie = "badCookie";
+                var queryPath = pathOfAuthService(queryUrl.substring(StringUtils.ordinalIndexOf(queryUrl,"/",3)));
+                var expectedMessage = "No authorization token provided for URL '" + queryPath + "'";
 
                 given()
                     .cookie(invalidCookie, validToken)
@@ -165,13 +170,17 @@ class QueryTest implements TestWithStartedInstances {
                         "messages.find { it.messageNumber == 'ZWEAG131E' }.messageContent", equalTo(expectedMessage)
                     );
             }
+
         }
+
     }
 
     @Nested
     class WhenUserQueriesViaPostMethod {
+
         @Nested
         class ReturnMethodNotAllowed {
+
             @ParameterizedTest(name = "givenValidCredentials {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.QueryTest#queryUrlsSource")
             void givenValidToken(String queryUrl) {
@@ -186,7 +195,18 @@ class QueryTest implements TestWithStartedInstances {
                         "messages.find { it.messageNumber == 'ZWEAO405E' }.messageContent", equalTo(expectedMessage)
                     );
             }
+
         }
+
     }
     //@formatter:on
+
+    private String pathOfAuthService(String url) {
+        if (IS_MODULITH_ENABLED) {
+            return url;
+        } else {
+            return url.replace("/gateway/", "/zaas/");
+        }
+    }
+
 }
