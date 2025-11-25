@@ -11,7 +11,9 @@
 package org.zowe.apiml.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -58,19 +61,20 @@ class ReactivePATControllerTest {
     @Mock private SecurityContext securityContext;
     @Mock private AccessTokenProvider tokenProvider;
     @Mock private MessageService messageService;
-    @Mock private ObjectMapper mapper;
+    private ObjectMapper mapper;
 
     @InjectMocks
     private ReactivePATController controller;
 
+    @BeforeEach
+    void setUp() {
+        this.mapper = new ObjectMapper();
+        ReflectionTestUtils.setField(controller, "objectMapper", mapper);
+    }
+
     @Test
-    void generatePat_success() {
-        var request = """
-            {
-                "validity": 3600,
-                "scopes": ["scope1"]
-            }
-        """;
+    void generatePat_success() throws JsonMappingException, JsonProcessingException {
+        var request = "{\"validity\": 3600, \"scopes\": [\"scope1\"]}";
         var username = "testUser";
         var pat = "generated-pat";
 

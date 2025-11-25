@@ -70,7 +70,7 @@ public class ReactivePATController {
     private final AccessTokenProvider tokenProvider;
     private final MessageService messageService;
     private final RauditxService rauditxService;
-    private final ObjectMapper mapper;
+    private final ObjectMapper objectMapper;
 
     @Data
     @NoArgsConstructor
@@ -114,7 +114,11 @@ public class ReactivePATController {
             .filter(Objects::nonNull)
             .map(authentication -> {
                 try {
-                    return new ImmutablePair<Authentication, AccessTokenRequest>(authentication, mapper.readValue(accessTokenRequest, AccessTokenRequest.class));
+                    var request = objectMapper.readValue(accessTokenRequest, AccessTokenRequest.class);
+                    if (request == null) {
+                        throw new IOException("Access Token Request body not found");
+                    }
+                    return new ImmutablePair<Authentication, AccessTokenRequest>(authentication, request);
                 } catch (IOException e) {
                     throw new AccessTokenMissingBodyException(e.getMessage());
                 }
@@ -510,7 +514,7 @@ public class ReactivePATController {
 
     private Mono<ResponseEntity<String>> badRequestForPATInvalidation() throws JsonProcessingException {
         final ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.query.invalidRevokeRequestBody").mapToView();
-        return Mono.just(new ResponseEntity<>(mapper.writeValueAsString(message), HttpStatus.BAD_REQUEST));
+        return Mono.just(new ResponseEntity<>(objectMapper.writeValueAsString(message), HttpStatus.BAD_REQUEST));
     }
 
 }
