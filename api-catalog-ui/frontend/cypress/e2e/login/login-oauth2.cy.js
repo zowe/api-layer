@@ -9,6 +9,7 @@
  */
 /* eslint-disable no-undef */
 
+// this test is excluded from our GH workflow for the time being due to failure
 describe('>>> Login through Auth0 OK', () => {
     it('should log in user and check session cookie', () => {
         cy.visit(`${Cypress.env('gatewayAuth0Redirect')}`);
@@ -24,9 +25,7 @@ describe('>>> Login through Auth0 OK', () => {
             cy.log('System env CYPRESS_AUTH0_PASSWORD is not set');
         }
 
-        // cy.get('form span.o-form-input-name-username input').type(username);
         cy.get('#username').type(username);
-        // cy.get('form input[type="password"]').type(password);
         cy.get('#password').type(password);
         cy.get('button[data-action-button-primary="true"]').should('not.be.disabled');
         cy.get('button[data-action-button-primary="true"]').click();
