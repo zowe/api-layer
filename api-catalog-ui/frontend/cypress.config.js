@@ -23,16 +23,13 @@ module.exports = defineConfig({
     viewportWidth: 1400,
     viewportHeight: 980,
     chromeWebSecurity: false,
-    experimentalSessionAndOrigin: true,
     reporter: 'junit',
     defaultCommandTimeout: 30000,
     reporterOptions: {
         mochaFile: 'test-results/e2e/output-[hash].xml',
     },
-    video: true,
+    video: false,
     e2e: {
-        browser: 'chrome',
-        userAgent: 'Chrome/51.0.2704.103 Safari/537.36',
         // We've imported your old cypress plugins here.
         // You may want to clean this up later by importing these.
         setupNodeEvents(on, config) {

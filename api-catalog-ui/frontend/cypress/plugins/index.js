@@ -13,34 +13,6 @@
 // the project's config changing)
 
 module.exports = (on, config) => {
-
-    on('before:browser:launch', (browser, launchOptions) => {
-
-        if (browser.name === 'chrome') {
-
-            launchOptions.args.push(
-                '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-            );
-
-            launchOptions.args.push('--disable-web-security');
-            launchOptions.args.push('--disable-site-isolation-trials');
-            launchOptions.args.push('--disable-features=IsolateOrigins,site-per-process');
-            launchOptions.args.push('--disable-blink-features=AutomationControlled');
-
-            launchOptions.args.push('--no-sandbox');
-            launchOptions.args.push('--disable-gpu');
-            launchOptions.args.push('--disable-dev-shm-usage');
-        }
-
-        return launchOptions;
-    });
-
-    on('task', {
-        log(message) {
-            console.log('TASK LOG:', message);
-            return null;
-        }
-    });
-
-    return config;
+    // `on` is used to hook into various events Cypress emits
+    // `config` is the resolved Cypress config
 };

@@ -1756,11 +1756,8 @@ jobs:
                     SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTID: ${{ secrets.AUTH0_CLIENT_ID }}
                     SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTSECRET: ${{ secrets.AUTH0_CLIENT_PASSWORD }}
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_ISSUER: ${{ secrets.AUTH0_ISSUER }}
-#                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_AUTHORIZATIONURI: ${{ secrets.OKTA_AUTH_URI }}
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_AUTHORIZATIONURI: ${{ secrets.AUTH0_AUTH_URI }}
-#                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_TOKENURI: ${{ secrets.OKTA_TOKEN_URI }}
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_TOKENURI: ${{ secrets.AUTH0_TOKEN_URI }}
-#                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_OKTA_USERINFOURI: ${{ secrets.OKTA_USER_INFO_URI }}
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_USERINFOURI: ${{ secrets.AUTH0_USER_INFO_URI }}
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_USERNAMEATTRIBUTE: sub
                     SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_JWKSETURI: ${{ secrets.AUTH0_JWKSET_URI }}
@@ -1859,12 +1856,6 @@ jobs:
                 with:
                     name: cypress-snapshots
                     path: api-catalog-ui/frontend/cypress/screenshots
-            -   name: Upload Cypress videos
-                uses: actions/upload-artifact@v4
-                if: always()
-                with:
-                    name: cypress-videos
-                    path: api-catalog-ui/frontend/cypress/videos
             -   uses: ./.github/actions/teardown
 
     E2EUITestsModulith:
