@@ -127,8 +127,17 @@ public class HttpRequestUtils {
         return getUriFromService(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration(), endpoint, s -> gatewayHostname, arguments);
     }
 
-    public static URI getUriFromZaas(String endpoint, NameValuePair...arguments) {
-        return getUriFromService(ConfigReader.environmentConfiguration().getZaasConfiguration(), endpoint, arguments);
+    /**
+     * Get a zaas-based URL
+     * ZAAS is no longer a separate entity in single-service deployment mode, so the URL is optional
+     *
+     * @param endpoint Which zaas endpoint
+     * @param arguments Arguments
+     * @return An optional URI object
+     */
+    public static Optional<URI> getUriFromZaas(String endpoint, NameValuePair...arguments) {
+        return Optional.ofNullable(ConfigReader.environmentConfiguration().getZaasConfiguration()) // on modulith zaas is not defined
+            .map(zaasConfig -> getUriFromService(zaasConfig, endpoint, arguments));
     }
 
 }

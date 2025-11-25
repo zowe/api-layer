@@ -55,16 +55,18 @@ public class ZaasNegativeTest {
 
     private final static String CLIENT_USER = ConfigReader.environmentConfiguration().getCredentials().getClientUser();
 
+    private static final boolean zaasAvailable = ZAAS_ZOWE_URI.isPresent() || ZAAS_ZOSMF_URI.isPresent() || ZAAS_SAFIDT_URI.isPresent() || ZAAS_TICKET_URI.isPresent();
+
     private static final Set<URI> tokenEndpoints = new HashSet<>() {{
-        add(ZAAS_ZOWE_URI);
-        add(ZAAS_ZOSMF_URI);
-        if (SAFIDT_CONF.isEnabled()) {
-            add(ZAAS_SAFIDT_URI);
+        ZAAS_ZOWE_URI.ifPresent(this::add);
+        ZAAS_ZOSMF_URI.ifPresent(this::add);
+        if (SAFIDT_CONF.isEnabled() && ZAAS_SAFIDT_URI.isPresent()) {
+            add(ZAAS_SAFIDT_URI.get());
         }
     }};
 
     private static final Set<URI> endpoints = new HashSet<>() {{
-        add(ZAAS_TICKET_URI);
+        ZAAS_TICKET_URI.ifPresent(this::add);
         addAll(tokenEndpoints);
     }};
 
@@ -112,6 +114,11 @@ public class ZaasNegativeTest {
             argumentsList.add(Arguments.of(uri, requestSpec));
         }
         return argumentsList.stream();
+    }
+
+    @BeforeEach
+    void setUp() {
+        assumeTrue(zaasAvailable);
     }
 
     @Nested

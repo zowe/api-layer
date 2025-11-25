@@ -62,11 +62,11 @@ public class EurekaUtils {
      */
     public void validateServiceId(String serviceId) {
         if (StringUtils.isBlank(serviceId)) {
-            throw new MetadataValidationException("The service ID must not be null or empty. The service will not be registered.");
+            throw new MetadataValidationException("The serviceId must not be null or empty. The service will not be registered in future releases.");
         }
         if (!SERVICE_ID_PATTERN.matcher(serviceId).matches()) {
             String message = String.format(
-                "Invalid serviceId [%s]: must comply with RFC 952/1123 (only lowercase letters, digits, hyphens, max 63 chars). The service will not be registered.",
+                "Invalid serviceId [%s]: must comply with RFC 952/1123 (only lowercase letters, digits, hyphens, max 63 chars). The service will not be registered in future releases.",
                 serviceId
             );
             throw new MetadataValidationException(message);
