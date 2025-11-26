@@ -63,7 +63,7 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
         return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.security.token.accessTokenBodyMissingScopes");
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)
     public Mono<Void> handleAuthenticationCredentialsNotFoundException(ServerWebExchange exchange, AuthenticationCredentialsNotFoundException e) {
         log.debug("Authentication credentials not found in request, status: {}, message: {}", SC_BAD_REQUEST, e.getMessage());
         return setBodyResponse(exchange, SC_BAD_REQUEST, ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getErrorMessageKey(), exchange.getRequest().getURI());

@@ -81,7 +81,7 @@ public class ZaasNegativeTest {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : endpoints) {
             RequestSpecification requestSpec = given();
-            if (ZAAS_SAFIDT_URI.equals(uri) || ZAAS_TICKET_URI.equals(uri)) {
+            if (uri.equals(ZAAS_SAFIDT_URI.get()) || uri.equals(ZAAS_TICKET_URI.get())) {
                 requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
             }
             for (String token : tokens) {
@@ -96,7 +96,7 @@ public class ZaasNegativeTest {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : endpoints) {
             RequestSpecification requestSpec = given();
-            if (ZAAS_SAFIDT_URI.equals(uri) || ZAAS_TICKET_URI.equals(uri)) {
+            if (uri.equals(ZAAS_SAFIDT_URI.get()) || uri.equals(ZAAS_TICKET_URI.get())) {
                 requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
             }
             argumentsList.add(Arguments.of(uri, requestSpec));
@@ -108,7 +108,7 @@ public class ZaasNegativeTest {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : tokenEndpoints) {
             RequestSpecification requestSpec = given();
-            if (ZAAS_SAFIDT_URI.equals(uri)) {
+            if (uri.equals(ZAAS_SAFIDT_URI.get())) {
                 requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
             }
             argumentsList.add(Arguments.of(uri, requestSpec));
