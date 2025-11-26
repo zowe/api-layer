@@ -11,9 +11,7 @@
 package org.zowe.apiml.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,7 +24,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -61,20 +58,15 @@ class ReactivePATControllerTest {
     @Mock private SecurityContext securityContext;
     @Mock private AccessTokenProvider tokenProvider;
     @Mock private MessageService messageService;
-    private ObjectMapper mapper;
+    @Mock private ObjectMapper mapper;
 
     @InjectMocks
     private ReactivePATController controller;
 
-    @BeforeEach
-    void setUp() {
-        this.mapper = new ObjectMapper();
-        ReflectionTestUtils.setField(controller, "objectMapper", mapper);
-    }
-
     @Test
-    void generatePat_success() throws JsonMappingException, JsonProcessingException {
-        var request = "{\"validity\": 3600, \"scopes\": [\"scope1\"]}";
+    void generatePat_success() {
+        var request =
+            new ReactivePATController.AccessTokenRequest(3600, Set.of("scope1"));
         var username = "testUser";
         var pat = "generated-pat";
 
@@ -87,7 +79,7 @@ class ReactivePATControllerTest {
 
         when(tokenAuthentication.getName()).thenReturn(username);
         when(securityContext.getAuthentication()).thenReturn(tokenAuthentication);
-        when(tokenProvider.getToken(username, 3600, Set.of("scope1"))).thenReturn(pat);
+        when(tokenProvider.getToken(username, request.getValidity(), request.getScopes())).thenReturn(pat);
 
         try (MockedStatic<ReactiveSecurityContextHolder> mockedContextHolder = Mockito.mockStatic(ReactiveSecurityContextHolder.class)) {
             mockedContextHolder.when(ReactiveSecurityContextHolder::getContext).thenReturn(Mono.just(securityContext));
@@ -101,7 +93,7 @@ class ReactivePATControllerTest {
                 })
                 .verifyComplete();
         }
-        verify(tokenProvider).getToken(username, 3600, Set.of("scope1"));
+        verify(tokenProvider).getToken(username, request.getValidity(), request.getScopes());
         verify(mockRauditBuilder).success();
         verify(mockRauditBuilder, never()).failure();
         verify(mockRauditBuilder, times(1)).issue();
@@ -109,12 +101,8 @@ class ReactivePATControllerTest {
 
     @Test
     void generatePat_failure() {
-        var request = """
-            {
-                "validity": 3600,
-                "scopes": ["scope1"]
-            }
-        """;
+        var request =
+            new ReactivePATController.AccessTokenRequest(3600, Set.of("scope1"));
         var username = "testUser";
         var exception = new RuntimeException("Token generation failed");
 
@@ -127,7 +115,7 @@ class ReactivePATControllerTest {
 
         when(tokenAuthentication.getName()).thenReturn(username);
         when(securityContext.getAuthentication()).thenReturn(tokenAuthentication);
-        when(tokenProvider.getToken(username, 3600, Set.of("scope1"))).thenThrow(exception);
+        when(tokenProvider.getToken(username, request.getValidity(), request.getScopes())).thenThrow(exception);
 
         try (var mockedContextHolder = Mockito.mockStatic(ReactiveSecurityContextHolder.class)) {
             mockedContextHolder.when(ReactiveSecurityContextHolder::getContext).thenReturn(Mono.just(securityContext));
@@ -139,7 +127,7 @@ class ReactivePATControllerTest {
                 .verify();
         }
 
-        verify(tokenProvider).getToken(username, 3600, Set.of("scope1"));
+        verify(tokenProvider).getToken(username, request.getValidity(), request.getScopes());
         verify(mockRauditBuilder).failure();
         verify(mockRauditBuilder).issue();
         verify(mockRauditBuilder, never()).success();

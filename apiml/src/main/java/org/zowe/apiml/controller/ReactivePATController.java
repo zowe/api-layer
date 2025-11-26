@@ -24,21 +24,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.filter.BasicLoginFilter;
+import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.audit.RauditxService;
@@ -54,10 +46,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.zowe.apiml.zaas.controllers.AuthController.ACCESS_TOKEN_EVICT;
-import static org.zowe.apiml.zaas.controllers.AuthController.ACCESS_TOKEN_REVOKE;
-import static org.zowe.apiml.zaas.controllers.AuthController.ACCESS_TOKEN_REVOKE_MULTIPLE;
-import static org.zowe.apiml.zaas.controllers.AuthController.ACCESS_TOKEN_VALIDATE;
+import static org.zowe.apiml.zaas.controllers.AuthController.*;
 
 @RestController
 @RequestMapping("/gateway/api/v1/auth")
@@ -68,9 +57,9 @@ public class ReactivePATController {
     private static final String TOKEN_KEY = "token";
 
     private final AccessTokenProvider tokenProvider;
-    private final MessageService messageService;
     private final RauditxService rauditxService;
-    private final ObjectMapper objectMapper;
+    private final MessageService messageService;
+    private final ObjectMapper mapper;
 
     @Data
     @NoArgsConstructor
@@ -108,29 +97,17 @@ public class ReactivePATController {
         @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
     @PostMapping("/access-token/generate")
-    public Mono<ResponseEntity<String>> generatePat(@RequestAttribute(name = BasicLoginFilter.BASIC_LOGIN_FILTER_BODY_ATTR) String accessTokenRequest) {
+    public Mono<ResponseEntity<String>> generatePat(@RequestBody AccessTokenRequest accessTokenRequest) {
         return ReactiveSecurityContextHolder.getContext()
             .map(SecurityContext::getAuthentication)
             .filter(Objects::nonNull)
-            .map(authentication -> {
-                try {
-                    var request = objectMapper.readValue(accessTokenRequest, AccessTokenRequest.class);
-                    if (request == null) {
-                        throw new IOException("Access Token Request body not found");
-                    }
-                    return new ImmutablePair<Authentication, AccessTokenRequest>(authentication, request);
-                } catch (IOException e) {
-                    throw new AccessTokenMissingBodyException(e.getMessage());
-                }
-            })
-            .<ResponseEntity<String>>handle((pair, sink) -> {
-                var request = pair.right;
-                if (request.getScopes() == null || request.getScopes().isEmpty()) {
+            .<ResponseEntity<String>>handle((authentication, sink) -> {
+                if (accessTokenRequest.getScopes() == null || accessTokenRequest.getScopes().isEmpty()) {
                     sink.error(new AccessTokenMissingBodyException("Missing required scopes in the request body."));
                     return;
                 }
 
-                var userId = pair.left.getName();
+                var userId = authentication.getName();
 
                 log.debug("Generating access token for user {}", userId);
 
@@ -142,7 +119,7 @@ public class ReactivePATController {
 
                 String pat;
                 try {
-                    pat = tokenProvider.getToken(userId, request.getValidity(), request.getScopes());
+                    pat = tokenProvider.getToken(userId, accessTokenRequest.getValidity(), accessTokenRequest.getScopes());
                     rauditBuilder.success();
                 } catch (RuntimeException e) {
                     rauditBuilder.failure();
@@ -514,7 +491,7 @@ public class ReactivePATController {
 
     private Mono<ResponseEntity<String>> badRequestForPATInvalidation() throws JsonProcessingException {
         final ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.query.invalidRevokeRequestBody").mapToView();
-        return Mono.just(new ResponseEntity<>(objectMapper.writeValueAsString(message), HttpStatus.BAD_REQUEST));
+        return Mono.just(new ResponseEntity<>(mapper.writeValueAsString(message), HttpStatus.BAD_REQUEST));
     }
 
 }

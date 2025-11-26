@@ -11,8 +11,6 @@
 package org.zowe.apiml.filter;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -61,8 +59,6 @@ import java.util.Optional;
 @Slf4j
 public class BasicLoginFilter implements WebFilter {
 
-    public static final String BASIC_LOGIN_FILTER_BODY_ATTR = "basicLoginFilteredBody";
-
     private final ReactiveAuthenticationManagerAdapter authenticationManager;
     private final FailedAuthenticationWebHandler failedAuthenticationWebHandler;
 
@@ -74,36 +70,16 @@ public class BasicLoginFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        return readLoginRequestFromBody(exchange)
-            .flatMap(body -> {
-                exchange.getAttributes().put(X509AuthFilter.SKIP_X509_AUTH_ATTR, StringUtils.isNotBlank(body));
-                return extractBasicAuth(exchange)
-                    .map(this::useCredentials)
-                    .switchIfEmpty(Mono.<AbstractAuthenticationToken>defer(() -> chain.filter(exchange).then(Mono.empty())))
-                    .flatMap(credentials ->
-                        authenticationManager.authenticate(credentials)
-                            .flatMap(authentication -> chain.filter(exchange)
-                                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication))))
-                    .onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), ex));
-            })
-
-        ;
-    }
-    // maintains support for wrongly-formed requests (with content-type but no content for example which are used)
-    private Mono<String> readLoginRequestFromBody(ServerWebExchange exchange) {
-        return DataBufferUtils.join(exchange.getRequest().getBody())
-            .map(buffer -> {
-                var bytes = new byte[buffer.readableByteCount()];
-                buffer.read(bytes);
-                DataBufferUtils.release(buffer);
-                return bytes;
-            })
-            .map(body -> {
-                var bodyAsString = new String(body);
-                exchange.getAttributes().put(BASIC_LOGIN_FILTER_BODY_ATTR, bodyAsString);
-                return bodyAsString;
-            })
-            .switchIfEmpty(Mono.just(""));
+        var hasBody = Optional.ofNullable(exchange.getAttribute(CachedBodyFilter.CACHED_BODY_ATTR)).map(body -> true).orElse(false);
+        exchange.getAttributes().put(X509AuthFilter.SKIP_X509_AUTH_ATTR, hasBody);
+        return extractBasicAuth(exchange)
+            .map(this::useCredentials)
+            .switchIfEmpty(Mono.<AbstractAuthenticationToken>defer(() -> chain.filter(exchange).then(Mono.empty())))
+            .flatMap(credentials ->
+                authenticationManager.authenticate(credentials)
+                    .flatMap(authentication -> chain.filter(exchange)
+                        .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication))))
+            .onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), ex));
     }
 
     private AbstractAuthenticationToken useCredentials(LoginRequest credentials) {
