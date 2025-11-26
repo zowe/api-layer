@@ -48,14 +48,14 @@ import static org.zowe.apiml.util.SecurityUtils.getDummyClientCertificate;
 import static org.zowe.apiml.util.SecurityUtils.parseJwtStringUnsecure;
 
 @ZaasTest
-public class ZaasNegativeTest {
+class ZaasNegativeTest {
 
     private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
     private final static SafIdtConfiguration SAFIDT_CONF = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
 
     private final static String CLIENT_USER = ConfigReader.environmentConfiguration().getCredentials().getClientUser();
 
-    private static final boolean zaasAvailable = ZAAS_ZOWE_URI.isPresent() || ZAAS_ZOSMF_URI.isPresent() || ZAAS_SAFIDT_URI.isPresent() || ZAAS_TICKET_URI.isPresent();
+    private static final boolean ZAAS_AVAILABLE = ZAAS_ZOWE_URI.isPresent() || ZAAS_ZOSMF_URI.isPresent() || ZAAS_SAFIDT_URI.isPresent() || ZAAS_TICKET_URI.isPresent();
 
     private static final Set<URI> tokenEndpoints = new HashSet<>() {{
         ZAAS_ZOWE_URI.ifPresent(this::add);
@@ -118,7 +118,7 @@ public class ZaasNegativeTest {
 
     @BeforeEach
     void setUp() {
-        assumeTrue(zaasAvailable, "Test expected ZAAS to be available (microservices deployment)");
+        assumeTrue(ZAAS_AVAILABLE, "Test expected ZAAS to be available (microservices deployment)");
     }
 
     @Nested
