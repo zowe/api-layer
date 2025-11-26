@@ -1,5 +1,6 @@
 /**
- * This gradle file add task `liteLibJarAll` which copies lite jar library files to a folder.
+ * This gradle file add task `liteLibJarAll` which copies lite jar library files to a folder,
+ * and `liteLibJarAllJar` which creates a jar containing all libraries.
  * It is helpful if project contains multiple application with different set of dependencies.
  *
  * For `liteLibJarAll` to be used, lite jars of each application must be built first. Then
@@ -56,6 +57,15 @@ task liteLibJarAll(type: Copy) {
     }
 }
 
+task liteLibJarAllJar(type: Jar) {
+    archiveFileName = getBaseNameLite() + ".jar"
+    entryCompression = ZipEntryCompression.STORED
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from { rootProject.subprojects.collectMany {
+        getLiteLibJarOutput(it.buildDir)
+    }.collect() }
+}
+
 liteLibJarAll.dependsOn(":apiml:build")
 liteLibJarAll.dependsOn(":zaas-service:build")
 liteLibJarAll.dependsOn(":gateway-service:build")
@@ -66,3 +76,6 @@ liteLibJarAll.dependsOn(":apiml:liteLibJar")
 liteLibJarAll.dependsOn(":zaas-service:liteLibJar")
 liteLibJarAll.dependsOn(":discovery-service:liteLibJar")
 liteLibJarAll.dependsOn(":api-catalog-services:liteLibJar")
+
+liteLibJarAllJar.dependsOn(liteLibJarAll)
+liteLibJarAll.finalizedBy(liteLibJarAllJar)
