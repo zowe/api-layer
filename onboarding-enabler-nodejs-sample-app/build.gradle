@@ -18,9 +18,9 @@ node {
     npmVersion = libs.versions.projectNpm.get()
     distBaseUrl = "https://nodejs.org/dist"
     npmInstallCommand = "install"
-    workDir = file("${project.projectDir}/tools/nodejs")
-    npmWorkDir = file("${project.projectDir}/tools/npm")
-    yarnWorkDir = file("${project.projectDir}/tools/yarn")
+    workDir = file("${project.rootDir}/tools/nodejs")
+    npmWorkDir = file("${project.rootDir}/tools/npm")
+    yarnWorkDir = file("${project.rootDir}/tools/yarn")
     nodeProjectDir = file("${project.projectDir}")
 }
 
@@ -36,6 +36,11 @@ task nodeClean(type: Delete) {
         delete 'node_modules'
     }
 }
+
+tasks.npmSetup {
+    args.addAll(['--registry', 'https://zowe.jfrog.io/artifactory/api/npm/npm-org/'])
+}
+
 clean.dependsOn nodeClean
 
 jar {

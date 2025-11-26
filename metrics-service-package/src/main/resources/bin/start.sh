@@ -227,6 +227,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java \
    ${QUICK_START} \
    ${ADD_OPENS} \
    ${LOGBACK} \
+  -Dsun.io.useCanonCaches=false \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
   -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
