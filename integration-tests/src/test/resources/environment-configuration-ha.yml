@@ -57,7 +57,7 @@ zosmfServiceConfiguration:
 auxiliaryUserList:
     value: 'servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
 oidcConfiguration:
-    providerName: okta
-    host: https://dev-95727686.okta.com
+    providerName: auth0
+    host: https://dev-svlu6abyr3eo710c.us.auth0.com
 safIdtConfiguration:
     enabled: true
