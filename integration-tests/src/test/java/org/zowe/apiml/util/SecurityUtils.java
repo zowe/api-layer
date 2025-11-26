@@ -25,7 +25,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.ParseException;
 import org.apache.http.client.CookieStore;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.SSLSocketFactory;
@@ -58,7 +61,10 @@ import org.zowe.apiml.util.config.TlsConfiguration;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import javax.net.ssl.SSLContext;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -110,6 +116,7 @@ public class SecurityUtils {
     public static final String OKTA_AUTHENTICATE_SESSION_URL = "/api/v1/authn";
     public static final String OKTA_GENERATE_TOKEN_URL = "/oauth2/v1/authorize";
     public static final String KEYCLOAK_GENERATE_TOKEN_URL = "/realms/apiml/protocol/openid-connect/token";
+    public static final String AUTH0_GENERATE_TOKEN_URL = "/oauth/token";
 
     public static final String COOKIE_NAME = "apimlAuthenticationToken";
     public static final String PAT_COOKIE_AUTH_NAME = "personalAccessToken";
@@ -424,6 +431,8 @@ public class SecurityUtils {
             return validKeycloakToken(userHasMappingDefined);
         } else if (isOktaProvider()) {
             return validOktaAccessToken(userHasMappingDefined);
+        } else if (isAuth0Provider()) {
+            return validAuth0AccessToken(userHasMappingDefined);
         }
         throw new IllegalArgumentException(String.format("Unsupported OIDC provider: %s", OIDC_PROVIDER_NAME));
     }
@@ -475,6 +484,10 @@ public class SecurityUtils {
         return "keycloak".equalsIgnoreCase(OIDC_PROVIDER_NAME);
     }
 
+    public static boolean isAuth0Provider() {
+        return "auth0".equalsIgnoreCase(OIDC_PROVIDER_NAME);
+    }
+
     public static boolean isOktaProvider() {
         return "okta".equalsIgnoreCase(OIDC_PROVIDER_NAME);
     }
@@ -503,7 +516,7 @@ public class SecurityUtils {
                 ContentType.APPLICATION_FORM_URLENCODED
             );
             request.setEntity(entity);
-            request.addHeader("content-type", "application/x-www-form-urlencoded");
+            request.addHeader(HttpHeaders.CONTENT_TYPE,  ContentType.APPLICATION_FORM_URLENCODED.getMimeType());
 
             var response = httpClient.execute(request);
 
@@ -515,6 +528,49 @@ public class SecurityUtils {
                 return (String)accessToken;
             } else {
                 throw new RuntimeException("Failed obtaining Keycloak access token: " + response.getStatusLine().getStatusCode() + ": " + EntityUtils.toString(response.getEntity()));
+            }
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String validAuth0AccessToken(boolean userHasMappingDefined) {
+        assertNotNull(OIDC_HOSTNAME, "Auth0 host name is not set.");
+        assertNotNull(OIDC_CLIENT_ID, "Auth0 client id is not set.");
+
+        try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) {
+            var uri = new URI(OIDC_HOSTNAME + AUTH0_GENERATE_TOKEN_URL);
+            var request = new HttpPost(uri);
+            var form = new StringBuilder();
+            form.append("grant_type=password");
+            form.append("&scope=discoverableclient");
+            form.append("&audience=https://apiml");
+            form.append("&client_id=").append(URLEncoder.encode(OIDC_CLIENT_ID, StandardCharsets.UTF_8));
+            form.append("&client_secret=").append(URLEncoder.encode(OIDC_CLIENT_PASSWORD, StandardCharsets.UTF_8));
+            if (userHasMappingDefined) {
+                form.append("&username=").append(URLEncoder.encode(OIDC_USER, StandardCharsets.UTF_8));
+                form.append("&password=").append(URLEncoder.encode(OIDC_PASSWORD, StandardCharsets.UTF_8));
+            } else {
+                form.append("&username=").append(URLEncoder.encode(OIDC_ALT_USER, StandardCharsets.UTF_8));
+                form.append("&password=").append(URLEncoder.encode(OIDC_ALT_PASSWORD, StandardCharsets.UTF_8));
+            }
+            var entity = new StringEntity(
+                form.toString(),
+                ContentType.APPLICATION_FORM_URLENCODED
+            );
+            request.setEntity(entity);
+            request.addHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.getMimeType());
+
+            var response = httpClient.execute(request);
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                // The response is HTML form where access token is hidden input field (this is controlled by response_mode = form_post)
+                var body = EntityUtils.toString(response.getEntity());
+                var accessToken = MAPPER.readValue(body,HashMap.class).get("access_token");
+                assertNotNull(accessToken, "Failed to locate access token in the Auth0 /authorize response.");
+                return (String)accessToken;
+            } else {
+                throw new RuntimeException("Failed obtaining Auth0 access token: " + response.getStatusLine().getStatusCode() + ": " + EntityUtils.toString(response.getEntity()));
             }
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException(e);
@@ -559,6 +615,8 @@ public class SecurityUtils {
             return expiredOktaAccessToken();
         } else if (isKeycloakProvider()) {
             return expiredKeycloakAccessToken();
+        } else if (isAuth0Provider()) {
+            return expiredAuth0AccessToken();
         }
         throw new IllegalArgumentException(String.format("Unsupported OIDC provider: %s", OIDC_PROVIDER_NAME));
     }
@@ -569,6 +627,10 @@ public class SecurityUtils {
 
     public static String expiredKeycloakAccessToken() {
         return "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJJZzc0dlkyMEZ5bXNxSmN5ZDc1MjVGbGloWElPdk13cFZMVVc5TkN2VVFrIn0.eyJleHAiOjE3NTgxOTgyMzUsImlhdCI6MTc1ODE5NzkzNSwianRpIjoib25ydHJvOjBiYjQzNTE4LTQ0MTQtODg1Zi01YThlLWQ1YmExYWMzOGI2NCIsImlzcyI6Imh0dHA6Ly8xMC4yNTIuMTIxLjE5MDo4MDgwL3JlYWxtcy9hcGltbCIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJmYzA4NWE1NC01N2E5LTRhMTEtOGQzMy1hMGU5Njc1YmMwZTkiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJjbGllbnRpZGFwaW1sIiwic2lkIjoiOGYzYzlkZmItYzEwNS00NzIyLWE5NTYtODhmZTc1ZjcwMTcwIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyIvKiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsiZGVmYXVsdC1yb2xlcy1hcGltbCIsIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXX0sInJlc291cmNlX2FjY2VzcyI6eyJhY2NvdW50Ijp7InJvbGVzIjpbIm1hbmFnZS1hY2NvdW50IiwibWFuYWdlLWFjY291bnQtbGlua3MiLCJ2aWV3LXByb2ZpbGUiXX19LCJzY29wZSI6InByb2ZpbGUgZGlzY292ZXJhYmxlY2xpZW50IGVtYWlsIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoiQVBJTUwgTWluaXBsZXggSW50ZWdyYXRpb24gVGVzdHMgQXV0aG9yaXplZCBVc2VyIiwiZ3JvdXBzIjp7Im1lbWViZXJPZiI6WyIvYXBpbWwiLCIva2V5Y2xvYWtncm91cCIsIi9yZWFkZXJzIiwiL3dhdGNoVG93ZXJVc2VyIl19LCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJ6b3dlc29uQHpvd2UuY29tIiwiZ2l2ZW5fbmFtZSI6IkFQSU1MIE1pbmlwbGV4IEludGVncmF0aW9uIFRlc3RzIiwiZmFtaWx5X25hbWUiOiJBdXRob3JpemVkIFVzZXIiLCJ1c2VybmFtZSI6eyJmdWxsTmFtZSI6Inpvd2Vzb25Aem93ZS5jb20ifX0.Yut1S6tIoBdX-h782Zde4g2xvkMu28HduOf4DwwpCUzWSJ-KxPbk5JZl7x_8ga81EuR8myv9o4bowOUA3nLZwOd9iC4_gcj_ZnS3dHIAlPA1PC7cUmppDRl_3GGYdEfAk7a_uLbyc9S1RyrD4FuvJASv4HPoB8pcrF7MJAFuQnWSVOhvDzKq-aRhuAHDXNBBb8SzwfKOuQ5cCeq1AjDrGPUt3XGWySeGxOFzQHPRdqPYTbgmJ7nOqzKJdJ-5hd6tvQRoGmGsq8nU1RCcrayc-27flnR1M3JJEVB3CcAp1DmofijHHO-CSgwbycUSz5zdx1c_tY_iUseQeSWsvshPxA";
+    }
+
+    public static String expiredAuth0AccessToken() {
+        return "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjJiQ2FxMHNybjZzaHpBbEpmUlRJcSJ9.eyJpc3MiOiJodHRwczovL2Rldi1zdmx1NmFieXIzZW83MTBjLnVzLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw2OTBkYzAzZmNiMDlhYjI1M2FiNTVkZmUiLCJhdWQiOiJodHRwczovL2FwaW1sIiwiaWF0IjoxNzYyODYwOTExLCJleHAiOjE3NjI5NDczMTEsInNjb3BlIjoiZGlzY292ZXJhYmxlY2xpZW50IiwiZ3R5IjoicGFzc3dvcmQiLCJhenAiOiJqd0R5QVZTWTExUWYzV2EwajFIYlVWTWloOHpEb21IRiJ9.DE7q6694xIUZd9Eoyy1_-5mwxFYaiiwiUg41KowdQ9ShkeosmSFgAkFU7M8iluCMTfra5tLe8R7cqHE2NHy1CpHpmIRc1qeIYCMac2DF-ndz8doYnoaOdu4L3reI8bcbuv9TcX3LU2999bAdl7KRFIcJvIXq3alWO3Q2wxcFjGlo-i-G1HaQ-kRutTp4Csfkqixa0EC9mcvDFrfOnNvI7INs8umLhXiOF20F43AkQcHf2rZbXuY6YS8_-ImPr3eqOBpJv9MvUuDgzdR3_p4ay10IP8gpV3JF4_Bk12KVFdendbU7j8Lpl7OIYXJ59WOdD04yYjg0WcySQsrS4kNdhg";
     }
 
     public static void logoutOnGateway(String url, String jwtToken) {

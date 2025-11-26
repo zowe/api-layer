@@ -165,7 +165,7 @@ public class ConfigReader {
                     configuration.getOidcConfiguration().setClientId(System.getProperty("oidc.client.id", String.valueOf(configuration.getOidcConfiguration().getClientId())));
                     configuration.getOidcConfiguration().setClientSecret(System.getProperty("oidc.client.secret", String.valueOf(configuration.getOidcConfiguration().getClientSecret())));
                     var oidcProviderName = configuration.getOidcConfiguration().getProviderName();
-                    if (!("keycloak".equalsIgnoreCase(oidcProviderName) || "okta".equalsIgnoreCase(oidcProviderName))) {
+                    if (!("keycloak".equalsIgnoreCase(oidcProviderName) || "okta".equalsIgnoreCase(oidcProviderName) || "auth0".equalsIgnoreCase(oidcProviderName))) {
                         throw new IllegalArgumentException(String.format("Unsupported OIDC provider: %s", oidcProviderName));
                     }
 
