@@ -18,7 +18,7 @@ function login() {
     const username = Cypress.env('username');
     const password = Cypress.env('password');
 
-    cy.get('button[type="submit"').as('submitButton');
+    cy.get('button[type="submit"]').as('submitButton');
 
     cy.get('#username').type(username);
     cy.get('input[name="password"]').type(password);
