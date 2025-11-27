@@ -277,11 +277,13 @@ if [ -n "${ZWE_java_home}" ]; then
 fi
 
 CATALOG_CODE=AC
+SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal"
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
+    ${SHARED_CLASSES_OPTS} \
     ${ADD_OPENS} \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
