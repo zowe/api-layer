@@ -521,7 +521,7 @@ public class SecurityUtils {
                 ContentType.APPLICATION_FORM_URLENCODED
             );
             request.setEntity(entity);
-            request.addHeader("content-type", "application/x-www-form-urlencoded");
+            request.addHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_FORM_URLENCODED.getMimeType());
 
             CloseableHttpResponse response = httpClient.execute(request);
 
@@ -542,7 +542,7 @@ public class SecurityUtils {
     public static String validAuth0AccessToken(boolean userHasMappingDefined) {
         assertNotNull(OIDC_HOSTNAME, "Auth0 host name is not set.");
         assertNotNull(OIDC_CLIENT_ID, "Auth0 client id is not set.");
-
+        // retrieve the access token from Okta using session token
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(getRelaxedSslContext()).build()) {
             URI uri = new URI(OIDC_HOSTNAME + AUTH0_GENERATE_TOKEN_URL);
             HttpPost request = new HttpPost(uri);
@@ -597,7 +597,7 @@ public class SecurityUtils {
             URIBuilder uriBuilder = new URIBuilder(OIDC_HOSTNAME + OKTA_AUTHENTICATE_SESSION_URL);
 
             HttpPost request = new HttpPost(uriBuilder.build());
-            request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
+            request.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.getMimeType());
             StringEntity entity = new StringEntity(requestBody.toString());
             request.setEntity(entity);
             CloseableHttpResponse response = httpClient.execute(request);
