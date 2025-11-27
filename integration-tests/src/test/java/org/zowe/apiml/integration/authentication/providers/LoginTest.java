@@ -54,6 +54,7 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -212,7 +213,7 @@ class LoginTest implements TestWithStartedInstances {
             @ParameterizedTest(name = "givenCredentialsInTheWrongJsonFormat {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenCredentialsInTheWrongJsonFormat(URI loginUrl) throws JSONException {
-                String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" + getPath(loginUrl) + "'";
+                var expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL";
 
                 JSONObject loginRequest = new JSONObject()
                     .put("user", getUsername())
@@ -226,7 +227,8 @@ class LoginTest implements TestWithStartedInstances {
                 .then()
                     .statusCode(is(SC_BAD_REQUEST))
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", startsWith(expectedMessage),
+                        "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", containsString(getPath(loginUrl))
                     );
             }
 

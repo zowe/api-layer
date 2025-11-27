@@ -52,7 +52,12 @@ public class CachedBodyFilter implements WebFilter {
                 };
                 return chain.filter(exchange.mutate().request(decoratedRequest).build());
             })
-            .switchIfEmpty(chain.filter(exchange));
+            .switchIfEmpty(chain.filter(exchange.mutate().request(new ServerHttpRequestDecorator(exchange.getRequest()) {
+                @Override
+                    public Flux<DataBuffer> getBody() {
+                        return Flux.just(exchange.getResponse().bufferFactory().wrap(new byte[]{}));
+                    }
+            }).build()));
     }
 
 }
