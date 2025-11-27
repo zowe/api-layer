@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.SchemaProperty;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -92,7 +93,11 @@ public class ReactiveAuthenticationController {
         """,
         requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
             content = @Content(
-                schema = @Schema(implementation = LoginRequest.class)
+                schemaProperties = {
+                    @SchemaProperty(name = "username", schema = @Schema(type = "string")),
+                    @SchemaProperty(name = "password", schema = @Schema(type = "string")),
+                    @SchemaProperty(name = "newPassword", schema = @Schema(type = "string"))
+                }
             ),
             description = "Specifies the user credentials to be authenticated. If newPassword is provided and the password is valid, the password is changed to newPassword"
         )
