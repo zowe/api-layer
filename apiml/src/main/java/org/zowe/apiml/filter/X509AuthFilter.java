@@ -50,7 +50,7 @@ public class X509AuthFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         X509Certificate[] certs = exchange.getAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
-        var skip = Optional.ofNullable(exchange.getAttribute(SKIP_X509_AUTH_ATTR)).map(value -> Boolean.valueOf(String.valueOf(value))).orElse(false);
+        boolean skip = Optional.ofNullable(exchange.getAttribute(SKIP_X509_AUTH_ATTR)).map(value -> Boolean.valueOf(String.valueOf(value))).orElse(false);
         if (ArrayUtils.isEmpty(certs) || skip) {
             return chain.filter(exchange);
         }
