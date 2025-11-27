@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.config;
 
 import com.netflix.discovery.EurekaClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +24,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import org.zowe.apiml.util.UrlUtils;
 
+@Slf4j
 @Configuration
 public class RegistryConfig {
 
@@ -47,15 +49,17 @@ public class RegistryConfig {
 
             // Validate that the external URL has a valid host component
             if (host == null || host.trim().isEmpty()) {
-                throw new IllegalArgumentException("Invalid external URL: '" + externalUrl + "'. The URL must contain a valid host component.");
-            }
-            // Handle IPv6 address format using UrlUtils
-            host = UrlUtils.formatHostnameForUrl(host);
+                log.warn("Invalid external URL '{}' has no valid host component. Falling back to default configuration (hostname:port).", externalUrl);
+                // Fall through to use the default hostname and port configuration below
+            } else {
+                // Handle IPv6 address format using UrlUtils
+                host = UrlUtils.formatHostnameForUrl(host);
 
-            return ServiceAddress.builder()
-                .scheme(clientAttlsEnabled ? "http" : uri.getScheme())
-                .hostname(host + ":" + uri.getPort())
-                .build();
+                return ServiceAddress.builder()
+                    .scheme(clientAttlsEnabled ? "http" : uri.getScheme())
+                    .hostname(host + ":" + uri.getPort())
+                    .build();
+            }
         }
 
         // Handle IPv6 address format using UrlUtils
