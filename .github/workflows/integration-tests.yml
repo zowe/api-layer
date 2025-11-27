@@ -421,7 +421,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runZaasTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-                    -Doidc.client.id=${{ secrets.OIDC_CLIENT_ID }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
+                    -Doidc.client.id=${{ secrets.OIDC_CLIENT_ID }} -Doidc.client.secret=${{ secrets.OIDC_CLIENT_SECRET }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
                     -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }} -Doidc.test.alt_user=${{ secrets.OIDC_WINNIE_USER }}
                     -Doidc.test.alt_pass=${{ secrets.OIDC_WINNIE_PASS }} -Doidc.host=${{secrets.OIDC_HOST}}
 
