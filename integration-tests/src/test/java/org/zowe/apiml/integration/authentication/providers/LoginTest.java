@@ -111,6 +111,7 @@ class LoginTest implements TestWithStartedInstances {
 
         @Nested
         class ReturnsValidToken {
+
             @ParameterizedTest(name = "givenValidCredentialsInBody {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenValidCredentialsInBody(URI loginUrl) {
@@ -160,7 +161,7 @@ class LoginTest implements TestWithStartedInstances {
             void givenInvalidCredentialsInBody(URI loginUrl) {
                 String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
                 String expectedMessageNumber = "ZWEAG120E";
-                if (AUTH_PROVIDER.equalsIgnoreCase("saf")) {
+                if ("saf".equalsIgnoreCase(AUTH_PROVIDER)) {
                     expectedMessage = "The platform returned error: " + PlatformPwdErrno.EINVAL.shortErrorName + ": " + PlatformPwdErrno.EINVAL.explanation;
                     expectedMessageNumber = "ZWEAT416E";
                 }
@@ -184,7 +185,7 @@ class LoginTest implements TestWithStartedInstances {
             void givenInvalidCredentialsInHeader(URI loginUrl) {
                 String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
                 String expectedMessageNumber = "ZWEAG120E";
-                if (AUTH_PROVIDER.equalsIgnoreCase("saf")) {
+                if ("saf".equalsIgnoreCase(AUTH_PROVIDER)) {
                     expectedMessage = "The platform returned error: " + PlatformPwdErrno.EINVAL.shortErrorName + ": " + PlatformPwdErrno.EINVAL.explanation;
                     expectedMessageNumber = "ZWEAT416E";
                 }
@@ -216,8 +217,6 @@ class LoginTest implements TestWithStartedInstances {
                 JSONObject loginRequest = new JSONObject()
                     .put("user", getUsername())
                     .put("pass", getPassword());
-
-                // TODO modulith returns 401 instead of 400 here
 
                 given()
                     .contentType(JSON)

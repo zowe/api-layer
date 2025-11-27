@@ -51,7 +51,8 @@ public class CachedBodyFilter implements WebFilter {
                     }
                 };
                 return chain.filter(exchange.mutate().request(decoratedRequest).build());
-            });
+            })
+            .switchIfEmpty(chain.filter(exchange));
     }
 
 }
