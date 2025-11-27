@@ -54,7 +54,10 @@ class CachingServiceClientRestTest {
     @BeforeEach
     void setUp() {
         webClient = spy(WebClient.builder().exchangeFunction(exchangeFunction).build());
-        client = new CachingServiceClientRest(webClient, new GatewayClient(ServiceAddress.builder().build()));
+        client = new CachingServiceClientRest(webClient, new GatewayClient(ServiceAddress.builder()
+            .scheme("https")
+            .hostname("localhost:10011")
+            .build()));
         lenient().when(clientResponse.releaseBody()).thenReturn(empty());
     }
 
