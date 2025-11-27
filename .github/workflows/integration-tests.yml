@@ -177,7 +177,7 @@ jobs:
 
             -   name: Dump CGW jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec || echo "Cloud Gateway Service is not available to obtain JaCoCo report at the moment"
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -221,7 +221,7 @@ jobs:
 
             -   name: Dump CGW jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec || echo "Cloud Gateway Service is not available to obtain JaCoCo report at the moment"
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -305,7 +305,7 @@ jobs:
 
             -   name: Dump CGW jacoco data
                 run: >
-                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec || echo "Cloud Gateway Service is not available to obtain JaCoCo report at the moment"
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -1446,9 +1446,7 @@ jobs:
                     export CYPRESS_AUTH0_USERNAME=${{ secrets.OIDC_WINNIE_USER }}
                     export CYPRESS_AUTH0_PASSWORD=${{ secrets.OIDC_WINNIE_PASS }}
                     npm run cy:e2e:ci
-            -   name: Dump CGW jacoco data
-                run: >
-                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec
+                    java -jar ./scripts/jacococli.jar dump --address cloud-gateway-service --port 6310 --destfile ./results/cloud-gateway-service.exec || echo "Cloud Gateway Service is not available to obtain JaCoCo report at the moment"
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
