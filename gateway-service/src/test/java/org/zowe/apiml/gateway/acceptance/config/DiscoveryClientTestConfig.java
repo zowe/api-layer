@@ -21,8 +21,6 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.netflix.eureka.RestClientTimeoutProperties;
-import org.springframework.cloud.netflix.eureka.http.DefaultEurekaClientHttpRequestFactorySupplier;
 import org.springframework.cloud.netflix.eureka.http.RestClientDiscoveryClientOptionalArgs;
 import org.springframework.cloud.netflix.eureka.http.RestClientTransportClientFactories;
 import org.springframework.cloud.util.ProxyUtils;
@@ -94,9 +92,10 @@ public class DiscoveryClientTestConfig {
             appManager = manager;
         }
 
-
-        var factorySupplier = new DefaultEurekaClientHttpRequestFactorySupplier(new RestClientTimeoutProperties());
-        var args1 = new RestClientDiscoveryClientOptionalArgs(factorySupplier, RestClient::builder);
+        // Use RestClientDiscoveryClientOptionalArgs with default RestClient builder
+        // The DefaultEurekaClientHttpRequestFactorySupplier constructors are deprecated,
+        // so we pass null for the supplier and let Spring Cloud use its defaults
+        var args1 = new RestClientDiscoveryClientOptionalArgs(null, RestClient::builder);
         var factories = new RestClientTransportClientFactories(args1);
         final var discoveryClient = new ApimlDiscoveryClientStub(appManager, config, this.context, applicationRegistry, factories, args1);
         discoveryClient.registerHealthCheck(healthCheckHandler);
