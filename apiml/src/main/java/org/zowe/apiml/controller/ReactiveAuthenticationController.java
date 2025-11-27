@@ -297,7 +297,7 @@ public class ReactiveAuthenticationController {
                 authenticationService.invalidateJwtTokenGateway(tokenAuthentication.getCredentials(), true, gateway);
                 var newToken = tokenCreationService.createJwtTokenWithoutCredentials(tokenAuthentication.getPrincipal());
                 exchange.getResponse().addCookie(httpUtils.createResponseCookie(newToken));
-                return ResponseEntity.ok().build();
+                return ResponseEntity.noContent().build();
             })
             .switchIfEmpty(Mono.just(ResponseEntity.status(HttpStatusCode.valueOf(401)).build()));
     }
