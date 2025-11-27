@@ -250,7 +250,10 @@ class ApiDocV3ServiceTest {
 
         @Test
         void givenInputFile_thenParseItCorrectly() throws IOException {
-            ServiceAddress gatewayConfigProperties = ServiceAddress.builder().scheme("https").hostname("localhost").build();
+            ServiceAddress gatewayConfigProperties = ServiceAddress.builder()
+                .scheme("https")
+                .hostname("localhost:10010")
+                .build();
             gatewayClient.setGatewayConfigProperties(gatewayConfigProperties);
 
             AtomicReference<OpenAPI> openApiHolder = new AtomicReference<>();
@@ -261,6 +264,9 @@ class ApiDocV3ServiceTest {
                     openApiHolder.set(openAPI);
                 }
             };
+            // Set the scheme field for the new ApiDocV3Service instance
+            ReflectionTestUtils.setField(apiDocV3Service, "scheme", "https");
+
             String transformed = apiDocV3Service.transformApiDoc("serviceId", ApiDocInfo.builder()
                 .apiInfo(mock(ApiInfo.class))
                 .apiDocContent(IOUtils.toString(new ClassPathResource("swagger/openapi3.json").getInputStream(), StandardCharsets.UTF_8))
