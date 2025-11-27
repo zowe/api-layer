@@ -77,6 +77,8 @@ class CachedBodyFilterTest {
             var exchange = MockServerWebExchange.from(requestWithoutBody);
             var chain = mock(WebFilterChain.class);
 
+            when(chain.filter(exchange)).thenReturn(Mono.empty());
+
             StepVerifier.create(filter.filter(exchange, chain))
                 .verifyComplete();
 
