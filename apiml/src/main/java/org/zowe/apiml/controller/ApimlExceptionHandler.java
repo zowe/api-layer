@@ -13,6 +13,7 @@ package org.zowe.apiml.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -28,6 +29,7 @@ import org.zowe.apiml.passticket.UsernameNotProvidedException;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.AccessTokenInvalidBodyException;
 import org.zowe.apiml.security.common.error.AccessTokenMissingBodyException;
+import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.error.ZosAuthenticationException;
 import reactor.core.publisher.Mono;
 
@@ -50,17 +52,21 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
     }
 
     @ExceptionHandler(AccessTokenInvalidBodyException.class)
-    public Mono<Void> handleAccessTokenBodyNotValidException(ServerWebExchange exchange, AccessTokenInvalidBodyException
-        ex) {
+    public Mono<Void> handleAccessTokenBodyNotValidException(ServerWebExchange exchange, AccessTokenInvalidBodyException ex) {
         log.debug("Invalid AccessToken body format, status: {}, message: {}", HttpStatus.BAD_REQUEST.value(), ex.getMessage());
         return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.accessToken.invalidFormat");
     }
 
     @ExceptionHandler(AccessTokenMissingBodyException.class)
-    public Mono<Void> handleAccessTokenMissingBodyException(ServerWebExchange exchange, AccessTokenMissingBodyException
-        ex) {
+    public Mono<Void> handleAccessTokenMissingBodyException(ServerWebExchange exchange, AccessTokenMissingBodyException ex) {
         log.debug("Missing AccessToken body, status: {}, message: {}", HttpStatus.BAD_REQUEST.value(), ex.getMessage());
         return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.security.token.accessTokenBodyMissingScopes");
+    }
+
+    @ExceptionHandler
+    public Mono<Void> handleAuthenticationCredentialsNotFoundException(ServerWebExchange exchange, AuthenticationCredentialsNotFoundException e) {
+        log.debug("Authentication credentials not found in request, status: {}, message: {}", SC_BAD_REQUEST, e.getMessage());
+        return setBodyResponse(exchange, SC_BAD_REQUEST, ErrorType.AUTH_CREDENTIALS_NOT_FOUND.getErrorMessageKey(), exchange.getRequest().getURI());
     }
 
     @ExceptionHandler(InvalidWebFingerConfigurationException.class)

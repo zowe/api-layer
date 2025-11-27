@@ -48,23 +48,25 @@ import static org.zowe.apiml.util.SecurityUtils.getDummyClientCertificate;
 import static org.zowe.apiml.util.SecurityUtils.parseJwtStringUnsecure;
 
 @ZaasTest
-public class ZaasNegativeTest {
+class ZaasNegativeTest {
 
     private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
     private final static SafIdtConfiguration SAFIDT_CONF = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
 
     private final static String CLIENT_USER = ConfigReader.environmentConfiguration().getCredentials().getClientUser();
 
+    private static final boolean ZAAS_AVAILABLE = ZAAS_ZOWE_URI.isPresent() || ZAAS_ZOSMF_URI.isPresent() || ZAAS_SAFIDT_URI.isPresent() || ZAAS_TICKET_URI.isPresent();
+
     private static final Set<URI> tokenEndpoints = new HashSet<>() {{
-        add(ZAAS_ZOWE_URI);
-        add(ZAAS_ZOSMF_URI);
-        if (SAFIDT_CONF.isEnabled()) {
-            add(ZAAS_SAFIDT_URI);
+        ZAAS_ZOWE_URI.ifPresent(this::add);
+        ZAAS_ZOSMF_URI.ifPresent(this::add);
+        if (SAFIDT_CONF.isEnabled() && ZAAS_SAFIDT_URI.isPresent()) {
+            add(ZAAS_SAFIDT_URI.get());
         }
     }};
 
     private static final Set<URI> endpoints = new HashSet<>() {{
-        add(ZAAS_TICKET_URI);
+        ZAAS_TICKET_URI.ifPresent(this::add);
         addAll(tokenEndpoints);
     }};
 
@@ -79,7 +81,7 @@ public class ZaasNegativeTest {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : endpoints) {
             RequestSpecification requestSpec = given();
-            if (ZAAS_SAFIDT_URI.equals(uri) || ZAAS_TICKET_URI.equals(uri)) {
+            if (uri.equals(ZAAS_SAFIDT_URI.get()) || uri.equals(ZAAS_TICKET_URI.get())) {
                 requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
             }
             for (String token : tokens) {
@@ -94,7 +96,7 @@ public class ZaasNegativeTest {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : endpoints) {
             RequestSpecification requestSpec = given();
-            if (ZAAS_SAFIDT_URI.equals(uri) || ZAAS_TICKET_URI.equals(uri)) {
+            if (uri.equals(ZAAS_SAFIDT_URI.get()) || uri.equals(ZAAS_TICKET_URI.get())) {
                 requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
             }
             argumentsList.add(Arguments.of(uri, requestSpec));
@@ -106,12 +108,17 @@ public class ZaasNegativeTest {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : tokenEndpoints) {
             RequestSpecification requestSpec = given();
-            if (ZAAS_SAFIDT_URI.equals(uri)) {
+            if (uri.equals(ZAAS_SAFIDT_URI.get())) {
                 requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
             }
             argumentsList.add(Arguments.of(uri, requestSpec));
         }
         return argumentsList.stream();
+    }
+
+    @BeforeEach
+    void setUp() {
+        assumeTrue(ZAAS_AVAILABLE);
     }
 
     @Nested

@@ -18,9 +18,13 @@ node {
     npmVersion = libs.versions.projectNpm.get()
     distBaseUrl = "https://nodejs.org/dist"
     npmInstallCommand = "ci"
-    workDir = file("${project.projectDir}/tools/nodejs")
-    npmWorkDir = file("${project.projectDir}/tools/npm")
+    workDir = file("${project.rootDir}/tools/nodejs")
+    npmWorkDir = file("${project.rootDir}/tools/npm")
     nodeProjectDir = file("${project.projectDir}")
+}
+
+tasks.npmSetup {
+    args.addAll(['--registry', 'https://zowe.jfrog.io/artifactory/api/npm/npm-org/'])
 }
 
 task nodeClean(type: Delete) {
