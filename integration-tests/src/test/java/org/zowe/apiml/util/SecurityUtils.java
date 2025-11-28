@@ -646,7 +646,7 @@ public class SecurityUtils {
         TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
         SSLContext sslContext = getSslContext();
         X509HostnameVerifier hostnameVerifier = tlsConfiguration.isNonStrictVerifySslCertificatesOfServices() ? SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER : SSLSocketFactory.STRICT_HOSTNAME_VERIFIER;
-        return SSLConfig.sslConfig().with().sslSocketFactory(new SSLSocketFactory(sslContext,hostnameVerifier));
+        return SSLConfig.sslConfig().with().sslSocketFactory(new SSLSocketFactory(sslContext, hostnameVerifier));
     }
 
     static SSLContext getRelaxedSslContext() {
