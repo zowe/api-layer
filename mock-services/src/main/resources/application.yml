@@ -47,6 +47,7 @@ zosmf:
 zss:
     userMapping:
             "[zoweson@zowe.com]": USER
+            "[auth0|690dc03fcb09ab253ab55dfe]": USER
 
 ---
 spring.profiles: attlsServer
