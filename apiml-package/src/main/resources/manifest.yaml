@@ -29,3 +29,4 @@ apimlServices:
     - serviceId: apiml
   static:
     - file: zosmf-static-definition.yaml.template
+      once: true
