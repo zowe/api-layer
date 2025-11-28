@@ -24,7 +24,11 @@ import org.zowe.apiml.models.AccessTokenContainer;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -33,13 +37,17 @@ public class InfinispanStorage implements Storage {
 
     private final ConcurrentMap<String, KeyValue> cache;
     private final ConcurrentMap<String, Map<String, String>> tokenCache;
-    private final ClusteredLock lock;
+    private final Supplier<ClusteredLock> lockSupplier;
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public InfinispanStorage(ConcurrentMap<String, KeyValue> cache, ConcurrentMap<String, Map<String, String>> tokenCache, ClusteredLock lock) {
+    public InfinispanStorage(
+        ConcurrentMap<String, KeyValue> cache,
+        ConcurrentMap<String, Map<String, String>> tokenCache,
+        Supplier<ClusteredLock> lockSupplier
+    ) {
         this.cache = cache;
         this.tokenCache = tokenCache;
-        this.lock = lock;
+        this.lockSupplier = lockSupplier;
     }
 
     static {
@@ -61,6 +69,7 @@ public class InfinispanStorage implements Storage {
 
     @Override
     public KeyValue storeMapItem(String serviceId, String mapKey, KeyValue toCreate) {
+        ClusteredLock lock = lockSupplier.get();
         CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
             if (Boolean.TRUE.equals(r)) {
                 try {
@@ -154,6 +163,7 @@ public class InfinispanStorage implements Storage {
 
     @Override
     public void removeNonRelevantTokens(String serviceId, String mapKey) {
+        ClusteredLock lock = lockSupplier.get();
         CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
             if (Boolean.TRUE.equals(r)) {
                 try {
@@ -184,6 +194,7 @@ public class InfinispanStorage implements Storage {
 
     @Override
     public void removeNonRelevantRules(String serviceId, String mapKey) {
+        ClusteredLock lock = lockSupplier.get();
         CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
             if (Boolean.TRUE.equals(r)) {
                 try {

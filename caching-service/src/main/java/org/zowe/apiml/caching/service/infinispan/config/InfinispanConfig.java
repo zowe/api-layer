@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.caching.service.infinispan.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.infinispan.commons.api.CacheContainerAdmin;
 import org.infinispan.commons.dataconversion.MediaType;
@@ -21,22 +22,27 @@ import org.infinispan.lock.EmbeddedClusteredLockManagerFactory;
 import org.infinispan.lock.api.ClusteredLock;
 import org.infinispan.lock.api.ClusteredLockManager;
 import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.partitionhandling.AvailabilityException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
+import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.Storage;
+import org.zowe.apiml.caching.service.StorageException;
 import org.zowe.apiml.caching.service.infinispan.exception.InfinispanConfigException;
 import org.zowe.apiml.caching.service.infinispan.storage.InfinispanStorage;
-import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
-import static org.zowe.apiml.security.SecurityUtils.isKeyring;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
+import static org.zowe.apiml.security.SecurityUtils.isKeyring;
+
+@Slf4j
 @Configuration
 @ConfigurationProperties(value = "caching.storage.infinispan")
 @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "infinispan")
@@ -108,17 +114,25 @@ public class InfinispanConfig {
         return cacheManager;
     }
 
-    @Bean
-    public ClusteredLock lock(DefaultCacheManager cacheManager) {
-        ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(cacheManager);
-        clm.defineLock("zoweInvalidatedTokenLock");
-        return clm.get("zoweInvalidatedTokenLock");
+    private ClusteredLock lock(DefaultCacheManager cacheManager) {
+        try {
+            ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(cacheManager);
+            // it can throw AvailabilityException
+            clm.defineLock("zoweInvalidatedTokenLock");
+            return clm.get("zoweInvalidatedTokenLock");
+        } catch (AvailabilityException ae) {
+            log.debug("Cannot obtain lock", ae);
+            throw new StorageException(Messages.CACHE_NOT_AVAILABLE.getKey(), Messages.CACHE_NOT_AVAILABLE.getStatus());
+        }
     }
 
-
     @Bean
-    public Storage storage(DefaultCacheManager cacheManager, ClusteredLock clusteredLock) {
-        return new InfinispanStorage(cacheManager.getCache("zoweCache"), cacheManager.getCache("zoweInvalidatedTokenCache"), clusteredLock);
+    public Storage storage(DefaultCacheManager cacheManager) {
+        return new InfinispanStorage(
+            cacheManager.getCache("zoweCache"),
+            cacheManager.getCache("zoweInvalidatedTokenCache"),
+            () -> lock(cacheManager)
+        );
     }
 
 }
