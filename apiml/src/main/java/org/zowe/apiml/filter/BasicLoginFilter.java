@@ -12,6 +12,7 @@ package org.zowe.apiml.filter;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.ProviderManager;
@@ -79,7 +80,13 @@ public class BasicLoginFilter implements WebFilter {
                 authenticationManager.authenticate(credentials)
                     .flatMap(authentication -> chain.filter(exchange)
                         .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication))))
-            .onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), ex));
+            .onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange.mutate().response(new ServerHttpResponseDecorator(exchange.getResponse()) {
+
+                public HttpHeaders getHeaders() {
+                    return new HttpHeaders(exchange.getResponse().getHeaders());
+                };
+
+            }).build(), chain), ex));
     }
 
     private AbstractAuthenticationToken useCredentials(LoginRequest credentials) {

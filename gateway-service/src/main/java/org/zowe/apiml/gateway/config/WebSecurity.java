@@ -507,8 +507,7 @@ public class WebSecurity {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     WebFilter writeableHeaders() {
         return (exchange, chain) -> {
-            HttpHeaders writeableHeaders = HttpHeaders.writableHttpHeaders(
-                exchange.getRequest().getHeaders());
+            var writeableHeaders = new HttpHeaders(exchange.getRequest().getHeaders());
             ServerHttpRequestDecorator writeableRequest = new ServerHttpRequestDecorator(
                 exchange.getRequest()) {
                 @Override
