@@ -82,9 +82,10 @@ public class BasicLoginFilter implements WebFilter {
                         .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication))))
             .onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange.mutate().response(new ServerHttpResponseDecorator(exchange.getResponse()) {
 
+                @Override
                 public HttpHeaders getHeaders() {
                     return new HttpHeaders(exchange.getResponse().getHeaders());
-                };
+                }
 
             }).build(), chain), ex));
     }
