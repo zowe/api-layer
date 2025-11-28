@@ -173,8 +173,7 @@ public class GatewayNotifier implements Runnable {
     protected void serviceUpdatedProcess(String serviceId, String instanceId) {
         notify(instanceId, instanceInfo -> {
             final String url = getServiceUrl(serviceId, instanceInfo);
-            try {
-                CloseableHttpResponse response = httpClient.execute(new HttpDelete(url));
+            try (CloseableHttpResponse response = httpClient.execute(new HttpDelete(url))) {
                 final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
                 if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                     log.debug(GW_UNEXPECTED_RESPONSE_LOG, url, response.getStatusLine());
@@ -190,8 +189,7 @@ public class GatewayNotifier implements Runnable {
     protected void serviceCancelRegistrationProcess(String serviceId) {
         notify(null, instanceInfo -> {
             final String url = getServiceUrl(serviceId, instanceInfo);
-            try {
-                CloseableHttpResponse response = httpClient.execute(new HttpDelete(url));
+            try (CloseableHttpResponse response = httpClient.execute(new HttpDelete(url))) {
                 final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
                 if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                     log.debug(GW_UNEXPECTED_RESPONSE_LOG, url, response.getStatusLine());
@@ -211,8 +209,7 @@ public class GatewayNotifier implements Runnable {
                 .append(DISTRIBUTE_PATH)
                 .append(instanceId);
 
-            try {
-                CloseableHttpResponse response = httpClient.execute(new HttpGet(url.toString()));
+            try (CloseableHttpResponse response = httpClient.execute(new HttpGet(url.toString()))) {
                 final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
                 if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
                     log.debug(GW_UNEXPECTED_RESPONSE_LOG, url, response.getStatusLine());

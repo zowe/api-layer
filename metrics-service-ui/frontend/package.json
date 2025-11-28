@@ -7,7 +7,7 @@
         "@material-ui/core": "4.12.4",
         "@material-ui/icons": "4.11.3",
         "@wojtekmaj/enzyme-adapter-react-17": "0.8.0",
-        "axios": "1.8.3",
+        "axios": "1.12.2",
         "history": "4.10.1",
         "lodash": "4.17.21",
         "loglevel": "1.7.1",
@@ -64,16 +64,19 @@
         "prettier": "2.3.0"
     },
     "overrides": {
+        "brace-expansion": "2.0.2",
         "nth-check": "2.0.1",
         "jsdom": "16.6.0",
+        "form-data": "3.0.4",
         "got": "12.1.0",
         "tough-cookie": "4.1.4",
         "resolve-url-loader": "5.0.0",
-        "follow-redirects": "1.15.9",
+        "follow-redirects": "1.15.11",
         "webpack-dev-middleware": "5.3.4",
         "@babel/traverse": "7.24.7",
         "serve-static": "1.16.2",
-        "body-parser": "1.20.3"
+        "body-parser": "1.20.3",
+        "js-yaml": "4.1.1"
     },
     "scripts": {
         "lint": "eslint \"src/**/*.{js,jsx}\"",

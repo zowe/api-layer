@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 spring:
     config:
         useLegacyProcessing: true
@@ -39,6 +42,7 @@ logging:
         # New Config
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         org.eclipse.jetty: WARN
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         javax.net.ssl: ERROR # For running with java 17
 
@@ -80,7 +84,7 @@ apiml:
         id: apimediationlayer
         title: API Mediation Layer API
         description: The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.
-        version:  1.0.0
+        version: 1.0.0
         # Configuration to customize the style of Catalog UI
         customStyle:
             logo:
@@ -234,13 +238,34 @@ spring:
 
 ---
 spring:
-    profiles: attls
+    profiles: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
+
+eureka:
+    instance:
+        secureHealthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/application/health
+        metadata-map:
+            apiml:
+                corsEnabled: true
+                corsAllowedOrigins: https://${apiml.service.hostname}:${apiml.service.port},${apiml.service.externalUrl}
+                apiInfo:
+                    - apiId: zowe.apiml.apicatalog
+                      version: 1.0.0
+                      gatewayUrl: api/v1
+                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
+---
+spring:
+    profiles: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
 eureka:
     instance:
         securePort: 0
@@ -252,12 +277,8 @@ eureka:
                 corsEnabled: true
                 corsAllowedOrigins: https://${apiml.service.hostname}:${apiml.service.port},${apiml.service.externalUrl}
                 apiInfo:
-                    - apiId: zowe.apiml.apicatalog
-                      version: 1.0.0
-                      gatewayUrl: api/v1
-                      swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
-apiml:
-    service:
-        scheme: http
-        nonSecurePortEnabled: true
-        securePortEnabled: false
+                    -   apiId: zowe.apiml.apicatalog
+                        version: 1.0.0
+                        gatewayUrl: api/v1
+                        swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v3/api-docs
+

@@ -12,6 +12,7 @@ logging:
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         javax.net.ssl: ERROR # For running with java 17
 
@@ -166,19 +167,41 @@ logbackServiceName: ZWEAMS1
 
 ---
 spring:
-    profiles: attls
+    profiles: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
 
 apiml:
     service:
+        nonSecurePortEnabled: false
+        securePortEnabled: true
+
+eureka:
+    instance:
+        securePort: ${apiml.service.port}
+        nonSecurePortEnabled: false
+        securePortEnabled: true
+
+---
+spring:
+    profiles: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
+apiml:
+    service:
         scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
 
 eureka:
     instance:
         nonSecurePortEnabled: true
         securePortEnabled: false
+

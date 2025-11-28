@@ -11,7 +11,7 @@ dependencyResolutionManagement {
             version('springCloudVersion3', '3.1.9')
             version('springCloudNetflix', '3.1.8')
             version('springCloudCB', '2.1.8')
-            version('springCloudGateway', '3.1.9')
+            version('springCloudGateway', '3.1.10')
             version('springSecurity') {
                 strictly '[5.8.16,6.0.0['
                 prefer '5.8.16'
@@ -21,40 +21,40 @@ dependencyResolutionManagement {
                 prefer '5.3.39'
             }
             version('springRetry', '1.3.4')
-            version('springWebTestClient', '5.5.1')
+            version('springWebTestClient', '5.5.6')
 
             version('aopalliance', '3.0.3') // >=3.0.4 compiled on Java major 55 (J11)
-            version('zosUtils', '2.0.6')
+            version('zosUtils', '2.0.7')
             version('archaius', '0.7.12')
             version('awaitility', '4.2.2')
-            version('awsJavaSdk', '1.12.782')
-            version('bouncyCastle', '1.78.1')
+            version('awsJavaSdk', '1.12.793')
+            version('bouncyCastle', '1.82')
+            version('byteBuddy', '1.14.19')
             // forced version in root gradle.build file. Version 3.x requieres Java 11
             version('caffeine', '2.9.3')
-            version('commonsCodec', '1.17.2')
+            version('commonsCodec', '1.19.0')
             version('commonsConfiguration', '1.10')
-            version('commonsLang3', '3.16.0')
+            version('commonsLang3', '3.19.0')
             version('commonsLogging', '1.3.5')
-            version('commonsText', '1.12.0')
-            version('commonsIo', '2.16.1')
-            version('commonsFileUpload', '1.5')
-            version('ehCache', '3.10.8')
+            version('commonsText', '1.14.0')
+            version('commonsIo', '2.20.0')
+            version('commonsFileUpload', '1.6.0')
+            version('ehCache', '3.10.9')
             version('eureka', '1.10.18')
-            version('findBugs', '3.0.2')
-            version('githubClassgraph', '4.8.179')
-            version('gradleGitProperties', '2.2.4') // Used in classpath dependencies
+            version('githubClassgraph', '4.8.184')
+            version('gradleGitProperties', '2.3.1') // Used in classpath dependencies
             version('gradleNode', '3.6.0') // Used in classpath dependencies
-            version('gson', '2.11.0')
-            version('guava', '33.2.1-jre')
+            version('gson', '2.13.2')
+            version('guava', '33.5.0-jre')
             version('hamcrest', '1.3')
             version('httpClient', '4.5.14')
             version('httpCore', '4.4.16')
             version('hystrix', '1.5.18')
             // version 14.x requires Java 11
             version('infinispan', '13.0.22.Final')
-            version('jacksonCore', '2.17.2')
-            version('jacksonDatabind', '2.17.2')
-            version('jacksonDataformatYaml', '2.17.2')
+            version('jacksonCore', '2.19.2')
+            version('jacksonDatabind', '2.19.2')
+            version('jacksonDataformatYaml', '2.19.2')
             version('jacksonMapperAsl', '1.9.16-TALEND')
             version('janino', '3.1.12')
             version('javassist', '3.30.2-GA')
@@ -62,9 +62,10 @@ dependencyResolutionManagement {
             version('jakartaInject', '1.0.5')
             version('javaxServletApi', '4.0.1')
             version('jaxbApi', '2.3.1')
-            version('jersey', '2.44')
+            version('jcip', '1.0')
+            version('jersey', '2.47')
             version('jerseySun', '1.19.4')
-            version('jettyWebSocketClient', '9.4.57.v20241219')
+            version('jettyWebSocketClient', '9.4.58.v20250814')
             version('jettison', '1.5.4')
             version('jjwt', '0.11.5')
             version('jjwtFull', '0.9.1')
@@ -74,10 +75,11 @@ dependencyResolutionManagement {
             version('jsonUnit', '3.4.1')
             version('json', '20240303')
             version('jsr305', '3.0.2')
-            version('junitJupiter', '5.10.3')
-            version('junitPlatform', '1.10.3')
+            version('junitJupiter', '5.12.2')
+            version('junitPlatform', '1.12.2')
             version('jquery', '3.7.1')
-            version('lettuce', '6.4.0.RELEASE')
+            version('jxpath', '1.4.0')
+            version('lettuce', '6.4.2.RELEASE')
             // force version in build.gradle file - compatibility with Slf4j
             version('log4j', '2.23.1')
             version('logback') {
@@ -86,7 +88,7 @@ dependencyResolutionManagement {
                 strictly '[1.2.13, 1.3['
                 prefer '1.2.13'
             }
-            version('lombok', '1.18.36')
+            version('lombok', '1.18.42')
             version('mockitoCore') {
                 // version 5.x requires Java 11
                 strictly '[4.11.0, 5.0.0['
@@ -99,12 +101,13 @@ dependencyResolutionManagement {
             }
             version('netflixCommonsUtil', '0.3.0')
             version('netflixServo', '0.13.2')
-            version('netty', '4.1.119.Final')
-            version('nettyReactor', '1.1.23')
-            version('nimbusJoseJwt', '9.40')
+            version('netty', '4.1.128.Final')
+            version('nettyReactor', '1.1.31')
+            version('nimbusJoseJwt', '10.5')
             version('openApiDiff', '2.0.1')
             version('ow2asm', '9.7.1')
-            version('picocli', '4.7.6')
+            version('picocli', '4.7.7')
+            version('protostream', '4.4.5.Final')
 
             // version 2.4 has a breaking change, ie. missing DefaultClientConfigImpl
             version('ribbon', '2.3.0')
@@ -113,26 +116,26 @@ dependencyResolutionManagement {
                 strictly '[3.4.37, 3.5.0['
                 prefer '3.4.37'
             }
-            version('restAssured', '5.5.1')
+            version('restAssured', '5.5.6')
             version('rhino', '1.7.15')
             // force version in build.gradle file, version 2.x is not compatible
             version('slf4j', '1.7.36')
-            version('snakeyaml', '2.2')
+            version('snakeyaml', '2.5')
             version('springFox', '2.9.2')
             version('springDoc') {
                 // version 1.7+ has a conflict with Jackson databind (displaying of examples)
                 strictly '[1.6.15, 1.7.0['
                 prefer '1.6.15'
             }
-            version('swagger3Core', '2.2.28')
-            version('swagger3Parser', '2.1.25')
-            version('swaggerCore', '1.6.15')
-            version('swaggerInflector', '2.0.12')
-            version('swaggerJaxrs2', '2.2.28')
+            version('swagger3Core', '2.2.40')
+            version('swagger3Parser', '2.1.35')
+            version('swaggerCore', '1.6.16')
+            version('swaggerInflector', '2.0.14')
+            version('swaggerJaxrs2', '2.2.40')
             version('thymeleaf', '3.1.3.RELEASE')
-            version('tomcat', '9.0.100')
+            version('tomcat', '9.0.112')
             version('velocity', '2.4.1')
-            version('woodstoxCore', '6.7.0')
+            version('woodstoxCore', '7.1.1')
             version('woodstoxStax2', '4.2.2')
             version('xstream') {
                 // older versions are vulnerable to CVE-2022-40151, CVE-2022-40152, and CVE-2022-41966
@@ -151,11 +154,12 @@ dependencyResolutionManagement {
             // version 3.x contains breaking changes
             version('gradleRelease', '2.8.1')
             version('gradleLicencer', '0.6.1')
-            version('gradleJibPlugin', '3.4.4')
+            version('gradleJibPlugin', '3.4.5')
             version('taskTree', '2.1.1')
             version('reactorBom', '2023.0')
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
+            version('mailapi', '1.6.8')
             // version 4.x is not compatible with Java 8
             version('micronaut', '3.10.4')
             version('micronautPlugin', '3.7.10')
@@ -238,12 +242,12 @@ dependencyResolutionManagement {
             library('awaitility', 'org.awaitility', 'awaitility').versionRef('awaitility')
             library('bcprov', 'org.bouncycastle', 'bcprov-jdk18on').versionRef('bouncyCastle')
             library('bcpkix', 'org.bouncycastle', 'bcpkix-jdk18on').versionRef('bouncyCastle')
+            library('byteBuddy', 'net.bytebuddy', 'byte-buddy').versionRef('byteBuddy')
             library('caffeine', 'com.github.ben-manes.caffeine', 'caffeine').versionRef('caffeine')
             library('commons_io', 'commons-io', 'commons-io').versionRef('commonsIo')
             library('eh_cache', 'org.ehcache', 'ehcache').versionRef('ehCache')
             library('eureka_client', 'com.netflix.eureka', 'eureka-client').versionRef('eureka')
             library('eureka_core', 'com.netflix.eureka', 'eureka-core').versionRef('eureka')
-            library('findbugs', 'com.google.code.findbugs', 'jsr305').versionRef('findBugs')
             library('gson', 'com.google.code.gson', 'gson').versionRef('gson')
             library('guava', 'com.google.guava', 'guava').versionRef('guava')
             library('hamcrest', 'org.hamcrest', 'hamcrest-all').versionRef('hamcrest')
@@ -265,6 +269,7 @@ dependencyResolutionManagement {
             library('jakarta_inject', 'jakarta.inject', 'jakarta.inject-api').versionRef('jakartaInject')
             library('javax_servlet_api', 'javax.servlet', 'javax.servlet-api').versionRef('javaxServletApi')
             library('jaxb_api', 'javax.xml.bind', 'jaxb-api').versionRef('jaxbApi')
+            library('jcip', 'net.jcip', 'jcip-annotations').versionRef('jcip')
             library('jetty_client', 'org.eclipse.jetty', 'jetty-client').versionRef('jettyWebSocketClient')
             library('jetty_http', 'org.eclipse.jetty', 'jetty-http').versionRef('jettyWebSocketClient')
             library('jetty_io', 'org.eclipse.jetty', 'jetty-io').versionRef('jettyWebSocketClient')
@@ -289,12 +294,14 @@ dependencyResolutionManagement {
             library('junit_platform_commons', 'org.junit.platform', 'junit-platform-commons').versionRef('junitPlatform')
             library('junit_platform_engine', 'org.junit.platform', 'junit-platform-engine').versionRef('junitPlatform')
             library('jquery', 'org.webjars', 'jquery').versionRef('jquery')
+            library('jxpath', 'commons-jxpath', 'commons-jxpath').versionRef('jxpath')
             library('lettuce', 'io.lettuce', 'lettuce-core').versionRef('lettuce')
             library('log4j_api', 'org.apache.logging.log4j', 'log4j-api').versionRef('log4j')
             library('log4j_to_slf4j', 'org.apache.logging.log4j', 'log4j-to-slf4j').versionRef('log4j')
             library('logback_classic', 'ch.qos.logback', 'logback-classic').versionRef('logback')
             library('logback_core', 'ch.qos.logback', 'logback-core').versionRef('logback')
             library('lombok', 'org.projectlombok', 'lombok').versionRef('lombok')
+            library('mailapi', 'jakarta.mail', 'jakarta.mail-api').versionRef('mailapi')
             library('mockito_core', 'org.mockito', 'mockito-core').versionRef('mockitoCore')
             library('mockito_jupiter', 'org.mockito', 'mockito-junit-jupiter').versionRef('mockitoCore')
             library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInline')
@@ -335,6 +342,7 @@ dependencyResolutionManagement {
             library('ow2asm', 'org.ow2.asm', 'asm').versionRef('ow2asm')
             library('picocli', 'info.picocli', 'picocli').versionRef('picocli')
             library('picocliCodegen', 'info.picocli', 'picocli-codegen').versionRef('picocli')
+            library('protostream', 'org.infinispan.protostream', 'protostream').versionRef('protostream')
             library('reactor', 'io.projectreactor', 'reactor-core').versionRef('reactor')
             library('reactorTest', 'io.projectreactor', 'reactor-test').versionRef('reactor')
             library('rhino', 'org.mozilla', 'rhino').versionRef('rhino')
@@ -372,6 +380,7 @@ dependencyResolutionManagement {
             library('jersey_container_servlet_core', 'org.glassfish.jersey.containers', 'jersey-container-servlet-core').versionRef('jersey')
             library('jersey_hk2', 'org.glassfish.jersey.inject', 'jersey-hk2').versionRef('jersey')
             library('jersey_media_json_jackson', 'org.glassfish.jersey.media', 'jersey-media-json-jackson').versionRef('jersey')
+            library('jersey_media_multipart', 'org.glassfish.jersey.media', 'jersey-media-multipart').versionRef('jersey')
             library('jersey_server', 'org.glassfish.jersey.core', 'jersey-server').versionRef('jersey')
             library('jersey_test_provider_jdk_http', 'org.glassfish.jersey.test-framework.providers', 'jersey-test-framework-provider-jdk-http').versionRef('jersey')
 
@@ -382,7 +391,7 @@ dependencyResolutionManagement {
             library('swagger_jaxrs2', 'io.swagger.core.v3', 'swagger-jaxrs2').versionRef('swaggerJaxrs2')
 
             library('spring_boot_gradle_plugin', 'org.springframework.boot', 'spring-boot-gradle-plugin').versionRef('springBoot')
-            library('gradle_git_properties', 'gradle.plugin.com.gorylenko.gradle-git-properties', 'gradle-git-properties').versionRef('gradleGitProperties')
+            library('gradle_git_properties', 'com.gorylenko.gradle-git-properties', 'gradle-git-properties').versionRef('gradleGitProperties')
             library('jgit', 'org.eclipse.jgit', 'org.eclipse.jgit').versionRef('jgit')
             library('github_classpath', 'io.github.classgraph', 'classgraph').versionRef('githubClassgraph')
             library('gradle_node_plugin', 'com.github.node-gradle', 'gradle-node-plugin').versionRef('gradleNode')
@@ -404,6 +413,8 @@ dependencyResolutionManagement {
             plugin('shadow', 'com.github.johnrengelman.shadow').versionRef('shadow')
             plugin('gradle_tomcat', 'com.bmuschko.tomcat').versionRef('gradleTomcatPlugin')
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
+
+            bundle('findbugreplacement', ['javax.annotation', 'jcip', 'jsr305'])
         }
     }
 }

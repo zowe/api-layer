@@ -21,6 +21,7 @@ import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.context.ApplicationContext;
 import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClientFactory;
+import org.zowe.apiml.product.gateway.AdditionalRegistrationGatewayRegistry;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,7 +42,7 @@ class DiscoveryClientBeanTest {
     void setup() {
         ApplicationContext context = mock(ApplicationContext.class);
         Supplier<EurekaJerseyClientImpl.EurekaJerseyClientBuilder> builder = () -> mock(EurekaJerseyClientImpl.EurekaJerseyClientBuilder.class);
-        dcConfig = new DiscoveryClientConfig(null, apimlDiscoveryClientFactory, context, builder);
+        dcConfig = new DiscoveryClientConfig(null, apimlDiscoveryClientFactory, context, builder, new AdditionalRegistrationGatewayRegistry());
     }
 
     @Test
@@ -63,7 +64,7 @@ class DiscoveryClientBeanTest {
         when(info.getLeaseInfo()).thenReturn(leaseInfo);
 
         EurekaClientConfigBean bean = new EurekaClientConfigBean();
-        DiscoveryClientWrapper wrapper = dcConfig.additionalDiscoveryClientWrapper(manager, bean, null, additionalRegistrations);
+        DiscoveryClientWrapper wrapper = dcConfig.additionalDiscoveryClientWrapper(manager, bean, null, additionalRegistrations, java.util.Optional.empty());
         wrapper.shutdown();
 
         assertThat(wrapper.getDiscoveryClients()).hasSize(2);

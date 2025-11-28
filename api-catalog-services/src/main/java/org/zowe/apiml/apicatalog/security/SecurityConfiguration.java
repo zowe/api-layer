@@ -12,6 +12,7 @@ package org.zowe.apiml.apicatalog.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +29,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -75,8 +77,14 @@ public class SecurityConfiguration {
     @Qualifier("publicKeyCertificatesBase64")
     private final Set<String> publicKeyCertificatesBase64;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
+
+    @Value("${apiml.service.internalProtocol:https}") // Based on AT-TLS
+    private String internalProtocol;
+
+    @Value("${apiml.service.gatewayHostname}")
+    private String gatewayHostname;
 
     @Value("${apiml.metrics.enabled:false}")
     private boolean isMetricsEnabled;
@@ -98,18 +106,19 @@ public class SecurityConfiguration {
         private boolean nonStrictVerifySslCertificatesOfServices;
 
         @Bean
-        public SecurityFilterChain basicAuthOrTokenOrCertApiDocFilterChain(HttpSecurity http) throws Exception {
+        SecurityFilterChain basicAuthOrTokenOrCertApiDocFilterChain(HttpSecurity http, LogoutHandler logoutHandler) throws Exception {
             mainframeCredentialsConfiguration(
-                    baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE)))
+                baseConfiguration(http.securityMatchers(matchers -> matchers.requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE))),
+                logoutHandler
             )
-                    .authorizeHttpRequests(requests -> requests
-                            .requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated())
-                    .authenticationProvider(gatewayLoginProvider)
-                    .authenticationProvider(gatewayTokenProvider)
-                    .authenticationProvider(new CertificateAuthenticationProvider());
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated())
+                .authenticationProvider(gatewayLoginProvider)
+                .authenticationProvider(gatewayTokenProvider)
+                .authenticationProvider(new CertificateAuthenticationProvider());
 
             if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
-                if (isAttlsEnabled) {
+                if (isServerAttlsEnabled) {
                     http.x509(x509 -> x509
                             .userDetailsService(x509UserDetailsService()))
                             .addFilterBefore(reversedCategorizeCertFilter(), X509AuthenticationFilter.class)
@@ -144,7 +153,7 @@ public class SecurityConfiguration {
     public class FilterChainBasicAuthOrTokenAllEndpoints {
 
         @Bean
-        public WebSecurityCustomizer webSecurityCustomizer() {
+        WebSecurityCustomizer webSecurityCustomizer() {
             String[] noSecurityAntMatchers = {
                 "/",
                 "/static/**",
@@ -155,15 +164,15 @@ public class SecurityConfiguration {
         }
 
         @Bean
-        public SecurityFilterChain basicAuthOrTokenAllEndpointsFilterChain(HttpSecurity http) throws Exception {
-            mainframeCredentialsConfiguration(baseConfiguration(http))
-                    .authorizeHttpRequests(requests -> requests
-                            .requestMatchers("/static-api/**").authenticated()
-                            .requestMatchers("/containers/**").authenticated()
-                            .requestMatchers(APIDOC_ROUTES).authenticated()
-                            .requestMatchers("/application/info").permitAll())
-                    .authenticationProvider(gatewayLoginProvider)
-                    .authenticationProvider(gatewayTokenProvider);
+        SecurityFilterChain basicAuthOrTokenAllEndpointsFilterChain(HttpSecurity http, LogoutHandler logoutHandler) throws Exception {
+            mainframeCredentialsConfiguration(baseConfiguration(http), logoutHandler)
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers("/static-api/**").authenticated()
+                        .requestMatchers("/containers/**").authenticated()
+                        .requestMatchers(APIDOC_ROUTES).authenticated()
+                        .requestMatchers("/application/info").permitAll())
+                .authenticationProvider(gatewayLoginProvider)
+                .authenticationProvider(gatewayTokenProvider);
 
 
             if (isHealthEndpointProtected) {
@@ -180,7 +189,7 @@ public class SecurityConfiguration {
 
             http.authorizeHttpRequests(requests -> requests.requestMatchers("/application/**").authenticated());
 
-            if (isAttlsEnabled) {
+            if (isServerAttlsEnabled) {
                 http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
             }
             return http.build();
@@ -213,15 +222,20 @@ public class SecurityConfiguration {
         return http;
     }
 
-    private HttpSecurity mainframeCredentialsConfiguration(HttpSecurity http) throws Exception {
-        http
-                // login endpoint
-                .authorizeHttpRequests(requests -> requests
-                        .requestMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll())
-                .logout(logout -> logout
-                        .logoutUrl(authConfigurationProperties.getServiceLogoutEndpoint())
-                        .logoutSuccessHandler(logoutSuccessHandler())).apply(new CustomSecurityFilters());
+    @Bean
+    LogoutHandler logoutHandler(CloseableHttpClient httpClient) {
+        return new ApiCatalogLogoutHandler(httpClient, authConfigurationProperties, internalProtocol, gatewayHostname);
+    }
 
+    private HttpSecurity mainframeCredentialsConfiguration(HttpSecurity http, LogoutHandler logoutHandler) throws Exception {
+        http
+            // login endpoint
+            .authorizeHttpRequests(requests -> requests
+                .requestMatchers(HttpMethod.POST, authConfigurationProperties.getServiceLoginEndpoint()).permitAll())
+            .logout(logout -> logout
+                .addLogoutHandler(logoutHandler)
+                .logoutUrl(authConfigurationProperties.getServiceLogoutEndpoint())
+                .logoutSuccessHandler(logoutSuccessHandler())).apply(new CustomSecurityFilters());
         return http;
     }
 
@@ -283,7 +297,8 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public LogoutSuccessHandler logoutSuccessHandler() {
+    LogoutSuccessHandler logoutSuccessHandler() {
         return new ApiCatalogLogoutSuccessHandler(authConfigurationProperties);
     }
+
 }

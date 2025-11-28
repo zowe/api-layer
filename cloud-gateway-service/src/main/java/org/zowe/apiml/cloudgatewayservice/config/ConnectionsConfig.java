@@ -23,6 +23,7 @@ import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -55,12 +56,14 @@ import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.pattern.PathPatternParser;
+import org.zowe.apiml.cloudgatewayservice.filters.X509awareXForwardedHeadersFilter;
 import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.config.AdditionalRegistrationCondition;
 import org.zowe.apiml.config.AdditionalRegistrationParser;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.gateway.AdditionalRegistrationGatewayRegistry;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.HttpsFactory;
@@ -73,10 +76,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.security.KeyStore;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
 
@@ -86,6 +86,7 @@ import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DE
 public class ConnectionsConfig {
 
     private static final char[] KEYRING_PASSWORD = "password".toCharArray();
+    private static final ApimlLogger apimlLog = ApimlLogger.of(ConnectionsConfig.class, YamlMessageServiceInstance.getInstance());
 
     @Value("${server.ssl.protocol:TLSv1.2}")
     private String protocol;
@@ -123,8 +124,8 @@ public class ConnectionsConfig {
     @Value("${spring.application.name}")
     private String serviceId;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean attlsEnabled;
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
 
     @Value("${server.ssl.trustStoreRequired:false}")
     private boolean trustStoreRequired;
@@ -134,10 +135,14 @@ public class ConnectionsConfig {
 
     @Value("${apiml.gateway.timeout:60}")
     private int requestTimeout;
+
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
+
+    @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
+    private List<String> corsAllowedMethods;
+
     private final ApplicationContext context;
-    private static final ApimlLogger apimlLog = ApimlLogger.of(ConnectionsConfig.class, YamlMessageServiceInstance.getInstance());
 
     public ConnectionsConfig(ApplicationContext context) {
         this.context = context;
@@ -158,7 +163,8 @@ public class ConnectionsConfig {
         }
     }
 
-    public HttpsFactory factory() {
+    @Bean
+    public HttpsConfig httpsConfig() {
         HttpsConfig config = HttpsConfig.builder()
             .protocol(protocol)
             .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
@@ -168,8 +174,11 @@ public class ConnectionsConfig {
             .keyAlias(keyAlias).keyStore(keyStorePath).keyPassword(keyPassword)
             .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).build();
         log.info("Using HTTPS configuration: {}", config.toString());
+        return config;
+    }
 
-        return new HttpsFactory(config);
+    public HttpsFactory factory() {
+        return new HttpsFactory(httpsConfig());
     }
 
     /**
@@ -185,9 +194,11 @@ public class ConnectionsConfig {
      */
     @Bean
     public BeanPostProcessor routingFilterHandler(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
+        boolean isKeyLoadPrevented = StringUtils.isBlank(keyStorePath) && isClientAttlsEnabled;
+
         // obtain SSL contexts (one with keystore to support client cert sign and truststore, second just with truststore)
         SslContext justTruststore = sslContext(false);
-        SslContext withKeystore = sslContext(true);
+        SslContext withKeystore = sslContext(!isKeyLoadPrevented);
 
         return new BeanPostProcessor() {
             @Override
@@ -206,7 +217,7 @@ public class ConnectionsConfig {
     /**
      * @return io.netty.handler.ssl.SslContext for http client.
      */
-    SslContext sslContext(boolean setKeystore) {
+    public SslContext sslContext(boolean setKeystore) {
         try {
             SslContextBuilder builder = SslContextBuilder.forClient();
 
@@ -237,7 +248,7 @@ public class ConnectionsConfig {
 
     @Bean("primaryApimlEurekaJerseyClient")
     EurekaJerseyClient getEurekaJerseyClient() {
-        return factory().createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId, attlsEnabled).build();
+        return factory().createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId, isClientAttlsEnabled).build();
     }
 
     @Bean(destroyMethod = "shutdown")
@@ -270,17 +281,24 @@ public class ConnectionsConfig {
     @Bean(destroyMethod = "shutdown")
     @Conditional(AdditionalRegistrationCondition.class)
     @RefreshScope
-    public AdditionalEurekaClientsHolder additionalEurekaClientsHolder(ApplicationInfoManager manager,
-                                                                       EurekaClientConfig config,
-                                                                       List<AdditionalRegistration> additionalRegistrations,
-                                                                       EurekaFactory eurekaFactory,
-                                                                       @Autowired(required = false) HealthCheckHandler healthCheckHandler
+    public AdditionalEurekaClientsHolder additionalEurekaClientsHolder(
+        ApplicationInfoManager manager,
+        EurekaClientConfig config,
+        List<AdditionalRegistration> additionalRegistrations,
+        EurekaFactory eurekaFactory,
+        @Autowired(required = false) HealthCheckHandler healthCheckHandler,
+        AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry,
+        Optional<X509awareXForwardedHeadersFilter> x509awareXForwardedHeadersFilter
     ) {
         List<CloudEurekaClient> additionalClients = new ArrayList<>(additionalRegistrations.size());
         for (AdditionalRegistration apimlRegistration : additionalRegistrations) {
             CloudEurekaClient cloudEurekaClient = registerInTheApimlInstance(config, apimlRegistration, manager, eurekaFactory);
             additionalClients.add(cloudEurekaClient);
             cloudEurekaClient.registerHealthCheck(healthCheckHandler);
+
+            x509awareXForwardedHeadersFilter
+                .ifPresent(__ ->
+                    additionalRegistrationGatewayRegistry.registerCacheRefreshEventListener(cloudEurekaClient));
         }
         return new AdditionalEurekaClientsHolder(additionalClients);
     }
@@ -295,7 +313,7 @@ public class ConnectionsConfig {
         BeanUtils.copyProperties(config, configBean);
         configBean.setServiceUrl(urls);
 
-        EurekaJerseyClient jerseyClient = factory().createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId, attlsEnabled).build();
+        EurekaJerseyClient jerseyClient = factory().createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId, isClientAttlsEnabled).build();
         MutableDiscoveryClientOptionalArgs args = new MutableDiscoveryClientOptionalArgs();
         args.setEurekaJerseyClient(jerseyClient);
 
@@ -314,12 +332,16 @@ public class ConnectionsConfig {
     @Bean
     @Primary
     public WebClient webClient(HttpClient httpClient) {
-        return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
+        return WebClient.builder()
+            .clientConnector(new ReactorClientHttpConnector(httpClient))
+            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
+            .build();
     }
 
     @Bean
     public WebClient webClientClientCert(HttpClient httpClient) {
-        httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext(true)));
+        boolean isKeyLoadPrevented = StringUtils.isBlank(keyStorePath) && isClientAttlsEnabled;
+        httpClient = httpClient.secure(sslContextSpec -> sslContextSpec.sslContext(sslContext(!isKeyLoadPrevented)));
         return webClient(httpClient);
     }
 
@@ -334,7 +356,7 @@ public class ConnectionsConfig {
 
     @Bean
     public CorsUtils corsUtils() {
-        return new CorsUtils(corsEnabled, null);
+        return new CorsUtils(corsEnabled, corsAllowedMethods, null);
     }
 
     @Bean

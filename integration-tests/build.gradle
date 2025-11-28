@@ -126,7 +126,7 @@ task runLocalIntegrationTests(type: Test) {
             'AdditionalLocalTest',
             'HATest',
             'ChaoticHATest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'MultipleRegistrationsTest'
         )
     }
@@ -149,7 +149,7 @@ task runAllIntegrationTestsNormal(type: Test) {
             'HATest',
             'ChaoticHATest',
             'NotAttlsTest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'MultipleRegistrationsTest',
             'HealthEndpointProtectionDisabledTest'
         )
@@ -200,12 +200,14 @@ task runAllIntegrationTestsForZoweNonHaTestingOnZos(type: Test) {
             'DiscoverableClientDependentTest',
             'HATest',
             'ChaoticHATest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'MultipleRegistrationsTest',
             'NotForMainframeTest',
             'ApiCatalogStandaloneTest',
             'SAFProviderTest',
             'CloudGatewayProxyTest',
+            'CloudGatewayAuthTest',
+            'CloudGatewayCentralRegistry',
             'SafIdTokenTest'
         )
     }
@@ -241,12 +243,14 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
             'AdditionalLocalTest',
             'TestsNotMeantForZowe',
             'DiscoverableClientDependentTest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'MultipleRegistrationsTest',
             'NotForMainframeTest',
             'ApiCatalogStandaloneTest',
             'SAFProviderTest',
             'CloudGatewayProxyTest',
+            'CloudGatewayAuthTest',
+            'CloudGatewayCentralRegistry',
             'SafIdTokenTest',
             'ChaoticHATest',
             'GraphQLTest'
@@ -279,7 +283,7 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
             'DiscoverableClientDependentTest',
             'HATest',
             'ChaoticHATest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'MultipleRegistrationsTest',
             'NotForMainframeTest'
         )
@@ -307,7 +311,7 @@ task runCITests(type: Test) {
             'ServiceIdPrefixReplacerTest',
             'HATest',
             'ChaoticHATest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'MultipleRegistrationsTest',
             'HealthEndpointProtectionDisabledTest'
         )
@@ -338,7 +342,7 @@ task runContainerTests(type: Test) {
             'HATest',
             'ChaoticHATest',
             'InfinispanStorageTest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'CloudGatewayProxyTest',
             'CloudGatewayServiceRouting',
             'CloudGatewayCentralRegistry',
@@ -375,7 +379,7 @@ task runBaseTests(type: Test) {
             'HATest',
             'ChaoticHATest',
             'InfinispanStorageTest',
-            'OktaOauth2Test',
+            'OidcOauth2Test',
             'CloudGatewayProxyTest',
             'CloudGatewayServiceRouting',
             'CloudGatewayCentralRegistry',
@@ -450,7 +454,7 @@ task runOidcTests(type: Test) {
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'OktaOauth2Test'
+            'OidcOauth2Test'
         )
     }
 }
