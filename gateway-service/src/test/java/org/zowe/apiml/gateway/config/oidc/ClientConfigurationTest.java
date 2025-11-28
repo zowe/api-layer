@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.gateway.config.oidc;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -114,7 +114,7 @@ class ClientConfigurationTest {
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
     void givenSystemEnvironment_whenCreateClientConfiguration_thenSet(boolean providerSet) throws NoSuchFieldException, IllegalAccessException {
-        assumeFalse(StringUtils.containsIgnoreCase(System.getProperty("os.name"), "win"));
+        assumeFalse(Strings.CI.contains(System.getProperty("os.name"), "win"), "This test is meant to run on UNIX-based systems");
 
         ClientConfiguration clientConfiguration = new ClientConfiguration();
         Class<?> envVarClass = System.getenv().getClass();

@@ -34,6 +34,6 @@ module.exports = defineConfig({
         setupNodeEvents(on, config) {
             // eslint-disable-next-line global-require
             return require('./cypress/plugins/index.js')(on, config);
-        }
+        },
     },
 });

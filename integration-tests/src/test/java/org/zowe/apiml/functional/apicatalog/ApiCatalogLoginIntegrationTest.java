@@ -62,7 +62,7 @@ class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
 
         @BeforeEach
         void checkIfMicroserviceIsAvailable() {
-            assumeFalse(IS_MODULITH_ENABLED);
+            assumeFalse(IS_MODULITH_ENABLED, "This test runs only on micro-services deployment");
         }
 
         //@formatter:off
@@ -122,7 +122,7 @@ class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
 
         @BeforeEach
         void checkIfModulithIsAvailable() {
-            assumeTrue(IS_MODULITH_ENABLED);
+            assumeTrue(IS_MODULITH_ENABLED, "Test expected to run on modulith mode");
         }
 
         //@formatter:off
