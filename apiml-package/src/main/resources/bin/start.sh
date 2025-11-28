@@ -123,7 +123,7 @@ echo "jar file: "${JAR_FILE}
 # script assumes it's in the apiml component directory and common_lib needs to be relative path
 
 if [ -z "${CMMN_LB}" ]; then
-    COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all/BOOT-INF/lib/"
+    COMMON_LIB="../apiml-common-lib/bin/BOOT-INF/lib/"
 else
     COMMON_LIB="${CMMN_LB}"
 fi
@@ -336,11 +336,14 @@ if [ -n "${ZWE_java_home}" ]; then
 fi
 
 APIML_CODE=AG
+
+SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal"
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Xms${ZWE_configs_heap_init:-${ZWE_components_gateway_heap_init:-32}}m -Xmx${ZWE_configs_heap_max:-${ZWE_components_gateway_heap_max:-512}}m \
     -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
+    ${SHARED_CLASSES_OPTS} \
     ${ADD_OPENS} \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
