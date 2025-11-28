@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 eureka:
     instance:
         instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
@@ -86,11 +89,14 @@ logging:
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
         javax.net.ssl: ERROR # For running with java 17
+        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
 
 management:
     endpoint:
       gateway:
-          enabled: false
+              enabled: false
     endpoints:
         web:
             base-path: /application
@@ -112,20 +118,50 @@ logging:
         reactor.netty.http.client.HttpClient: DEBUG
         reactor.netty.http.client.HttpClientConnect: DEBUG
         com.netflix: DEBUG
+        org.apache: INFO
+        org.apache.http: DEBUG
+        org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
 
 ---
-spring.config.activate.on-profile: attls
+spring:
+    profiles: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
 
-    service:
-        scheme: http
 apiml:
     service:
+        nonSecurePortEnabled: false
+        securePortEnabled: true
         corsEnabled: true
+
+eureka:
+    instance:
+        securePort: ${apiml.service.port}
+        nonSecurePortEnabled: false
+        securePortEnabled: true
+
+---
+spring:
+    profiles: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
+apiml:
+    service:
         scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+        discoveryServiceUrls: http://localhost:10011/eureka/
+
+eureka:
+    instance:
+        securePort: 0
+        nonSecurePortEnabled: true
+        securePortEnabled: false

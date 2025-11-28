@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.util.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.Map;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class EnvironmentConfiguration {
     private Credentials credentials;
     private GatewayServiceConfiguration gatewayServiceConfiguration;
@@ -27,12 +29,12 @@ public class EnvironmentConfiguration {
     private ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
     private ApiCatalogServiceConfiguration apiCatalogStandaloneConfiguration;
     private CachingServiceConfiguration cachingServiceConfiguration;
-    private CloudGatewayConfiguration cloudGatewayConfiguration;
+    // Cloud gateway tests are excluded from z/OS tests, leading to config load failure when the props are undefined
+    private CloudGatewayConfiguration cloudGatewayConfiguration = new CloudGatewayConfiguration();
     private TlsConfiguration tlsConfiguration;
     private ZosmfServiceConfiguration zosmfServiceConfiguration;
     private AuxiliaryUserList auxiliaryUserList;
     private Map<String, String> instanceEnv;
-    private IDPConfiguration idpConfiguration;
     private SafIdtConfiguration safIdtConfiguration;
     private OidcConfiguration oidcConfiguration;
 }

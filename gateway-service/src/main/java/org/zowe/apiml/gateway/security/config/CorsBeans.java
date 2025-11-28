@@ -36,6 +36,8 @@ public class CorsBeans {
 
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
+    @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
+    private List<String> corsAllowedMethods;
     @Value("${apiml.service.ignoredHeadersWhenCorsEnabled}")
     private String ignoredHeadersWhenCorsEnabled;
 
@@ -63,8 +65,8 @@ public class CorsBeans {
         String hostname,
         int port
     ) throws URISyntaxException {
-        boolean isAttls = Arrays.asList(environment.getActiveProfiles()).contains("attls");
-        if (corsEnabled || !isAttls) {
+        boolean isClientAttlsEnabled = Arrays.asList(environment.getActiveProfiles()).contains("attlsClient");
+        if (corsEnabled || !isClientAttlsEnabled) {
             return null; // NOSONAR
         }
 
@@ -88,6 +90,6 @@ public class CorsBeans {
         @Value("${server.hostname:${apiml.service.hostname}}") String hostname,
         @Value("${server.port}") int port
     ) throws URISyntaxException {
-        return new CorsUtils(corsEnabled, getDefaultAllowedOrigins(environment, externalUrl, hostname, port));
+        return new CorsUtils(corsEnabled, corsAllowedMethods, getDefaultAllowedOrigins(environment, externalUrl, hostname, port));
     }
 }

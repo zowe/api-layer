@@ -40,7 +40,7 @@ public class NativeMapper implements NativeMapperWrapper {
     @Override
     public MapperResponse getUserIDForDN(String dn, String registry) {
         MapperResponse response = userMapper.getUserIDForDN(dn, registry);
-        log.debug("{}", response);
+        log.debug("Mapping {} from registry {}: {}",dn, registry, response);
         return response;
     }
 }

@@ -92,6 +92,7 @@ allprojects {
         exclude group: "javax.servlet", module: "servlet-api"
         exclude group: 'org.glassfish', module: 'jakarta.el'
         exclude group: 'commons-httpclient', module: 'commons-httpclient'
+        exclude group: 'com.google.code.findbugs', module: 'annotations'
 
         resolutionStrategy.dependencySubstitution {
             substitute(module('aopalliance:aopalliance:1.0')).using(module('org.glassfish.hk2.external:aopalliance-repackaged:3.0.3'))
@@ -102,6 +103,8 @@ allprojects {
             // upgrade Bouncy Castle from 1.5 to 1.8
             substitute(module('org.bouncycastle:bcprov-jdk15on')).using(module("org.bouncycastle:bcprov-jdk18on:${libs.versions.bouncyCastle.get()}"))
             substitute(module('org.bouncycastle:bcpkix-jdk15on')).using(module("org.bouncycastle:bcpkix-jdk18on:${libs.versions.bouncyCastle.get()}"))
+
+            substitute(module('com.sun.mail:mailapi')).using(module("jakarta.mail:jakarta.mail-api:${libs.versions.mailapi}"))
         }
 
         resolutionStrategy.force libs.slf4j.api

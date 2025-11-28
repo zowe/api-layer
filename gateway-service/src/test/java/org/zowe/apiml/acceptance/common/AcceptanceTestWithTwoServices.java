@@ -14,6 +14,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicStatusLine;
@@ -22,10 +23,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.acceptance.netflix.ApimlDiscoveryClientStub;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
+import org.zowe.apiml.security.common.verify.CertificateValidator;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -33,12 +36,18 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Locale;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
 @AcceptanceTest
 public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
 
+    @SpyBean
+    protected CertificateValidator mockCertificateValidator;
     @Autowired
     @Qualifier("mockProxy")
     protected CloseableHttpClient mockClient;
@@ -91,6 +100,21 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
         Mockito.when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream("{foo}".getBytes()));
         Mockito.when(response.getLocale()).thenReturn(Locale.US);
         Mockito.when(mockClient.execute(any())).thenReturn(response);
+    }
+
+    protected void assertHeaderNullValue(HttpUriRequest request, String header) {
+        assertThat(request.getHeaders(header).length, is(1));
+        assertNull(request.getFirstHeader(header).getValue());
+    }
+
+    protected void assertHeaderEqualsValue(HttpUriRequest request, String header, String value) {
+        assertThat(request.getHeaders(header).length, is(1));
+        assertThat(request.getFirstHeader(header).getValue(), is(value));
+    }
+
+    protected void assertHeaderContainsValue(HttpUriRequest request, String header, String value) {
+        assertThat(request.getHeaders(header).length, is(1));
+        assertTrue(request.getFirstHeader(header).getValue().contains(value));
     }
 }
 

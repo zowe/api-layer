@@ -29,18 +29,20 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.CollectionUtils;
 import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.config.AdditionalRegistrationCondition;
 import org.zowe.apiml.config.AdditionalRegistrationParser;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClientFactory;
+import org.zowe.apiml.gateway.filters.pre.ApimlPreDecorationFilter;
+import org.zowe.apiml.product.gateway.AdditionalRegistrationGatewayRegistry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -67,9 +69,10 @@ public class DiscoveryClientConfig {
     private final ApimlDiscoveryClientFactory apimlDiscoveryClientFactory;
     private final ApplicationContext context;
     private final Supplier<EurekaJerseyClientImpl.EurekaJerseyClientBuilder> eurekaJerseyClientBuilder;
+    private final AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry;
 
     @Bean
-    public List<AdditionalRegistration> additionalRegistration(StandardEnvironment environment) {
+    public List<AdditionalRegistration> additionalRegistration() {
         List<AdditionalRegistration> additionalRegistrations = new AdditionalRegistrationParser().extractAdditionalRegistrations(System.getenv());
         log.debug("Parsed {} additional registration: {}", additionalRegistrations.size(), additionalRegistrations);
         return additionalRegistrations;
@@ -92,16 +95,20 @@ public class DiscoveryClientConfig {
     @Bean(destroyMethod = "shutdown")
     @Conditional({AdditionalRegistrationCondition.class})
     @RefreshScope
-    public DiscoveryClientWrapper additionalDiscoveryClientWrapper(ApplicationInfoManager manager,
-                                                                   EurekaClientConfig config,
-                                                                   @Autowired(required = false) HealthCheckHandler healthCheckHandler,
-                                                                   List<AdditionalRegistration> additionalRegistrations
+    public DiscoveryClientWrapper additionalDiscoveryClientWrapper(
+        ApplicationInfoManager manager,
+        EurekaClientConfig config,
+        @Autowired(required = false) HealthCheckHandler healthCheckHandler,
+        List<AdditionalRegistration> additionalRegistrations,
+        Optional<ApimlPreDecorationFilter> apimlPreDecorationFilter
     ) {
 
         List<ApimlDiscoveryClient> discoveryClientsList = new ArrayList<>(additionalRegistrations.size());
         for (AdditionalRegistration apimlRegistration : additionalRegistrations) {
             ApimlDiscoveryClient additionalApimlRegistration = registerInTheApimlInstance(config, healthCheckHandler, apimlRegistration, manager);
             discoveryClientsList.add(additionalApimlRegistration);
+            apimlPreDecorationFilter.ifPresent(__ ->
+                additionalRegistrationGatewayRegistry.registerCacheRefreshEventListener(additionalApimlRegistration));
         }
 
         return new DiscoveryClientWrapper(discoveryClientsList);

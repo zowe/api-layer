@@ -117,6 +117,12 @@ project(":platform") {
     }
 }
 
+project(":discoverable-client") {
+    sonar {
+        skipProject = true
+    }
+}
+
 // Packaging project; sonar does not apply
 project(":api-catalog-package") {
     sonar {

@@ -42,7 +42,7 @@ class GatewayCorsEnabledTest extends AcceptanceTestWithTwoServices {
         .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin","https://foo.bar.org")
-            .header("Access-Control-Allow-Methods", "GET,HEAD,POST,DELETE,PUT,OPTIONS")
+            .header("Access-Control-Allow-Methods", "GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS")
             .header("Access-Control-Allow-Headers", "origin, x-requested-with");
 
         // Actual request
@@ -94,7 +94,7 @@ class GatewayCorsEnabledTest extends AcceptanceTestWithTwoServices {
         .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", is("https://foo.bar.org"))
-            .header("Access-Control-Allow-Methods", is("GET,HEAD,POST,DELETE,PUT,OPTIONS"))
+            .header("Access-Control-Allow-Methods", is("GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS"))
             .header("Access-Control-Allow-Headers", is("origin, x-requested-with"));
 
         // The preflight request isn't passed to the southbound service

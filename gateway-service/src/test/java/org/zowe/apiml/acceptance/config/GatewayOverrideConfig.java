@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.netflix.zuul.filters.SimpleRouteLocator;
@@ -22,6 +23,7 @@ import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapp
 import org.springframework.cloud.netflix.zuul.filters.discovery.SimpleServiceRouteMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -93,5 +95,11 @@ public class GatewayOverrideConfig {
     public ObjectMapper mapper() {
         return new ObjectMapper()
             .registerModule(new JavaTimeModule());
+    }
+
+    @Bean
+    @Profile("forward-headers-proxy-test")
+    public MutateRemoteAddressFilter mutateRemoteAddressFilter(@Value("${test.proxyAddress}") String proxyAddress) {
+        return new MutateRemoteAddressFilter(proxyAddress);
     }
 }

@@ -17,27 +17,35 @@ import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.Ssl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.util.CorsUtils;
+
+import java.lang.reflect.Field;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @ComponentScan(basePackages = "org.zowe.apiml.cloudgatewayservice")
+@ExtendWith(MockitoExtension.class)
 class ConnectionsConfigTest {
 
     @Autowired
     private ConnectionsConfig connectionsConfig;
-    @Autowired
-    private RoutingConfig routingConfig;
 
     @Nested
     class WhenCreateEurekaJerseyClientBuilder {
@@ -109,5 +117,54 @@ class ConnectionsConfigTest {
             assertThat(ReflectionTestUtils.getField(connectionsConfig, "trustStorePassword")).isNull();
         }
     }
+
+    @Nested
+    @SpringBootTest(
+        properties = {"apiml.service.corsEnabled=true"}
+    )
+    class GivenCorsEnabled {
+
+        @Nested
+        public class WhenCorsAllowedMethodsIsNotSet {
+
+            @Autowired
+            private ConnectionsConfig connectionsConfig;
+
+            @Test
+            void validateDefaultCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
+                CorsUtils corsUtils = connectionsConfig.corsUtils();
+
+                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
+                field.setAccessible(true);
+                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
+                assertEquals(7, corsAllowedMethods.size());
+            }
+        }
+
+        @Nested
+        @TestPropertySource(properties = {
+            "apiml.service.corsAllowedMethods=GET,POST, PATCH"
+        })
+        @DirtiesContext
+        public class WhenCorsAllowedMethodsIsSet {
+
+            @Autowired
+            private ConnectionsConfig connectionsConfig;
+
+            @Test
+            void validateCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
+                CorsUtils corsUtils = connectionsConfig.corsUtils();
+
+                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
+                field.setAccessible(true);
+                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
+                assertEquals(3, corsAllowedMethods.size());
+                assertEquals("GET", corsAllowedMethods.get(0));
+                assertEquals("POST", corsAllowedMethods.get(1));
+                assertEquals("PATCH", corsAllowedMethods.get(2));
+            }
+        }
+    }
+
 }
 

@@ -11,10 +11,13 @@
 package org.zowe.apiml.cloudgatewayservice.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cloud.gateway.filter.headers.XForwardedHeadersFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -52,13 +55,19 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.zowe.apiml.cloudgatewayservice.config.oidc.ClientConfiguration;
+import org.zowe.apiml.cloudgatewayservice.filters.X509awareXForwardedHeadersFilter;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.gateway.AdditionalRegistrationGatewayRegistry;
+import org.zowe.apiml.security.HttpsConfig;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -67,7 +76,7 @@ import java.util.stream.Collectors;
 
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 
-
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class WebSecurity {
@@ -120,7 +129,7 @@ public class WebSecurity {
         return defaultCookieAttr(ResponseCookie.from(name, value)).build();
     }
 
-     /**
+    /**
      * Security chain for oauth2 client. To enable this chain, please refer to Zowe OIDC configuration.
      */
     @Bean
@@ -135,7 +144,10 @@ public class WebSecurity {
             return null;
         }
         return http
-            .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
+            .headers(headers -> headers
+                .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
+                .writer(new CustomHstsServerHttpHeadersWriter())
+                .frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(OAUTH_2_AUTHORIZATION, OAUTH_2_REDIRECT_URI))
             .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
@@ -291,7 +303,10 @@ public class WebSecurity {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
-            .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
+            .headers(headers -> headers
+                .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
+                .writer(new CustomHstsServerHttpHeadersWriter())
+                .frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .x509(x509 ->
                 x509
                     .principalExtractor(new SubjectDnX509PrincipalExtractor())
@@ -429,4 +444,19 @@ public class WebSecurity {
         };
     }
 
+    @Bean
+    public AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry() {
+        return new AdditionalRegistrationGatewayRegistry();
+    }
+
+    @Bean
+    @Primary
+    @ConditionalOnProperty(name = "spring.cloud.gateway.x-forwarded.enabled", matchIfMissing = true)
+    public XForwardedHeadersFilter xForwardedHeadersFilter(
+        @Value("${apiml.security.forwardHeader.trustedProxies:#{null}}") String trustedProxies,
+        HttpsConfig httpsConfig,
+        AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry
+    ) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+        return new X509awareXForwardedHeadersFilter(httpsConfig, trustedProxies, additionalRegistrationGatewayRegistry);
+    }
 }
