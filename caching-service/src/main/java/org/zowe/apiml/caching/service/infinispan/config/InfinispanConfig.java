@@ -122,7 +122,7 @@ public class InfinispanConfig {
             return clm.get("zoweInvalidatedTokenLock");
         } catch (AvailabilityException ae) {
             log.debug("Cannot obtain lock", ae);
-            throw new StorageException(Messages.CACHE_NOT_AVAILABLE.getKey(), Messages.CACHE_NOT_AVAILABLE.getStatus());
+            throw new StorageException(Messages.CACHE_NOT_AVAILABLE.getKey(), Messages.CACHE_NOT_AVAILABLE.getStatus(), ae.getMessage());
         }
     }
 

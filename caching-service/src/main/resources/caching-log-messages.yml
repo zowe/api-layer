@@ -118,7 +118,7 @@ messages:
     -   key: org.zowe.apiml.cache.notAvailable
         number: ZWECS703
         type: WARNING
-        text: "Cache is not available."
-        reason: "Cache is not ready to write add the moment."
+        text: "Cache is not available: %s"
+        reason: "Cache is not ready to write at the moment."
         action: "Verify the instance configuration or connectivity between multiple instances."
 
