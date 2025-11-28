@@ -90,7 +90,7 @@ fi
 echo "jar file: "${JAR_FILE}
 # script assumes it's in the gateway component directory and common_lib needs to be relative path
 if [ -z "${CMMN_LB}" ]; then
-    COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all/BOOT-INF/lib/"
+    COMMON_LIB="../apiml-common-lib/bin/BOOT-INF/lib/"
 else
     COMMON_LIB="${CMMN_LB}"
 fi
