@@ -39,6 +39,7 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
 import static org.zowe.apiml.security.SecurityUtils.isKeyring;
@@ -71,6 +72,8 @@ public class InfinispanConfig {
     private String keyExchangePort;
     @Value("${jgroups.tcp.diag.enabled:false}")
     private String tcpDiagEnabled;
+
+    private AtomicReference<ClusteredLock> zoweInvalidatedTokenLock = new AtomicReference<>();
 
     @PostConstruct
     void updateKeyring() {
@@ -137,11 +140,23 @@ public class InfinispanConfig {
     }
 
     private ClusteredLock lock(DefaultCacheManager cacheManager) {
+        ClusteredLock lock = zoweInvalidatedTokenLock.get();
+        if (lock != null) {
+            return lock;
+        }
+
         try {
-            ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(cacheManager);
-            // it can throw AvailabilityException
-            clm.defineLock("zoweInvalidatedTokenLock");
-            return clm.get("zoweInvalidatedTokenLock");
+            synchronized (zoweInvalidatedTokenLock) {
+                lock = zoweInvalidatedTokenLock.get();
+                if (lock == null) {
+                    ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(cacheManager);
+                    // it can throw AvailabilityException
+                    clm.defineLock("zoweInvalidatedTokenLock");
+                    lock = clm.get("zoweInvalidatedTokenLock");
+                }
+                zoweInvalidatedTokenLock.set(lock);
+            }
+            return lock;
         } catch (AvailabilityException ae) {
             log.debug("Cannot obtain lock", ae);
             throw new StorageException(Messages.CACHE_NOT_AVAILABLE.getKey(), Messages.CACHE_NOT_AVAILABLE.getStatus(), ae.getMessage());
