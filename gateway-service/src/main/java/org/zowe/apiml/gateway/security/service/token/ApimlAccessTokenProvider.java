@@ -49,8 +49,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     @Qualifier("oidcJwkMapper")
     private final ObjectMapper objectMapper;
 
-    private byte[] salt;
-
     public void invalidateToken(String token) throws CachingServiceClientException, JsonProcessingException {
         String hashedValue = getHash(token);
         QueryResponse queryResponse = authenticationService.parseJwtWithSignature(token);
@@ -181,11 +179,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public byte[] getSalt() throws CachingServiceClientException {
-        if (this.salt != null) {
-            return this.salt;
-        }
-        this.salt = initializeSalt().getBytes();
-        return this.salt;
+        return initializeSalt().getBytes();
     }
 
     private void storeSalt(byte[] salt) throws CachingServiceClientException {
