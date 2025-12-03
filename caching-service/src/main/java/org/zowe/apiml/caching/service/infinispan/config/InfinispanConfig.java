@@ -39,12 +39,11 @@ import org.zowe.apiml.caching.service.infinispan.storage.InfinispanStorage;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
-import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
-import static org.zowe.apiml.security.SecurityUtils.isKeyring;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
 import static org.zowe.apiml.security.SecurityUtils.isKeyring;
@@ -93,6 +92,8 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${server.attlsServer.enabled:false}")
     private boolean isServerAttlsEnabled;
 
+    private AtomicReference<ClusteredLock> zoweInvalidatedTokenLock = new AtomicReference<>();
+
     @Override
     public void afterPropertiesSet() {
         updateKeyring();
@@ -106,7 +107,22 @@ public class InfinispanConfig implements InitializingBean {
         }
     }
 
-    @Bean
+    static String getRootFolder() {
+        // using getenv().get is because of system compatibility (see non-case sensitive on Windows)
+        String instanceId = System.getenv().get("ZWE_haInstance_id");
+        if (StringUtils.isBlank(instanceId)) {
+            instanceId = "localhost";
+        }
+
+        String workspaceFolder = System.getenv().get("ZWE_zowe_workspaceDirectory");
+        if (StringUtils.isBlank(workspaceFolder)) {
+            return Paths.get("caching-service", instanceId).toString();
+        } else {
+            return Paths.get(workspaceFolder, "caching-service", instanceId).toString();
+        }
+    }
+
+    @Bean(destroyMethod = "stop")
     synchronized DefaultCacheManager cacheManager(ResourceLoader resourceLoader) {
         System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
         System.setProperty("jgroups.bind.port", port);
@@ -132,6 +148,9 @@ public class InfinispanConfig implements InitializingBean {
         } catch (IOException e) {
             throw new InfinispanConfigException("Can't read configuration file", e);
         }
+        holder.getGlobalConfigurationBuilder().globalState().persistentLocation(getRootFolder()).enable();
+        holder.newConfigurationBuilder("default").persistence().passivation(true).addSoftIndexFileStore()
+            .shared(false);
 
         DefaultCacheManager cacheManager = new DefaultCacheManager(holder, true);
 
@@ -160,11 +179,23 @@ public class InfinispanConfig implements InitializingBean {
     }
 
     private ClusteredLock lock(DefaultCacheManager cacheManager) {
+        ClusteredLock lock = zoweInvalidatedTokenLock.get();
+        if (lock != null) {
+            return lock;
+        }
+
         try {
-            ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(cacheManager);
-            // it can throw AvailabilityException
-            clm.defineLock("zoweInvalidatedTokenLock");
-            return clm.get("zoweInvalidatedTokenLock");
+            synchronized (zoweInvalidatedTokenLock) {
+                lock = zoweInvalidatedTokenLock.get();
+                if (lock == null) {
+                    ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(cacheManager);
+                    // it can throw AvailabilityException
+                    clm.defineLock("zoweInvalidatedTokenLock");
+                    lock = clm.get("zoweInvalidatedTokenLock");
+                }
+                zoweInvalidatedTokenLock.set(lock);
+            }
+            return lock;
         } catch (AvailabilityException ae) {
             log.debug("Cannot obtain lock", ae);
             throw new StorageException(Messages.CACHE_NOT_AVAILABLE.getKey(), Messages.CACHE_NOT_AVAILABLE.getStatus(), ae.getMessage());
