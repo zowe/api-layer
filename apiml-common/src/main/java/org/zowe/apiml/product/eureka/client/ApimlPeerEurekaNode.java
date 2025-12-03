@@ -564,7 +564,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                 return true;
             }
 
-            var cause = e.getCause();
+            Throwable cause = e.getCause();
             if ((cause == null) || (cause == e)) {
                 return false;
             }
@@ -588,7 +588,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                 }
             }
 
-            var cause = e.getCause();
+            Throwable cause = e.getCause();
             if ((cause == null) || (cause == e)) {
                 return false;
             }
