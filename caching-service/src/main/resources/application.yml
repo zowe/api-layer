@@ -173,6 +173,10 @@ logging:
         org.ehcache: INFO
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
+        org.apache.tomcat: DEBUG
+        org.apache.catalina: DEBUG
+        org.apache.coyote.http11.Http11InputBuffer: TRACE
+        org.infinispan: DEBUG
 
 ---
 spring:

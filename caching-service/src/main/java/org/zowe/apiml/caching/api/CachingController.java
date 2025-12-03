@@ -13,6 +13,7 @@ package org.zowe.apiml.caching.api;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,6 +29,7 @@ import org.zowe.apiml.message.core.MessageService;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
@@ -199,6 +201,7 @@ public class CachingController {
 
 
     private ResponseEntity<Object> exceptionToResponse(StorageException exception) {
+        log.debug("Storage exception", exception);
         Message message = messageService.createMessage(exception.getKey(), (Object[]) exception.getParameters());
         return new ResponseEntity<>(message.mapToView(), exception.getStatus());
     }
@@ -298,12 +301,14 @@ public class CachingController {
     }
 
     private ResponseEntity<Object> handleInternalError(Exception exception, StringBuffer requestURL) {
+        log.debug("Internal error occurred", exception);
         Messages internalServerError = Messages.INTERNAL_SERVER_ERROR;
         Message message = messageService.createMessage(internalServerError.getKey(), requestURL, exception.getMessage(), exception.toString());
         return new ResponseEntity<>(message.mapToView(), internalServerError.getStatus());
     }
 
     private ResponseEntity<Object> handleIncompatibleStorageMethod(Exception exception, StringBuffer requestURL) {
+        log.debug("Incompatible storage method", exception);
         Messages internalServerError = Messages.INCOMPATIBLE_STORAGE_METHOD;
         Message message = messageService.createMessage(internalServerError.getKey(), requestURL, exception.getMessage(), exception.toString());
         return new ResponseEntity<>(message.mapToView(), internalServerError.getStatus());
