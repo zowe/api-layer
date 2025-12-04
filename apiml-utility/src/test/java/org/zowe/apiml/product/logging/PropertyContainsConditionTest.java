@@ -18,7 +18,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class PropertyContainsConditionTest {
@@ -31,16 +31,18 @@ class PropertyContainsConditionTest {
 
         @ParameterizedTest
         @CsvSource(value = {
-            "abc,b,true",
-            "abc,a,true",
-            "abc,c,true",
-            "abc,d,false",
-            "abc,B,false"
-        }, delimiter = ',')
-        void expectResult(String returnedValue, String searchedForValue, boolean expectedResult) {
-            propertyContainsCondition.setKey("a.key");
+            "key,abc,b,true",
+            "key,abc,a,true",
+            "key,abc,c,true",
+            "key,abc,d,false",
+            "key,abc,B,false",
+            "null,abc,b,false",
+            "key,null,b,false"
+        }, delimiter = ',', nullValues = { "null" })
+        void expectResult(String key, String returnedValue, String searchedForValue, boolean expectedResult) {
+            propertyContainsCondition.setKey(key);
             propertyContainsCondition.setValue(searchedForValue);
-            doReturn(returnedValue).when(propertyContainsCondition).p("a.key");
+            lenient().doReturn(returnedValue).when(propertyContainsCondition).p(key);
             assertEquals(expectedResult, propertyContainsCondition.evaluate(), "Expected " + returnedValue + " to " + (expectedResult ? " contain " : " not contain ") + searchedForValue);
         }
 
