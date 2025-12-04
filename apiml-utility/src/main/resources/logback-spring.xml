@@ -28,7 +28,7 @@
         </encoder>
     </appender>
 
-    <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition.class">
+    <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
         <key>spring.profiles.active</key>
         <value>debug</value>
     </condition>
@@ -56,7 +56,7 @@
         </then>
     </if>
 
-    <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition.class">
+    <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
         <key>spring.profiles.active</key>
         <value>debug</value>
     </condition>
