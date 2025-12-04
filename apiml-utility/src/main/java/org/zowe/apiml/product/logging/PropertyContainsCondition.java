@@ -14,14 +14,11 @@ import ch.qos.logback.core.boolex.PropertyConditionBase;
 import lombok.Getter;
 import lombok.Setter;
 
+@Setter
+@Getter
 public class PropertyContainsCondition extends PropertyConditionBase {
 
-    @Setter
-    @Getter
     String key;
-
-    @Setter
-    @Getter
     String value;
 
     @Override
