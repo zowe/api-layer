@@ -149,22 +149,17 @@ public class InfinispanConfig implements InitializingBean {
             throw new InfinispanConfigException("Can't read configuration file", e);
         }
         holder.getGlobalConfigurationBuilder().globalState().persistentLocation(getRootFolder()).enable();
-        holder.newConfigurationBuilder("default").persistence().passivation(true).addSoftIndexFileStore()
-            .shared(false);
+        holder.newConfigurationBuilder("default").persistence()
+            .addSoftIndexFileStore()
+            .clustering().cacheMode(CacheMode.DIST_SYNC);
 
         DefaultCacheManager cacheManager = new DefaultCacheManager(holder, true);
 
         ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder.clustering()
-            .cacheMode(CacheMode.REPL_SYNC)
-            .encoding()
-            .mediaType("application/x-jboss-marshalling");
-
-        builder.persistence()
-            .passivation(true)
-            .addSoftIndexFileStore()
-            .shared(false)
-            .dataLocation(dataLocation).indexLocation(indexLocation);
+        builder
+            .encoding().mediaType("application/x-jboss-marshalling")
+            .persistence().addSoftIndexFileStore().clustering()
+            .clustering().cacheMode(CacheMode.DIST_SYNC);
 
         List<String> caches = Arrays.asList("zoweCache", "zoweInvalidatedTokenCache");
         caches.forEach(cacheName -> cacheManager.administration()
