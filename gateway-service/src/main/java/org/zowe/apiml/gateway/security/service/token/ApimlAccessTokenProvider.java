@@ -152,6 +152,11 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             localSalt = keyValue.getValue();
         } catch (CachingServiceClientException e) {
             log.debug("Cannot read salt.", e);
+            if (e.getCause() != null) {
+                // it could be because of timeout for example
+                throw e;
+            }
+            // a null value was returned
             byte[] newSalt = generateSalt();
             storeSalt(newSalt);
             localSalt = new String(newSalt);
