@@ -19,4 +19,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CachingServiceConfiguration {
     private String url;
+    private String scheme;
+    private String host;
+    private int port;
 }

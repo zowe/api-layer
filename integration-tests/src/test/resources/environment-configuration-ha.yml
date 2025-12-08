@@ -34,6 +34,9 @@ apiCatalogServiceConfiguration:
     instances: 2
 cachingServiceConfiguration:
     url:
+    scheme: https
+    host: caching-service,caching-service-2,caching-service-3
+    port: 10016
 cloudGatewayConfiguration:
     scheme: https
     host: cloud-gateway-service
