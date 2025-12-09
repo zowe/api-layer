@@ -144,7 +144,6 @@ public class CachingServiceClient {
             ResponseEntity<KeyValue> response = restTemplate.exchange(gatewayProtocolHostPort + CACHING_API_PATH + "/" + key, HttpMethod.GET, new HttpEntity<KeyValue>(null, defaultHeaders), KeyValue.class);
             if (response != null && response.hasBody()) { //NOSONAR tests return null
                 return response.getBody();
-            } else {
             }
         } catch (RestClientException e) {
             if (!(
