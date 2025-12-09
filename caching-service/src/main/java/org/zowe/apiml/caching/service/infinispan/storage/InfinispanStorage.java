@@ -99,10 +99,21 @@ public class InfinispanStorage implements Storage {
     @Override
     public Map<String, Map<String, String>> getAllMaps(String serviceId) {
         log.info("Reading all records from token cache for service {} ", serviceId);
-        // filter all maps which belong given service and remove the service name from key names.
-        return tokenCache.entrySet().stream().filter(
-            entry -> entry.getKey().startsWith(serviceId))
-            .collect(Collectors.toMap(e -> e.getKey().substring(serviceId.length()), Map.Entry::getValue));
+
+        /**
+         * Original implementation with stream, collect and lambdas to read keys leads to serializing of lambdas,
+         * see org.infinispan.marshall.core.LambdaMarshaller#write(java.io.ObjectOutput, java.lang.Object).
+         * It is difficult to support and also slower (see exchanging lambdas between nodes).
+         */
+        Map<String, Map<String, String>> result = new HashMap<>();
+        for (String key : tokenCache.keySet()) {
+            if (!key.startsWith(serviceId)) continue;
+
+            String newKey = key.substring(serviceId.length());
+            result.put(newKey, tokenCache.get(key));
+        }
+
+        return result;
     }
 
     @Override
@@ -228,4 +239,5 @@ public class InfinispanStorage implements Storage {
             }
         }
     }
+
 }
