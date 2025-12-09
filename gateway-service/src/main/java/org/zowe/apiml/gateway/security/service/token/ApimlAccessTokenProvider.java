@@ -78,10 +78,11 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public boolean isInvalidated(String token) throws CachingServiceClientException {
+        byte[] salt = getSalt();
         QueryResponse parsedToken = authenticationService.parseJwtWithSignature(token);
-        String hashedToken = getHash(token);
-        String hashedUserId = getHash(parsedToken.getUserId().trim().toUpperCase());
-        List<String> hashedServiceIds = parsedToken.getScopes().stream().map(this::getHash).collect(Collectors.toList());
+        String hashedToken = getHash(token, salt);
+        String hashedUserId = getHash(parsedToken.getUserId().trim().toUpperCase(), salt);
+        List<String> hashedServiceIds = parsedToken.getScopes().stream().map(scope -> getHash(scope, salt)).collect(Collectors.toList());
 
         Map<String, Map<String, String>> cacheMap = cachingServiceClient.readAllMaps();
         if (cacheMap != null && !cacheMap.isEmpty()) {
@@ -139,6 +140,10 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         cachingServiceClient.evictTokens(INVALID_TOKENS_KEY);
         cachingServiceClient.evictRules(INVALID_USERS_KEY);
         cachingServiceClient.evictRules(INVALID_SCOPES_KEY);
+    }
+
+    private String getHash(String token, byte[] salt) throws CachingServiceClientException {
+        return getSecurePassword(token, salt);
     }
 
     public String getHash(String token) throws CachingServiceClientException {
