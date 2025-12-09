@@ -10,15 +10,20 @@
 
 package org.zowe.apiml.integration.ha;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.restassured.RestAssured;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.util.categories.ChaoticHATest;
 import org.zowe.apiml.util.config.*;
 
+import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -98,6 +103,37 @@ public class CachingService {
                     .statusCode(200)
                     .body("value", equalTo(VALUE));
             }
+        }
+
+    }
+
+    @RequiredArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @Data
+    static class KeyValue implements Serializable {
+
+        private final String key;
+        private final String value;
+        private String serviceId;
+        private final String created;
+
+        public KeyValue(String key, String value) {
+            this.key = key;
+            this.value = value;
+            this.serviceId = "";
+            this.created = currentTime();
+        }
+
+        private static String currentTime() {
+            return String.valueOf(new Date().getTime());
+        }
+
+        @JsonCreator
+        public KeyValue() {
+            key = "";
+            value = "";
+            serviceId = "";
+            created = currentTime();
         }
 
     }
