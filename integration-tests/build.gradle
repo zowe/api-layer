@@ -36,7 +36,6 @@ dependencies {
     testImplementation libs.bcpkix;
     testImplementation project(':apiml-security-common')
     testImplementation project(':zaas-client')
-    testImplementation project(':caching-service')
 
     testImplementation libs.hamcrest
     testImplementation libs.awaitility
