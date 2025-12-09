@@ -387,12 +387,21 @@ class CachingControllerTest {
         }
 
         @Test
-        void givenErrorReadingStorage_thenResponseBadRequest() throws StorageException {
-            when(mockStorage.getAllMapItems(any(), any())).thenThrow(new RuntimeException("error"));
+        void givenInvalidStorage_thenResponseBadRequest() throws StorageException {
+            when(mockStorage.getAllMapItems(any(), any())).thenThrow(new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), HttpStatus.BAD_REQUEST));
 
             ResponseEntity<?> response = underTest.getAllMapItems(any(), mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
         }
+
+        @Test
+        void givenGenericErrorReadingStorage_thenResponseInternalError() throws StorageException {
+            when(mockStorage.getAllMapItems(any(), any())).thenThrow(new RuntimeException("error"));
+
+            ResponseEntity<?> response = underTest.getAllMapItems(any(), mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+
     }
 
     @Nested
