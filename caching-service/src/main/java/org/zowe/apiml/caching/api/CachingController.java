@@ -130,7 +130,13 @@ public class CachingController {
                 try {
                     return new ResponseEntity<>(storage.getAllMapItems(s, mapKey), HttpStatus.OK);
                 } catch (Exception exception) {
-                    return handleIncompatibleStorageMethod(exception, request.getRequestURL());
+                    if (
+                        (exception instanceof StorageException) &&
+                            Messages.INCOMPATIBLE_STORAGE_METHOD.getKey().equals(((StorageException) exception).getKey())
+                    ) {
+                        return handleIncompatibleStorageMethod(exception, request.getRequestURL());
+                    }
+                    return handleInternalError(exception, request.getRequestURL());
                 }
             }
         ).orElseGet(this::getUnauthorizedResponse);
@@ -147,7 +153,13 @@ public class CachingController {
                 try {
                     return new ResponseEntity<>(storage.getAllMaps(s), HttpStatus.OK);
                 } catch (Exception exception) {
-                    return handleIncompatibleStorageMethod(exception, request.getRequestURL());
+                    if (
+                        (exception instanceof StorageException) &&
+                        Messages.INCOMPATIBLE_STORAGE_METHOD.getKey().equals(((StorageException) exception).getKey())
+                    ) {
+                        return handleIncompatibleStorageMethod(exception, request.getRequestURL());
+                    }
+                    return handleInternalError(exception, request.getRequestURL());
                 }
             }
         ).orElseGet(this::getUnauthorizedResponse);
