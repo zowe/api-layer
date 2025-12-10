@@ -10,12 +10,18 @@
 
 package org.zowe.apiml.security.common.filter;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -32,6 +38,8 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -72,6 +80,9 @@ class CategorizeCertsFilterTest {
 
     private CertificateValidator certificateValidator;
 
+    private Logger logger;
+    private ListAppender<ILoggingEvent> logAppender;
+
     @BeforeAll
     public static void init() throws CertificateException {
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
@@ -87,6 +98,19 @@ class CategorizeCertsFilterTest {
         certificateValidator = mock(CertificateValidator.class);
         when(certificateValidator.isForwardingEnabled()).thenReturn(false);
         when(certificateValidator.hasGatewayChain(any())).thenReturn(false);
+
+        logger = (Logger) LoggerFactory.getLogger(CategorizeCertsFilter.class);
+        logAppender = new ListAppender<>();
+        logAppender.start();
+        logger.addAppender(logAppender);
+        logger.setLevel(Level.DEBUG);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        if (logger != null && logAppender != null) {
+            logger.detachAppender(logAppender);
+        }
     }
 
     @Nested
@@ -546,6 +570,84 @@ class CategorizeCertsFilterTest {
             );
 
             assertNotNull(chain.getRequest(), "Filter chain should continue normally");
+        }
+    }
+
+    @Nested
+    class LogIgnoredCertificatesTests {
+
+        @BeforeEach
+        void setUp() {
+            var serverCertChain = new HashSet<>(Arrays.asList(
+                X509Utils.correctBase64("apimlCert1"),
+                X509Utils.correctBase64("apimlCertCA")
+            ));
+            filter = new CategorizeCertsFilter(serverCertChain, certificateValidator);
+        }
+
+        @Test
+        void whenApimlCertIsIgnored_thenLogsCorrectly() throws ServletException, IOException {
+            X509Certificate[] certs = new X509Certificate[]{
+                X509Utils.getCertificate(X509Utils.correctBase64("apimlCert1")),
+                X509Utils.getCertificate(X509Utils.correctBase64("apimlCertCA"))
+            };
+            request.setAttribute("jakarta.servlet.request.X509Certificate", certs);
+
+            filter.doFilter(request, response, chain);
+            List<ILoggingEvent> logsList = logAppender.list;
+
+            List<ILoggingEvent> ignoredCertLogs = logsList.stream()
+                .filter(event -> event.getMessage().contains("ignored"))
+                .collect(Collectors.toList());
+
+            assertFalse(ignoredCertLogs.isEmpty(), "Should have logged information about ignored certificates");
+
+            boolean hasSummaryLog = logsList.stream()
+                .anyMatch(event -> event.getMessage().contains("Certificates ignored/not used for authentication"));
+            assertTrue(hasSummaryLog, "Should have summary log about ignored certificates");
+
+            boolean hasDetailedLog = logsList.stream()
+                .anyMatch(event -> event.getFormattedMessage().contains("is an APIML Gateway certificate"));
+            assertTrue(hasDetailedLog, "Should explain that certificate is an APIML Gateway certificate");
+        }
+
+        @Test
+        void whenOnlyClientCert_thenNoIgnoredLogs() throws ServletException, IOException {
+            filter = new CategorizeCertsFilter(new HashSet<>(), certificateValidator);
+
+            X509Certificate[] certs = new X509Certificate[]{
+                X509Utils.getCertificate(X509Utils.correctBase64("foreignCert1"))
+            };
+            request.setAttribute("jakarta.servlet.request.X509Certificate", certs);
+
+            filter.doFilter(request, response, chain);
+
+            List<ILoggingEvent> logsList = logAppender.list;
+
+            boolean hasIgnoredLog = logsList.stream()
+                .anyMatch(event -> event.getMessage().contains("Certificates ignored/not used for authentication"));
+            assertFalse(hasIgnoredLog, "Should NOT log ignored certificates when only client cert is present");
+        }
+
+        @Test
+        void whenMixedCertChain_thenLogsOnlyIgnoredOnes() throws ServletException, IOException {
+            X509Certificate[] certs = new X509Certificate[]{
+                X509Utils.getCertificate(X509Utils.correctBase64("foreignCert1")),
+                X509Utils.getCertificate(X509Utils.correctBase64("apimlCert1"))
+            };
+            request.setAttribute("jakarta.servlet.request.X509Certificate", certs);
+
+            filter.doFilter(request, response, chain);
+
+            List<ILoggingEvent> logsList = logAppender.list;
+
+            boolean hasIgnoredLog = logsList.stream()
+                .anyMatch(event -> event.getMessage().contains("Certificates ignored/not used for authentication"));
+            assertTrue(hasIgnoredLog, "Should log ignored certificates in mixed chain");
+
+            boolean mentionsApimlCert = logsList.stream()
+                .anyMatch(event -> event.getFormattedMessage().contains("is an APIML Gateway certificate"));
+            assertTrue(mentionsApimlCert, "Should mention ignored APIML certificate");
         }
     }
 }
