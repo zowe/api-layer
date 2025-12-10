@@ -15,11 +15,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.restassured.RestAssured;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.zowe.apiml.util.categories.ChaoticHATest;
 import org.zowe.apiml.util.config.*;
+import org.zowe.apiml.util.requests.Endpoints;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -30,12 +33,16 @@ import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
 
+@Slf4j
 @ChaoticHATest
 @TestInstance(TestInstance.Lifecycle. PER_CLASS)
 public class CachingService {
@@ -48,6 +55,36 @@ public class CachingService {
 
     private Credentials credentials;
     private List<String> baseUrls;
+
+    private boolean isUp(int index) {
+        try {
+            String url = String.format("%s/cachingservice%s", baseUrls.get(index), Endpoints.HEALTH);
+            log.info("Check if {}. Caching Service is up: {}", index, url);
+
+            given()
+                .contentType(JSON)
+                .auth()
+                .basic(credentials.getUser(), credentials.getPassword())
+            .when()
+                .get(url)
+            .then()
+                .statusCode(200)
+                .body("status", Matchers.is("UP"));
+            return true;
+        } catch (AssertionError e) {
+            log.info("Caching service is down", e);
+            return false;
+        }
+    }
+
+    private boolean isUp() {
+        for (int i = 0; i < baseUrls.size(); i++) {
+            if (!isUp(i)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     @BeforeAll
     void setUp() throws Exception {
@@ -64,6 +101,12 @@ public class CachingService {
             .map(host -> String.format("%s://%s:%d", cachingServiceConfiguration.getScheme(), host, cachingServiceConfiguration.getPort()))
             .collect(Collectors.toList());
         credentials = ConfigReader.environmentConfiguration().getCredentials();
+
+        await()
+            .atMost(10, MINUTES)
+            .pollDelay(0, SECONDS)
+            .pollInterval(10, SECONDS)
+            .until(this::isUp);
     }
 
     @Test
