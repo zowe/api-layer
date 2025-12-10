@@ -107,6 +107,14 @@ public class CachingService {
             .pollDelay(0, SECONDS)
             .pollInterval(10, SECONDS)
             .until(this::isUp);
+
+        log.info("Waiting for joining into a cluster");
+        await()
+            .atMost(2, MINUTES)
+            .pollDelay(0, SECONDS)
+            .pollInterval(2, MINUTES)
+            .until(() -> true);
+        log.info("Ready to test");
     }
 
     @Test
