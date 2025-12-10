@@ -139,6 +139,7 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
     /**
      * Logs information about certificates that were ignored during authentication.
      * Compares the original set of certificates with the filtered set to identify ignored certificates.
+     * Uses Base64-encoded public keys for reliable comparison instead of X509Certificate object equality.
      *
      * @param originalCerts The original array of certificates before filtering
      * @param filteredCerts The array of certificates after filtering for authentication
@@ -146,18 +147,27 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
     private void logIgnoredCertificates(X509Certificate[] originalCerts, X509Certificate[] filteredCerts) {
         if (originalCerts == null || originalCerts.length == 0) return;
 
-        // Creating sets for efficient comparison
-        //  !!Verify if this approach is correct or not
-        Set<X509Certificate> originalSet = new HashSet<>(Arrays.asList(originalCerts));
-        Set<X509Certificate> filteredSet = filteredCerts != null ? new HashSet<>(Arrays.asList(filteredCerts)) : new HashSet<>();
+        Set<String> originalKeys = Arrays.stream(originalCerts)
+            .map(CategorizeCertsWebFilter::base64EncodePublicKey)
+            .collect(Collectors.toSet());
 
-        // Finding ignored certificates (in original but not in filtered)
-        Set<X509Certificate> ignoredCerts = new HashSet<>(originalSet);
-        ignoredCerts.removeAll(filteredSet);
+        Set<String> filteredKeys = filteredCerts != null
+            ? Arrays.stream(filteredCerts)
+                .map(CategorizeCertsWebFilter::base64EncodePublicKey)
+                .collect(Collectors.toSet())
+            : new HashSet<>();
 
-        // Log information about ignored certificates
-        if (!ignoredCerts.isEmpty()) {
-            //Update this message after discussing with Team
+        // Finding ignored certificate keys (in original but not in filtered)
+        Set<String> ignoredKeys = new HashSet<>(originalKeys);
+        ignoredKeys.removeAll(filteredKeys);
+
+        if (!ignoredKeys.isEmpty()) {
+            // Find the actual certificate objects for the ignored keys
+            List<X509Certificate> ignoredCerts = Arrays.stream(originalCerts)
+                .filter(cert -> ignoredKeys.contains(base64EncodePublicKey(cert)))
+                .collect(Collectors.toList());
+
+            // Log summary of ignored certificates
             log.debug("Certificates ignored/not used for authentication: {}",
                 ignoredCerts.stream()
                     .map(cert -> {
@@ -169,14 +179,17 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                     })
                     .collect(Collectors.joining(", ")));
 
-            // For each ignored certificate, logging why it was ignored
+            // For each ignored certificate, log why it was ignored
             ignoredCerts.forEach(cert -> {
                 String publicKeyBase64 = base64EncodePublicKey(cert);
                 boolean isApimlCert = getPublicKeyCertificatesBase64().contains(publicKeyBase64);
-                //Update this message after discussing with Team
-                log.debug("Certificate with subject '{}' was ignored because it {} APIML's own certificate",
-                    cert.getSubjectX500Principal().getName(),
-                    isApimlCert ? "IS" : "is NOT");
+                if (isApimlCert) {
+                    log.debug("Certificate with subject '{}' was ignored because it is an APIML Gateway certificate (not used for client authentication)",
+                        cert.getSubjectX500Principal().getName());
+                } else {
+                    log.debug("Certificate with subject '{}' was ignored for unknown reason (not in APIML cert set, but filtered by predicate)",
+                        cert.getSubjectX500Principal().getName());
+                }
             });
         }
     }
