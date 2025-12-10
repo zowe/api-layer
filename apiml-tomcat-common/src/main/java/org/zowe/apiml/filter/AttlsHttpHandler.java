@@ -14,7 +14,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Builder;
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.RequestFacade;
@@ -22,10 +21,15 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.codec.ServerCodecConfigurer;
-import org.springframework.http.server.reactive.*;
+import org.springframework.http.server.reactive.AbstractServerHttpRequest;
+import org.springframework.http.server.reactive.HttpHandler;
+import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.adapter.DefaultServerWebExchange;
 import org.springframework.web.server.i18n.LocaleContextResolver;
@@ -33,7 +37,11 @@ import org.springframework.web.server.session.DefaultWebSessionManager;
 import org.springframework.web.server.session.WebSessionManager;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.commons.attls.*;
+import org.zowe.commons.attls.ContextIsNotInitializedException;
+import org.zowe.commons.attls.InboundAttls;
+import org.zowe.commons.attls.IoctlCallException;
+import org.zowe.commons.attls.StatConn;
+import org.zowe.commons.attls.UnknownEnumValueException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -47,7 +55,6 @@ import java.util.Base64;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Component
-@RequiredArgsConstructor
 @ConditionalOnProperty(name = "server.attlsServer.enabled", havingValue = "true")
 @Slf4j
 public class AttlsHttpHandler implements BeanPostProcessor {
@@ -59,6 +66,12 @@ public class AttlsHttpHandler implements BeanPostProcessor {
 
     private final WebSessionManager sessionManager = new DefaultWebSessionManager();
     private final ServerCodecConfigurer serverCodecConfigurer = ServerCodecConfigurer.create();
+
+    @Lazy
+    public AttlsHttpHandler(MessageService messageService, LocaleContextResolver localeContextResolver) {
+        this.messageService = messageService;
+        this.localeContextResolver = localeContextResolver;
+    }
 
     private Mono<Void> writeError(ServerHttpRequest request, ServerHttpResponse response, String message) {
         var serverWebExchange = new DefaultServerWebExchange(request, response, sessionManager, serverCodecConfigurer, localeContextResolver);
