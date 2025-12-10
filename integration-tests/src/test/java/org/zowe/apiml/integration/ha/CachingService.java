@@ -110,7 +110,7 @@ public class CachingService {
 
         log.info("Waiting for joining into a cluster");
         await()
-            .atMost(2, MINUTES)
+            .atMost(10, MINUTES)
             .pollDelay(2, MINUTES)
             .pollInterval(2, MINUTES)
             .until(() -> true);
