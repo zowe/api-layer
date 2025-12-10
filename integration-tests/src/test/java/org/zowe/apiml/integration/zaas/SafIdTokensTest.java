@@ -34,11 +34,25 @@ import java.util.Collections;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static io.restassured.http.ContentType.XML;
-import static jakarta.servlet.http.HttpServletResponse.*;
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.*;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
-import static org.zowe.apiml.util.SecurityUtils.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyOrNullString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.LTPA_COOKIE;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_SAFIDT_URI;
+import static org.zowe.apiml.util.SecurityUtils.generateZoweJwtWithLtpa;
+import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.SecurityUtils.getZosmfJwtToken;
+import static org.zowe.apiml.util.SecurityUtils.getZosmfToken;
+import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
+import static org.zowe.apiml.util.SecurityUtils.validOidcAccessToken;
 
 @ZaasTest
 @SafIdTokenTest
@@ -58,7 +72,8 @@ public class SafIdTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenValidZosmfToken() {
-            String zosmfToken = getZosmfJwtToken();
+            assumeTrue(ZAAS_SAFIDT_URI.isPresent());
+            var zosmfToken = getZosmfJwtToken();
 
             //@formatter:off
             given()
@@ -66,18 +81,19 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .body(ticketRequest)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_SAFIDT_URI)
+                .post(ZAAS_SAFIDT_URI.get())
             .then()
                 .statusCode(SC_OK)
-                .body("token", not(isEmptyOrNullString()))
-                .body("cookieName", isEmptyOrNullString());
+                .body("token", not(emptyOrNullString()))
+                .body("cookieName", is(emptyOrNullString()));
             //@formatter:on
         }
 
         @Test
         void givenValidZoweTokenWithLtpa() throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
-            String ltpaToken = getZosmfToken(LTPA_COOKIE);
-            String zoweToken = generateZoweJwtWithLtpa(ltpaToken);
+            assumeTrue(ZAAS_SAFIDT_URI.isPresent());
+            var ltpaToken = getZosmfToken(LTPA_COOKIE);
+            var zoweToken = generateZoweJwtWithLtpa(ltpaToken);
 
             //@formatter:off
             given()
@@ -85,18 +101,19 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .body(ticketRequest)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_SAFIDT_URI)
+                .post(ZAAS_SAFIDT_URI.get())
             .then()
                 .statusCode(SC_OK)
-                .body("token", not(isEmptyOrNullString()))
-                .body("cookieName", isEmptyOrNullString());
+                .body("token", not(emptyOrNullString()))
+                .body("cookieName", is(emptyOrNullString()));
             //@formatter:on
         }
 
         @Test
         void givenValidAccessToken() {
-            String serviceId = "gateway";
-            String pat = personalAccessToken(Collections.singleton(serviceId));
+            assumeTrue(ZAAS_SAFIDT_URI.isPresent());
+            var serviceId = "gateway";
+            var pat = personalAccessToken(Collections.singleton(serviceId));
 
             //@formatter:off
             given()
@@ -105,34 +122,36 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .body(ticketRequest)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_SAFIDT_URI)
+                .post(ZAAS_SAFIDT_URI.get())
             .then()
                 .statusCode(SC_OK)
-                .body("token", not(isEmptyOrNullString()))
-                .body("cookieName", isEmptyOrNullString());
+                .body("token", not(emptyOrNullString()))
+                .body("cookieName", is(emptyOrNullString()));
             //@formatter:on
         }
 
         @ParameterizedTest(name = "SafIdtTokensTest.givenX509Certificate {1}")
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasTestUtil#provideClientCertificates")
         void givenX509Certificate(String certificate, String description) {
+            assumeTrue(ZAAS_SAFIDT_URI.isPresent());
             //@formatter:off
             given()
                 .header("Client-Cert", certificate)
                 .body(ticketRequest)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_SAFIDT_URI)
+                .post(ZAAS_SAFIDT_URI.get())
             .then()
                 .statusCode(SC_OK)
-                .body("token", not(isEmptyOrNullString()))
-                .body("cookieName", isEmptyOrNullString());
+                .body("token", not(emptyOrNullString()))
+                .body("cookieName", is(emptyOrNullString()));
             //@formatter:on
         }
 
         @Test
         void givenValidOAuthToken() {
-            String oAuthToken = validOktaAccessToken(true);
+            assumeTrue(ZAAS_SAFIDT_URI.isPresent());
+            var oAuthToken = validOidcAccessToken(true);
 
             //@formatter:off
             given()
@@ -140,11 +159,11 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .body(ticketRequest)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_SAFIDT_URI)
+                .post(ZAAS_SAFIDT_URI.get())
             .then()
                 .statusCode(SC_OK)
-                .body("token", not(isEmptyOrNullString()))
-                .body("cookieName", isEmptyOrNullString());
+                .body("token", not(emptyOrNullString()))
+                .body("cookieName", is(emptyOrNullString()));
             //@formatter:on
         }
     }
@@ -156,7 +175,8 @@ public class SafIdTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenNoApplicationName() {
-            String expectedMessage = "The 'applicationName' parameter name is missing.";
+            assumeTrue(ZAAS_SAFIDT_URI.isPresent());
+            var expectedMessage = "The 'applicationName' parameter name is missing.";
 
             //@formatter:off
             given()
@@ -164,7 +184,7 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .body(new TicketRequest())
                 .cookie(COOKIE, jwt)
             .when()
-                .post(ZAAS_SAFIDT_URI)
+                .post(ZAAS_SAFIDT_URI.get())
             .then()
                 .statusCode(is(SC_BAD_REQUEST))
                 .body("messages.find { it.messageNumber == 'ZWEAG140E' }.messageContent", equalTo(expectedMessage));
@@ -173,8 +193,9 @@ public class SafIdTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenInvalidApplicationName() {
-            String expectedMessage = "The generation of the PassTicket failed. Reason:";
-            TicketRequest ticketRequest = new TicketRequest(PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID);
+            assumeTrue(ZAAS_SAFIDT_URI.isPresent());
+            var expectedMessage = "The generation of the PassTicket failed. Reason:";
+            var ticketRequest = new TicketRequest(PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID);
 
             //@formatter:off
             given()
@@ -182,7 +203,7 @@ public class SafIdTokensTest implements TestWithStartedInstances {
                 .body(ticketRequest)
                 .cookie(COOKIE, jwt)
             .when()
-                .post(ZAAS_SAFIDT_URI)
+                .post(ZAAS_SAFIDT_URI.get())
             .then()
                 .statusCode(is(SC_INTERNAL_SERVER_ERROR))
                 .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", containsString(expectedMessage));
@@ -192,13 +213,14 @@ public class SafIdTokensTest implements TestWithStartedInstances {
         @Test
         @Disabled("Enable once it runs on z/OS. Mimic the behaviour in Mock service.")
         void givenLongApplicationName() {
+            assumeTrue(ZAAS_SAFIDT_URI.isPresent());
             //@formatter:off
             given()
                 .contentType(JSON)
                 .body(new TicketRequest("TooLongAppName"))
                 .cookie(COOKIE, jwt)
             .when()
-                .post(ZAAS_SAFIDT_URI)
+                .post(ZAAS_SAFIDT_URI.get())
             .then()
                 .statusCode(is(SC_BAD_REQUEST));
             //@formatter:on
@@ -213,13 +235,14 @@ public class SafIdTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenInvalidContentType() {
+            assumeTrue(ZAAS_SAFIDT_URI.isPresent());
             //@formatter:off
             given()
                 .body(new TicketRequest(APPLICATION_NAME))
                 .cookie(COOKIE, jwt)
                 .contentType(XML)
             .when()
-                .post(ZAAS_SAFIDT_URI)
+                .post(ZAAS_SAFIDT_URI.get())
             .then()
                 .statusCode(is(SC_UNSUPPORTED_MEDIA_TYPE));
             //@formatter:on
@@ -227,12 +250,13 @@ public class SafIdTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenNoBodyWithoutContentType() {
+            assumeTrue(ZAAS_SAFIDT_URI.isPresent());
             //@formatter:off
             given()
                 .cookie(COOKIE, jwt)
                 .noContentType()
             .when()
-                .post(ZAAS_SAFIDT_URI)
+                .post(ZAAS_SAFIDT_URI.get())
             .then()
                 .statusCode(is(SC_UNSUPPORTED_MEDIA_TYPE));
             //@formatter:on
@@ -240,12 +264,13 @@ public class SafIdTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenNoBody() {
+            assumeTrue(ZAAS_SAFIDT_URI.isPresent());
             //@formatter:off
             given()
                 .cookie(COOKIE, jwt)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_SAFIDT_URI)
+                .post(ZAAS_SAFIDT_URI.get())
             .then()
                 .statusCode(is(SC_BAD_REQUEST));
             //@formatter:on

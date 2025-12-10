@@ -12,6 +12,7 @@ gatewayServiceConfiguration:
     instances: 1
     servicesEndpoint: gateway/api/v1/services
     bucketCapacity: 20
+    authProvider: zosmf
 centralGatewayServiceConfiguration:
     scheme: https
     host: central-gateway-service
@@ -61,9 +62,7 @@ zosmfServiceConfiguration:
     serviceId: mockzosmf
 auxiliaryUserList:
     value: 'unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
-idpConfiguration:
-    host: https://dev-95727686.okta.com
+oidcConfiguration:
+    providerName: auth0
 safIdtConfiguration:
     enabled: true
-oidcConfiguration:
-    clientId:

@@ -99,6 +99,8 @@ allprojects {
     configurations.all {
         resolutionStrategy.dependencySubstitution {
             substitute(module('javax.servlet:servlet-api')).using(module('javax.servlet:javax.servlet-api:4.0.1'))
+
+            substitute(module('com.sun.mail:mailapi')).using(module("jakarta.mail:jakarta.mail-api:${libs.versions.mailapi}"))
         }
     }
 
@@ -166,6 +168,60 @@ subprojects {
     }
 }
 
+ext.enablers = [
+    'onboarding-enabler-spring',
+    'onboarding-enabler-java',
+    //'onboarding-enabler-micronaut'
+    'zaas-client',
+]
+
+ext.javaLibraries = [
+    'apiml-utility',
+    'apiml-common',
+    'apiml-security-common',
+    'apiml-tomcat-common',
+    'certificate-analyser',
+    'common-service-core',
+    'security-service-client-spring',
+    'apiml-sample-extension',
+    'apiml-sample-extension-package',
+    'apiml-extension-loader'
+]
+
+ext.servicesToPublish = [
+    'apiml',
+    'apiml-package',
+    'apiml-common-lib-package',
+    'api-catalog-services',
+    'api-catalog-package',
+    'caching-service',
+    'caching-service-package',
+    'discovery-service',
+    'discovery-package',
+    'zaas-service',
+    'zaas-package',
+    'gateway-service',
+    'gateway-package'
+]
+ext.projectsToPublish = ext.servicesToPublish + ext.javaLibraries
+
+task 'buildZoweServer' {
+    group 'Zowe Server components'
+    description 'Builds only main zowe server components.'
+    dependsOn projectsToPublish.collect { "$it:build" }
+    doLast {
+        println "Successfully built all 'Zowe Server components' modules."
+    }
+}
+task 'buildEnablers' {
+    group 'Enablers'
+    description 'Builds only enablers.'
+    dependsOn enablers.collect { "$it:build" }
+    doLast {
+        println "Successfully built all 'Enabler' modules."
+    }
+}
+
 task buildCore(dependsOn: [':discovery-service:build', ':api-catalog-services:build', ':api-catalog-ui:build',
                            ':discoverable-client:build', ':zaas-client:build', ':apiml-sample-extension:build', ':gateway-service:build']) {
     description "Build core components"
@@ -214,9 +270,17 @@ task runIdPrefixReplacerTests(dependsOn: [":integration-tests:runIdPrefixReplace
 
 task publishAllVersions {
     group 'Zowe Publishing'
-    description 'Publish ZIP file and SDK libraries to Zowe Artifactory'
+    description 'Publish Zowe server ZIP files and libraries to Zowe Artifactory'
     doLast {
-        println 'Published ZIP file and libraries'
+        println 'Published Zowe server ZIP files and libraries'
+    }
+}
+
+task publishAllSDKVersions {
+    group 'Zowe Publishing'
+    description 'Publish SDK libraries to Zowe Artifactory'
+    doLast {
+        println 'Published SDK libraries'
     }
 }
 
@@ -266,13 +330,29 @@ task runChaoticHATests(dependsOn: ":integration-tests:runChaoticHATests") {
 
 clean.dependsOn nodejsClean
 
-publishAllVersions.dependsOn publishSdkArtifacts
+publishAllVersions.dependsOn publishZoweServerArtifacts
+publishAllSDKVersions.dependsOn publishSDKArtifacts
 
 //-----------Release part start
 apply plugin: 'net.researchgate.release'
 
 ext.releaseScope = project.hasProperty('release.scope') ? project.getProperty('release.scope') : 'patch'
 
+
+
+//1. Define properties for enablers
+def enablerProps = new Properties()
+def enablerPropsFile = new File(rootProject.projectDir, "enabler.properties")
+
+//2. Load the file if it exists
+if (enablerPropsFile.exists()) {
+    enablerPropsFile.withInputStream { stream ->
+        enablerProps.load(stream)
+    }
+}
+
+//3. Get the version, or use the rootProject.version as a fallback
+def sdkVersion = enablerProps.getProperty("version")
 release {
     failOnCommitNeeded = true
     failOnPublishNeeded = true
@@ -283,10 +363,13 @@ release {
     preCommitText = '[Gradle Release plugin]'
     preTagCommitMessage = '[skip ci] Before tag commit'
     tagCommitMessage = 'Release:'
-    tagTemplate = 'v${version}'
+    tagTemplate = project.hasProperty('releaseEnablers') ? 'enablers-v${version}' : 'v${version}'
     newVersionCommitMessage = 'Create new version:'
-    versionPropertyFile = 'gradle.properties'
-
+    versionPropertyFile = project.hasProperty('releaseEnablers') ? 'enabler.properties' : 'gradle.properties'
+    buildTasks = project.hasProperty('releaseEnablers') ? ['buildEnablers'] : ['buildZoweServer']
+    if(project.hasProperty('releaseEnablers')){
+        project.setVersion(sdkVersion)
+    }
     if (releaseScope == 'minor') {
         versionPatterns = [
             /[.]*\.(\d+)\.(\d+)[.]*/: { Matcher m, Project p -> m.replaceAll(".${(m[0][1] as int) + 1}.0") }
@@ -314,7 +397,11 @@ release {
     }
 }
 
-afterReleaseBuild.dependsOn publishAllVersions
+if(project.hasProperty('releaseEnablers')) {
+    afterReleaseBuild.dependsOn publishAllSDKVersions
+} else {
+    afterReleaseBuild.dependsOn publishAllVersions
+}
 //-----------Release part end
 
 

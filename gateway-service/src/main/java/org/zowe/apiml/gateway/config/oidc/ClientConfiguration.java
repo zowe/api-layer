@@ -16,17 +16,23 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Reads OIDC Client configuration from environment variables or application configuration file.
+ * Reads OIDC Client configuration from Zowe launcher environment variables or application configuration file.
  */
 @Data
 @Component
@@ -34,6 +40,7 @@ import java.util.stream.Collectors;
 @ConfigurationProperties(prefix = "spring.security.oauth2.client", ignoreInvalidFields = true)
 public class ClientConfiguration {
 
+    private static final String DEFAULT_REDIRECT_URI = "{baseUrl}/gateway/{action}/oauth2/code/{registrationId}";
     private static final String SYSTEM_ENV_PREFIX = "ZWE_configs_spring_security_oauth2_client_";
     private static final Pattern REGISTRATION_ID_PATTERN = Pattern.compile(
         "^" + SYSTEM_ENV_PREFIX + "(registration|provider)_([^_]+)_.*$"
@@ -42,9 +49,9 @@ public class ClientConfiguration {
     public static final String REGISTRATION_ENV_TYPE = "registration";
     public static final String PROVIDER_ENV_TYPE = "provider";
 
-
     private Map<String, Registration> registration = new HashMap<>();
     private Map<String, Provider> provider = new HashMap<>();
+
 
     private String getSystemEnv(String id, String type, String name) {
         StringBuilder sb = new StringBuilder();
@@ -96,6 +103,19 @@ public class ClientConfiguration {
         for (String registrationId : getRegistrationsIdsFromSystemEnv()) {
             update(registrationId, registration.computeIfAbsent(registrationId, k -> new Registration()));
             update(registrationId, provider.computeIfAbsent(registrationId, k -> new Provider()));
+        }
+        processDefaults();
+    }
+
+    /*
+     * redirectUri was originally set as a property but for Okta provider only, without it it can be a breaking change.
+     * This makes sure any provider has a default redirectUri if no explicit one is provided
+     */
+    private void processDefaults() {
+        for (Map.Entry<String, Registration> entry : registration.entrySet()) {
+            if (StringUtils.isBlank(entry.getValue().getRedirectUri())) {
+                entry.getValue().setRedirectUri(DEFAULT_REDIRECT_URI);
+            }
         }
     }
 

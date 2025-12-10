@@ -108,5 +108,50 @@ Below is an example of the configuration.
       keyPassword: password
     
     ```
+Alternatively, you can also pass the config as a json to the client:
+  ```js
+      import { EurekaClient as Eureka } from '@zowe/apiml-onboarding-enabler-nodejs'
+      const client = new Eureka({
+      eureka: {
+        ssl: true,
+        host: localhost,
+        port: 10011,
+        servicePath: '/eureka/apps/',
+        maxRetries: 2,
+        registryFetchInterval: 30000,
+        fetchRegistry: false,
+        heartbeatInterval: 60000
+      },
+      instance: {
+        app: hwexpress,
+        instanceId: localhost:hwexpress:10020,
+        hostName: 'localhost',
+        ipAddr: '127.0.0.1',
+        homePageUrl: https://localhost:10020/,
+        secureVipAddress: hwexpress,
+        port: {
+          $: 10020,
+          '@enabled': false
+        },
+        securePort: {
+          $: 10020,
+          '@enabled': true
+        },
+        dataCenterInfo: {
+          '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
+          name: 'MyOwn'
+        },
+        metadata: {
+          'apiml.routes.ui-v1.gatewayUrl': 'ui',
+          'apiml.routes.ui-v1.serviceUrl': '/',
+          'apiml.routes.ws-v1.gatewayUrl': 'ws/ui',
+          'apiml.routes.ws-v1.serviceUrl': '/'
+        }
+      },
+      requestMiddleware: (requestOpts, done) => {
+        done(Object.assign(requestOpts, tlsOptions));
+      }
+    }); 
+  ```
 
 4. Start your Node.js service and verify that it registers to the Zowe API Mediation Layer.

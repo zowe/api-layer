@@ -11,6 +11,7 @@ gatewayServiceConfiguration:
     instances: 2
     servicesEndpoint: gateway/api/v1/services
     bucketCapacity: 20
+    authProvider: zosmf
 zaasConfiguration:
     scheme: https
     host: zaas-service
@@ -56,9 +57,7 @@ zosmfServiceConfiguration:
     serviceId: mockzosmf
 auxiliaryUserList:
     value: 'servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
-idpConfiguration:
-    host: https://dev-95727686.okta.com
+oidcConfiguration:
+    providerName: auth0
 safIdtConfiguration:
     enabled: true
-oidcConfiguration:
-    clientId:

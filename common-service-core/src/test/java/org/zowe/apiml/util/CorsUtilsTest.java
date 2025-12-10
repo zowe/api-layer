@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,8 @@ class CorsUtilsTest {
 
     Map<String, String> metadata = new HashMap<>();
     List<String> defaultCorsMethods = List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS");
+
+    List<String> allowedEndpoints = List.of("/gateway/**");
 
     @BeforeEach
     void setup() {
@@ -37,7 +40,7 @@ class CorsUtilsTest {
         @Nested
         class givenDefaultCorsAllowedMethods {
 
-            CorsUtils corsUtils = new CorsUtils(true, defaultCorsMethods);
+            CorsUtils corsUtils = new CorsUtils(true, defaultCorsMethods, allowedEndpoints);
 
             @Test
             void registerDefaultConfig() {
@@ -93,7 +96,7 @@ class CorsUtilsTest {
 
     @Nested
     class GivenCorsDisabled {
-        CorsUtils corsUtils = new CorsUtils(false, null);
+        CorsUtils corsUtils = new CorsUtils(false, null, Arrays.asList("/gateway/**", "/api-docs"));
 
         @Test
         void registerEmptyDefaultConfig() {

@@ -39,19 +39,22 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.text.IsEqualIgnoringCase.equalToIgnoringCase;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_TICKET_URI;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.isTestForICSF;
 import static org.zowe.apiml.util.SecurityUtils.USERNAME;
 import static org.zowe.apiml.util.SecurityUtils.generateZoweJwtWithLtpa;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
 import static org.zowe.apiml.util.SecurityUtils.getZosmfJwtTokenFromGw;
 import static org.zowe.apiml.util.SecurityUtils.getZosmfLtpaToken;
 import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
-import static org.zowe.apiml.util.SecurityUtils.validOktaAccessToken;
+import static org.zowe.apiml.util.SecurityUtils.validOidcAccessToken;
 
 /**
  * Verify integration of the API ML PassTicket support with the zOS provider of the PassTicket.
@@ -73,6 +76,7 @@ class PassTicketTest {
 
         @Test
         void givenValidZosmfToken() {
+            assumeTrue(ZAAS_TICKET_URI.isPresent());
             String zosmfToken = getZosmfJwtTokenFromGw();
 
             //@formatter:off
@@ -81,10 +85,10 @@ class PassTicketTest {
                 .body(ticketRequest)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_TICKET_URI.get())
             .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(isEmptyOrNullString()))
+                .body("ticket", not(emptyOrNullString()))
                 .body("userId", is(USERNAME))
                 .body("applicationName", is(APPLICATION_NAME));
             //@formatter:on
@@ -92,8 +96,10 @@ class PassTicketTest {
 
         @Test
         void givenValidZoweTokenWithLtpa() throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
-            String ltpaToken = getZosmfLtpaToken();
-            String zoweToken = generateZoweJwtWithLtpa(ltpaToken);
+            assumeFalse(isTestForICSF(), "This test can't run with ICSF hardware keys. Certificate mismatch");
+            assumeTrue(ZAAS_TICKET_URI.isPresent());
+            var ltpaToken = getZosmfLtpaToken();
+            var zoweToken = generateZoweJwtWithLtpa(ltpaToken);
 
             //@formatter:off
             given()
@@ -101,10 +107,10 @@ class PassTicketTest {
                 .body(ticketRequest)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_TICKET_URI.get())
             .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(isEmptyOrNullString()))
+                .body("ticket", not(emptyOrNullString()))
                 .body("userId", is(USERNAME))
                 .body("applicationName", is(APPLICATION_NAME));
             //@formatter:on
@@ -112,8 +118,9 @@ class PassTicketTest {
 
         @Test
         void givenValidPersonalAccessToken() {
-            String serviceId = "gateway";
-            String pat = personalAccessToken(Collections.singleton(serviceId));
+            assumeTrue(ZAAS_TICKET_URI.isPresent());
+            var serviceId = "gateway";
+            var pat = personalAccessToken(Collections.singleton(serviceId));
 
             //@formatter:off
             given()
@@ -122,10 +129,10 @@ class PassTicketTest {
                 .body(ticketRequest)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_TICKET_URI.get())
             .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(isEmptyOrNullString()))
+                .body("ticket", not(emptyOrNullString()))
                 .body("userId", is(USERNAME))
                 .body("applicationName", is(APPLICATION_NAME));
             //@formatter:on
@@ -134,24 +141,27 @@ class PassTicketTest {
         @ParameterizedTest(name = "PassTicketTest.givenX509Certificate {1}")
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasTestUtil#provideClientCertificates")
         void givenX509Certificate(String certificate, String description) {
+            assumeFalse(isTestForICSF(), "This test can't run with ICSF hardware keys. Certificate mismatch");
+            assumeTrue(ZAAS_TICKET_URI.isPresent());
             //@formatter:off
             given()
                 .header("Client-Cert", certificate)
                 .body(ticketRequest)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_TICKET_URI.get())
             .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(isEmptyOrNullString()))
-                .body("userId", not(isEmptyOrNullString()))
+                .body("ticket", not(emptyOrNullString()))
+                .body("userId", not(emptyOrNullString()))
                 .body("applicationName", is(APPLICATION_NAME));
             //@formatter:on
         }
 
         @Test
         void givenValidOAuthToken() {
-            String oAuthToken = validOktaAccessToken(true);
+            var oAuthToken = validOidcAccessToken(true);
+            assumeTrue(ZAAS_TICKET_URI.isPresent());
 
             //@formatter:off
             given()
@@ -159,10 +169,10 @@ class PassTicketTest {
                 .body(ticketRequest)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_TICKET_URI.get())
             .then()
                 .statusCode(SC_OK)
-                .body("ticket", not(isEmptyOrNullString()))
+                .body("ticket", not(emptyOrNullString()))
                 .body("userId", equalToIgnoringCase(USERNAME))
                 .body("applicationName", is(APPLICATION_NAME));
             //@formatter:on
@@ -176,7 +186,8 @@ class PassTicketTest {
 
         @Test
         void givenNoApplicationName() {
-            String expectedMessage = "The 'applicationName' parameter name is missing.";
+            assumeTrue(ZAAS_TICKET_URI.isPresent());
+            var expectedMessage = "The 'applicationName' parameter name is missing.";
 
             //@formatter:off
             given()
@@ -184,7 +195,7 @@ class PassTicketTest {
                 .body(new TicketRequest())
                 .cookie(COOKIE, jwt)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_TICKET_URI.get())
             .then()
                 .statusCode(is(SC_BAD_REQUEST))
                 .body("messages.find { it.messageNumber == 'ZWEAG140E' }.messageContent", equalTo(expectedMessage));
@@ -193,7 +204,8 @@ class PassTicketTest {
 
         @Test
         void givenIncorrectHTTPMethod_thenReturnNotAllowed() {
-            String expectedMessage = "The request method has been disabled and cannot be used for the requested resource.";
+            assumeTrue(ZAAS_TICKET_URI.isPresent());
+            var expectedMessage = "The request method has been disabled and cannot be used for the requested resource.";
 
             //@formatter:off
             given()
@@ -201,7 +213,7 @@ class PassTicketTest {
                 .body(new TicketRequest())
                 .cookie(COOKIE, jwt)
             .when()
-                .get(ZAAS_TICKET_URI)
+                .get(ZAAS_TICKET_URI.get())
             .then()
                 .statusCode(is(SC_METHOD_NOT_ALLOWED))
                 .body("messages.find { it.messageNumber == 'ZWEAO405E' }.messageContent", equalTo(expectedMessage));
@@ -210,8 +222,9 @@ class PassTicketTest {
 
         @Test
         void givenInvalidApplicationName() {
-            String expectedMessage = "The generation of the PassTicket failed. Reason:";
-            TicketRequest ticketRequest = new TicketRequest(PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID);
+            assumeTrue(ZAAS_TICKET_URI.isPresent());
+            var expectedMessage = "The generation of the PassTicket failed. Reason:";
+            var ticketRequest = new TicketRequest(PassTicketService.DefaultPassTicketImpl.UNKNOWN_APPLID);
 
             //@formatter:off
             given()
@@ -219,7 +232,7 @@ class PassTicketTest {
                 .body(ticketRequest)
                 .cookie(COOKIE, jwt)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_TICKET_URI.get())
             .then()
                 .statusCode(is(SC_INTERNAL_SERVER_ERROR))
                 .body("messages.find { it.messageNumber == 'ZWEAG141E' }.messageContent", containsString(expectedMessage));
@@ -229,13 +242,14 @@ class PassTicketTest {
         @Test
         @Disabled("Enable once it runs on z/OS. Mimic the behaviour in Mock service.")
         void givenLongApplicationName() {
+            assumeTrue(ZAAS_TICKET_URI.isPresent());
             //@formatter:off
             given()
                 .body(new TicketRequest("TooLongAppName"))
                 .cookie(COOKIE, jwt)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_TICKET_URI.get())
             .then()
                 .statusCode(is(SC_BAD_REQUEST));
             //@formatter:on
@@ -243,13 +257,14 @@ class PassTicketTest {
 
         @Test
         void givenNoContentTypeWithoutContentType() {
+            assumeTrue(ZAAS_TICKET_URI.isPresent());
             //@formatter:off
             given()
                 .body(new TicketRequest(APPLICATION_NAME).toString().getBytes())
                 .cookie(COOKIE, jwt)
                 .noContentType()
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_TICKET_URI.get())
             .then()
                 .statusCode(is(SC_UNSUPPORTED_MEDIA_TYPE));
             //@formatter:on
@@ -257,13 +272,14 @@ class PassTicketTest {
 
         @Test
         void givenNoContentType() {
+            assumeTrue(ZAAS_TICKET_URI.isPresent());
             //@formatter:off
             given()
                 .body(new TicketRequest(APPLICATION_NAME).toString().getBytes())
                 .cookie(COOKIE, jwt)
                 .contentType(JSON)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_TICKET_URI.get())
             .then()
                 .statusCode(is(SC_BAD_REQUEST));
             //@formatter:on
@@ -271,13 +287,14 @@ class PassTicketTest {
 
         @Test
         void givenInvalidContentType() {
+            assumeTrue(ZAAS_TICKET_URI.isPresent());
             //@formatter:off
             given()
                 .body(new TicketRequest(APPLICATION_NAME))
                 .cookie(COOKIE, jwt)
                 .contentType(TEXT)
             .when()
-                .post(ZAAS_TICKET_URI)
+                .post(ZAAS_TICKET_URI.get())
             .then()
                 .statusCode(is(SC_UNSUPPORTED_MEDIA_TYPE));
             //@formatter:on

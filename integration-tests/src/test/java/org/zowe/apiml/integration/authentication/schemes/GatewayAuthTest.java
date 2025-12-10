@@ -25,10 +25,7 @@ import org.zowe.apiml.util.categories.ZaasTest;
 import org.zowe.apiml.util.config.*;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -36,7 +33,9 @@ import java.util.stream.Stream;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.zowe.apiml.util.SecurityUtils.*;
+import static org.zowe.apiml.util.SecurityUtils.generateJwtWithRandomSignature;
+import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
+import static org.zowe.apiml.util.SecurityUtils.validOidcAccessToken;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @ZaasTest
@@ -44,16 +43,12 @@ public class GatewayAuthTest implements TestWithStartedInstances {
 
     private static final GatewayServiceConfiguration GATEWAY_CONF = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     private static final SafIdtConfiguration SAF_IDT_CONF = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
+    private static final String AUTH_PROVIDER = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getAuthProvider();
 
     static Stream<Arguments> validToBeTransformed() {
         List<Arguments> arguments = new ArrayList<>(Arrays.asList(
             Arguments.of("Zowe auth scheme", ZOWE_JWT_REQUEST, (Consumer<Response>) response -> {
                 assertNotNull(response.jsonPath().getString("cookies.apimlAuthenticationToken"), "Expected not null apimlAuthenticationToken. Response was: " + response.asPrettyString());
-                assertNotNull(response.jsonPath().getString("headers.authorization"), "Expected not null Authorization header. Response was: " + response.asPrettyString());
-                assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")), "Expected empty certs list. Response was: " + response.asPrettyString());
-            }),
-            Arguments.of("z/OSMF auth scheme", ZOSMF_REQUEST, (Consumer<Response>) response -> {
-                assertNotNull(response.jsonPath().getString("cookies.jwtToken"), "Expected not null jwtToken cookie. Response was: " + response.asPrettyString());
                 assertNotNull(response.jsonPath().getString("headers.authorization"), "Expected not null Authorization header. Response was: " + response.asPrettyString());
                 assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")), "Expected empty certs list. Response was: " + response.asPrettyString());
             }),
@@ -63,6 +58,13 @@ public class GatewayAuthTest implements TestWithStartedInstances {
                 assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")));
             })
         ));
+        if (AUTH_PROVIDER.equalsIgnoreCase("zosmf")) {
+            arguments.add(Arguments.of("z/OSMF auth scheme", ZOSMF_REQUEST, (Consumer<Response>) response -> {
+                assertNotNull(response.jsonPath().getString("cookies.jwtToken"), "Expected not null jwtToken cookie. Response was: " + response.asPrettyString());
+                assertNotNull(response.jsonPath().getString("headers.authorization"), "Expected not null Authorization header. Response was: " + response.asPrettyString());
+                assertTrue(CollectionUtils.isEmpty(response.jsonPath().getList("certs")), "Expected empty certs list. Response was: " + response.asPrettyString());
+            }));
+        }
         if (SAF_IDT_CONF.isEnabled()) {
             arguments.add(Arguments.of("SAF IDT auth scheme", SAF_IDT_REQUEST, (Consumer<Response>) response -> {
                 assertNull(response.jsonPath().getString("cookies.jwtToken"));
@@ -153,7 +155,7 @@ public class GatewayAuthTest implements TestWithStartedInstances {
         @ParameterizedTest(name = "givenValidRequest_thenOidcIsTransformed {0} [{index}]")
         @MethodSource("org.zowe.apiml.integration.authentication.schemes.GatewayAuthTest#validToBeTransformed")
         void givenValidRequest_thenOidcIsTransformed(String title, String basePath, Consumer<Response> assertions) {
-            String oAuthToken = validOktaAccessToken(true);
+            String oAuthToken = validOidcAccessToken(true);
 
             Response response = given()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + oAuthToken)

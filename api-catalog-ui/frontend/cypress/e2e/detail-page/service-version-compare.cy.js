@@ -38,7 +38,7 @@ describe('>>> Service version compare Test', () => {
             'exist'
         );
 
-        const expectedServicesCount = 17;
+        const expectedServicesCount = 18;
 
         cy.get('div.MuiTabs-flexContainer.MuiTabs-flexContainerVertical') // Select the parent div
             .find('a.MuiTab-root') // Find all the anchor elements within the div

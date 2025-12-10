@@ -75,7 +75,6 @@ class PageRedirectionTest implements TestWithStartedInstances {
     @TestsNotMeantForZowe
     void apiRouteOfDiscoverableClient() {
         String location = String.format("%s://%s:%d%s", dcScheme, dcHost, dcPort, DISCOVERABLE_GREET);
-        String transformedLocation = String.format("%s://%s:%d%s", gatewayScheme, gatewayHost, gatewayPort, STATIC_GREET);
 
         RedirectLocation redirectLocation = new RedirectLocation(location);
 
@@ -86,7 +85,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
             .post(requestUrl)
         .then()
             .statusCode(is(HttpStatus.TEMPORARY_REDIRECT.value()))
-            .header(LOCATION, transformedLocation);
+            .header(LOCATION, STATIC_GREET);
     }
 
     /**

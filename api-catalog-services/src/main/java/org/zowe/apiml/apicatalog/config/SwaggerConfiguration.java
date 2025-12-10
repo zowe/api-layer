@@ -10,6 +10,10 @@
 
 package org.zowe.apiml.apicatalog.config;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -21,6 +25,34 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ConditionalOnMissingBean(name = "modulithConfig")
+@OpenAPIDefinition(
+    security = {
+        @SecurityRequirement(name = "LoginBasicAuth"),
+        @SecurityRequirement(name = "Bearer"),
+        @SecurityRequirement(name = "CookieAuth")
+    },
+    info = @io.swagger.v3.oas.annotations.info.Info(title = "API Catalog", description = """
+        REST API for the API Catalog, which is a component of the API Mediation Layer.
+        Use this API to perform tasks such as retrieve the catalog containers with the Open API documentation.
+        """)
+)
+@io.swagger.v3.oas.annotations.security.SecurityScheme(
+    name = "LoginBasicAuth",
+    type = SecuritySchemeType.HTTP,
+    scheme = "basic"
+)
+@io.swagger.v3.oas.annotations.security.SecurityScheme(
+    name = "Bearer",
+    type = SecuritySchemeType.HTTP,
+    scheme = "bearer",
+    bearerFormat = "JWT"
+)
+@io.swagger.v3.oas.annotations.security.SecurityScheme(
+    name = "CookieAuth",
+    type = SecuritySchemeType.APIKEY,
+    in = SecuritySchemeIn.COOKIE,
+    paramName = "apimlAuthenticationToken"
+)
 public class SwaggerConfiguration {
 
     @Value("${apiml.service.apiDoc.title}")

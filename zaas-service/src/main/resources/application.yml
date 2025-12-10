@@ -118,6 +118,10 @@ spring:
         allow-circular-references: true
         web-application-type: servlet
 
+otel:
+    sdk:
+        disabled: true
+
 springdoc:
     writer-with-order-by-keys: true
 

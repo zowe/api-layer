@@ -1,0 +1,48 @@
+{
+    "groups": [
+        {
+            "name": "apiml",
+            "type": "java.util.Map",
+            "description": "API Mediation Layer configuration option."
+        },
+        {
+            "name": "apiml.security",
+            "type": "java.util.Map",
+            "description": "API Mediation Layer security configuration."
+        },
+        {
+            "name": "apiml.security.x509",
+            "type": "java.util.Map",
+            "description": "Client certificate configuration."
+        },
+        {
+            "name": "apiml.security.x509.registry",
+            "type": "java.util.Map",
+            "description": "Client certificate configuration of /registry endpoint."
+        },
+        {
+            "name": "apiml.gateway",
+            "type": "java.util.Map",
+            "description": "Gateway configuration."
+        },
+        {
+            "name": "apiml.gateway.registry",
+            "type": "java.util.Map",
+            "description": "Gateway configuration of a service registry endpoint."
+        }
+    ],
+    "properties": [
+        {
+            "name": "apiml.security.rauditx.onOidcUserIsMapped",
+            "type": "java.lang.Boolean",
+            "defaultValue": false,
+            "description": "Enable cutting SMF record on mapping distributed user from OIDC token to mainframe one."
+        },
+        {
+            "name": "apiml.security.rauditx.oidcSourceUserPaths",
+            "type": "java.lang.String",
+            "defaultValue": "sub",
+            "description": "Comma separated JSON paths to find source user in the OIDC token to be cut in the SMF record."
+        }
+    ]
+}

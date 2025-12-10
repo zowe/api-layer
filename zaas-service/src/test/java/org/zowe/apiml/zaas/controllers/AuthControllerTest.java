@@ -11,8 +11,9 @@
 package org.zowe.apiml.zaas.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.JsonWebKeySet;
+import org.jose4j.lang.JoseException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,18 +43,32 @@ import org.zowe.apiml.zaas.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
 
 import java.io.IOException;
-import java.text.ParseException;
+import java.math.BigInteger;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_NOT_FOUND;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 class AuthControllerTest {
@@ -81,11 +96,11 @@ class AuthControllerTest {
 
     private MessageService messageService;
 
-    private JWK zosmfJwk, apimlJwk;
+    private JsonWebKey zosmfJwk, apimlJwk;
     private JSONObject body;
 
     @BeforeEach
-    void setUp() throws ParseException, JSONException {
+    void setUp() throws JSONException, JoseException {
         messageService = new YamlMessageService("/zaas-log-messages.yml");
         authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService, tokenProvider, oidcProvider, webFingerProvider);
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
@@ -120,8 +135,8 @@ class AuthControllerTest {
         this.mockMvc.perform(get("/zaas/api/v1/auth/distribute/instance2")).andExpect(status().is(SC_NO_CONTENT));
     }
 
-    private JWK getJwk(int i) throws ParseException {
-        return JWK.parse("{" +
+    private JsonWebKey getJwk(int i) throws JoseException {
+        return JsonWebKey.Factory.newJwk("{" +
             "\"e\":\"AQAB\"," +
             "\"n\":\"kWp2zRA23Z3vTL4uoe8kTFptxBVFunIoP4t_8TDYJrOb7D1iZNDXVeEsYKp6ppmrTZDAgd-cNOTKLd4M39WJc5FN0maTAVKJc7NxklDeKc4dMe1BGvTZNG4MpWBo-taKULlYUu0ltYJuLzOjIrTHfarucrGoRWqM0sl3z2-fv9k\",\n" +
             "\"kty\":\"RSA\",\n" +
@@ -130,13 +145,13 @@ class AuthControllerTest {
     }
 
     private void initPublicKeys() {
-        JWKSet zosmf = mock(JWKSet.class);
-        when(zosmf.getKeys()).thenReturn(
+        var zosmf = mock(JsonWebKeySet.class);
+        when(zosmf.getJsonWebKeys()).thenReturn(
             Collections.singletonList(zosmfJwk)
         );
 
         when(zosmfService.getPublicKeys()).thenReturn(zosmf);
-        when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JWKSet(Collections.singletonList(apimlJwk)));
+        when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JsonWebKeySet(Collections.singletonList(apimlJwk)));
         when(jwtSecurity.getJwkPublicKey()).thenReturn(Optional.of(apimlJwk));
     }
 
@@ -144,34 +159,34 @@ class AuthControllerTest {
     void testGetAllPublicKeys() throws Exception {
         initPublicKeys();
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
-        JWKSet jwkSet = new JWKSet(Arrays.asList(zosmfJwk, apimlJwk));
+        var jwkSet = new JsonWebKeySet(Arrays.asList(zosmfJwk, apimlJwk));
         this.mockMvc.perform(get("/zaas/api/v1/auth/keys/public/all"))
             .andExpect(status().is(SC_OK))
-            .andExpect(content().json(jwkSet.toString()));
+            .andExpect(content().json(jwkSet.toJson()));
     }
 
     @Test
     void givenAPIMLJWTProducer_whenGetAllPublicKeys_thenReturnsOnlyAPIMLKeys() throws Exception {
         initPublicKeys();
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
-        JWKSet jwkSet = new JWKSet(Collections.singletonList(apimlJwk));
+        var jwkSet = new JsonWebKeySet(Collections.singletonList(apimlJwk));
         this.mockMvc.perform(get("/zaas/api/v1/auth/keys/public/all"))
             .andExpect(status().is(SC_OK))
-            .andExpect(content().json(jwkSet.toString()));
+            .andExpect(content().json(jwkSet.toJson()));
     }
 
     @Test
     void givenOIDCJWKSet_whenGetAllPublicKeys_thenIncludeOIDCInResult() throws Exception {
         initPublicKeys();
-        JWKSet mockedJwkSet = mock(JWKSet.class);
-        JWK oidcJwk = getJwk(3);
+        var mockedJwkSet = mock(JsonWebKeySet.class);
+        var oidcJwk = getJwk(3);
         when(oidcProvider.getJwkSet()).thenReturn(mockedJwkSet);
-        when(mockedJwkSet.getKeys()).thenReturn(Collections.singletonList(oidcJwk));
+        when(mockedJwkSet.getJsonWebKeys()).thenReturn(Collections.singletonList(oidcJwk));
 
-        JWKSet jwkSet = new JWKSet(Arrays.asList(apimlJwk, oidcJwk));
+        var jwkSet = new JsonWebKeySet(Arrays.asList(apimlJwk, oidcJwk));
         this.mockMvc.perform(get("/zaas/api/v1/auth/keys/public/all"))
             .andExpect(status().is(SC_OK))
-            .andExpect(content().json(jwkSet.toString()));
+            .andExpect(content().json(jwkSet.toJson()));
     }
 
     @Nested
@@ -180,30 +195,30 @@ class AuthControllerTest {
         void useZoweJwt() throws Exception {
             initPublicKeys();
             when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
-            JWKSet jwkSet = new JWKSet(Collections.singletonList(apimlJwk));
+            var jwkSet = new JsonWebKeySet(Collections.singletonList(apimlJwk));
             mockMvc.perform(get("/zaas/api/v1/auth/keys/public/current"))
                 .andExpect(status().is(SC_OK))
-                .andExpect(content().json(jwkSet.toString()));
+                .andExpect(content().json(jwkSet.toJson()));
         }
 
         @Test
         void returnEmptyWhenUnknown() throws Exception {
             initPublicKeys();
             when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.UNKNOWN);
-            JWKSet jwkSet = new JWKSet(Collections.emptyList());
+            var jwkSet = new JsonWebKeySet(Collections.emptyList());
             mockMvc.perform(get("/zaas/api/v1/auth/keys/public/current"))
                 .andExpect(status().is(SC_OK))
-                .andExpect(content().json(jwkSet.toString()));
+                .andExpect(content().json(jwkSet.toJson()));
         }
 
         @Test
         void useZosmf() throws Exception {
             initPublicKeys();
-            JWKSet jwkSet = new JWKSet(Collections.singletonList(zosmfJwk));
+            var jwkSet = new JsonWebKeySet(Collections.singletonList(zosmfJwk));
             when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
             mockMvc.perform(get("/zaas/api/v1/auth/keys/public/current"))
                 .andExpect(status().is(SC_OK))
-                .andExpect(content().json(jwkSet.toString()));
+                .andExpect(content().json(jwkSet.toJson()));
         }
     }
 
@@ -214,7 +229,7 @@ class AuthControllerTest {
             @Test
             void whenOnlineAndSupportJwt_returnValidPemKey() throws Exception {
                 when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
-                when(zosmfService.getPublicKeys()).thenReturn(new JWKSet(getJwk(0)));
+                when(zosmfService.getPublicKeys()).thenReturn(new JsonWebKeySet(getJwk(0)));
 
                 mockMvc.perform(get("/zaas/api/v1/auth/keys/public"))
                     .andExpect(status().is(SC_OK));
@@ -223,19 +238,18 @@ class AuthControllerTest {
             @Test
             void whenToPublicKeyThrowsException_thenReturnsInternalServerError() throws Exception {
                 byte[] badModulus = new byte[]{0};
-                com.nimbusds.jose.jwk.RSAKey badKey = new com.nimbusds.jose.jwk.RSAKey.Builder(
-                    new java.security.interfaces.RSAPublicKey() {
-                        public java.math.BigInteger getModulus() { return new java.math.BigInteger(badModulus); }
-                        public java.math.BigInteger getPublicExponent() { return java.math.BigInteger.ONE; }
-                        public String getAlgorithm() { return "RSA"; }
-                        public String getFormat() { return null; }
-                        public byte[] getEncoded() { return new byte[0]; }
-                    })
-                    .keyID("broken")
-                    .build();
+
+                var badKey = mock(RSAPublicKey.class);
+                when(badKey.getModulus()).thenReturn(new BigInteger(badModulus));
+                when(badKey.getPublicExponent()).thenReturn(BigInteger.ONE);
+                when(badKey.getAlgorithm()).thenReturn("RSA");
+                when(badKey.getFormat()).thenReturn(null);
+                when(badKey.getEncoded()).thenReturn(new byte[0]);
+
+                var badJwk = JsonWebKey.Factory.newJwk(badKey);
 
                 when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
-                when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JWKSet(List.of(badKey)));
+                when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JsonWebKeySet(List.of(badJwk)));
 
                 mockMvc.perform(get("/zaas/api/v1/auth/keys/public"))
                     .andExpect(status().isInternalServerError())
@@ -253,9 +267,9 @@ class AuthControllerTest {
 
             @Test
             void whenZosmfReturnsIncorrectAmountOfKeys_returnInternalServerError() throws Exception {
-                List<JWK> jwkList = Arrays.asList(mock(JWK.class), mock(JWK.class));
+                var jwkList = Arrays.asList(mock(JsonWebKey.class), mock(JsonWebKey.class));
                 when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.ZOSMF);
-                when(zosmfService.getPublicKeys()).thenReturn(new JWKSet(jwkList));
+                when(zosmfService.getPublicKeys()).thenReturn(new JsonWebKeySet(jwkList));
 
                 mockMvc.perform(get("/zaas/api/v1/auth/keys/public"))
                     .andExpect(status().is(SC_INTERNAL_SERVER_ERROR))
@@ -268,7 +282,7 @@ class AuthControllerTest {
             @Test
             void returnValidPemKey() throws Exception {
                 when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
-                when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JWKSet(getJwk(0)));
+                when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JsonWebKeySet(getJwk(0)));
 
                 mockMvc.perform(get("/zaas/api/v1/auth/keys/public"))
                     .andExpect(status().is(SC_OK));

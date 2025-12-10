@@ -1,6 +1,6 @@
 {
   "name": "@zowe/apiml-onboarding-enabler-nodejs",
-  "version": "3.2.2",
+  "version": "3.2.4",
   "description": "NodeJS enabler for Zowe API Mediation Layer",
   "type": "module",
   "main": "src/index.js",
@@ -20,7 +20,7 @@
   "homepage": ".",
   "dependencies": {
     "async": "3.2.6",
-    "js-yaml": "4.1.0",
+    "js-yaml": "4.1.1",
     "lodash": "4.17.21"
   },
   "devDependencies": {
@@ -52,7 +52,7 @@
     ]
   },
   "engines": {
-    "npm": "=10.9.3",
-    "node": "=20.19.5"
+    "npm": ">=10.9.2",
+    "node": ">=20.19.2"
   }
 }

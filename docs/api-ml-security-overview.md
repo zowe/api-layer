@@ -36,7 +36,7 @@ API ML uses the following authentication methods:
 
 - **OIDC authentication**
  
-  API ML is now able to authenticate mainframe users with an external/distributed Identity Provider (IDP) implemented by an OIDC/OAuth2 provider, such as OKTA, KeyCloak, Microsoft Entra ID (a.k.a. Azure Active Directory) and others.
+  API ML is now able to authenticate mainframe users with an external/distributed Identity Provider (IDP) implemented by an OIDC/OAuth2 provider, such as OKTA, KeyCloak, Auth0, Microsoft Entra ID (a.k.a. Azure Active Directory) and others.
   Client applications can ask their users to log in at the authentication page of the OIDC provider, and then access APIs with the JWT Access Token that is provided by the external IDP. The following process outlines that basic flow:
   - The client application intiates the OIDC authentication flow with the distributed OIDC provider.  
   - The user provides credentials as required at the provider's authentication page/end-point.

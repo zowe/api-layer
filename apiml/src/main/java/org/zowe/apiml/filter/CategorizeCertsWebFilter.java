@@ -265,4 +265,3 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
 
     }
 }
-

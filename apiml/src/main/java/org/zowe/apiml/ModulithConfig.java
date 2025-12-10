@@ -19,6 +19,11 @@ import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.servlet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -81,6 +86,23 @@ import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
 @EnableConfigurationProperties
 @DependsOn(value = {"gatewayHealthIndicator"})
 @Slf4j
+@OpenAPIDefinition(
+    security = {
+        @SecurityRequirement(name = "LoginBasicAuth"),
+        @SecurityRequirement(name = "ClientCert")
+    },
+    info = @Info(title = "API Mediation Layer", description = "The API Mediation Layer REST API.")
+)
+@SecurityScheme(
+    name = "LoginBasicAuth",
+    type = SecuritySchemeType.HTTP,
+    scheme = "basic"
+)
+@SecurityScheme(
+    type = SecuritySchemeType.MUTUALTLS,
+    name = "ClientCert",
+    description = "Client certificate X509"
+)
 public class ModulithConfig implements InitializingBean {
 
     private final ApplicationContext applicationContext;
@@ -114,10 +136,10 @@ public class ModulithConfig implements InitializingBean {
 
     private InstanceInfo getInstanceInfo(String serviceId) {
         var leaseInfo = LeaseInfo.Builder.newBuilder()
-            .setDurationInSecs(Integer.MAX_VALUE)
+            .setDurationInSecs(90)
             .setRegistrationTimestamp(System.currentTimeMillis())
             .setRenewalTimestamp(System.currentTimeMillis())
-            .setRenewalIntervalInSecs(Integer.MAX_VALUE)
+            .setRenewalIntervalInSecs(30)
             .setServiceUpTimestamp(System.currentTimeMillis())
             .build();
 

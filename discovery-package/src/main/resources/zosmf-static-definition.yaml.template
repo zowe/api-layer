@@ -1,7 +1,7 @@
 # Static definition for z/OSMF
 #
 # Once configured you can access z/OSMF via the API gateway:
-# curl -k -X GET -H "X-CSRF-ZOSMF-HEADER: *" https://${ZWE_zowe_externalDomains_0}:${GATEWAY_PORT}/zosmf/api/v1/info
+# curl -k -X GET -H "X-CSRF-ZOSMF-HEADER: *" https://${ZWE_zowe_externalDomains_0}:${GATEWAY_PORT}/ibmzosmf/api/v1/info
 #
 services:
     - serviceId: ibmzosmf
@@ -15,7 +15,8 @@ services:
         - gatewayUrl: api/v1
           serviceRelativeUrl:
       authentication:
-          scheme: zosmf
+          scheme: ${ZOSMF_AUTHENTICATION_SCHEME:-zosmf}
+          applid: ${ZOSMF_APPLID:-IZUDFLT}
       apiInfo:
         - apiId: ibm.zosmf
           gatewayUrl: api/v1
@@ -25,6 +26,10 @@ services:
           apiml:
               enableUrlEncodedCharacters: true
               headersToIgnore: Origin
+              service:
+                scheme: ${ZOSMF_SCHEME}
+                nonSecurePortEnabled: ${ZOSMF_NON_SECURE_PORT_ENABLED:-false}
+                securePortEnabled: ${ZOSMF_SECURE_PORT_ENABLED:-true}
 catalogUiTiles:
     zosmf:
         title: z/OSMF services

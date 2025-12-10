@@ -64,6 +64,7 @@ class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstance
     //@formatter:off
     @Nested
     class AcceptAuthentication {
+
         @Nested
         class WhenCallingTheServiceWithValidToken {
             @Test
@@ -122,11 +123,14 @@ class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstance
                         "items.dsname", hasItems(dsname1, dsname2))
                     .onFailMessage("Accessing " + uri);
             }
+
         }
+
     }
 
     @Nested
     class RejectAuthentication {
+
         @Nested
         class WhenProvidingInvalidAuthentication {
 
@@ -155,13 +159,17 @@ class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstance
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED));
             }
+
         }
+
     }
 
     @Nested
     class GivenNoAuthentication {
+
         @Nested
         class RejectAuthentication {
+
             @Test
             void withoutAnyAuthenticationMethod() {
                 given()
@@ -197,7 +205,10 @@ class ServiceProtectedEndpointIntegrationTest implements TestWithStartedInstance
                 .then()
                     .statusCode(is(SC_UNAUTHORIZED));
             }
+
         }
+
     }
     //@formatter:on
+
 }
