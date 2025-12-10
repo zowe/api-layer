@@ -1311,6 +1311,71 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
+    CITestsCachingChaoticHA:
+        needs: PublishJibContainers
+        container: ubuntu:latest
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        services:
+            caching-service:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    MANAGEMENT_ENDPOINT_SHUTDOWN_ENABLED: true
+                    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,hystrixstream,shutdown
+                    STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_BIND_ADDRESS: caching-service
+                    JGROUPS_KEYEXCHANGE_PORT: 7602
+                    APIML_SERVICE_HOSTNAME: caching-service
+            caching-service-2:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+            caching-service-3:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+            discovery-service:
+                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
+            gateway-service:
+                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Run Caching Chaotic HA Tests
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingService
+                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+            # Coverage results are not stored in this job as it would not provide much additional data
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsWebSocketChaoticHA-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/teardown
+
     CITestsWithInfinispan:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
