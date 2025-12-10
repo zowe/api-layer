@@ -59,7 +59,7 @@ public class CachingService {
     private boolean isUp(int index) {
         try {
             String url = String.format("%s/cachingservice%s", baseUrls.get(index), Endpoints.HEALTH);
-            log.info("Check if {}. Caching Service is up: {}", index, url);
+            log.info("Check if {}. Caching Service is up: {}", index + 1, url);
 
             given()
                 .contentType(JSON)
@@ -110,7 +110,8 @@ public class CachingService {
     }
 
     @Test
-    void testIt() {
+    void givenMultipleInstances_whenShareAValue_thenShutdownDoesntChangeTheState() {
+        log.info("Set value on the first instance");
         given()
             .config(SslContext.clientCertApiml)
             .header("X-Certificate-DistinguishedName", SERVICE)
@@ -124,7 +125,7 @@ public class CachingService {
         int instances = baseUrls.size();
         for (int i = -1; i < instances - 1; i++) {
             if (i >= 0) {
-                // kill caching service
+                log.info("Kill {}. instance of caching service", i + 1);
                 given()
                     .config(SslContext.clientCertApiml)
                     .contentType(JSON)
@@ -136,7 +137,7 @@ public class CachingService {
             }
 
             for (int j = i + 1; j < instances; j++) {
-                // check if the value is accessible
+                log.info("Check if the value is accessible {}. instance", i + 1);
                 given()
                     .config(SslContext.clientCertApiml)
                     .header("X-Certificate-DistinguishedName", SERVICE)
