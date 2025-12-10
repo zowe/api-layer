@@ -98,8 +98,6 @@ class CategorizeCertsWebFilterTest {
         when(mockRequestBuilder.build()).thenReturn(mockRequest);
         when(mockRequestBuilder.headers(any())).thenReturn(mockRequestBuilder);
         when(mockRequestBuilder.build()).thenReturn(mockRequest);
-
-        // Setup log capturing
         logger = (Logger) LoggerFactory.getLogger(CategorizeCertsWebFilter.class);
         logAppender = new ListAppender<>();
         logAppender.start();
@@ -109,7 +107,6 @@ class CategorizeCertsWebFilterTest {
 
     @AfterEach
     void tearDown() {
-        // Clean up log appender
         if (logger != null && logAppender != null) {
             logger.detachAppender(logAppender);
         }
@@ -319,7 +316,6 @@ class CategorizeCertsWebFilterTest {
 
         List<ILoggingEvent> logsList = logAppender.list;
 
-        // Should log ignored certificates
         boolean hasIgnoredLog = logsList.stream()
             .anyMatch(event -> event.getMessage().contains("Certificates ignored/not used for authentication"));
         assertTrue(hasIgnoredLog, "Should log ignored certificates in mixed chain");
@@ -329,7 +325,6 @@ class CategorizeCertsWebFilterTest {
             .anyMatch(event -> event.getFormattedMessage().contains(gatewayCertSubject));
         assertTrue(mentionsGatewayCert, "Should mention ignored gateway certificate");
 
-        // Should NOT mention client certificate as ignored
         String clientCertSubject = clientCert.getSubjectX500Principal().getName();
         long clientCertIgnoredMentions = logsList.stream()
             .filter(event -> event.getMessage().contains("ignored"))
@@ -342,7 +337,6 @@ class CategorizeCertsWebFilterTest {
     void logIgnoredCertificates_whenForwardingModeWithGatewayCertInHeader_logsIgnored() throws CertificateEncodingException {
         Map<String, Object> attributes = new HashMap<>();
         X509Certificate[] tlsChain = {clientCert, gatewayCert};
-        // Using gatewayCert in header (which should be ignored since it's an APIML cert)
         String headerCertBase64 = Base64.getEncoder().encodeToString(gatewayCert.getEncoded());
 
         when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
@@ -359,12 +353,10 @@ class CategorizeCertsWebFilterTest {
 
         List<ILoggingEvent> logsList = logAppender.list;
 
-        // Should log that gateway cert from header was ignored
         boolean hasIgnoredLog = logsList.stream()
             .anyMatch(event -> event.getMessage().contains("Certificates ignored/not used for authentication"));
         assertTrue(hasIgnoredLog, "Should log that header certificate was ignored");
 
-        // Should explain it's an APIML certificate
         boolean explainsReason = logsList.stream()
             .anyMatch(event -> event.getFormattedMessage().contains("is an APIML Gateway certificate"));
         assertTrue(explainsReason, "Should explain why header certificate was ignored");
