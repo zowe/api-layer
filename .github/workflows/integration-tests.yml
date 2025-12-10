@@ -1323,7 +1323,7 @@ jobs:
                 env:
                     MANAGEMENT_ENDPOINT_SHUTDOWN_ENABLED: true
                     MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,hystrixstream,shutdown
-                    STORAGE_MODE: infinispan
+                    CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7098],caching-service-2[7098],caching-service-3[7098]"
                     JGROUPS_BIND_PORT: 7098
                     JGROUPS_BIND_ADDRESS: caching-service
@@ -1334,7 +1334,7 @@ jobs:
                 env:
                     MANAGEMENT_ENDPOINT_SHUTDOWN_ENABLED: true
                     MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,hystrixstream,shutdown
-                    STORAGE_MODE: infinispan
+                    CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7098],caching-service-2[7098],caching-service-3[7098]"
                     JGROUPS_BIND_PORT: 7098
                     JGROUPS_BIND_ADDRESS: caching-service-2
@@ -1345,7 +1345,7 @@ jobs:
                 env:
                     MANAGEMENT_ENDPOINT_SHUTDOWN_ENABLED: true
                     MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,hystrixstream,shutdown
-                    STORAGE_MODE: infinispan
+                    CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7098],caching-service-2[7098],caching-service-3[7098]"
                     JGROUPS_BIND_PORT: 7098
                     JGROUPS_BIND_ADDRESS: caching-service-3
