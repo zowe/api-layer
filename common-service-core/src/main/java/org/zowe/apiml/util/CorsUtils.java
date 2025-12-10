@@ -22,6 +22,7 @@ import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
 public class CorsUtils {
+
     private final List<String> allowedCorsHttpMethods;
     private final boolean corsEnabled;
     private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes\\.[^.]*\\.gateway\\S*");
