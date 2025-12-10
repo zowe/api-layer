@@ -137,7 +137,7 @@ public class CachingService {
             }
 
             for (int j = i + 1; j < instances; j++) {
-                log.info("Check if the value is accessible {}. instance", i + 1);
+                log.info("Check if the value is accessible {}. instance", j + 1);
                 given()
                     .config(SslContext.clientCertApiml)
                     .header("X-Certificate-DistinguishedName", SERVICE)

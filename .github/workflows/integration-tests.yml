@@ -1331,20 +1331,34 @@ jobs:
                     APIML_SERVICE_HOSTNAME: caching-service
             caching-service-2:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    MANAGEMENT_ENDPOINT_SHUTDOWN_ENABLED: true
+                    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,hystrixstream,shutdown
+                    STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_BIND_ADDRESS: caching-service-2
+                    JGROUPS_KEYEXCHANGE_PORT: 7602
+                    APIML_SERVICE_HOSTNAME: caching-service-2
             caching-service-3:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    MANAGEMENT_ENDPOINT_SHUTDOWN_ENABLED: true
+                    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,hystrixstream,shutdown
+                    STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_BIND_ADDRESS: caching-service-3
+                    JGROUPS_KEYEXCHANGE_PORT: 7602
+                    APIML_SERVICE_HOSTNAME: caching-service-3
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
         steps:
             -   uses: actions/checkout@v4
                 with:
