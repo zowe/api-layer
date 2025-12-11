@@ -118,7 +118,7 @@ class ZaasNegativeTest {
 
     @BeforeEach
     void setUp() {
-        assumeTrue(ZAAS_AVAILABLE);
+        assumeTrue(ZAAS_AVAILABLE, "Test expected ZAAS to be available (microservices deployment)");
     }
 
     @Nested
@@ -196,7 +196,7 @@ class ZaasNegativeTest {
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasTokenEndpoints")
         void givenClientAndHeaderCertificates_thenReturnTokenFromClientCert(URI uri, RequestSpecification requestSpecification) throws Exception {
-            assumeTrue(isTestForZOSMF());
+            assumeTrue(isTestForZOSMF(), "Test expects z/OSMF as the configured authentication provider in gatewayServiceConfiguration.authProvider");
             TlsConfiguration tlsCfg = ConfigReader.environmentConfiguration().getTlsConfiguration();
             SslContextConfigurer sslContextConfigurer = new SslContextConfigurer(tlsCfg.getKeyStorePassword(), tlsCfg.getClientKeystore(), tlsCfg.getKeyStore());
             SslContext.prepareSslAuthentication(sslContextConfigurer);

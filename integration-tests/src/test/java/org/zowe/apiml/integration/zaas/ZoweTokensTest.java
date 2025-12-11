@@ -42,6 +42,7 @@ import static org.zowe.apiml.util.SecurityUtils.getZosmfJwtToken;
 import static org.zowe.apiml.util.SecurityUtils.getZosmfLtpaToken;
 import static org.zowe.apiml.util.SecurityUtils.personalAccessToken;
 import static org.zowe.apiml.util.SecurityUtils.validOidcAccessToken;
+import static org.zowe.apiml.util.requests.Endpoints.ZAAS_ZOWE_ENDPOINT;
 
 @ZaasTest
 class ZoweTokensTest implements TestWithStartedInstances {
@@ -56,7 +57,7 @@ class ZoweTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenValidZosmfToken() {
-            assumeTrue(ZAAS_ZOWE_URI.isPresent());
+            assumeTrue(ZAAS_ZOWE_URI.isPresent(), "Test requires " + ZAAS_ZOWE_ENDPOINT + " to be present. It's not present in single-service mode only");
             var zosmfToken = getZosmfJwtToken();
 
             //@formatter:off
@@ -73,8 +74,8 @@ class ZoweTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenValidZoweTokenWithLtpa() throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
-            assumeFalse(isTestForICSF());
-            assumeTrue(ZAAS_ZOWE_URI.isPresent());
+            assumeFalse(isTestForICSF(), "This test can't run with ICSF hardware keys. Certificate mismatch");
+            assumeTrue(ZAAS_ZOWE_URI.isPresent(), "Test requires " + ZAAS_ZOWE_ENDPOINT + " to be present. It's not present in single-service mode only");
             var ltpaToken = getZosmfLtpaToken();
             var zoweToken = generateZoweJwtWithLtpa(ltpaToken);
 
@@ -92,7 +93,7 @@ class ZoweTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenValidAccessToken() {
-            assumeTrue(ZAAS_ZOWE_URI.isPresent());
+            assumeTrue(ZAAS_ZOWE_URI.isPresent(), "Test requires " + ZAAS_ZOWE_ENDPOINT + " to be present. It's not present in single-service mode only");
             var serviceId = "gateway";
             var pat = personalAccessToken(Collections.singleton(serviceId));
 
@@ -112,8 +113,8 @@ class ZoweTokensTest implements TestWithStartedInstances {
         @ParameterizedTest(name = "ZoweTokensTest.givenX509Certificate {1}")
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasTestUtil#provideClientCertificates")
         void givenX509Certificate(String certificate, String description) {
-            assumeTrue(ZAAS_ZOWE_URI.isPresent());
-            assumeFalse(isTestForICSF());
+            assumeTrue(ZAAS_ZOWE_URI.isPresent(), "Test requires " + ZAAS_ZOWE_ENDPOINT + " to be present. It's not present in single-service mode only");
+            assumeFalse(isTestForICSF(), "This test can't run with ICSF hardware keys. Certificate mismatch");
             //@formatter:off
             given()
                 .header("Client-Cert", certificate)
@@ -128,7 +129,7 @@ class ZoweTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenValidOAuthToken() {
-            assumeTrue(ZAAS_ZOWE_URI.isPresent());
+            assumeTrue(ZAAS_ZOWE_URI.isPresent(), "Test requires " + ZAAS_ZOWE_ENDPOINT + " to be present. It's not present in single-service mode only");
             var oAuthToken = validOidcAccessToken(true);
 
             //@formatter:off

@@ -96,7 +96,7 @@ class PassTicketTest {
 
         @Test
         void givenValidZoweTokenWithLtpa() throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
-            assumeFalse(isTestForICSF());
+            assumeFalse(isTestForICSF(), "This test can't run with ICSF hardware keys. Certificate mismatch");
             assumeTrue(ZAAS_TICKET_URI.isPresent());
             var ltpaToken = getZosmfLtpaToken();
             var zoweToken = generateZoweJwtWithLtpa(ltpaToken);
@@ -141,7 +141,7 @@ class PassTicketTest {
         @ParameterizedTest(name = "PassTicketTest.givenX509Certificate {1}")
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasTestUtil#provideClientCertificates")
         void givenX509Certificate(String certificate, String description) {
-            assumeFalse(isTestForICSF());
+            assumeFalse(isTestForICSF(), "This test can't run with ICSF hardware keys. Certificate mismatch");
             assumeTrue(ZAAS_TICKET_URI.isPresent());
             //@formatter:off
             given()

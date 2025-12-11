@@ -28,7 +28,11 @@
         </encoder>
     </appender>
 
-    <if condition='isDefined("apiml.logs.location") &amp;&amp; property("spring.profiles.active").contains("debug")'>
+    <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
+        <key>spring.profiles.active</key>
+        <value>debug</value>
+    </condition>
+    <if>
         <then>
             <appender name="FILE" class="org.zowe.apiml.product.logging.ApimlRollingFileAppender">
                 <file>${STORAGE_LOCATION}/${logbackService:-${logbackServiceName}}.log</file>
@@ -52,7 +56,11 @@
         </then>
     </if>
 
-    <if condition='isDefined("apiml.logs.location") &amp;&amp; property("spring.profiles.active").contains("debug")'>
+    <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
+        <key>spring.profiles.active</key>
+        <value>debug</value>
+    </condition>
+    <if>
         <then>
             <root level="INFO">
                 <appender-ref ref="STDOUT"/>

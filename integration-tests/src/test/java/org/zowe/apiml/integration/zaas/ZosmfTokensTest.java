@@ -32,9 +32,6 @@ import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.COOKIE;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.LTPA_COOKIE;
-import static org.zowe.apiml.integration.zaas.ZaasTestUtil.ZAAS_ZOSMF_URI;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.zowe.apiml.util.SecurityUtils.*;
@@ -71,7 +68,7 @@ class ZosmfTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenValidZoweTokenWithLtpa() throws UnrecoverableKeyException, CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
-            assumeFalse(isTestForICSF());
+            assumeFalse(isTestForICSF(), "This test can't run with ICSF hardware keys. Certificate mismatch");
             assumeTrue(ZAAS_ZOSMF_URI.isPresent());
             var ltpaToken = getZosmfLtpaToken();
             var zoweToken = generateZoweJwtWithLtpa(ltpaToken);
@@ -113,7 +110,7 @@ class ZosmfTokensTest implements TestWithStartedInstances {
         void givenX509Certificate(String certificate, String description) {
             assumeTrue(ZAAS_ZOSMF_URI.isPresent());
             assumeTrue(isTestForZOSMF());
-            assumeFalse(isTestForICSF());
+            assumeFalse(isTestForICSF(), "This test can't run with ICSF hardware keys. Certificate mismatch");
             //@formatter:off
             given()
                 .header("Client-Cert", certificate)
