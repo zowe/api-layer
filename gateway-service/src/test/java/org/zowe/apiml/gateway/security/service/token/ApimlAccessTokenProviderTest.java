@@ -235,10 +235,10 @@ class ApimlAccessTokenProviderTest {
 
         @Test
         void givenNoSaltInCache_whenInitializing_thenCreateNewOne() {
-            byte[] salt = "salt".getBytes();
             Exception noRecordException = new CachingServiceClientException("no record");
             doThrow(noRecordException).when(cachingServiceClient).read("salt");
-            assertEquals(new String(salt), accessTokenProvider.initializeSalt());
+            String salt = accessTokenProvider.initializeSalt();
+            assertEquals(16, salt.length());
             verify(cachingServiceClient, times(1)).create(any());
         }
 
