@@ -71,8 +71,8 @@ public class CachingService {
                 .statusCode(200)
                 .body("status", Matchers.is("UP"));
             return true;
-        } catch (AssertionError e) {
-            log.info("Caching service is down", e);
+        } catch (Throwable t) {
+            log.info("Caching service is down", t);
             return false;
         }
     }
