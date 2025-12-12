@@ -2098,7 +2098,7 @@ jobs:
             -   name: Install NPM dependencies for Node.JS Sample Service
                 uses: bahmutov/npm-install@v1
                 with:
-                    install-command: npm install
+                    install-command: npm ci --legacy-peer-deps
                     working-directory: onboarding-enabler-nodejs-sample-app
 
             -   name: Replace service configuration files
