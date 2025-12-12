@@ -120,5 +120,5 @@ messages:
         type: WARNING
         text: "Cache is not available: %s"
         reason: "Cache is not ready to write at the moment."
-        action: "Verify the instance configuration or connectivity between multiple instances."
+        action: "Wait till initialization of cache is done. In case it is done verify the instance configuration or connectivity between multiple instances."
 
