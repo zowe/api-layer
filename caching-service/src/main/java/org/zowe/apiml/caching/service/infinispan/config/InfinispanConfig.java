@@ -58,9 +58,6 @@ public class InfinispanConfig implements InitializingBean {
     private static final String SERVER_SSL_KEY_STORE_TYPE = "server.ssl.keyStoreType";
     private static final String SERVER_SSL_KEY_STORE = "server.ssl.keyStore";
     private static final String SERVER_SSL_KEY_STORE_PASSWORD = "server.ssl.keyStorePassword";
-    private static final String SERVER_SSL_TRUST_STORE_TYPE = "server.ssl.trustStoreType";
-    private static final String SERVER_SSL_TRUST_STORE = "server.ssl.trustStore";
-    private static final String SERVER_SSL_TRUST_STORE_PASSWORD = "server.ssl.trustStorePassword";
 
     @Value("${caching.storage.infinispan.initialHosts}")
     private String initialHosts;
@@ -73,15 +70,6 @@ public class InfinispanConfig implements InitializingBean {
 
     @Value("${server.ssl.keyStorePassword}")
     private String keyStorePass;
-
-    @Value("${server.ssl.trustStoreType}")
-    private String trustStoreType;
-
-    @Value("${server.ssl.trustStore}")
-    private String trustStore;
-
-    @Value("${server.ssl.trustStorePassword}")
-    private String trustStorePass;
 
     @Value("${jgroups.bind.port}")
     private String port;
@@ -111,10 +99,6 @@ public class InfinispanConfig implements InitializingBean {
             keyStore = formatKeyringUrl(keyStore);
             if (StringUtils.isBlank(keyStorePass)) keyStorePass = KEYRING_PASSWORD;
         }
-        if (isKeyring(trustStore)) {
-            trustStore = formatKeyringUrl(trustStore);
-            if (StringUtils.isBlank(trustStorePass)) trustStorePass = KEYRING_PASSWORD;
-        }
     }
 
     static String getRootFolder() {
@@ -143,17 +127,11 @@ public class InfinispanConfig implements InitializingBean {
         Optional<String> oldKeyStoreType = Optional.ofNullable(System.getProperty("SERVER_SSL_KEY_STORE_TYPE"));
         Optional<String> oldKeyStore = Optional.ofNullable(System.getProperty("SERVER_SSL_KEY_STORE"));
         Optional<String> oldKeyStorePassword = Optional.ofNullable(System.getProperty("SERVER_SSL_KEY_STORE_PASSWORD"));
-        Optional<String> oldTrustStoreType = Optional.ofNullable(System.getProperty("SERVER_SSL_TRUST_STORE_TYPE"));
-        Optional<String> oldTrustStore = Optional.ofNullable(System.getProperty("SERVER_SSL_TRUST_STORE"));
-        Optional<String> oldTrustStorePassword = Optional.ofNullable(System.getProperty("SERVER_SSL_TRUST_STORE_PASSWORD"));
 
         if (!isServerAttlsEnabled) {
             System.setProperty(SERVER_SSL_KEY_STORE_TYPE, keyStoreType);
             System.setProperty(SERVER_SSL_KEY_STORE, keyStore);
             System.setProperty(SERVER_SSL_KEY_STORE_PASSWORD, keyStorePass);
-            System.setProperty(SERVER_SSL_TRUST_STORE_TYPE, trustStoreType);
-            System.setProperty(SERVER_SSL_TRUST_STORE, trustStore);
-            System.setProperty(SERVER_SSL_TRUST_STORE_PASSWORD, trustStorePass);
         }
 
         ConfigurationBuilderHolder holder;
@@ -185,9 +163,6 @@ public class InfinispanConfig implements InitializingBean {
         oldKeyStoreType.ifPresent(keystoreType -> System.setProperty(SERVER_SSL_KEY_STORE_TYPE, keystoreType));
         oldKeyStore.ifPresent(keystore -> System.setProperty(SERVER_SSL_KEY_STORE, keystore));
         oldKeyStorePassword.ifPresent(keystorePassword -> System.setProperty(SERVER_SSL_KEY_STORE_PASSWORD, keystorePassword));
-        oldTrustStoreType.ifPresent(trueststoreType -> System.setProperty(SERVER_SSL_TRUST_STORE_TYPE, trueststoreType));
-        oldTrustStore.ifPresent(truststore -> System.setProperty(SERVER_SSL_TRUST_STORE, truststore));
-        oldTrustStorePassword.ifPresent(truststorePassword -> System.setProperty(SERVER_SSL_TRUST_STORE_PASSWORD, truststorePassword));
 
         return cacheManager;
     }

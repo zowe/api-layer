@@ -26,9 +26,6 @@
             <SSL_KEY_EXCHANGE keystore_name="${server.ssl.keyStore}"
                               keystore_type="${server.ssl.keyStoreType}"
                               keystore_password="${server.ssl.keyStorePassword}"
-                              truststore_name="${server.ssl.trustStore}"
-                              truststore_type="${server.ssl.trustStoreType}"
-                              truststore_password="${server.ssl.trustStorePassword}"
                               secret_key_algorithm="RSA"
                               port="${jgroups.keyExchange.port}"
             />
