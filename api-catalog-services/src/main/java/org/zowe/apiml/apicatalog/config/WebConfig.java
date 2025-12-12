@@ -11,12 +11,14 @@
 package org.zowe.apiml.apicatalog.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.CacheControl;
+import org.springframework.web.reactive.config.CorsRegistry;
 import org.springframework.web.reactive.config.ResourceHandlerRegistry;
 import org.springframework.web.reactive.config.WebFluxConfigurer;
 import org.springframework.web.reactive.function.server.RouterFunction;
@@ -35,6 +37,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 @ComponentScan("org.zowe.apiml.product.web")
 @RequiredArgsConstructor
 @SuppressWarnings("squid:S1192") // using same literals increase the readability
+@Slf4j
 public class WebConfig implements WebFluxConfigurer {
 
     private final ApplicationInfo applicationInfo;
@@ -60,6 +63,12 @@ public class WebConfig implements WebFluxConfigurer {
             .addResourceHandler(prefix + "/resources/**")
             .setCacheControl(CacheControl.maxAge(Duration.ofDays(365L)))
             .addResourceLocations("/resources/", "/resources/static/", "/resources/templates/");
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        log.error("ADD CORS MAPPINGS");
+        registry.addMapping("/**").allowedOrigins("*").allowedMethods("*");
     }
 
     private Mono<ServerResponse> redirect(String path) {

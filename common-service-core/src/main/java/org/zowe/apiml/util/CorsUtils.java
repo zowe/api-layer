@@ -11,6 +11,7 @@
 package org.zowe.apiml.util;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.springframework.web.cors.CorsConfiguration;
 
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class CorsUtils {
 
     private final List<String> allowedCorsHttpMethods;
@@ -41,6 +43,7 @@ public class CorsUtils {
 
     public void setCorsConfiguration(String serviceId, Map<String, String> metadata, TriConsumer<String, String, CorsConfiguration> entryMapper) {
         if (corsEnabled) {
+            log.error("CORS is enabled");
             CorsConfiguration corsConfiguration = setAllowedOriginsForService(metadata);
             metadata.entrySet().stream()
                 .filter(entry -> gatewayRoutesPattern.matcher(entry.getKey()).find())
@@ -72,6 +75,8 @@ public class CorsUtils {
     public void registerDefaultCorsConfiguration(BiConsumer<String, CorsConfiguration> pathMapper) {
         final CorsConfiguration config = new CorsConfiguration();
         List<String> pathsToEnable;
+
+        log.error("CORS enabled: {} REGISTER DEFAULT CORS CONFIGURATION {}", corsEnabled, Arrays.toString(corsAllowedEndpoints.toArray()));
 
         if (corsEnabled) {
             config.setAllowCredentials(true);

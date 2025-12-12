@@ -127,6 +127,12 @@ public class ModulithConfig implements InitializingBean {
     @Value("${apiml.service.port:10010}")
     private int port;
 
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
+
+    @Value("${apiml.service.externalUrl}")
+    private String externalUrl;
+
     @Bean
     ApplicationInfo applicationInfo() {
         return ApplicationInfo.builder()
@@ -148,7 +154,12 @@ public class ModulithConfig implements InitializingBean {
         Map<String, String> metadata = switch (serviceId) {
             case "gateway" -> eurekaInstanceGw.getMetadataMap();
             case "cachingservice" -> cachingServiceEurekaInstanceConfigBean.getMetadataMap();
-            case "apicatalog" -> catalogEurekaInstanceConfigBean.getMetadataMap();
+            case "apicatalog" -> {
+                var customMetadata = catalogEurekaInstanceConfigBean.getMetadataMap();
+                customMetadata.put("apiml.corsEnabled", "true");
+                customMetadata.put("apiml.corsAllowedOrigins", "https://" + hostname + ":" + port + "," + externalUrl);
+                yield customMetadata;
+            }
             default -> new HashMap<>();
         };
 
