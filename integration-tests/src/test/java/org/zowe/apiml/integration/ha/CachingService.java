@@ -50,8 +50,13 @@ public class CachingService {
     private static final String SERVICE = "service";
     private static final String KEY = "aCacheKey" + new Random().nextInt();
     private static final String VALUE = "aCacheValue";
+    private static final String MAP = "aMap";
+    private static final String MAP_KEY = "aMapCacheKey" + new Random().nextInt();
+    private static final String MAP_VALUE = "aMapCacheValue";
+    private static final String DN = "CN=Zowe Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, ST=Prague, C=CZ";
 
     private static final KeyValue KEY_VALUE = new KeyValue(KEY, VALUE);
+    private static final KeyValue MAP_KEY_VALUE = new KeyValue(MAP_KEY, MAP_VALUE);
 
     private Credentials credentials;
     private List<String> baseUrls;
@@ -109,16 +114,59 @@ public class CachingService {
             .until(this::isUp);
     }
 
-    @Test
-    void givenMultipleInstances_whenShareAValue_thenShutdownDoesntChangeTheState() {
-        log.info("Set value on the first instance");
+    private void assertContent(int index) {
+        // check the all records (tokenCache)
         given()
             .config(SslContext.clientCertApiml)
-            .header("X-Certificate-DistinguishedName", SERVICE)
+            .header("X-Certificate-DistinguishedName", DN)
+        .when()
+            .get(baseUrls.get(index) + "/cachingservice/api/v1/cache-list")
+        .then()
+            .statusCode(200)
+            .body(MAP + "." + MAP_KEY, equalTo(MAP_VALUE));
+
+        // check the all records (tokenCache)
+        given()
+            .config(SslContext.clientCertApiml)
+            .header("X-Certificate-DistinguishedName", DN)
+        .when()
+            .get(baseUrls.get(index) + "/cachingservice/api/v1/cache-list/" + MAP)
+        .then()
+            .statusCode(200)
+            .body(MAP_KEY, equalTo(MAP_VALUE));
+
+        // check the concrete record (cache)
+        given()
+            .config(SslContext.clientCertApiml)
+            .header("X-Certificate-DistinguishedName", DN)
+        .when()
+            .get(baseUrls.get(index) + "/cachingservice/api/v1/cache/" + KEY)
+        .then()
+            .statusCode(200)
+            .body("value", equalTo(VALUE));
+    }
+
+    @Test
+    void givenMultipleInstances_whenShareAValue_thenShutdownDoesntChangeTheState() {
+        log.info("Set value on the first instance to cache storage");
+        given()
+            .config(SslContext.clientCertApiml)
+            .header("X-Certificate-DistinguishedName", DN)
             .contentType(JSON)
             .body(KEY_VALUE)
         .when()
             .post(baseUrls.get(0) + "/cachingservice/api/v1/cache")
+        .then()
+            .statusCode(201);
+
+        log.info("Set value on the first instance to tokenCache storage");
+        given()
+            .config(SslContext.clientCertApiml)
+            .header("X-Certificate-DistinguishedName", DN)
+            .contentType(JSON)
+            .body(MAP_KEY_VALUE)
+        .when()
+            .post(baseUrls.get(0) + "/cachingservice/api/v1/cache-list/" + MAP)
         .then()
             .statusCode(201);
 
@@ -138,14 +186,7 @@ public class CachingService {
 
             for (int j = i + 1; j < instances; j++) {
                 log.info("Check if the value is accessible {}. instance", j + 1);
-                given()
-                    .config(SslContext.clientCertApiml)
-                    .header("X-Certificate-DistinguishedName", SERVICE)
-                .when()
-                    .get(baseUrls.get(j) + "/cachingservice/api/v1/cache/" + KEY)
-                .then()
-                    .statusCode(200)
-                    .body("value", equalTo(VALUE));
+                assertContent(j);
             }
         }
 
