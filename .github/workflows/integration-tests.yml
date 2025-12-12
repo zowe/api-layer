@@ -32,7 +32,7 @@ jobs:
                     docker tag hwexpress ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
                     echo "${{ secrets.PERSONAL_JB_TOKEN }}" | docker login ghcr.io -u balhar-jakub --password-stdin
                     docker push ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
-                    
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew clean jib -Djib.serialize=true -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
