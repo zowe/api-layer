@@ -731,3 +731,31 @@ task runChaoticHATests(type: Test) {
     }
 
 }
+
+task runNodeJsSampleServiceTests(type: Test) {
+    group "Integration tests"
+    description "Run tests verifying onboarding of Node.JS Sample service"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'NodeEnablerTest'
+        )
+    }
+}
+
+task runPythonSampleServiceTests(type: Test) {
+    group "Integration tests"
+    description "Run tests verifying onboarding of Python Sample service"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'PythonEnablerTest'
+        )
+    }
+}
