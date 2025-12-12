@@ -2104,7 +2104,7 @@ jobs:
             -   name: Replace service configuration files
                 run: |
                     mv config/docker/nodejs-service/service-configuration.yml onboarding-enabler-nodejs-sample-app/config/service-configuration.yml
-                    mv config/docker/python-service/service-configuration.yml onboarding-enabler-python-sample-app/config/service-configuration.yml
+                    mv config/docker/python-service/service-configuration.yml onboarding-enabler-python-sample-app/src/config/service-configuration.yml
 
             -   name: Run Node.JS Sample Service
                 run: |
