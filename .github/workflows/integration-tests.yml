@@ -2108,6 +2108,7 @@ jobs:
 
             -   name: Run Node.JS Sample Service
                 run: |
+                    npm install
                     npm run onboarding-enabler-nodejs-sample-app
 
             -   name: Install Python dependencies for Python Sample Service
