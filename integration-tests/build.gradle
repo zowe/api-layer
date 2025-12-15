@@ -425,6 +425,7 @@ task runContainerModulithTests(type: Test) {
             'RegistrationTest',
             'ServiceIdPrefixReplacerTest',
             'NodeEnablerTest',
+            'PythonEnablerTest',
             'HATest',
             'ChaoticHATest',
             'InfinispanStorageTest',

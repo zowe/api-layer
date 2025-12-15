@@ -2111,7 +2111,7 @@ jobs:
                     mv config/docker/python-service/service-configuration.yml onboarding-enabler-python-sample-app/src/config/service-configuration.yml
             -   name: Run Node.JS Sample Service
                 run: |
-                    npm run onboarding-enabler-nodejs-sample-app
+                    npm run onboarding-enabler-nodejs-sample-app &
 
             -   name: Install Python dependencies for Python Sample Service
                 run: |
@@ -2123,7 +2123,7 @@ jobs:
             -   name: Run Node.JS Sample Service
                 run: |
                     cd onboarding-enabler-python-sample-app/src
-                    python app.py
+                    python app.py &
 
             -   name: Run Node.JS Service Tests
                 run: >
