@@ -163,10 +163,6 @@ describe('>>> GraphiQL Playground page test', () => {
         cy.get('.graphiql-dialog-header h2').should('be.visible').should('contain', 'Settings');
     });
 
-/*    // Skip flaky tests in the microservice setup
-    if (Cypress.env('microservices')) {
-        return;
-    }*/
     it('Variable usage', () => {
         login();
         cy.contains('Discoverable client with GraphQL').click();
@@ -198,7 +194,9 @@ describe('>>> GraphiQL Playground page test', () => {
 
         const header = '{"X-Custom-Header": "CustomValue"}';
 
-        cy.get('.graphiql-editor-tool').first().first()
+        cy.get('.graphiql-editor-tool .cm-s-graphiql').last().as('headersInput').click();
+
+        cy.get('@headersInput').first()
             .type(header, {parseSpecialCharSequences: false});
 
         cy.get('.graphiql-editor-tool').then(($container) => {
