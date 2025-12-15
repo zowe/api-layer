@@ -163,10 +163,10 @@ describe('>>> GraphiQL Playground page test', () => {
         cy.get('.graphiql-dialog-header h2').should('be.visible').should('contain', 'Settings');
     });
 
-    // Skip flaky tests in the microservice setup
+/*    // Skip flaky tests in the microservice setup
     if (Cypress.env('microservices')) {
         return;
-    }
+    }*/
     it('Variable usage', () => {
         login();
         cy.contains('Discoverable client with GraphQL').click();
