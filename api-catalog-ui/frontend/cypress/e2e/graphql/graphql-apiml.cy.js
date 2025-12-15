@@ -177,7 +177,9 @@ describe('>>> GraphiQL Playground page test', () => {
 
         const variable = '{"id" :"book-1"}';
 
-        cy.get('.graphiql-editor-tool').first().first()
+        cy.get('.graphiql-editor-tool .cm-s-graphiql').first().as('variablesInput').click();
+
+        cy.get('@variablesInput').first()
             .type(variable, {parseSpecialCharSequences: false});
 
         cy.get('.graphiql-editor-tool').then(($container) => {
