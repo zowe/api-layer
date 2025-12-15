@@ -42,6 +42,6 @@ instance:
 
 ssl:
   certificate: ../keystore/docker/all-services.keystore.cer
-  keystore: ../keystore/docker/all-services.keystore.p12
+  keystore: ../keystore/docker/all-services.keystore.key
   caFile: ../keystore/docker/all-services.pem
   keyPassword: password
