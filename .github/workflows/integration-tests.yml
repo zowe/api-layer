@@ -1905,14 +1905,6 @@ jobs:
                 with:
                     name: cypress-snapshots
                     path: api-catalog-ui/frontend/cypress/screenshots
-
-            -   name: Upload videos API Catalog
-                uses: actions/upload-artifact@v4
-                if: always()
-                with:
-                    name: cypress-videos
-                    path: api-catalog-ui/frontend/cypress/videos
-
             -   uses: ./.github/actions/teardown
 
     E2EUITestsModulith:

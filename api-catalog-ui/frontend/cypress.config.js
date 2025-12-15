@@ -28,7 +28,7 @@ module.exports = defineConfig({
     reporterOptions: {
         mochaFile: 'test-results/e2e/output-[hash].xml',
     },
-    video: true,
+    video: false,
     e2e: {
         // We've imported your old cypress plugins here.
         // You may want to clean this up later by importing these.
