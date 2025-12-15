@@ -2123,8 +2123,8 @@ jobs:
                 run: |
                     cd onboarding-enabler-python-sample-app
                     python -m venv venv
-                    source venv/bin/activate
-                    pipenv sync
+                    venv/bin/pip install --upgrade pip pipenv
+                    venv/bin/pipenv sync
 
             -   name: Run Node.JS Sample Service
                 run: |
