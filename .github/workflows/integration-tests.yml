@@ -2120,7 +2120,7 @@ jobs:
 
             -   name: Install Python dependencies for Python Sample Service
                 run: |
-                    cd onboarding-enabler-python-sample-app/src
+                    cd onboarding-enabler-python-sample-app
                     python -m venv venv
                     source venv/bin/activate
                     pipenv sync
