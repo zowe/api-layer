@@ -2095,6 +2095,10 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Install dependencies for onboarding-enabler-nodejs
+                run: |
+                    cd onboarding-enabler-nodejs
+                    npm ci --legacy-peer-deps
             -   name: Install NPM dependencies for Node.JS Sample Service
                 uses: bahmutov/npm-install@v1
                 with:
@@ -2105,12 +2109,8 @@ jobs:
                 run: |
                     mv config/docker/nodejs-service/service-configuration.yml onboarding-enabler-nodejs-sample-app/config/service-configuration.yml
                     mv config/docker/python-service/service-configuration.yml onboarding-enabler-python-sample-app/src/config/service-configuration.yml
-
             -   name: Run Node.JS Sample Service
                 run: |
-                    cd onboarding-enabler-nodejs-sample-app
-                    npm install
-                    cd ..
                     npm run onboarding-enabler-nodejs-sample-app
 
             -   name: Install Python dependencies for Python Sample Service
