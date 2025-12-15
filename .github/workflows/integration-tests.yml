@@ -2119,6 +2119,7 @@ jobs:
                     python-version: "3.14"
 
             -   name: Install Python dependencies for Python Sample Service
+                shell: bash
                 run: |
                     cd onboarding-enabler-python-sample-app
                     python -m venv venv
