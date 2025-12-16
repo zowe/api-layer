@@ -2127,7 +2127,7 @@ jobs:
 
             -   name: Run Node.JS Service Tests
                 run: >
-                     ./gradlew :integration-tests:runNodeJsSampleServiceTests --info -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
+                    ./gradlew :integration-tests:runNodeJsSampleServiceTests --info -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Python Service Tests
