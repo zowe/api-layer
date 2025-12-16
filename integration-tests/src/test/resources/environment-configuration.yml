@@ -12,6 +12,7 @@ gatewayServiceConfiguration:
     instances: 1
     servicesEndpoint: gateway/api/v1/services
     bucketCapacity: 20
+    authProvider: zosmf
 centralGatewayServiceConfiguration:
     scheme: https
     host: localhost
@@ -62,16 +63,13 @@ zosmfServiceConfiguration:
 auxiliaryUserList:
     value: 'servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
 oidcConfiguration:
-    providerName: okta
-    host: https://dev-15878923.okta.com
-    clientId: 0oalf0sc35aNKevXs5d7
-    user: zoweson@zowe.com
-    password: hKE6tisHdujbmSg
+    providerName: auth0
+    host: https://dev-svlu6abyr3eo710c.us.auth0.com
 safIdtConfiguration:
     enabled: true
 instanceEnv:
     # Try to avoid adding quotes to the values of these env variables
-    CMMN_LB: build/libs/api-layer-lite-lib-all.jar
+    CMMN_LB: build/libs/api-layer-lite-lib-all/BOOT-INF/lib/
     ZWE_haInstance_hostname: localhost
     ZOWE_PREFIX: ZWE
     ZWE_configs_apiml_service_allowEncodedSlashes: true

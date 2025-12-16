@@ -29,7 +29,8 @@ public class GatewayServiceConfiguration implements ServiceConfiguration {
     private String internalPorts;
     private String servicesEndpoint;
     private int bucketCapacity;
-
+    private String authProvider;
+  
     @Override
     public String getServiceId() {
         return CoreService.GATEWAY.getServiceId();

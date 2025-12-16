@@ -48,6 +48,7 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 class PATWithAllSchemesTest {
 
     private static SafIdtConfiguration safIdtConfig = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
+    private static final String AUTH_PROVIDER = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getAuthProvider();
 
     static Stream<Arguments> authentication() {
         return Stream.of(
@@ -67,7 +68,7 @@ class PATWithAllSchemesTest {
             String jwt = r.getBody().path("headers.cookie").toString();
             try {
                 String issuer = JWTParser.parse(jwt.substring(COOKIE_NAME.length()).trim()).getJWTClaimsSet().toJSONObject().get("iss").toString();
-                assertEquals("zOSMF", issuer);
+                assertEquals(AUTH_PROVIDER.equalsIgnoreCase("saf") ? "APIML" : "zOSMF", issuer);
             } catch (ParseException e) {
                 fail(e);
             }

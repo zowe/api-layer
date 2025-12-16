@@ -35,8 +35,7 @@ import org.springframework.cloud.gateway.config.HttpClientProperties;
 import org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter;
 import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
-import org.springframework.cloud.netflix.eureka.RestClientTimeoutProperties;
-import org.springframework.cloud.netflix.eureka.http.DefaultEurekaClientHttpRequestFactorySupplier;
+import org.springframework.cloud.netflix.eureka.http.EurekaClientHttpRequestFactorySupplier;
 import org.springframework.cloud.netflix.eureka.http.RestClientDiscoveryClientOptionalArgs;
 import org.springframework.cloud.netflix.eureka.http.RestClientTransportClientFactories;
 import org.springframework.cloud.util.ProxyUtils;
@@ -58,6 +57,7 @@ import org.zowe.apiml.gateway.filters.proxyheaders.AdditionalRegistrationGateway
 import org.zowe.apiml.gateway.filters.proxyheaders.X509AndGwAwareXForwardedHeadersFilter;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.web.DiscoveryRestTemplateConfig;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.common.util.ConnectionUtil;
@@ -98,6 +98,9 @@ public class ConnectionsConfig {
 
     @Value("${apiml.service.externalUrl:}")
     private String externalUrl;
+
+    @Value("${apiml.service.corsAllowedEndpoints:/gateway/**}")
+    private final List<String> corsEnabledEndpoints;
 
     /**
      * @param httpClient             default http client
@@ -149,29 +152,21 @@ public class ConnectionsConfig {
     @RefreshScope
     @ConditionalOnMissingBean(EurekaClient.class)
     CloudEurekaClient primaryEurekaClient(ApplicationInfoManager manager, EurekaClientConfig config,
-                                                 @Autowired(required = false) HealthCheckHandler healthCheckHandler) {
+                                          @Autowired(required = false) HealthCheckHandler healthCheckHandler) {
         ApplicationInfoManager appManager;
         if (AopUtils.isAopProxy(manager)) {
             appManager = ProxyUtils.getTargetObject(manager);
         } else {
             appManager = manager;
         }
-        RestClientDiscoveryClientOptionalArgs args1 = defaultArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
+        RestClientDiscoveryClientOptionalArgs args1 = defaultArgs(DiscoveryRestTemplateConfig.getDefaultEurekaClientHttpRequestFactorySupplier());
         RestClientTransportClientFactories factories = new RestClientTransportClientFactories(args1);
         final CloudEurekaClient cloudEurekaClient = new CloudEurekaClient(appManager, config, factories, args1, this.context);
         cloudEurekaClient.registerHealthCheck(healthCheckHandler);
         return cloudEurekaClient;
     }
 
-    private static DefaultEurekaClientHttpRequestFactorySupplier getDefaultEurekaClientHttpRequestFactorySupplier() {
-        RestClientTimeoutProperties properties = new RestClientTimeoutProperties();
-        properties.setConnectTimeout(180000);
-        properties.setConnectRequestTimeout(180000);
-        properties.setSocketTimeout(180000);
-        return new DefaultEurekaClientHttpRequestFactorySupplier(properties);
-    }
-
-    public RestClientDiscoveryClientOptionalArgs defaultArgs(DefaultEurekaClientHttpRequestFactorySupplier factorySupplier) {
+    public RestClientDiscoveryClientOptionalArgs defaultArgs(EurekaClientHttpRequestFactorySupplier factorySupplier) {
         RestClientDiscoveryClientOptionalArgs clientArgs = new RestClientDiscoveryClientOptionalArgs(factorySupplier, RestClient::builder);
 
         if (eurekaServerUrl.startsWith("http://")) {
@@ -233,7 +228,7 @@ public class ConnectionsConfig {
 
         updateMetadata(newInfo, apimlRegistration);
 
-        RestClientDiscoveryClientOptionalArgs args1 = defaultArgs(getDefaultEurekaClientHttpRequestFactorySupplier());
+        RestClientDiscoveryClientOptionalArgs args1 = defaultArgs(DiscoveryRestTemplateConfig.getDefaultEurekaClientHttpRequestFactorySupplier());
         RestClientTransportClientFactories factories = new RestClientTransportClientFactories(args1);
         return eurekaFactory.createCloudEurekaClient(new AdditionalEurekaConfiguration(eurekaInstanceConfig, newInfo), newInfo, configBean, context, factories, args1);
     }
@@ -242,7 +237,7 @@ public class ConnectionsConfig {
         return StringUtils.startsWith(key, ROUTES + ".") &&
             (
                 StringUtils.endsWith(key, "." + ROUTES_GATEWAY_URL) ||
-                StringUtils.endsWith(key, "." + ROUTES_SERVICE_URL)
+                    StringUtils.endsWith(key, "." + ROUTES_SERVICE_URL)
             );
     }
 
@@ -272,12 +267,12 @@ public class ConnectionsConfig {
             .timeLimiterConfig(
                 TimeLimiterConfig.custom()
                     .timeoutDuration(Duration.ofMillis(config.getRequestConnectionTimeout()))
-                .build()).build());
+                    .build()).build());
     }
 
     @Bean
     CorsUtils corsUtils() {
-        return new CorsUtils(corsEnabled, corsAllowedMethods);
+        return new CorsUtils(corsEnabled, corsAllowedMethods, corsEnabledEndpoints);
     }
 
     @Bean
@@ -285,7 +280,7 @@ public class ConnectionsConfig {
         return new CorsWebFilter(serviceCorsUpdater.getUrlBasedCorsConfigurationSource());
     }
 
-    public InstanceInfo create(EurekaInstanceConfig config)  {
+    public InstanceInfo create(EurekaInstanceConfig config) {
         LeaseInfo.Builder leaseInfoBuilder = LeaseInfo.Builder.newBuilder()
             .setRenewalIntervalInSecs(config.getLeaseRenewalIntervalInSeconds())
             .setDurationInSecs(config.getLeaseExpirationDurationInSeconds());
@@ -321,7 +316,7 @@ public class ConnectionsConfig {
             .setSecureVIPAddress(config.getSecureVirtualHostName())
             .setHomePageUrl(null, UriComponentsBuilder.fromUriString(externalUrl).path(config.getHomePageUrlPath()).toUriString())
             .setStatusPageUrl(null, UriComponentsBuilder.fromUriString(externalUrl).path(config.getStatusPageUrlPath()).toUriString())
-            .setHealthCheckUrls(config.getHealthCheckUrlPath(), null,null)
+            .setHealthCheckUrls(config.getHealthCheckUrlPath(), null, null)
             .setASGName(config.getASGName());
 
         // Start off with the STARTING state to avoid traffic
@@ -331,8 +326,7 @@ public class ConnectionsConfig {
                 log.info("Setting initial instance status as: " + initialStatus);
             }
             builder.setStatus(initialStatus);
-        }
-        else {
+        } else {
             if (log.isInfoEnabled()) {
                 log.info("Setting initial instance status as: " + InstanceInfo.InstanceStatus.UP
                     + ". This may be too early for the instance to advertise itself as available. "
@@ -398,9 +392,13 @@ public class ConnectionsConfig {
         interface NonDelegated {
 
             String getHostName(boolean refresh);
+
             String getHealthCheckUrl();
+
             String getSecureHealthCheckUrl();
+
             String getHomePageUrl();
+
             String getStatusPageUrl();
 
         }

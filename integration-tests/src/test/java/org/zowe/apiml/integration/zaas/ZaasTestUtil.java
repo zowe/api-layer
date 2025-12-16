@@ -10,9 +10,9 @@
 
 package org.zowe.apiml.integration.zaas;
 
-import lombok.experimental.UtilityClass;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.junit.jupiter.params.provider.Arguments;
+import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
@@ -23,27 +23,43 @@ import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.zowe.apiml.util.SecurityUtils.getClientCertificate;
 import static org.zowe.apiml.util.SecurityUtils.getDummyClientCertificate;
 import static org.zowe.apiml.util.requests.Endpoints.*;
 
-@UtilityClass
 public class ZaasTestUtil {
 
-    static final URI ZAAS_TICKET_URI = HttpRequestUtils.getUriFromZaas(ZAAS_TICKET_ENDPOINT);
-    static final URI ZAAS_ZOSMF_URI = HttpRequestUtils.getUriFromZaas(ZAAS_ZOSMF_ENDPOINT);
-    static final URI ZAAS_ZOWE_URI = HttpRequestUtils.getUriFromZaas(ZAAS_ZOWE_ENDPOINT);
+    private ZaasTestUtil() {
+        super();
+    }
 
-    static final URI ZAAS_SAFIDT_URI = HttpRequestUtils.getUriFromZaas(ZAAS_SAFIDT_ENDPOINT);
+    /**
+     * /zaas/scheme/ticket is not usable when running in single-service mode
+     */
+    static final Optional<URI> ZAAS_TICKET_URI = HttpRequestUtils.getUriFromZaas(ZAAS_TICKET_ENDPOINT);
+    /**
+     * /zaas/scheme/zosmf is not usable when running in single-service mode
+     */
+    static final Optional<URI> ZAAS_ZOSMF_URI = HttpRequestUtils.getUriFromZaas(ZAAS_ZOSMF_ENDPOINT);
+    /**
+     * /zaas/scheme/zoweJwt is not usable when running in single-service mode
+     */
+    static final Optional<URI> ZAAS_ZOWE_URI = HttpRequestUtils.getUriFromZaas(ZAAS_ZOWE_ENDPOINT);
+    /**
+     * /zaas/scheme/safIdt is not usable when running in single-service mode
+     */
+    static final Optional<URI> ZAAS_SAFIDT_URI = HttpRequestUtils.getUriFromZaas(ZAAS_SAFIDT_ENDPOINT);
 
     static final String COOKIE = "apimlAuthenticationToken";
     static final String LTPA_COOKIE = "LtpaToken2";
 
     static final boolean ZOS_TARGET = Boolean.parseBoolean(System.getProperty("environment.zos.target", "false"));
+    static final String AUTH_PROVIDER = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getAuthProvider();
 
-    static Stream<Arguments> provideClientCertificates() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException {
+    public static Stream<Arguments> provideClientCertificates() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, NoSuchProviderException, OperatorCreationException {
         List<Arguments> args = new ArrayList<>();
         args.add(Arguments.of(getClientCertificate(), "client certificate"));
         if (!ZOS_TARGET) {
@@ -51,4 +67,25 @@ public class ZaasTestUtil {
         }
         return args.stream();
     }
+
+    /**
+     * Some tests are written as integration tests and make the test runner act as the Gateway (they sign tokens for example, or use the server's private key to act as Gateway)
+     * These tests cannot run in an environment where the server has the private key in hardware as it is not available to the runner and the validations fail because the runner
+     * cannot provide valid server credentials.
+     *
+     * @return a boolean indicating if the test runner is working against an instance with ICSF hardware keyring
+     */
+    public static boolean isTestForICSF() {
+        return Boolean.getBoolean("hwkeyring");
+    }
+
+    /**
+     * Is z/OSMF the configured authentication provider
+     *
+     * @return
+     */
+    static boolean isTestForZOSMF() {
+        return AUTH_PROVIDER.equalsIgnoreCase("zosmf");
+    }
+
 }

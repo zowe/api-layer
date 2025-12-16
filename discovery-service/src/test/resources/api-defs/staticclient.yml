@@ -23,18 +23,18 @@ services:
           serviceRelativeUrl: /ws
         - gatewayUrl: api-doc
           serviceRelativeUrl: /api-doc
-    - serviceId: toAddAuth
+    - serviceId: toaddauth
       title: Service to add auth info
       instanceBaseUrls:
         - https://localhost:10012/discoverableclient
-    - serviceId: toReplaceAuth
+    - serviceId: toreplaceauth
       title: Service to replace auth info
       instanceBaseUrls:
         - https://localhost:10012/discoverableclient
       authentication:
         scheme: httpBasicPassTicket
         applid: TSTAPPL2
-    - serviceId: nowFixedAuth
+    - serviceId: nowfixedauth
       title: Service with temporary auth, althought auth is defined now
       instanceBaseUrls:
         - https://localhost:10012/discoverableclient
@@ -43,16 +43,16 @@ services:
           applid: TSTAPPL3
 
 additionalServiceMetadata:
-    - serviceId: toAddAuth
+    - serviceId: toaddauth
       authentication:
         scheme: httpBasicPassTicket
         applid: TSTAPPL4
-    - serviceId: toReplaceAuth
+    - serviceId: toreplaceauth
       mode: FORCE_UPDATE
       authentication:
         scheme: httpBasicPassTicket
         applid: TSTAPPL5
-    - serviceId: nowFixedAuth
+    - serviceId: nowfixedauth
       authentication:
         scheme: httpBasicPassTicket
         applid: TSTAPPL6

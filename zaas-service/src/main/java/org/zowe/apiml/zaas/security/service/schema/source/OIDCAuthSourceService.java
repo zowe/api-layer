@@ -12,6 +12,7 @@ package org.zowe.apiml.zaas.security.service.schema.source;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -21,11 +22,8 @@ import org.springframework.stereotype.Service;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
-import org.zowe.apiml.security.common.token.NoMainframeIdentityException;
-import org.zowe.apiml.security.common.token.OIDCProvider;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.audit.RauditxService;
+import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
@@ -35,8 +33,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static org.zowe.apiml.zaas.security.service.JwtUtils.getFieldValuesFromToken;
+import static org.zowe.apiml.security.common.util.JwtUtils.getFieldValuesFromToken;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
@@ -49,6 +48,13 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
     private final AuthenticationService authenticationService;
     private final OIDCProvider oidcProvider;
     private final TokenCreationService tokenService;
+    private final RauditxService rauditxService;
+
+    @Value("${apiml.security.rauditx.onOidcUserIsMapped:false}")
+    private boolean rauditxOnOidcUserIsMapped;
+
+    @Value("${apiml.security.rauditx.oidcSourceUserPaths:sub}")
+    private List<String> oidcSourceUserPaths;
 
     @Value("${apiml.security.oidc.userIdField:sub}")
     protected String userIdFieldPathProperty;
@@ -115,7 +121,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
     public AuthSource.Parsed parse(AuthSource authSource) {
         if (authSource instanceof OIDCAuthSource oidcAuthSource) {
             if (isValid(oidcAuthSource)) {
-                return parseOIDCToken( oidcAuthSource, mapper);
+                return parseOIDCToken(oidcAuthSource, mapper);
             }
             throw new TokenNotValidException("OIDC token is not valid.");
         }
@@ -126,7 +132,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
      * Parse OIDC token
      *
      * @param oidcAuthSource{@link OIDCAuthSource} object which hold original source of authentication - OIDC token.
-     * @param mapper     instance of {@link AuthenticationMapper} to use for parsing.
+     * @param mapper               instance of {@link AuthenticationMapper} to use for parsing.
      * @return parsed authentication source.
      */
     private AuthSource.Parsed parseOIDCToken(OIDCAuthSource oidcAuthSource, AuthenticationMapper mapper) {
@@ -137,6 +143,22 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
         if (StringUtils.isEmpty(mappedUser)) {
             logger.log(MessageType.DEBUG, "No mainframe user id retrieved. Cancel parsing of OIDC token.");
             throw new NoMainframeIdentityException("No mainframe identity found.", token, true);
+        } else {
+            if (rauditxOnOidcUserIsMapped) {
+                var rauditx = rauditxService.builder()
+                    .authentication()
+                    .alwaysLogSuccesses()
+                    .userId(mappedUser)
+                    .messageSegment("The OIDC token was mapped to the user account")
+                    .success();
+                try {
+                    getFieldValuesFromToken(token, oidcSourceUserPaths)
+                        .forEach(rauditx::sourceUserId);
+                } catch (Exception e) {
+                    log.debug("Cannot obtain source users from the OIDC token", e);
+                }
+                rauditx.issue();
+            }
         }
         logger.log(MessageType.DEBUG, "Parsing OIDC token.");
         QueryResponse response = authenticationService.parseJwtToken(token);

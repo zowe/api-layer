@@ -81,13 +81,19 @@ else
     JAR_FILE="$(pwd)/bin/zaas-service-lite.jar"
 fi
 echo "jar file: "${JAR_FILE}
-# script assumes it's in the ZAAS component directory and common_lib needs to be relative path
 
+# script assumes it's in the ZAAS component directory and common_lib needs to be relative path
 if [ -z "${CMMN_LB}" ]
 then
-    COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
+    COMMON_LIB="../apiml-common-lib/bin/BOOT-INF/lib/"
 else
     COMMON_LIB=${CMMN_LB}
+fi
+
+# script assumes it's in the zaas component directory and jvm.security.override.properties needs to be relative path
+JVM_SECURITY_PROPERTIES=""
+if [ "${JVM_SECURITY_PROPERTIES_OVERRIDE:-false}" = "true" ]; then
+    JVM_SECURITY_PROPERTIES="-Djava.security.properties=../apiml-common-lib/bin/jvm.security.override.properties"
 fi
 
 if [ -z "${LIBRARY_PATH}" ]
@@ -312,11 +318,14 @@ CERTIFICATES_URLS=${ZWE_configs_apiml_security_x509_certificatesUrl:-${ZWE_compo
 CERTIFICATES_URLS=${ZWE_configs_apiml_security_x509_certificatesUrls:-${ZWE_components_gateway_apiml_security_x509_certificatesUrls:-${CERTIFICATES_URLS}}}
 
 ZAAS_CODE=AZ
+SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal"
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} ${JAVA_BIN_DIR}java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     ${QUICK_START} \
+    ${SHARED_CLASSES_OPTS} \
     ${ADD_OPENS} \
     ${LOGBACK} \
+    ${JVM_SECURITY_PROPERTIES} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
@@ -384,6 +393,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} ${JAVA_BIN_DIR}java \
     -Dloader.path=${ZAAS_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
+    -Dotel.sdk.disabled=true \
     -jar ${JAR_FILE} &
 
 pid=$!

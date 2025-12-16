@@ -165,7 +165,6 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
                 assertNotNull(componentSchemas.get("APIContainer"), apiCatalogSwagger);
                 assertNotNull(componentSchemas.get("APIService"), apiCatalogSwagger);
                 assertNotNull(securitySchemes.get(BASIC_SCHEME), apiCatalogSwagger);
-                assertNotNull(securitySchemes.get("CookieAuth"), apiCatalogSwagger);
             }
 
             @Test
@@ -200,7 +199,6 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
                 assertNotNull(componentSchemas.get("APIContainer"), apiCatalogSwagger);
                 assertNotNull(componentSchemas.get("APIService"), apiCatalogSwagger);
                 assertNotNull(securitySchemes.get(BASIC_SCHEME), apiCatalogSwagger);
-                assertNotNull(securitySchemes.get("CookieAuth"), apiCatalogSwagger);
             }
         }
 

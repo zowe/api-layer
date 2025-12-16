@@ -13,18 +13,18 @@ package org.zowe.apiml.zaas.security.service.token;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.jsonwebtoken.Clock;
-import io.jsonwebtoken.impl.DefaultClock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+
+import java.time.Clock;
 
 @Configuration
 public class OIDCConfig {
 
     @Bean("oidcJwtClock")
     public Clock oidcJwtClock() {
-        return new DefaultClock();
+        return Clock.systemUTC();
     }
 
     @Bean("oidcJwkMapper")

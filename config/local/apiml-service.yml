@@ -64,3 +64,11 @@ jgroups:
         port: 7600
         address: localhost
 
+spring:
+    cloud:
+        gateway:
+            server:
+                webflux:
+                    httpclient:
+                        websocket:
+                            max-frame-payload-length: 3145728

@@ -35,6 +35,8 @@ import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.function.Predicate;
 
+import static org.zowe.apiml.util.ServletRequestUtils.isClientCertificateIgnored;
+
 /**
  * This filter processes certificates on request. It decides, which certificates are considered for client authentication
  */
@@ -66,21 +68,30 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      * @param request Request to filter certificates
      */
     private void categorizeCerts(ServletRequest request) {
-        X509Certificate[] certs = (X509Certificate[]) request.getAttribute(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
+        var httpServletRequest = (HttpServletRequest) request;
+        var certs = (X509Certificate[]) httpServletRequest.getAttribute(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
         if (certs != null && certs.length > 0) {
-            Optional<Certificate> clientCert = getClientCertFromHeader((HttpServletRequest) request);
-            if (certificateValidator.isForwardingEnabled() && certificateValidator.hasGatewayChain(certs) && clientCert.isPresent()) {
-                certificateValidator.updateAPIMLPublicKeyCertificates(certs);
-                // add the client certificate to the certs array
-                String subjectDN = ((X509Certificate) clientCert.get()).getSubjectX500Principal().getName();
-                log.debug("Found client certificate in header, adding it to the request. Subject DN: {}", subjectDN);
-                request.setAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(new X509Certificate[]{(X509Certificate) clientCert.get()}, certificateForClientAuth));
-            } else {
-                request.setAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth));
-                request.setAttribute(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, apimlCertificate));
+            Optional<Certificate> clientCert = getClientCertFromHeader(httpServletRequest);
+            if (certificateValidator.isForwardingEnabled() && certificateValidator.hasGatewayChain(certs)) {
+                if (clientCert.isPresent()) {
+                    certificateValidator.updateAPIMLPublicKeyCertificates(certs);
+                    // add the client certificate to the certs array
+                    String subjectDN = ((X509Certificate) clientCert.get()).getSubjectX500Principal().getName();
+                    log.debug("Found client certificate in header, adding it to the request. Subject DN: {}", subjectDN);
+                    httpServletRequest.setAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(new X509Certificate[]{(X509Certificate) clientCert.get()}, certificateForClientAuth));
+                    return;
+                } else if (isClientCertificateIgnored(httpServletRequest)) {
+                    log.debug("Client certificate is ignored.");
+                    httpServletRequest.removeAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
+                    httpServletRequest.removeAttribute(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
+                    return;
+                }
             }
 
-            log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, request.getAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE));
+            httpServletRequest.setAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth));
+            httpServletRequest.setAttribute(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, apimlCertificate));
+
+            log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, httpServletRequest.getAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE));
         }
     }
 

@@ -63,6 +63,12 @@ then
     ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}debug"
 fi
 
+# script assumes it's in the caching-service component directory and jvm.security.override.properties needs to be relative path
+JVM_SECURITY_PROPERTIES=""
+if [ "${JVM_SECURITY_PROPERTIES_OVERRIDE:-false}" = "true" ]; then
+    JVM_SECURITY_PROPERTIES="-Djava.security.properties=../apiml-common-lib/bin/jvm.security.override.properties"
+fi
+
 if [ -z "${LIBRARY_PATH}" ]
 then
     LIBRARY_PATH="../common-java-lib/bin/"
@@ -244,13 +250,16 @@ if [ -d "${original_infinispan_index_location}" ]; then
 fi
 
 CACHING_CODE=CS
+SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal"
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
   -XX:+ExitOnOutOfMemoryError \
   ${QUICK_START} \
+  ${SHARED_CLASSES_OPTS} \
   ${ADD_OPENS} \
   ${LOGBACK} \
+  ${JVM_SECURITY_PROPERTIES} \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
   -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
@@ -292,6 +301,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Djava.net.preferIPv4Stack=true \
   -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
   -Djava.library.path=${LIBPATH} \
+  -Dotel.sdk.disabled=true \
   -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"

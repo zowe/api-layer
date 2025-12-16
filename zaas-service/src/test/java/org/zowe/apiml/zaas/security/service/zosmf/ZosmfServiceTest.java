@@ -16,9 +16,9 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.util.DefaultResourceRetriever;
-import com.nimbusds.jose.util.Resource;
 import org.hamcrest.collection.IsMapContaining;
+import org.jose4j.jwk.JsonWebKeySet;
+import org.jose4j.lang.JoseException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
@@ -60,6 +60,7 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.ParsedTokenAuthSource;
+import org.zowe.apiml.zaas.security.service.token.JWKResolver;
 
 import javax.management.ServiceNotFoundException;
 import javax.net.ssl.SSLHandshakeException;
@@ -108,24 +109,20 @@ class ZosmfServiceTest {
     private static final String ZOSMF_ID = "zosmf";
 
     private final AuthConfigurationProperties authConfigurationProperties = mock(AuthConfigurationProperties.class);
-
     @Mock
     private RestTemplate restTemplate;
-
     @Mock
     private ApplicationContext applicationContext;
-
     @Mock
     private TokenValidationStrategy tokenValidationStrategy1;
-
     @Mock
     private TokenValidationStrategy tokenValidationStrategy2;
-
     @Mock
     private AuthenticationService authenticationService;
-
     @Mock
     private TokenCreationService tokenCreationService;
+    @Mock
+    private JWKResolver jwkResolver;
 
     private final List<TokenValidationStrategy> validationStrategyList = new ArrayList<>();
 
@@ -142,7 +139,7 @@ class ZosmfServiceTest {
             applicationContext,
             authenticationService,
             null,
-            null);
+            jwkResolver);
         ZosmfService zosmfService = spy(zosmfServiceObj);
         doReturn(ZOSMF_ID).when(zosmfService).getZosmfServiceId();
         doReturn("http://zosmf:1433").when(zosmfService).getURI(ZOSMF_ID);
@@ -717,16 +714,13 @@ class ZosmfServiceTest {
                 """;
 
         @Test
-        void thenSuccess() throws JSONException, IOException {
+        void thenSuccess() throws JSONException, IOException, JoseException {
             String zosmfJwtUrl = "/jwt/ibm/api/zOSMFBuilder/jwk";
             when(authConfigurationProperties.getZosmf().getJwtEndpoint()).thenReturn(zosmfJwtUrl);
             ZosmfService zosmfService = getZosmfServiceSpy();
-            DefaultResourceRetriever resourceRetriever = mock(DefaultResourceRetriever.class);
-            ReflectionTestUtils.setField(zosmfService, "resourceRetriever", resourceRetriever);
 
-            when(resourceRetriever.retrieveResource(any())).thenReturn(new Resource(ZOSMF_PUBLIC_KEY_JSON, null));
-
-            JSONAssert.assertEquals(ZOSMF_PUBLIC_KEY_JSON, new JSONObject(zosmfService.getPublicKeys().toString()), true);
+            when(jwkResolver.resolve(any())).thenReturn(new JsonWebKeySet(ZOSMF_PUBLIC_KEY_JSON));
+            JSONAssert.assertEquals(ZOSMF_PUBLIC_KEY_JSON, new JSONObject(zosmfService.getPublicKeys().toJson()), true);
         }
 
         @Test
@@ -746,9 +740,10 @@ class ZosmfServiceTest {
     class WhenGetsPublicKeys {
 
         @Test
-        void givenExceptionInTheResponse_thenPublicKeysAreEmpty() {
+        void givenExceptionInTheResponse_thenPublicKeysAreEmpty() throws JoseException, IOException {
             ZosmfService zosmfService = getZosmfServiceSpy();
-            assertTrue(zosmfService.getPublicKeys().getKeys().isEmpty());
+            when(jwkResolver.resolve(any())).thenThrow(IOException.class);
+            assertTrue(zosmfService.getPublicKeys().getJsonWebKeys().isEmpty());
         }
     }
 

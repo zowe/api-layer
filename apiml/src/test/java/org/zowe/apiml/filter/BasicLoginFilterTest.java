@@ -94,7 +94,6 @@ class BasicLoginFilterTest {
         return MockServerWebExchange.from(request);
     }
 
-
     @Test
     void whenBearerTokenPresent_shouldSkipFilterAndProceed() {
         MockServerHttpRequest request = MockServerHttpRequest.post("/login")
