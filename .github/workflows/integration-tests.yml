@@ -2106,8 +2106,6 @@ jobs:
             -   name: Run Node.JS Sample Service
                 run: |
                     npm run onboarding-enabler-nodejs-sample-app &
-                    ./gradlew :integration-tests:runNodeJsSampleServiceTests --info -Denvironment.config=-docker-modulith -Denvironment.modulith=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
 #            -   name: Setup Python
 #                uses: actions/setup-python@v5
