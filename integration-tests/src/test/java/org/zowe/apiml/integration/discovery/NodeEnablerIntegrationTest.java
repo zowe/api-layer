@@ -13,6 +13,8 @@ package org.zowe.apiml.integration.discovery;
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.*;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -30,10 +32,9 @@ import static org.hamcrest.Matchers.is;
 @GatewayTest
 @NotAttlsTest
 @NodeEnablerTest
-class NodeEnablerIntegrationTest {
+class NodeEnablerIntegrationTest implements TestWithStartedInstances {
 
     private static final String APP_INFO_HEALTH = "/hwexpress/api/v1/status/";
-    private static final String JSON_CONTENT_TYPE = "application/json;charset=utf-8";
 
     @BeforeAll
     public static void beforeClass() {
@@ -51,7 +52,7 @@ class NodeEnablerIntegrationTest {
         .then()
             .log().all()
             .statusCode(is(SC_OK))
-            .contentType(is(JSON_CONTENT_TYPE))
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
             .body("status", is("UP"));
     }
 
