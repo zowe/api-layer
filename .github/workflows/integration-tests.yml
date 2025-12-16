@@ -23,22 +23,13 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
-
-            -   name: Build Nodejs
-                run: |
-                    cd onboarding-enabler-nodejs-sample-app
-                    cp ../config/docker/nodejs-service/service-configuration.yml ./config/service-configuration.yml
-                    docker build -t hwexpress .
-                    docker tag hwexpress ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
-                    echo "${{ secrets.PERSONAL_JB_TOKEN }}" | docker login ghcr.io -u balhar-jakub --password-stdin
-                    docker push ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
-
             -   name: Build with Gradle
                 run: >
                     ./gradlew clean jib -Djib.serialize=true -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
             -   name: Standalone Catalog
                 run: >
                     ./gradlew :api-catalog-services:jib -Djib.serialize=true -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6304 -Pzowe.jib.image.debugPort=5125 -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
+
             -   uses: ./.github/actions/teardown
 
     CITestsModulith:
@@ -2079,7 +2070,7 @@ jobs:
 
     CITestsNodeJsAndPythonServices:
         needs: PublishJibContainers
-        container: node:20-alpine
+        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -2088,12 +2079,8 @@ jobs:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
-                env:
-                    APIML_HEALTH_PROTECTED: false
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-            nodejs-sample-app:
-                image: ghcr.io/balhar-jakub/nodejs-sample-app:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@v4
@@ -2102,44 +2089,50 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
-
+            -   name: Install dependencies for onboarding-enabler-nodejs
+                run: |
+                    cd onboarding-enabler-nodejs
+                    npm ci --legacy-peer-deps
+            -   name: Install NPM dependencies for Node.JS Sample Service
+                uses: bahmutov/npm-install@v1
+                with:
+                    install-command: npm ci --legacy-peer-deps
+                    working-directory: onboarding-enabler-nodejs-sample-app
 
             -   name: Replace service configuration files
                 run: |
+                    mv config/docker/nodejs-service/service-configuration.yml onboarding-enabler-nodejs-sample-app/config/service-configuration.yml
                     mv config/docker/python-service/service-configuration.yml onboarding-enabler-python-sample-app/src/config/service-configuration.yml
+            -   name: Run Node.JS Sample Service
+                run: |
+                    npm run onboarding-enabler-nodejs-sample-app &
 
+            -   name: Setup Python
+                uses: actions/setup-python@v5
+                with:
+                    python-version: "3.12"
 
+            -   name: Install Python dependencies for Python Sample Service
+                shell: bash
+                run: |
+                    cd onboarding-enabler-python-sample-app
+                    python -m venv venv
+                    venv/bin/pip install --upgrade pip pipenv
+                    venv/bin/pipenv sync
 
-#            -   name: Run Node.JS Sample Service
-#                run: |
-#                    npm run onboarding-enabler-nodejs-sample-app &
-
-#            -   name: Setup Python
-#                uses: actions/setup-python@v5
-#                with:
-#                    python-version: "3.12"
-#
-#            -   name: Install Python dependencies for Python Sample Service
-#                shell: bash
-#                run: |
-#                    cd onboarding-enabler-python-sample-app
-#                    python -m venv venv
-#                    venv/bin/pip install --upgrade pip pipenv
-#                    venv/bin/pipenv sync
-#
-#            -   name: Run Python Sample Service
-#                run: |
-#                    cd onboarding-enabler-python-sample-app/src
-#                    python app.py &
+            -   name: Run Python Sample Service
+                run: |
+                    cd onboarding-enabler-python-sample-app/src
+                    python app.py &
 
             -   name: Run Node.JS Service Tests
                 run: >
-                    ./gradlew :integration-tests:runNodeJsSampleServiceTests --info -Denvironment.config=-docker-modulith
-                    -Denvironment.modulith=true -Ddiscoverableclient.instances=0 -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    ./gradlew :integration-tests:runNodeJsSampleServiceTests --info -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Python Service Tests
                 run: >
-                    ./gradlew :integration-tests:runPythonSampleServiceTests --info -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    ./gradlew :integration-tests:runPythonSampleServiceTests --info -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Store results
