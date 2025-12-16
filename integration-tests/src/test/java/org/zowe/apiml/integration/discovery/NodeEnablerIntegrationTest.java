@@ -46,9 +46,11 @@ class NodeEnablerIntegrationTest implements TestWithStartedInstances {
         URI uri = HttpRequestUtils.getUriFromGateway(APP_INFO_HEALTH);
 
         given()
+            .log().all()
         .when()
             .get(uri)
         .then()
+            .log().all()
             .statusCode(is(SC_OK))
             .contentType(is(JSON_CONTENT_TYPE))
             .body("status", is("UP"));
