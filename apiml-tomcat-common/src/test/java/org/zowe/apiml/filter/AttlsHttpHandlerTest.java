@@ -162,7 +162,7 @@ class AttlsHttpHandlerTest {
         }
 
         AttlsContext createAttlsContext(StatConn statConn) {
-            return new AttlsContext(0, false) {
+            return new AttlsContextImpl(0, false) {
                 @Override
                 public StatConn getStatConn() {
                     return statConn;
