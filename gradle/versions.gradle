@@ -85,7 +85,7 @@ dependencyResolutionManagement {
             version('openApiDiff', '2.1.6')
             version('picocli', '4.7.7')
 
-            version('reactor', '3.8.0')
+            version('reactor', '3.8.1')
             version('restAssured', '5.5.6')
             version('rhino', '1.8.1')
             version('springDoc', '2.8.14')
@@ -281,7 +281,7 @@ dependencyResolutionManagement {
 
             // Pure Java dependencies - do not use in Spring unless really necessary
             version('logback', '1.5.21')
-            version('mockitoCore', '5.20.0')
+            version('mockitoCore', '5.21.0')
             version('mockitoInline', '5.2.0')
 
             library('logback_classic', 'ch.qos.logback', 'logback-classic').versionRef('logback')
