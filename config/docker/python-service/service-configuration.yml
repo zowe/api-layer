@@ -1,6 +1,6 @@
 eureka:
     ssl: true
-    host: discovery-service
+    host: apiml
     ipAddress: 127.0.0.1
     port: 10011
     servicePath: '/eureka'
