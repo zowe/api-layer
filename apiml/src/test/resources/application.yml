@@ -147,7 +147,7 @@ apiml:
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
         filterChainConfiguration: new
-        allowTokenRefresh: false
+        allowTokenRefresh: true
         jwtInitializerTimeout: 5
         personalAccessToken:
             enabled: false

@@ -152,7 +152,7 @@ public class ModulithConfig implements InitializingBean {
         var scheme = https ? "https" : "http";
 
         Map<String, String> metadata = switch (serviceId) {
-            case "gateway" -> catalogEurekaInstanceConfigBean.getMetadataMap();
+            case "gateway" -> eurekaInstanceGw.getMetadataMap();
             case "cachingservice" -> cachingServiceEurekaInstanceConfigBean.getMetadataMap();
             case "apicatalog" -> catalogEurekaInstanceConfigBean.getMetadataMap();
             default -> new HashMap<>();
