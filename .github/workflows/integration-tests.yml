@@ -2105,9 +2105,21 @@ jobs:
                 run: |
                     mv config/docker/nodejs-service/service-configuration.yml onboarding-enabler-nodejs-sample-app/config/service-configuration.yml
                     mv config/docker/python-service/service-configuration.yml onboarding-enabler-python-sample-app/src/config/service-configuration.yml
-            -   name: Run Node.JS Sample Service
+
+            -   name: Build NodeJS Sample Service image
                 run: |
-                    npm run onboarding-enabler-nodejs-sample-app &
+                    cd onboarding-enabler-nodejs-sample-app
+                    docker build -t hwexpress .
+            -   name: Run NodeJS Sample Service (Docker)
+                run: |
+                    docker run -d \
+                    --name hwexpress \
+                    --network host \
+                    hwexpress
+
+#            -   name: Run Node.JS Sample Service
+#                run: |
+#                    npm run onboarding-enabler-nodejs-sample-app &
 
 #            -   name: Setup Python
 #                uses: actions/setup-python@v5
