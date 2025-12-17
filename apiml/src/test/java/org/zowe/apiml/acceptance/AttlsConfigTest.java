@@ -17,6 +17,7 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
 import com.netflix.discovery.shared.Applications;
 import org.apache.http.HttpStatus;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -271,6 +272,11 @@ class AttlsConfigTest {
             when(threadLocal.get()).thenReturn(attlsContext);
             lenient().when(attlsContext.getCertificate()).thenReturn(Base64.getDecoder().decode(VALID_CERT));
             lenient().when(attlsContext.getStatConn()).thenReturn(StatConn.SECURE);
+        }
+
+        @AfterEach
+        void tearDown() {
+            ReflectionTestUtils.setField(InboundAttls.class, "contexts", new ThreadLocal<>());
         }
 
         @Test
