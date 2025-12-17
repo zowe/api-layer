@@ -103,12 +103,14 @@ class AttlsConfigTest {
         @Test
         void whenContextloads_requestFailsWithHttps() {
             assertThrows(SSLException.class, () -> {
+                //@formatter:off
                 given()
                     .log().all()
-                    .when()
+                .when()
                     .get(getGatewayUrlWithPath(hostname, port, "https", "application/version"))
-                    .then()
+                .then()
                     .log().all();
+                //@formatter:on
             });
         }
 
@@ -121,14 +123,16 @@ class AttlsConfigTest {
             // Prevent use of native code but verify it calls the customizer
             doNothing().when(apimlTomcatCustomizer).customize(any());
 
+            //@formatter:off
             given()
                 .log().all()
-                .when()
+            .when()
                 .get(getGatewayUrlWithPath(hostname, port, "http", "application/version"))
-                .then()
+            .then()
                 .log().all()
                 .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
                 .body(containsString("org.zowe.apiml.common.internalServerError"));
+            //@formatter:on
 
             verify(mockedAppender, atLeast(1)).doAppend(loggingEventCaptor.capture());
             assertThat(loggingEventCaptor.getAllValues())
@@ -212,9 +216,6 @@ class AttlsConfigTest {
     @AcceptanceTest
     class WhenCorsEnabledService extends AcceptanceTestWithMockServices {
 
-        // @MockitoBean
-        // private AttlsHttpHandler attlsHttpHandler;
-
         @MockitoBean
         private ApimlInstanceRegistry apimlInstanceRegistry;
 
@@ -233,9 +234,7 @@ class AttlsConfigTest {
 
         @BeforeEach
         void setUp() {
-            // when(apimlInstanceRegistry.getApplications()).thenReturn(new Applications());
             doNothing().when(apimlTomcatCustomizer).customize(any());
-            //((ThreadLocal<AttlsContext>) ReflectionTestUtils.getField(InboundAttls.class, "contexts")).set(attlsContext);
             ReflectionTestUtils.setField(InboundAttls.class, "contexts", threadLocal);
             when(threadLocal.get()).thenReturn(attlsContext);
         }
@@ -308,6 +307,7 @@ class AttlsConfigTest {
             when(attlsContext.getCertificate()).thenReturn(Base64.getDecoder().decode(cert));
             when(attlsContext.getStatConn()).thenReturn(StatConn.SECURE);
 
+            //@formatter:off
             given()
                 .log().all()
                 .header(HttpHeaders.ORIGIN, String.format("https://localhost:%d", port))
@@ -316,7 +316,9 @@ class AttlsConfigTest {
                 .post(getGatewayUrlWithPath(hostname, port, "http", "apicatalog/api/v1/auth/login"))
             .then()
                 .statusCode(is(SC_PERMANENT_REDIRECT));
+                //@formatter:on
         }
+
     }
 
 }
