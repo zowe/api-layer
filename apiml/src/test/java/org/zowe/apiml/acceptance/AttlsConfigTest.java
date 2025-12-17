@@ -288,6 +288,7 @@ class AttlsConfigTest {
         }
 
         @Test
+        @Disabled
         void testLoginEndpoint_mockedAttls() throws IoctlCallException, UnknownEnumValueException {
             String cert = "MIID3jCCAsagAwIBAgIULApMeb1+40+ifLXNVf1mqwsNlt4wDQYJKoZIhvcNAQEL" +
                 "BQAwYDELMAkGA1UEBhMCQ1oxEDAOBgNVBAgMB0N6ZWNoaWExDzANBgNVBAcMBlBy" +

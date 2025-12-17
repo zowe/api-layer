@@ -154,7 +154,13 @@ public class ModulithConfig implements InitializingBean {
         Map<String, String> metadata = switch (serviceId) {
             case "gateway" -> eurekaInstanceGw.getMetadataMap();
             case "cachingservice" -> cachingServiceEurekaInstanceConfigBean.getMetadataMap();
-            case "apicatalog" -> catalogEurekaInstanceConfigBean.getMetadataMap();
+            case "apicatalog" -> {
+                var allowedOrigins = "https://" + hostname + ":" + port + "," + externalUrl;
+                metadata = catalogEurekaInstanceConfigBean.getMetadataMap();
+                metadata.put("apiml.corsEnabled", "true");
+                metadata.put("apiml.corsAllowedOrigins", allowedOrigins);
+                yield metadata;
+            }
             default -> new HashMap<>();
         };
 

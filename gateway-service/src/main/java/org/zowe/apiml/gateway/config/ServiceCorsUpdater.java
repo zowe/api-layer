@@ -60,7 +60,6 @@ public class ServiceCorsUpdater implements InitializingBean {
                         (prefix, serviceId, config) -> {
                             serviceId = instance.getMetadata().getOrDefault(APIML_ID, instance.getServiceId().toLowerCase());
                             urlBasedCorsConfigurationSource.registerCorsConfiguration("/" + serviceId + "/**", config);
-                            urlBasedCorsConfigurationSource.registerCorsConfiguration("/apicatalog/**", config);
                         }
                 );
                 return instance;

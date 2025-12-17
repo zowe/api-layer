@@ -67,7 +67,6 @@ public class WebConfig implements WebFluxConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        log.error("ADD CORS MAPPINGS");
         registry.addMapping("/**").allowedOrigins("*").allowedMethods("*");
     }
 
@@ -91,7 +90,7 @@ public class WebConfig implements WebFluxConfigurer {
             .and(route(GET("/apicatalog/ui/v1"), req -> redirect("/apicatalog/ui/v1/")))
             .and(route(GET("/apicatalog/ui/v1/"), req -> redirect("/apicatalog/ui/v1/index.html")))
 
-            .and(route(POST("/apicatalog/api/v1/auth/login"), req -> redirect("/gateway/api/v1/auth/login")))
+            // .and(route(POST("/apicatalog/api/v1/auth/login"), req -> redirect("/gateway/api/v1/auth/login")))
             .and(route(POST("/apicatalog/api/v1/auth/logout"), req -> redirect("/gateway/api/v1/auth/logout")))
             .and(route(GET("/apicatalog/api/v1/auth/query"), req -> redirect("/gateway/api/v1/auth/query")));
     }

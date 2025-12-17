@@ -99,9 +99,6 @@ public class WebSecurityConfig {
     @Value("${apiml.internal-discovery.port:10011}")
     private int internalDiscoveryPort;
 
-    @Value("${server.attlsServer.enabled:false}")
-    private boolean isServerAttlsEnabled;
-
     private static final List<String> UNAUTHENTICATED_PATTERNS = List.of(
         "/application/",
         "/application/version",
@@ -362,17 +359,6 @@ public class WebSecurityConfig {
             .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION);
-
-        if (isServerAttlsEnabled) {
-            http.cors(customizer ->
-                // var corsConfig = new UrlBasedCorsConfigurationSource();
-                // corsConfig.setCorsConfigurations(
-                //     Map.of("", "")
-                // );
-                // customizer.configurationSource(corsConfig);
-                customizer.disable()
-            );
-        }
 
         return http.build();
     }
