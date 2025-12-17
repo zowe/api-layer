@@ -18,7 +18,6 @@ import ch.qos.logback.core.Appender;
 import com.netflix.discovery.shared.Applications;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -85,6 +84,7 @@ class AttlsConfigTest {
         classes = ApimlApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
+    @TestInstance(Lifecycle.PER_CLASS)
     class GivenAttlsProfile {
 
         @LocalServerPort
@@ -101,6 +101,11 @@ class AttlsConfigTest {
 
         @MockitoBean
         private ApimlTomcatCustomizer apimlTomcatCustomizer;
+
+        @BeforeEach
+        void setUp() {
+            ReflectionTestUtils.setField(InboundAttls.class, "contexts", new ThreadLocal<>());
+        }
 
         @Test
         void whenContextloads_requestFailsWithHttps() {
@@ -167,6 +172,7 @@ class AttlsConfigTest {
         },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
+    @TestInstance(Lifecycle.PER_CLASS)
     class GivenSslDisabled {
 
         @MockitoBean
@@ -216,6 +222,7 @@ class AttlsConfigTest {
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
     @AcceptanceTest
+    @TestInstance(Lifecycle.PER_CLASS)
     class WhenCorsEnabledService extends AcceptanceTestWithMockServices {
 
         private static final String VALID_CERT =
