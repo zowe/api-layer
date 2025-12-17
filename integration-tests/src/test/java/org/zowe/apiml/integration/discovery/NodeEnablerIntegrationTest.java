@@ -57,7 +57,7 @@ class NodeEnablerIntegrationTest {
         class GivenValidService {
             @Test
             void givenNodeEnablerIsOnboarded_gatewayReturnsHealth() {
-                waitUntilServiceIsRegisteredInDiscovery();
+//                waitUntilServiceIsRegisteredInDiscovery();
                 waitUntilGatewayRouteIsReady();
 
                 given()
@@ -78,10 +78,9 @@ class NodeEnablerIntegrationTest {
             .pollInterval(1, SECONDS)
             .untilAsserted(() ->
                 given()
-                    .relaxedHTTPSValidation()
                     .log().all()
                 .when()
-                    .get(NodeEnablerIntegrationTest.MEDIATION_CLIENT_URI)
+                    .get(MEDIATION_CLIENT_URI)
                 .then()
                     .log().all()
                     .statusCode(SC_OK)
