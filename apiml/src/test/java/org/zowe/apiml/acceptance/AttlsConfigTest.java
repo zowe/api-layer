@@ -18,6 +18,7 @@ import ch.qos.logback.core.Appender;
 import com.netflix.discovery.shared.Applications;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -65,6 +66,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -165,6 +167,7 @@ class AttlsConfigTest {
         },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
+    // @Disabled
     class GivenSslDisabled {
 
         @MockitoBean
@@ -214,7 +217,31 @@ class AttlsConfigTest {
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
     @AcceptanceTest
+    // @Disabled
     class WhenCorsEnabledService extends AcceptanceTestWithMockServices {
+
+        private static final String VALID_CERT =
+                "MIID3jCCAsagAwIBAgIULApMeb1+40+ifLXNVf1mqwsNlt4wDQYJKoZIhvcNAQEL" +
+                "BQAwYDELMAkGA1UEBhMCQ1oxEDAOBgNVBAgMB0N6ZWNoaWExDzANBgNVBAcMBlBy" +
+                "YWd1ZTEMMAoGA1UECgwDT01GMQ0wCwYDVQQLDARab3dlMREwDwYDVQQDDAhBUElN" +
+                "TCBDQTAeFw0yMzA2MDIxMjQ4NDBaFw0yOTA1MzExMjQ4NDBaMF8xCzAJBgNVBAYT" +
+                "AkNaMRAwDgYDVQQIDAdDemVjaGlhMQ8wDQYDVQQHDAZQcmFndWUxDDAKBgNVBAoM" +
+                "A09NRjENMAsGA1UECwwEWm93ZTEQMA4GA1UEAwwHQVBJTVRTVDCCASIwDQYJKoZI" +
+                "hvcNAQEBBQADggEPADCCAQoCggEBAJ6L+6l6mfxByy/VrHQ881xkW/GWQQndocPH" +
+                "i5Em15P+/ZQToYBTfLPUqGXcPnILg+PrjMtTHBCHO03pIuJxFXqrWfsaxR/O7zhp" +
+                "BSTt+iT6/kMBhPdF4sJF2VQo1sGBa79hIn3StvD3hKba/5Rzx8i+WXpKNeCzYRoZ" +
+                "BLYH/MLAokgabf0iWjzrwy9STBvZ0uPON4iBhz6bYh0wTra90j0dDjsetTBMOrm9" +
+                "gO/sj7RD2KBQUM+mMiny5w4AWjvDChfzGEc37f/Ur2FyCqwY7k4oNS2tMtPQKemg" +
+                "4CtmFsWLL3Vb7e6fwoCNFLsmJumsd13u2HCmnV5YT13ZL8xphqkCAwEAAaOBkDCB" +
+                "jTALBgNVHQ8EBAMCBeAwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMBMB8G" +
+                "A1UdEQQYMBaCCWxvY2FsaG9zdIIJMTI3LjAuMC4xMB0GA1UdDgQWBBQ3GrkUuyvH" +
+                "QmPRECqdzcR3qmQSHzAfBgNVHSMEGDAWgBT78hIus4SCXxMW8T9T0AEIe7HZNjAN" +
+                "BgkqhkiG9w0BAQsFAAOCAQEAHAzeBownnYY9kSF6fif+dXw2miRTNkhRRc6ZIlij" +
+                "Jy+d5ZysrR0yUTeW11raltGiX2gcCtg5GZp+ODgiqSMJN3mV1bIpKiuBhODKHlMz" +
+                "pg8v4ebjIHd1buO8KbOlR8zKv4kMFiGqdfWW6W3BZy3w3RCOnWhts2Y4O+XZ4Gri" +
+                "Yjiwkwf1IY7xv7HBJ4BsbUwxjxMcxa1HNqE8oAqEtiFxRmPkAi+g1lijvF26AKZd" +
+                "WxKFTLJV1HxUsa5l8b7cHN9yya6IVixVcB9Cla06Rg7dkaI4Deb5JCxFXjoznDKY" +
+                "kv8ZumkzQI9Ov90d1FYyVr7VWPEun/XV2XmH9nGHWyJSkA==";
 
         @MockitoBean
         private ApimlInstanceRegistry apimlInstanceRegistry;
@@ -233,10 +260,12 @@ class AttlsConfigTest {
         private ThreadLocal<AttlsContext> threadLocal;
 
         @BeforeEach
-        void setUp() {
+        void setUp() throws IoctlCallException, UnknownEnumValueException {
             doNothing().when(apimlTomcatCustomizer).customize(any());
             ReflectionTestUtils.setField(InboundAttls.class, "contexts", threadLocal);
             when(threadLocal.get()).thenReturn(attlsContext);
+            lenient().when(attlsContext.getCertificate()).thenReturn(Base64.getDecoder().decode(VALID_CERT));
+            lenient().when(attlsContext.getStatConn()).thenReturn(StatConn.SECURE);
         }
 
         @Test
@@ -268,12 +297,10 @@ class AttlsConfigTest {
 
         @Test
         void testLoginEndpoint() throws IoctlCallException, UnknownEnumValueException {
-                // mockedContextHolder.when(ReactiveSecurityContextHolder::getContext).thenReturn(Mono.just(securityContext));
             //@formatter:off
             given()
                 .log().all()
                 .header(HttpHeaders.ORIGIN, String.format("https://localhost:%d", port))
-                .auth().preemptive().basic("invaliduser", "invalidpassword")
             .when()
                 .post(getGatewayUrlWithPath(hostname, port, "http", "apicatalog/api/v1/auth/login"))
             .then()
@@ -283,40 +310,18 @@ class AttlsConfigTest {
 
         @Test
         void testLoginEndpoint_mockedAttls() throws IoctlCallException, UnknownEnumValueException {
-            String cert = "MIID3jCCAsagAwIBAgIULApMeb1+40+ifLXNVf1mqwsNlt4wDQYJKoZIhvcNAQEL" +
-                "BQAwYDELMAkGA1UEBhMCQ1oxEDAOBgNVBAgMB0N6ZWNoaWExDzANBgNVBAcMBlBy" +
-                "YWd1ZTEMMAoGA1UECgwDT01GMQ0wCwYDVQQLDARab3dlMREwDwYDVQQDDAhBUElN" +
-                "TCBDQTAeFw0yMzA2MDIxMjQ4NDBaFw0yOTA1MzExMjQ4NDBaMF8xCzAJBgNVBAYT" +
-                "AkNaMRAwDgYDVQQIDAdDemVjaGlhMQ8wDQYDVQQHDAZQcmFndWUxDDAKBgNVBAoM" +
-                "A09NRjENMAsGA1UECwwEWm93ZTEQMA4GA1UEAwwHQVBJTVRTVDCCASIwDQYJKoZI" +
-                "hvcNAQEBBQADggEPADCCAQoCggEBAJ6L+6l6mfxByy/VrHQ881xkW/GWQQndocPH" +
-                "i5Em15P+/ZQToYBTfLPUqGXcPnILg+PrjMtTHBCHO03pIuJxFXqrWfsaxR/O7zhp" +
-                "BSTt+iT6/kMBhPdF4sJF2VQo1sGBa79hIn3StvD3hKba/5Rzx8i+WXpKNeCzYRoZ" +
-                "BLYH/MLAokgabf0iWjzrwy9STBvZ0uPON4iBhz6bYh0wTra90j0dDjsetTBMOrm9" +
-                "gO/sj7RD2KBQUM+mMiny5w4AWjvDChfzGEc37f/Ur2FyCqwY7k4oNS2tMtPQKemg" +
-                "4CtmFsWLL3Vb7e6fwoCNFLsmJumsd13u2HCmnV5YT13ZL8xphqkCAwEAAaOBkDCB" +
-                "jTALBgNVHQ8EBAMCBeAwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwMBMB8G" +
-                "A1UdEQQYMBaCCWxvY2FsaG9zdIIJMTI3LjAuMC4xMB0GA1UdDgQWBBQ3GrkUuyvH" +
-                "QmPRECqdzcR3qmQSHzAfBgNVHSMEGDAWgBT78hIus4SCXxMW8T9T0AEIe7HZNjAN" +
-                "BgkqhkiG9w0BAQsFAAOCAQEAHAzeBownnYY9kSF6fif+dXw2miRTNkhRRc6ZIlij" +
-                "Jy+d5ZysrR0yUTeW11raltGiX2gcCtg5GZp+ODgiqSMJN3mV1bIpKiuBhODKHlMz" +
-                "pg8v4ebjIHd1buO8KbOlR8zKv4kMFiGqdfWW6W3BZy3w3RCOnWhts2Y4O+XZ4Gri" +
-                "Yjiwkwf1IY7xv7HBJ4BsbUwxjxMcxa1HNqE8oAqEtiFxRmPkAi+g1lijvF26AKZd" +
-                "WxKFTLJV1HxUsa5l8b7cHN9yya6IVixVcB9Cla06Rg7dkaI4Deb5JCxFXjoznDKY" +
-                "kv8ZumkzQI9Ov90d1FYyVr7VWPEun/XV2XmH9nGHWyJSkA==";
-            when(attlsContext.getCertificate()).thenReturn(Base64.getDecoder().decode(cert));
+            when(attlsContext.getCertificate()).thenReturn(Base64.getDecoder().decode(VALID_CERT));
             when(attlsContext.getStatConn()).thenReturn(StatConn.SECURE);
 
             //@formatter:off
             given()
                 .log().all()
                 .header(HttpHeaders.ORIGIN, String.format("https://localhost:%d", port))
-                .auth().preemptive().basic("invaliduser", "invalidpassword")
             .when()
                 .post(getGatewayUrlWithPath(hostname, port, "http", "apicatalog/api/v1/auth/login"))
             .then()
                 .statusCode(is(SC_PERMANENT_REDIRECT));
-                //@formatter:on
+            //@formatter:on
         }
 
     }
