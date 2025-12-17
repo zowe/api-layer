@@ -133,7 +133,7 @@ class SafResourceAccessDummyTest {
     void testLoading_whenExternalDoesntExists_thenLoadFromResources() throws IOException {
         File file = File.createTempFile("junit-saf2", ".yml");
         file.delete();
-        assumeFalse(file.exists());
+        assumeFalse(file.exists(), "File " + file.getAbsolutePath() + " should not exist for this test to run");
 
         SafResourceAccessVerifying verifying = new SafResourceAccessDummy();
         Authentication authentication = new UsernamePasswordAuthenticationToken("ZOWE", "token");

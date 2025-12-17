@@ -12,6 +12,7 @@ gatewayServiceConfiguration:
     instances: 1
     servicesEndpoint: gateway/api/v1/services
     bucketCapacity: 20
+    authProvider: zosmf
 zaasConfiguration:
     scheme: https
     host: zaas-service

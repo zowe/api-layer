@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.util.http;
 
-import lombok.experimental.UtilityClass;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -25,8 +24,11 @@ import java.net.URI;
 
 import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGIN;
 
-@UtilityClass
 public class HttpSecurityUtils {
+
+    private HttpSecurityUtils() {
+        super();
+    }
 
     public static String getCookieForGateway() throws IOException {
         Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();
@@ -55,4 +57,5 @@ public class HttpSecurityUtils {
     public static void addCookie(HttpRequest request, String cookie) {
         request.addHeader("Cookie", cookie);
     }
+
 }

@@ -124,3 +124,10 @@ index/*
 *.lock
 index.*
 index-count
+
+deploy-apiml.sh
+*/*.dmp
+*/*.phd
+*/*.trc
+
+tools/*

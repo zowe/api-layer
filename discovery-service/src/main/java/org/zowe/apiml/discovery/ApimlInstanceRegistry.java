@@ -21,24 +21,17 @@ import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
 import org.zowe.apiml.discovery.config.EurekaConfig;
+import org.zowe.apiml.exception.MetadataValidationException;
+import org.zowe.apiml.util.EurekaUtils;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.invoke.WrongMethodTypeException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.lang.invoke.*;
+import java.lang.reflect.*;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
@@ -229,6 +222,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      */
     @Override
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
+            validateInstanceInfo(info);
             info = changeServiceId(info);
         try {
             register3ArgsMethodHandle.invokeWithArguments(this, info, leaseDuration, isReplication);
@@ -244,6 +238,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, final boolean isReplication) {
+            validateInstanceInfo(info);
             info = changeServiceId(info);
         try {
             register2ArgsMethodHandle.invokeWithArguments(this, info, isReplication);
@@ -254,6 +249,43 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
             throw re;
         } catch (Throwable t) {
             throw new IllegalArgumentException(EXCEPTION_MESSAGE, t);
+        }
+    }
+
+    /**
+     * Validates that the service identifiers in the {@link InstanceInfo} are conformant and mutually consistent.
+     * The appName must not be null or empty. Both must comply with RFC 952 and RFC 1123.
+     * Only lowercase letters, digits, and hyphens allowed, must not start or end with a hyphen, and must not exceed 63 characters.
+     * Unfortunately the java enabler converts the appName to uppercase when sending the registration request.
+     * Therefore, the validation is case-insensitive.
+     * The instanceId must follow the format 'hostname:serviceId:port'.
+     * The serviceId extracted from the instanceId must match the appName, the check is again case-insensitive for the reason
+     * described above. For backwards compatibility the validation prints warnings only for non-conformant values.
+     * @param info the instance info
+     */
+    private void validateInstanceInfo(InstanceInfo info) {
+        String instanceId = info.getInstanceId();
+        String appName = StringUtils.lowerCase(info.getAppName());
+
+        try {
+            EurekaUtils.validateServiceId(appName);
+        } catch (MetadataValidationException e) {
+            log.warn("Conformance criteria violation in serviceId or app in instanceInfo: {}. Cause: {}" , info, e.getMessage());
+        }
+
+        String serviceId = EurekaUtils.getServiceIdFromInstanceId(instanceId);
+        try {
+            EurekaUtils.validateServiceId(serviceId);
+        } catch (MetadataValidationException e) {
+            log.warn("Conformance criteria violation in serviceId or instanceId, instanceId expected format 'hostname:serviceid:port' but is '{}' in instanceInfo: {}. Cause: {}",
+                info.getInstanceId(), info, e.getMessage());
+        }
+
+        if (!Objects.equals(appName, StringUtils.lowerCase(serviceId))) {
+            log.warn(
+                "Inconsistent service identity: instanceId contains serviceId '{}' but appName='{}'. The service will not register in future releases. InstanceInfo: {}",
+                serviceId, appName, info
+            );
         }
     }
 

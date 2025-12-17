@@ -99,6 +99,8 @@ allprojects {
     configurations.all {
         resolutionStrategy.dependencySubstitution {
             substitute(module('javax.servlet:servlet-api')).using(module('javax.servlet:javax.servlet-api:4.0.1'))
+
+            substitute(module('com.sun.mail:mailapi')).using(module("jakarta.mail:jakarta.mail-api:${libs.versions.mailapi}"))
         }
     }
 
@@ -118,6 +120,8 @@ configure(subprojects.findAll { it.name in [
     configurations.all {
         // it has been replaced by spring-jcl
         exclude group: "commons-logging", module: "commons-logging"
+        // exclude netty platform specific native libraries from distribution
+        exclude group: "io.netty", module: "netty-codec-native-quic"
     }
 
 }
