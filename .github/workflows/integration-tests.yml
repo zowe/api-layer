@@ -2070,7 +2070,7 @@ jobs:
 
     CITestsNodeJsAndPythonServices:
         needs: PublishJibContainers
-        container: ubuntu:latest
+#        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
