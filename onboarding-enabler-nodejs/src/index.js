@@ -17,14 +17,14 @@ let keyFile = null;
 let caFile = null;
 let passPhrase = null;
 let client = null;
-let tlsOpts = null;
+let tlsOptions = null;
 
 /**
  * Read ssl service configuration
  */
 function readTlsProps() {
   try {
-    const config = yaml.load(fs.readFileSync('config/service-configuration.yml', 'utf8'));
+    const config = yaml.load(fs.readFileSync('config/service-configuration.yml'));
     certFile = config.ssl.certificate;
     keyFile = config.ssl.keystore;
     caFile = config.ssl.caFile;
@@ -34,13 +34,11 @@ function readTlsProps() {
   }
 }
 
-export const tlsOptions = tlsOpts;
-
-function init () {
-  const defaultFile = fs.existsSync('config/service-configuration.yml', 'utf8');
+function init() {
+  const defaultFile = fs.existsSync('config/service-configuration.yml');
   if (defaultFile) {
     readTlsProps();
-    tlsOpts = {
+    tlsOptions = {
       cert: fs.readFileSync(certFile),
       key: fs.readFileSync(keyFile),
       passphrase: passPhrase,
@@ -50,7 +48,7 @@ function init () {
       filename: 'service-configuration',
       cwd: 'config/',
       requestMiddleware: (requestOpts, done) => {
-        done(Object.assign(requestOpts, tlsOpts));
+        done(Object.assign(requestOpts, tlsOptions));
       },
     });
   }
@@ -58,10 +56,17 @@ function init () {
 
 init();
 
+export function getTlsOptions() {
+  return tlsOptions;
+}
+
 /**
  * Function that uses the eureka-js-client library to register the application to Eureka
  */
 export function connectToEureka() {
+  if (!client) {
+    throw new Error('Eureka client not initialized');
+  }
   client.start((error) => {
     if (error != null) {
       console.log(JSON.stringify(error));
@@ -73,6 +78,9 @@ export function connectToEureka() {
  * Unregister the Eureka client from Eureka (i.e. when the application down)
  */
 export function unregisterFromEureka() {
+  if (!client) {
+    throw new Error('Eureka client not initialized');
+  }
   console.log('\nUnregistering the service from Eureka...');
   client.stop();
 }
