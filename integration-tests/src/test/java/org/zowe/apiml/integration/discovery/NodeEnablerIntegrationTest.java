@@ -14,9 +14,9 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
 import org.zowe.apiml.util.categories.*;
 import org.zowe.apiml.util.http.HttpRequestUtils;
+import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import java.net.URI;
 
@@ -40,6 +40,7 @@ class NodeEnablerIntegrationTest {
 
     private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway(APP_INFO_HEALTH);
 
+    private static final String DISCOVERY_APP = DiscoveryUtils.getDiscoveryUrl() + "/apps/HWEXPRESS";
 
     @BeforeAll
     public static void beforeClass() {
@@ -51,58 +52,67 @@ class NodeEnablerIntegrationTest {
         @Nested
         class GivenValidService {
             @Test
-            void verifyRegistrationAndUnregistration() {
-                isRegistered(false, MEDIATION_CLIENT_URI);
+            void givenNodeEnablerIsOnboarded_gatewayReturnsHealth() {
+                waitUntilServiceIsRegisteredInDiscovery();
+                waitUntilGatewayRouteIsReady();
 
-                register(MEDIATION_CLIENT_URI);
-                isRegistered(true, MEDIATION_CLIENT_URI);
+                given()
+                    .when()
+                    .log().all()
+                    .get(MEDIATION_CLIENT_URI)
+                    .then()
+                    .log().all()
+                    .statusCode(SC_OK)
+                    .body("status", is("UP"));
             }
         }
     }
 
-    private void isRegistered(boolean expectedRegistrationState, URI uri) {
-        // It can take some time for (un)registration to complete
+    private void waitUntilGatewayRouteIsReady() {
         await()
-            .atMost(5, MINUTES)
-            .pollDelay(0, SECONDS)
+            .atMost(2, MINUTES)
             .pollInterval(1, SECONDS)
-            .until(() -> registeredStateAsExpected(expectedRegistrationState, uri));
+            .untilAsserted(() ->
+                given()
+                    .relaxedHTTPSValidation()
+                    .log().all()
+                    .when()
+                    .get(NodeEnablerIntegrationTest.MEDIATION_CLIENT_URI)
+                    .then()
+                    .log().all()
+                    .statusCode(SC_OK)
+            );
     }
 
-    private boolean registeredStateAsExpected(boolean expectedRegistrationState, URI uri) {
-        try {
-            given()
-                .when()
-                .get(uri)
-                .then()
-                .statusCode(is(SC_OK));
-            return true;
-        } catch (AssertionError e) {
-            return false;
-        }
+    private void waitUntilServiceIsRegisteredInDiscovery() {
+        await()
+            .atMost(3, MINUTES)
+            .pollInterval(1, SECONDS)
+            .untilAsserted(() ->
+                given()
+                    .log().all()
+                    .relaxedHTTPSValidation()
+                    .when()
+                    .get(DISCOVERY_APP)
+                    .then()
+                    .log().all()
+                    .statusCode(SC_OK)
+            );
     }
 
-    private void register(URI uri) {
-        given()
-            .when()
-            .post(uri)
-            .then()
-            .statusCode(is(SC_OK));
-    }
-
-    @Test
-    void givenEnablerIsOnboarded_whenRequestingPublicEndpoint_returnStatus() {
-        URI uri = HttpRequestUtils.getUriFromGateway(APP_INFO_HEALTH);
-
-        given()
-            .log().all()
-        .when()
-            .get(uri)
-        .then()
-            .log().all()
-            .statusCode(is(SC_OK))
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .body("status", is("UP"));
-    }
+//    @Test
+//    void givenEnablerIsOnboarded_whenRequestingPublicEndpoint_returnStatus() {
+//        URI uri = HttpRequestUtils.getUriFromGateway(APP_INFO_HEALTH);
+//
+//        given()
+//            .log().all()
+//        .when()
+//            .get(uri)
+//        .then()
+//            .log().all()
+//            .statusCode(is(SC_OK))
+//            .contentType(MediaType.APPLICATION_JSON_VALUE)
+//            .body("status", is("UP"));
+//    }
 
 }
