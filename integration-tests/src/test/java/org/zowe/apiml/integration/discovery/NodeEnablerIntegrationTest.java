@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.*;
+import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
@@ -26,6 +27,8 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.http.HttpHeaders.ACCEPT;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * Test that Node.js enabler is properly integrated with the API ML (Discovery, Gateway)
@@ -92,7 +95,8 @@ class NodeEnablerIntegrationTest {
             .untilAsserted(() ->
                 given()
                     .log().all()
-                    .relaxedHTTPSValidation()
+                    .config(SslContext.clientCertUser)
+                    .header(ACCEPT, APPLICATION_JSON_VALUE)
                     .when()
                     .get(DISCOVERY_APP)
                     .then()
