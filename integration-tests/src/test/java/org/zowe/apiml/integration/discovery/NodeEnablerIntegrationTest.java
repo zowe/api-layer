@@ -36,11 +36,12 @@ import static org.hamcrest.Matchers.is;
 @NotAttlsTest
 @NodeEnablerTest
 class NodeEnablerIntegrationTest {
+
     private static final String APP_INFO_HEALTH = "/hwexpress/api/v1/status/";
 
     private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway(APP_INFO_HEALTH);
 
-    private static final String DISCOVERY_APP = DiscoveryUtils.getDiscoveryUrl() + "/apps/HWEXPRESS";
+    private static final String DISCOVERY_APP = DiscoveryUtils.getDiscoveryUrl() + "/eureka/apps/HWEXPRESS";
 
     @BeforeAll
     public static void beforeClass() {
@@ -76,9 +77,9 @@ class NodeEnablerIntegrationTest {
                 given()
                     .relaxedHTTPSValidation()
                     .log().all()
-                    .when()
+                .when()
                     .get(NodeEnablerIntegrationTest.MEDIATION_CLIENT_URI)
-                    .then()
+                .then()
                     .log().all()
                     .statusCode(SC_OK)
             );
