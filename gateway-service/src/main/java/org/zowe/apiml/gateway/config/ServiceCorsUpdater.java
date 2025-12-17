@@ -53,7 +53,6 @@ public class ServiceCorsUpdater implements InitializingBean {
         return discoveryClient.getServices()
             .flatMap(discoveryClient::getInstances)
             .map(instance -> {
-                    log.error("set CORS configuration for service {} with metadata {}", instance.getInstanceId(), instance.getMetadata());
                     corsUtils.setCorsConfiguration(
                         instance.getServiceId().toLowerCase(),
                         instance.getMetadata(),

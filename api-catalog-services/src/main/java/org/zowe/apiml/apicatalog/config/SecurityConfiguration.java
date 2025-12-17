@@ -93,9 +93,6 @@ public class SecurityConfiguration {
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
-    @Value("${server.attlsServer.enabled:false}")
-    private boolean isServerAttlsEnabled;
-
     private WebFilter basicAuthenticationFilter;
     private WebFilter tokenAuthenticationFilter;
     private WebFilter oidcAuthenticationFilter;
