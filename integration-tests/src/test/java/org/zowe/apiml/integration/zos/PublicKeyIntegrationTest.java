@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.GatewayTest;
-import org.zowe.apiml.util.categories.MainframeDependentTests;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -54,7 +53,6 @@ class PublicKeyIntegrationTest implements TestWithStartedInstances {
         @Nested
         class ReturnZosmfAndInternalOnes {
             @Test
-            @MainframeDependentTests
             void givenNoAuthentication() throws ParseException {
                 String response = given()
                 .when()
@@ -65,7 +63,7 @@ class PublicKeyIntegrationTest implements TestWithStartedInstances {
 
                 JWKSet jwkSet = JWKSet.parse(response);
 
-                verifyKeys(jwkSet, 2);
+                verifyKeys(jwkSet, 3);
             }
         }
     }
@@ -75,7 +73,6 @@ class PublicKeyIntegrationTest implements TestWithStartedInstances {
         @Nested
         class ReturnActuallyUsedKey {
             @Test
-            @MainframeDependentTests
             void givenNoAuthentication() throws ParseException {
                 String response = given()
                     .accept(ContentType.JSON)
@@ -86,7 +83,7 @@ class PublicKeyIntegrationTest implements TestWithStartedInstances {
                     .extract().body().asString();
                 JWKSet jwkSet = JWKSet.parse(response);
 
-                verifyKeys(jwkSet, 1);
+                verifyKeys(jwkSet, 2);
             }
         }
     }
