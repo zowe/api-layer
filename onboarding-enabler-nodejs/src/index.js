@@ -24,7 +24,7 @@ let tlsOptions = null;
  */
 function readTlsProps() {
   try {
-    const config = yaml.load(fs.readFileSync('config/service-configuration.yml'));
+    const config = yaml.load(fs.readFileSync('config/service-configuration.yml', 'utf8'));
     certFile = config.ssl.certificate;
     keyFile = config.ssl.keystore;
     caFile = config.ssl.caFile;
