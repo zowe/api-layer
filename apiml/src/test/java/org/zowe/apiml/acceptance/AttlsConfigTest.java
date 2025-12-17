@@ -167,7 +167,6 @@ class AttlsConfigTest {
         },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
-    // @Disabled
     class GivenSslDisabled {
 
         @MockitoBean
@@ -217,7 +216,6 @@ class AttlsConfigTest {
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
     @AcceptanceTest
-    // @Disabled
     class WhenCorsEnabledService extends AcceptanceTestWithMockServices {
 
         private static final String VALID_CERT =
