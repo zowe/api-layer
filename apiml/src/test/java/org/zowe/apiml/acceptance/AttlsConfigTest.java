@@ -18,7 +18,6 @@ import ch.qos.logback.core.Appender;
 import com.netflix.discovery.shared.Applications;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -84,7 +83,6 @@ class AttlsConfigTest {
         classes = ApimlApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
-    @Disabled
     class GivenAttlsProfile {
 
         @LocalServerPort
@@ -163,7 +161,6 @@ class AttlsConfigTest {
         },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
-    @Disabled
     class GivenSslDisabled {
 
         @MockitoBean
@@ -244,7 +241,6 @@ class AttlsConfigTest {
         }
 
         @Test
-        @Disabled
         void givenServiceRuns_ApimlAccepts() {
             var testPath = "/testpath";
             var serviceId = "testuiservice";
@@ -272,7 +268,6 @@ class AttlsConfigTest {
         }
 
         @Test
-        @Disabled
         void testLoginEndpoint() throws IoctlCallException, UnknownEnumValueException {
                 // mockedContextHolder.when(ReactiveSecurityContextHolder::getContext).thenReturn(Mono.just(securityContext));
             //@formatter:off
@@ -288,7 +283,6 @@ class AttlsConfigTest {
         }
 
         @Test
-        @Disabled
         void testLoginEndpoint_mockedAttls() throws IoctlCallException, UnknownEnumValueException {
             String cert = "MIID3jCCAsagAwIBAgIULApMeb1+40+ifLXNVf1mqwsNlt4wDQYJKoZIhvcNAQEL" +
                 "BQAwYDELMAkGA1UEBhMCQ1oxEDAOBgNVBAgMB0N6ZWNoaWExDzANBgNVBAcMBlBy" +

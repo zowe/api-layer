@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 
 /**
@@ -33,37 +34,37 @@ public class ReactiveCatalogController {
     private static final String UI_V1 = "/ui/v1";
 
     @GetMapping(API_V1)
-    public ResponseEntity<Void> catalogApi() {
-        return ResponseEntity.status(308).header(HttpHeaders.LOCATION, "/apicatalog/api/v1/").build();
+    public Mono<ResponseEntity<Void>> catalogApi() {
+        return Mono.just(ResponseEntity.status(308).header(HttpHeaders.LOCATION, "/apicatalog/api/v1/").build());
     }
 
     @GetMapping(API_V1 + "/")
-    public ResponseEntity<Void> catalogApiIndex() {
-        return ResponseEntity.status(308).header(HttpHeaders.LOCATION, "/apicatalog/api/v1/index.html").build();
+    public Mono<ResponseEntity<Void>> catalogApiIndex() {
+        return Mono.just(ResponseEntity.status(308).header(HttpHeaders.LOCATION, "/apicatalog/api/v1/index.html").build());
     }
 
     @GetMapping(UI_V1)
-    public ResponseEntity<Void> catalogUi() {
-        return ResponseEntity.status(308).header(HttpHeaders.LOCATION, "/apicatalog/ui/v1/").build();
+    public Mono<ResponseEntity<Void>> catalogUi() {
+        return Mono.just(ResponseEntity.status(308).header(HttpHeaders.LOCATION, "/apicatalog/ui/v1/").build());
     }
 
     @GetMapping(UI_V1 + "/")
-    public ResponseEntity<Void> catalogUiIndex() {
-        return ResponseEntity.status(308).header(HttpHeaders.LOCATION, "/apicatalog/ui/v1/index.html").build();
+    public Mono<ResponseEntity<Void>> catalogUiIndex() {
+        return Mono.just(ResponseEntity.status(308).header(HttpHeaders.LOCATION, "/apicatalog/ui/v1/index.html").build());
     }
 
     @PostMapping(API_V1 + "/auth/login")
-    public ResponseEntity<Void> catalogLogin() {
-        return ResponseEntity.status(308).header(HttpHeaders.LOCATION, "/gateway/api/v1/auth/login").build();
+    public Mono<ResponseEntity<Void>> catalogLogin() {
+        return Mono.just(ResponseEntity.status(308).header(HttpHeaders.LOCATION, "/gateway/api/v1/auth/login").build());
     }
 
     @PostMapping(API_V1 + "/auth/logout")
-    public ResponseEntity<Void> catalogLogout() {
-        return ResponseEntity.status(308).header(HttpHeaders.LOCATION, "/gateway/api/v1/auth/logout").build();
+    public Mono<ResponseEntity<Void>> catalogLogout() {
+        return Mono.just(ResponseEntity.status(308).header(HttpHeaders.LOCATION, "/gateway/api/v1/auth/logout").build());
     }
 
     @GetMapping(API_V1 + "/auth/query")
-    public ResponseEntity<Void> catalogQuery() {
-        return ResponseEntity.status(308).header(HttpHeaders.LOCATION, "/gateway/api/v1/auth/query").build();
+    public Mono<ResponseEntity<Void>> catalogQuery() {
+        return Mono.just(ResponseEntity.status(308).header(HttpHeaders.LOCATION, "/gateway/api/v1/auth/query").build());
     }
 }
