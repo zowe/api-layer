@@ -2129,12 +2129,12 @@ jobs:
 
             -   name: Run Node.JS Service Tests
                 run: >
-                    ./gradlew :integration-tests:runNodeJsSampleServiceTests --info -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    ENV_CONFIG=docker-modulith ./gradlew runStartUpCheck :integration-tests:runNodeJsSampleServiceTests --info -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Python Service Tests
                 run: >
-                    ENV_CONFIG=docker-modulith ./gradlew runStartUpCheck :integration-tests:runPythonSampleServiceTests --info -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    ./gradlew :integration-tests:runPythonSampleServiceTests --info -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Store results
