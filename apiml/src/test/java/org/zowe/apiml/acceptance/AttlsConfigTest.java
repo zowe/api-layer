@@ -307,7 +307,7 @@ class AttlsConfigTest {
         }
 
         @Test
-        void testLoginEndpoint() throws IoctlCallException, UnknownEnumValueException {
+        void testLoginEndpoint() {
             //@formatter:off
             given()
                 .log().all()
