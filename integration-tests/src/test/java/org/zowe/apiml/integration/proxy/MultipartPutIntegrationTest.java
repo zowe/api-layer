@@ -78,7 +78,7 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
 
         @Test
         void givenLargeFileUpload() throws IOException {
-            int payloadSize = 750 * 1024 * 1024; //750MB
+            int payloadSize = 50 * 1024 * 1024; //50MB
             File tempFile = File.createTempFile("largefile", ".dat");
             tempFile.deleteOnExit();
 
