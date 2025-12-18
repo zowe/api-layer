@@ -149,7 +149,6 @@ public class ModulithConfig implements InitializingBean {
             .setServiceUpTimestamp(System.currentTimeMillis())
             .build();
 
-        var scheme = https ? "https" : "http";
 
         Map<String, String> metadata = switch (serviceId) {
             case "gateway" -> eurekaInstanceGw.getMetadataMap();
@@ -168,6 +167,11 @@ public class ModulithConfig implements InitializingBean {
 
         String homePagePath = metadata.getOrDefault("apiml.homePagePath", "/");
 
+        String scheme = "https";
+        if (!https && !isServerAttlsEnabled) {
+            scheme = "http";
+        }
+
         return InstanceInfo.Builder.newBuilder()
             .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
             .setAppName(serviceId)
@@ -177,8 +181,8 @@ public class ModulithConfig implements InitializingBean {
             .setIPAddr(ipAddress)
             .setPort(port)
             .setSecurePort(port)
-            .enablePort(InstanceInfo.PortType.SECURE, https)
-            .enablePort(InstanceInfo.PortType.UNSECURE, !https)
+            .enablePort(InstanceInfo.PortType.SECURE, https || isServerAttlsEnabled)
+            .enablePort(InstanceInfo.PortType.UNSECURE, !https && !isServerAttlsEnabled)
             .setVIPAddress(serviceId)
             .setDataCenterInfo(() -> DataCenterInfo.Name.MyOwn)
             .setLeaseInfo(leaseInfo)
