@@ -30,7 +30,7 @@ jobs:
                     cp ../config/docker/nodejs-service/service-configuration.yml ./config/service-configuration.yml
                     docker build -t hwexpress .
                     docker tag hwexpress ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
-                    docker login ghcr.io/balhar-jakub/ -u ${{ secrets.PERSONAL_JB_TOKEN }}
+                    echo "${{ secrets.PERSONAL_JB_TOKEN }}" | docker login ghcr.io -u balhar-jakub --password-stdin
                     docker push ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
                     
             -   name: Build with Gradle
