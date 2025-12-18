@@ -23,19 +23,22 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
+
+            -   name: Build Nodejs
+                run: |
+                    cd onboarding-enabler-nodejs-sample-app
+                    cp ../config/docker/nodejs-service/service-configuration.yml ./config/service-configuration.yml
+                    docker build -t hwexpress .
+                    docker tag hwexpress ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
+                    docker login ghcr.io/balhar-jakub/ -u ${{ secrets.PERSONAL_JB_TOKEN }}
+                    docker push ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
+                    
             -   name: Build with Gradle
                 run: >
                     ./gradlew clean jib -Djib.serialize=true -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
             -   name: Standalone Catalog
                 run: >
                     ./gradlew :api-catalog-services:jib -Djib.serialize=true -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6304 -Pzowe.jib.image.debugPort=5125 -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
-            -   name: Build Nodejs
-                run: |
-                    cd onboarding-enabler-nodejs-sample-app
-                    docker build -t hwexpress .
-                    docker tag hwexpress ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
-                    docker login ghcr.io/balhar-jakub/ -u ${{ secrets.PERSONAL_JB_TOKEN }}
-                    docker push ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
             -   uses: ./.github/actions/teardown
 
     CITestsModulith:

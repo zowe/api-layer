@@ -28,7 +28,7 @@ RUN npm ci --legacy-peer-deps
 
 # ===== copy app
 COPY . .
-COPY ../config/docker/nodejs-service/service-configuration.yml ./config/service-configuration.yml
+COPY config/service-configuration.yml config/service-configuration.yml
 
 # ===== expose service port
 EXPOSE 10020
