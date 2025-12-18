@@ -11,9 +11,9 @@
 package org.zowe.apiml.integration.proxy;
 
 import io.restassured.RestAssured;
+import io.restassured.config.HttpClientConfig;
+import io.restassured.config.RestAssuredConfig;
 import io.restassured.parsing.Parser;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.content.FileBody;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,10 +22,9 @@ import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
-import java.util.Objects;
 import java.util.Random;
 
 import static io.restassured.RestAssured.given;
@@ -36,12 +35,12 @@ import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_MULTIPART;
 class MultipartPutIntegrationTest implements TestWithStartedInstances {
     private final String configFileName = "example.txt";
     private final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-    private final URI url = HttpRequestUtils.getUriFromGateway(DISCOVERABLE_MULTIPART);
+    private URI url = HttpRequestUtils.getUriFromGateway(DISCOVERABLE_MULTIPART);
 
     @BeforeAll
     static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
-//        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 
     @Nested
@@ -54,7 +53,7 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
 
                 given().
                     contentType("multipart/form-data").
-                    multiPart(new File(Objects.requireNonNull(classLoader.getResource(configFileName)).getFile())).
+                    multiPart(new File(classLoader.getResource(configFileName).getFile())).
                     expect().
                     statusCode(200).
                     body("fileName", equalTo("example.txt")).
@@ -69,7 +68,7 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
 
                 given().
                     contentType("multipart/form-data").
-                    multiPart(new File(Objects.requireNonNull(classLoader.getResource(configFileName)).getFile())).
+                    multiPart(new File(classLoader.getResource(configFileName).getFile())).
                     expect().
                     statusCode(200).
                     body("fileName", equalTo("example.txt")).
@@ -80,34 +79,64 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
         }
 
         @Test
-        void givenLargeFileUpload() throws IOException {
-            int payloadSize = 50 * 1024 * 1024; //50MB
-            File tempFile = File.createTempFile("largefile", ".dat");
-            tempFile.deleteOnExit();
-
-            try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-                byte[] buf = new byte[8192];
-                Random r = new Random();
-                int written = 0;
-                while (written < payloadSize) {
-                    r.nextBytes(buf);
-                    int toWrite = Math.min(buf.length, payloadSize - written);
-                    fos.write(buf, 0, toWrite);
-                    written += toWrite;
-                }
-            }
-
-            FileBody fileBody = new FileBody(tempFile, ContentType.APPLICATION_OCTET_STREAM);
+        void givenLargeFileUpload() {
+            int payloadSize = 750 * 1024 * 1024; //750MB
+            RestAssuredConfig config = RestAssured.config()
+                .httpClient(HttpClientConfig.httpClientConfig()
+                    .setParam("http.connection.timeout", 300000)
+                    .setParam("http.socket.timeout", 300000)
+                    .setParam("http.method.retry-handler", (org.apache.http.client.HttpRequestRetryHandler)
+                        (exception, executionCount, context) -> false));
 
             given()
-                .multiPart("file", fileBody)
-            .when()
+                .config(config)
+                .multiPart(
+                    "file",
+                    "largefile.dat",
+                    new RandomDataInputStream(payloadSize),
+                    "application/octet-stream"
+                )
+                .when()
                 .post(url)
-            .then()
+                .then()
                 .statusCode(200)
-                .body("fileName", equalTo(tempFile.getName()))
+                .body("fileName", equalTo("largefile.dat"))
                 .body("fileType", equalTo("application/octet-stream"))
                 .body("size", equalTo(payloadSize));
+        }
+
+        static class RandomDataInputStream extends InputStream {
+            private final long targetSize;
+            private long count = 0;
+            private final Random random = new Random();
+
+            RandomDataInputStream(long targetSize) {
+                this.targetSize = targetSize;
+            }
+
+            @Override
+            public int read() throws IOException {
+                if (count >= targetSize) {
+                    return -1;
+                }
+                count++;
+                return random.nextInt(256);
+            }
+
+            @Override
+            public int read(byte[] b) throws IOException {
+                return read(b, 0, b.length);
+            }
+
+            @Override
+            public int read(byte[] b, int off, int len) {
+                if (count >= targetSize) return -1;
+                long remaining = targetSize - count;
+                int toRead = (int) Math.min(len, remaining);
+                random.nextBytes(b);
+                count += toRead;
+                return toRead;
+            }
         }
     }
 }
