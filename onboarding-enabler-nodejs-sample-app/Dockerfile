@@ -21,10 +21,12 @@ LABEL description="NodeJS sample service for APIML onboarding"
 
 WORKDIR /app
 
-# ===== install deps
+# ===== copy enabler package first (needed for npm install)
+COPY onboarding-enabler-nodejs ../onboarding-enabler-nodejs
 
+# ===== install deps
 COPY package*.json ./
-RUN npm ci --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 
 # ===== copy app
 COPY . .
