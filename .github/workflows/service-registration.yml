@@ -36,7 +36,7 @@ jobs:
                         --name golden \
                         --user $(id -u):$(id -g) \
                         --network otel-net \
-                        -v ${{ github.workspace }}/data:/var/data \
+                        -v ${{ github.workspace }}/expected.yaml:/var/data/expected.yaml \
                         -p 4317:4317 \
                         -p 4318:4318 \
                         ghcr.io/open-telemetry/opentelemetry-collector-contrib/golden:latest \
@@ -59,7 +59,7 @@ jobs:
                             --ignore-metric-values \
                             --ignore-data-points-attributes-order \
                             --ignore-scope-version
-                            
+
             # 3. Start COLLECTOR (The Processor)
              # It connects to 'otel-net', reads config from repo, and forwards to 'golden'.
             -   name: Start Collector
