@@ -1,0 +1,33 @@
+receivers:
+  # OTLP receiver to receive telemetry data from services
+  # Services are configured to send to localhost:4318 (HTTP) and localhost:4317 (gRPC)
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+exporters:
+  # OTLP exporter to forward telemetry to the golden collector
+  # Using container name 'golden' since both containers are on the same Docker network 'otel-net'
+  otlp:
+    endpoint: golden:4317
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: []
+      exporters: [otlp]
+    metrics:
+      receivers: [otlp]
+      processors: []
+      exporters: [otlp]
+    logs:
+      receivers: [otlp]
+      processors: []
+      exporters: [otlp]
+
