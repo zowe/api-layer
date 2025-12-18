@@ -31,6 +31,7 @@ import static org.zowe.apiml.util.config.ConfigReader.IS_MODULITH_ENABLED;
 
 @Slf4j
 public class FullApiMediationLayer {
+
     private RunningService discoveryService;
     private RunningService gatewayService;
     private RunningService apiCatalogService;

@@ -67,9 +67,65 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.startServices=true
 
+            -   name: Start OpenTelemetry docker containers
+                run: |
+                    cd otel
+                    chmod -R 777 otel-*
+                    docker compose up -d
+
+            -   name: Check OpenTelemetry containers
+                run: |
+                    echo "Checking OpenTelemetry Golden Tester..."
+                    curl -s http://localhost:5318/v1/metrics -H "Content-Type: application/json" -d "{}" \
+                        --fail \
+                        --retry-all-errors \
+                        --retry-delay 2 \
+                        --retry 10
+                    echo ""
+                    echo "curl exit code: "$?
+                    echo ""
+
+                    echo "Checking OpenTelemetry Collector..."
+                    curl -s http://localhost:4318/v1/metrics -H "Content-Type: application/json" -d "{}" \
+                        --fail \
+                        --retry-all-errors \
+                        --retry-delay 2 \
+                        --retry 10
+                    echo ""
+                    echo "curl exit code: "$?
+
             -   name: Run startup check for modulith
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.startServices=true -Denvironment.modulith=true -Denvironment.config=-modulith
+                    ./gradlew runStartUpCheckWithOpenTelemetry --info --scan -Denvironment.startServices=true -Denvironment.modulith=true
+
+            -   name: Verify OpenTelemetry data with Golden Tester
+                if: always()
+                run: |
+                    echo "Waiting for Golden Validator to finish..."
+
+                    # This blocks until the golden container exits (success or timeout)
+                    EXIT_CODE=$(docker wait golden)
+
+                    # Display logs to see the diff if it failed
+                    echo "Golden container logs:"
+                    docker logs golden
+
+                    echo ""
+
+                    if [ "$EXIT_CODE" -ne 0 ]; then
+                      echo "::error::OpenTelemetry data validation failed! See logs above for diff."
+                      exit 1
+                    fi
+                    echo "OpenTelemetry data validation passed!"
+
+            -   name: Stop OpenTelemetry Collector and print logs
+                if: always()
+                run: |
+                    docker stop collector -t 60
+
+                    echo "Collector container logs:"
+                    docker logs collector
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -78,5 +134,6 @@ jobs:
                     name: Register-${{ env.JOB_ID }}
                     path: |
                         */build/reports/**
+                        otel/**
 
             -   uses: ./.github/actions/teardown

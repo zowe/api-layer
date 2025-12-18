@@ -104,6 +104,18 @@ task runStartUpCheck(type: Test) {
     systemProperties System.properties
     useJUnitPlatform {
         includeTags 'StartupCheck'
+        excludeTags 'OpenTelemetryTest'
+    }
+    outputs.upToDateWhen { false }
+}
+
+task runStartUpCheckWithOpenTelemetry(type: Test) {
+    group 'integration tests'
+    description "Check that the API Mediation Layer is up and running with graceful wait for OpenTelemetry"
+
+    systemProperties System.properties
+    useJUnitPlatform {
+        includeTags 'StartupCheck'
     }
     outputs.upToDateWhen { false }
 }

@@ -1,0 +1,96 @@
+receivers:
+  # OTLP receiver to receive telemetry data from services
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+exporters:
+  # signals (received and exported) are saved to files
+  file/metrics:
+    path: /etc/otel-collector/metrics.json
+    append: false
+    format: json
+  file/metrics_filtered:
+      path: /etc/otel-collector/metrics_filtered.json
+      append: false
+      format: json
+  file/traces:
+    path: /etc/otel-collector/traces.json
+    append: false
+    format: json
+  file/logs:
+    path: /etc/otel-collector/logs.json
+    append: false
+    format: json
+  # debug printed to the console
+  debug:
+    verbosity: detailed
+  # otlp-http exporter to forward telemetry to the Golden Tester
+  otlphttp/golden:
+    endpoint: "http://golden:4318"
+    tls:
+      insecure: true
+  nop: {}
+
+# The OpenTelemetry Golden Tester validates all received data,
+# which requires all data to be described in golden expected definitions file.
+# The metrics are filtered so only one metric is produced for validation.
+processors:
+    # All metrics except jvm.cpu.count are ignored.
+    # The metric is expected to be always produced as we run java application.
+    filter/keep_specific_metrics:
+        error_mode: ignore
+        metrics:
+            include:
+                match_type: strict
+                metric_names:
+                    - jvm.cpu.count
+
+    # Every metric is converted to test.metric:
+    #  - The name reflects this is purely artificial metrics for testing
+    #  - Is converted to gauge as the gauge carries fewer attributes which simplifies the validation
+    #  - The value is always 1.0 so it is easy to define the expected value for validation
+    transform/all_in_one:
+        error_mode: ignore
+        metric_statements:
+            -   context: metric
+                statements:
+                    - set(name, "test.metric")
+                    - set(description, "Synthetic metric for resource attribute validation carrying fixed dummy value")
+                    - set(instrumentation_scope.name, "test")
+                    - set(unit, "")
+                    - convert_sum_to_gauge()
+            -   context: datapoint
+                statements:
+                    - set(value_double, 1.0)
+
+service:
+  telemetry:
+    metrics:
+      level: none # Disables generation of internal otelcol_ metrics
+  pipelines:
+    traces:
+      # received traces are exported to console and file only
+      receivers: [otlp]
+      processors: []
+      exporters: [debug, file/traces]
+    # received traces are exported to console and file only
+    metrics:
+      receivers: [otlp]
+      processors: []
+      exporters: [debug, file/metrics]
+    # Received metrics are filtered and transformed. For any number of received metrics, at most one will be exported
+    # to console, file and Golden Tester.
+    metrics/filtered:
+        receivers: [ otlp ]
+        processors: [ filter/keep_specific_metrics, transform/all_in_one ]
+        exporters: [ debug, file/metrics_filtered, otlphttp/golden ]
+    # received logs are exported to console and file only
+    logs:
+      receivers: [otlp]
+      processors: []
+      exporters: [debug, file/logs]
+
