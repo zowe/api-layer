@@ -13,6 +13,7 @@ package org.zowe.apiml.filter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -133,9 +134,17 @@ public class AttlsHttpHandler implements BeanPostProcessor {
                         return unsecureError(request, response);
                     }
 
-                    RequestFacade requestFacade = ((AbstractServerHttpRequest) request).getNativeRequest();
-                    requestFacade.setAttribute("attls", attlsContext);
-                    request = updateCertificate(request, requestFacade, attlsContext.getCertificate());
+                    var nativeRequest = ((AbstractServerHttpRequest) request).getNativeRequest();
+
+                    if (nativeRequest instanceof RequestFacade facade) {
+                        facade.setAttribute("attls", attlsContext);
+                        request = updateCertificate(request, facade, attlsContext.getCertificate());
+                    } else if (nativeRequest instanceof HttpServletRequestWrapper applicationRequest) {
+                        applicationRequest.setAttribute("attls", attlsContext);
+                        request = updateCertificate(request, applicationRequest, attlsContext.getCertificate());
+                    } else {
+                        log.error("Unsupported request type {}", nativeRequest.getClass());
+                    }
                 } catch (IoctlCallException | UnknownEnumValueException | ContextIsNotInitializedException |
                          CertificateException | UnsatisfiedLinkError e) {
                     log.error("Cannot verify AT-TLS status", e);
