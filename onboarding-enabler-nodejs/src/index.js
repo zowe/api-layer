@@ -17,7 +17,7 @@ let keyFile = null;
 let caFile = null;
 let passPhrase = null;
 let client = null;
-let tlsOptions = null;
+let tlsOpts = null;
 
 /**
  * Read ssl service configuration
@@ -34,11 +34,14 @@ function readTlsProps() {
   }
 }
 
+// eslint-disable-next-line import/no-mutable-exports
+export let tlsOptions = tlsOpts;
+
 function init() {
   const defaultFile = fs.existsSync('config/service-configuration.yml');
   if (defaultFile) {
     readTlsProps();
-    tlsOptions = {
+    tlsOpts = {
       cert: fs.readFileSync(certFile),
       key: fs.readFileSync(keyFile),
       passphrase: passPhrase,
@@ -51,6 +54,7 @@ function init() {
         done(Object.assign(requestOpts, tlsOptions));
       },
     });
+    tlsOptions = tlsOpts;
   }
 }
 
