@@ -11,8 +11,9 @@
 package org.zowe.apiml.integration.proxy;
 
 import io.restassured.RestAssured;
-import io.restassured.filter.log.LogDetail;
 import io.restassured.parsing.Parser;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.content.FileBody;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -96,16 +97,13 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
                 }
             }
 
+            FileBody fileBody = new FileBody(tempFile, ContentType.APPLICATION_OCTET_STREAM);
+
             given()
-                .log().ifValidationFails(LogDetail.STATUS)
-                .multiPart(
-                    "file",
-                    tempFile,
-                    "application/octet-stream"
-                )
-                .when()
+                .multiPart("file", fileBody)
+            .when()
                 .post(url)
-                .then()
+            .then()
                 .statusCode(200)
                 .body("fileName", equalTo(tempFile.getName()))
                 .body("fileType", equalTo("application/octet-stream"))
