@@ -29,7 +29,13 @@ jobs:
             -   name: Standalone Catalog
                 run: >
                     ./gradlew :api-catalog-services:jib -Djib.serialize=true -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6304 -Pzowe.jib.image.debugPort=5125 -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
-
+            -   name: Build Nodejs
+                run: |
+                    cd onboarding-enabler-nodejs-sample-app
+                    docker build -t hwexpress .
+                    docker tag hwexpress ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
+                    docker login ghcr.io/balhar-jakub/ -u ${{ secrets.PERSONAL_JB_TOKEN }}
+                    docker push ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
             -   uses: ./.github/actions/teardown
 
     CITestsModulith:
@@ -2070,7 +2076,7 @@ jobs:
 
     CITestsNodeJsAndPythonServices:
         needs: PublishJibContainers
-#        container: ubuntu:latest
+        container: node:20-alpine
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -2083,6 +2089,8 @@ jobs:
                     APIML_HEALTH_PROTECTED: false
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+            nodejs-sample-app:
+                image: ghcr.io/balhar-jakub/nodejs-sample-app:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@v4
@@ -2091,30 +2099,13 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
-            -   name: Install dependencies for onboarding-enabler-nodejs
-                run: |
-                    cd onboarding-enabler-nodejs
-                    npm ci --legacy-peer-deps
-            -   name: Install NPM dependencies for Node.JS Sample Service
-                uses: bahmutov/npm-install@v1
-                with:
-                    install-command: npm ci --legacy-peer-deps
-                    working-directory: onboarding-enabler-nodejs-sample-app
+
 
             -   name: Replace service configuration files
                 run: |
-                    mv config/docker/nodejs-service/service-configuration.yml onboarding-enabler-nodejs-sample-app/config/service-configuration.yml
                     mv config/docker/python-service/service-configuration.yml onboarding-enabler-python-sample-app/src/config/service-configuration.yml
 
-            -   name: Build NodeJS Sample Service image
-                run: |
-                    cd onboarding-enabler-nodejs-sample-app
-                    docker build -t hwexpress .
-            -   name: Run NodeJS Sample Service (Docker)
-                run: |
-                    docker run -d \
-                    --name hwexpress \
-                    hwexpress
+
 
 #            -   name: Run Node.JS Sample Service
 #                run: |
