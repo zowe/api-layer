@@ -26,7 +26,7 @@ COPY onboarding-enabler-nodejs ../onboarding-enabler-nodejs
 
 # ===== install deps
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN npm ci --legacy-peer-deps
 
 # ===== copy app
 COPY . .
