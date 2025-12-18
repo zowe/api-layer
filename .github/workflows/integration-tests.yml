@@ -28,7 +28,6 @@ jobs:
                 run: |
                     cd onboarding-enabler-nodejs-sample-app
                     cp ../config/docker/nodejs-service/service-configuration.yml ./config/service-configuration.yml
-                    cp -r ../onboarding-enabler-nodejs ./onboarding-enabler-nodejs
                     docker build -t hwexpress .
                     docker tag hwexpress ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
                     echo "${{ secrets.PERSONAL_JB_TOKEN }}" | docker login ghcr.io -u balhar-jakub --password-stdin
