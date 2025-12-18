@@ -11,6 +11,7 @@
 package org.zowe.apiml.integration.proxy;
 
 import io.restassured.RestAssured;
+import io.restassured.filter.log.LogDetail;
 import io.restassured.parsing.Parser;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -23,6 +24,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Objects;
 import java.util.Random;
 
 import static io.restassured.RestAssured.given;
@@ -33,12 +35,12 @@ import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_MULTIPART;
 class MultipartPutIntegrationTest implements TestWithStartedInstances {
     private final String configFileName = "example.txt";
     private final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-    private URI url = HttpRequestUtils.getUriFromGateway(DISCOVERABLE_MULTIPART);
+    private final URI url = HttpRequestUtils.getUriFromGateway(DISCOVERABLE_MULTIPART);
 
     @BeforeAll
     static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
-        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+//        RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 
     @Nested
@@ -51,7 +53,7 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
 
                 given().
                     contentType("multipart/form-data").
-                    multiPart(new File(classLoader.getResource(configFileName).getFile())).
+                    multiPart(new File(Objects.requireNonNull(classLoader.getResource(configFileName)).getFile())).
                     expect().
                     statusCode(200).
                     body("fileName", equalTo("example.txt")).
@@ -66,7 +68,7 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
 
                 given().
                     contentType("multipart/form-data").
-                    multiPart(new File(classLoader.getResource(configFileName).getFile())).
+                    multiPart(new File(Objects.requireNonNull(classLoader.getResource(configFileName)).getFile())).
                     expect().
                     statusCode(200).
                     body("fileName", equalTo("example.txt")).
@@ -95,6 +97,7 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
             }
 
             given()
+                .log().ifValidationFails(LogDetail.STATUS)
                 .multiPart(
                     "file",
                     tempFile,
