@@ -25,6 +25,35 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            
+            -   name: Start Golden OTel Collector
+                run: |
+                    docker run -d \
+                        --name golden \
+                        --user $(id -u):$(id -g) \
+                        -v ${{ github.workspace }}/data:/var/data \
+                        -p 4317:4317 \
+                        -p 4318:4318 \
+                        ghcr.io/open-telemetry/opentelemetry-collector-contrib/golden:latest \
+                            --expected /var/data/expected.yaml \
+                            --otlp-http-endpoint 0.0.0.0:4318 \
+                            --otlp-endpoint 0.0.0.0:4317 \
+                            --ignore-timestamp \
+                            --ignore-start-timestamp \
+                            --timeout 2m \
+                            --ignore-resource-attribute-value service.instance.id \
+                            --ignore-metric-attribute-value service.instance.id \
+                            --ignore-resource-attribute-value service.version \
+                            --ignore-resource-attribute-value service.name \
+                            --ignore-metric-attribute-value service.version \
+                            --ignore-metric-attribute-value service.name \
+                            --ignore-resource-metrics-order \
+                            --ignore-scope-metrics-order \
+                            --ignore-metrics-order \
+                            --ignore-metrics-data-points-order \
+                            --ignore-metric-values \
+                            --ignore-data-points-attributes-order \
+                            --ignore-scope-version
 
             -   name: Build with Gradle
                 run: >
@@ -32,6 +61,23 @@ jobs:
             -   name: Run startup check
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.startServices=true
+
+            -   name: Verify Golden File
+                run: |
+                      echo "Waiting for Golden Validator to finish..."
+                      
+                      # This blocks until the golden container exits (success or timeout)
+                      EXIT_CODE=$(docker wait golden)
+                      
+                      # Display logs to see the diff if it failed
+                      docker logs golden
+                      
+                      if [ "$EXIT_CODE" -ne 0 ]; then
+                        echo "::error::Trace validation failed! See logs above for diff."
+                        exit 1
+                      fi
+                      echo "Trace validation passed!"
+                      
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()

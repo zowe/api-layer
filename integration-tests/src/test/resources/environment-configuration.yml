@@ -105,3 +105,10 @@ instanceEnv:
     ZWE_configs_apiml_security_authorization_provider: endpoint
     # set the value to "authentication" if you want to test the sticky session load balancing
     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: headerRequest
+    OTEL_SDK_DISABLED: false
+    OTEL_RESOURCE_ATTRIBUTES_DEPLOYMENT_ENVIRONMENT: dev
+    OTEL_RESOURCE_ATTRIBUTES_SERVICE_NAME: apiml
+    OTEL_RESOURCE_ATTRIBUTES_ZOS_SMF_ID: SYS1
+    OTEL_RESOURCE_ATTRIBUTES_ZOS_SYSPLEX_NAME: SYSPLEX1
+    OTEL_RESOURCE_ATTRIBUTES_MAINFRAME_LPAR_NAME: LPAR01
+    OTEL_EXPORTER_OTLP_ENDPOINT: https://localhost:4318
