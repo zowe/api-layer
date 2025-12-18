@@ -127,6 +127,12 @@ public class ModulithConfig implements InitializingBean {
     @Value("${apiml.service.port:10010}")
     private int port;
 
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
+
+    @Value("${apiml.service.externalUrl}")
+    private String externalUrl;
+
     @Bean
     ApplicationInfo applicationInfo() {
         return ApplicationInfo.builder()
@@ -143,16 +149,28 @@ public class ModulithConfig implements InitializingBean {
             .setServiceUpTimestamp(System.currentTimeMillis())
             .build();
 
-        var scheme = https ? "https" : "http";
 
         Map<String, String> metadata = switch (serviceId) {
             case "gateway" -> eurekaInstanceGw.getMetadataMap();
             case "cachingservice" -> cachingServiceEurekaInstanceConfigBean.getMetadataMap();
-            case "apicatalog" -> catalogEurekaInstanceConfigBean.getMetadataMap();
+            case "apicatalog" -> {
+                metadata = catalogEurekaInstanceConfigBean.getMetadataMap();
+                if (isServerAttlsEnabled) {
+                    var allowedOrigins = "https://" + hostname + ":" + port + "," + externalUrl;
+                    metadata.put("apiml.corsEnabled", "true");
+                    metadata.put("apiml.corsAllowedOrigins", allowedOrigins);
+                }
+                yield metadata;
+            }
             default -> new HashMap<>();
         };
 
         String homePagePath = metadata.getOrDefault("apiml.homePagePath", "/");
+
+        String scheme = "https";
+        if (!https && !isServerAttlsEnabled) {
+            scheme = "http";
+        }
 
         return InstanceInfo.Builder.newBuilder()
             .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
@@ -163,8 +181,8 @@ public class ModulithConfig implements InitializingBean {
             .setIPAddr(ipAddress)
             .setPort(port)
             .setSecurePort(port)
-            .enablePort(InstanceInfo.PortType.SECURE, https)
-            .enablePort(InstanceInfo.PortType.UNSECURE, !https)
+            .enablePort(InstanceInfo.PortType.SECURE, https || isServerAttlsEnabled)
+            .enablePort(InstanceInfo.PortType.UNSECURE, !https && !isServerAttlsEnabled)
             .setVIPAddress(serviceId)
             .setDataCenterInfo(() -> DataCenterInfo.Name.MyOwn)
             .setLeaseInfo(leaseInfo)

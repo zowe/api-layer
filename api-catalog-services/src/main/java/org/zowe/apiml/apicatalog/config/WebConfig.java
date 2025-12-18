@@ -11,7 +11,7 @@
 package org.zowe.apiml.apicatalog.config;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -28,13 +28,13 @@ import java.net.URI;
 import java.time.Duration;
 
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
-import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 @Configuration("catalogWebConfig")
 @ComponentScan("org.zowe.apiml.product.web")
 @RequiredArgsConstructor
 @SuppressWarnings("squid:S1192") // using same literals increase the readability
+@Slf4j
 public class WebConfig implements WebFluxConfigurer {
 
     private final ApplicationInfo applicationInfo;
@@ -72,19 +72,6 @@ public class WebConfig implements WebFluxConfigurer {
         return route(GET("/"), req -> redirect("/apicatalog"))
             .and(route(GET("/apicatalog"), req -> redirect("/apicatalog/")))
             .and(route(GET("/apicatalog/"), req -> redirect("/apicatalog/index.html")));
-    }
-
-    @Bean
-    @ConditionalOnBean(name = "modulithConfig")
-    public RouterFunction<ServerResponse> redirectRouteModulith() {
-        return route(GET("/apicatalog/api/v1"), req -> redirect("/apicatalog/api/v1/"))
-            .and(route(GET("/apicatalog/api/v1/"), req -> redirect("/apicatalog/api/v1/index.html")))
-            .and(route(GET("/apicatalog/ui/v1"), req -> redirect("/apicatalog/ui/v1/")))
-            .and(route(GET("/apicatalog/ui/v1/"), req -> redirect("/apicatalog/ui/v1/index.html")))
-
-            .and(route(POST("/apicatalog/api/v1/auth/login"), req -> redirect("/gateway/api/v1/auth/login")))
-            .and(route(POST("/apicatalog/api/v1/auth/logout"), req -> redirect("/gateway/api/v1/auth/logout")))
-            .and(route(GET("/apicatalog/api/v1/auth/query"), req -> redirect("/gateway/api/v1/auth/query")));
     }
 
 }
