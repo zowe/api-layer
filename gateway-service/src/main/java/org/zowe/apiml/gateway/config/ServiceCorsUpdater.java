@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.config;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.gateway.config.GlobalCorsProperties;
@@ -28,6 +29,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class ServiceCorsUpdater implements InitializingBean {
 
     private final CorsUtils corsUtils;
@@ -52,12 +54,12 @@ public class ServiceCorsUpdater implements InitializingBean {
             .flatMap(discoveryClient::getInstances)
             .map(instance -> {
                     corsUtils.setCorsConfiguration(
-                    instance.getServiceId().toLowerCase(),
-                    instance.getMetadata(),
-                    (prefix, serviceId, config) -> {
-                        serviceId = instance.getMetadata().getOrDefault(APIML_ID, instance.getServiceId().toLowerCase());
-                        urlBasedCorsConfigurationSource.registerCorsConfiguration("/" + serviceId + "/**", config);
-                    }
+                        instance.getServiceId().toLowerCase(),
+                        instance.getMetadata(),
+                        (prefix, serviceId, config) -> {
+                            serviceId = instance.getMetadata().getOrDefault(APIML_ID, instance.getServiceId().toLowerCase());
+                            urlBasedCorsConfigurationSource.registerCorsConfiguration("/" + serviceId + "/**", config);
+                        }
                 );
                 return instance;
             }).then();

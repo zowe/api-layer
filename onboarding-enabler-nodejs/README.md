@@ -12,7 +12,7 @@ This is the onboarding Node.js enabler for [Zowe API Mediation Layer](https://gi
 
     ```js
     const apiLayerService = require("@zowe/apiml-onboarding-enabler-nodejs");
-    tlsOptions = apiLayerService.tlsOptions;
+    tlsOptions = apiLayerService.getTlsOptions();
     const httpsServer = https.createServer(tlsOptions, app);
     httpsServer.listen(args.port, function () {
         apiLayerService.connectToEureka();

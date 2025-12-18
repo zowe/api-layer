@@ -106,14 +106,6 @@
 # - ZWE_configs_storage_vsam_name
 # Optional variables:
 
-add_profile() {
-    new_profile=$1
-    if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
-        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
-    fi
-    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}${new_profile}"
-}
-
 if [ -n "${LAUNCH_COMPONENT}" ]; then
     JAR_FILE="${LAUNCH_COMPONENT}/apiml-lite.jar"
 else
@@ -149,7 +141,7 @@ add_profile() {
 if [ "${ZWE_components_gateway_debug:-${ZWE_configs_debug:-false}}" = "true" ]; then
     # TODO should this be a merge of the profiles in gateway and discovery (and other modules later added?)
     if [ -n "${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}" ]; then
-        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}},"
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}"
     fi
     add_profile "debug"
 fi
@@ -215,6 +207,7 @@ fi
 if [ "${ATTLS_SERVER_ENABLED}" = "true" ]; then
   add_profile "attlsServer"
   ZWE_configs_server_ssl_enabled="false"
+  ZWE_configs_apiml_service_corsEnabled=true
 fi
 
 internalProtocol="https"
