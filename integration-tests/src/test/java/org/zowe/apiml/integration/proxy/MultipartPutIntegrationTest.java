@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Objects;
 import java.util.Random;
 
 import static io.restassured.RestAssured.given;
@@ -35,7 +36,7 @@ import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_MULTIPART;
 class MultipartPutIntegrationTest implements TestWithStartedInstances {
     private final String configFileName = "example.txt";
     private final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-    private URI url = HttpRequestUtils.getUriFromGateway(DISCOVERABLE_MULTIPART);
+    private final URI url = HttpRequestUtils.getUriFromGateway(DISCOVERABLE_MULTIPART);
 
     @BeforeAll
     static void beforeClass() {
@@ -53,12 +54,12 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
 
                 given().
                     contentType("multipart/form-data").
-                    multiPart(new File(classLoader.getResource(configFileName).getFile())).
+                    multiPart(new File(Objects.requireNonNull(classLoader.getResource(configFileName)).getFile())).
                     expect().
                     statusCode(200).
                     body("fileName", equalTo("example.txt")).
                     body("fileType", equalTo("application/octet-stream")).
-                    when().
+                when().
                     put(url);
             }
 
@@ -68,12 +69,12 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
 
                 given().
                     contentType("multipart/form-data").
-                    multiPart(new File(classLoader.getResource(configFileName).getFile())).
+                    multiPart(new File(Objects.requireNonNull(classLoader.getResource(configFileName)).getFile())).
                     expect().
                     statusCode(200).
                     body("fileName", equalTo("example.txt")).
                     body("fileType", equalTo("application/octet-stream")).
-                    when().
+                when().
                     post(url);
             }
         }
@@ -81,6 +82,7 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
         @Test
         void givenLargeFileUpload() {
             int payloadSize = 750 * 1024 * 1024; //750MB
+            //disable the retry to avoid NonRepeatableRequestException and increase the timeout to fix the flakiness
             RestAssuredConfig config = RestAssured.config()
                 .httpClient(HttpClientConfig.httpClientConfig()
                     .setParam("http.connection.timeout", 300000)
@@ -96,9 +98,9 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
                     new RandomDataInputStream(payloadSize),
                     "application/octet-stream"
                 )
-                .when()
+            .when()
                 .post(url)
-                .then()
+            .then()
                 .statusCode(200)
                 .body("fileName", equalTo("largefile.dat"))
                 .body("fileType", equalTo("application/octet-stream"))
