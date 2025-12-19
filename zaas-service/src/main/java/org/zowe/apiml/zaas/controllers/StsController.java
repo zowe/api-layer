@@ -46,7 +46,7 @@ public class StsController {
     private final PassTicketService passTicketService;
     private final NativeMapperWrapper nativeMapper;
 
-    public static final String CONTROLLER_PATH = "/zaas/api/v1/auth/delegations";
+    public static final String CONTROLLER_PATH = "/zaas/api/v1/auth/delegate";
     public static final String PASSTICKET_PATH = "/passticket";
 
     @PostMapping(value = StsController.PASSTICKET_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -75,7 +75,7 @@ public class StsController {
             log.info("Getting request email id: {} and ZOS_Userid: {}", emailID, zosUserId);
             return ResponseEntity.ok(new PassTicketResponse(ticket, zosUserId));
         } catch (Exception ex) {
-            log.error("Error calling delegations passticket api", ex);
+            log.error("Error calling delegate passticket api", ex);
             throw ex;
         }
     }
