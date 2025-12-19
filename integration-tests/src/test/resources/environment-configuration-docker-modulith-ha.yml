@@ -11,12 +11,8 @@ gatewayServiceConfiguration:
     externalPort: 10010
     instances: 2
     servicesEndpoint: gateway/api/v1/services
-    bucketCapacity: 20
+    bucketCapacity: 40
     authProvider: zosmf
-centralGatewayServiceConfiguration:
-    scheme: https
-    host: central-gateway-service
-    port: 10010
 discoveryServiceConfiguration:
     scheme: https
     user: user
