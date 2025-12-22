@@ -36,18 +36,6 @@ services:
       - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
       - APIML_SERVICE_HOSTNAME=discoverable-client-2
 
-  api-catalog-services:
-    image: ghcr.io/zowe/api-catalog-services:latest
-    networks:
-      - apiml_net
-      - apiml_shared
-    container_name: api-catalog-services
-    volumes:
-      - /api-defs:/api-defs # Update to an existing local directory
-    environment:
-      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
-      - APIML_SERVICE_HOSTNAME=api-catalog-services
-
   apiml-2:
     image: ghcr.io/zowe/apiml:latest
     ports:
@@ -65,24 +53,6 @@ services:
       - APIML_SERVICE_HOSTNAME=apiml-2
       - APIML_DISCOVERY_ALLPEERSURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
       - logbackService=ZWEAGW2
-  caching-service:
-    image: ghcr.io/zowe/caching-service:latest
-    networks:
-      - apiml_net
-      - apiml_shared
-    container_name: caching-service
-    environment:
-      - APIML_SERVICE_HOSTNAME=caching-service
-      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
-  caching-service-2:
-    image: ghcr.io/zowe/caching-service:latest
-    networks:
-      - apiml_net
-      - apiml_shared
-    container_name: caching-service-2
-    environment:
-      - APIML_SERVICE_HOSTNAME=caching-service-2
-      - APIML_SERVICE_DISCOVERYSERVICEURLS=https://apiml:10011/eureka,https://apiml-2:10011/eureka
   mock-services:
     image: ghcr.io/zowe/mock-services:latest
     networks:
