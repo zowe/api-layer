@@ -58,7 +58,11 @@ public class InfinispanConfig implements InitializingBean {
     private static final String SERVER_SSL_KEY_STORE_TYPE = "server.ssl.keyStoreType";
     private static final String SERVER_SSL_KEY_STORE = "server.ssl.keyStore";
     private static final String SERVER_SSL_KEY_STORE_PASSWORD = "server.ssl.keyStorePassword";
+
     private static final String ZWE_HAINSTANCE_ID = "ZWE_haInstance_id";
+    private static final String LOCK_ZOWE_INVALIDATED = "zoweInvalidatedTokenLock";
+    private static final String CACHE_ZOWE = "zoweCache";
+    private static final String CACHE_ZOWE_INVALIDATED_TOKEN = "zoweInvalidatedTokenCache";
 
     @Value("${caching.storage.infinispan.initialHosts}")
     private String initialHosts;
@@ -152,11 +156,11 @@ public class InfinispanConfig implements InitializingBean {
 
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder
-            .encoding().mediaType("application/x-jboss-marshalling")
+            .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
             .persistence().addSoftIndexFileStore().clustering()
             .clustering().cacheMode(CacheMode.DIST_SYNC);
 
-        List<String> caches = Arrays.asList("zoweCache", "zoweInvalidatedTokenCache");
+        List<String> caches = Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN);
         caches.forEach(cacheName -> cacheManager.administration()
             .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
             .getOrCreateCache(cacheName, builder.build()));
@@ -180,8 +184,8 @@ public class InfinispanConfig implements InitializingBean {
                 if (lock == null) {
                     ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(cacheManager);
                     // it can throw AvailabilityException
-                    clm.defineLock("zoweInvalidatedTokenLock");
-                    lock = clm.get("zoweInvalidatedTokenLock");
+                    clm.defineLock(LOCK_ZOWE_INVALIDATED);
+                    lock = clm.get(LOCK_ZOWE_INVALIDATED);
                 }
                 zoweInvalidatedTokenLock.set(lock);
             }
@@ -195,8 +199,8 @@ public class InfinispanConfig implements InitializingBean {
     @Bean
     public Storage storage(DefaultCacheManager cacheManager) {
         return new InfinispanStorage(
-            cacheManager.getCache("zoweCache"),
-            cacheManager.getCache("zoweInvalidatedTokenCache"),
+            cacheManager.getCache(CACHE_ZOWE),
+            cacheManager.getCache(CACHE_ZOWE_INVALIDATED_TOKEN),
             () -> lock(cacheManager)
         );
     }
