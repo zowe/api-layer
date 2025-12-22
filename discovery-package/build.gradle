@@ -19,7 +19,11 @@ task packageDiscovery(type: Zip) {
 
     into('/') {
         from "$buildDir/convert/manifest.yaml", "$resourceDir/zosmf-static-definition.yaml.template"
-        from "../schemas/discovery-schema.json"
+    }
+
+    into('schemas/') {
+        from "$resourceDir/schemas/discovery-config.json"
+        from "$resourceDir/schemas/zowe-schema.json"
     }
 
     into('bin/') {

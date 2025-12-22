@@ -1,0 +1,48 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "https://zowe.org/schemas/v2/discovery-config",
+    "title": "discovery configuration",
+    "description": "Configuration properties for discovery, as specified within a configuration file such as zowe.yaml",
+    "type": "object",
+    "properties": {
+        "apiml": {
+            "type": "object",
+            "properties": {
+                "serviceIdPrefixReplacer": {
+                    "type": "string",
+                    "description": "A comma separated tuple to replace service ID with new one in API ML registry."
+                }
+            }
+        },
+        "port": {
+            "$ref": "#/$defs/port",
+            "default": 7552
+        },
+        "debug": {
+            "type": "boolean",
+            "description": "Enable debug logs in discovery service"
+        },
+        "heap": {
+            "type": "object",
+            "description": "Configure JVM parameters for heap size",
+            "properties": {
+                "init": {
+                    "type": "integer",
+                    "description": "Initial heap size in MB."
+                },
+                "max": {
+                    "type": "integer",
+                    "description": "Maximum heap size in MB."
+                }
+            }
+        }
+    },
+    "$defs": {
+        "port": {
+            "type": "integer",
+            "description": "TCP network port",
+            "minimum": 1024,
+            "maximum": 65535
+        }
+    }
+}

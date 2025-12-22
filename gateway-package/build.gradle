@@ -19,7 +19,11 @@ task packageApiGateway(type: Zip) {
 
     into('/') {
         from "$buildDir/convert/manifest.yaml"
-        from "../schemas/gateway-schema.json"
+    }
+
+    into('schemas/') {
+        from "$resourceDir/schemas/gateway-config.json"
+        from "$resourceDir/schemas/zowe-schema.json"
     }
 
     into('bin/') {

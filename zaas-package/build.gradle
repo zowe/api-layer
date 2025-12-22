@@ -19,7 +19,11 @@ task packageZaas(type: Zip) {
 
     into('/') {
         from "$buildDir/convert/manifest.yaml"
-        from "../schemas/zaas-schema.json"
+    }
+
+    into('schemas/') {
+        from "$resourceDir/schemas/zaas-config.json"
+        from "$resourceDir/schemas/zowe-schema.json"
     }
 
     into('bin/') {

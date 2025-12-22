@@ -20,7 +20,6 @@ task packageApiCatalog(type: Zip) {
     into('/') {
         from "$buildDir/convert/manifest.yaml"
         from "$resourceDir/pluginDefinition.json"
-        from "../schemas/catalog-schema.json"
     }
 
     into('plugin/') {
@@ -29,6 +28,11 @@ task packageApiCatalog(type: Zip) {
 
     into('plugin/web/assets/') {
         from "$resourceDir/plugin/web/assets/api-catalog.png"
+    }
+
+    into('schemas/') {
+        from "$resourceDir/schemas/api-catalog-config.json"
+        from "$resourceDir/schemas/zowe-schema.json"
     }
 
     into('bin/') {
