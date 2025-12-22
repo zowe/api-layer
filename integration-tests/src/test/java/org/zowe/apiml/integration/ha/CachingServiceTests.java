@@ -45,7 +45,7 @@ import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
 @Slf4j
 @ChaoticHATest
 @TestInstance(TestInstance.Lifecycle. PER_CLASS)
-public class CachingService {
+class CachingServiceTests {
 
     private static final String SERVICE = "service";
     private static final String KEY = "aCacheKey" + new Random().nextInt();
