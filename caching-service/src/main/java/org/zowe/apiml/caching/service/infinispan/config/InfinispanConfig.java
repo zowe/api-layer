@@ -58,6 +58,7 @@ public class InfinispanConfig implements InitializingBean {
     private static final String SERVER_SSL_KEY_STORE_TYPE = "server.ssl.keyStoreType";
     private static final String SERVER_SSL_KEY_STORE = "server.ssl.keyStore";
     private static final String SERVER_SSL_KEY_STORE_PASSWORD = "server.ssl.keyStorePassword";
+    private static final String ZWE_HAINSTANCE_ID = "ZWE_haInstance_id";
 
     @Value("${caching.storage.infinispan.initialHosts}")
     private String initialHosts;
@@ -103,7 +104,7 @@ public class InfinispanConfig implements InitializingBean {
 
     static String getRootFolder() {
         // using getenv().get is because of system compatibility (see non-case sensitive on Windows)
-        String instanceId = System.getenv().get("ZWE_haInstance_id");
+        String instanceId = System.getenv().get(ZWE_HAINSTANCE_ID);
         if (StringUtils.isBlank(instanceId)) {
             instanceId = "localhost";
         }
