@@ -119,6 +119,14 @@ public class CachingController {
             mapKey, keyValue, request, HttpStatus.CREATED);
     }
 
+    private boolean isStorageIncompatible(Exception exception) {
+        if (!(exception instanceof StorageException)) {
+            return false;
+        }
+        StorageException storageException = (StorageException) exception;
+        return Messages.INCOMPATIBLE_STORAGE_METHOD.getKey().equals(storageException.getKey());
+    }
+
     @GetMapping(value = "/cache-list/{mapKey}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Retrieves all the items in the cache map",
         description = "Values returned for the calling service and specific cache map.")
@@ -130,10 +138,7 @@ public class CachingController {
                 try {
                     return new ResponseEntity<>(storage.getAllMapItems(s, mapKey), HttpStatus.OK);
                 } catch (Exception exception) {
-                    if (
-                        (exception instanceof StorageException) &&
-                            Messages.INCOMPATIBLE_STORAGE_METHOD.getKey().equals(((StorageException) exception).getKey())
-                    ) {
+                    if (isStorageIncompatible(exception)) {
                         return handleIncompatibleStorageMethod(exception, request.getRequestURL());
                     }
                     return handleInternalError(exception, request.getRequestURL());
@@ -153,10 +158,7 @@ public class CachingController {
                 try {
                     return new ResponseEntity<>(storage.getAllMaps(s), HttpStatus.OK);
                 } catch (Exception exception) {
-                    if (
-                        (exception instanceof StorageException) &&
-                        Messages.INCOMPATIBLE_STORAGE_METHOD.getKey().equals(((StorageException) exception).getKey())
-                    ) {
+                    if (isStorageIncompatible(exception)) {
                         return handleIncompatibleStorageMethod(exception, request.getRequestURL());
                     }
                     return handleInternalError(exception, request.getRequestURL());
