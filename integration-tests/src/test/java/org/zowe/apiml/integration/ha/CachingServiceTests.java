@@ -66,6 +66,7 @@ class CachingServiceTests {
             String url = String.format("%s/cachingservice%s", baseUrls.get(index), Endpoints.HEALTH);
             log.info("Check if {}. Caching Service is up: {}", index + 1, url);
 
+            //@formatter:off
             given()
                 .contentType(JSON)
                 .auth()
@@ -75,6 +76,7 @@ class CachingServiceTests {
             .then()
                 .statusCode(200)
                 .body("status", Matchers.is("UP"));
+            //@formatter:on
             return true;
         } catch (Throwable t) {
             log.info("Caching service is down", t);
@@ -115,6 +117,8 @@ class CachingServiceTests {
     }
 
     private void assertContent(int index) {
+        //@formatter:off
+
         // check the all records (tokenCache)
         given()
             .config(SslContext.clientCertApiml)
@@ -144,11 +148,14 @@ class CachingServiceTests {
         .then()
             .statusCode(200)
             .body("value", equalTo(VALUE));
+
+        //@formatter:on
     }
 
     @Test
     void givenMultipleInstances_whenShareAValue_thenShutdownDoesntChangeTheState() {
         log.info("Set value on the first instance to cache storage");
+        //@formatter:off
         given()
             .config(SslContext.clientCertApiml)
             .header("X-Certificate-DistinguishedName", DN)
@@ -169,11 +176,13 @@ class CachingServiceTests {
             .post(baseUrls.get(0) + "/cachingservice/api/v1/cache-list/" + MAP)
         .then()
             .statusCode(201);
+        //@formatter:on
 
         int instances = baseUrls.size();
         for (int i = -1; i < instances - 1; i++) {
             if (i >= 0) {
                 log.info("Kill {}. instance of caching service", i + 1);
+                //@formatter:off
                 given()
                     .config(SslContext.clientCertApiml)
                     .contentType(JSON)
@@ -182,6 +191,7 @@ class CachingServiceTests {
                     .post(baseUrls.get(i) + "/cachingservice/application/shutdown")
                 .then()
                     .statusCode(is(SC_OK));
+                //@formatter:on
             }
 
             for (int j = i + 1; j < instances; j++) {
