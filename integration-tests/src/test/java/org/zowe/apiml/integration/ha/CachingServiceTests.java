@@ -21,6 +21,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.zowe.apiml.util.categories.ChaoticHATest;
+import org.zowe.apiml.util.categories.HATest;
 import org.zowe.apiml.util.config.*;
 import org.zowe.apiml.util.requests.Endpoints;
 
@@ -43,6 +44,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
 
 @Slf4j
+@HATest
 @ChaoticHATest
 @TestInstance(TestInstance.Lifecycle. PER_CLASS)
 class CachingServiceTests {
@@ -91,6 +93,10 @@ class CachingServiceTests {
             }
         }
         return true;
+    }
+
+    private boolean isChaotic() {
+        return Boolean.getBoolean("cloudGateway.enabled");
     }
 
     @BeforeAll
@@ -182,6 +188,11 @@ class CachingServiceTests {
         int instances = baseUrls.size();
         for (int i = -1; i < instances - 1; i++) {
             if (i >= 0) {
+                if (!isChaotic()) {
+                    // for non-chaotic stop the test once all instances are verified
+                    return;
+                }
+
                 log.info("Kill {}. instance of caching service", i + 1);
                 //@formatter:off
                 given()

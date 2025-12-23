@@ -859,6 +859,31 @@ jobs:
                     APIML_SERVICE_HOSTNAME: api-catalog-services-2
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    CACHING_STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7098],caching-service-2[7098],caching-service-3[7098]"
+                    JGROUPS_BIND_PORT: 7098
+                    JGROUPS_BIND_ADDRESS: caching-service
+                    JGROUPS_KEYEXCHANGE_PORT: 7118
+                    APIML_SERVICE_HOSTNAME: caching-service
+            caching-service-2:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    CACHING_STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7098],caching-service-2[7098],caching-service-3[7098]"
+                    JGROUPS_BIND_PORT: 7098
+                    JGROUPS_BIND_ADDRESS: caching-service-2
+                    JGROUPS_KEYEXCHANGE_PORT: 7118
+                    APIML_SERVICE_HOSTNAME: caching-service-2
+            caching-service-3:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    CACHING_STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7098],caching-service-2[7098],caching-service-3[7098]"
+                    JGROUPS_BIND_PORT: 7098
+                    JGROUPS_BIND_ADDRESS: caching-service-3
+                    JGROUPS_KEYEXCHANGE_PORT: 7118
+                    APIML_SERVICE_HOSTNAME: caching-service-3
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client-2:
@@ -1368,8 +1393,8 @@ jobs:
 
             -   name: Run Caching Chaotic HA Tests
                 run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingService
-                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingServiceTests
+                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false -Denvironment.chaotic=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
