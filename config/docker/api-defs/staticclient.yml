@@ -10,7 +10,7 @@ services:
       title: Statically Defined API Service  # Title of the service in the API catalog
       description: Sample to demonstrate how to add an API service with Swagger to API Catalog using a static YAML definition  # Description of the service in the API catalog
       instanceBaseUrls:  # list of base URLs for each instance
-        - https://discoverable-client:10012/discoverableclient  # scheme://hostname:port/contextPath
+        - https://discoverable-client-unknown:10012/discoverableclient  # scheme://hostname:port/contextPath
       homePageRelativeUrl: / # Normally used for informational purposes for other services to use it as a landing page
       statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
       healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
@@ -35,7 +35,7 @@ services:
       title: Staticaly Defined Service To Test Zowe JWT scheme  # Title of the service in the API catalog
       description: Sample to demonstrate how to add an API service without Swagger documentation to API Catalog using a static YAML definition  # Description of the service in the API catalog
       instanceBaseUrls:  # list of base URLs for each instance
-          - https://discoverable-client:10012/discoverableclient  # scheme://hostname:port/contextPath
+          - https://discoverable-client-unknown:10012/discoverableclient  # scheme://hostname:port/contextPath
       homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
       statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
       healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
@@ -58,7 +58,7 @@ services:
       title: Staticaly Defined Service 2  # Title of the service in the API catalog
       description: Sample to demonstrate how to add an API service without Swagger documentation to API Catalog using a static YAML definition  # Description of the service in the API catalog
       instanceBaseUrls:  # list of base URLs for each instance
-        - https://discoverable-client:10012/discoverableclient  # scheme://hostname:port/contextPath
+        - https://discoverable-client-unknown:10012/discoverableclient  # scheme://hostname:port/contextPath
       homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
       statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
       healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
@@ -83,7 +83,7 @@ services:
       title: Discoverable client with by pass authentication scheme  # Title of the service in the API catalog
       description: Define service to test by pass authentication schema for integration tests.
       instanceBaseUrls:  # list of base URLs for each instance
-          - https://discoverable-client:10012/discoverableclient  # scheme://hostname:port/contextPath
+          - https://discoverable-client-unknown:10012/discoverableclient  # scheme://hostname:port/contextPath
       homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
       statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
       healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
@@ -102,7 +102,7 @@ services:
         title: Discoverable client with GraphQL   # Title of the service in the API catalog
         description: Sample for data demonstration using GraphiQL Playround.
         instanceBaseUrls: # list of base URLs for each instance
-            - https://discoverable-client:10012/discoverableclient  # scheme://hostname:port/contextPath
+            - https://discoverable-client-unknown:10012/discoverableclient  # scheme://hostname:port/contextPath
         homePageRelativeUrl: /api/v1 # Normally used for informational purposes for other services to use it as a landing page
         statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
         healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
@@ -123,7 +123,7 @@ services:
       title: Discoverable client with passTicket authentication scheme  # Title of the service in the API catalog
       description: Define service to test passTicket authentication schema for integration tests.
       instanceBaseUrls:  # list of base URLs for each instance
-          - https://discoverable-client:10012/discoverableclient  # scheme://hostname:port/contextPath
+          - https://discoverable-client-unknown:10012/discoverableclient  # scheme://hostname:port/contextPath
       homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
       statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
       healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
@@ -143,7 +143,7 @@ services:
       title: Discoverable client with passTicket authentication scheme (Misconfiguration - access rights) # Title of the service in the API catalog
       description: Define service to test passTicket authentication schema for integration tests.
       instanceBaseUrls:  # list of base URLs for each instance
-          - https://discoverable-client:10012/discoverableclient  # scheme://hostname:port/contextPath
+          - https://discoverable-client-unknown:10012/discoverableclient  # scheme://hostname:port/contextPath
       homePageRelativeUrl: /api/v1 # Normally used for informational purposes for other services to use it as a landing page
       statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
       healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
@@ -163,7 +163,7 @@ services:
       title: Discoverable client with passTicket authentication scheme (Misconfiguration - no APPLID) # Title of the service in the API catalog
       description: Define service to test passTicket authentication schema for integration tests.
       instanceBaseUrls:  # list of base URLs for each instance
-          - https://discoverable-client:10012/discoverableclient  # scheme://hostname:port/contextPath
+          - https://discoverable-client-unknown:10012/discoverableclient  # scheme://hostname:port/contextPath
       homePageRelativeUrl: /api/v1 # Normally used for informational purposes for other services to use it as a landing page
       statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
       healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
@@ -182,7 +182,7 @@ services:
       title: Discoverable client with safIdt authentication scheme  # Title of the service in the API catalog
       description: Define service to test safIdt authentication schema for integration tests.
       instanceBaseUrls:  # list of base URLs for each instance
-          - https://discoverable-client:10012/discoverableclient  # scheme://hostname:port/contextPath
+          - https://discoverable-client-unknown:10012/discoverableclient  # scheme://hostname:port/contextPath
       homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
       statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
       healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
@@ -202,7 +202,7 @@ services:
       title: Discoverable client with zosmf authentication scheme  # Title of the service in the API catalog
       description: Define service to test zosmf authentication schema for integration tests.
       instanceBaseUrls:  # list of base URLs for each instance
-          - https://discoverable-client:10012/discoverableclient  # scheme://hostname:port/contextPath
+          - https://discoverable-client-unknown:10012/discoverableclient  # scheme://hostname:port/contextPath
       homePageRelativeUrl:  # Normally used for informational purposes for other services to use it as a landing page
       statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
       healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
@@ -221,7 +221,7 @@ services:
       title: Redirect client  # Title of the service in the API catalog
       description: REST API in the mockservices to test redirect on a service without context path.
       instanceBaseUrls:  # list of base URLs for each instance
-          - https://mock-services:10013/  # scheme://hostname:port/contextPath
+          - https://mock-services-unknown:10013/  # scheme://hostname:port/contextPath
       homePageRelativeUrl: /api/v1 # Normally used for informational purposes for other services to use it as a landing page
       statusPageRelativeUrl: /application/info  # Appended to the instanceBaseUrl
       healthCheckRelativeUrl: /application/health  # Appended to the instanceBaseUrl
@@ -234,7 +234,7 @@ services:
           - apiId: zowe.apiml.redirectclient
             gatewayUrl: api/v1
             version: 1.0.0
-            swaggerUrl: https://mock-services:10013/zosmf/api/docs
+            swaggerUrl: https://mock-services-unknown:10013/zosmf/api/docs
 
 # Additional metadata that will be added to existing dynamically registered services:
 additionalServiceMetadata:
