@@ -21,15 +21,14 @@ LABEL description="NodeJS sample service for APIML onboarding"
 
 WORKDIR /app
 
-COPY onboarding-enabler-nodejs ../onboarding-enabler-nodejs
-
+COPY onboarding-enabler-nodejs ./onboarding-enabler-nodejs
 # ===== install deps
-COPY onboarding-enabler-nodejs-sample-app/package*.json ./
+COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 
 # ===== copy app
-COPY onboarding-enabler-nodejs-sample-app/ ./
-#COPY config/service-configuration.yml config/service-configuration.yml
+COPY . .
+COPY config/service-configuration.yml config/service-configuration.yml
 
 # ===== expose service port
 EXPOSE 10020
