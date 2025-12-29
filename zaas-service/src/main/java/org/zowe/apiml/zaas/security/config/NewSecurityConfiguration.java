@@ -54,7 +54,12 @@ import org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter;
 import org.zowe.apiml.security.common.handler.FailedAccessTokenHandler;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
-import org.zowe.apiml.security.common.login.*;
+import org.zowe.apiml.security.common.login.BasicAuthFilter;
+import org.zowe.apiml.security.common.login.LoginFilter;
+import org.zowe.apiml.security.common.login.NonCompulsoryAuthenticationProcessingFilter;
+import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
+import org.zowe.apiml.security.common.login.X509AuthAwareFilter;
+import org.zowe.apiml.security.common.login.X509ForwardingAwareAuthenticationFilter;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 import org.zowe.apiml.zaas.controllers.AuthController;
 import org.zowe.apiml.zaas.controllers.SafResourceAccessController;
@@ -581,12 +586,6 @@ public class NewSecurityConfiguration {
                 }
             }
 
-            private CategorizeCertsFilter reversedCategorizeCertFilter() {
-                CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator);
-                out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
-                out.setApimlCertificate(crt -> !out.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
-                return out;
-            }
         }
 
         /**
