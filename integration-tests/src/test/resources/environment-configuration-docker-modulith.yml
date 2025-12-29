@@ -30,7 +30,7 @@ discoverableClientConfiguration:
     scheme: https
     port: 10012
     applId: ZOWEAPPL
-    host: discoverable-client
+    host: discoverable-client-unknown
     instances: 1
 apiCatalogServiceConfiguration:
     scheme: https
@@ -53,7 +53,7 @@ tlsConfiguration:
     trustStorePassword: password
 zosmfServiceConfiguration:
     scheme: https
-    host: mock-services
+    host: mock-services-unknown
     port: 10013
     serviceId: mockzosmf
 auxiliaryUserList:
