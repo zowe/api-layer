@@ -151,7 +151,7 @@ jobs:
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
-                    name: ContainerCITestsModulith-${{ env.JOB_ID }}
+                    name: ContainerCITestsModulithUnknownHostnames-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
@@ -562,7 +562,7 @@ jobs:
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
-                    name: ContainerCITests-${{ env.JOB_ID }}
+                    name: ContainerCITestsUnknownHostnames-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
