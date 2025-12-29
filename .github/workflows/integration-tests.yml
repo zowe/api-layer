@@ -484,10 +484,17 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: api-catalog-services-2
                     APIML_HEALTH_PROTECTED: false
+                    #ZWE_zowe_verifyCertificates: NONSTRICT
+                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: true
+                    APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
+                env:
+                    #ZWE_zowe_verifyCertificates: NONSTRICT
+                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: true
+                    APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client-unknown:
