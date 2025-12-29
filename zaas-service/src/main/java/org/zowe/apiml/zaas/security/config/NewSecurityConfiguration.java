@@ -520,12 +520,6 @@ public class NewSecurityConfiguration {
                     )
                     .logout(AbstractHttpConfigurer::disable);  // logout filter in this chain not needed
 
-                if (isServerAttlsEnabled) {
-                    http
-                        // filter out API ML certificate
-                        .addFilterBefore(reversedCategorizeCertFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
-                }
-
                 return http.authenticationProvider(compoundAuthProvider) // for authenticating credentials
                     .authenticationProvider(tokenAuthenticationProvider) // for authenticating Tokens
                     .authenticationProvider(new CertificateAuthenticationProvider())
