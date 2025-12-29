@@ -21,7 +21,7 @@ LABEL description="NodeJS sample service for APIML onboarding"
 
 WORKDIR /app
 
-COPY onboarding-enabler-nodejs ./onboarding-enabler-nodejs
+COPY onboarding-enabler-nodejs ../onboarding-enabler-nodejs
 
 # ===== install deps
 COPY package*.json ./
