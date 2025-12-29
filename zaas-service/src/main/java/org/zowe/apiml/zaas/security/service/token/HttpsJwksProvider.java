@@ -15,6 +15,7 @@ import org.jose4j.http.Get;
 import org.jose4j.jwk.HttpsJwks;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.product.web.HttpConfig;
 
 import javax.net.ssl.SSLContext;
 
@@ -22,13 +23,13 @@ import javax.net.ssl.SSLContext;
 @RequiredArgsConstructor
 public class HttpsJwksProvider {
 
-    @Qualifier("secureSslContextWithoutKeystore")
-    private final SSLContext secureSslContextWithoutKeystore;
+    private final HttpConfig httpConfig;
 
     public HttpsJwks getFor(String url) {
         var httpsJwks = new HttpsJwks(url);
         var get = new Get();
-        get.setSslSocketFactory(secureSslContextWithoutKeystore.getSocketFactory());
+        get.setSslSocketFactory(httpConfig.secureSslContext().getSocketFactory());
+        get.setHostnameVerifier(httpConfig.getSecureHostnameVerifier());
         httpsJwks.setSimpleHttpGet(get);
         return httpsJwks;
     }
