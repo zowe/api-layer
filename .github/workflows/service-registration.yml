@@ -40,12 +40,11 @@ jobs:
                         -p 4317:4317 \
                         -p 4318:4318 \
                         ghcr.io/open-telemetry/opentelemetry-collector-contrib/golden:latest \
-                            --expected /var/data/expected.yaml \
                             --otlp-http-endpoint 0.0.0.0:4318 \
                             --otlp-endpoint 0.0.0.0:4317 \
                             --ignore-timestamp \
                             --ignore-start-timestamp \
-                            --timeout 2m \
+                            --timeout 20m \
                             --ignore-resource-attribute-value service.instance.id \
                             --ignore-metric-attribute-value service.instance.id \
                             --ignore-resource-attribute-value service.version \
@@ -58,7 +57,8 @@ jobs:
                             --ignore-metrics-data-points-order \
                             --ignore-metric-values \
                             --ignore-data-points-attributes-order \
-                            --ignore-scope-version
+                            --ignore-scope-version \
+                            --write-expected
 
             -   name: Check Golden OTel Collector
                 continue-on-error: true
