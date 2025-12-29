@@ -60,6 +60,22 @@ jobs:
                             --ignore-data-points-attributes-order \
                             --ignore-scope-version
 
+            -   name: Wait for Golden OTel Collector to be ready
+                continue-on-error: true
+                run: |
+                    echo "Waiting for Golden OTel Collector to be ready..."
+                    for i in {1..30}; do
+                        if curl -s -o /dev/null -w "%{http_code}" http://localhost:4318/ 2>/dev/null | grep -qE "200|405"; then
+                            echo "Golden OTel Collector is ready!"
+                            exit 0
+                        fi
+                        echo "Attempt $i/30: Golden OTel Collector not ready yet, waiting..."
+                        sleep 2
+                    done
+                    echo "::warning::Golden OTel Collector failed to start within 60 seconds"
+                    docker logs golden
+                    exit 1
+
             # 3. Start COLLECTOR (The Processor)
              # It connects to 'otel-net', reads config from repo, and forwards to 'golden'.
             -   name: Start Collector
@@ -67,9 +83,26 @@ jobs:
                     docker run -d \
                         --name collector \
                         --network otel-net \
+                        -p 13133:13133 \
                         -v ${{ github.workspace }}/config.yaml:/etc/config.yaml \
-                        otel/opentelemetry-collector-contrib:latest \
+                        ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:latest \
                             --config /etc/config.yaml
+
+            -   name: Wait for Collector to be ready
+                continue-on-error: true
+                run: |
+                    echo "Waiting for Collector to be ready..."
+                    for i in {1..30}; do
+                        if curl -s -o /dev/null -w "%{http_code}" http://localhost:13133/ | grep -q "200"; then
+                            echo "Collector is ready!"
+                            exit 0
+                        fi
+                        echo "Attempt $i/30: Collector not ready yet, waiting..."
+                        sleep 2
+                    done
+                    echo "::warning::Collector failed to start within 60 seconds"
+                    docker logs collector
+                    exit 1
 
             -   name: Build with Gradle
                 run: >
