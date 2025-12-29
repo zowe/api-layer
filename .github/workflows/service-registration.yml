@@ -37,8 +37,6 @@ jobs:
                         --user $(id -u):$(id -g) \
                         --network otel-net \
                         -v ${{ github.workspace }}/expected.yaml:/var/data/expected.yaml \
-                        -p 4317:4317 \
-                        -p 4318:4318 \
                         ghcr.io/open-telemetry/opentelemetry-collector-contrib/golden:latest \
                             --otlp-http-endpoint 0.0.0.0:4318 \
                             --otlp-endpoint 0.0.0.0:4317 \
@@ -76,7 +74,8 @@ jobs:
                     docker run -d \
                         --name collector \
                         --network otel-net \
-                        -p 13133:13133 \
+                        -p 4317:4317 \
+                        -p 4318:4318 \
                         -v ${{ github.workspace }}/config.yaml:/etc/config.yaml \
                         ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:latest \
                             --config /etc/config.yaml
@@ -85,7 +84,7 @@ jobs:
                 continue-on-error: true
                 run: |
                     echo "Checking Collector..."
-                    curl -v http://localhost:13133/ 2>&1 || true
+                    curl -v http://localhost:4318/ 2>&1 || true
                     echo ""
                     echo "Container logs:"
                     docker logs collector
