@@ -161,6 +161,9 @@ public class HttpConfig implements InitializingBean {
                     .idleConnTimeoutSeconds(idleConnTimeoutSeconds).requestConnectionTimeout(requestConnectionTimeout)
                     .timeToLive(timeToLive);
 
+            log.debug(">>>>>>>>>>> verifySslCertificatesOfServices: {}", verifySslCertificatesOfServices);
+            log.debug(">>>>>>>>>>> nonStrictVerifySslCertificatesOfServices: {}", nonStrictVerifySslCertificatesOfServices);
+
             httpsConfig = httpsConfigSupplier.get()
                 .keyAlias(keyAlias).keyStore(keyStorePath).keyPassword(keyPassword)
                 .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType).certificate(certificate)
