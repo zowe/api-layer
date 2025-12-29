@@ -22,6 +22,7 @@ LABEL description="NodeJS sample service for APIML onboarding"
 WORKDIR /app
 
 # ===== install deps
+COPY .npmrc ./
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 
