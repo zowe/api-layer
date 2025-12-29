@@ -105,6 +105,9 @@ jobs:
                       
                       # Display logs to see the diff if it failed
                       docker logs golden
+
+                      echo "Collector logs:"
+                      docker logs collector
                       
                       if [ "$EXIT_CODE" -ne 0 ]; then
                         echo "::error::Trace validation failed! See logs above for diff."
