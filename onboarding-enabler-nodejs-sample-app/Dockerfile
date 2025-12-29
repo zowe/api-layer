@@ -24,11 +24,11 @@ WORKDIR /app
 COPY onboarding-enabler-nodejs ../onboarding-enabler-nodejs
 
 # ===== install deps
-COPY package*.json ./
+COPY onboarding-enabler-nodejs-sample-app/package*.json ./
 RUN npm ci --legacy-peer-deps
 
 # ===== copy app
-COPY . .
+COPY onboarding-enabler-nodejs-sample-app/ ./
 #COPY config/service-configuration.yml config/service-configuration.yml
 
 # ===== expose service port
