@@ -17,7 +17,7 @@ services:
             gatewayUrl: api/v1
             version: 2.4.0
             documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.4.0/com.ibm.zos.v2r4.izua700/IZUHPINFO_RESTServices.htm
-            swaggerUrl: https://mock-services:10013/zosmf/api/docs
+            swaggerUrl: https://mock-services-unknown:10013/zosmf/api/docs
     - serviceId: zss  # unique lowercase ID of the service
       catalogUiTileId: zss  # ID of the API Catalog UI tile (visual grouping of the services)
       title: Statically Defined ZSS  # Title of the service in the API catalog
@@ -34,7 +34,6 @@ services:
             gatewayUrl: api
             version: 2.4.0
             documentationUrl: https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.4.0/com.ibm.zos.v2r4.izua700/IZUHPINFO_RESTServices.htm
-
 
 # List of tiles that can be used by services defined in the YAML file:
 catalogUiTiles:

@@ -26,8 +26,8 @@ apiml:
     useDummyCNMapper: true
     saf:
       urls:
-        authenticate: https://mock-services:10013/zss/saf/authenticate
-        verify: https://mock-services:10013/zss/saf/verify
+        authenticate: https://mock-services-unknown:10013/zss/saf/authenticate
+        verify: https://mock-services-unknown:10013/zss/saf/verify
   banner: console
 eureka:
   client:
