@@ -45,7 +45,7 @@ jobs:
     create-image-all-services-amd64:
         strategy:
             matrix:
-                service: [ discovery-service, api-catalog-services, caching-service, gateway-service, zaas-service, apiml-service ]
+                service: [ apiml-service ]
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
         if: ${{ inputs.service == 'all' }}
@@ -86,7 +86,7 @@ jobs:
         strategy:
             max-parallel: 1
             matrix:
-                service: [ discovery-service, api-catalog-services, caching-service, gateway-service, zaas-service, apiml-service ]
+                service: [ apiml-service ]
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
         if: ${{ inputs.service == 'all' }}
@@ -137,7 +137,7 @@ jobs:
             - create-image-all-services-s390x
         strategy:
             matrix:
-                service: [ discovery-service, api-catalog-services, caching-service, gateway-service, zaas-service, apiml-service ]
+                service: [ apiml-service ]
                 os: [ ubuntu, ubi ]
         runs-on: ubuntu-latest
         if: ${{ inputs.service == 'all' }}
