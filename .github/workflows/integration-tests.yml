@@ -115,6 +115,10 @@ jobs:
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
                     APIML_GATEWAY_SERVICESTODISABLERETRY: discoverableclient
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+                    #ZWE_zowe_verifyCertificates: NONSTRICT
+                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: true
+                    APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
+
                 #The memory is constrained to test large file upload memory issues (#4265)
                 #If the container runs oom, it is hard killed without printing any reasonable message in the log
                 options: --memory 640m --memory-swap 640m
@@ -514,6 +518,10 @@ jobs:
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
                     EUREKA_CLIENT_INSTANCEINFOREPLICATIONINTERVALSECONDS: 1
                     EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS: 1
+                    #ZWE_zowe_verifyCertificates: NONSTRICT
+                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: true
+                    APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
+
                 options: --memory 640m --memory-swap 640m
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
