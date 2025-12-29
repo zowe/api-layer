@@ -120,5 +120,6 @@ jobs:
                     name: BuildAndTest-${{ env.JOB_ID }}
                     path: |
                         */build/reports/**
+                        expected.yaml
 
             -   uses: ./.github/actions/teardown
