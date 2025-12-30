@@ -27,12 +27,14 @@ RUN ls -al /app
 COPY onboarding-enabler-nodejs ./onboarding-enabler-nodejs
 RUN ls -al /
 RUN ls -al /app
+RUN ls -al /app/onboarding-enabler-nodejs
 
 # ===== copy enabler sources
 
 COPY . .
 RUN ls -al /
 RUN ls -al /app
+RUN ls -al /app/onboarding-enabler-nodejs
 
 # ===== install deps
 RUN npm install --legacy-peer-deps
