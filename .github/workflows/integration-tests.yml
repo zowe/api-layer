@@ -2088,14 +2088,14 @@ jobs:
         timeout-minutes: 15
 
         services:
-#            apiml:
-#                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-#                volumes:
-#                    - /api-defs:/api-defs
-#                env:
-#                    APIML_HEALTH_PROTECTED: false
-#            mock-services:
-#                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+            apiml:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_HEALTH_PROTECTED: false
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             nodejs-sample-app:
                 image: ghcr.io/balhar-jakub/nodejs-sample-app:${{ github.run_id }}-${{ github.run_number }}
 
@@ -2137,24 +2137,24 @@ jobs:
 #                    python app.py &
 
             -   name: Run Node.JS Service Tests
-                run: echo "Tests were run."
-#                run: >
-#                    ./gradlew :integration-tests:runNodeJsSampleServiceTests --info -Denvironment.config=-docker-modulith
-#                    -Denvironment.modulith=true -Ddiscoverableclient.instances=0 -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+#                run: echo "Tests were run."
+                run: >
+                    ./gradlew :integration-tests:runNodeJsSampleServiceTests --info -Denvironment.config=-docker-modulith
+                    -Denvironment.modulith=true -Ddiscoverableclient.instances=0 -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
 #            -   name: Run Python Service Tests
 #                run: >
 #                    ./gradlew :integration-tests:runPythonSampleServiceTests --info -Denvironment.config=-docker-modulith -Denvironment.modulith=true
 #                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
-#            -   name: Store results
-#                uses: actions/upload-artifact@v4
-#                if: always()
-#                with:
-#                    name: CITestsNodeJsAndPythonServices-${{ env.JOB_ID }}
-#                    path: |
-#                        integration-tests/build/reports/**
-#                        results/**
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsNodeJsAndPythonServices-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        results/**
 
             -   uses: ./.github/actions/teardown
 
