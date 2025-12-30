@@ -27,29 +27,22 @@ import org.springframework.http.HttpStatus;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
-import org.zowe.apiml.util.config.ServiceConfiguration;
-import org.zowe.apiml.util.config.SslContext;
-import org.zowe.apiml.util.config.SslContextConfigurer;
-import org.zowe.apiml.util.config.TlsConfiguration;
+import org.zowe.apiml.util.config.*;
 
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.with;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.zowe.apiml.util.SecurityUtils.GATEWAY_TOKEN_COOKIE_NAME;
@@ -170,33 +163,66 @@ class CentralRegistryTest implements TestWithStartedInstances {
             .contentType(ContentType.JSON);
     }
 
+    private String callContainers() {
+        try {
+            URI containers = new URL(
+                conf.getScheme(),
+                conf.getHost(),
+                conf.getPort(),
+                APIML_CONTAINER_PATH
+            ).toURI();
+
+            final String jwt = gatewayToken();
+
+            return with().given()
+                .header(ACCEPT, APPLICATION_JSON_VALUE)
+                .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
+                .get(containers)
+                .then()
+                .statusCode(200)
+                .contentType("application/json")
+                .extract()
+                .body()
+                .asString();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to call containers endpoint", e);
+        }
+    }
+
     @Test
-    void shouldContainCorrectBasePaths() throws MalformedURLException, URISyntaxException {
-        URI containers = new URL(conf.getScheme(), conf.getHost(), conf.getPort(), APIML_CONTAINER_PATH)
-            .toURI();
+    void shouldContainCorrectBasePaths() {
 
-        final String jwt = gatewayToken();
-        String responseBody = with().given()
-            .header(ACCEPT, APPLICATION_JSON_VALUE)
-            .cookie(GATEWAY_TOKEN_COOKIE_NAME, jwt)
-            .get(containers)
-            .then()
-            .statusCode(200)
-            .contentType("application/json")
-            .extract()
-            .body()
-            .asString();
+        await()
+            .atMost(30, TimeUnit.SECONDS)
+            .pollInterval(1, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
 
-        DocumentContext jsonContext = JsonPath.parse(responseBody);
+                String body = callContainers();
+                DocumentContext jsonContext = JsonPath.parse(body);
 
-        JSONArray gatewayBasePath = jsonContext.read("$[0].services[?(@.serviceId == 'gateway')].basePath");
-        assertNotNull(gatewayBasePath, String.format("BasePath for central gw should not be null but it was '%s'", gatewayBasePath));
-        assertFalse(gatewayBasePath.isEmpty(), String.format("BasePath for central gw should not be empty but it was '%s'", gatewayBasePath));
-        assertEquals("/", gatewayBasePath.get(0));
-        JSONArray domainGatewayBasePath = jsonContext.read("$[0].services[?(@.serviceId == 'domain-apiml')].basePath");
-        assertNotNull(domainGatewayBasePath, String.format("BasePath for domain gw should not be null but it was '%s'", domainGatewayBasePath));
-        assertFalse(domainGatewayBasePath.isEmpty(), String.format("BasePath for domain gw should not be empty but it was '%s'", domainGatewayBasePath));
-        assertEquals("/" + DOMAIN_APIML, domainGatewayBasePath.get(0));
+                JSONArray gatewayBasePath =
+                    jsonContext.read(
+                        "$[?(@.apimlId == 'central-apiml')].services[?(@.serviceId == 'gateway')].basePath"
+                    );
+
+
+                assertThat(gatewayBasePath)
+                    .withFailMessage("Central gateway basePath not ready yet. Payload:\n%s", body)
+                    .isNotNull()
+                    .isNotEmpty();
+                assertEquals("/", gatewayBasePath.get(0));
+
+                JSONArray domainGatewayBasePath =
+                    jsonContext.read(
+                        "$[?(@.apimlId == 'domain-apiml')].services[?(@.serviceId == 'gateway')].basePath"
+                    );
+                assertThat(domainGatewayBasePath)
+                    .withFailMessage("Domain gateway basePath not ready yet. Payload:\n%s", body)
+                    .isNotNull()
+                    .isNotEmpty();
+                assertEquals("/" + DOMAIN_APIML, domainGatewayBasePath.get(0));
+            });
     }
 
     @SneakyThrows
