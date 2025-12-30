@@ -53,7 +53,7 @@ jobs:
                             --ignore-resource-attribute-value service.name \
                             --ignore-metric-attribute-value service.version \
                             --ignore-metric-attribute-value service.name \
-                            --ignore-resource-metrics-order \               
+                            --ignore-resource-metrics-order \
                             --ignore-scope-metrics-order \
                             --ignore-metrics-order \
                             --ignore-metrics-data-points-order \
