@@ -25,7 +25,7 @@ COPY onboarding-enabler-nodejs ./onboarding-enabler-nodejs
 # ===== copy enabler sources
 COPY . .
 # ===== install deps
-RUN npm ci --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 
 # ===== copy the config
 COPY config/service-configuration.yml config/service-configuration.yml
