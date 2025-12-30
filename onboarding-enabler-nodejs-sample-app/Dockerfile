@@ -22,6 +22,7 @@ LABEL description="NodeJS sample service for APIML onboarding"
 WORKDIR /
 COPY .licence ./.licence
 COPY onboarding-enabler-nodejs ./onboarding-enabler-nodejs
+COPY keystore ./keystore
 
 WORKDIR /onboarding-enabler-nodejs
 RUN npm ci --legacy-peer-deps

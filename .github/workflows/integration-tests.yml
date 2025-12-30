@@ -29,6 +29,7 @@ jobs:
                     cd onboarding-enabler-nodejs-sample-app
                     cp ../config/docker/nodejs-service/service-configuration.yml ./config/service-configuration.yml
                     cp -r ../.licence ./.licence
+                    cp -r ../keystore ./keystore
                     cp -r ../onboarding-enabler-nodejs ./onboarding-enabler-nodejs
                     docker build -t hwexpress .
                     docker tag hwexpress ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
