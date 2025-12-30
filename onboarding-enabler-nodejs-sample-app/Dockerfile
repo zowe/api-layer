@@ -19,15 +19,25 @@ LABEL name="hwexpress"
 LABEL vendor="Zowe"
 LABEL description="NodeJS sample service for APIML onboarding"
 
-WORKDIR /app
+# ricreiamo il repo root
+WORKDIR /repo
 
+# copiamo i due progetti come fratelli
 COPY onboarding-enabler-nodejs ./onboarding-enabler-nodejs
-# ===== install deps
-COPY onboarding-enabler-nodejs-sample-app/package*.json ./
+COPY onboarding-enabler-nodejs-sample-app ./onboarding-enabler-nodejs-sample-app
+
+# installiamo dal sample app
+WORKDIR /repo/onboarding-enabler-nodejs-sample-app
 RUN npm ci --legacy-peer-deps
 
-# ===== copy app
-COPY onboarding-enabler-nodejs-sample-app .
+#WORKDIR /app
+#
+#COPY onboarding-enabler-nodejs ./onboarding-enabler-nodejs
+## ===== install deps
+#COPY onboarding-enabler-nodejs-sample-app/package*.json ./
+#
+## ===== copy app
+#COPY onboarding-enabler-nodejs-sample-app .
 #COPY config/service-configuration.yml config/service-configuration.yml
 
 # ===== expose service port

@@ -58,7 +58,7 @@ class NodeEnablerIntegrationTest {
             @Test
             void givenNodeEnablerIsOnboarded_gatewayReturnsHealth() {
 //                waitUntilServiceIsRegisteredInDiscovery();
-                waitUntilGatewayRouteIsReady();
+//                waitUntilGatewayRouteIsReady();
 
                 given()
                     .when()
