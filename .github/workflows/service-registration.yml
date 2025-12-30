@@ -30,13 +30,17 @@ jobs:
                 run: |
                     docker network create otel-net
 
+            -   name: Create output directory
+                run: mkdir -p ${{ github.workspace }}/golden-output
+
             -   name: Start Golden OTel Collector
                 run: |
                     docker run -d \
                         --name golden \
                         --user $(id -u):$(id -g) \
                         --network otel-net \
-                        -v ${{ github.workspace }}/expected.yaml:/var/data/expected.yaml \
+                        -v ${{ github.workspace }}/golden-output:/output \
+                        -w /output \
                         ghcr.io/open-telemetry/opentelemetry-collector-contrib/golden:latest \
                             --otlp-http-endpoint 0.0.0.0:4318 \
                             --otlp-endpoint 0.0.0.0:4317 \
@@ -49,7 +53,7 @@ jobs:
                             --ignore-resource-attribute-value service.name \
                             --ignore-metric-attribute-value service.version \
                             --ignore-metric-attribute-value service.name \
-                            --ignore-resource-metrics-order \
+                            --ignore-resource-metrics-order \               
                             --ignore-scope-metrics-order \
                             --ignore-metrics-order \
                             --ignore-metrics-data-points-order \
@@ -122,6 +126,6 @@ jobs:
                     name: BuildAndTest-${{ env.JOB_ID }}
                     path: |
                         */build/reports/**
-                        expected.yaml
+                        golden-output/expected.yaml
 
             -   uses: ./.github/actions/teardown
