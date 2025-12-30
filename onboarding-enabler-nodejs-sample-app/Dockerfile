@@ -21,11 +21,23 @@ LABEL description="NodeJS sample service for APIML onboarding"
 
 WORKDIR /app
 
+RUN ls -al /
+RUN ls -al /app
+
 COPY onboarding-enabler-nodejs ./onboarding-enabler-nodejs
+RUN ls -al /
+RUN ls -al /app
+
 # ===== copy enabler sources
+
 COPY . .
+RUN ls -al /
+RUN ls -al /app
+
 # ===== install deps
 RUN npm install --legacy-peer-deps
+RUN ls -al /
+RUN ls -al /app
 
 # ===== copy the config
 COPY config/service-configuration.yml config/service-configuration.yml
