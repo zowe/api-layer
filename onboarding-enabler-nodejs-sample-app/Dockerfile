@@ -20,6 +20,7 @@ LABEL vendor="Zowe"
 LABEL description="NodeJS sample service for APIML onboarding"
 
 WORKDIR /
+COPY .licence ./.licence
 COPY onboarding-enabler-nodejs ./onboarding-enabler-nodejs
 
 WORKDIR /app
