@@ -30,8 +30,10 @@ jobs:
                 run: |
                     docker network create otel-net
 
-            -   name: Create output directory
-                run: mkdir -p ${{ github.workspace }}/golden-output
+            -   name: Create output directory and initial expected file
+                run: |
+                    mkdir -p ${{ github.workspace }}/golden-output
+                    touch ${{ github.workspace }}/golden-output/expected.yaml
 
             -   name: Start Golden OTel Collector
                 run: |
