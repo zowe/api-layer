@@ -40,7 +40,6 @@ jobs:
                         --user $(id -u):$(id -g) \
                         --network otel-net \
                         -v ${{ github.workspace }}/golden-output:/output \
-                        -w /output \
                         ghcr.io/open-telemetry/opentelemetry-collector-contrib/golden:latest \
                             --otlp-http-endpoint 0.0.0.0:4318 \
                             --otlp-endpoint 0.0.0.0:4317 \
@@ -60,6 +59,7 @@ jobs:
                             --ignore-metric-values \
                             --ignore-data-points-attributes-order \
                             --ignore-scope-version \
+                            --expected-file /output/expected.yaml \
                             --write-expected
 
             -   name: Check Golden OTel Collector
