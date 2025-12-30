@@ -23,12 +23,14 @@ WORKDIR /
 COPY .licence ./.licence
 COPY onboarding-enabler-nodejs ./onboarding-enabler-nodejs
 
+WORKDIR /onboarding-enabler-nodejs
+RUN npm ci --legacy-peer-deps
+
 WORKDIR /app
 COPY package*.json ./
 
 RUN pwd
 RUN ls -al
-RUN npm config set strict-ssl false
 RUN npm ci --legacy-peer-deps
 
 # ===== copy the app and config
