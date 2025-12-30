@@ -45,6 +45,7 @@ jobs:
                         --network otel-net \
                         -v ${{ github.workspace }}/golden-output:/output \
                         ghcr.io/open-telemetry/opentelemetry-collector-contrib/golden:latest \
+                            --log-level=debug \
                             --otlp-http-endpoint 0.0.0.0:4318 \
                             --otlp-endpoint 0.0.0.0:4317 \
                             --ignore-timestamp \
