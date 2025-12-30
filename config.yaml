@@ -18,13 +18,16 @@ exporters:
     tls:
       insecure: true
   nop: {}
+  file:
+    path: /var/data/actual_traces.json
+    append: false
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
       processors: []
-      exporters: [otlphttp]
+      exporters: [file]
     metrics:
       receivers: [otlp]
       processors: []
@@ -32,5 +35,5 @@ service:
     logs:
       receivers: [otlp]
       processors: []
-      exporters: [otlphttp]
+      exporters: [nop]
 

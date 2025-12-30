@@ -129,6 +129,6 @@ jobs:
                     name: BuildAndTest-${{ env.JOB_ID }}
                     path: |
                         */build/reports/**
-                        oteldata/expected.yaml
+                        oteldata/**
 
             -   uses: ./.github/actions/teardown
