@@ -19,7 +19,7 @@ exporters:
       insecure: true
   nop: {}
   file:
-    path: /var/data/actual_traces.json
+    path: /etc/otelcollector/actual_traces.json
     append: false
 
 service:

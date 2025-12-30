@@ -83,9 +83,9 @@ jobs:
                         --network otel-net \
                         -p 4317:4317 \
                         -p 4318:4318 \
-                        -v ${{ github.workspace }}/config.yaml:/etc/config.yaml \
+                        -v ${{ github.workspace }}/otelcollector:/etc/otelcollector \
                         ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:latest \
-                            --config /etc/config.yaml
+                            --config /etc/otelcollector/config.yaml
 
             -   name: Check Collector
                 continue-on-error: true
@@ -130,5 +130,6 @@ jobs:
                     path: |
                         */build/reports/**
                         oteldata/**
+                        otelcollector/**
 
             -   uses: ./.github/actions/teardown
