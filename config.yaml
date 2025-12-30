@@ -12,7 +12,7 @@ exporters:
   # OTLP exporter to forward telemetry to the golden collector
   # Using container name 'golden' since both containers are on the same Docker network 'otel-net'
   otlphttp:
-    endpoint: golden:4318
+    endpoint: "http://golden:4318"
     tls:
       insecure: true
 
