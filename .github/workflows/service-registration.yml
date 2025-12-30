@@ -33,7 +33,9 @@ jobs:
             -   name: Create output directory and initial expected file
                 run: |
                     mkdir -p ${{ github.workspace }}/golden-output
-                    touch ${{ github.workspace }}/golden-output/expected.yaml
+                    echo "# Placeholder for golden collector expected output" > ${{ github.workspace }}/golden-output/expected.yaml
+                    chmod 777 ${{ github.workspace }}/golden-output
+                    chmod 666 ${{ github.workspace }}/golden-output/expected.yaml
 
             -   name: Start Golden OTel Collector
                 run: |
@@ -47,7 +49,7 @@ jobs:
                             --otlp-endpoint 0.0.0.0:4317 \
                             --ignore-timestamp \
                             --ignore-start-timestamp \
-                            --timeout 20m \
+                            --timeout 17m \
                             --ignore-resource-attribute-value service.instance.id \
                             --ignore-metric-attribute-value service.instance.id \
                             --ignore-resource-attribute-value service.version \
