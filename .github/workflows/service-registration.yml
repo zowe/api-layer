@@ -43,9 +43,8 @@ jobs:
                         --name golden \
                         --user $(id -u):$(id -g) \
                         --network otel-net \
-                        -v ${{ github.workspace }}/golden-output:/output \
+                        -v ${{ github.workspace }}/oteldata:/var/data \
                         ghcr.io/open-telemetry/opentelemetry-collector-contrib/golden:latest \
-                            --log-level=debug \
                             --otlp-http-endpoint 0.0.0.0:4318 \
                             --otlp-endpoint 0.0.0.0:4317 \
                             --ignore-timestamp \
@@ -64,8 +63,7 @@ jobs:
                             --ignore-metric-values \
                             --ignore-data-points-attributes-order \
                             --ignore-scope-version \
-                            --expected-file /output/expected.yaml \
-                            --write-expected
+                            --expected /var/data/expected.yaml
 
             -   name: Check Golden OTel Collector
                 continue-on-error: true
@@ -77,7 +75,7 @@ jobs:
                     docker logs golden
 
             # 3. Start COLLECTOR (The Processor)
-             # It connects to 'otel-net', reads config from repo, and forwards to 'golden'.
+            # It connects to 'otel-net', reads config from repo, and forwards to 'golden'.
             -   name: Start Collector
                 run: |
                     docker run -d \
@@ -131,6 +129,6 @@ jobs:
                     name: BuildAndTest-${{ env.JOB_ID }}
                     path: |
                         */build/reports/**
-                        golden-output/expected.yaml
+                        oteldata/expected.yaml
 
             -   uses: ./.github/actions/teardown
