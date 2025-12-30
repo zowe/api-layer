@@ -12,37 +12,27 @@
 # base image tag
 ARG ZOWE_BASE_IMAGE=3-ubuntu
 
-FROM zowe-docker-release.jfrog.io/ompzowe/base-jdk:${ZOWE_BASE_IMAGE} AS builder
+#FROM zowe-docker-release.jfrog.io/ompzowe/base-jdk:${ZOWE_BASE_IMAGE} AS builder
 FROM node:20-alpine
 
 LABEL name="hwexpress"
 LABEL vendor="Zowe"
 LABEL description="NodeJS sample service for APIML onboarding"
 
-WORKDIR /app
-
-RUN ls -al /
-RUN ls -al /app
-
+WORKDIR /
 COPY onboarding-enabler-nodejs ./onboarding-enabler-nodejs
-RUN ls -al /
-RUN ls -al /app
-RUN ls -al /app/onboarding-enabler-nodejs
 
-# ===== copy enabler sources
+WORKDIR /app
+COPY package*.json ./
 
-COPY . .
-RUN ls -al /
-RUN ls -al /app
-RUN ls -al /app/onboarding-enabler-nodejs
+RUN pwd
+RUN ls -al
+RUN npm config set strict-ssl false
+RUN npm ci --legacy-peer-deps
 
-# ===== install deps
-RUN npm install --legacy-peer-deps
-RUN ls -al /
-RUN ls -al /app
-
-# ===== copy the config
-COPY config/service-configuration.yml config/service-configuration.yml
+# ===== copy the app and config
+COPY src ./src
+COPY config/service-configuration.yml ./config/service-configuration.yml
 
 # ===== expose service port
 EXPOSE 10020
