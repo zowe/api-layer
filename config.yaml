@@ -15,7 +15,8 @@ exporters:
     endpoint: "golden:4317"
     tls:
       insecure: true
-
+  nop:
+  
 service:
   pipelines:
     traces:
