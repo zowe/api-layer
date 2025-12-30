@@ -25,7 +25,7 @@ public class HttpsJwksProvider {
     public HttpsJwks getFor(String url) {
         var httpsJwks = new HttpsJwks(url);
         var get = new Get();
-        get.setSslSocketFactory(httpConfig.secureSslContext().getSocketFactory());
+        get.setSslSocketFactory(httpConfig.getSecureSslContextWithoutKeystore().getSocketFactory());
         get.setHostnameVerifier(httpConfig.getSecureHostnameVerifier());
         httpsJwks.setSimpleHttpGet(get);
         return httpsJwks;
