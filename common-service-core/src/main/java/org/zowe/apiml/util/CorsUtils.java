@@ -11,6 +11,7 @@
 package org.zowe.apiml.util;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.springframework.web.cors.CorsConfiguration;
 
@@ -21,7 +22,9 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class CorsUtils {
+
     private final List<String> allowedCorsHttpMethods;
     private final boolean corsEnabled;
     private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes\\.[^.]*\\.gateway\\S*");
@@ -40,7 +43,7 @@ public class CorsUtils {
 
     public void setCorsConfiguration(String serviceId, Map<String, String> metadata, TriConsumer<String, String, CorsConfiguration> entryMapper) {
         if (corsEnabled) {
-            CorsConfiguration corsConfiguration = setAllowedOriginsForService(metadata);
+            var corsConfiguration = setAllowedOriginsForService(serviceId, metadata);
             metadata.entrySet().stream()
                 .filter(entry -> gatewayRoutesPattern.matcher(entry.getKey()).find())
                 .forEach(entry ->
@@ -48,22 +51,26 @@ public class CorsUtils {
         }
     }
 
-    private CorsConfiguration setAllowedOriginsForService(Map<String, String> metadata) {
+    private CorsConfiguration setAllowedOriginsForService(String serviceId, Map<String, String> metadata) {
         // Check if the configuration specifies allowed origins for this service
-        final CorsConfiguration config = new CorsConfiguration();
+        var config = new CorsConfiguration();
         if (isCorsEnabledForService(metadata)) {
-            String corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
+            var corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
             if (corsAllowedOriginsForService == null || corsAllowedOriginsForService.isEmpty()) {
                 // Origins not specified: allow everything
+                log.debug("For service {}, set all as allowed origins", serviceId);
                 config.addAllowedOriginPattern(CorsConfiguration.ALL);
             } else {
                 // Origins specified: split by comma, add to whitelist
+                log.debug("For service {}, set [{}] as allowed origins", serviceId, Arrays.toString(corsAllowedOriginsForService.split(",")));
                 Arrays.stream(corsAllowedOriginsForService.split(","))
                     .forEach(config::addAllowedOrigin);
             }
             config.setAllowCredentials(true);
             config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
             config.setAllowedMethods(allowedCorsHttpMethods);
+        } else {
+            log.debug("CORS is not enabled for service {}, using defaults", serviceId);
         }
         return config;
     }
@@ -83,4 +90,5 @@ public class CorsUtils {
         }
         pathsToEnable.forEach(path -> pathMapper.accept(path, config));
     }
+
 }

@@ -57,13 +57,16 @@ class DiscoveryAuthIntegrationTest implements TestWithStartedInstances {
     @ValueSource(strings = {DISCOVERY_STATIC_API, "/"})
     void testApplicationInfoEndpoints_Cookie(String path) throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
-        String jwtToken = SecurityUtils.gatewayToken(username, password);
+        var jwtToken = SecurityUtils.gatewayToken(username, password);
+
+        //@formatter:off
         given()
             .cookie(COOKIE, jwtToken)
-            .when()
+        .when()
             .get(getDiscoveryUriWithPath(path))
-            .then()
+        .then()
             .statusCode(is(HttpStatus.SC_OK));
+        //@formatter:on
     }
 
     private URI getDiscoveryUriWithPath(String path) throws Exception {

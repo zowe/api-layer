@@ -80,7 +80,7 @@ class AttlsConfigTest {
                 .log().all()
                 .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR))
                 .body(containsString("Connection is not secure."))
-                .body(containsString("AttlsContext.getStatConn"));
+                .body(containsString("AttlsContextImpl.getStatConn"));
         }
 
     }
@@ -127,7 +127,7 @@ class AttlsConfigTest {
                 .log().all()
                 .statusCode(is(HttpStatus.SC_INTERNAL_SERVER_ERROR))
                 .body(containsString("Connection is not secure."))
-                .body(containsString("AttlsContext.getStatConn"));
+                .body(containsString("AttlsContextImpl.getStatConn"));
         }
 
     }

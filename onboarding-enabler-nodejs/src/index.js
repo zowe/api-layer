@@ -34,10 +34,13 @@ function readTlsProps() {
   }
 }
 
-export const tlsOptions = tlsOpts;
+// this export to use directly the variable, instead of the get method, is
+// kept only for legacy reasons, to avoid breaking changes.
+// eslint-disable-next-line import/no-mutable-exports
+export let tlsOptions = tlsOpts;
 
-function init () {
-  const defaultFile = fs.existsSync('config/service-configuration.yml', 'utf8');
+function init() {
+  const defaultFile = fs.existsSync('config/service-configuration.yml');
   if (defaultFile) {
     readTlsProps();
     tlsOpts = {
@@ -53,15 +56,25 @@ function init () {
         done(Object.assign(requestOpts, tlsOpts));
       },
     });
+    tlsOptions = tlsOpts;
   }
 }
 
 init();
 
+// noinspection JSUnusedGlobalSymbols
+export function getTlsOptions() {
+  return tlsOptions;
+}
+
 /**
  * Function that uses the eureka-js-client library to register the application to Eureka
  */
+// noinspection JSUnusedGlobalSymbols
 export function connectToEureka() {
+  if (!client) {
+    throw new Error('Eureka client not initialized');
+  }
   client.start((error) => {
     if (error != null) {
       console.log(JSON.stringify(error));
@@ -72,7 +85,11 @@ export function connectToEureka() {
 /**
  * Unregister the Eureka client from Eureka (i.e. when the application down)
  */
+// noinspection JSUnusedGlobalSymbols
 export function unregisterFromEureka() {
+  if (!client) {
+    throw new Error('Eureka client not initialized');
+  }
   console.log('\nUnregistering the service from Eureka...');
   client.stop();
 }
