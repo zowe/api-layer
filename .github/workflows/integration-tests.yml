@@ -39,7 +39,7 @@ jobs:
             -   name: Build Python Sample App
                 run: |
                     cd onboarding-enabler-python-sample-app
-                    cp ../config/docker/python-service/service-configuration.yml ./src/config/service-configuration.yml
+                    cp ../config/docker/python-service/service-configuration.yml ./config/service-configuration.yml
                     cp -r ../keystore ./keystore
                     cp -r ../onboarding-enabler-python ./onboarding-enabler-python
                     docker build -t pythonsampleapp .

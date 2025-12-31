@@ -28,7 +28,8 @@ RUN pip install --upgrade pip pipenv \
 
 # ===== copy the app and config
 COPY src ./src
-COPY src/config/service-configuration.yml ./src/config/service-configuration.yml
+COPY config ./config
+#COPY src/config/service-configuration.yml ./src/config/service-configuration.yml
 COPY keystore ./keystore
 
 # ===== expose service port
