@@ -1,7 +1,6 @@
 resourceMetrics:
   - resource:
       attributes:
-        # --- Static/Business Attributes (Keep these) ---
         - key: mainframe.lpar.name
           value: { stringValue: "LPAR01" }
         - key: zos.smf.id
@@ -10,41 +9,4 @@ resourceMetrics:
           value: { stringValue: "SYSPLEX1" }
         - key: deployment.environment
           value: { stringValue: "dev" }
-        
-        # --- Dynamic/Infrastructure Attributes (See "Robust Fix" below) ---
-        - key: host.arch
-          value: { stringValue: "amd64" }# ⚠️ Will change in CI
-        - key: os.type
-          value: { stringValue: "linux" }
-        - key: os.description
-          value: { stringValue: "Linux 6.11.0-1018-azure" }
-        
-        # --- Process Attributes --- ⚠️ Will change every run
-        - key: process.executable.path
-          value: { stringValue: "/opt/hostedtoolcache/Java_IBM_Semeru_jdk/17.0.17-10/x64/bin/java" }
-        - key: process.runtime.name
-          value: { stringValue: "IBM Semeru Runtime Open Edition" }
-        - key: process.runtime.version
-          value: { stringValue: "17.0.17+10" }
-        - key: process.runtime.description
-          value: { stringValue: "Eclipse OpenJ9 Eclipse OpenJ9 VM 17.0.17+10-openj9-0.56.0" }
-        
-        # --- Telemetry SDK Attributes ---
-        - key: telemetry.sdk.name
-          value: { stringValue: "opentelemetry" }
-        - key: telemetry.sdk.language
-          value: { stringValue: "java" }
-        - key: telemetry.sdk.version
-          value: { stringValue: "1.56.0" }
-        - key: telemetry.distro.name
-          value: { stringValue: "opentelemetry-spring-boot-starter" }
-        - key: telemetry.distro.version
-          value: { stringValue: "2.22.0" }
-        
-        # ⚠️ The giant command line string. 
-        # Ideally, DO NOT put this in YAML. Ignore it via CLI flags.
-        - key: process.command_line
-          value: { stringValue: "/opt/hostedtoolcache/Java_IBM_Semeru_jdk/17.0.17-10/x64/bin/java -Xoptionsfile=..." }
-
-    # You will need to add your actual metrics here under scopeMetrics
     scopeMetrics: []
