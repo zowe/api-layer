@@ -24,7 +24,7 @@ WORKDIR /usr/src/app
 COPY Pipfile Pipfile.lock ./
 
 RUN pip install --upgrade pip pipenv \
- && pipenv install --system --deploy
+ && pipenv sync --system
 
 # ===== copy the app and config
 COPY src ./src
