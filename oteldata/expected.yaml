@@ -1,12 +1,13 @@
 resourceMetrics:
   - resource:
       attributes:
+        - key: deployment.environment
+          value: { stringValue: "dev" }
         - key: mainframe.lpar.name
           value: { stringValue: "LPAR01" }
         - key: zos.smf.id
           value: { stringValue: "SYS1" }
         - key: zos.sysplex.name
           value: { stringValue: "SYSPLEX1" }
-        - key: deployment.environment
-          value: { stringValue: "dev" }
+
     scopeMetrics: []

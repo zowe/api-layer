@@ -57,10 +57,15 @@ jobs:
                             --ignore-resource-attribute-value process.command_line \
                             --ignore-resource-attribute-value process.executable.path \
                             --ignore-resource-attribute-value process.runtime.description \
+                            --ignore-resource-attribute-value process.runtime.version \
+                            --ignore-resource-attribute-value process.runtime.name \
                             --ignore-resource-attribute-value os.description \
                             --ignore-resource-attribute-value os.type \
                             --ignore-resource-attribute-value telemetry.sdk.version \
+                            --ignore-resource-attribute-value telemetry.distro.name \
                             --ignore-resource-attribute-value telemetry.distro.version \
+                            --ignore-resource-attribute-value telemetry.sdk.language \
+                            --ignore-resource-attribute-value telemetry.sdk.name \
                             --ignore-resource-attribute-value service.version \
                             --ignore-resource-attribute-value service.name \
                             --ignore-metric-attribute-value service.instance.id \
