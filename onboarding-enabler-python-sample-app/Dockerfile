@@ -39,6 +39,6 @@ RUN ls -al
 # ===== expose service port
 EXPOSE 10018
 
-WORKDIR src
+WORKDIR /usr/src/app
 # ===== start
 CMD ["python", "app.py"]
