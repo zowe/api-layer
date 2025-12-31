@@ -14,6 +14,7 @@ ARG ZOWE_BASE_IMAGE=3-ubuntu
 
 #FROM zowe-docker-release.jfrog.io/ompzowe/base-jdk:${ZOWE_BASE_IMAGE} AS builder
 FROM node:20-alpine
+RUN npm install -g npm@10.9.4
 
 LABEL name="hwexpress"
 LABEL vendor="Zowe"
