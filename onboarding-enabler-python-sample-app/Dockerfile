@@ -29,7 +29,8 @@ RUN pip install --upgrade pip pipenv \
 # ===== copy the app and config
 COPY src ./src
 #COPY config ./config
-COPY src/config/service-configuration.yml ./config/service-configuration.yml
+#COPY src/config/service-configuration.yml ./config/service-configuration.yml
+COPY src/config/service-configuration.yml ./config/src/service-configuration.yml
 COPY keystore ./keystore
 
 RUN pwd
@@ -38,5 +39,6 @@ RUN ls -al
 # ===== expose service port
 EXPOSE 10018
 
+WORKDIR src
 # ===== start
-CMD ["python", "src/app.py"]
+CMD ["python", "app.py"]
