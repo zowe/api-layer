@@ -13,9 +13,9 @@ instance:
     app: pythonservice
     scheme: https
     vipAddress: pythonservice
-    instanceId: localhost:pythonservice:10018
-    homePageUrl: https://localhost:10018/pythonservice
-    hostName: 'localhost'
+    instanceId: python-sample-app:pythonservice:10018
+    homePageUrl: https://python-sample-app:10018/pythonservice
+    hostName: 'python-sample-app'
     ipAddr: '127.0.0.1'
     port: 10018
     securePort: 10018
