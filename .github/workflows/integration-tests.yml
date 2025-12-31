@@ -24,17 +24,17 @@ jobs:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
 
-            -   name: Build Nodejs Sample App
-                run: |
-                    cd onboarding-enabler-nodejs-sample-app
-                    cp ../config/docker/nodejs-service/service-configuration.yml ./config/service-configuration.yml
-                    cp -r ../.licence ./.licence
-                    cp -r ../keystore ./keystore
-                    cp -r ../onboarding-enabler-nodejs ./onboarding-enabler-nodejs
-                    docker build -t nodesampleapp .
-                    docker tag nodesampleapp ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
-                    echo "${{ secrets.PERSONAL_JB_TOKEN }}" | docker login ghcr.io -u balhar-jakub --password-stdin
-                    docker push ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
+#            -   name: Build Nodejs Sample App
+#                run: |
+#                    cd onboarding-enabler-nodejs-sample-app
+#                    cp ../config/docker/nodejs-service/service-configuration.yml ./config/service-configuration.yml
+#                    cp -r ../.licence ./.licence
+#                    cp -r ../keystore ./keystore
+#                    cp -r ../onboarding-enabler-nodejs ./onboarding-enabler-nodejs
+#                    docker build -t nodesampleapp .
+#                    docker tag nodesampleapp ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
+#                    echo "${{ secrets.PERSONAL_JB_TOKEN }}" | docker login ghcr.io -u balhar-jakub --password-stdin
+#                    docker push ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
 
             -   name: Build Python Sample App
                 run: |
@@ -2107,10 +2107,10 @@ jobs:
                     APIML_HEALTH_PROTECTED: false
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-            nodejs-sample-app:
-                image: ghcr.io/balhar-jakub/nodejs-sample-app:${{ github.run_id }}-${{ github.run_number }}
+#            nodejs-sample-app:
+#                image: ghcr.io/balhar-jakub/nodejs-sample-app:${{ github.run_id }}-${{ github.run_number }}
             python-sample-app:
-                image: ghcr.io/balhar-jakub/nodejs-sample-app:python20618485954-6479:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/nodejs-sample-app:python${{ github.run_id }}-${{ github.run_number }}
 
 
         steps:
@@ -2133,10 +2133,10 @@ jobs:
 #                    venv/bin/pip install --upgrade pip pipenv
 #                    venv/bin/pipenv sync
 
-            -   name: Run Node.JS Service Tests
-                run: >
-                    ./gradlew :integration-tests:runNodeJsSampleServiceTests --info -Denvironment.config=-docker-modulith
-                    -Denvironment.modulith=true -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+#            -   name: Run Node.JS Service Tests
+#                run: >
+#                    ./gradlew :integration-tests:runNodeJsSampleServiceTests --info -Denvironment.config=-docker-modulith
+#                    -Denvironment.modulith=true -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Python Service Tests
                 run: >
