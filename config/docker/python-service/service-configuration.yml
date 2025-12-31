@@ -20,8 +20,8 @@ instance:
     port: 10018
     securePort: 10018
     secureVipAddress: pythonservice
-    statusPageUrl: https://localhost:10018/pythonservice/application/info
-    healthCheckUrl: https://localhost:10018/pythonservice/application/health
+    statusPageUrl: https://python-sample-app:10018/pythonservice/application/info
+    healthCheckUrl: https://python-sample-app:10018/pythonservice/application/health
     nonSecurePortEnabled': false
     securePortEnabled: true
     metadata:
@@ -32,7 +32,7 @@ instance:
         apiml.routes.api_v1.serviceUrl: "/pythonservice"
         apiml.apiInfo.0.apiId: org.zowe.pythonservice
         apiml.apiInfo.0.gatewayUrl: "api/v1"
-        apiml.apiInfo.0.swaggerUrl: https://localhost:10018/pythonservice/apidoc
+        apiml.apiInfo.0.swaggerUrl: https://python-sample-app:10018/pythonservice/apidoc
         apiml.apiInfo.0.version: 1.0.0
         apiml.service.title: 'Zowe Sample Python Service'
         apiml.service.description: 'Sample API services to demonstrate Python Onboarding Enabler'
