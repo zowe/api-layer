@@ -11,7 +11,7 @@
 
 # base image tag
 ARG ZOWE_BASE_IMAGE=3-ubuntu
-FROM python:3.11-slim
+FROM python:3
 
 LABEL name="pythonsampleapp"
 LABEL vendor="Zowe"
