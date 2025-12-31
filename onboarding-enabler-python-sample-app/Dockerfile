@@ -17,7 +17,7 @@ LABEL name="pythonsampleapp"
 LABEL vendor="Zowe"
 LABEL description="Python sample service for APIML onboarding"
 
-WORKDIR /
+WORKDIR /usr/src
 COPY onboarding-enabler-python ./onboarding-enabler-python
 
 WORKDIR /usr/src/app
