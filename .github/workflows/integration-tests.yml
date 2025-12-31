@@ -43,9 +43,9 @@ jobs:
                     cp -r ../keystore ./keystore
                     cp -r ../onboarding-enabler-python ./onboarding-enabler-python
                     docker build -t pythonsampleapp .
-                    docker tag pythonsampleapp ghcr.io/balhar-jakub/python-sample-app:${{ env.JOB_ID }}
+                    docker tag pythonsampleapp ghcr.io/balhar-jakub/nodejs-sample-app:python${{ env.JOB_ID }}
                     echo "${{ secrets.PERSONAL_JB_TOKEN }}" | docker login ghcr.io -u balhar-jakub --password-stdin
-                    docker push ghcr.io/balhar-jakub/python-sample-app:${{ env.JOB_ID }}
+                    docker push ghcr.io/balhar-jakub/nodejs-sample-app:python${{ env.JOB_ID }}
 
 
             -   name: Build with Gradle
