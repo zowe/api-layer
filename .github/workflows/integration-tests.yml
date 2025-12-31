@@ -2094,7 +2094,6 @@ jobs:
 
     CITestsNodeJsAndPythonServices:
         needs: PublishJibContainers
-#        container: node:20-alpine
         container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
@@ -2133,14 +2132,8 @@ jobs:
 #                    python -m venv venv
 #                    venv/bin/pip install --upgrade pip pipenv
 #                    venv/bin/pipenv sync
-#
-#            -   name: Run Python Sample Service
-#                run: |
-#                    cd onboarding-enabler-python-sample-app/src
-#                    python app.py &
 
             -   name: Run Node.JS Service Tests
-#                run: echo "Tests were run."
                 run: >
                     ./gradlew :integration-tests:runNodeJsSampleServiceTests --info -Denvironment.config=-docker-modulith
                     -Denvironment.modulith=true -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}

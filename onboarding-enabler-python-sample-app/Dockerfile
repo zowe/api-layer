@@ -18,7 +18,7 @@ LABEL vendor="Zowe"
 LABEL description="Python sample service for APIML onboarding"
 
 WORKDIR /
-#COPY onboarding-enabler-python ./onboarding-enabler-python
+COPY onboarding-enabler-python ./onboarding-enabler-python
 
 WORKDIR /usr/src/app
 COPY Pipfile Pipfile.lock ./
