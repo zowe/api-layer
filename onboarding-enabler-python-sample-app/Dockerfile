@@ -11,35 +11,28 @@
 
 # base image tag
 ARG ZOWE_BASE_IMAGE=3-ubuntu
+FROM python:3.11-slim
 
-FROM node:20-alpine
-RUN npm install -g npm@10.9.4
-
-LABEL name="nodesampleapp"
+LABEL name="pythonsampleapp"
 LABEL vendor="Zowe"
-LABEL description="NodeJS sample service for APIML onboarding"
+LABEL description="Python sample service for APIML onboarding"
 
 WORKDIR /
-COPY .licence ./.licence
-COPY onboarding-enabler-nodejs ./onboarding-enabler-nodejs
-COPY keystore ./keystore
+#COPY onboarding-enabler-python ./onboarding-enabler-python
 
-WORKDIR /onboarding-enabler-nodejs
-RUN npm ci --legacy-peer-deps
+WORKDIR /usr/src/app
+COPY Pipfile Pipfile.lock ./
 
-WORKDIR /app
-COPY package*.json ./
-
-RUN pwd
-RUN ls -al
-RUN npm ci --legacy-peer-deps
+RUN pip install --upgrade pip pipenv \
+ && pipenv install --system --deploy \
 
 # ===== copy the app and config
 COPY src ./src
-COPY config/service-configuration.yml ./config/service-configuration.yml
+COPY config/service-configuration.yml ./src/config/service-configuration.yml
+COPY keystore ./keystore
 
 # ===== expose service port
-EXPOSE 10020
+EXPOSE 10018
 
 # ===== start
-CMD ["npm", "run", "start"]
+CMD ["python", "src/app.py"]

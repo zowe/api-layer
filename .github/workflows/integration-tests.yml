@@ -24,17 +24,29 @@ jobs:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
 
-            -   name: Build Nodejs
+            -   name: Build Nodejs Sample App
                 run: |
                     cd onboarding-enabler-nodejs-sample-app
                     cp ../config/docker/nodejs-service/service-configuration.yml ./config/service-configuration.yml
                     cp -r ../.licence ./.licence
                     cp -r ../keystore ./keystore
                     cp -r ../onboarding-enabler-nodejs ./onboarding-enabler-nodejs
-                    docker build -t hwexpress .
-                    docker tag hwexpress ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
+                    docker build -t nodesampleapp .
+                    docker tag nodesampleapp ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
                     echo "${{ secrets.PERSONAL_JB_TOKEN }}" | docker login ghcr.io -u balhar-jakub --password-stdin
                     docker push ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
+
+            -   name: Build Python Sample App
+                run: |
+                    cd onboarding-enabler-python-sample-app
+                    cp ../config/docker/python-service/service-configuration.yml ./config/service-configuration.yml
+                    cp -r ../keystore ./keystore
+                    cp -r ../onboarding-enabler-python ./onboarding-enabler-python
+                    docker build -t pythonsampleapp .
+                    docker tag pythonsampleapp ghcr.io/balhar-jakub/python-sample-app:${{ env.JOB_ID }}
+                    echo "${{ secrets.PERSONAL_JB_TOKEN }}" | docker login ghcr.io -u balhar-jakub --password-stdin
+                    docker push ghcr.io/balhar-jakub/python-sample-app:${{ env.JOB_ID }}
+
 
             -   name: Build with Gradle
                 run: >
@@ -2098,6 +2110,9 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             nodejs-sample-app:
                 image: ghcr.io/balhar-jakub/nodejs-sample-app:${{ github.run_id }}-${{ github.run_number }}
+            python-sample-app:
+                image: ghcr.io/balhar-jakub/python-sample-app:${{ github.run_id }}-${{ github.run_number }}
+
 
         steps:
             -   uses: actions/checkout@v4
@@ -2105,18 +2120,6 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
-#
-#
-#
-#            -   name: Replace service configuration files
-#                run: |
-#                    mv config/docker/python-service/service-configuration.yml onboarding-enabler-python-sample-app/src/config/service-configuration.yml
-
-
-
-#            -   name: Run Node.JS Sample Service
-#                run: |
-#                    npm run onboarding-enabler-nodejs-sample-app &
 
 #            -   name: Setup Python
 #                uses: actions/setup-python@v5
