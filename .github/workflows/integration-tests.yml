@@ -2109,8 +2109,8 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             nodejs-sample-app:
                 image: ghcr.io/balhar-jakub/nodejs-sample-app:${{ github.run_id }}-${{ github.run_number }}
-            nodejs-sample-app:python20618485954-6479:
-                image: ghcr.io/balhar-jakub/python-sample-app:${{ github.run_id }}-${{ github.run_number }}
+            python-sample-app:
+                image: ghcr.io/balhar-jakub/nodejs-sample-app:python20618485954-6479:${{ github.run_id }}-${{ github.run_number }}
 
 
         steps:
