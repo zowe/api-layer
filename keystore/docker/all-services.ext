@@ -27,3 +27,5 @@ DNS.21 = central-gateway-service
 DNS.22 = central-gateway-service-2
 DNS.23 = apiml
 DNS.24 = apiml-2
+DNS.25 = nodejs-sample-app
+DNS.26 = python-sample-app
