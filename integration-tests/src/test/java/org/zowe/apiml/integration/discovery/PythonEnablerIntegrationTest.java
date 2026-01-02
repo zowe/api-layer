@@ -11,6 +11,7 @@
 package org.zowe.apiml.integration.discovery;
 
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.*;
@@ -18,7 +19,6 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
 
-import static io.netty.handler.codec.http.HttpHeaders.Values.APPLICATION_JSON;
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
@@ -49,7 +49,7 @@ class PythonEnablerIntegrationTest {
             .get(uri)
         .then()
             .statusCode(is(SC_OK))
-            .contentType(is(APPLICATION_JSON))
+            .contentType(ContentType.JSON)
             .body("status", is("UP"));
     }
 
