@@ -55,6 +55,7 @@ jobs:
                             --ignore-resource-attribute-value host.arch \
                             --ignore-resource-attribute-value process.pid \
                             --ignore-resource-attribute-value process.command_line \
+                            --ignore-resource-attribute-value process.command_args \
                             --ignore-resource-attribute-value process.executable.path \
                             --ignore-resource-attribute-value process.runtime.description \
                             --ignore-resource-attribute-value process.runtime.version \
