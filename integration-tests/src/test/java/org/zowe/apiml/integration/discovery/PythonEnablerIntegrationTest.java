@@ -13,6 +13,7 @@ package org.zowe.apiml.integration.discovery;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.*;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -20,7 +21,10 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 
 /**
@@ -40,17 +44,24 @@ class PythonEnablerIntegrationTest {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    @Test
-    void givenEnablerIsOnboarded_whenRequestingPublicEndpoint_returnStatus() {
-        URI uri = HttpRequestUtils.getUriFromGateway(APP_INFO_HEALTH);
+    @Nested
+    class WhenServiceIsRegisteredInDiscovery {
+        @Test
+        void gatewayRouteReturnsUpStatus() {
+            URI uri = HttpRequestUtils.getUriFromGateway(APP_INFO_HEALTH);
 
-        given()
-        .when()
-            .get(uri)
-        .then()
-            .statusCode(is(SC_OK))
-            .contentType(ContentType.JSON)
-            .body("status", is("UP"));
+            await()
+                .atMost(2, MINUTES)
+                .pollInterval(1, SECONDS)
+                .untilAsserted(() ->
+                    given()
+                        .when()
+                        .get(uri)
+                        .then()
+                        .statusCode(is(SC_OK))
+                        .contentType(ContentType.JSON)
+                        .body("status", is("UP")));
+
+        }
     }
-
 }

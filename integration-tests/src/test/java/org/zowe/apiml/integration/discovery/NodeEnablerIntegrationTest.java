@@ -15,7 +15,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.*;
-import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
@@ -27,8 +26,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
-import static org.springframework.http.HttpHeaders.ACCEPT;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * Test that Node.js enabler is properly integrated with the API ML (Discovery, Gateway)
@@ -52,71 +49,21 @@ class NodeEnablerIntegrationTest {
     }
 
     @Nested
-    class WhenIntegratingWithDiscoveryService {
-        @Nested
-        class GivenValidService {
-            @Test
-            void givenNodeEnablerIsOnboarded_gatewayReturnsHealth() {
-//                waitUntilServiceIsRegisteredInDiscovery();
-//                waitUntilGatewayRouteIsReady();
+    class WhenServiceIsRegisteredInDiscovery {
+        @Test
+        void gatewayRouteReturnsUpStatus() {
 
-                given()
-                    .when()
-                    .log().all()
-                    .get(MEDIATION_CLIENT_URI)
-                    .then()
-                    .log().all()
-                    .statusCode(SC_OK)
-                    .body("status", is("UP"));
-            }
+            await()
+                .atMost(2, MINUTES)
+                .pollInterval(1, SECONDS)
+                .untilAsserted(() ->
+                    given()
+                        .when()
+                        .get(MEDIATION_CLIENT_URI)
+                        .then()
+                        .statusCode(SC_OK)
+                        .body("status", is("UP")));
+
         }
     }
-
-    private void waitUntilGatewayRouteIsReady() {
-        await()
-            .atMost(2, MINUTES)
-            .pollInterval(1, SECONDS)
-            .untilAsserted(() ->
-                given()
-                    .log().all()
-                .when()
-                    .get(MEDIATION_CLIENT_URI)
-                .then()
-                    .log().all()
-                    .statusCode(SC_OK)
-            );
-    }
-
-    private void waitUntilServiceIsRegisteredInDiscovery() {
-        await()
-            .atMost(3, MINUTES)
-            .pollInterval(1, SECONDS)
-            .untilAsserted(() ->
-                given()
-                    .log().all()
-                    .config(SslContext.clientCertUser)
-                    .header(ACCEPT, APPLICATION_JSON_VALUE)
-                    .when()
-                    .get(DISCOVERY_APP)
-                    .then()
-                    .log().all()
-                    .statusCode(SC_OK)
-            );
-    }
-
-//    @Test
-//    void givenEnablerIsOnboarded_whenRequestingPublicEndpoint_returnStatus() {
-//        URI uri = HttpRequestUtils.getUriFromGateway(APP_INFO_HEALTH);
-//
-//        given()
-//            .log().all()
-//        .when()
-//            .get(uri)
-//        .then()
-//            .log().all()
-//            .statusCode(is(SC_OK))
-//            .contentType(MediaType.APPLICATION_JSON_VALUE)
-//            .body("status", is("UP"));
-//    }
-
 }
