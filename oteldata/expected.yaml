@@ -12,6 +12,6 @@ resourceMetrics:
     schemaUrl: https://opentelemetry.io/schemas/1.24.0
     scopeMetrics:
       - scope: {"name":"io.opentelemetry.sdk.trace"}
-        metrics: [ {"name":"queueSize","description":"The number of items queued","unit":"1","gauge":{"dataPoints":["attributes":[{"key":"processorType","value":{"stringValue":"BatchLogRecordProcessor"}}]]}} ]
+        metrics: [ {"name":"queueSize","description":"The number of items queued","unit":"1","gauge":{"dataPoints":["attributes":[{"key":"processorType","value":{"stringValue":"BatchSpanProcessor"}}]]}} ]
       - scope: {"name":"io.opentelemetry.sdk.logs"}
         metrics: [ {"name":"queueSize","description":"The number of items queued","unit":"1","gauge":{"dataPoints":["attributes":[{"key":"processorType","value":{"stringValue":"BatchLogRecordProcessor"}}]]}} ]
