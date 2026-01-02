@@ -28,8 +28,6 @@ RUN pip install --upgrade pip pipenv \
 
 # ===== copy the app and config
 COPY src ./src
-#COPY config ./config
-#COPY src/config/service-configuration.yml ./config/service-configuration.yml
 COPY src/config/service-configuration.yml ./src/config/service-configuration.yml
 COPY keystore ./keystore
 

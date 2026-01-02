@@ -2119,15 +2119,10 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
-            -   name: Run Node.JS Service Tests
+            -   name: Run Node.JS and Python Services Tests
                 run: >
-                    ./gradlew :integration-tests:runNodeJsSampleServiceTests --info -Denvironment.config=-docker-modulith
-                    -Denvironment.modulith=true -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-
-            -   name: Run Python Service Tests
-                run: >
-                    ./gradlew :integration-tests:runPythonSampleServiceTests  --info -Denvironment.config=-docker-modulith
-                    -Denvironment.modulith=true -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    ./gradlew :integration-tests:runNodeAndPythonSampleServiceTests --info -Denvironment.config=-docker-modulith
+                    -Denvironment.modulith=true
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
