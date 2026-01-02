@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.util.categories.*;
 import org.zowe.apiml.util.http.HttpRequestUtils;
-import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import java.net.URI;
 
@@ -40,8 +39,6 @@ class NodeEnablerIntegrationTest {
     private static final String APP_INFO_HEALTH = "/hwexpress/api/v1/status/";
 
     private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway(APP_INFO_HEALTH);
-
-    private static final String DISCOVERY_APP = DiscoveryUtils.getDiscoveryUrl() + "/eureka/apps/HWEXPRESS";
 
     @BeforeAll
     public static void beforeClass() {
