@@ -18,6 +18,7 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
 
+import static io.netty.handler.codec.http.HttpHeaders.Values.APPLICATION_JSON;
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
@@ -33,7 +34,6 @@ import static org.hamcrest.Matchers.is;
 class PythonEnablerIntegrationTest {
 
     private static final String APP_INFO_HEALTH = "/pythonservice/api/v1/application/health";
-    private static final String JSON_CONTENT_TYPE = "application/json;charset=utf-8";
 
     @BeforeAll
     public static void beforeClass() {
@@ -49,7 +49,7 @@ class PythonEnablerIntegrationTest {
             .get(uri)
         .then()
             .statusCode(is(SC_OK))
-            .contentType(is(JSON_CONTENT_TYPE))
+            .contentType(is(APPLICATION_JSON))
             .body("status", is("UP"));
     }
 
