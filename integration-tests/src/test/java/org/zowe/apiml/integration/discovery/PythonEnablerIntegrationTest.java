@@ -32,7 +32,7 @@ import static org.hamcrest.Matchers.is;
 @PythonEnablerTest
 class PythonEnablerIntegrationTest {
 
-    private static final String APP_INFO_HEALTH = "/pythonservice/api/v1/status/";
+    private static final String APP_INFO_HEALTH = "/pythonservice/api/v1/application/health";
     private static final String JSON_CONTENT_TYPE = "application/json;charset=utf-8";
 
     @BeforeAll
