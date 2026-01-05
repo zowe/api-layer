@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.zowe.apiml.util.SecurityUtils.assertIfLogged;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.config.ConfigReader.IS_MODULITH_ENABLED;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromService;
 import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGOUT;
 
@@ -42,11 +43,13 @@ class AuthenticationHaTest {
     private static final String ZAAS_QUERY = "/zaas/api/v1/auth/query";
     private static final GatewayServiceConfiguration GATEWAY_CONF = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     private static final ZaasConfiguration ZAAS_CONF = ConfigReader.environmentConfiguration().getZaasConfiguration();
+    private List<Throwable> errors;
 
     @BeforeEach
     void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        errors = new ArrayList<>();
     }
 
     @Nested
@@ -65,18 +68,17 @@ class AuthenticationHaTest {
                 // Logout on any instance
                 SecurityUtils.logoutOnGateway(SecurityUtils.getGatewayUrl(gatewayHosts[0], ROUTED_LOGOUT), jwt);
 
-                List<Throwable> errors = new ArrayList<>();
-
                 // Verify token is invalid in one or more Gateway and ZAAS instances. Do this twice
                 for (int i = 0; i < 2; i++) {
-                    try {
-                        assertIfGatewayLogged(jwt, false, gatewayHosts[0]);
+                    assertIfGatewayLogged(jwt, false, gatewayHosts[0]);
+                    if (!(IS_MODULITH_ENABLED || ZAAS_CONF == null)) {
                         assertIfZaasLogged(jwt, false, ZAAS_CONF);
-                        assertIfGatewayLogged(jwt, false, gatewayHosts[1]);
+                    }
+
+                    assertIfGatewayLogged(jwt, false, gatewayHosts[1]);
+                    if (!(IS_MODULITH_ENABLED || ZAAS_CONF == null)) {
                         // Since we have only one ZAAS instance in the configuration, manually add the second one
                         assertIfZaasLogged(jwt, false, new ZaasConfiguration(ZAAS_CONF.getScheme(), ZAAS_CONF.getHost() + "-2", ZAAS_CONF.getPort(), 2));
-                    } catch (Throwable error) {
-                        errors.add(error);
                     }
                 }
 
@@ -91,11 +93,19 @@ class AuthenticationHaTest {
     }
 
     private void assertIfGatewayLogged(String jwt, boolean logged, String gatewayHost) {
-        SecurityUtils.assertIfLogged(jwt, logged, gatewayHost);
+        try {
+            SecurityUtils.assertIfLogged(jwt, logged, gatewayHost);
+        } catch (Throwable error) {
+            errors.add(new Throwable(gatewayHost, error));
+        }
     }
 
     private void assertIfZaasLogged(String jwt, boolean logged, ZaasConfiguration zaasConfiguration) {
-        SecurityUtils.assertIfLogged(jwt, logged, getUriFromService(zaasConfiguration, ZAAS_QUERY));
+        try {
+            SecurityUtils.assertIfLogged(jwt, logged, getUriFromService(zaasConfiguration, ZAAS_QUERY));
+        } catch (Throwable error) {
+            errors.add(new Throwable(zaasConfiguration.getHost(), error));
+        }
     }
 
     // assume only two gateway (or apiml) instances
