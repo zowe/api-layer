@@ -274,7 +274,7 @@ public class AuthenticationService {
         }
 
         final String myInstanceId = eurekaClient.getApplicationInfoManager().getInfo().getInstanceId();
-        boolean returnValue = Boolean.TRUE;
+        Boolean returnValue = Boolean.TRUE;
 
         for (final InstanceInfo instanceInfo : application.getInstances()) {
             if (StringUtils.equals(myInstanceId, instanceInfo.getInstanceId())) {
