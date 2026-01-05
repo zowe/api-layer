@@ -15,24 +15,33 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.HATest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.ZaasConfiguration;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.zowe.apiml.util.SecurityUtils.assertIfLogged;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromService;
 import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGOUT;
 
 /**
  * In initial version, basic logout test to verify token invalidation in HA scenarios
- *
  */
 @HATest
 @Tag("SAFProviderTest")
 class AuthenticationHaTest {
 
+    private static final String ZAAS_QUERY = "/zaas/api/v1/auth/query";
     private static final GatewayServiceConfiguration GATEWAY_CONF = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    private static final ZaasConfiguration ZAAS_CONF = ConfigReader.environmentConfiguration().getZaasConfiguration();
 
     @BeforeEach
     void setUp() {
@@ -49,22 +58,44 @@ class AuthenticationHaTest {
             @Test
             void thenTokenIsInvalidatedInBoth() {
                 var jwt = SecurityUtils.gatewayToken();
+                var gatewayHosts = getGatewayHosts();
 
                 assertIfLogged(jwt, true);
 
                 // Logout on any instance
-                SecurityUtils.logoutOnGateway(SecurityUtils.getGatewayUrl(getGatewayHosts()[0], ROUTED_LOGOUT), jwt);
+                SecurityUtils.logoutOnGateway(SecurityUtils.getGatewayUrl(gatewayHosts[0], ROUTED_LOGOUT), jwt);
 
-                // Verify token is invalid in one or more Gateway instances
-                var gatewayHosts = getGatewayHosts();
-                for (String host : gatewayHosts) {
-                    SecurityUtils.assertIfLogged(jwt, false, host);
+                List<Throwable> errors = new ArrayList<>();
+
+                // Verify token is invalid in one or more Gateway and ZAAS instances. Do this twice
+                for (int i = 0; i < 2; i++) {
+                    try {
+                        assertIfGatewayLogged(jwt, false, gatewayHosts[0]);
+                        assertIfZaasLogged(jwt, false, ZAAS_CONF);
+                        assertIfGatewayLogged(jwt, false, gatewayHosts[1]);
+                        // Since we have only one ZAAS instance in the configuration, manually add the second one
+                        assertIfZaasLogged(jwt, false, new ZaasConfiguration(ZAAS_CONF.getScheme(), ZAAS_CONF.getHost() + "-2", ZAAS_CONF.getPort(), 2));
+                    } catch (Throwable error) {
+                        errors.add(error);
+                    }
                 }
 
+                try {
+                    assertTrue(errors.isEmpty());
+                } catch (AssertionFailedError assertionFailedError) {
+                    throw new AssertionFailedError("Errors:" + errors.stream().map(Throwable::getMessage)
+                        .collect(Collectors.joining("\n")));
+                }
             }
-
         }
+    }
 
+    private void assertIfGatewayLogged(String jwt, boolean logged, String gatewayHost) {
+        SecurityUtils.assertIfLogged(jwt, logged, gatewayHost);
+    }
+
+    private void assertIfZaasLogged(String jwt, boolean logged, ZaasConfiguration zaasConfiguration) {
+        SecurityUtils.assertIfLogged(jwt, logged, getUriFromService(zaasConfiguration, ZAAS_QUERY));
     }
 
     // assume only two gateway (or apiml) instances

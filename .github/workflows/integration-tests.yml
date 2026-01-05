@@ -491,7 +491,7 @@ jobs:
 
             -   name: Run CI Tests With SAF Provider
                 run: >
-                    ./gradlew :integration-tests:runContainerSAFProviderTests --info -Denvironment.config=-ha
+                    ENV_CONFIG=ha ./gradlew :integration-tests:runContainerSAFProviderTests --info -Denvironment.config=-ha
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()

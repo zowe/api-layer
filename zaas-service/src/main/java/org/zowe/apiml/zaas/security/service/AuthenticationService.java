@@ -190,6 +190,12 @@ public class AuthenticationService {
      * @param distribute distribute invalidation to another instances?
      * @return state of invalidate (true - token was invalidated)
      */
+
+    /**
+    * TODO consider the following scenarios during the fix:
+     * Cache hit on CACHE_INVALIDATED_JWT_TOKENS with return true -> method is not executed -> CacheEvict on CACHE_VALIDATION_JWT_TOKEN does not happen
+     * Cache miss on CACHE_INVALIDATED_JWT_TOKENS -> method is executed and return is false -> CacheEvict on CACHE_VALIDATION_JWT_TOKEN happens nevertheless
+     */
     @CacheEvict(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken")
     @Cacheable(value = CACHE_INVALIDATED_JWT_TOKENS, key = "#jwtToken", condition = "#jwtToken != null")
     public Boolean invalidateJwtToken(String jwtToken, boolean distribute) {
@@ -268,6 +274,8 @@ public class AuthenticationService {
         }
 
         final String myInstanceId = eurekaClient.getApplicationInfoManager().getInfo().getInstanceId();
+        boolean returnValue = Boolean.TRUE;
+
         for (final InstanceInfo instanceInfo : application.getInstances()) {
             if (StringUtils.equals(myInstanceId, instanceInfo.getInstanceId())) {
                 continue;
@@ -278,11 +286,12 @@ public class AuthenticationService {
                 restTemplate.delete(url);
             } catch (HttpClientErrorException e) {
                 log.debug("Problem invalidating token on another instance url " + url, e);
+                returnValue = Boolean.FALSE;
             }
 
         }
 
-        return Boolean.TRUE;
+        return returnValue;
     }
 
     /**
@@ -331,7 +340,7 @@ public class AuthenticationService {
      * - it uses validation via REST directly in z/OSMF
      * <p>
      * Method uses cache to speedup validation. In case of invalidating jwtToken in z/OSMF without Zowe, method
-     * can return still true until cache will expired or be evicted.
+     * can return still true until cache will expire or be evicted.
      *
      * @param jwtToken token to verification
      * @return true if token is still valid, otherwise false
@@ -363,7 +372,7 @@ public class AuthenticationService {
      * @param jwtToken token of user
      * @return authenticated {@link TokenAuthentication} using information about invalidating of token
      */
-    @CachePut(value = "validationJwtToken", key = "#jwtToken", condition = "#jwtToken != null")
+    @CachePut(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken", condition = "#jwtToken != null")
     public TokenAuthentication createTokenAuthentication(String user, String jwtToken) {
         final TokenAuthentication out = new TokenAuthentication(user, jwtToken, TokenAuthentication.Type.JWT);
         // without a proxy cache aspect is not working, thus it is necessary get bean from application context
