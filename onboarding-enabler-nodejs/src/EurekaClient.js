@@ -640,6 +640,8 @@ export default class Eureka extends EventEmitter {
           cert: requestOpts.cert,
           key: requestOpts.key,
           ca: requestOpts.ca,
+          pfx: requestOpts.pfx,
+          passphrase: requestOpts.passphrase,
         };
         this.logger.debug(`prepared options for the request ${JSON.stringify(options)}`);
 

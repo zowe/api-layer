@@ -18,15 +18,18 @@ let caFile = null;
 let passPhrase = null;
 let client = null;
 let tlsOpts = null;
+let p12File = null;
+let config;
 
 /**
  * Read ssl service configuration
  */
 function readTlsProps() {
   try {
-    const config = yaml.load(fs.readFileSync('config/service-configuration.yml', 'utf8'));
+    config = yaml.load(fs.readFileSync('config/service-configuration.yml', 'utf8'));
     certFile = config.ssl.certificate;
     keyFile = config.ssl.keystore;
+    p12File = config.ssl.p12File;
     caFile = config.ssl.caFile;
     passPhrase = config.ssl.keyPassword;
   } catch (e) {
@@ -43,12 +46,24 @@ function init() {
   const defaultFile = fs.existsSync('config/service-configuration.yml');
   if (defaultFile) {
     readTlsProps();
-    tlsOpts = {
-      cert: fs.readFileSync(certFile),
-      key: fs.readFileSync(keyFile),
-      passphrase: passPhrase,
-      ca: fs.readFileSync(caFile),
-    };
+    if (p12File) {
+      tlsOpts = {
+        pfx: fs.readFileSync(p12File),
+        passphrase: passPhrase,
+      };
+    } else if (certFile && keyFile) {
+      tlsOpts = {
+        cert: fs.readFileSync(certFile),
+        key: fs.readFileSync(keyFile),
+        passphrase: passPhrase,
+        ca: fs.readFileSync(caFile),
+      };
+    } else {
+      throw new Error(
+          'Invalid TLS configuration: provide either p12File or certificate + keystore'
+      );
+    }
+
     client = new Eureka({
       filename: 'service-configuration',
       cwd: 'config/',
