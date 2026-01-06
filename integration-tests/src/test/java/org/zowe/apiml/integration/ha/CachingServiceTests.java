@@ -96,7 +96,7 @@ class CachingServiceTests {
     }
 
     private boolean isChaotic() {
-        return Boolean.getBoolean("cloudGateway.enabled");
+        return Boolean.getBoolean("environment.chaotic");
     }
 
     @BeforeAll
