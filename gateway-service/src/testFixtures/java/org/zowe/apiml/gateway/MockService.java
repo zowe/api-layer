@@ -18,7 +18,11 @@ import com.netflix.appinfo.InstanceInfo;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Singular;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
 import org.assertj.core.error.MultipleAssertionsError;
@@ -121,6 +125,11 @@ public class MockService implements AutoCloseable {
      * service, you can use {@link MockService#getEndpoint()}
      */
     private final Map<String, Endpoint> endpoints = new HashMap<>();
+
+    /**
+     * Additional metadata added on top of standard one required for the mock service to run
+     */
+    private Map<? extends String, ? extends String> additionalMetadata;
 
     /**
      * Status of the service - see possible values {@link MockService.Status}
@@ -324,6 +333,8 @@ public class MockService implements AutoCloseable {
             metadata.put("apiml.authentication.applid", applid);
         }
 
+        metadata.putAll(additionalMetadata);
+
         return metadata;
     }
 
@@ -357,6 +368,7 @@ public class MockService implements AutoCloseable {
     public static class MockServiceBuilder {
 
         private List<Endpoint> endpoints = new LinkedList<>();
+        private Map<String, String> additionalMetadata = new HashMap<>();
 
         /**
          * Create a new endpoint of the Mock Service
@@ -366,6 +378,9 @@ public class MockService implements AutoCloseable {
          */
         public Endpoint.EndpointBuilder addEndpoint(String path) {
             Endpoint.EndpointBuilder endpointBuilder = Endpoint.builder();
+            if (!path.startsWith("/")) {
+                throw new IllegalArgumentException();
+            }
             endpointBuilder.path(path);
             endpointBuilder.mockServiceBuilder = this;
             return endpointBuilder;
@@ -380,6 +395,7 @@ public class MockService implements AutoCloseable {
             MockService mockService = internalBuild();
             mockService.port = idCounter++;
             mockService.endpointsConfig = endpoints;
+            mockService.additionalMetadata = additionalMetadata;
             return mockService;
         }
 

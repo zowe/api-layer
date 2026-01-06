@@ -50,9 +50,9 @@ public class StickySessionLoadBalancingTest {
         void shouldLoadBalanceSameInstance() throws URISyntaxException {
             String lbTypeEnv = getenv("APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE");
             String lbType = lbTypeEnv != null ? lbTypeEnv : "";
-            assumeTrue(lbType.equals("authentication"), "Skipping test: condition not met");
+            assumeTrue(lbType.equals("authentication"), "Skipping test: environment APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE not set");
 
-            assumeTrue(HA_GW_REQUESTS.existing() > 1);
+            assumeTrue(HA_GW_REQUESTS.existing() > 1, "Expected at least 2 gateways");
             assertThat(HA_DS_REQUESTS.getAmountOfRegisteredInstancesForService(0, Apps.DISCOVERABLE_CLIENT), is(2));
 
             String jwt = gatewayToken();

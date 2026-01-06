@@ -79,6 +79,11 @@ public class ZaasTestUtil {
         return Boolean.getBoolean("hwkeyring");
     }
 
+    /**
+     * Is z/OSMF the configured authentication provider
+     *
+     * @return
+     */
     static boolean isTestForZOSMF() {
         return AUTH_PROVIDER.equalsIgnoreCase("zosmf");
     }
