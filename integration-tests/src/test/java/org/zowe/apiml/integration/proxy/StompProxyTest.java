@@ -60,7 +60,7 @@ public class StompProxyTest extends WebSocketProxyTest {
 
         StompSession stompSession = stompClient.connectAsync(
             discoverableClientGatewayUrl(DISCOVERABLE_STOMP), VALID_AUTH_HEADERS, new StompSessionHandlerAdapter() {
-        }).get(5, SECONDS); // lower connection timeout fails on z/os test system
+        }).get(10, SECONDS); // lower connection timeout fails on z/os test system
         stompSession.subscribe(SUBSCRIBE_ENDPOINT + uuid, new StringStompFrameHandler());
 
         char c = 'A';
