@@ -66,7 +66,7 @@ public class InMemoryRateLimiterFilterFactoryIntegrationTest {
 
     @Test
     void testRateLimitingWhenExceeded() {
-        IntStream.range(0, bucketCapacity).parallel().forEach(i -> client.get()
+        IntStream.range(0, 2 * bucketCapacity).parallel().forEach(i -> client.get()
             .cookie("apimlAuthenticationToken", "validTokenValue")
             .exchange().expectStatus().isOk());
 
