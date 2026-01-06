@@ -54,7 +54,7 @@ function startHttpsService() {
     app.use(express.static("src/static"));
 
     // Start HTTPS server and register to Discovery Service:
-    const tlsOptions = apiLayerService.tlsOptions;
+    const tlsOptions = apiLayerService.getTlsOptions();
     httpsServer = https.createServer(tlsOptions, app);
     httpsServer.listen(args.port, function () {
         console.log(`${args.serviceId} service listening on port ${args.port}`);

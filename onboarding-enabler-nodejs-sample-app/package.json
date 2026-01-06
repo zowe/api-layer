@@ -16,13 +16,13 @@
     "license": "EPL-2.0",
     "dependencies": {
         "@zowe/apiml-onboarding-enabler-nodejs": "file:../onboarding-enabler-nodejs",
-        "express": "4.21.2"
+        "express": "4.22.1"
     },
     "overrides": {
         "tough-cookie": "5.1.2"
     },
     "engines": {
-        "npm": "=10.9.4",
-        "node": "=20.19.5"
+        "npm": ">=10.9.4",
+        "node": ">=20.19.6"
     }
 }

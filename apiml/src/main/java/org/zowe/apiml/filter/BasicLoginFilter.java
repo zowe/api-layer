@@ -12,6 +12,7 @@ package org.zowe.apiml.filter;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.ProviderManager;
@@ -50,6 +51,8 @@ import java.util.Optional;
  *
  * <p>This filter is intended to be used on /login endpoints.</p>
  *
+ * Caution: Filter will read the body and make it available as a request attribute
+ *
  * @see LoginRequest
  * @see CompoundAuthProvider
  * @see FailedAuthenticationWebHandler
@@ -68,6 +71,8 @@ public class BasicLoginFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        var hasBody = Optional.ofNullable(exchange.getAttribute(CachedBodyFilter.CACHED_BODY_ATTR)).isPresent();
+        exchange.getAttributes().put(X509AuthFilter.SKIP_X509_AUTH_ATTR, hasBody);
         return extractBasicAuth(exchange)
             .map(this::useCredentials)
             .switchIfEmpty(Mono.<AbstractAuthenticationToken>defer(() -> chain.filter(exchange).then(Mono.empty())))
@@ -75,7 +80,14 @@ public class BasicLoginFilter implements WebFilter {
                 authenticationManager.authenticate(credentials)
                     .flatMap(authentication -> chain.filter(exchange)
                         .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication))))
-            .onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), ex));
+            .onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange.mutate().response(new ServerHttpResponseDecorator(exchange.getResponse()) {
+
+                @Override
+                public HttpHeaders getHeaders() {
+                    return new HttpHeaders(exchange.getResponse().getHeaders());
+                }
+
+            }).build(), chain), ex));
     }
 
     private AbstractAuthenticationToken useCredentials(LoginRequest credentials) {

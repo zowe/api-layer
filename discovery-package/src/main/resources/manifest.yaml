@@ -20,7 +20,6 @@ build:
   timestamp: {{build.timestamp}}
 commands:
   start: bin/start.sh
-  validate: bin/validate.sh
 # if we need to automatically tag file encoding on z/OS during installation
 autoEncoding:
   # tag all files
@@ -30,6 +29,7 @@ apimlServices:
     - serviceId: discovery
   static:
     - file: zosmf-static-definition.yaml.template
+      once: true
 configs:
     # server.prefix.replacer is used to replace service ID prefix non-conformant with v2.
     # Define ZWE_configs_apiml_discovery_serviceIdPrefixReplacer in the Zowe config if you want to use it

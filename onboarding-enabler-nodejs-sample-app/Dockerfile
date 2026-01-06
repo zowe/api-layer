@@ -1,0 +1,45 @@
+#######################################################################
+# This program and the accompanying materials are made available
+# under the terms of the Eclipse Public License v2.0 which
+# accompanies this distribution, and is available at
+# https://www.eclipse.org/legal/epl-v20.html
+#
+# SPDX-License-Identifier: EPL-2.0
+#
+# Copyright Contributors to the Zowe Project.
+#######################################################################
+
+# base image tag
+ARG ZOWE_BASE_IMAGE=3-ubuntu
+
+FROM node:20-alpine
+RUN npm install -g npm@10.9.4
+
+LABEL name="nodesampleapp"
+LABEL vendor="Zowe"
+LABEL description="NodeJS sample service for APIML onboarding"
+
+WORKDIR /
+COPY .licence ./.licence
+COPY onboarding-enabler-nodejs ./onboarding-enabler-nodejs
+COPY keystore ./keystore
+
+WORKDIR /onboarding-enabler-nodejs
+RUN npm ci --legacy-peer-deps
+
+WORKDIR /app
+COPY package*.json ./
+
+RUN pwd
+RUN ls -al
+RUN npm ci --legacy-peer-deps
+
+# ===== copy the app and config
+COPY src ./src
+COPY config/service-configuration.yml ./config/service-configuration.yml
+
+# ===== expose service port
+EXPOSE 10020
+
+# ===== start
+CMD ["npm", "run", "start"]

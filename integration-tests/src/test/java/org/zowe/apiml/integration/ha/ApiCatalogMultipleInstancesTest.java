@@ -52,7 +52,7 @@ public class ApiCatalogMultipleInstancesTest {
                 matches = "true"
             )
             void apiCatalogInstancesAreUp() {
-                assumeTrue(haApiCatalogRequests.existing() > 1);
+                assumeTrue(haApiCatalogRequests.existing() > 1, "Test expected more than one API Catalog instance");
 
                 assertThat(haApiCatalogRequests.up(), is(true));
             }

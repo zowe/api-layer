@@ -20,7 +20,6 @@ build:
   timestamp: {{build.timestamp}}
 commands:
   start: bin/start.sh
-  validate: bin/validate.sh
 # if we need to automatically tag file encoding on z/OS during installation
 autoEncoding:
   # tag all files
@@ -30,3 +29,4 @@ apimlServices:
     - serviceId: apiml
   static:
     - file: zosmf-static-definition.yaml.template
+      once: true

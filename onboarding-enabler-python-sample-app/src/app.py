@@ -80,5 +80,5 @@ def get_application_health():
 if __name__ == "__main__":
     # Load SSL configuration
     enabler.register()
-    uvicorn.run(app, host="0.0.0.0", port=10018, ssl_certfile="../../keystore/localhost/localhost.keystore.cer",
-                ssl_keyfile="../../keystore/localhost/localhost.keystore.key")
+    uvicorn.run(app, host="0.0.0.0", port=10018, ssl_certfile=cert_file,
+                ssl_keyfile=key_file)

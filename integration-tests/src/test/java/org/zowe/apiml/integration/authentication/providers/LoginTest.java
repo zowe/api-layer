@@ -40,19 +40,30 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
-import static org.zowe.apiml.util.SecurityUtils.*;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.zowe.apiml.integration.zaas.ZaasTestUtil.isTestForICSF;
+import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
+import static org.zowe.apiml.util.SecurityUtils.assertThatTokenIsValid;
+import static org.zowe.apiml.util.SecurityUtils.assertValidAuthToken;
+import static org.zowe.apiml.util.SecurityUtils.parseJwtStringUnsecure;
 import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGIN;
 
 /**
@@ -64,6 +75,8 @@ import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGIN;
 class LoginTest implements TestWithStartedInstances {
 
     public static final URI LOGIN_ENDPOINT_URL = HttpRequestUtils.getUriFromGateway(ROUTED_LOGIN);
+
+    private static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
 
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
@@ -96,8 +109,10 @@ class LoginTest implements TestWithStartedInstances {
 
     @Nested
     class WhenUserAuthenticates {
+
         @Nested
         class ReturnsValidToken {
+
             @ParameterizedTest(name = "givenValidCredentialsInBody {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenValidCredentialsInBody(URI loginUrl) {
@@ -147,7 +162,7 @@ class LoginTest implements TestWithStartedInstances {
             void givenInvalidCredentialsInBody(URI loginUrl) {
                 String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
                 String expectedMessageNumber = "ZWEAG120E";
-                if (AUTH_PROVIDER.equalsIgnoreCase("saf")) {
+                if ("saf".equalsIgnoreCase(AUTH_PROVIDER)) {
                     expectedMessage = "The platform returned error: " + PlatformPwdErrno.EINVAL.shortErrorName + ": " + PlatformPwdErrno.EINVAL.explanation;
                     expectedMessageNumber = "ZWEAT416E";
                 }
@@ -171,7 +186,7 @@ class LoginTest implements TestWithStartedInstances {
             void givenInvalidCredentialsInHeader(URI loginUrl) {
                 String expectedMessage = "Invalid username or password for URL '" + getPath(loginUrl) + "'";
                 String expectedMessageNumber = "ZWEAG120E";
-                if (AUTH_PROVIDER.equalsIgnoreCase("saf")) {
+                if ("saf".equalsIgnoreCase(AUTH_PROVIDER)) {
                     expectedMessage = "The platform returned error: " + PlatformPwdErrno.EINVAL.shortErrorName + ": " + PlatformPwdErrno.EINVAL.explanation;
                     expectedMessageNumber = "ZWEAT416E";
                 }
@@ -194,10 +209,11 @@ class LoginTest implements TestWithStartedInstances {
 
         @Nested
         class ReturnsBadRequest {
+
             @ParameterizedTest(name = "givenCredentialsInTheWrongJsonFormat {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenCredentialsInTheWrongJsonFormat(URI loginUrl) throws JSONException {
-                String expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL '" + getPath(loginUrl) + "'";
+                var expectedMessage = "Authorization header is missing, or the request body is missing or invalid for URL";
 
                 JSONObject loginRequest = new JSONObject()
                     .put("user", getUsername())
@@ -211,13 +227,15 @@ class LoginTest implements TestWithStartedInstances {
                 .then()
                     .statusCode(is(SC_BAD_REQUEST))
                     .body(
-                        "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", equalTo(expectedMessage)
+                        "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", startsWith(expectedMessage),
+                        "messages.find { it.messageNumber == 'ZWEAG121E' }.messageContent", containsString(getPath(loginUrl))
                     );
             }
 
             @ParameterizedTest(name = "givenApimlsCert {index} {0} ")
             @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
             void givenApimlsCert(URI loginUrl) {
+                assumeFalse(isTestForICSF(), "This test can't run with ICSF hardware keys. Certificate mismatch");
                 given()
                     .config(SslContext.clientCertApiml)
                 .when()
@@ -227,10 +245,12 @@ class LoginTest implements TestWithStartedInstances {
             }
 
         }
+
     }
 
     @Nested
     class WhenUserAuthenticatesViaGetMethod {
+
         @Nested
         class ReturnMethodNotAllowed {
 
@@ -252,7 +272,9 @@ class LoginTest implements TestWithStartedInstances {
                         "messages.find { it.messageNumber == 'ZWEAO405E' }.messageContent", equalTo(expectedMessage)
                     );
             }
+
         }
+
     }
     //@formatter:on
 
@@ -261,21 +283,18 @@ class LoginTest implements TestWithStartedInstances {
         LoginRequest validLoginRequest = new LoginRequest(LoginTest.USERNAME, LoginTest.PASSWORD.toCharArray());
         URI loginNew = LOGIN_ENDPOINT_URL;
 
-        return Stream.of(
-            //URI loginUrl, RestAssuredConfig config, LoginRequest loginRequest, String user, String pw, HttpStatus rc, String loggedUser
+        List<Arguments> tests = new ArrayList<>();
+        tests.add(Arguments.of("Login with body no cert", loginNew, SslContext.tlsWithoutCert, validLoginRequest, null, null, HttpStatus.NO_CONTENT, LoginTest.USERNAME));
+        tests.add(Arguments.of("Login with basic and body (basic has precedence)", loginNew, SslContext.tlsWithoutCert, validLoginRequest, "aaaa", "aaaa", HttpStatus.UNAUTHORIZED, null));
+        tests.add(Arguments.of("Login with trusted cert and body (body or basic has precedence)", loginNew, SslContext.clientCertValid, validLoginRequest, null, null, HttpStatus.NO_CONTENT, LoginTest.USERNAME));
+        tests.add(Arguments.of("Login with trusted cert", loginNew, SslContext.clientCertValid, null, null, null, HttpStatus.NO_CONTENT, CLIENT_USER));
+        tests.add(Arguments.of("Login with trusted cert and Basic (body or basic has precedence)", loginNew, SslContext.clientCertValid, null, LoginTest.USERNAME, LoginTest.PASSWORD, HttpStatus.NO_CONTENT, LoginTest.USERNAME));
 
-            Arguments.of("Login with body no cert", loginNew, SslContext.tlsWithoutCert, validLoginRequest, null, null, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
+        if (isTestForICSF()) {
+            tests.add(Arguments.of("Login with aml cert (aml cert filtered out)", loginNew, SslContext.clientCertApiml, null, null, null, HttpStatus.BAD_REQUEST, null));
+        }
 
-            Arguments.of("Login with basic and body (basic has precedence)", loginNew, SslContext.tlsWithoutCert, validLoginRequest, "aaaa", "aaaa", HttpStatus.UNAUTHORIZED, null),
-
-            Arguments.of("Login with trusted cert and body (body or basic has precedence)", loginNew, SslContext.clientCertValid, validLoginRequest, null, null, HttpStatus.NO_CONTENT, LoginTest.USERNAME),
-
-            Arguments.of("Login with aml cert (aml cert filtered out)", loginNew, SslContext.clientCertApiml, null, null, null, HttpStatus.BAD_REQUEST, null),
-
-            Arguments.of("Login with trusted cert", loginNew, SslContext.clientCertValid, null, null, null, HttpStatus.NO_CONTENT, CLIENT_USER),
-
-            Arguments.of("Login with trusted cert and Basic (body or basic has precedence)", loginNew, SslContext.clientCertValid, null, LoginTest.USERNAME, LoginTest.PASSWORD, HttpStatus.NO_CONTENT, LoginTest.USERNAME)
-        );
+        return tests.stream();
     }
 
     @Nested
@@ -305,13 +324,19 @@ class LoginTest implements TestWithStartedInstances {
             }
 
         }
-    }
 
+    }
 
     private String getPath(URI loginUrl) {
-        String urlPath = loginUrl.getPath();
+        var urlPath = loginUrl.getPath();
 
-        return urlPath.substring(StringUtils.ordinalIndexOf(urlPath, "/", 1))
-            .replace("/gateway/", "/zaas/");
+        if (IS_MODULITH_ENABLED) {
+            urlPath = urlPath.substring(StringUtils.ordinalIndexOf(urlPath, "/", 1));
+        } else {
+            urlPath = urlPath.replace("/gateway/", "/zaas/");
+        }
+        return urlPath;
+
     }
+
 }

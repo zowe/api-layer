@@ -17,7 +17,11 @@ import io.restassured.response.Validatable;
 import io.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -33,7 +37,6 @@ import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import java.net.URISyntaxException;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
@@ -109,12 +112,12 @@ class ApiCatalogAuthenticationTest {
         RestAssured.useRelaxedHTTPSValidation();
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
 
-        List<DiscoveryUtils.InstanceInfo> apiCatalogInstances = DiscoveryUtils.getInstances(CATALOG_SERVICE_ID);
+        var apiCatalogInstances = DiscoveryUtils.getInstances(CATALOG_SERVICE_ID);
         if (StringUtils.isEmpty(apiCatalogServiceUrl)) {
             apiCatalogServiceUrl = apiCatalogInstances.stream()
                 .filter(catalogInstance -> catalogInstance.getPort() == catalogConfig.getPort())
                 .findFirst()
-                .map(i -> String.format("%s", i.getUrl()))
+                .map(i -> String.format("%s", i.getUrl()).replace("https://", "http://").replace("http://", ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getScheme() + "://"))
                 .orElseThrow(() -> new RuntimeException("Cannot determine API Catalog service from Discovery"));
         }
     }
