@@ -118,4 +118,4 @@ zowe-apiml-onboarding-enabler-python = {editable = true, path = "../onboarding-e
 [dev-packages]
 
 [requires]
-python_version = "3.13"
+python_version = "3.12"
