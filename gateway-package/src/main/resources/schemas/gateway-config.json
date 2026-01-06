@@ -320,6 +320,7 @@
                                 "provider": {
                                     "type": "string",
                                     "enum": ["endpoint", "native", "dummy"],
+                                    "default": "native",
                                     "description": "Specifies security provider to be used by the Gateway."
                                 }
                             },
