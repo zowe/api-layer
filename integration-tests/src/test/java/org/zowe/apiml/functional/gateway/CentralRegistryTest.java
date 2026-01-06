@@ -199,6 +199,8 @@ class CentralRegistryTest implements TestWithStartedInstances {
             .untilAsserted(() -> {
 
                 String body = callContainers();
+                System.out.println("this is the body");
+                System.out.println(body);
                 DocumentContext jsonContext = JsonPath.parse(body);
 
                 JSONArray gatewayBasePath =
