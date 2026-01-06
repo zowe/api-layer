@@ -674,7 +674,8 @@ task runHATests(type: Test) {
     systemProperties System.getProperties()
     useJUnitPlatform {
         includeTags(
-            'HATest'
+            'HATest',
+            'RateLimitTest'
         )
     }
 
