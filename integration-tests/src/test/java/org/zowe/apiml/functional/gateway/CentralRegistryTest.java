@@ -199,8 +199,8 @@ class CentralRegistryTest implements TestWithStartedInstances {
             .untilAsserted(() -> {
                 String body = callContainers();
                 assertThat(body)
-                    .as("central-apiml must be present in containers")
-                    .contains("\"apimlId\":\"central-apiml\"");
+                    .as("Domain gateway must be present in containers")
+                    .contains("\"serviceId\":\"domain-apiml\"");
             });
 
         String body = callContainers();
@@ -210,25 +210,23 @@ class CentralRegistryTest implements TestWithStartedInstances {
 
         JSONArray gatewayBasePath =
             jsonContext.read(
-                "$[?(@.apimlId == 'central-apiml')].services[?(@.serviceId == 'gateway')].basePath"
+                "$[0].services[?(@.serviceId == 'gateway')].basePath"
             );
 
 
         assertThat(gatewayBasePath)
             .withFailMessage("Central gateway basePath not ready yet. Payload:\n%s", body)
-            .isNotNull()
             .isNotEmpty();
         assertEquals("/", gatewayBasePath.get(0));
 
         JSONArray domainGatewayBasePath =
             jsonContext.read(
-                "$[?(@.apimlId == 'domain-apiml')].services[?(@.serviceId == 'gateway')].basePath"
+                "$[0].services[?(@.serviceId == 'domain-apiml')].basePath"
             );
         assertThat(domainGatewayBasePath)
             .withFailMessage("Domain gateway basePath not ready yet. Payload:\n%s", body)
-            .isNotNull()
             .isNotEmpty();
-        assertEquals("/" + DOMAIN_APIML, domainGatewayBasePath.get(0));
+        assertEquals("/domain-apiml", domainGatewayBasePath.get(0));
     }
 
     @SneakyThrows
