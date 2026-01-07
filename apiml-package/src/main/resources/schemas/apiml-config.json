@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2019-09/schema",
     "$id": "https://zowe.org/schemas/v2/apiml-config",
     "title": "apiml configuration",
-    "description": "Configuration properties for apiml, as specified within a configuration file such as zowe.yaml",
+    "description": "Configuration properties for APIML, as specified within a configuration file such as zowe.yaml",
     "type": "object",
     "properties": {
         "port": {
@@ -11,7 +11,8 @@
         },
         "debug": {
             "type": "boolean",
-            "description": "Enable debug logs in API ML service"
+            "description": "Enable debug logs in API ML service",
+            "default": false
         },
         "heap": {
             "type": "object",
@@ -19,11 +20,13 @@
             "properties": {
                 "init": {
                     "type": "integer",
-                    "description": "Initial heap size in MB."
+                    "description": "Initial heap size in MB.",
+                    "default": 32
                 },
                 "max": {
                     "type": "integer",
-                    "description": "Maximum heap size in MB."
+                    "description": "Maximum heap size in MB.",
+                    "default": 512
                 }
             }
         },

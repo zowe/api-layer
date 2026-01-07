@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2019-09/schema",
     "$id": "https://zowe.org/schemas/v2/gateway-config",
     "title": "gateway configuration",
-    "description": "Configuration properties for gateway, as specified within a configuration file such as zowe.yaml",
+    "description": "Configuration properties for Gateway Service, as specified within a configuration file such as zowe.yaml",
     "type": "object",
     "properties": {
         "port": {
@@ -11,7 +11,7 @@
         },
         "debug": {
             "type": "boolean",
-            "description": "Enable debug logs in gateway service",
+            "description": "Enable debug logs in Gateway service",
             "default": false
         },
         "sslDebug": {
@@ -30,7 +30,7 @@
                 "max": {
                     "type": "integer",
                     "description": "Maximum heap size in MB.",
-                    "max": 512
+                    "default": 512
                 }
             }
         },
@@ -491,12 +491,12 @@
             "properties": {
                 "maxConnectionsPerRoute": {
                     "type": "integer",
-                    "description": "How many connection should exists for single HTTP client?",
+                    "description": "How many connections should exist for single route?",
                     "default": 100
                 },
                 "maxTotalConnections": {
                     "type": "integer",
-                    "description": "How many connection should exists in total?",
+                    "description": "How many connections should exist in total?",
                     "default": 1000
                 },
                 "webSocket": {
@@ -665,7 +665,7 @@
         "tlsType": {
             "type": "string",
             "description": "List of supported SSL/TLS protocols",
-            "enum": ["TLSv1.1", "TLSv1.2", "TLSv1.3", "TLSv1.4"]
+            "enum": ["TLSv1.2", "TLSv1.3", "TLSv1.4"]
         }
     }
 }

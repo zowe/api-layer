@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2019-09/schema",
     "$id": "https://zowe.org/schemas/v2/discovery-config",
     "title": "discovery configuration",
-    "description": "Configuration properties for discovery, as specified within a configuration file such as zowe.yaml",
+    "description": "Configuration properties for Discovery Service, as specified within a configuration file such as zowe.yaml",
     "type": "object",
     "properties": {
         "apiml": {
@@ -20,7 +20,8 @@
         },
         "debug": {
             "type": "boolean",
-            "description": "Enable debug logs in discovery service"
+            "description": "Enable debug logs in Discovery service",
+            "default": false
         },
         "heap": {
             "type": "object",
@@ -28,11 +29,13 @@
             "properties": {
                 "init": {
                     "type": "integer",
-                    "description": "Initial heap size in MB."
+                    "description": "Initial heap size in MB.",
+                    "default": 32
                 },
                 "max": {
                     "type": "integer",
-                    "description": "Maximum heap size in MB."
+                    "description": "Maximum heap size in MB.",
+                    "default": 512
                 }
             }
         }
