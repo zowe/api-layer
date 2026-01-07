@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class CertificateLoggingUtils {
 
+    private static final String UNKNOWN = "Unknown";
+
     /**
      * Logs information about certificates that were ignored during authentication.
      * Compares the original set of certificates with the filtered set to identify ignored certificates.
@@ -45,6 +47,24 @@ public class CertificateLoggingUtils {
     ) {
         if (originalCerts == null || originalCerts.length == 0) return;
 
+        List<X509Certificate> ignoredCerts = identifyIgnoredCertificates(
+            originalCerts, filteredCerts, base64Encoder
+        );
+
+        if (!ignoredCerts.isEmpty()) {
+            logCertificateSummary(ignoredCerts, base64Encoder, logger);
+            logCertificateDetails(ignoredCerts, publicKeyCertificatesBase64, base64Encoder, logger);
+        }
+    }
+
+    /**
+     * Identifies certificates that were ignored by comparing original and filtered certificate arrays.
+     */
+    private static List<X509Certificate> identifyIgnoredCertificates(
+        X509Certificate[] originalCerts,
+        X509Certificate[] filteredCerts,
+        Function<X509Certificate, String> base64Encoder
+    ) {
         Set<String> originalKeys = Arrays.stream(originalCerts)
             .map(base64Encoder)
             .collect(Collectors.toSet());
@@ -58,41 +78,66 @@ public class CertificateLoggingUtils {
         Set<String> ignoredKeys = new HashSet<>(originalKeys);
         ignoredKeys.removeAll(filteredKeys);
 
-        if (!ignoredKeys.isEmpty()) {
-            List<X509Certificate> ignoredCerts = Arrays.stream(originalCerts)
-                .filter(cert -> ignoredKeys.contains(base64Encoder.apply(cert)))
-                .collect(Collectors.toList());
+        return Arrays.stream(originalCerts)
+            .filter(cert -> ignoredKeys.contains(base64Encoder.apply(cert)))
+            .toList();
+    }
 
-            logger.debug("Certificates ignored/not used for authentication: {}",
-                ignoredCerts.stream()
-                    .map(cert -> {
-                        String subjectDN = cert.getSubjectX500Principal() != null
-                            ? cert.getSubjectX500Principal().getName()
-                            : "Unknown";
-                        String issuerDN = cert.getIssuerX500Principal() != null
-                            ? cert.getIssuerX500Principal().getName()
-                            : "Unknown";
-                        String publicKeyBase64 = base64Encoder.apply(cert);
-                        return String.format("[Subject: %s, Issuer: %s, Public Key (first 20 chars): %s...]",
-                            subjectDN, issuerDN, publicKeyBase64.substring(0, Math.min(20, publicKeyBase64.length())));
-                    })
-                    .collect(Collectors.joining(", ")));
+    /**
+     * Logs a summary of all ignored certificates with their key details.
+     */
+    private static void logCertificateSummary(
+        List<X509Certificate> ignoredCerts,
+        Function<X509Certificate, String> base64Encoder,
+        Logger logger
+    ) {
+        logger.debug("Certificates ignored/not used for authentication: {}",
+            ignoredCerts.stream()
+                .map(cert -> formatCertificateInfo(cert, base64Encoder))
+                .collect(Collectors.joining(", ")));
+    }
 
-            ignoredCerts.forEach(cert -> {
-                String publicKeyBase64 = base64Encoder.apply(cert);
-                boolean isApimlCert = publicKeyCertificatesBase64.contains(publicKeyBase64);
-                String subjectDN = cert.getSubjectX500Principal() != null
-                    ? cert.getSubjectX500Principal().getName()
-                    : "Unknown";
-                if (isApimlCert) {
-                    logger.debug("Certificate with subject '{}' was ignored because it is an APIML Gateway certificate (not used for client authentication)",
-                        subjectDN);
-                } else {
-                    logger.debug("Certificate with subject '{}' was ignored for unknown reason (not in APIML cert set, but filtered by predicate)",
-                        subjectDN);
-                }
-            });
-        }
+    /**
+     * Formats certificate information for logging.
+     */
+    private static String formatCertificateInfo(
+        X509Certificate cert,
+        Function<X509Certificate, String> base64Encoder
+    ) {
+        String subjectDN = cert.getSubjectX500Principal() != null
+            ? cert.getSubjectX500Principal().getName()
+            : UNKNOWN;
+        String issuerDN = cert.getIssuerX500Principal() != null
+            ? cert.getIssuerX500Principal().getName()
+            : UNKNOWN;
+        String publicKeyBase64 = base64Encoder.apply(cert);
+        return String.format("[Subject: %s, Issuer: %s, Public Key (first 20 chars): %s...]",
+            subjectDN, issuerDN, publicKeyBase64.substring(0, Math.min(20, publicKeyBase64.length())));
+    }
+
+    /**
+     * Logs detailed information about each ignored certificate including the reason for ignoring.
+     */
+    private static void logCertificateDetails(
+        List<X509Certificate> ignoredCerts,
+        Set<String> publicKeyCertificatesBase64,
+        Function<X509Certificate, String> base64Encoder,
+        Logger logger
+    ) {
+        ignoredCerts.forEach(cert -> {
+            String publicKeyBase64 = base64Encoder.apply(cert);
+            boolean isApimlCert = publicKeyCertificatesBase64.contains(publicKeyBase64);
+            String subjectDN = cert.getSubjectX500Principal() != null
+                ? cert.getSubjectX500Principal().getName()
+                : UNKNOWN;
+            if (isApimlCert) {
+                logger.debug("Certificate with subject '{}' was ignored because it is an APIML Gateway certificate (not used for client authentication)",
+                    subjectDN);
+            } else {
+                logger.debug("Certificate with subject '{}' was ignored for unknown reason (not in APIML cert set, but filtered by predicate)",
+                    subjectDN);
+            }
+        });
     }
 }
 

@@ -152,6 +152,55 @@ class CategorizeCertsWebFilterTest {
 
         assertNotNull(gatewayCerts);
         assertEquals(0, gatewayCerts.length); // No gateway certs were found
+
+        // Verify no ignored certificate logs when only client cert is present
+        List<ILoggingEvent> logsList = logAppender.list;
+        boolean hasIgnoredLog = logsList.stream()
+            .anyMatch(event -> event.getMessage().contains("Certificates ignored/not used for authentication"));
+        assertFalse(hasIgnoredLog, "Should not log ignored certificates when only client cert is present");
+    }
+
+    @Test
+    void filter_standardPath_withMixedCertChain_logsOnlyIgnoredOnes() {
+        Map<String, Object> attributes = new HashMap<>();
+        X509Certificate[] certChain = {clientCert, gatewayCert};
+
+        when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
+        when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
+        when(mockExchange.getAttributes()).thenReturn(attributes);
+        when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
+        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
+        when(mockHeaders.getFirst(CLIENT_CERT_HEADER)).thenReturn("");
+        when(mockCertificateValidator.isForwardingEnabled()).thenReturn(false);
+
+        StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
+
+        X509Certificate[] clientAuthCerts = (X509Certificate[]) attributes.get(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
+        X509Certificate[] gatewayCerts = (X509Certificate[]) attributes.get(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
+
+        assertNotNull(clientAuthCerts);
+        assertEquals(1, clientAuthCerts.length);
+        assertEquals(clientCert, clientAuthCerts[0]);
+
+        assertNotNull(gatewayCerts);
+        assertEquals(1, gatewayCerts.length);
+        assertEquals(gatewayCert, gatewayCerts[0]);
+
+        // Verify logging for ignored certificates in mixed chain
+        List<ILoggingEvent> logsList = logAppender.list;
+        assertTrue(logsList.stream().anyMatch(event -> event.getMessage().contains("Certificates ignored/not used for authentication")),
+            "Should log ignored certificates in mixed chain");
+
+        String gatewayCertSubject = gatewayCert.getSubjectX500Principal().getName();
+        assertTrue(logsList.stream().anyMatch(event -> event.getFormattedMessage().contains(gatewayCertSubject)),
+            "Should mention ignored gateway certificate");
+
+        String clientCertSubject = clientCert.getSubjectX500Principal().getName();
+        long clientCertIgnoredMentions = logsList.stream()
+            .filter(event -> event.getMessage().contains("ignored"))
+            .filter(event -> event.getFormattedMessage().contains(clientCertSubject))
+            .count();
+        assertEquals(0, clientCertIgnoredMentions, "Should NOT log client certificate as ignored");
     }
 
     @Test
@@ -178,6 +227,19 @@ class CategorizeCertsWebFilterTest {
         assertNotNull(gatewayCerts);
         assertEquals(1, gatewayCerts.length);
         assertEquals(gatewayCert, gatewayCerts[0]);
+
+        List<ILoggingEvent> logsList = logAppender.list;
+        List<ILoggingEvent> ignoredCertLogs = logsList.stream()
+            .filter(event -> event.getMessage().contains("ignored"))
+            .toList();
+
+        assertFalse(ignoredCertLogs.isEmpty(), "Should have logged information about ignored certificates");
+        assertTrue(logsList.stream().anyMatch(event -> event.getMessage().contains("Certificates ignored/not used for authentication")),
+            "Should have summary log about ignored certificates");
+        assertTrue(logsList.stream().anyMatch(event -> event.getFormattedMessage().contains("is an APIML Gateway certificate")),
+            "Should explain that certificate IS an APIML Gateway certificate");
+        assertTrue(logsList.stream().anyMatch(event -> event.getFormattedMessage().contains(gatewayCert.getSubjectX500Principal().getName())),
+            "Should mention the gateway certificate subject");
     }
 
     @Test
@@ -240,127 +302,6 @@ class CategorizeCertsWebFilterTest {
         }
     }
 
-    @Test
-    void logIgnoredCertificates_whenGatewayCertIsIgnored_logsCorrectly() {
-        Map<String, Object> attributes = new HashMap<>();
-        X509Certificate[] certChain = {gatewayCert};
-
-        when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
-        when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
-        when(mockExchange.getAttributes()).thenReturn(attributes);
-        when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
-        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
-        when(mockHeaders.getFirst(CLIENT_CERT_HEADER)).thenReturn("");
-        when(mockCertificateValidator.isForwardingEnabled()).thenReturn(false);
-
-        StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
-
-        List<ILoggingEvent> logsList = logAppender.list;
-
-        List<ILoggingEvent> ignoredCertLogs = logsList.stream()
-            .filter(event -> event.getMessage().contains("ignored"))
-            .collect(Collectors.toList());
-
-        assertFalse(ignoredCertLogs.isEmpty(), "Should have logged information about ignored certificates");
-
-        boolean hasSummaryLog = logsList.stream()
-            .anyMatch(event -> event.getMessage().contains("Certificates ignored/not used for authentication"));
-        assertTrue(hasSummaryLog, "Should have summary log about ignored certificates");
-
-        boolean hasDetailedLog = logsList.stream()
-            .anyMatch(event -> event.getFormattedMessage().contains("is an APIML Gateway certificate"));
-        assertTrue(hasDetailedLog, "Should explain that certificate IS an APIML Gateway certificate");
-
-        String gatewayCertSubject = gatewayCert.getSubjectX500Principal().getName();
-        boolean mentionsSubject = logsList.stream()
-            .anyMatch(event -> event.getFormattedMessage().contains(gatewayCertSubject));
-        assertTrue(mentionsSubject, "Should mention the gateway certificate subject: " + gatewayCertSubject);
-    }
-
-    @Test
-    void logIgnoredCertificates_whenOnlyClientCert_noIgnoredLogs() {
-        Map<String, Object> attributes = new HashMap<>();
-        X509Certificate[] certChain = {clientCert};
-
-        when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
-        when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
-        when(mockExchange.getAttributes()).thenReturn(attributes);
-        when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
-        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
-        when(mockHeaders.getFirst(CLIENT_CERT_HEADER)).thenReturn("");
-        when(mockCertificateValidator.isForwardingEnabled()).thenReturn(false);
-
-        StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
-
-        List<ILoggingEvent> logsList = logAppender.list;
-
-        boolean hasIgnoredLog = logsList.stream()
-            .anyMatch(event -> event.getMessage().contains("Certificates ignored/not used for authentication"));
-        assertFalse(hasIgnoredLog, "Should NOT log ignored certificates when only client cert is present");
-    }
-
-    @Test
-    void logIgnoredCertificates_whenMixedCertChain_logsOnlyIgnoredOnes() {
-        Map<String, Object> attributes = new HashMap<>();
-        X509Certificate[] certChain = {clientCert, gatewayCert}; // Mixed chain
-
-        when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
-        when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
-        when(mockExchange.getAttributes()).thenReturn(attributes);
-        when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
-        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
-        when(mockHeaders.getFirst(CLIENT_CERT_HEADER)).thenReturn("");
-        when(mockCertificateValidator.isForwardingEnabled()).thenReturn(false);
-
-        StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
-
-        List<ILoggingEvent> logsList = logAppender.list;
-
-        boolean hasIgnoredLog = logsList.stream()
-            .anyMatch(event -> event.getMessage().contains("Certificates ignored/not used for authentication"));
-        assertTrue(hasIgnoredLog, "Should log ignored certificates in mixed chain");
-
-        String gatewayCertSubject = gatewayCert.getSubjectX500Principal().getName();
-        boolean mentionsGatewayCert = logsList.stream()
-            .anyMatch(event -> event.getFormattedMessage().contains(gatewayCertSubject));
-        assertTrue(mentionsGatewayCert, "Should mention ignored gateway certificate");
-
-        String clientCertSubject = clientCert.getSubjectX500Principal().getName();
-        long clientCertIgnoredMentions = logsList.stream()
-            .filter(event -> event.getMessage().contains("ignored"))
-            .filter(event -> event.getFormattedMessage().contains(clientCertSubject))
-            .count();
-        assertEquals(0, clientCertIgnoredMentions, "Should NOT log client certificate as ignored");
-    }
-
-    @Test
-    void logIgnoredCertificates_whenForwardingModeWithGatewayCertInHeader_logsIgnored() throws CertificateEncodingException {
-        Map<String, Object> attributes = new HashMap<>();
-        X509Certificate[] tlsChain = {clientCert, gatewayCert};
-        String headerCertBase64 = Base64.getEncoder().encodeToString(gatewayCert.getEncoded());
-
-        when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
-        when(mockSslInfo.getPeerCertificates()).thenReturn(tlsChain);
-        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
-        when(mockHeaders.getFirst(CLIENT_CERT_HEADER)).thenReturn(headerCertBase64);
-        when(mockExchange.getAttributes()).thenReturn(attributes);
-        when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
-
-        when(mockCertificateValidator.isForwardingEnabled()).thenReturn(true);
-        when(mockCertificateValidator.hasGatewayChain(tlsChain)).thenReturn(true);
-
-        StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
-
-        List<ILoggingEvent> logsList = logAppender.list;
-
-        boolean hasIgnoredLog = logsList.stream()
-            .anyMatch(event -> event.getMessage().contains("Certificates ignored/not used for authentication"));
-        assertTrue(hasIgnoredLog, "Should log that header certificate was ignored");
-
-        boolean explainsReason = logsList.stream()
-            .anyMatch(event -> event.getFormattedMessage().contains("is an APIML Gateway certificate"));
-        assertTrue(explainsReason, "Should explain why header certificate was ignored");
-    }
 
 
 }
