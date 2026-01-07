@@ -32,7 +32,6 @@ logging:
         org.zowe.apiml.caching: WARN
         org.springdoc: WARN
         org.springframework: WARN
-        org.springframework.boot: OFF
         org.infinispan: ERROR
         org.jgroups: ERROR
         com.netflix: WARN

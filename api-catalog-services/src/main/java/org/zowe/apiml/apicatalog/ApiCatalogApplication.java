@@ -26,6 +26,7 @@ import org.zowe.apiml.product.version.BuildInfo;
 @ComponentScan(value = {
     "org.zowe.apiml.apicatalog",
     "org.zowe.apiml.product.compatibility",
+    "org.zowe.apiml.product.eureka.web",
     "org.zowe.apiml.product.security",
     "org.zowe.apiml.product.web",
     "org.zowe.apiml.product.gateway",

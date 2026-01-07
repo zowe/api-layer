@@ -25,6 +25,7 @@ import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
     scanBasePackages = {
         "org.zowe.apiml.filter",
         "org.zowe.apiml.gateway",
+        "org.zowe.apiml.product.eureka.web",
         "org.zowe.apiml.product.web",
         "org.zowe.apiml.product.gateway",
         "org.zowe.apiml.product.version",

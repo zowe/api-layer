@@ -28,3 +28,9 @@ server:
         keyStorePassword: password
         trustStore: /docker/all-services.truststore.p12
         trustStorePassword: password
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "*"
