@@ -72,7 +72,6 @@ public class GatewayScanJob {
     }
 
     private void addLocalServices() {
-        log.warn("addLocalServices executed for {}", currentApimlId);
         String apimlIdKey = Optional.ofNullable(currentApimlId).orElse(serviceRegistration.getInstanceId());
         List<ServiceInfo> localServices = basicInfoService.getServicesInfo();
         gatewayIndexerService.putApimlServices(apimlIdKey, localServices);

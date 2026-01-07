@@ -204,8 +204,6 @@ class CentralRegistryTest implements TestWithStartedInstances {
             });
 
         String body = callContainers();
-        System.out.println("this is the body");
-        System.out.println(body);
         DocumentContext jsonContext = JsonPath.parse(body);
 
         JSONArray gatewayBasePath =
