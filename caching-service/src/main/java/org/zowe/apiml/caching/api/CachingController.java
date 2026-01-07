@@ -13,6 +13,7 @@ package org.zowe.apiml.caching.api;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,6 +29,7 @@ import org.zowe.apiml.message.core.MessageService;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
@@ -117,6 +119,14 @@ public class CachingController {
             mapKey, keyValue, request, HttpStatus.CREATED);
     }
 
+    private boolean isStorageIncompatible(Exception exception) {
+        if (!(exception instanceof StorageException)) {
+            return false;
+        }
+        StorageException storageException = (StorageException) exception;
+        return Messages.INCOMPATIBLE_STORAGE_METHOD.getKey().equals(storageException.getKey());
+    }
+
     @GetMapping(value = "/cache-list/{mapKey}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Retrieves all the items in the cache map",
         description = "Values returned for the calling service and specific cache map.")
@@ -128,7 +138,10 @@ public class CachingController {
                 try {
                     return new ResponseEntity<>(storage.getAllMapItems(s, mapKey), HttpStatus.OK);
                 } catch (Exception exception) {
-                    return handleIncompatibleStorageMethod(exception, request.getRequestURL());
+                    if (isStorageIncompatible(exception)) {
+                        return handleIncompatibleStorageMethod(exception, request.getRequestURL());
+                    }
+                    return handleInternalError(exception, request.getRequestURL());
                 }
             }
         ).orElseGet(this::getUnauthorizedResponse);
@@ -145,7 +158,10 @@ public class CachingController {
                 try {
                     return new ResponseEntity<>(storage.getAllMaps(s), HttpStatus.OK);
                 } catch (Exception exception) {
-                    return handleIncompatibleStorageMethod(exception, request.getRequestURL());
+                    if (isStorageIncompatible(exception)) {
+                        return handleIncompatibleStorageMethod(exception, request.getRequestURL());
+                    }
+                    return handleInternalError(exception, request.getRequestURL());
                 }
             }
         ).orElseGet(this::getUnauthorizedResponse);
@@ -199,6 +215,7 @@ public class CachingController {
 
 
     private ResponseEntity<Object> exceptionToResponse(StorageException exception) {
+        log.debug("Storage exception", exception);
         Message message = messageService.createMessage(exception.getKey(), (Object[]) exception.getParameters());
         return new ResponseEntity<>(message.mapToView(), exception.getStatus());
     }
@@ -298,12 +315,14 @@ public class CachingController {
     }
 
     private ResponseEntity<Object> handleInternalError(Exception exception, StringBuffer requestURL) {
+        log.debug("Internal error occurred", exception);
         Messages internalServerError = Messages.INTERNAL_SERVER_ERROR;
         Message message = messageService.createMessage(internalServerError.getKey(), requestURL, exception.getMessage(), exception.toString());
         return new ResponseEntity<>(message.mapToView(), internalServerError.getStatus());
     }
 
     private ResponseEntity<Object> handleIncompatibleStorageMethod(Exception exception, StringBuffer requestURL) {
+        log.debug("Incompatible storage method", exception);
         Messages internalServerError = Messages.INCOMPATIBLE_STORAGE_METHOD;
         Message message = messageService.createMessage(internalServerError.getKey(), requestURL, exception.getMessage(), exception.toString());
         return new ResponseEntity<>(message.mapToView(), internalServerError.getStatus());

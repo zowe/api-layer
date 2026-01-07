@@ -49,8 +49,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     @Qualifier("oidcJwkMapper")
     private final ObjectMapper objectMapper;
 
-    private byte[] salt;
-
     public void invalidateToken(String token) throws CachingServiceClientException, JsonProcessingException {
         String hashedValue = getHash(token);
         QueryResponse queryResponse = authenticationService.parseJwtWithSignature(token);
@@ -80,10 +78,11 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public boolean isInvalidated(String token) throws CachingServiceClientException {
+        byte[] salt = getSalt();
         QueryResponse parsedToken = authenticationService.parseJwtWithSignature(token);
-        String hashedToken = getHash(token);
-        String hashedUserId = getHash(parsedToken.getUserId().trim().toUpperCase());
-        List<String> hashedServiceIds = parsedToken.getScopes().stream().map(this::getHash).collect(Collectors.toList());
+        String hashedToken = getHash(token, salt);
+        String hashedUserId = getHash(parsedToken.getUserId().trim().toUpperCase(), salt);
+        List<String> hashedServiceIds = parsedToken.getScopes().stream().map(scope -> getHash(scope, salt)).collect(Collectors.toList());
 
         Map<String, Map<String, String>> cacheMap = cachingServiceClient.readAllMaps();
         if (cacheMap != null && !cacheMap.isEmpty()) {
@@ -143,16 +142,26 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         cachingServiceClient.evictRules(INVALID_SCOPES_KEY);
     }
 
+    private String getHash(String token, byte[] salt) throws CachingServiceClientException {
+        return getSecurePassword(token, salt);
+    }
+
     public String getHash(String token) throws CachingServiceClientException {
         return getSecurePassword(token, getSalt());
     }
 
-    private String initializeSalt() throws CachingServiceClientException {
+    String initializeSalt() throws CachingServiceClientException {
         String localSalt;
         try {
             CachingServiceClient.KeyValue keyValue = cachingServiceClient.read("salt");
             localSalt = keyValue.getValue();
         } catch (CachingServiceClientException e) {
+            log.debug("Cannot read salt.", e);
+            if (e.getCause() != null) {
+                // it could be because of timeout for example
+                throw e;
+            }
+            // a null value was returned
             byte[] newSalt = generateSalt();
             storeSalt(newSalt);
             localSalt = new String(newSalt);
@@ -180,11 +189,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public byte[] getSalt() throws CachingServiceClientException {
-        if (this.salt != null) {
-            return this.salt;
-        }
-        this.salt = initializeSalt().getBytes();
-        return this.salt;
+        return initializeSalt().getBytes();
     }
 
     private void storeSalt(byte[] salt) throws CachingServiceClientException {
