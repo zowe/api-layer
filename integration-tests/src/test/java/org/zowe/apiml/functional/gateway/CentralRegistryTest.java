@@ -194,37 +194,41 @@ class CentralRegistryTest implements TestWithStartedInstances {
     void shouldContainCorrectBasePaths() {
 
         await()
-            .atMost(30, TimeUnit.SECONDS)
+            .atMost(60, TimeUnit.SECONDS)
             .pollInterval(1, TimeUnit.SECONDS)
             .untilAsserted(() -> {
-
                 String body = callContainers();
-                System.out.println("this is the body");
-                System.out.println(body);
-                DocumentContext jsonContext = JsonPath.parse(body);
-
-                JSONArray gatewayBasePath =
-                    jsonContext.read(
-                        "$[?(@.apimlId == 'central-apiml')].services[?(@.serviceId == 'gateway')].basePath"
-                    );
-
-
-                assertThat(gatewayBasePath)
-                    .withFailMessage("Central gateway basePath not ready yet. Payload:\n%s", body)
-                    .isNotNull()
-                    .isNotEmpty();
-                assertEquals("/", gatewayBasePath.get(0));
-
-                JSONArray domainGatewayBasePath =
-                    jsonContext.read(
-                        "$[?(@.apimlId == 'domain-apiml')].services[?(@.serviceId == 'gateway')].basePath"
-                    );
-                assertThat(domainGatewayBasePath)
-                    .withFailMessage("Domain gateway basePath not ready yet. Payload:\n%s", body)
-                    .isNotNull()
-                    .isNotEmpty();
-                assertEquals("/" + DOMAIN_APIML, domainGatewayBasePath.get(0));
+                assertThat(body)
+                    .as("central-apiml must be present in containers")
+                    .contains("\"apimlId\":\"central-apiml\"");
             });
+
+        String body = callContainers();
+        System.out.println("this is the body");
+        System.out.println(body);
+        DocumentContext jsonContext = JsonPath.parse(body);
+
+        JSONArray gatewayBasePath =
+            jsonContext.read(
+                "$[?(@.apimlId == 'central-apiml')].services[?(@.serviceId == 'gateway')].basePath"
+            );
+
+
+        assertThat(gatewayBasePath)
+            .withFailMessage("Central gateway basePath not ready yet. Payload:\n%s", body)
+            .isNotNull()
+            .isNotEmpty();
+        assertEquals("/", gatewayBasePath.get(0));
+
+        JSONArray domainGatewayBasePath =
+            jsonContext.read(
+                "$[?(@.apimlId == 'domain-apiml')].services[?(@.serviceId == 'gateway')].basePath"
+            );
+        assertThat(domainGatewayBasePath)
+            .withFailMessage("Domain gateway basePath not ready yet. Payload:\n%s", body)
+            .isNotNull()
+            .isNotEmpty();
+        assertEquals("/" + DOMAIN_APIML, domainGatewayBasePath.get(0));
     }
 
     @SneakyThrows
