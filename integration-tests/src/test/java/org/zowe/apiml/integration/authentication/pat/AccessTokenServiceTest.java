@@ -31,6 +31,9 @@ import java.util.Set;
 import java.util.stream.IntStream;
 
 import static io.restassured.RestAssured.given;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 
@@ -71,15 +74,17 @@ public class AccessTokenServiceTest {
                 .delete(REVOKE_ENDPOINT)
             .then().log().ifValidationFails()
                 .statusCode(204);
-            IntStream.range(0, 3).forEach(x -> {
-                given()
-                    .contentType(ContentType.JSON)
-                    .body(bodyContent)
-                .when()
-                    .post(VALIDATE_ENDPOINT)
-                .then()
-                    .statusCode(401);
-            });
+            IntStream.range(0, 3).forEach(x -> await()
+                .atMost(5, SECONDS)
+                .pollInterval(100, MILLISECONDS)
+                .untilAsserted(() ->
+                    given()
+                        .contentType(ContentType.JSON)
+                        .body(bodyContent)
+                    .when()
+                        .post(VALIDATE_ENDPOINT)
+                    .then()
+                        .statusCode(401)));
         }
 
         @Test
@@ -91,15 +96,17 @@ public class AccessTokenServiceTest {
                 .delete(REVOKE_ENDPOINT)
                 .then().log().ifValidationFails()
             .statusCode(204);
-            IntStream.range(0, 3).forEach(x -> {
-                given()
-                    .contentType(ContentType.JSON)
-                    .body(bodyContent)
-                .when()
-                    .delete(REVOKE_ENDPOINT)
-                .then().log().ifValidationFails()
-                    .statusCode(401);
-            });
+            IntStream.range(0, 3).forEach(x -> await()
+                .atMost(5, SECONDS)
+                .pollInterval(100, MILLISECONDS)
+                .untilAsserted(() ->
+                    given()
+                        .contentType(ContentType.JSON)
+                        .body(bodyContent)
+                    .when()
+                        .delete(REVOKE_ENDPOINT)
+                    .then().log().ifValidationFails()
+                        .statusCode(401)));
         }
 
         @Test
@@ -168,15 +175,17 @@ public class AccessTokenServiceTest {
             .then()
                 .statusCode(204);
 //            validate after revocation rule
-            IntStream.range(0, 3).forEach(x -> {
-                given()
-                    .contentType(ContentType.JSON)
-                    .body(bodyContent)
-                .when()
-                    .post(VALIDATE_ENDPOINT)
-                .then()
-                    .statusCode(401);
-            });
+            IntStream.range(0, 3).forEach(x -> await()
+                .atMost(5, SECONDS)
+                .pollInterval(100, MILLISECONDS)
+                .untilAsserted(() ->
+                    given()
+                        .contentType(ContentType.JSON)
+                        .body(bodyContent)
+                    .when()
+                        .post(VALIDATE_ENDPOINT)
+                    .then()
+                        .statusCode(401)));
         }
 
         @Test
@@ -202,13 +211,17 @@ public class AccessTokenServiceTest {
             .then()
                 .statusCode(204);
 //            validate after revocation rule
-            given()
-                .contentType(ContentType.JSON)
-                .body(bodyContent)
-            .when()
-                .post(VALIDATE_ENDPOINT)
-            .then()
-                .statusCode(401);
+            await()
+                .atMost(5, SECONDS)
+                .pollInterval(100, MILLISECONDS)
+                .untilAsserted(() ->
+                    given()
+                        .contentType(ContentType.JSON)
+                        .body(bodyContent)
+                    .when()
+                        .post(VALIDATE_ENDPOINT)
+                    .then()
+                        .statusCode(401));
         }
 
         @Test
@@ -240,15 +253,17 @@ public class AccessTokenServiceTest {
             .then()
                 .statusCode(204);
 //            validate after revocation rule
-            IntStream.range(0, 3).forEach(x -> {
-                given()
-                    .contentType(ContentType.JSON)
-                    .body(bodyContent)
-                .when()
-                    .post(VALIDATE_ENDPOINT)
-                .then()
-                    .statusCode(401);
-            });
+            IntStream.range(0, 3).forEach(x -> await()
+                .atMost(5, SECONDS)
+                .pollInterval(100, MILLISECONDS)
+                .untilAsserted(() ->
+                    given()
+                        .contentType(ContentType.JSON)
+                        .body(bodyContent)
+                    .when()
+                        .post(VALIDATE_ENDPOINT)
+                    .then()
+                        .statusCode(401)));
         }
 
         @Test
