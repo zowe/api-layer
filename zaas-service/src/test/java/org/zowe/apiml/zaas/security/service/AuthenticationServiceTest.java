@@ -38,6 +38,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.product.constants.CoreService;
@@ -61,30 +62,12 @@ import java.security.PublicKey;
 import java.text.ParseException;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationServiceTest { //NOSONAR, needs to be public
@@ -443,7 +426,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             stubJWTSecurityForSign();
             authConfigurationProperties.getTokenProperties().setIssuer(ZOSMF);
             String token = authService.createJwtToken("user", "dom", null);
-            Mockito.doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, token);
+            doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, token);
 
             Exception exception = assertThrows(BadCredentialsException.class, () -> {
                 authService.invalidateJwtToken(token, false);
@@ -472,7 +455,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             authConfigurationProperties.getTokenProperties().setIssuer(ZOSMF);
             String token = authService.createJwtToken("user", DOMAIN, null);
             doNothing().when(restTemplate).delete("http://localhost:0/zaas/api/v1/auth/invalidate/" + token);
-            Mockito.doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, token);
+            doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, token);
 
             assertTrue(authService.invalidateJwtToken(token, true));
         }
@@ -673,6 +656,40 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate/{}", "a");
             verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate/{}", "b");
+        }
+
+        @Test
+        void givenHttpClientErrorOnInvalidateAnotherInstance_thenReturnFalse() {
+            String token = "jwtToken";
+
+            Application application = mock(Application.class);
+            ApplicationInfoManager applicationInfoManager = mock(ApplicationInfoManager.class);
+
+            InstanceInfo myInstance = mock(InstanceInfo.class);
+            InstanceInfo otherInstance = mock(InstanceInfo.class);
+
+            when(eurekaClient.getApplication(CoreService.ZAAS.getServiceId()))
+                .thenReturn(application);
+
+            when(eurekaClient.getApplicationInfoManager())
+                .thenReturn(applicationInfoManager);
+
+            when(applicationInfoManager.getInfo())
+                .thenReturn(myInstance);
+
+            when(myInstance.getInstanceId())
+                .thenReturn("myInstance");
+
+            when(application.getInstances())
+                .thenReturn(List.of(myInstance, otherInstance));
+
+            doThrow(HttpClientErrorException.BadRequest.class)
+                .when(restTemplate)
+                .delete(anyString());
+
+            Boolean result = authService.invalidateJwtToken(token, true);
+
+            assertFalse(result);
         }
 
     }

@@ -15,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.opentest4j.AssertionFailedError;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.HATest;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -82,12 +81,12 @@ class AuthenticationHaTest {
                     }
                 }
 
-                try {
-                    assertTrue(errors.isEmpty());
-                } catch (AssertionFailedError assertionFailedError) {
-                    throw new AssertionFailedError("Errors:" + errors.stream().map(Throwable::getMessage)
-                        .collect(Collectors.joining("\n")));
-                }
+                assertTrue(
+                    errors.isEmpty(),
+                    () -> "Errors:\n" + errors.stream()
+                        .map(Throwable::getMessage)
+                        .collect(Collectors.joining("\n"))
+                );
             }
         }
     }
