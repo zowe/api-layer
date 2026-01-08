@@ -15,5 +15,12 @@ public interface ServiceConfiguration {
     String getScheme();
     String getHost();
     int getPort();
+    String getServiceId();
+    default String getServletContext() {
+        return "/";
+    }
+    default boolean isBasicSupported() {
+        return true;
+    }
 
 }

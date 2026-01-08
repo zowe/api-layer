@@ -14,31 +14,32 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import net.minidev.json.JSONArray;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.Credentials;
-import org.zowe.apiml.util.config.DiscoverableClientConfiguration;
-import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import org.zowe.apiml.util.config.SslContext;
+import org.springframework.web.util.DefaultUriBuilderFactory;
+import org.zowe.apiml.util.config.*;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
+import static io.netty.handler.codec.http.HttpHeaders.Values.APPLICATION_JSON;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Checks and waits until the testing environment is ready to be tested.
@@ -48,19 +49,27 @@ public class ApiMediationLayerStartupChecker {
 
     private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
 
+    private static final long POOL_INTERVAL = 5;
+
     private final GatewayServiceConfiguration gatewayConfiguration;
     private final DiscoverableClientConfiguration discoverableClientConfiguration;
     private final DiscoveryServiceConfiguration discoveryServiceConfiguration;
+    private final CachingServiceConfiguration cachingServiceConfiguration;
     private final Credentials credentials;
+    private final String credentialsHeader;
     private final List<Service> servicesToCheck = new ArrayList<>();
+    private final List<Instance> instancesToCheck = new ArrayList<>();
     private final String healthEndpoint = "/application/health";
 
+    private int minimumEurekaVersion;
 
     public ApiMediationLayerStartupChecker() {
         gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         credentials = ConfigReader.environmentConfiguration().getCredentials();
+        credentialsHeader = "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes());
         discoverableClientConfiguration = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration();
         discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
+        cachingServiceConfiguration = ConfigReader.environmentConfiguration().getCachingServiceConfiguration();
 
         servicesToCheck.add(new Service("Gateway", "$.status"));
         if (!IS_MODULITH_ENABLED) {
@@ -68,15 +77,42 @@ public class ApiMediationLayerStartupChecker {
         }
         servicesToCheck.add(new Service("Api Catalog", "$.components.gateway.details.apicatalog"));
         servicesToCheck.add(new Service("Discovery Service", "$.components.gateway.details.discovery"));
+
+        instancesToCheck.addAll(Instance.of(discoveryServiceConfiguration));
+        instancesToCheck.addAll(Instance.of(gatewayConfiguration, "gateway.instances"));
+        instancesToCheck.addAll(Instance.of(discoverableClientConfiguration, "discoverableclient.instances"));
+        instancesToCheck.addAll(Instance.of(discoverableClientConfiguration, "discoverableclient.instances"));
+        instancesToCheck.addAll(Instance.of(cachingServiceConfiguration, "caching.instances"));
+    }
+
+    void initSsl() {
+        if (SslContext.sslClientCertValid == null) {
+            TlsConfiguration tlsCfg = ConfigReader.environmentConfiguration().getTlsConfiguration();
+            SslContextConfigurer sslContextConfigurer = new SslContextConfigurer(tlsCfg.getKeyStorePassword(), tlsCfg.getClientKeystore(), tlsCfg.getKeyStore());
+            try {
+                SslContext.prepareSslAuthentication(sslContextConfigurer);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    void awaitFor(Callable<Boolean> check, int durationMin) {
+        await()
+            .atMost(durationMin, MINUTES)
+            .pollDelay(0, SECONDS)
+            .pollInterval(POOL_INTERVAL, SECONDS)
+            .until(check);
     }
 
     public void waitUntilReady() {
-        long poolInterval = 5;
-        await()
-            .atMost(10, MINUTES)
-            .pollDelay(0, SECONDS)
-            .pollInterval(poolInterval, SECONDS)
-            .until(this::areAllServicesUp);
+        initSsl();
+
+        awaitFor(this::areAllInstancesOnboarded, 2);
+        this.minimumEurekaVersion = getEurekaVersion(Instance.of(discoveryServiceConfiguration).get(0));
+        assertTrue(this.minimumEurekaVersion >= 0, "Cannot obtain eurekaVersion from Discovery service");
+        awaitFor(this::areAllInstancesRegistryUpToDate, 1);
+        awaitFor(this::areAllServicesUp, 1);
     }
 
     private DocumentContext getDocumentAsContext(HttpGet request) {
@@ -99,6 +135,75 @@ public class ApiMediationLayerStartupChecker {
         }
     }
 
+    private boolean areAllInstanceOnInEureka(DocumentContext documentContext) {
+        Set<String> onboarded = ((JSONArray) documentContext.read("applications.application.*.instance.*.instanceId")).stream()
+            .map(String.class::cast)
+            .map(String::toLowerCase)
+            .collect(Collectors.toSet());
+        Set<String> expectedInstanceIds = instancesToCheck.stream()
+            .map(Instance::getInstanceId)
+            .map(String::toLowerCase)
+            .collect(Collectors.toSet());
+
+        List<String> missing = expectedInstanceIds.stream().filter(id -> !onboarded.contains(id)).sorted().toList();
+        if (missing.isEmpty()) {
+            return true;
+        }
+
+        log.debug("{} services has not onboarded yet: {}", missing.size(), StringUtils.join(missing, ", "));
+        return false;
+    }
+
+    private boolean areAllInstancesOnboarded() {
+        HttpGet requestToEurekaApps = new HttpGet(HttpRequestUtils.getUriFromService(discoveryServiceConfiguration, "/eureka/apps"));
+        requestToEurekaApps.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
+        try (CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build()) {
+            var response = client.execute(requestToEurekaApps);
+            var entity = response.getEntity();
+            if (entity != null) {
+                String entityString = EntityUtils.toString(entity);
+                log.debug("eureka/apps: {}", entityString);
+                return areAllInstanceOnInEureka(JsonPath.parse(entityString));
+            } else {
+                log.debug("eureka/apps entity is null");
+            }
+        } catch (Exception e) {
+            log.error("Cannot call Eureka apps", e);
+        }
+        return false;
+    }
+
+    private int getEurekaVersion(Instance instance) {
+        HttpGet requestToEurekaApps = new HttpGet(instance.getEurekaVersionUrl());
+        requestToEurekaApps.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
+        if (instance.serviceConfiguration.isBasicSupported()) {
+            requestToEurekaApps.addHeader(HttpHeaders.AUTHORIZATION, credentialsHeader);
+        }
+        try (CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build()) {
+            var doc = JsonPath.parse(EntityUtils.toString(client.execute(requestToEurekaApps).getEntity()));
+            return doc.read("version");
+        } catch (Exception e) {
+            log.debug("Eurekaversion endpoint is on accessible on " + instance.getInstanceId(), e);
+        }
+        return -1;
+    }
+
+    private boolean areAllInstancesRegistryUpToDate() {
+        List<String> notUpdated = new ArrayList<>();
+        for (Instance instance : instancesToCheck) {
+            int version = getEurekaVersion(instance);
+            if (version < this.minimumEurekaVersion) {
+                notUpdated.add(instance.getInstanceId());
+            }
+        }
+        if (notUpdated.isEmpty()) {
+            return true;
+        }
+
+        log.debug("There are instances that has not been updated yet: {}", StringUtils.join(notUpdated, ", "));
+        return false;
+    }
+
     private boolean areAllServicesUp() {
         try {
             var gatewayHosts = gatewayConfiguration.getHost().split(",");
@@ -106,8 +211,8 @@ public class ApiMediationLayerStartupChecker {
             // If second one does not exist, redundant call and check to same gateway
             var requestToGateway2 = HttpRequestUtils.getRequest(gatewayHosts.length > 1 ? gatewayHosts[1] : gatewayHosts[0], healthEndpoint);
 
-            requestToGateway1.addHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes()));
-            requestToGateway2.addHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes()));
+            requestToGateway1.addHeader("Authorization", credentialsHeader);
+            requestToGateway2.addHeader("Authorization", credentialsHeader);
             DocumentContext context1 = getDocumentAsContext(requestToGateway1);
             DocumentContext context2 = getDocumentAsContext(requestToGateway2);
 
@@ -158,7 +263,7 @@ public class ApiMediationLayerStartupChecker {
                 for (int i = 0; i < Math.min(internalPorts.length, hosts.length); i++) {
                     log.debug("Trying to access the Gateway at port {}", internalPorts[i]);
                     requestToGateway1 = HttpRequestUtils.getRequest(healthEndpoint);
-                    requestToGateway1.addHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes()));
+                    requestToGateway1.addHeader("Authorization", credentialsHeader);
                     var response = HttpClientUtils.client().execute(requestToGateway1);
 
                     if (response.getStatusLine().getStatusCode() != 200) {
@@ -205,7 +310,7 @@ public class ApiMediationLayerStartupChecker {
         } else {
             requestToZaas = new HttpGet(HttpRequestUtils.getUriFromGateway(healthEndpoint));
         }
-        requestToZaas.addHeader("Authorization", "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes()));
+        requestToZaas.addHeader("Authorization", credentialsHeader);
         DocumentContext zaasContext = getDocumentAsContext(requestToZaas);
         if (zaasContext == null) {
             return false;
@@ -233,4 +338,69 @@ public class ApiMediationLayerStartupChecker {
         String name;
         String path;
     }
+
+    @Data
+    private static class Instance {
+
+        private final String hostname;
+        private final String serviceId;
+        private final int port;
+        private final ServiceConfiguration serviceConfiguration;
+
+        Instance(String hostname, String serviceId, int port, ServiceConfiguration serviceConfiguration) {
+            this.hostname = hostname;
+            this.serviceId = serviceId;
+            this.port = port;
+            this.serviceConfiguration = serviceConfiguration;
+        }
+
+        static List<Instance> of(ServiceConfiguration serviceConfiguration) {
+            return Arrays.stream(
+                Optional.ofNullable(serviceConfiguration)
+                    .map(ServiceConfiguration::getHost)
+                    .orElse("")
+                    .split("[,;]")
+                )
+                .map(String::trim)
+                .map(String::toLowerCase)
+                .map(host -> new Instance(host, serviceConfiguration.getServiceId(), serviceConfiguration.getPort(), serviceConfiguration))
+                .toList();
+        }
+
+        static List<Instance> of(ServiceConfiguration serviceConfiguration, String countProperty) {
+            List<Instance> allInstances = of(serviceConfiguration);
+            String countString = System.getProperty(countProperty);
+            if (StringUtils.isNotBlank(countString)) {
+                int count = Integer.parseInt(countString);
+                if ((count >= 0) && (count <= allInstances.size())) {
+                    return allInstances.subList(0, count);
+                }
+                log.warn("Invalid count of services: {}", countString);
+            }
+            return allInstances;
+        }
+
+        String getUrl(String basePath) {
+            return new DefaultUriBuilderFactory().builder()
+                .scheme("https")
+                .host(this.hostname)
+                .port(this.port)
+                .path(this.serviceConfiguration.getServletContext() + basePath)
+                .toUriString();
+        }
+
+        public String getHealthEndpointUrl() {
+            return getUrl("application/health");
+        }
+
+        public String getEurekaVersionUrl() {
+            return getUrl("application/eurekaversion");
+        }
+
+        public String getInstanceId() {
+            return (this.hostname + ":" + this.serviceId + ":" + this.port).toLowerCase();
+        }
+
+    }
+
 }

@@ -13,11 +13,13 @@ package org.zowe.apiml.util.config;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.zowe.apiml.product.constants.CoreService;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class GatewayServiceConfiguration implements ServiceConfiguration {
+
     private String scheme;
     private String host;
     private String dvipaHost;
@@ -28,4 +30,9 @@ public class GatewayServiceConfiguration implements ServiceConfiguration {
     private String servicesEndpoint;
     private int bucketCapacity;
     private String authProvider;
+
+    public String getServiceId() {
+        return CoreService.GATEWAY.getServiceId();
+    }
+
 }
