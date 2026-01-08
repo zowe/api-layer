@@ -102,11 +102,16 @@ Below is an example of the configuration.
         apiml.service.description: 'The Proxy Server is an HTTP HTTPS, and Websocket server built upon NodeJS and ExpressJS.'
     
     ssl:
+      p12File: ssl/localhost.keystore.p12
+      keyPassword: password
+    ```
+    A certificate and private key (PEM format) configuration is also supported:
+    ```yaml
+    ssl:
       certificate: ssl/localhost.keystore.cer
       keystore: ssl/localhost.keystore.key
       caFile: ssl/localhost.pem
       keyPassword: password
-    
     ```
 Alternatively, you can also pass the config as a json to the client:
   ```js

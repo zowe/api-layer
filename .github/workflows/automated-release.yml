@@ -8,7 +8,7 @@ on:
     workflow_dispatch:
         inputs:
             scope:
-                description: 'Specify scope that is to be used.'
+                description: 'Version component to increment for the next SNAPSHOT (patch: x.y.Z, minor: x.Y.0, major: X.0.0)'
                 required: true
                 type: choice
                 options:
