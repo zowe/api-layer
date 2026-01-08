@@ -36,6 +36,9 @@ apiCatalogServiceConfiguration:
     instances: 2
 cachingServiceConfiguration:
     url:
+    scheme: https
+    host: apiml,apiml-2
+    port: 10010
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password

@@ -107,10 +107,37 @@ class CachingServiceClientTest {
         }
 
         @Test
-        void readWithExceptonFromRestTemplateThrowsDefined() {
+        void readWithExceptionFromRestTemplateThrowsDefined() {
             doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
             assertThrows(CachingServiceClientException.class, () -> underTest.read(keyToRead));
         }
+
+        @Test
+        void ioException() {
+            RestClientException ioException = new RestClientException("io");
+            doThrow(ioException).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(CachingServiceClient.KeyValue.class));
+            CachingServiceClientException e = assertThrows(CachingServiceClientException.class, () -> underTest.read(keyToRead));
+            assertSame(e.getCause(), ioException);
+        }
+
+        /* TODO: replacement for webFlux
+        @Test
+        void notFound() {
+            doThrow(HttpClientErrorException.create("record not found", HttpStatus.NOT_FOUND, "notFound", new HttpHeaders(), new byte[0], StandardCharsets.UTF_8))
+                .when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(CachingServiceClient.KeyValue.class));
+            CachingServiceClientException e = assertThrows(CachingServiceClientException.class, () -> underTest.read(keyToRead));
+            assertNull(e.getCause());
+        }
+
+        @Test
+        void noAvailable() {
+            Exception responseException = HttpClientErrorException.create("service not available", HttpStatus.SERVICE_UNAVAILABLE, "503", new HttpHeaders(), new byte[0], StandardCharsets.UTF_8);
+            doThrow(responseException).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(CachingServiceClient.KeyValue.class));
+            CachingServiceClientException e = assertThrows(CachingServiceClientException.class, () -> underTest.read(keyToRead));
+            assertSame(e.getCause(), responseException);
+        }
+         */
+
     }
 
     @Nested

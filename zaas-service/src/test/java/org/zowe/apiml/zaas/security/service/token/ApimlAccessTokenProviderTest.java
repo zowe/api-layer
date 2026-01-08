@@ -28,6 +28,7 @@ import org.zowe.apiml.zaas.cache.CachingServiceClient;
 import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.*;
@@ -262,6 +263,28 @@ class ApimlAccessTokenProviderTest {
             .setIssuer(QueryResponse.Source.ZOWE_PAT.value)
             .setId(UUID.randomUUID().toString())
             .addClaims(claims).compact();
+    }
+
+    @Nested
+    class SaltInitialization {
+
+        @Test
+        void givenUnexpectedError_whenReadSalt_thenThrowIt() {
+            Exception unexpectedError = new CachingServiceClientException("unexpected error", new IOException("e.g. timeout"));
+            doThrow(unexpectedError).when(cachingServiceClient).read("salt");
+            Exception thrownException = assertThrows(CachingServiceClientException.class, accessTokenProvider::initializeSalt);
+            assertSame(unexpectedError, thrownException);
+        }
+
+        @Test
+        void givenNoSaltInCache_whenInitializing_thenCreateNewOne() {
+            Exception noRecordException = new CachingServiceClientException("no record");
+            doThrow(noRecordException).when(cachingServiceClient).read("salt");
+            String salt = accessTokenProvider.initializeSalt();
+            assertEquals(16, salt.length());
+            verify(cachingServiceClient, times(1)).create(any());
+        }
+
     }
 
 }

@@ -221,7 +221,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                type: ["normal", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic"]
+                type: ["normal", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic", "caching-chaotic"]
         services:
             apiml:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
@@ -239,6 +239,11 @@ jobs:
                     APIML_SERVICE_HOSTNAME: apiml
                     logbackService: ZWEAGW1
                     APIML_HEALTH_PROTECTED: false
+                    CACHING_STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_BIND_ADDRESS: caching-service
+                    JGROUPS_KEYEXCHANGE_PORT: 7601
             apiml-2:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -255,6 +260,11 @@ jobs:
                     APIML_SERVICE_HOSTNAME: apiml-2
                     logbackService: ZWEAGW2
                     APIML_HEALTH_PROTECTED: false
+                    CACHING_STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_BIND_ADDRESS: caching-service-2
+                    JGROUPS_KEYEXCHANGE_PORT: 7601
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -318,6 +328,16 @@ jobs:
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
                     --info -Denvironment.config=-docker-modulith-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Run Caching Chaotic HA Tests
+                if: ${{ 'caching-chaotic' == matrix.type }}
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingServiceTests
+                    --info -Denvironment.config=-docker-modulith-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false -Denvironment.modulith=true -Denvironment.chaotic=true
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -1523,7 +1543,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                type: ["normal", "discovery-chaotic", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic"]
+                type: ["normal", "discovery-chaotic", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic", "caching-chaotic"]
         services:
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
@@ -1538,6 +1558,31 @@ jobs:
                     APIML_HEALTH_PROTECTED: false
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    CACHING_STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_BIND_ADDRESS: caching-service
+                    JGROUPS_KEYEXCHANGE_PORT: 7601
+                    APIML_SERVICE_HOSTNAME: caching-service
+            caching-service-2:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    CACHING_STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_BIND_ADDRESS: caching-service-2
+                    JGROUPS_KEYEXCHANGE_PORT: 7601
+                    APIML_SERVICE_HOSTNAME: caching-service-2
+            caching-service-3:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    CACHING_STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_BIND_ADDRESS: caching-service-3
+                    JGROUPS_KEYEXCHANGE_PORT: 7601
+                    APIML_SERVICE_HOSTNAME: caching-service-3
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client-2:
@@ -1638,6 +1683,16 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
                     --info -Denvironment.config=-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Run Caching Chaotic HA Tests
+                if: ${{ 'caching-chaotic' == matrix.type }}
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingServiceTests
+                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false -Denvironment.chaotic=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}

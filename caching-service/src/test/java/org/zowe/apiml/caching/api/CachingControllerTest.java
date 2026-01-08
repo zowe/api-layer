@@ -19,10 +19,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.zowe.apiml.caching.model.KeyValue;
-import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
+import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
@@ -488,6 +488,25 @@ class CachingControllerTest {
                 .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST)))
                 .verifyComplete();
         }
+
+        @Test
+        void givenInvalidStorage_thenResponseBadRequest() throws StorageException {
+            when(mockStorage.getAllMapItems(any(), any())).thenThrow(new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), HttpStatus.BAD_REQUEST));
+
+            StepVerifier.create(underTest.getAllMapItems(MAP_KEY, mockRequest))
+                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST)))
+                .verifyComplete();
+        }
+
+        @Test
+        void givenGenericErrorReadingStorage_thenResponseInternalError() throws StorageException {
+            when(mockStorage.getAllMapItems(any(), any())).thenThrow(new RuntimeException("error"));
+
+            StepVerifier.create(underTest.getAllMapItems(MAP_KEY, mockRequest))
+                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
+                .verifyComplete();
+        }
+
     }
 
     @Nested
@@ -523,4 +542,73 @@ class CachingControllerTest {
                 .verifyComplete();
         }
     }
+
+    @Nested
+    class WhenGetAll {
+
+        @Nested
+        class MapItems {
+
+            @Test
+            void givenWrongStorage_whenGetAllMapItems_thenReturn400() {
+                Exception storageException = new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+                doThrow(storageException).when(mockStorage).getAllMapItems(any(), any());
+
+                StepVerifier.create(underTest.evictRules(MAP_KEY, mockRequest))
+                    .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST)))
+                    .verifyComplete();
+            }
+
+            @Test
+            void givenUnexpectedError_whenGetAllMapItems_thenReturn500() {
+                doThrow(new RuntimeException("unexpected")).when(mockStorage).getAllMapItems(any(), any());
+                StepVerifier.create(underTest.getAllMapItems(MAP_KEY, mockRequest))
+                    .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
+                    .verifyComplete();
+            }
+
+            @Test
+            void givenUOtherStorageException_whenGetAllMapItems_thenReturn500() {
+                Exception storageException = new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus());
+                doThrow(storageException).when(mockStorage).getAllMapItems(any(), any());
+                StepVerifier.create(underTest.getAllMapItems(MAP_KEY, mockRequest))
+                    .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
+                    .verifyComplete();
+            }
+
+        }
+
+        @Nested
+        class Maps {
+
+            @Test
+            void givenWrongStorage_whenGetAllMapItems_thenReturn400() {
+                Exception storageException = new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+                doThrow(storageException).when(mockStorage).getAllMaps(any());
+                StepVerifier.create(underTest.getAllMaps(mockRequest))
+                    .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST)))
+                    .verifyComplete();
+            }
+
+            @Test
+            void givenUnexpectedError_whenGetAllMapItems_thenReturn500() {
+                doThrow(new RuntimeException("unexpected")).when(mockStorage).getAllMaps(any());
+                StepVerifier.create(underTest.getAllMaps(mockRequest))
+                    .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
+                    .verifyComplete();
+            }
+
+            @Test
+            void givenUOtherStorageException_whenGetAllMapItems_thenReturn500() {
+                Exception storageException = new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus());
+                doThrow(storageException).when(mockStorage).getAllMaps(any());
+                StepVerifier.create(underTest.getAllMaps(mockRequest))
+                    .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
+                    .verifyComplete();
+            }
+
+        }
+
+    }
+
 }
