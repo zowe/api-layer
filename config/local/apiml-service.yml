@@ -89,3 +89,12 @@ otel:
 #                capture-mdc-attributes: '*'
 #        logback-mdc:
 #            add-baggage: true
+
+spring:
+    cloud:
+        gateway:
+            server:
+                webflux:
+                    httpclient:
+                        websocket:
+                            max-frame-payload-length: 3145728

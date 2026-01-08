@@ -39,6 +39,10 @@ spring:
         web-application-type: reactive
         allow-bean-definition-overriding: true
 
+otel:
+    sdk:
+        disabled: true
+
 springdoc:
     api-docs:
         path: /v3/api-docs
@@ -189,6 +193,7 @@ apiml:
     service:
         apimlId: apiml1
         corsEnabled: true
+        corsAllowedEndpoints: /gateway/**,/apicatalog/**,/cachingservice/**,/v3/api-docs/**
         allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
         forwardClientCertEnabled: false
@@ -303,8 +308,8 @@ logging:
         reactor.netty: WARN
         reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
-        org.infinispan: WARN
-        org.jgroups: WARN
+        org.infinispan: ERROR
+        org.jgroups: ERROR
 
 management:
     endpoint:
@@ -318,6 +323,7 @@ management:
             base-path: /application
             exposure:
                 include: health,info
+
 ---
 spring.config.activate.on-profile: debug
 
@@ -343,6 +349,7 @@ logging:
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.springframework.security: TRACE
         org.springframework.security.web: TRACE
+        org.springdoc.core: DEBUG
         org.zowe.apiml: DEBUG
         reactor.netty: DEBUG
         reactor.netty.http.client: DEBUG

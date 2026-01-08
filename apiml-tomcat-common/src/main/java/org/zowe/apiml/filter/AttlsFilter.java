@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.zowe.apiml.util.ServletRequestUtils;
 import org.zowe.commons.attls.InboundAttls;
 
 import java.io.ByteArrayInputStream;
@@ -34,17 +35,24 @@ import java.util.Base64;
 @Slf4j
 public class AttlsFilter extends OncePerRequestFilter {
 
+    private static final String CLIENT_CERT_HEADER = "Client-Cert";
+
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        try {
-            byte[] certificate = InboundAttls.getCertificate();
-            if (certificate != null && certificate.length > 0) {
-                log.debug("Certificate length: {}", certificate.length);
-                populateRequestWithCertificate(request, certificate);
+        if (ServletRequestUtils.isClientCertificateIgnored(request)) {
+            log.debug("Client certificate is ignored.");
+        } else {
+            log.debug("Updating request with client certificate from the AT-TLS context.");
+            try {
+                byte[] certificate = InboundAttls.getCertificate();
+                if (certificate != null && certificate.length > 0) {
+                    log.debug("Certificate length: {}", certificate.length);
+                    populateRequestWithCertificate(request, certificate);
+                }
+            } catch (Exception e) {
+                logger.error("Not possible to get certificate from AT-TLS context", e);
+                AttlsErrorHandler.handleError(response, "Exception reading certificate");
             }
-        } catch (Exception e) {
-            logger.error("Not possible to get certificate from AT-TLS context", e);
-            AttlsErrorHandler.handleError(response, "Exception reading certificate");
         }
         filterChain.doFilter(request, response);
     }

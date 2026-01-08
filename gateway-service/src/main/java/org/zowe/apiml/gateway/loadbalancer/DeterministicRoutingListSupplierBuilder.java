@@ -10,11 +10,12 @@
 
 package org.zowe.apiml.gateway.loadbalancer;
 
-import io.jsonwebtoken.Clock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplierBuilder;
 import org.springframework.cloud.loadbalancer.support.LoadBalancerClientFactory;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache;
+
+import java.time.Clock;
 
 @RequiredArgsConstructor
 public class DeterministicRoutingListSupplierBuilder {
@@ -24,7 +25,7 @@ public class DeterministicRoutingListSupplierBuilder {
     public ServiceInstanceListSupplierBuilder withStickySessionRouting(LoadBalancerCache cache, int expirationTime, Clock clock) {
         ServiceInstanceListSupplierBuilder.DelegateCreator creator = (context, delegate) -> {
             LoadBalancerClientFactory loadBalancerClientFactory = context.getBean(LoadBalancerClientFactory.class);
-            return new DeterministicLoadBalancer(delegate, loadBalancerClientFactory, cache, clock, expirationTime);
+            return new DeterministicLoadBalancer(delegate, loadBalancerClientFactory, cache, expirationTime, clock);
         };
         builder.with(creator);
         return builder;

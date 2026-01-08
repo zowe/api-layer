@@ -27,8 +27,12 @@ import java.util.List;
 public class TomcatConfiguration {
 
     @Bean
+    public TomcatConnectorCustomizer urlTomcatCustomizer() {
+        return new UrlTomcatCustomizer();
+    }
+
+    @Bean
     public ServletWebServerFactory servletContainer(List<TomcatConnectorCustomizer> connectorCustomizers) {
-        connectorCustomizers.add(new UrlTomcatCustomizer());
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         tomcat.setProtocol(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
         tomcat.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));

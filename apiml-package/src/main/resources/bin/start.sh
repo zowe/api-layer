@@ -115,21 +115,35 @@ echo "jar file: "${JAR_FILE}
 # script assumes it's in the apiml component directory and common_lib needs to be relative path
 
 if [ -z "${CMMN_LB}" ]; then
-    COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all.jar"
+    COMMON_LIB="../apiml-common-lib/bin/BOOT-INF/lib/"
 else
     COMMON_LIB="${CMMN_LB}"
+fi
+
+# script assumes it's in the apiml component directory and jvm.security.override.properties needs to be relative path
+JVM_SECURITY_PROPERTIES=""
+if [ "${JVM_SECURITY_PROPERTIES_OVERRIDE:-false}" = "true" ]; then
+    JVM_SECURITY_PROPERTIES="-Djava.security.properties=../apiml-common-lib/bin/jvm.security.override.properties"
 fi
 
 if [ -z "${LIBRARY_PATH}" ]; then
     LIBRARY_PATH="../common-java-lib/bin/"
 fi
 
-if [ "${ZWE_configs_debug:-${ZWE_components_gateway_debug:-${ZWE_components_discovery_debug:-false}}}" = "true" ]; then
+add_profile() {
+    new_profile=$1
+    if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+    fi
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}${new_profile}"
+}
+
+if [ "${ZWE_components_gateway_debug:-${ZWE_configs_debug:-false}}" = "true" ]; then
     # TODO should this be a merge of the profiles in gateway and discovery (and other modules later added?)
     if [ -n "${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}" ]; then
-        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}},"
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}"
     fi
-    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}debug"
+    add_profile "debug"
 fi
 
 if [  "${ZWE_configs_apiml_security_auth_uniqueCookie:-${ZWE_components_gateway_apiml_security_auth_uniqueCookie:-false}}" = "true" ]; then
@@ -180,14 +194,6 @@ if [ -n "${ZWE_configs_logging_config}" ]; then
     LOGBACK="-Dlogging.config=${ZWE_configs_logging_config}"
 fi
 
-add_profile() {
-    new_profile=$1
-    if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
-        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
-    fi
-    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}${new_profile}"
-}
-
 ATTLS_SERVER_ENABLED="false"
 ATTLS_CLIENT_ENABLED="false"
 
@@ -201,6 +207,7 @@ fi
 if [ "${ATTLS_SERVER_ENABLED}" = "true" ]; then
   add_profile "attlsServer"
   ZWE_configs_server_ssl_enabled="false"
+  ZWE_configs_apiml_service_corsEnabled=true
 fi
 
 internalProtocol="https"
@@ -322,13 +329,17 @@ if [ -n "${ZWE_java_home}" ]; then
 fi
 
 APIML_CODE=AG
+
+SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal"
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Xms${ZWE_configs_heap_init:-${ZWE_components_gateway_heap_init:-32}}m -Xmx${ZWE_configs_heap_max:-${ZWE_components_gateway_heap_max:-512}}m \
     -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
+    ${SHARED_CLASSES_OPTS} \
     ${ADD_OPENS} \
     ${LOGBACK} \
+    ${JVM_SECURITY_PROPERTIES} \
     -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_haInstance_id:-localhost} \
     -Dapiml.catalog.customStyle.backgroundColor=${ZWE_components_apicatalog_apiml_catalog_customStyle_backgroundColor:-${ZWE_configs_apiml_catalog_customStyle_backgroundColor:-}} \
     -Dapiml.catalog.customStyle.docLink=${ZWE_components_apicatalog_apiml_catalog_customStyle_docLink:-${ZWE_configs_apiml_catalog_customStyle_docLink:-}} \
@@ -401,7 +412,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.service.allowEncodedSlashes=${ZWE_components_gateway_apiml_service_allowEncodedSlashes:-${ZWE_configs_apiml_service_allowEncodedSlashes:-true}} \
     -Dapiml.service.apimlId=${ZWE_components_gateway_apimlId:-${ZWE_configs_apimlId:-}} \
     -Dapiml.service.corsEnabled=${ZWE_components_gateway_apiml_service_corsEnabled:-${ZWE_configs_apiml_service_corsEnabled:-false}} \
-    -Dapiml.service.corsAllowedMethods=${ZWE_components_gateway_apiml_service_corsAllowedMethods:-${ZWE_configs_apiml_service_corsAllowedMethods:-}} \
+    -Dapiml.service.corsAllowedMethods=${ZWE_components_gateway_apiml_service_corsAllowedMethods:-${ZWE_configs_apiml_service_corsAllowedMethods:-GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}} \
     -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.service.forwardClientCertEnabled=${ZWE_components_gateway_apiml_security_x509_enabled:-${ZWE_configs_apiml_security_x509_enabled:-false}} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
@@ -444,8 +455,10 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.webSocket.asyncWriteTimeout=${ZWE_components_gateway_server_webSocket_asyncWriteTimeout:-${ZWE_configs_server_webSocket_asyncWriteTimeout:-60000}} \
     -Dserver.webSocket.connectTimeout=${ZWE_components_gateway_server_webSocket_connectTimeout:-${ZWE_configs_server_webSocket_connectTimeout:-45000}} \
     -Dserver.webSocket.maxIdleTimeout=${ZWE_components_gateway_server_webSocket_maxIdleTimeout:-${ZWE_configs_server_webSocket_maxIdleTimeout:-3600000}} \
-    -Dserver.webSocket.requestBufferSize=${ZWE_components_gateway_server_webSocket_requestBufferSize:-${ZWE_configs_server_webSocket_requestBufferSize:-8192}} \
+    -Dspring.cloud.gateway.server.webflux.httpclient.websocket.max-frame-payload-length=${ZWE_components_gateway_server_webSocket_requestBufferSize:-${ZWE_configs_server_webSocket_requestBufferSize:-8192}} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
+    -Dapiml.security.rauditx.onOidcUserIsMapped=${ZWE_configs_apiml_security_rauditx_onOidcUserIsMapped:-${ZWE_components_gateway_apiml_security_rauditx_onOidcUserIsMapped:-false}} \
+    -Dapiml.security.rauditx.oidcSourceUserPaths=${ZWE_configs_apiml_security_rauditx_oidcSourceUserPaths:-${ZWE_components_gateway_apiml_security_rauditx_oidcSourceUserPaths:-sub}} \
     -jar "${JAR_FILE}" &
 
 pid=$!

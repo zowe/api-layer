@@ -73,6 +73,10 @@ spring:
         banner-mode: ${apiml.banner:"off"}
         web-application-type: reactive
 
+otel:
+    sdk:
+        disabled: true
+
 springdoc:
     api-docs:
         path: /gateway/api-docs
@@ -95,6 +99,7 @@ apiml:
     service:
         apimlId: apiml1
         corsEnabled: true
+        corsAllowedEndpoints: /gateway/**
         allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
         forwardClientCertEnabled: false
@@ -111,6 +116,9 @@ apiml:
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
+        rauditx:
+            onOidcUserIsMapped: false
+
     health:
         protected: true
     webClientConfig.enabled: true
@@ -143,7 +151,9 @@ logging:
         io.netty.resolver.dns: WARN
         io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
         javax.net.ssl: ERROR
+        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.springframework.beans: WARN
         org.springframework.cloud.gateway.filter: WARN
         org.springframework.cloud.gateway.route: WARN
@@ -172,6 +182,8 @@ logging:
     level:
         com.netflix: DEBUG
         javax.net.ssl: ERROR
+        org.apache: INFO
+        org.apache.http: DEBUG
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.springframework.boot.autoconfigure.web: DEBUG

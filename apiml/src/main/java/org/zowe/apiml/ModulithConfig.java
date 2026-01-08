@@ -19,6 +19,11 @@ import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import com.netflix.eureka.EurekaServerContext;
 import com.netflix.eureka.EurekaServerContextHolder;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.servlet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -81,6 +86,23 @@ import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
 @EnableConfigurationProperties
 @DependsOn(value = {"gatewayHealthIndicator"})
 @Slf4j
+@OpenAPIDefinition(
+    security = {
+        @SecurityRequirement(name = "LoginBasicAuth"),
+        @SecurityRequirement(name = "ClientCert")
+    },
+    info = @Info(title = "API Mediation Layer", description = "The API Mediation Layer REST API.")
+)
+@SecurityScheme(
+    name = "LoginBasicAuth",
+    type = SecuritySchemeType.HTTP,
+    scheme = "basic"
+)
+@SecurityScheme(
+    type = SecuritySchemeType.MUTUALTLS,
+    name = "ClientCert",
+    description = "Client certificate X509"
+)
 public class ModulithConfig implements InitializingBean {
 
     private final ApplicationContext applicationContext;
@@ -105,6 +127,12 @@ public class ModulithConfig implements InitializingBean {
     @Value("${apiml.service.port:10010}")
     private int port;
 
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
+
+    @Value("${apiml.service.externalUrl}")
+    private String externalUrl;
+
     @Bean
     ApplicationInfo applicationInfo() {
         return ApplicationInfo.builder()
@@ -114,23 +142,35 @@ public class ModulithConfig implements InitializingBean {
 
     private InstanceInfo getInstanceInfo(String serviceId) {
         var leaseInfo = LeaseInfo.Builder.newBuilder()
-            .setDurationInSecs(Integer.MAX_VALUE)
+            .setDurationInSecs(90)
             .setRegistrationTimestamp(System.currentTimeMillis())
             .setRenewalTimestamp(System.currentTimeMillis())
-            .setRenewalIntervalInSecs(Integer.MAX_VALUE)
+            .setRenewalIntervalInSecs(30)
             .setServiceUpTimestamp(System.currentTimeMillis())
             .build();
 
-        var scheme = https ? "https" : "http";
 
         Map<String, String> metadata = switch (serviceId) {
             case "gateway" -> eurekaInstanceGw.getMetadataMap();
             case "cachingservice" -> cachingServiceEurekaInstanceConfigBean.getMetadataMap();
-            case "apicatalog" -> catalogEurekaInstanceConfigBean.getMetadataMap();
+            case "apicatalog" -> {
+                metadata = catalogEurekaInstanceConfigBean.getMetadataMap();
+                if (isServerAttlsEnabled) {
+                    var allowedOrigins = "https://" + hostname + ":" + port + "," + externalUrl;
+                    metadata.put("apiml.corsEnabled", "true");
+                    metadata.put("apiml.corsAllowedOrigins", allowedOrigins);
+                }
+                yield metadata;
+            }
             default -> new HashMap<>();
         };
 
         String homePagePath = metadata.getOrDefault("apiml.homePagePath", "/");
+
+        String scheme = "https";
+        if (!https && !isServerAttlsEnabled) {
+            scheme = "http";
+        }
 
         return InstanceInfo.Builder.newBuilder()
             .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
@@ -141,8 +181,8 @@ public class ModulithConfig implements InitializingBean {
             .setIPAddr(ipAddress)
             .setPort(port)
             .setSecurePort(port)
-            .enablePort(InstanceInfo.PortType.SECURE, https)
-            .enablePort(InstanceInfo.PortType.UNSECURE, !https)
+            .enablePort(InstanceInfo.PortType.SECURE, https || isServerAttlsEnabled)
+            .enablePort(InstanceInfo.PortType.UNSECURE, !https && !isServerAttlsEnabled)
             .setVIPAddress(serviceId)
             .setDataCenterInfo(() -> DataCenterInfo.Name.MyOwn)
             .setLeaseInfo(leaseInfo)

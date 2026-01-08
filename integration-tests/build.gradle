@@ -25,7 +25,7 @@ configurations.all {
 dependencies {
     testImplementation project(':apiml-security-common')
     testImplementation project(':zaas-client')
-    testImplementation group: 'org.springframework.graphql', name: 'spring-graphql-test', version: '1.4.1'
+    testImplementation group: 'org.springframework.graphql', name: 'spring-graphql-test', version: '1.4.4'
 
 
     testImplementation libs.spring.boot.starter.actuator
@@ -194,6 +194,8 @@ task runAllIntegrationTestsForZoweNonHaTestingOnZos(type: Test) {
             'HATest',
             'ChaoticHATest',
             'OidcOauth2Test',
+            'NodeEnablerTest',
+            'PythonEnablerTest',
             'MultipleRegistrationsTest',
             'NotForMainframeTest',
             'ApiCatalogStandaloneTest',
@@ -236,6 +238,8 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
             'TestsNotMeantForZowe',
             'DiscoverableClientDependentTest',
             'OidcOauth2Test',
+            'NodeEnablerTest',
+            'PythonEnablerTest',
             'MultipleRegistrationsTest',
             'NotForMainframeTest',
             'ApiCatalogStandaloneTest',
@@ -285,13 +289,16 @@ task runAllIntegrationTestsForZoweModulithNonHaTestingOnZos(type: Test) {
             'ChaoticHATest',
             'OidcOauth2Test',
             'MultipleRegistrationsTest',
+            'NodeEnablerTest',
+            'PythonEnablerTest',
             'NotForMainframeTest',
             'ApiCatalogStandaloneTest',
             'SAFProviderTest',
             'GatewayProxyTest',
             'GatewayCentralRegistry',
             'SafIdTokenTest',
-            'ZaasTest' // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
+            'ZaasTest', // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
+            'NonModulithTest'
         )
     }
 
@@ -329,6 +336,8 @@ task runAllIntegrationTestsForZoweModulithHaTestingOnZos(type: Test) {
             'DiscoverableClientDependentTest',
             'OidcOauth2Test',
             'MultipleRegistrationsTest',
+            'NodeEnablerTest',
+            'PythonEnablerTest',
             'NotForMainframeTest',
             'ApiCatalogStandaloneTest',
             'SAFProviderTest',
@@ -336,6 +345,7 @@ task runAllIntegrationTestsForZoweModulithHaTestingOnZos(type: Test) {
             'GatewayCentralRegistry',
             'SafIdTokenTest',
             'ChaoticHATest',
+            'GraphQLTest',
             'GraphQLTest',
             'ZaasTest' // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
         )
@@ -363,6 +373,8 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
             'EnvironmentCheck',
             'AdditionalLocalTest',
             'TestsNotMeantForZowe',
+            'NodeEnablerTest',
+            'PythonEnablerTest',
             'DiscoverableClientDependentTest',
             'HATest',
             'ChaoticHATest',
@@ -390,6 +402,8 @@ task runCITests(type: Test) {
             'MainframeDependentTests',
             'SAFAuthTest',
             'AttlsTest',
+            'NodeEnablerTest',
+            'PythonEnablerTest',
             'RegistrationTest',
             'ServiceIdPrefixReplacerTest',
             'HATest',
@@ -407,7 +421,9 @@ task runContainerModulithTests(type: Test) {
     description "Run only tests without long tests"
 
     outputs.cacheIf { false }
-    systemProperty "environment.config", "-docker-modulith"
+    def targetSystem = System.getenv("ZOS_TARGET_SYS") ? "-" + System.getenv("ZOS_TARGET_SYS") : "-docker-modulith"
+    systemProperty "environment.config", targetSystem
+    systemProperty "environment.modulith", "true"
 
     systemProperties System.properties
     useJUnitPlatform {
@@ -422,6 +438,7 @@ task runContainerModulithTests(type: Test) {
             'RegistrationTest',
             'ServiceIdPrefixReplacerTest',
             'NodeEnablerTest',
+            'PythonEnablerTest',
             'HATest',
             'ChaoticHATest',
             'InfinispanStorageTest',
@@ -457,6 +474,7 @@ task runContainerTests(type: Test) {
             'RegistrationTest',
             'ServiceIdPrefixReplacerTest',
             'NodeEnablerTest',
+            'PythonEnablerTest',
             'HATest',
             'ChaoticHATest',
             'InfinispanStorageTest',
@@ -507,6 +525,7 @@ task runBaseTests(type: Test) {
             'RegistrationTest',
             'ServiceIdPrefixReplacerTest',
             'NodeEnablerTest',
+            'PythonEnablerTest',
             'HATest',
             'ChaoticHATest',
             'InfinispanStorageTest',
@@ -584,6 +603,7 @@ task runZosmfAuthTest(type: Test) {
     outputs.cacheIf { false }
 
     systemProperties System.getProperties()
+
     useJUnitPlatform {
         includeTags(
             'zOSMFAuthTest'
@@ -644,6 +664,7 @@ task runInfinispanServiceTests(type: Test) {
 task runModulithInfinispanServiceTests(type: Test) {
     group "integration tests"
     description "Run APIML(modulith) with infinispan storage tests"
+    systemProperty "environment.modulith", "true"
 
     outputs.cacheIf { false }
 
@@ -725,4 +746,19 @@ task runChaoticHATests(type: Test) {
         )
     }
 
+}
+
+task runNodeAndPythonSampleServiceTests(type: Test) {
+    group "Integration tests"
+    description "Run tests verifying onboarding of Node.JS and Python Sample services"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'NodeEnablerTest',
+            'PythonEnablerTest'
+        )
+    }
 }

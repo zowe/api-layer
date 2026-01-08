@@ -11,11 +11,8 @@ gatewayServiceConfiguration:
     externalPort: 10010
     instances: 2
     servicesEndpoint: gateway/api/v1/services
-    bucketCapacity: 20
-centralGatewayServiceConfiguration:
-    scheme: https
-    host: central-gateway-service
-    port: 10010
+    bucketCapacity: 40
+    authProvider: zosmf
 discoveryServiceConfiguration:
     scheme: https
     user: user
@@ -58,6 +55,6 @@ zosmfServiceConfiguration:
 auxiliaryUserList:
     value: 'unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
 oidcConfiguration:
-    providerName: okta
+    providerName: auth0
 safIdtConfiguration:
     enabled: true

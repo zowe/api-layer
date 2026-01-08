@@ -54,7 +54,12 @@ import org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter;
 import org.zowe.apiml.security.common.handler.FailedAccessTokenHandler;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
-import org.zowe.apiml.security.common.login.*;
+import org.zowe.apiml.security.common.login.BasicAuthFilter;
+import org.zowe.apiml.security.common.login.LoginFilter;
+import org.zowe.apiml.security.common.login.NonCompulsoryAuthenticationProcessingFilter;
+import org.zowe.apiml.security.common.login.ShouldBeAlreadyAuthenticatedFilter;
+import org.zowe.apiml.security.common.login.X509AuthAwareFilter;
+import org.zowe.apiml.security.common.login.X509ForwardingAwareAuthenticationFilter;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 import org.zowe.apiml.zaas.controllers.AuthController;
 import org.zowe.apiml.zaas.controllers.SafResourceAccessController;
@@ -520,12 +525,6 @@ public class NewSecurityConfiguration {
                     )
                     .logout(AbstractHttpConfigurer::disable);  // logout filter in this chain not needed
 
-                if (isServerAttlsEnabled) {
-                    http
-                        // filter out API ML certificate
-                        .addFilterBefore(reversedCategorizeCertFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
-                }
-
                 return http.authenticationProvider(compoundAuthProvider) // for authenticating credentials
                     .authenticationProvider(tokenAuthenticationProvider) // for authenticating Tokens
                     .authenticationProvider(new CertificateAuthenticationProvider())
@@ -587,12 +586,6 @@ public class NewSecurityConfiguration {
                 }
             }
 
-            private CategorizeCertsFilter reversedCategorizeCertFilter() {
-                CategorizeCertsFilter out = new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator);
-                out.setCertificateForClientAuth(crt -> out.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
-                out.setApimlCertificate(crt -> !out.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
-                return out;
-            }
         }
 
         /**

@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.acceptance;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
@@ -19,6 +18,7 @@ import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @MicroservicesAcceptanceTest
@@ -39,7 +39,7 @@ class CorsPerServiceTest extends AcceptanceTestWithMockServices {
         .when()
             .get(basePath + "/test")
         .then()
-            .statusCode(Matchers.is(SC_OK));
+            .statusCode(is(SC_OK));
     }
 
 }

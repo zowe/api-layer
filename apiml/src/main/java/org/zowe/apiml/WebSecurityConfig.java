@@ -11,6 +11,7 @@
 package org.zowe.apiml;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -32,7 +33,12 @@ import org.springframework.security.web.server.util.matcher.NegatedServerWebExch
 import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher.MatchResult;
-import org.zowe.apiml.filter.*;
+import org.zowe.apiml.filter.BasicLoginFilter;
+import org.zowe.apiml.filter.CachedBodyFilter;
+import org.zowe.apiml.filter.CategorizeCertsWebFilter;
+import org.zowe.apiml.filter.LogoutHandler;
+import org.zowe.apiml.filter.QueryWebFilter;
+import org.zowe.apiml.filter.X509AuthFilter;
 import org.zowe.apiml.gateway.filters.security.AuthExceptionHandlerReactive;
 import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
 import org.zowe.apiml.handler.FailedAuthenticationWebHandler;
@@ -49,7 +55,9 @@ import org.zowe.apiml.zaas.security.query.TokenAuthenticationProvider;
 import java.util.List;
 import java.util.Set;
 
-import static org.springframework.http.HttpMethod.*;
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers.pathMatchers;
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_FULL_URL;
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_SHORT_URL;
@@ -58,6 +66,7 @@ import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_SH
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class WebSecurityConfig {
 
     private static final String CONTEXT_PATH = String.format("/%s", CoreService.GATEWAY.getServiceId());
@@ -331,25 +340,27 @@ public class WebSecurityConfig {
     SecurityWebFilterChain loginAndLogoutSecurityWebFilterChain(ServerHttpSecurity http, LogoutHandler logoutHandler) {
         var man = new ProviderManager(x509AuthenticationProvider);
         var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
-        return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+        http.csrf(ServerHttpSecurity.CsrfSpec::disable)
             .securityMatcher(new AndServerWebExchangeMatcher(
-                pathMatchers(POST, "gateway/api/v1/auth/login", "gateway/api/v1/auth/logout")
+                pathMatchers(POST, "gateway/api/v1/auth/login", "gateway/api/v1/auth/logout", "apicatalog/api/v1/auth/login")
             ))
             .authorizeExchange(exchange ->
                 exchange.matchers(pathMatchers(POST, "gateway/api/v1/auth/logout")).authenticated()
             )
             .authorizeExchange(exchange ->
-                exchange.matchers(pathMatchers(POST, "gateway/api/v1/auth/login")).permitAll()
+                exchange.matchers(pathMatchers(POST, "gateway/api/v1/auth/login", "apicatalog/api/v1/auth/login")).permitAll()
             )
             .logout(c -> c
                 .logoutUrl("/gateway/api/v1/auth/logout")
                 .logoutHandler(logoutHandler)
                 .logoutSuccessHandler(new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .addFilterAfter(new CachedBodyFilter(), SecurityWebFiltersOrder.FIRST)
             .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
-            .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION)
-            .build();
+            .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION);
+
+        return http.build();
     }
 
     /**

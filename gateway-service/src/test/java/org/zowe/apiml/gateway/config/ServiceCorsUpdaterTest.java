@@ -37,10 +37,7 @@ import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ServiceCorsUpdaterTest {
@@ -48,7 +45,8 @@ class ServiceCorsUpdaterTest {
     private static final String SERVICE_ID = "myserviceid";
     private static final String APIML_ID = "apimlid";
 
-    private CorsUtils corsUtils = spy(new CorsUtils(true, List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS")));
+    List<String> allowedEndpoints = List.of("/gateway/**");
+    private CorsUtils corsUtils = spy(new CorsUtils(true, List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"), allowedEndpoints));
 
     @Mock
     private ReactiveDiscoveryClient discoveryClient;
@@ -106,7 +104,8 @@ class ServiceCorsUpdaterTest {
 
     @Test
     void givenNoApimlId_whenSetCors_thenServiceIdIsUsed() {
-        TriConsumer<String, String, CorsConfiguration> corsLambda = getCorsLambda(md -> {});
+        TriConsumer<String, String, CorsConfiguration> corsLambda = getCorsLambda(md -> {
+        });
 
         corsLambda.accept(null, SERVICE_ID, null);
 

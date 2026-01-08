@@ -17,12 +17,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
-import org.zowe.apiml.zaas.security.service.TokenCreationService;
-import org.zowe.apiml.zaas.security.service.schema.source.X509AuthSource;
 import org.zowe.apiml.security.common.error.AuthenticationTokenException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
+import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
+import org.zowe.apiml.zaas.security.service.TokenCreationService;
+import org.zowe.apiml.zaas.security.service.schema.source.X509AuthSource;
 
 import java.security.cert.X509Certificate;
 

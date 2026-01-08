@@ -23,37 +23,50 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.ZaasTest;
-import org.zowe.apiml.util.config.*;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.SafIdtConfiguration;
+import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.SslContextConfigurer;
+import org.zowe.apiml.util.config.TlsConfiguration;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.*;
-import static org.zowe.apiml.util.SecurityUtils.*;
+import static org.zowe.apiml.util.SecurityUtils.generateJwtWithRandomSignature;
+import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.SecurityUtils.getDummyClientCertificate;
+import static org.zowe.apiml.util.SecurityUtils.parseJwtStringUnsecure;
 
 @ZaasTest
-public class ZaasNegativeTest {
+class ZaasNegativeTest {
 
     private final static String APPLICATION_NAME = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration().getApplId();
     private final static SafIdtConfiguration SAFIDT_CONF = ConfigReader.environmentConfiguration().getSafIdtConfiguration();
 
     private final static String CLIENT_USER = ConfigReader.environmentConfiguration().getCredentials().getClientUser();
 
+    private static final boolean ZAAS_AVAILABLE = ZAAS_ZOWE_URI.isPresent() || ZAAS_ZOSMF_URI.isPresent() || ZAAS_SAFIDT_URI.isPresent() || ZAAS_TICKET_URI.isPresent();
+
     private static final Set<URI> tokenEndpoints = new HashSet<>() {{
-        add(ZAAS_ZOWE_URI);
-        add(ZAAS_ZOSMF_URI);
-        if (SAFIDT_CONF.isEnabled()) {
-            add(ZAAS_SAFIDT_URI);
+        ZAAS_ZOWE_URI.ifPresent(this::add);
+        ZAAS_ZOSMF_URI.ifPresent(this::add);
+        if (SAFIDT_CONF.isEnabled() && ZAAS_SAFIDT_URI.isPresent()) {
+            add(ZAAS_SAFIDT_URI.get());
         }
     }};
 
     private static final Set<URI> endpoints = new HashSet<>() {{
-        add(ZAAS_TICKET_URI);
+        ZAAS_TICKET_URI.ifPresent(this::add);
         addAll(tokenEndpoints);
     }};
 
@@ -68,7 +81,7 @@ public class ZaasNegativeTest {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : endpoints) {
             RequestSpecification requestSpec = given();
-            if (ZAAS_SAFIDT_URI.equals(uri) || ZAAS_TICKET_URI.equals(uri)) {
+            if (uri.equals(ZAAS_SAFIDT_URI.get()) || uri.equals(ZAAS_TICKET_URI.get())) {
                 requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
             }
             for (String token : tokens) {
@@ -83,7 +96,7 @@ public class ZaasNegativeTest {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : endpoints) {
             RequestSpecification requestSpec = given();
-            if (ZAAS_SAFIDT_URI.equals(uri) || ZAAS_TICKET_URI.equals(uri)) {
+            if (uri.equals(ZAAS_SAFIDT_URI.get()) || uri.equals(ZAAS_TICKET_URI.get())) {
                 requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
             }
             argumentsList.add(Arguments.of(uri, requestSpec));
@@ -95,12 +108,17 @@ public class ZaasNegativeTest {
         List<Arguments> argumentsList = new ArrayList<>();
         for (URI uri : tokenEndpoints) {
             RequestSpecification requestSpec = given();
-            if (ZAAS_SAFIDT_URI.equals(uri)) {
+            if (uri.equals(ZAAS_SAFIDT_URI.get())) {
                 requestSpec.contentType(ContentType.JSON).body(new TicketRequest(APPLICATION_NAME));
             }
             argumentsList.add(Arguments.of(uri, requestSpec));
         }
         return argumentsList.stream();
+    }
+
+    @BeforeEach
+    void setUp() {
+        assumeTrue(ZAAS_AVAILABLE, "Test expected ZAAS to be available (microservices deployment)");
     }
 
     @Nested
@@ -178,6 +196,7 @@ public class ZaasNegativeTest {
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasTokenEndpoints")
         void givenClientAndHeaderCertificates_thenReturnTokenFromClientCert(URI uri, RequestSpecification requestSpecification) throws Exception {
+            assumeTrue(isTestForZOSMF(), "Test expects z/OSMF as the configured authentication provider in gatewayServiceConfiguration.authProvider");
             TlsConfiguration tlsCfg = ConfigReader.environmentConfiguration().getTlsConfiguration();
             SslContextConfigurer sslContextConfigurer = new SslContextConfigurer(tlsCfg.getKeyStorePassword(), tlsCfg.getClientKeystore(), tlsCfg.getKeyStore());
             SslContext.prepareSslAuthentication(sslContextConfigurer);

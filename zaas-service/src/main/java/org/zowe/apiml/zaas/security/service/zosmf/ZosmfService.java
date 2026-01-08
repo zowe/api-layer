@@ -13,9 +13,6 @@ package org.zowe.apiml.zaas.security.service.zosmf;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.util.DefaultResourceRetriever;
-import com.nimbusds.jose.util.Resource;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,6 +20,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.jose4j.jwk.JsonWebKeySet;
+import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
@@ -55,13 +54,13 @@ import org.zowe.apiml.zaas.ZaasTokenResponse;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
+import org.zowe.apiml.zaas.security.service.token.JWKResolver;
 
 import javax.management.ServiceNotFoundException;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.ParseException;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -125,19 +124,19 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     private final List<TokenValidationStrategy> tokenValidationStrategy;
-
+    private final AuthenticationService authenticationService;
+    private final JWKResolver jwkResolver;
     private ZosmfService meAsProxy;
     private TokenCreationService tokenCreationService;
-    private final DefaultResourceRetriever resourceRetriever;
 
     public ZosmfService(
-            final AuthConfigurationProperties authConfigurationProperties,
-            final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
-            final ObjectMapper securityObjectMapper,
-            final ApplicationContext applicationContext,
-            final AuthenticationService authenticationService,
-            List<TokenValidationStrategy> tokenValidationStrategy,
-            DefaultResourceRetriever resourceRetriever
+        final AuthConfigurationProperties authConfigurationProperties,
+        final @Qualifier("restTemplateWithoutKeystore") RestTemplate restTemplateWithoutKeystore,
+        final ObjectMapper securityObjectMapper,
+        final ApplicationContext applicationContext,
+        final AuthenticationService authenticationService,
+        List<TokenValidationStrategy> tokenValidationStrategy,
+        JWKResolver jwkResolver
     ) {
         super(
                 applicationContext,
@@ -147,10 +146,8 @@ public class ZosmfService extends AbstractZosmfService {
         );
         this.tokenValidationStrategy = tokenValidationStrategy;
         this.authenticationService = authenticationService;
-        this.resourceRetriever = resourceRetriever;
+        this.jwkResolver = jwkResolver;
     }
-
-    private final AuthenticationService authenticationService;
 
     @PostConstruct
     @Override
@@ -441,11 +438,11 @@ public class ZosmfService extends AbstractZosmfService {
                 return false;
             } else {
                 // other 400 family code
-                apimlLog.log(JWT_ENDPOINT_ERROR_MSGID, url, hce.getRawStatusCode() + ": " + hce.getMessage());
+                apimlLog.log(JWT_ENDPOINT_ERROR_MSGID, url, hce.getStatusCode().value() + ": " + hce.getMessage());
                 return false;
             }
         } catch (HttpServerErrorException serverError) {
-            apimlLog.log(JWT_ENDPOINT_ERROR_MSGID, url, serverError.getRawStatusCode() + ": " + serverError.getMessage());
+            apimlLog.log(JWT_ENDPOINT_ERROR_MSGID, url, serverError.getStatusCode().value() + ": " + serverError.getMessage());
             return false;
         } catch (Exception e) {
             apimlLog.log(JWT_ENDPOINT_ERROR_MSGID, url, e.getMessage());
@@ -561,19 +558,13 @@ public class ZosmfService extends AbstractZosmfService {
         return new ZosmfService.AuthenticationResponse(tokens);
     }
 
-    public JWKSet getPublicKeys() {
-        final String url = getURI(getZosmfServiceId(), authConfigurationProperties.getZosmf().getJwtEndpoint());
-
+    public JsonWebKeySet getPublicKeys() {
+        var jwkZosmfUrl = getURI(getZosmfServiceId(), authConfigurationProperties.getZosmf().getJwtEndpoint());
         try {
-            Resource resource = resourceRetriever.retrieveResource(new URL(url));
-            return JWKSet.parse(resource.getContent());
-        } catch (ParseException pe) {
-            log.debug("Invalid format of public keys from z/OSMF", pe);
-        } catch (HttpClientErrorException.NotFound nf) {
-            log.debug("Cannot get public keys from z/OSMF", nf);
-        } catch (IOException me) {
-            log.debug("Can't read JWK due to the exception {}", me.getMessage(), me.getCause());
+            return jwkResolver.resolve(jwkZosmfUrl);
+        } catch (JoseException | IOException e) {
+            log.debug("Unable to get JWKs from z/OSMF: {}", e.getMessage(), e);
+            return new JsonWebKeySet(Collections.emptyList());
         }
-        return new JWKSet();
     }
 }

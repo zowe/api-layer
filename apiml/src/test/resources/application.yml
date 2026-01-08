@@ -3,6 +3,12 @@ logging:
         ROOT: DEBUG
         org.springframework: DEBUG
         org.zowe.apiml: DEBUG
+        org.springframework.cloud.gateway: TRACE
+        org.springframework.http.server.reactive: TRACE
+        org.springframework.web.reactive: TRACE
+        org.springframework.boot.autoconfigure.web: TRACE
+        reactor.netty: TRACE
+        redisratelimiter: TRACE
 
 eureka:
     dashboard:
@@ -19,7 +25,15 @@ eureka:
     server:
         max-threads-for-peer-replication: 2
         useReadOnlyResponseCache: false
-
+management:
+    endpoint:
+        gateway:
+            access: unrestricted
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: "*"
 apiml:
     catalog:
         serviceId: apicatalog
@@ -63,7 +77,7 @@ apiml:
                             - apiId: zowe.apiml.gateway
                               version: 1.0.0
                               gatewayUrl: api/v1
-                              swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/gateway/api-docs
+                              swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/v3/api-docs/gateway
                               documentationUrl: https://zowe.github.io/docs-site/
                         service:
                             title: API Gateway
@@ -76,9 +90,46 @@ apiml:
         registry:
             enabled: false
             metadata-key-allow-list: zos.sysname,zos.system,zos.sysplex,zos.cpcName,zos.zosName,zos.lpar
+    caching:
+        eureka:
+            instance:
+                metadata-map:
+                    apiml:
+                        registrationType: primary
+                        apiBasePath: /cachingservice/api/v1
+                        catalog:
+                            tile:
+                                id: apimediationlayer
+                                title: API Mediation Layer API
+                                description: The API Mediation Layer for z/OS internal API services. The API Mediation Layer provides a single point of access to mainframe REST APIs and offers enterprise cloud-like features such as high-availability, scalability, dynamic API discovery, and documentation.
+                                version: 1.0.0
+                        routes:
+                            api_v1:
+                                gatewayUrl: /
+                                serviceUrl: /cachingservice
+                        apiInfo:
+                            -   apiId: zowe.apiml.cachingservice
+                                version: 1.0.0
+                                gatewayUrl: api/v1
+                                swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/v3/api-docs/cachingservice
+                                documentationUrl: https://zowe.github.io/docs-site/
+                        service:
+                            title: Caching service for internal usage.
+                            description: Service that provides caching API.
+                        authentication:
+                            sso: true
+
+    connection:
+        timeout: 60000
+        idleConnectionTimeoutSeconds: 5
+        timeToLive: 10000
+    routing:
+        instanceIdHeader: false
+        ignoredServices: discovery,zaas,apicatalog,cachingservice # to disable routing to the Discovery and ZAAS service + local services on Modulith
     service:
         apimlId: apiml1
         corsEnabled: true
+        corsAllowedEndpoints: /gateway/**,/apicatalog/**,/cachingservice/**,/v3/api-docs/**
         allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
         forwardClientCertEnabled: false
@@ -92,7 +143,15 @@ apiml:
         securePortEnabled: true
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
     security:
+        headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
+        ssl:
+            nonStrictVerifySslCertificatesOfServices: false
+        filterChainConfiguration: new
         allowTokenRefresh: true
+        jwtInitializerTimeout: 5
+        personalAccessToken:
+            enabled: false
+        useInternalMapper: false
         auth:
             provider: zosmf
             zosmf:
@@ -128,6 +187,19 @@ server:
     max-http-request-header-size: 48000
 
 spring:
+    cloud:
+        gateway:
+            server:
+                webflux:
+                    route-refresh-listener.enabled: false
+                    x-forwarded:
+                        prefix-append: false
+                        prefix-enabled: true
+                    filter:
+                        secure-headers:
+                            disable: content-security-policy,permitted-cross-domain-policies,download-options
+                            referrer-policy: strict-origin-when-cross-origin
+                            frame-options: sameorigin
     application:
         name: gateway
     main:

@@ -241,3 +241,8 @@ apiml:
 server:
     attlsClient:
         enabled: true
+
+eureka:
+    instance:
+        nonSecurePortEnabled: true
+        securePortEnabled: false

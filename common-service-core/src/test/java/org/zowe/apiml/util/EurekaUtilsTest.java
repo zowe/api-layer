@@ -14,12 +14,17 @@ import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.zowe.apiml.exception.MetadataValidationException;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -32,13 +37,13 @@ class EurekaUtilsTest {
 
     @Test
     void test() {
-        assertEquals("abc", EurekaUtils.getServiceIdFromInstanceId("123:abc:def:::::xyz"));
         assertEquals("abc", EurekaUtils.getServiceIdFromInstanceId("123:abc:def"));
-        assertEquals("", EurekaUtils.getServiceIdFromInstanceId("123::def"));
-        assertEquals("", EurekaUtils.getServiceIdFromInstanceId("::"));
+        assertNull(EurekaUtils.getServiceIdFromInstanceId("123:abc:def:::::xyz"));
+        assertNull(EurekaUtils.getServiceIdFromInstanceId("hostname:123:"));
+        assertNull(EurekaUtils.getServiceIdFromInstanceId("::"));
+        assertNull(EurekaUtils.getServiceIdFromInstanceId("123::def"));
         assertNull(EurekaUtils.getServiceIdFromInstanceId(":"));
         assertNull(EurekaUtils.getServiceIdFromInstanceId(""));
-        assertNull(EurekaUtils.getServiceIdFromInstanceId("abc"));
     }
 
     private InstanceInfo createInstanceInfo(String host, int port, int securePort, boolean isSecureEnabled) {
@@ -110,6 +115,39 @@ class EurekaUtilsTest {
             assertTrue(instance.isEmpty());
         }
 
+    }
+
+    @Nested
+    class WhenValidatingServiceId {
+
+        private static Stream<Arguments> validServiceIds() {
+            return Stream.of(
+                Arguments.of("valid-service-id"),
+                Arguments.of("a".repeat(63))
+            );
+        }
+
+        private static Stream<Arguments> invalidServiceIds() {
+            return Stream.of(
+                Arguments.of("service_id"),
+                Arguments.of(""),
+                Arguments.of(" "),
+                Arguments.of("Invalid@ServiceId"),
+                Arguments.of("a".repeat(64))
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("invalidServiceIds")
+        void givenServiceIdWithUnderscore_thenThrowMetadataValidationException(String serviceId) {
+            assertThrows(MetadataValidationException.class, () -> EurekaUtils.validateServiceId(serviceId));
+        }
+
+        @ParameterizedTest
+        @MethodSource("validServiceIds")
+        void testValidateServiceId_thenDoNotThrowException(String serviceId) {
+            assertDoesNotThrow(() -> EurekaUtils.validateServiceId(serviceId));
+        }
     }
 
 }
