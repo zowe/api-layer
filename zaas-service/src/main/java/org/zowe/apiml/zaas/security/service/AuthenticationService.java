@@ -153,7 +153,7 @@ public class AuthenticationService {
             newClaims.setIssuedAt(NumericDate.fromMilliseconds(issuedAt));
             newClaims.setSubject(username);
             if (claims != null) {
-                claims.entrySet().forEach(entry -> newClaims.setClaim(entry.getKey(), entry.getValue()));
+                claims.forEach(newClaims::setClaim);
             }
 
             var jws = new JsonWebSignature();
@@ -180,6 +180,9 @@ public class AuthenticationService {
     }
 
     /**
+     * TODO consider the following scenarios during the fix:
+     *      * Cache hit on CACHE_INVALIDATED_JWT_TOKENS with return true -> method is not executed -> CacheEvict on CACHE_VALIDATION_JWT_TOKEN does not happen
+     *      * Cache miss on CACHE_INVALIDATED_JWT_TOKENS -> method is executed and return is false -> CacheEvict on CACHE_VALIDATION_JWT_TOKEN happens nevertheless
      * Method will invalidate jwtToken. It could be called from two reasons:
      * - on logout phase (distribute = true)
      * - from another ZAAS instance to notify about change (distribute = false)
@@ -189,12 +192,6 @@ public class AuthenticationService {
      * @param jwtToken   token to invalidate
      * @param distribute distribute invalidation to another instances?
      * @return state of invalidate (true - token was invalidated)
-     */
-
-    /**
-    * TODO consider the following scenarios during the fix:
-     * Cache hit on CACHE_INVALIDATED_JWT_TOKENS with return true -> method is not executed -> CacheEvict on CACHE_VALIDATION_JWT_TOKEN does not happen
-     * Cache miss on CACHE_INVALIDATED_JWT_TOKENS -> method is executed and return is false -> CacheEvict on CACHE_VALIDATION_JWT_TOKEN happens nevertheless
      */
     @CacheEvict(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken")
     @Cacheable(value = CACHE_INVALIDATED_JWT_TOKENS, key = "#jwtToken", condition = "#jwtToken != null")
@@ -274,7 +271,7 @@ public class AuthenticationService {
         }
 
         final String myInstanceId = eurekaClient.getApplicationInfoManager().getInfo().getInstanceId();
-        Boolean returnValue = Boolean.TRUE;
+        boolean returnValue = Boolean.TRUE;
 
         for (final InstanceInfo instanceInfo : application.getInstances()) {
             if (StringUtils.equals(myInstanceId, instanceInfo.getInstanceId())) {
@@ -285,7 +282,7 @@ public class AuthenticationService {
             try {
                 restTemplate.delete(url);
             } catch (HttpClientErrorException e) {
-                log.debug("Problem invalidating token on another instance url " + url, e);
+                log.debug("Problem invalidating token on another instance url {}", url, e);
                 returnValue = Boolean.FALSE;
             }
 
