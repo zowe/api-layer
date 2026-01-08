@@ -19,6 +19,7 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +28,7 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 @Component
 @RequiredArgsConstructor
 @Endpoint(id = "eurekaversion")
+@ConditionalOnMissingBean(name = "modulithConfig")
 @Slf4j
 public class EurekaRegistryVersionEndpoint {
 
