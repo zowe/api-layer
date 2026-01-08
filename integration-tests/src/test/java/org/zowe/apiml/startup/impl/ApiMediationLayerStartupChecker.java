@@ -54,6 +54,7 @@ public class ApiMediationLayerStartupChecker {
     private final GatewayServiceConfiguration gatewayConfiguration;
     private final DiscoverableClientConfiguration discoverableClientConfiguration;
     private final DiscoveryServiceConfiguration discoveryServiceConfiguration;
+    private final ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
     private final CachingServiceConfiguration cachingServiceConfiguration;
     private final Credentials credentials;
     private final String credentialsHeader;
@@ -69,6 +70,7 @@ public class ApiMediationLayerStartupChecker {
         credentialsHeader = "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", credentials.getUser(), credentials.getPassword()).getBytes());
         discoverableClientConfiguration = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration();
         discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
+        apiCatalogServiceConfiguration = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration();
         cachingServiceConfiguration = ConfigReader.environmentConfiguration().getCachingServiceConfiguration();
 
         servicesToCheck.add(new Service("Gateway", "$.status"));
@@ -81,7 +83,7 @@ public class ApiMediationLayerStartupChecker {
         instancesToCheck.addAll(Instance.of(discoveryServiceConfiguration));
         instancesToCheck.addAll(Instance.of(gatewayConfiguration, "gateway.instances"));
         instancesToCheck.addAll(Instance.of(discoverableClientConfiguration, "discoverableclient.instances"));
-        instancesToCheck.addAll(Instance.of(discoverableClientConfiguration, "discoverableclient.instances"));
+        instancesToCheck.addAll(Instance.of(apiCatalogServiceConfiguration, "apicatalog.instances"));
         instancesToCheck.addAll(Instance.of(cachingServiceConfiguration, "caching.instances"));
     }
 
