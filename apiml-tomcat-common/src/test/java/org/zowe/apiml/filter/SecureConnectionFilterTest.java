@@ -22,6 +22,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.commons.attls.AttlsContext;
+import org.zowe.commons.attls.AttlsContextImpl;
 import org.zowe.commons.attls.InboundAttls;
 import org.zowe.commons.attls.IoctlCallException;
 import org.zowe.commons.attls.StatConn;
@@ -39,7 +40,7 @@ class SecureConnectionFilterTest {
 
     HttpServletResponse response = new MockHttpServletResponse();
 
-    class AttlsContextTest extends AttlsContext {
+    class AttlsContextTest extends AttlsContextImpl {
 
         StatConn statConn;
 

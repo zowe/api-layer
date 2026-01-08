@@ -11,6 +11,7 @@
 package org.zowe.apiml.integration.discovery;
 
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,18 +28,16 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 
 /**
- * Test that Node.js enabler is properly integrated with the API ML (Discovery, Gateway)
+ * Test that Python enabler is properly integrated with the API ML (Discovery, Gateway)
  */
 @TestsNotMeantForZowe
 @NotForMainframeTest
 @GatewayTest
 @NotAttlsTest
-@NodeEnablerTest
-class NodeEnablerIntegrationTest {
+@PythonEnablerTest
+class PythonEnablerIntegrationTest {
 
-    private static final String APP_INFO_HEALTH = "/hwexpress/api/v1/status/";
-
-    private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway(APP_INFO_HEALTH);
+    private static final String APP_INFO_HEALTH = "/pythonservice/api/v1/application/health";
 
     @BeforeAll
     public static void beforeClass() {
@@ -49,6 +48,7 @@ class NodeEnablerIntegrationTest {
     class WhenServiceIsRegisteredInDiscovery {
         @Test
         void gatewayRouteReturnsUpStatus() {
+            URI uri = HttpRequestUtils.getUriFromGateway(APP_INFO_HEALTH);
 
             await()
                 .atMost(2, MINUTES)
@@ -56,9 +56,10 @@ class NodeEnablerIntegrationTest {
                 .untilAsserted(() ->
                     given()
                         .when()
-                        .get(MEDIATION_CLIENT_URI)
+                        .get(uri)
                         .then()
-                        .statusCode(SC_OK)
+                        .statusCode(is(SC_OK))
+                        .contentType(ContentType.JSON)
                         .body("status", is("UP")));
 
         }
