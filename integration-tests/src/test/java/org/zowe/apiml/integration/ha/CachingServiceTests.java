@@ -68,7 +68,7 @@ class CachingServiceTests {
     private boolean isUp(int index) {
         try {
             String servletPath = "";
-            if (IS_MODULITH_ENABLED) {
+            if (!IS_MODULITH_ENABLED) {
                 servletPath = "/cachingservice";
             }
 
