@@ -137,7 +137,7 @@ public class CachingController {
                     if (isStorageIncompatible(exception)) {
                         return handleIncompatibleStorageMethod(exception, request);
                     }
-                    return handleIncompatibleStorageMethod(exception, request);
+                    return handleInternalError(exception, request);
                 }
             }
         ).orElseGet(this::getUnauthorizedResponse));
@@ -157,7 +157,7 @@ public class CachingController {
                     if (isStorageIncompatible(exception)) {
                         return handleIncompatibleStorageMethod(exception, request);
                     }
-                    return handleIncompatibleStorageMethod(exception, request);
+                    return handleInternalError(exception, request);
                 }
             }
         ).orElseGet(this::getUnauthorizedResponse));

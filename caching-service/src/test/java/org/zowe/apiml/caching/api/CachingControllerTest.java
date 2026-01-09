@@ -485,7 +485,7 @@ class CachingControllerTest {
                 .thenThrow(new RuntimeException("error"));
 
             StepVerifier.create(underTest.getAllMapItems(MAP_KEY, mockRequest))
-                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST)))
+                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
                 .verifyComplete();
         }
 
@@ -554,7 +554,7 @@ class CachingControllerTest {
                 Exception storageException = new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
                 doThrow(storageException).when(mockStorage).getAllMapItems(any(), any());
 
-                StepVerifier.create(underTest.evictRules(MAP_KEY, mockRequest))
+                StepVerifier.create(underTest.getAllMapItems(MAP_KEY, mockRequest))
                     .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST)))
                     .verifyComplete();
             }
