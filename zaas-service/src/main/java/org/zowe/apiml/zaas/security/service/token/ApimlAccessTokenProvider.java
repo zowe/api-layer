@@ -63,7 +63,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public void invalidateAllTokensForUser(String userId, long timestamp) throws CachingServiceClientException {
-        String hashedUserId = getHash(userId);
+        String hashedUserId = getHash(userId.trim().toUpperCase());
         if (timestamp == 0) {
             timestamp = System.currentTimeMillis();
         }

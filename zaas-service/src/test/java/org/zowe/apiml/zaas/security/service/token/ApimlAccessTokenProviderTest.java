@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.zowe.apiml.models.AccessTokenContainer;
@@ -177,14 +176,16 @@ class ApimlAccessTokenProviderTest {
 
     @Test
     void givenTokenWithUserIdMatchingRule_returnInvalidated() {
-        String userId = accessTokenProvider.getHash("user");
-
         when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
-        Map<String, String> invalidUsers = new HashMap<>();
-        invalidUsers.put(userId, String.valueOf(System.currentTimeMillis()));
         Map<String, Map<String, String>> cacheMap = new HashMap<>();
-        cacheMap.put(ApimlAccessTokenProvider.INVALID_USERS_KEY, invalidUsers);
         when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
+        doAnswer(answer -> {
+            var mapkey = (String) answer.getArgument(0);
+            var keyValue = (CachingServiceClient.KeyValue) answer.getArgument(1);
+            cacheMap.computeIfAbsent(mapkey, key -> new HashMap<>()).put(keyValue.getKey(), keyValue.getValue());
+            return null;
+        }).when(cachingServiceClient).appendList(any(), any());
+        accessTokenProvider.invalidateAllTokensForUser("User", System.currentTimeMillis());
         assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
     }
 
