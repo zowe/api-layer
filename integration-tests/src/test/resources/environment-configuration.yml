@@ -21,7 +21,6 @@ centralGatewayServiceConfiguration:
 zaasConfiguration:
     scheme: https
     host: localhost
-    additionalHost: zaas-service-2
     port: 10023
 discoveryServiceConfiguration:
     scheme: https
