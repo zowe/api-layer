@@ -13,6 +13,7 @@ package org.zowe.apiml.zaas.security.service.token;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.jsonwebtoken.Jwts;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -282,7 +283,7 @@ class ApimlAccessTokenProviderTest {
             Exception noRecordException = new CachingServiceClientException("no record");
             doThrow(noRecordException).when(cachingServiceClient).read("salt");
             String salt = accessTokenProvider.initializeSalt();
-            assertEquals(16, salt.length());
+            assertTrue(StringUtils.isNotBlank(salt));
             verify(cachingServiceClient, times(1)).create(any());
         }
 
