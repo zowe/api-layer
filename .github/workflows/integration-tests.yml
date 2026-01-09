@@ -240,9 +240,9 @@ jobs:
                     logbackService: ZWEAGW1
                     APIML_HEALTH_PROTECTED: false
                     CACHING_STORAGE_MODE: infinispan
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
                     JGROUPS_BIND_PORT: 7600
-                    JGROUPS_BIND_ADDRESS: caching-service
+                    JGROUPS_BIND_ADDRESS: apiml
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             apiml-2:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
@@ -261,9 +261,9 @@ jobs:
                     logbackService: ZWEAGW2
                     APIML_HEALTH_PROTECTED: false
                     CACHING_STORAGE_MODE: infinispan
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
                     JGROUPS_BIND_PORT: 7600
-                    JGROUPS_BIND_ADDRESS: caching-service-2
+                    JGROUPS_BIND_ADDRESS: apiml-2
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
