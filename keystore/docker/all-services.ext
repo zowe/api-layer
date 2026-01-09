@@ -1,6 +1,21 @@
+[ req ]
+default_bits            = 2048
+prompt                  = no
+default_md              = sha256
+x509_extensions         = v3_req
+distinguished_name      = dn
+
 [ v3_req ]
 extendedKeyUsage        = clientAuth, serverAuth
 subjectAltName          = @alt_names
+
+[ dn ]
+CN                      = "CZ"
+ST                      = "Czechia"
+L                       = "Prague"
+O                       = "Broadcom"
+OU                      = "MSD"
+CN                      = "Zowe Component"
 
 [alt_names]
 DNS.1 = localhost
