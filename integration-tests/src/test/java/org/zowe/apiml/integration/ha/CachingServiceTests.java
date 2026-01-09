@@ -50,6 +50,7 @@ import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
 class CachingServiceTests {
 
     private static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
+    private static final String SERVLET_PATH = IS_MODULITH_ENABLED ? "" : "/cachingservice";
 
     private static final String SERVICE = "service";
     private static final String KEY = "aCacheKey" + new Random().nextInt();
@@ -67,12 +68,7 @@ class CachingServiceTests {
 
     private boolean isUp(int index) {
         try {
-            String servletPath = "";
-            if (!IS_MODULITH_ENABLED) {
-                servletPath = "/cachingservice";
-            }
-
-            String url = String.format("%s%s%s", baseUrls.get(index), servletPath, Endpoints.HEALTH);
+            String url = String.format("%s%s%s", baseUrls.get(index), SERVLET_PATH, Endpoints.HEALTH);
             log.info("Check if {}. Caching Service is up: {}", index + 1, url);
 
             //@formatter:off
@@ -207,7 +203,7 @@ class CachingServiceTests {
                     .contentType(JSON)
                     .auth().basic(credentials.getUser(), credentials.getPassword())
                     .when()
-                    .post(baseUrls.get(i) + "/cachingservice/application/shutdown")
+                    .post(baseUrls.get(i) + SERVLET_PATH + "/application/shutdown")
                     .then()
                     .statusCode(is(SC_OK));
                 //@formatter:on
