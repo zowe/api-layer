@@ -63,7 +63,7 @@ public class ConfigReader {
                         log.warn("Can't read service configuration from resource file, using default: http://localhost:10010", e);
                         Credentials credentials = new Credentials("user", "user");
                         GatewayServiceConfiguration gatewayServiceConfiguration
-                            = new GatewayServiceConfiguration("https", "localhost", null, 10010, 10010, 1, "10010", ROUTED_SERVICE, 20, "zosmf");
+                            = new GatewayServiceConfiguration("https", "localhost", null, 10010, 10010, 1, "10010", ROUTED_SERVICE, 20, "zosmf", 5);
                         CentralGatewayServiceConfiguration centralGatewayServiceConfiguration = new CentralGatewayServiceConfiguration("https", "localhost", 10010);
                         ZaasConfiguration zaasConfiguration = new ZaasConfiguration("https", "localhost", 10023, 1);
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost","localhost", 10011,10021, 1);
@@ -117,6 +117,7 @@ public class ConfigReader {
                     configuration.getGatewayServiceConfiguration().setServicesEndpoint(System.getProperty("gateway.servicesEndpoint", configuration.getGatewayServiceConfiguration().getServicesEndpoint()));
                     configuration.getGatewayServiceConfiguration().setBucketCapacity(parseInt(System.getProperty("gateway.bucketCapacity", String.valueOf(configuration.getGatewayServiceConfiguration().getBucketCapacity()))));
                     configuration.getGatewayServiceConfiguration().setAuthProvider(System.getProperty("gateway.authProvider", configuration.getGatewayServiceConfiguration().getAuthProvider()));
+                    configuration.getGatewayServiceConfiguration().setConnectionTimeout(Integer.parseInt(System.getProperty("gateway.connectionTimeout", String.valueOf(configuration.getGatewayServiceConfiguration().getConnectionTimeout()))));
 
                     CentralGatewayServiceConfiguration config = configuration.getCentralGatewayServiceConfiguration();
                     Optional.ofNullable(config).ifPresent(c -> {

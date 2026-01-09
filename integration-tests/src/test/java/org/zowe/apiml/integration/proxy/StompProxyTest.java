@@ -19,6 +19,7 @@ import org.springframework.messaging.simp.stomp.*;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.zowe.apiml.util.SecurityUtils;
+import org.zowe.apiml.util.config.ConfigReader;
 
 import java.lang.reflect.Type;
 import java.util.UUID;
@@ -36,6 +37,8 @@ public class StompProxyTest extends WebSocketProxyTest {
     private static WebSocketStompClient stompClient;
 
     private CompletableFuture<String> completableFuture;
+
+    final int connectionTimeout = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getConnectionTimeout();
 
     @BeforeAll
     public static void setUpStompClient() {
@@ -60,7 +63,7 @@ public class StompProxyTest extends WebSocketProxyTest {
 
         StompSession stompSession = stompClient.connectAsync(
             discoverableClientGatewayUrl(DISCOVERABLE_STOMP), VALID_AUTH_HEADERS, new StompSessionHandlerAdapter() {
-        }).get(10, SECONDS); // lower connection timeout fails on z/os test system
+        }).get(connectionTimeout, SECONDS); // lower connection timeout fails on z/os test system
         stompSession.subscribe(SUBSCRIBE_ENDPOINT + uuid, new StringStompFrameHandler());
 
         char c = 'A';

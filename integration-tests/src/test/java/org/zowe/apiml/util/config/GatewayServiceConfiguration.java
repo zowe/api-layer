@@ -28,4 +28,5 @@ public class GatewayServiceConfiguration implements ServiceConfiguration {
     private String servicesEndpoint;
     private int bucketCapacity;
     private String authProvider;
+    private int connectionTimeout;
 }
