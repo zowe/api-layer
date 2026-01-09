@@ -201,6 +201,9 @@ class CentralRegistryTest implements TestWithStartedInstances {
                 assertThat(body)
                     .as("Domain gateway must be present in containers")
                     .contains("\"serviceId\":\"domain-apiml\"");
+                assertThat(body)
+                    .as("Central gateway must be present in containers")
+                    .contains("\"serviceId\":\"gateway\"");
             });
 
         String body = callContainers();
