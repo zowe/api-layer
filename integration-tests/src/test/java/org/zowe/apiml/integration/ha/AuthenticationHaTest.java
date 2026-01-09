@@ -76,8 +76,9 @@ class AuthenticationHaTest {
 
                     assertIfGatewayLogged(jwt, false, gatewayHosts[1]);
                     if (!(IS_MODULITH_ENABLED || ZAAS_CONF == null)) {
+                        String zaasHost = ZAAS_CONF.getAdditionalHost() != null ? ZAAS_CONF.getAdditionalHost() : ZAAS_CONF.getHost() + "-2";
                         // Since we have only one ZAAS instance in the configuration, manually add the second one
-                        assertIfZaasLogged(jwt, false, new ZaasConfiguration(ZAAS_CONF.getScheme(), ZAAS_CONF.getHost() + "-2", ZAAS_CONF.getPort(), 2));
+                        assertIfZaasLogged(jwt, false, new ZaasConfiguration(ZAAS_CONF.getScheme(), zaasHost, zaasHost, ZAAS_CONF.getPort(), 2));
                     }
                 }
 
