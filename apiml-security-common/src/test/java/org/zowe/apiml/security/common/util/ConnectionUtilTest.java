@@ -51,6 +51,7 @@ class ConnectionUtilTest {
         when(httpConfig.getTrustStoreType()).thenReturn("PKCS12");
         when(httpConfig.getTrustStorePath()).thenReturn("../keystore/localhost/localhost.truststore.p12");
         when(httpConfig.getTrustStorePassword()).thenReturn("password".toCharArray()); //NOSONAR
+        when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(true);
     }
 
     @Test
