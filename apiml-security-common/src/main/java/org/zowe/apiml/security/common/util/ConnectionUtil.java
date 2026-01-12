@@ -67,7 +67,7 @@ public class ConnectionUtil {
             builder.keyManager(keyManagerFactory);
         }
 
-        if (config.isVerifySslCertificatesOfServices() && config.isNonStrictVerifySslCertificatesOfServices()) {
+        if (!config.isVerifySslCertificatesOfServices() || (config.isVerifySslCertificatesOfServices() && config.isNonStrictVerifySslCertificatesOfServices())) {
             log.debug("ConnectionUtil.getSslContext - NONSTRICT mode: disabling endpointIdentificationAlgorithm");
             builder.endpointIdentificationAlgorithm(null);
         }
@@ -77,7 +77,7 @@ public class ConnectionUtil {
 
     public HttpClient getHttpClient(HttpConfig config, HttpClient httpClient, boolean useClientCert) throws UnrecoverableKeyException, CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
         var sslContextBuilder = SslProvider.builder().sslContext(ConnectionUtil.getSslContext(config, useClientCert));
-        boolean hostnameVerificationEnabled = !config.isNonStrictVerifySslCertificatesOfServices();
+        boolean hostnameVerificationEnabled = config.isVerifySslCertificatesOfServices() && !config.isNonStrictVerifySslCertificatesOfServices();
         log.debug("ConnectionUtil.getHttpClient - SSL config: verifySslCertificatesOfServices={}, nonStrictVerifySslCertificatesOfServices={}, hostnameVerificationEnabled={}, useClientCert={}",
             config.isVerifySslCertificatesOfServices(),
             config.isNonStrictVerifySslCertificatesOfServices(),
