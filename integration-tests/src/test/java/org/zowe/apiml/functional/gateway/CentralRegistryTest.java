@@ -203,7 +203,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
 
                 JSONArray centralGatewayBasePath =
                     json.read(
-                        "$[?(@.apimlId == 'central-apiml')].services[?(@.serviceId == 'gateway')].basePath"
+                        "$[*].services[?(@.serviceId == 'gateway')].basePath"
                     );
 
                 assertThat(centralGatewayBasePath)
@@ -213,7 +213,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
 
                 JSONArray domainGatewayBasePath =
                     json.read(
-                        "$[?(@.apimlId == 'domain-apiml')].services[?(@.serviceId == 'gateway')].basePath"
+                        "$[*].services[?(@.serviceId == 'domain-apiml')].basePath"
                     );
 
                 assertThat(domainGatewayBasePath)
