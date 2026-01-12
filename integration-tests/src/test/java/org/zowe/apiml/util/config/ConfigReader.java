@@ -104,7 +104,6 @@ public class ConfigReader {
                             safIdtConfiguration
                         );
                     }
-                    Integer timeout = configuration.getGatewayServiceConfiguration().getConnectionTimeout();
 
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
                     configuration.getCredentials().setPassword(System.getProperty("credentials.password", StringUtils.isEmpty(configuration.getCredentials().getPassword()) ? "" : new String(configuration.getCredentials().getPassword())));
