@@ -118,8 +118,10 @@ public class ConfigReader {
                     configuration.getGatewayServiceConfiguration().setServicesEndpoint(System.getProperty("gateway.servicesEndpoint", configuration.getGatewayServiceConfiguration().getServicesEndpoint()));
                     configuration.getGatewayServiceConfiguration().setBucketCapacity(parseInt(System.getProperty("gateway.bucketCapacity", String.valueOf(configuration.getGatewayServiceConfiguration().getBucketCapacity()))));
                     configuration.getGatewayServiceConfiguration().setAuthProvider(System.getProperty("gateway.authProvider", configuration.getGatewayServiceConfiguration().getAuthProvider()));
-                    configuration.getGatewayServiceConfiguration().setConnectionTimeout(Integer.parseInt(System.getProperty("gateway.connectionTimeout", String.valueOf(timeout != null ? timeout : 5))));
-
+                    String timeoutProp = System.getProperty("gateway.connectionTimeout");
+                    if (timeoutProp != null) {
+                        configuration.getGatewayServiceConfiguration().setConnectionTimeout(Integer.parseInt(timeoutProp));
+                    }
                     CentralGatewayServiceConfiguration config = configuration.getCentralGatewayServiceConfiguration();
                     Optional.ofNullable(config).ifPresent(c -> {
                             c.setScheme(System.getProperty("centralgateway.scheme", config.getScheme()));
