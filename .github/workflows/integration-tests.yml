@@ -1566,6 +1566,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: caching-service
                     JGROUPS_KEYEXCHANGE_PORT: 7601
                     APIML_SERVICE_HOSTNAME: caching-service
+                    APIML_HEALTH_PROTECTED: false
             caching-service-2:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1575,6 +1576,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: caching-service-2
                     JGROUPS_KEYEXCHANGE_PORT: 7601
                     APIML_SERVICE_HOSTNAME: caching-service-2
+                    APIML_HEALTH_PROTECTED: false
             caching-service-3:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1584,6 +1586,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: caching-service-3
                     JGROUPS_KEYEXCHANGE_PORT: 7601
                     APIML_SERVICE_HOSTNAME: caching-service-3
+                    APIML_HEALTH_PROTECTED: false
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client-2:
