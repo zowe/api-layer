@@ -104,6 +104,7 @@ public class ConfigReader {
                             safIdtConfiguration
                         );
                     }
+                    Integer timeout = configuration.getGatewayServiceConfiguration().getConnectionTimeout();
 
                     configuration.getCredentials().setUser(System.getProperty("credentials.user", configuration.getCredentials().getUser()));
                     configuration.getCredentials().setPassword(System.getProperty("credentials.password", StringUtils.isEmpty(configuration.getCredentials().getPassword()) ? "" : new String(configuration.getCredentials().getPassword())));
@@ -117,7 +118,7 @@ public class ConfigReader {
                     configuration.getGatewayServiceConfiguration().setServicesEndpoint(System.getProperty("gateway.servicesEndpoint", configuration.getGatewayServiceConfiguration().getServicesEndpoint()));
                     configuration.getGatewayServiceConfiguration().setBucketCapacity(parseInt(System.getProperty("gateway.bucketCapacity", String.valueOf(configuration.getGatewayServiceConfiguration().getBucketCapacity()))));
                     configuration.getGatewayServiceConfiguration().setAuthProvider(System.getProperty("gateway.authProvider", configuration.getGatewayServiceConfiguration().getAuthProvider()));
-                    configuration.getGatewayServiceConfiguration().setConnectionTimeout(Integer.parseInt(System.getProperty("gateway.connectionTimeout", String.valueOf(configuration.getGatewayServiceConfiguration().getConnectionTimeout()))));
+                    configuration.getGatewayServiceConfiguration().setConnectionTimeout(Integer.parseInt(System.getProperty("gateway.connectionTimeout", String.valueOf(timeout != null ? timeout : 5))));
 
                     CentralGatewayServiceConfiguration config = configuration.getCentralGatewayServiceConfiguration();
                     Optional.ofNullable(config).ifPresent(c -> {
