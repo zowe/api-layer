@@ -73,6 +73,18 @@ class CentralRegistryTest implements TestWithStartedInstances {
     @BeforeEach
     void setup() {
         RestAssured.useRelaxedHTTPSValidation();
+        await()
+            .atMost(60, TimeUnit.SECONDS)
+            .pollInterval(1, TimeUnit.SECONDS)
+            .untilAsserted(() -> {
+                String body = callContainers();
+                assertThat(body)
+                    .as("Domain gateway must be present in containers")
+                    .contains("\"serviceId\":\"domain-apiml\"");
+                assertThat(body)
+                    .as("Central gateway must be present in containers")
+                    .contains("\"serviceId\":\"gateway\"");
+            });
     }
 
     @Test
@@ -192,19 +204,6 @@ class CentralRegistryTest implements TestWithStartedInstances {
 
     @Test
     void shouldContainCorrectBasePaths() {
-
-        await()
-            .atMost(60, TimeUnit.SECONDS)
-            .pollInterval(1, TimeUnit.SECONDS)
-            .untilAsserted(() -> {
-                String body = callContainers();
-                assertThat(body)
-                    .as("Domain gateway must be present in containers")
-                    .contains("\"serviceId\":\"domain-apiml\"");
-                assertThat(body)
-                    .as("Central gateway must be present in containers")
-                    .contains("\"serviceId\":\"gateway\"");
-            });
 
         String body = callContainers();
         DocumentContext jsonContext = JsonPath.parse(body);
