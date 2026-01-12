@@ -124,7 +124,7 @@ bootRun {
 
     debugOptions {
         port = 5009
-        suspend = true
+        suspend = false
         server = true
     }
 
