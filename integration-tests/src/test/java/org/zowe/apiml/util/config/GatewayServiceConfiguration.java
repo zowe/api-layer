@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.util.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class GatewayServiceConfiguration implements ServiceConfiguration {
     private String scheme;
     private String host;
@@ -28,5 +30,5 @@ public class GatewayServiceConfiguration implements ServiceConfiguration {
     private String servicesEndpoint;
     private int bucketCapacity;
     private String authProvider;
-    private int connectionTimeout;
+    private Integer connectionTimeout;
 }

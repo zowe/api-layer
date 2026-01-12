@@ -22,6 +22,7 @@ import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.config.ConfigReader;
 
 import java.lang.reflect.Type;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -33,12 +34,19 @@ public class StompProxyTest extends WebSocketProxyTest {
 
     private static final String SEND_ENDPOINT = "/app/replyWithSameSize/";
     private static final String SUBSCRIBE_ENDPOINT = "/topic/replyWithSameSize/";
+    private static final int DEFAULT_CONNECTION_TIMEOUT = 5;
 
     private static WebSocketStompClient stompClient;
 
     private CompletableFuture<String> completableFuture;
 
-    final int connectionTimeout = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getConnectionTimeout();
+    final int connectionTimeout =
+        Optional.ofNullable(
+                ConfigReader.environmentConfiguration()
+                    .getGatewayServiceConfiguration()
+                    .getConnectionTimeout()
+            )
+            .orElse(DEFAULT_CONNECTION_TIMEOUT);
 
     @BeforeAll
     public static void setUpStompClient() {
