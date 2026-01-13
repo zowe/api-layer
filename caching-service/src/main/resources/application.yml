@@ -118,6 +118,10 @@ spring:
         gateway:
             mvc.enabled: false
             enabled: false
+        discovery:
+            client:
+                health-indicator:
+                    enabled: false
     application:
         name: Caching service
     output.ansi.enabled: always

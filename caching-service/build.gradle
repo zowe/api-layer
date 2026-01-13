@@ -66,6 +66,7 @@ dependencies {
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.doc.webflux.ui
     implementation libs.spring.retry
+    implementation libs.eureka.jersey.client
 
     implementation libs.bundles.infinispan
 
