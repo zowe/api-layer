@@ -101,7 +101,7 @@ class CachesHealthIndicatorTest {
             var caches = (Map) mapDetails.get(CACHES);
             assertEquals(cacheStatus, caches.get(CACHE_1));
             assertEquals(wholeStatus, mapDetails.get(STATUS));
-            verify(builder).status(result ? Status.UP :Status.DOWN);
+            verify(builder).status(result ? Status.UP : Status.DOWN);
         }
 
     }
