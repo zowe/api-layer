@@ -67,7 +67,7 @@ public class ConnectionUtil {
             builder.keyManager(keyManagerFactory);
         }
 
-        if (!config.isVerifySslCertificatesOfServices() || (config.isVerifySslCertificatesOfServices() && config.isNonStrictVerifySslCertificatesOfServices())) {
+        if (!isHostnameVerificationEnabled(config)) {
             log.debug("ConnectionUtil.getSslContext - NONSTRICT mode: disabling endpointIdentificationAlgorithm");
             builder.endpointIdentificationAlgorithm(null);
         }
@@ -77,13 +77,12 @@ public class ConnectionUtil {
 
     public HttpClient getHttpClient(HttpConfig config, HttpClient httpClient, boolean useClientCert) throws UnrecoverableKeyException, CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
         var sslContextBuilder = SslProvider.builder().sslContext(ConnectionUtil.getSslContext(config, useClientCert));
-        boolean hostnameVerificationEnabled = config.isVerifySslCertificatesOfServices() && !config.isNonStrictVerifySslCertificatesOfServices();
         log.debug("ConnectionUtil.getHttpClient - SSL config: verifySslCertificatesOfServices={}, nonStrictVerifySslCertificatesOfServices={}, hostnameVerificationEnabled={}, useClientCert={}",
             config.isVerifySslCertificatesOfServices(),
             config.isNonStrictVerifySslCertificatesOfServices(),
-            hostnameVerificationEnabled,
+            isHostnameVerificationEnabled(config),
             useClientCert);
-        if (hostnameVerificationEnabled) {
+        if (isHostnameVerificationEnabled(config)) {
             log.debug("ConnectionUtil.getHttpClient - hostname verification enabled");
             sslContextBuilder.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
         } else {
@@ -96,6 +95,10 @@ public class ConnectionUtil {
             });
         }
         return httpClient.secure(sslContextBuilder.build());
+    }
+
+    private boolean isHostnameVerificationEnabled(HttpConfig config) {
+        return config.isVerifySslCertificatesOfServices() && !config.isNonStrictVerifySslCertificatesOfServices();
     }
 
     @VisibleForTesting
