@@ -1,7 +1,7 @@
 serviceId: service
 title: HelloWorld Spring REST API
 description: POC for exposing a Spring REST API
-baseUrl: http://blah.blah.blah.com:10021/hellospring
+baseUrl: http://uknownhostexception:10021/hellospring
 preferIpAddress: true
 
 homePageRelativeUrl: /

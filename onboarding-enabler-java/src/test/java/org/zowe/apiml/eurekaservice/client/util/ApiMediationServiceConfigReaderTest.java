@@ -237,8 +237,8 @@ class ApiMediationServiceConfigReaderTest {
         assertThat(exception.getCause(), instanceOf(MalformedURLException.class));
     }
 
-    // @Test
-    void testLoadConfiguration_IpAddressIsNull_UnknownHost() {
+    @Test
+    void testLoadConfiguration_IpAddressIsNull_andUnknownHostAsBaseUrl_thenThrowException() {
         String internalFileName = "/additional-service-configuration_ip-address-null_UnknownHost.yml";
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
