@@ -1567,6 +1567,8 @@ jobs:
                     JGROUPS_KEYEXCHANGE_PORT: 7601
                     APIML_SERVICE_HOSTNAME: caching-service
                     APIML_HEALTH_PROTECTED: false
+                    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
+                    MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
             caching-service-2:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1577,6 +1579,8 @@ jobs:
                     JGROUPS_KEYEXCHANGE_PORT: 7601
                     APIML_SERVICE_HOSTNAME: caching-service-2
                     APIML_HEALTH_PROTECTED: false
+                    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
+                    MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
             caching-service-3:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1587,6 +1591,8 @@ jobs:
                     JGROUPS_KEYEXCHANGE_PORT: 7601
                     APIML_SERVICE_HOSTNAME: caching-service-3
                     APIML_HEALTH_PROTECTED: false
+                    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
+                    MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client-2:
