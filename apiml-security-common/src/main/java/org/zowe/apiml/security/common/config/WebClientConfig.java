@@ -10,8 +10,10 @@
 
 package org.zowe.apiml.security.common.config;
 
-import java.util.List;
-
+import io.netty.handler.ssl.SslContext;
+import io.netty.resolver.DefaultAddressResolverGroup;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -31,12 +33,9 @@ import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.common.util.ConnectionUtil;
 
-import io.netty.handler.ssl.SslContext;
-import io.netty.resolver.DefaultAddressResolverGroup;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import reactor.netty.http.client.HttpClient;
 
+import java.util.List;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor

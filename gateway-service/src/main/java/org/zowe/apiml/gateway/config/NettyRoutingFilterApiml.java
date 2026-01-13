@@ -77,7 +77,7 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
         httpClient = httpClient
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeoutResult)
             .responseTimeout(Duration.ofMillis(responseTimeoutResult));
-        
+
         return httpClient;
     }
 
