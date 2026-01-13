@@ -10,9 +10,8 @@
 
 package org.zowe.apiml.security.common.config;
 
-import io.netty.resolver.DefaultAddressResolverGroup;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -31,11 +30,12 @@ import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.common.util.ConnectionUtil;
-import reactor.netty.http.client.HttpClient;
-import reactor.netty.http.client.HttpClientSecurityUtils;
-import reactor.netty.tcp.SslProvider;
 
-import java.util.List;
+import io.netty.handler.ssl.SslContext;
+import io.netty.resolver.DefaultAddressResolverGroup;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import reactor.netty.http.client.HttpClient;
 
 @Slf4j
 @Configuration
@@ -56,21 +56,9 @@ public class WebClientConfig {
         ServerProperties serverProperties, List<HttpClientCustomizer> customizers,
         HttpClientSslConfigurer sslConfigurer
     ) {
-        SslProvider sslProvider;
+        SslContext sslContext;
         try {
-            var sslProviderBuilder = SslProvider.builder().sslContext(ConnectionUtil.getSslContext(config, false));
-            // When NONSTRICT, we must NOT add hostname verification to disable hostname checking.
-            // When STRICT, we need to explicitly add it to ensure hostname verification is enabled.
-            boolean isNonStrict = config.isVerifySslCertificatesOfServices() && config.isNonStrictVerifySslCertificatesOfServices();
-            log.debug("WebClientConfig.gatewayHttpClientFactory - SSL config: verifySslCertificatesOfServices={}, nonStrictVerifySslCertificatesOfServices={}, isNonStrict={}, hostnameVerificationEnabled={}",
-                config.isVerifySslCertificatesOfServices(),
-                config.isNonStrictVerifySslCertificatesOfServices(),
-                isNonStrict,
-                !isNonStrict);
-            if (!isNonStrict) {
-                sslProviderBuilder.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
-            }
-            sslProvider = sslProviderBuilder.build();
+            sslContext = ConnectionUtil.getSslContext(config, false);
         } catch (Exception e) {
             apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
             throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
@@ -80,7 +68,7 @@ public class WebClientConfig {
             @Override
             protected HttpClient createInstance() {
                 return super.createInstance()
-                    .secure(sslProvider)
+                    .secure(sslContextSpec -> sslContextSpec.sslContext(sslContext))
                     .resolver(DefaultAddressResolverGroup.INSTANCE);
             }
         };
