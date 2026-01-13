@@ -10,18 +10,11 @@
 
 package org.zowe.apiml.security.common.config;
 
-import io.netty.handler.ssl.SslContext;
-import io.netty.resolver.DefaultAddressResolverGroup;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
-import org.springframework.cloud.gateway.config.HttpClientCustomizer;
-import org.springframework.cloud.gateway.config.HttpClientFactory;
-import org.springframework.cloud.gateway.config.HttpClientProperties;
-import org.springframework.cloud.gateway.config.HttpClientSslConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -35,7 +28,6 @@ import org.zowe.apiml.security.common.util.ConnectionUtil;
 
 import reactor.netty.http.client.HttpClient;
 
-import java.util.List;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -48,30 +40,6 @@ public class WebClientConfig {
 
     @Value("${server.attlsClient.enabled:false}")
     private boolean isClientAttlsEnabled;
-
-    @Bean
-    HttpClientFactory gatewayHttpClientFactory(
-        HttpClientProperties properties,
-        ServerProperties serverProperties, List<HttpClientCustomizer> customizers,
-        HttpClientSslConfigurer sslConfigurer
-    ) {
-        SslContext sslContext;
-        try {
-            sslContext = ConnectionUtil.getSslContext(config, false);
-        } catch (Exception e) {
-            apimlLog.log("org.zowe.apiml.common.sslContextInitializationError", e.getMessage());
-            throw new HttpsConfigError("Error initializing SSL Context: " + e.getMessage(), e,
-                HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config.httpsConfig());
-        }
-        return new HttpClientFactory(properties, serverProperties, sslConfigurer, customizers) {
-            @Override
-            protected HttpClient createInstance() {
-                return super.createInstance()
-                    .secure(sslContextSpec -> sslContextSpec.sslContext(sslContext))
-                    .resolver(DefaultAddressResolverGroup.INSTANCE);
-            }
-        };
-    }
 
     HttpClient getHttpClient(HttpClient httpClient, boolean useClientCert) {
         try {
