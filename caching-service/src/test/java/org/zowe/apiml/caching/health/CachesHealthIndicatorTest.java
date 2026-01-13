@@ -58,7 +58,6 @@ class CachesHealthIndicatorTest {
         private static final String INFINISPAN = "infinispan";
         private static final String STATUS = "status";
         private static final String CACHE_1 = "cache_1";
-        private static final String CACHE_2 = "cache_2";
 
         private SpringEmbeddedCacheManager cacheManager = mock(SpringEmbeddedCacheManager.class);
         private EmbeddedCacheManager nativeCacheManager = mock(EmbeddedCacheManager.class);

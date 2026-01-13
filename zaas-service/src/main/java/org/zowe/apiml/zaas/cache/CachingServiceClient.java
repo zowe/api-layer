@@ -155,8 +155,8 @@ public class CachingServiceClient implements CachingClient {
             }
         } catch (RestClientException e) {
             if (!(
-                (e instanceof HttpStatusCodeException) &&
-                    (((HttpStatusCodeException) e).getStatusCode() == HttpStatus.NOT_FOUND)
+                (e instanceof HttpStatusCodeException httpStatusCodeException) &&
+                (httpStatusCodeException.getStatusCode() == HttpStatus.NOT_FOUND)
             )) {
                 throw new CachingServiceClientException("Unable to read key: " + key + ", caused by: " + e.getMessage(), e);
             }

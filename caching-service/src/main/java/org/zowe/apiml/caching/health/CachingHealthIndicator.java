@@ -49,7 +49,7 @@ public class CachingHealthIndicator extends AbstractHealthIndicator implements A
         builder.withDetail(CoreService.GATEWAY.getServiceId(), gatewayUp ? Status.UP : Status.DOWN);
 
         cachesHealthIndicator.ifPresent(i -> i.doHealthCheck(builder));
-        if (!serviceUp.get() || !gatewayUp) {
+        if ((!(boolean) serviceUp.get()) || !gatewayUp) {
             builder.down();
         }
     }

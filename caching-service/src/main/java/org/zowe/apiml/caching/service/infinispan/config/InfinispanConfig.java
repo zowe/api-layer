@@ -160,7 +160,7 @@ public class InfinispanConfig implements InitializingBean {
             .persistence().addSoftIndexFileStore().clustering()
             .clustering().cacheMode(CacheMode.DIST_SYNC);
 
-        var caches = Arrays.asList("zoweCache", "zoweInvalidatedTokenCache", "zosmfAuthenticationEndpoint", "invalidatedJwtTokens", "validationJwtToken", "zosmfInfo", "zosmfJwtEndpoint", "trustedCertificates", "parseOIDCToken", "validationOIDCToken");
+        var caches = Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN, "zosmfAuthenticationEndpoint", "invalidatedJwtTokens", "validationJwtToken", "zosmfInfo", "zosmfJwtEndpoint", "trustedCertificates", "parseOIDCToken", "validationOIDCToken");
         caches.forEach(cacheName -> cacheManager.administration()
             .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
             .getOrCreateCache(cacheName, builder.build()));
