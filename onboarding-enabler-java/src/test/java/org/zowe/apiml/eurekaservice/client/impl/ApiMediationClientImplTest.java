@@ -23,6 +23,7 @@ import org.zowe.apiml.eurekaservice.client.util.ApiMediationServiceConfigReader;
 import org.zowe.apiml.eurekaservice.client.util.EurekaInstanceConfigCreator;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
+import org.zowe.apiml.product.zos.ZUtilDummy;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -209,8 +210,8 @@ class ApiMediationClientImplTest {
         assertEquals("OSX", config.getCustomMetadata().get("os.name"));
     }
 
-    private ZUtil getZUtilZosValue() {
-        ZUtilDummy zutil = mock(ZUtilDummy.class);
+    private org.zowe.apiml.product.zos.ZUtil getZUtilZosValue() {
+        org.zowe.apiml.product.zos.ZUtilDummy zutil = mock(ZUtilDummy.class);
         doReturn("jobId").when(zutil).getCurrentJobId();
         doReturn("jobName").when(zutil).getCurrentJobname();
         doReturn("userId").when(zutil).getCurrentUser();

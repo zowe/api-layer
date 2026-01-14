@@ -74,7 +74,6 @@ dependencies {
     implementation libs.nimbus.jose.jwt
     implementation libs.spring.doc.webflux.ui
     implementation libs.jose4j.jwt // Signing, with support for JCA with ICSF
-    implementation libs.opentelemetry.spring.boot.starter
 
     testImplementation(testFixtures(project(":apiml-common")))
     testImplementation(testFixtures(project(":gateway-service")))
