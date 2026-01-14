@@ -20,7 +20,6 @@ import lombok.NoArgsConstructor;
 public class ZaasConfiguration implements ServiceConfiguration {
     private String scheme;
     private String host;
-    private String additionalHost;
     private int port;
     private int instances;
 }

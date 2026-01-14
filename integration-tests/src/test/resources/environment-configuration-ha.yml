@@ -14,8 +14,7 @@ gatewayServiceConfiguration:
     authProvider: zosmf
 zaasConfiguration:
     scheme: https
-    host: zaas-service
-    additionalHost: zaas-service-2
+    host: zaas-service,zaas-service-2
     port: 10023
 discoveryServiceConfiguration:
     scheme: https
