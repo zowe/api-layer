@@ -140,4 +140,8 @@ public class HttpRequestUtils {
             .map(zaasConfig -> getUriFromService(zaasConfig, endpoint, arguments));
     }
 
+    public static URI getUriFromZaas(String endpoint, String zaasHostname, NameValuePair...arguments) {
+        return getUriFromService(ConfigReader.environmentConfiguration().getZaasConfiguration(), endpoint, s -> zaasHostname, arguments);
+    }
+
 }
