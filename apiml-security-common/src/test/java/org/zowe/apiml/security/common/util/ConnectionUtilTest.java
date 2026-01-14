@@ -12,13 +12,16 @@ package org.zowe.apiml.security.common.util;
 
 import io.netty.handler.ssl.SslContextBuilder;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.web.HttpConfig;
+import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
@@ -30,7 +33,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -51,6 +56,7 @@ class ConnectionUtilTest {
         when(httpConfig.getTrustStoreType()).thenReturn("PKCS12");
         when(httpConfig.getTrustStorePath()).thenReturn("../keystore/localhost/localhost.truststore.p12");
         when(httpConfig.getTrustStorePassword()).thenReturn("password".toCharArray()); //NOSONAR
+        when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(true);
     }
 
     @Test
@@ -110,6 +116,57 @@ class ConnectionUtilTest {
 
             verify(builder, times(1)).trustManager(any(TrustManagerFactory.class));
             verify(builder, times(1)).endpointIdentificationAlgorithm(isNull());
+        }
+
+    }
+
+    @Nested
+    class WhenGetHttpClient {
+
+        @Test
+        void whenHostnameVerificationEnabled_thenEnableEndpointIdentificationAlgorithm() throws UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+            when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(true);
+            when(httpConfig.isNonStrictVerifySslCertificatesOfServices()).thenReturn(false);
+            HttpClient baseHttpClient = HttpClient.create();
+            HttpClient result = ConnectionUtil.getHttpClient(httpConfig, baseHttpClient, false);
+            
+            assertEquals("HTTPS", ReflectionTestUtils.getField(result.configuration().sslProvider().getSslContext(), "endpointIdentificationAlgorithm"));
+        }
+
+        @Test
+        void whenUseClientCertTrueAndHostnameVerificationStrict_thenEnableEndpointIdentificationAlgorithm() throws UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+            when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(true);
+            when(httpConfig.isNonStrictVerifySslCertificatesOfServices()).thenReturn(false);
+            when(httpConfig.getKeyStoreType()).thenReturn("PKCS12");
+            when(httpConfig.getKeyStorePath()).thenReturn("../keystore/localhost/localhost.keystore.p12");
+            when(httpConfig.getKeyStorePassword()).thenReturn("password".toCharArray()); //NOSONAR
+
+            HttpClient baseHttpClient = HttpClient.create();
+            HttpClient result = ConnectionUtil.getHttpClient(httpConfig, baseHttpClient, true);
+
+            assertEquals("HTTPS", ReflectionTestUtils.getField(result.configuration().sslProvider().getSslContext(), "endpointIdentificationAlgorithm"));
+        }
+
+        @Test
+        void whenHostnameVerificationDisabled_thenDisableEndpointIdentificationAlgorithm() throws UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+            when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(true);
+            when(httpConfig.isNonStrictVerifySslCertificatesOfServices()).thenReturn(true);
+
+            HttpClient baseHttpClient = HttpClient.create();
+            HttpClient result = ConnectionUtil.getHttpClient(httpConfig, baseHttpClient, false);
+
+            assertNull(ReflectionTestUtils.getField(result.configuration().sslProvider().getSslContext(), "endpointIdentificationAlgorithm"));
+        }
+
+        @Test
+        void whenVerifySslDisabled_thenDisableEndpointIdentificationAlgorithm() throws UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+            when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(false);
+            when(httpConfig.isNonStrictVerifySslCertificatesOfServices()).thenReturn(false);
+
+            HttpClient baseHttpClient = HttpClient.create();
+            HttpClient result = ConnectionUtil.getHttpClient(httpConfig, baseHttpClient, false);
+
+            assertNull(ReflectionTestUtils.getField(result.configuration().sslProvider().getSslContext(), "endpointIdentificationAlgorithm"));
         }
 
     }
