@@ -19,7 +19,7 @@ module.exports = defineConfig({
         username: 'USER',
         password: 'validPassword',
         microservices: true,
-},
+    },
     viewportWidth: 1400,
     viewportHeight: 980,
     chromeWebSecurity: false,

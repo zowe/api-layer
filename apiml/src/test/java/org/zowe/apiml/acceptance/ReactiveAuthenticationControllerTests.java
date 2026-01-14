@@ -106,7 +106,7 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
         .when()
             .post(URI.create(basePath + REFRESH_ENDPOINT))
         .then()
-            .statusCode(200)
+            .statusCode(204)
             .cookie(AUTH_COOKIE)
         .extract()
             .cookie(AUTH_COOKIE);

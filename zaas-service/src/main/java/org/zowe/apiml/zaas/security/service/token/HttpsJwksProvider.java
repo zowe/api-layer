@@ -10,14 +10,25 @@
 
 package org.zowe.apiml.zaas.security.service.token;
 
+import lombok.RequiredArgsConstructor;
+import org.jose4j.http.Get;
 import org.jose4j.jwk.HttpsJwks;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.product.web.HttpConfig;
 
 @Component
+@RequiredArgsConstructor
 public class HttpsJwksProvider {
 
+    private final HttpConfig httpConfig;
+
     public HttpsJwks getFor(String url) {
-        return new HttpsJwks(url);
+        var httpsJwks = new HttpsJwks(url);
+        var get = new Get();
+        get.setSslSocketFactory(httpConfig.getSecureSslContextWithoutKeystore().getSocketFactory());
+        get.setHostnameVerifier(httpConfig.getSecureHostnameVerifier());
+        httpsJwks.setSimpleHttpGet(get);
+        return httpsJwks;
     }
 
 }

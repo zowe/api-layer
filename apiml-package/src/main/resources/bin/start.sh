@@ -106,14 +106,6 @@
 # - ZWE_configs_storage_vsam_name
 # Optional variables:
 
-add_profile() {
-    new_profile=$1
-    if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
-        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
-    fi
-    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}${new_profile}"
-}
-
 if [ -n "${LAUNCH_COMPONENT}" ]; then
     JAR_FILE="${LAUNCH_COMPONENT}/apiml-lite.jar"
 else
@@ -123,7 +115,7 @@ echo "jar file: "${JAR_FILE}
 # script assumes it's in the apiml component directory and common_lib needs to be relative path
 
 if [ -z "${CMMN_LB}" ]; then
-    COMMON_LIB="../apiml-common-lib/bin/api-layer-lite-lib-all/BOOT-INF/lib/"
+    COMMON_LIB="../apiml-common-lib/bin/BOOT-INF/lib/"
 else
     COMMON_LIB="${CMMN_LB}"
 fi
@@ -149,7 +141,7 @@ add_profile() {
 if [ "${ZWE_components_gateway_debug:-${ZWE_configs_debug:-false}}" = "true" ]; then
     # TODO should this be a merge of the profiles in gateway and discovery (and other modules later added?)
     if [ -n "${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}" ]; then
-        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}},"
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}"
     fi
     add_profile "debug"
 fi
@@ -215,6 +207,7 @@ fi
 if [ "${ATTLS_SERVER_ENABLED}" = "true" ]; then
   add_profile "attlsServer"
   ZWE_configs_server_ssl_enabled="false"
+  ZWE_configs_apiml_service_corsEnabled=true
 fi
 
 internalProtocol="https"
@@ -336,11 +329,14 @@ if [ -n "${ZWE_java_home}" ]; then
 fi
 
 APIML_CODE=AG
+
+SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal"
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Xms${ZWE_configs_heap_init:-${ZWE_components_gateway_heap_init:-32}}m -Xmx${ZWE_configs_heap_max:-${ZWE_components_gateway_heap_max:-512}}m \
     -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
+    ${SHARED_CLASSES_OPTS} \
     ${ADD_OPENS} \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \

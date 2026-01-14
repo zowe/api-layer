@@ -19,25 +19,36 @@ import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.HATest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.ServiceConfiguration;
+import org.zowe.apiml.util.config.ZaasConfiguration;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.zowe.apiml.util.SecurityUtils.assertIfLogged;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
+import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromZaas;
 import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGOUT;
 
 /**
  * In initial version, basic logout test to verify token invalidation in HA scenarios
- *
  */
 @HATest
 @Tag("SAFProviderTest")
 class AuthenticationHaTest {
 
+    private static final String ZAAS_QUERY = "/zaas/api/v1/auth/query";
     private static final GatewayServiceConfiguration GATEWAY_CONF = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+    private static final ZaasConfiguration ZAAS_CONF = ConfigReader.environmentConfiguration().getZaasConfiguration();
+    private List<Throwable> errors;
 
     @BeforeEach
     void setUp() {
         RestAssured.useRelaxedHTTPSValidation();
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
+        errors = new ArrayList<>();
     }
 
     @Nested
@@ -49,27 +60,56 @@ class AuthenticationHaTest {
             @Test
             void thenTokenIsInvalidatedInBoth() {
                 var jwt = SecurityUtils.gatewayToken();
+                var gatewayHosts = getHosts(GATEWAY_CONF);
+                var zaasHosts = getHosts(ZAAS_CONF);
 
                 assertIfLogged(jwt, true);
 
                 // Logout on any instance
-                SecurityUtils.logoutOnGateway(SecurityUtils.getGatewayUrl(getGatewayHosts()[0], ROUTED_LOGOUT), jwt);
+                SecurityUtils.logoutOnGateway(SecurityUtils.getGatewayUrl(gatewayHosts[0], ROUTED_LOGOUT), jwt);
 
-                // Verify token is invalid in one or more Gateway instances
-                var gatewayHosts = getGatewayHosts();
-                for (String host : gatewayHosts) {
-                    SecurityUtils.assertIfLogged(jwt, false, host);
+                // Verify token is invalid in one or more Gateway and ZAAS instances. Do this twice
+                for (int i = 0; i < 2; i++) {
+                    assertIfGatewayLogged(jwt, false, gatewayHosts[0]);
+                    // On Modulith setup ZAAS_CONF can be null
+                    if (zaasHosts != null) {
+                        assertIfZaasLogged(jwt, false, zaasHosts[0]);
+                    }
+
+                    assertIfGatewayLogged(jwt, false, gatewayHosts[1]);
+                    if (zaasHosts != null && zaasHosts.length > 1) {
+                        assertIfZaasLogged(jwt, false, zaasHosts[1]);
+                    }
                 }
 
+                assertTrue(
+                    errors.isEmpty(),
+                    () -> "Errors:\n" + errors.stream()
+                        .map(Throwable::getMessage)
+                        .collect(Collectors.joining("\n"))
+                );
             }
-
         }
-
     }
 
-    // assume only two gateway (or apiml) instances
-    private String[] getGatewayHosts() {
-        return GATEWAY_CONF.getHost().split(",");
+    private void assertIfGatewayLogged(String jwt, boolean logged, String gatewayHost) {
+        try {
+            SecurityUtils.assertIfLogged(jwt, logged, gatewayHost);
+        } catch (Throwable error) {
+            errors.add(new Throwable(gatewayHost, error));
+        }
+    }
+
+    private void assertIfZaasLogged(String jwt, boolean logged, String zaasHost) {
+        try {
+            SecurityUtils.assertIfLogged(jwt, logged, getUriFromZaas(ZAAS_QUERY, zaasHost));
+        } catch (Throwable error) {
+            errors.add(new Throwable(zaasHost, error));
+        }
+    }
+
+    private String[] getHosts(ServiceConfiguration serviceConfiguration) {
+        return serviceConfiguration == null ? null : serviceConfiguration.getHost().split(",");
     }
 
 }

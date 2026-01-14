@@ -18,6 +18,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.Credentials;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.SslContext;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -100,6 +101,7 @@ public class GatewayRequests {
             log.info("GatewayRequests#refresh Token to be refreshed: {}", token);
 
             return given()
+                .config(SslContext.clientCertValid)
                 .cookie(COOKIE_NAME, token)
             .when()
                 .post(getGatewayUriWithPath(authConfigurationProperties.getGatewayRefreshEndpoint()))

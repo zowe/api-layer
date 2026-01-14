@@ -646,7 +646,7 @@ public class SecurityUtils {
         TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
         SSLContext sslContext = getSslContext();
         X509HostnameVerifier hostnameVerifier = tlsConfiguration.isNonStrictVerifySslCertificatesOfServices() ? SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER : SSLSocketFactory.STRICT_HOSTNAME_VERIFIER;
-        return SSLConfig.sslConfig().with().sslSocketFactory(new SSLSocketFactory(sslContext,hostnameVerifier));
+        return SSLConfig.sslConfig().with().sslSocketFactory(new SSLSocketFactory(sslContext, hostnameVerifier));
     }
 
     static SSLContext getRelaxedSslContext() {
@@ -679,23 +679,19 @@ public class SecurityUtils {
     }
 
     public static void assertIfLogged(String jwt, boolean logged) {
-        final HttpStatus status = logged ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
-
-        given()
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-        .when()
-            .get(HttpRequestUtils.getUriFromGateway(ROUTED_QUERY))
-        .then()
-            .statusCode(status.value());
+        assertIfLogged(jwt, logged, HttpRequestUtils.getUriFromGateway(ROUTED_QUERY));
     }
 
     public static void assertIfLogged(String jwt, boolean logged, String gatewayHost) {
-        final HttpStatus status = logged ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
+        assertIfLogged(jwt, logged, HttpRequestUtils.getUriFromGateway(ROUTED_QUERY, gatewayHost));
+    }
 
+    public static void assertIfLogged(String jwt, boolean logged, URI uri) {
+        final HttpStatus status = logged ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
         given()
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .when()
-            .get(HttpRequestUtils.getUriFromGateway(ROUTED_QUERY, gatewayHost))
+            .get(uri)
         .then()
             .statusCode(status.value());
     }

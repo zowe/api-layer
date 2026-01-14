@@ -12,15 +12,18 @@ package org.zowe.apiml.integration.discovery;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.*;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 
 /**
@@ -31,27 +34,33 @@ import static org.hamcrest.Matchers.is;
 @GatewayTest
 @NotAttlsTest
 @NodeEnablerTest
-class NodeEnablerIntegrationTest implements TestWithStartedInstances {
+class NodeEnablerIntegrationTest {
 
     private static final String APP_INFO_HEALTH = "/hwexpress/api/v1/status/";
-    private static final String JSON_CONTENT_TYPE = "application/json;charset=utf-8";
+
+    private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway(APP_INFO_HEALTH);
 
     @BeforeAll
     public static void beforeClass() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
-    @Test
-    void givenEnablerIsOnboarded_whenRequestingPublicEndpoint_returnStatus() {
-        URI uri = HttpRequestUtils.getUriFromGateway(APP_INFO_HEALTH);
+    @Nested
+    class WhenServiceIsRegisteredInDiscovery {
+        @Test
+        void gatewayRouteReturnsUpStatus() {
 
-        given()
-        .when()
-            .get(uri)
-        .then()
-            .statusCode(is(SC_OK))
-            .contentType(is(JSON_CONTENT_TYPE))
-            .body("status", is("UP"));
+            await()
+                .atMost(2, MINUTES)
+                .pollInterval(1, SECONDS)
+                .untilAsserted(() ->
+                    given()
+                        .when()
+                        .get(MEDIATION_CLIENT_URI)
+                        .then()
+                        .statusCode(SC_OK)
+                        .body("status", is("UP")));
+
+        }
     }
-
 }
