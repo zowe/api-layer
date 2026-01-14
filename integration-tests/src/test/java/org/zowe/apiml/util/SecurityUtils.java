@@ -679,23 +679,19 @@ public class SecurityUtils {
     }
 
     public static void assertIfLogged(String jwt, boolean logged) {
-        final HttpStatus status = logged ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
-
-        given()
-            .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
-        .when()
-            .get(HttpRequestUtils.getUriFromGateway(ROUTED_QUERY))
-        .then()
-            .statusCode(status.value());
+        assertIfLogged(jwt, logged, HttpRequestUtils.getUriFromGateway(ROUTED_QUERY));
     }
 
     public static void assertIfLogged(String jwt, boolean logged, String gatewayHost) {
-        final HttpStatus status = logged ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
+        assertIfLogged(jwt, logged, HttpRequestUtils.getUriFromGateway(ROUTED_QUERY, gatewayHost));
+    }
 
+    public static void assertIfLogged(String jwt, boolean logged, URI uri) {
+        final HttpStatus status = logged ? HttpStatus.OK : HttpStatus.UNAUTHORIZED;
         given()
             .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
         .when()
-            .get(HttpRequestUtils.getUriFromGateway(ROUTED_QUERY, gatewayHost))
+            .get(uri)
         .then()
             .statusCode(status.value());
     }
