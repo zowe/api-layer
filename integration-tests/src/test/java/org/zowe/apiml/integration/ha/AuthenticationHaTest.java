@@ -19,6 +19,7 @@ import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.HATest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.ServiceConfiguration;
 import org.zowe.apiml.util.config.ZaasConfiguration;
 
 import java.util.ArrayList;
@@ -60,8 +61,8 @@ class AuthenticationHaTest {
             @Test
             void thenTokenIsInvalidatedInBoth() {
                 var jwt = SecurityUtils.gatewayToken();
-                var gatewayHosts = getGatewayHosts();
-                var zaasHosts = getZaasHosts();
+                var gatewayHosts = getHosts(GATEWAY_CONF);
+                var zaasHosts = getHosts(ZAAS_CONF);
 
                 assertIfLogged(jwt, true);
 
@@ -107,13 +108,8 @@ class AuthenticationHaTest {
         }
     }
 
-    // assume only two gateway (or apiml) instances
-    private String[] getGatewayHosts() {
-        return GATEWAY_CONF.getHost().split(",");
-    }
-
-    private String[] getZaasHosts() {
-        return ZAAS_CONF.getHost().split(",");
+    private String[] getHosts(ServiceConfiguration serviceConfiguration) {
+        return serviceConfiguration.getHost().split(",");
     }
 
 }
