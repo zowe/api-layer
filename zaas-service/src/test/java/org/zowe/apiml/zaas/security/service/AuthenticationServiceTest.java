@@ -687,9 +687,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
                 .when(restTemplate)
                 .delete(anyString());
 
-            Boolean result = authService.invalidateJwtToken(token, true);
+            assertFalse(authService.invalidateJwtToken(token, true));
 
-            assertFalse(result);
         }
 
     }
