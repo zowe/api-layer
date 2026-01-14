@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.zowe.apiml.util.SecurityUtils.assertIfLogged;
 import static org.zowe.apiml.util.SecurityUtils.getConfiguredSslConfig;
-import static org.zowe.apiml.util.config.ConfigReader.IS_MODULITH_ENABLED;
 import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromZaas;
 import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGOUT;
 
@@ -72,12 +71,13 @@ class AuthenticationHaTest {
                 // Verify token is invalid in one or more Gateway and ZAAS instances. Do this twice
                 for (int i = 0; i < 2; i++) {
                     assertIfGatewayLogged(jwt, false, gatewayHosts[0]);
-                    if (!IS_MODULITH_ENABLED) {
+                    // On Modulith setup ZAAS_CONF can be null
+                    if (zaasHosts != null) {
                         assertIfZaasLogged(jwt, false, zaasHosts[0]);
                     }
 
                     assertIfGatewayLogged(jwt, false, gatewayHosts[1]);
-                    if (!(IS_MODULITH_ENABLED || zaasHosts.length < 2)) {
+                    if (zaasHosts != null && zaasHosts.length > 1) {
                         assertIfZaasLogged(jwt, false, zaasHosts[1]);
                     }
                 }
@@ -109,7 +109,7 @@ class AuthenticationHaTest {
     }
 
     private String[] getHosts(ServiceConfiguration serviceConfiguration) {
-        return serviceConfiguration.getHost().split(",");
+        return serviceConfiguration == null ? null : serviceConfiguration.getHost().split(",");
     }
 
 }
