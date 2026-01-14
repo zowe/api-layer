@@ -8,16 +8,12 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.eurekaservice.client.impl;
+package org.zowe.apiml.product.zos;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Properties;
 
-/**
- * @deprecated Use new version in apiml-utility
- */
-@Deprecated
 public class ZUtilDummy implements ZUtil {
 
     @Override
