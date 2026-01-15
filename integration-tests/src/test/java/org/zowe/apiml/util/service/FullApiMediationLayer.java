@@ -24,14 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.zowe.apiml.util.config.ConfigReader.IS_MODULITH_ENABLED;
+
 //TODO this class doesn't lend itself well to switching of configurations.
 //attls is integrated in a kludgy way, and deserves a rewrite
 
 @Slf4j
 public class FullApiMediationLayer {
-
-    public static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
-
     private RunningService discoveryService;
     private RunningService gatewayService;
     private RunningService apiCatalogService;
