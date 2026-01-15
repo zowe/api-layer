@@ -7,7 +7,7 @@ on:
     workflow_dispatch:
         inputs:
             release_version:
-                description: 'The version that is going to be release (leave empty to use version from gradle.properties)'
+                description: 'The version that is going to be released (leave empty to use version from gradle.properties)'
                 required: false
 
 jobs:
