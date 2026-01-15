@@ -95,7 +95,7 @@ apiml:
         timeToLive: 10000
     routing:
         instanceIdHeader: false
-        ignoredServices: discovery,zaas # to disable routing to the Discovery and ZAAS service
+        ignoredServices: discovery,zaas,gateway # to disable routing to the Discovery and ZAAS service
     service:
         apimlId: apiml1
         corsEnabled: true

@@ -125,7 +125,7 @@ apiml:
         timeToLive: 10000
     routing:
         instanceIdHeader: false
-        ignoredServices: discovery,zaas,apicatalog,cachingservice # to disable routing to the Discovery and ZAAS service + local services on Modulith
+        ignoredServices: discovery,zaas,gateway,apicatalog,cachingservice # to disable routing to the Discovery and ZAAS service + local services on Modulith
     service:
         apimlId: apiml1
         corsEnabled: true
