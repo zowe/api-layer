@@ -65,21 +65,21 @@ class OpenTelemetryTests {
 
     }
 
-    @TestConfiguration
-    @Profile("OpenTelemetryTest")
-    class OpenTelemetryConfiguration {
+}
 
-        @Bean
-        @Primary
-        SpanExporter spanExporter() {
-            return InMemorySpanExporter.create();
-        }
+@TestConfiguration
+@Profile("OpenTelemetryTest")
+class OpenTelemetryConfiguration {
 
-        @Bean
-        InMemorySpanExporter inMemorySpanExporter(SpanExporter spanExporter) {
-            return (InMemorySpanExporter) spanExporter;
-        }
+    @Bean
+    @Primary
+    SpanExporter spanExporter() {
+        return InMemorySpanExporter.create();
+    }
 
+    @Bean
+    InMemorySpanExporter inMemorySpanExporter(SpanExporter spanExporter) {
+        return (InMemorySpanExporter) spanExporter;
     }
 
 }
