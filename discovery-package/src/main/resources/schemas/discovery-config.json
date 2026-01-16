@@ -5,15 +5,6 @@
     "description": "Configuration properties for Discovery Service, as specified within a configuration file such as zowe.yaml",
     "type": "object",
     "properties": {
-        "apiml": {
-            "type": "object",
-            "properties": {
-                "serviceIdPrefixReplacer": {
-                    "type": "string",
-                    "description": "A comma separated tuple to replace service ID with new one in API ML registry."
-                }
-            }
-        },
         "port": {
             "$ref": "#/$defs/port",
             "default": 7552
@@ -22,6 +13,10 @@
             "type": "boolean",
             "description": "Enable debug logs in Discovery service",
             "default": false
+        },
+        "sslDebug": {
+            "type": "string",
+            "description": "Configure attributes fro SSL config, see java property javax.net.debug."
         },
         "heap": {
             "type": "object",
@@ -36,6 +31,76 @@
                     "type": "integer",
                     "description": "Maximum heap size in MB.",
                     "default": 512
+                }
+            }
+        },
+        "apiml": {
+            "type": "object",
+            "description": "Zowe API ML specific properties.",
+            "properties": {
+                "discovery": {
+                    "type": "object",
+                    "properties": {
+                        "serviceIdPrefixReplacer": {
+                            "type": "string",
+                            "description": "A comma separated tuple to replace service ID with new one in API ML registry."
+                        }
+                    }
+                },
+                "health": {
+                    "type": "object",
+                    "properties": {
+                        "protected": {
+                            "type": "boolean",
+                            "description": "Specifies if the /application/health endpoint is protected or accessible without any credentials.",
+                            "default": true
+                        }
+                    }
+                }
+            }
+        },
+        "server": {
+            "type": "object",
+            "description": "Configure Discovery server properties.",
+            "properties": {
+                "ssl": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "To enable SSL/tls layer.",
+                            "default": true
+                        }
+                    }
+                }
+            }
+        },
+        "spring": {
+            "type": "object",
+            "description": "Application framework parameters",
+            "properties": {
+                "profiles": {
+                    "type": "object",
+                    "description": "Profiles that can hold multiple configuration parameters.",
+                    "properties": {
+                        "active": {
+                            "type": "string",
+                            "description": "List of the active configuration profiles.",
+                            "pattern": "^[a-zA-Z0-9]+(,[a-zA-Z0-9]+)*$"
+                        }
+                    }
+                }
+            }
+        },
+        "logging": {
+            "type": "string",
+            "description": "Logging configuration for Discovery service.",
+            "properties": {
+                "config": {
+                    "type": "string",
+                    "description": "Path to custom logback configuration file.",
+                    "minLength": 1,
+                    "maxLength": 1024
                 }
             }
         }

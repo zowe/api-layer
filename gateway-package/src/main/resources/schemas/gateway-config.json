@@ -39,104 +39,6 @@
             "pattern": "^[a-z0-9]{1,64}$",
             "description": "Specifies identifier of the domain gateway for routing purpose in the central Gateway."
         },
-        "certificate": {
-            "type": "object",
-            "description": "Network encryption for gateway service connections.",
-            "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Should gateway use encrypted communication?",
-                    "default": true
-                },
-                "keystore": {
-                    "type": "object",
-                    "properties": {
-                        "alias": {
-                            "type": "string",
-                            "description": "Specifies the alias used to address the private key in the keystore."
-                        },
-                        "key": {
-                            "type": "object",
-                            "properties": {
-                                "password": {
-                                    "type": "string",
-                                    "description": "Specifies the password associated with the private key."
-                                }
-                            }
-                        },
-                        "file": {
-                            "type": "string",
-                            "description": "Specifies the keystore file used to store the private key. When using keyring, the value should be set to the SAF keyring location. For information about required certificates."
-                        },
-                        "password": {
-                            "type": "string",
-                            "description": "Specifies the password used to unlock the keystore."
-                        },
-                        "type": {
-                            "type": "string",
-                            "pattern": "^((PKCS12)|(JCE.*RACFKS))$",
-                            "description": "Specifies the type of the keystore.",
-                            "default": "PKCS12"
-                        }
-                    },
-                    "allOf": [
-                        {
-                            "if": {
-                                "properties": {
-                                    "type": {
-                                        "pattern": "^JCE.*RACFKS$"
-                                    }
-                                }
-                            },
-                            "then": {
-                                "properties": {
-                                    "file": {
-                                        "pattern": "^safkeyring[^:]*://"
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                },
-                "truststore": {
-                    "type": "object",
-                    "properties": {
-                        "file": {
-                            "type": "string",
-                            "description": "Specifies the truststore file used to keep other parties public keys and certificates. When using keyring, this value should be set to the SAF keyring location. For information about required certificates."
-                        },
-                        "password": {
-                            "type": "string",
-                            "description": "Specifies the password used to unlock the truststore."
-                        },
-                        "type": {
-                            "type": "string",
-                            "pattern": "^((PKCS12)|(JCE.*RACFKS))$",
-                            "description": "Specifies the truststore type. The default for this parameter is PKCS12.",
-                            "default": "PKCS12"
-                        }
-                    },
-                    "allOf": [
-                        {
-                            "if": {
-                                "properties": {
-                                    "type": {
-                                        "pattern": "^JCE.*RACFKS$"
-                                    }
-                                }
-                            },
-                            "then": {
-                                "properties": {
-                                    "file": {
-                                        "pattern": "^safkeyring[^:]*://"
-                                    }
-                                }
-                            }
-                        }
-                    ]
-                }
-            }
-        },
         "apiml": {
             "type": "object",
             "description": "Zowe API ML specific properties.",
@@ -157,46 +59,42 @@
                         "timeToLive": {
                             "type": "integer",
                             "description": "Specifies a timeout limit how long to keep open connection to be reused, in milliseconds.",
-                            "default": 60000
+                            "default": 10000
                         }
                     }
                 },
                 "gateway": {
                     "type": "object",
                     "properties": {
-                        "routing": {
-                            "properties": {
-                                "rateLimiterCapacity":{
-                                    "type": "integer",
-                                    "description": "Defines the total number of requests that can be allowed at one time.",
-                                    "default": 20
-                                },
-                                "rateLimiterTokens":{
-                                    "type": "integer",
-                                    "description": "Defines the number of requests that are added to the service’s allowance at regular intervals.",
-                                    "default": 20
-                                },
-                                "rateLimiterRefillDuration":{
-                                    "type": "integer",
-                                    "description": "Sets the time interval (in minutes) at which new requests (or tokens) are added.",
-                                    "default": 1
-                                },
-                                "servicesToLimitRequestRate":{
-                                    "type": "array",
-                                    "description": "Array of services which the rate limiter will be applied to.",
-                                    "items": {
-                                        "type": "string",
-                                        "description": "The name of the service."
-                                    }
-                                },
-                                "servicesToDisableRetry":{
-                                    "type": "array",
-                                    "description": "Array of services which the retry filter will be disabled for.",
-                                    "items": {
-                                        "type": "string",
-                                        "description": "The name of the service."
-                                    }
-                                }
+                        "rateLimiterCapacity":{
+                            "type": "integer",
+                            "description": "Defines the total number of requests that can be allowed at one time.",
+                            "default": 20
+                        },
+                        "rateLimiterTokens":{
+                            "type": "integer",
+                            "description": "Defines the number of requests that are added to the service’s allowance at regular intervals.",
+                            "default": 20
+                        },
+                        "rateLimiterRefillDuration":{
+                            "type": "integer",
+                            "description": "Sets the time interval (in minutes) at which new requests (or tokens) are added.",
+                            "default": 1
+                        },
+                        "servicesToLimitRequestRate":{
+                            "type": "array",
+                            "description": "Array of services which the rate limiter will be applied to.",
+                            "items": {
+                                "type": "string",
+                                "description": "The name of the service."
+                            }
+                        },
+                        "servicesToDisableRetry":{
+                            "type": "array",
+                            "description": "Array of services which the retry filter will be disabled for.",
+                            "items": {
+                                "type": "string",
+                                "description": "The name of the service."
                             }
                         },
                         "registry": {
@@ -246,6 +144,11 @@
                     "type": "object",
                     "description": "Security configuration of the Gateway",
                     "properties": {
+                        "useInternalMapper": {
+                            "type": "boolean",
+                            "description": "Enables direct native calls to z/OS to query distributed identity mappings and client certificate mappings. Use only if APIML is running on z/OS.",
+                            "default": true
+                        },
                         "auth": {
                             "type": "object",
                             "description": "Detail configuration of authentication schemes.",
@@ -274,6 +177,29 @@
                                         }
                                     }
                                 },
+                                "provider": {
+                                    "type": "string",
+                                    "description": "Which provider should be used to verify user credentials.",
+                                    "enum": ["zosmf","saf"],
+                                    "default": "saf"
+                                },
+                                "zosmf": {
+                                    "type": "object",
+                                    "description": "When zosmf is set as authentication provider, this section can be used to provide more details.",
+                                    "properties": {
+                                        "jwtAutoconfiguration": {
+                                            "type": "string",
+                                            "description": "Type of the token that is returned from zOSMF after login.",
+                                            "enum": ["JWT","jwt","LTPA","ltpa"],
+                                            "default": "jwt"
+                                        },
+                                        "serviceId": {
+                                            "type": "string",
+                                            "description": "Service ID of zOSMF from discovery service. Under this ID is zOSMF registered",
+                                            "default": "ibmzosmf"
+                                        }
+                                    }
+                                },
                                 "uniqueCookie": {
                                     "type": "boolean",
                                     "default": false
@@ -296,7 +222,7 @@
                                         "url": {
                                             "type": "string",
                                             "format": "uri",
-                                            "pattern": "^(https?)://",
+                                            "pattern": "^(https?):\/\/",
                                             "description": "URL of endpoint to verify SAF resource. Ie. https://&lt;zss hostname&gt;:&lt;zss port&gt;/saf-auth"
                                         }
                                     },
@@ -322,6 +248,16 @@
                                     "enum": ["endpoint", "native", "dummy"],
                                     "default": "native",
                                     "description": "Specifies security provider to be used by the Gateway."
+                                },
+                                "resourceClass": {
+                                    "type": "string",
+                                    "description": "zOS resource to verify access.",
+                                    "default": "ZOWE"
+                                },
+                                "resourceNamePrefix": {
+                                    "type": "string",
+                                    "description": "Prefix of the resource.",
+                                    "default": "APIML."
                                 }
                             },
                             "allOf": [
@@ -341,6 +277,16 @@
                                 }
                             ]
                         },
+                        "forwardHeader": {
+                            "type": "object",
+                            "description": "Forward header configuration.",
+                            "properties": {
+                                "trustedProxies": {
+                                    "type": "string",
+                                    "description": "IP address regular expression pattern used to identify trusted proxies from which X-Forwarded-* headers are accepted and forwarded."
+                                }
+                            }
+                        },
                         "x509": {
                             "type": "object",
                             "description": "Client certificate configuration.",
@@ -353,13 +299,29 @@
                                 "certificatesUrl": {
                                     "type": "string",
                                     "format": "uri",
-                                    "pattern": "^(https?)://",
+                                    "pattern": "^(https?):\/\/",
                                     "description": "URL of the trusted caller to obtain used certificate. Request signed by this certificate are authorized to accept client certificate provided in the header."
+                                },
+                                "certificatesUrls": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "pattern": "https?:\/\/[^\\s,]+",
+                                    "description": "List of URLs of the trusted callers to obtain used certificate. Request signed by this certificate are authorized to accept client certificate provided in the header."
                                 },
                                 "enabled": {
                                     "type": "boolean",
                                     "default": false,
                                     "description": "To enable accepting client certificate in the Gateway."
+                                },
+                                "externalMapperUrl": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "pattern": "^(https?):\/\/",
+                                    "description": "URL of the service where certificate will be mapped to user. ZSS is used if no value is provided."
+                                },
+                                "externalMapperUser": {
+                                    "type": "string",
+                                    "description": "User that has permission to do such mapping. Zowe user is used if no value is provided."
                                 },
                                 "registry": {
                                     "type": "object",
@@ -383,8 +345,9 @@
                                         }
                                     },
                                     "then": {
-                                        "required": [
-                                            "certificatesUrl"
+                                        "anyOf": [
+                                            { "required": [ "certificatesUrl" ] },
+                                            { "required": [ "certificatesUrls" ] }
                                         ]
                                     }
                                 }
@@ -403,6 +366,18 @@
                                     "type": "string",
                                     "description": "Registry name."
                                 },
+                                "identityMapperUrl": {
+                                    "type": "string",
+                                    "deprecated": true,
+                                    "format": "uri",
+                                    "pattern": "^(https?):\/\/",
+                                    "description": "URL where the Gateway can query the mapping of the distributed user ID to the mainframe user ID. ZSS is used if no value is provided."
+                                },
+                                "identityMapperUser": {
+                                    "type": "string",
+                                    "deprecated": true,
+                                    "description": "User with access to external user identity mapper specified in identityMapperUrl. Zowe user is used if no value is provided."
+                                },
                                 "jwks": {
                                     "type": "object",
                                     "description": "JWKS configuration",
@@ -418,9 +393,14 @@
                                         }
                                     }
                                 },
+                                "userIdField": {
+                                    "type": "string",
+                                    "description": "OIDC token field used for user mapping in SAF.",
+                                    "default": "sub"
+                                },
                                 "userInfo": {
                                     "type": "object",
-                                    "description": "OIDC user info endpoint configuration",
+                                    "description": "OIDC user info endpoint configuration.",
                                     "properties": {
                                         "uri": {
                                             "type": "string",
@@ -440,6 +420,68 @@
                             "type": "boolean",
                             "description": "Allow JWT to refresh.",
                             "default": false
+                        },
+                        "jwtInitializerTimeout": {
+                            "type": "integer",
+                            "description": "Timeout for initialization of JWT in minutes.",
+                            "default": 5
+                        },
+                        "personalAccessToken": {
+                            "type": "object",
+                            "description": "Personal Access Tokens configuration.",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "To enable Personal Access Tokens.",
+                                    "default": false
+                                }
+                            }
+                        },
+                        "saf": {
+                            "type": "object",
+                            "description": "SAF IDT provider.",
+                            "properties": {
+                                "provider": {
+                                    "type": "string",
+                                    "description": "Method of communication used by the SAF IDT provider implementation. REST is used if no value is provided.",
+                                    "enum": ["rest"],
+                                    "default": "rest"
+                                },
+                                "urls": {
+                                    "type": "string",
+                                    "description": "URLs of the SAF IDT provider used for the token generation and verification.",
+                                    "properties": {
+                                        "authenticate": {
+                                            "type": "string",
+                                            "format": "uri",
+                                            "pattern": "^(https?):\/\/",
+                                            "description": "URL of the SAF IDT provider used to generate the SAF token on behalf of the specified user."
+                                        },
+                                        "verify": {
+                                            "type": "string",
+                                            "format": "uri",
+                                            "pattern": "^(https?):\/\/",
+                                            "description": "URL of the SAF IDT provider used to validate the SAF token."
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "rauditx": {
+                            "type": "object",
+                            "description": "Configuration for issuing SMF records.",
+                            "properties": {
+                                "onOidcUserIsMapped": {
+                                    "type": "boolean",
+                                    "description": "To enable cutting SMF record on mapping distributed user from OIDC token to mainframe one.",
+                                    "default": false
+                                },
+                                "oidcSourceUserPaths": {
+                                    "type": "string",
+                                    "description": "Comma separated JSON paths to find source user in the OIDC token to be cut in the SMF record.",
+                                    "default": "sub"
+                                }
+                            }
                         }
                     }
                 },
@@ -476,10 +518,32 @@
                             "description": "Allow CORS on gateway.",
                             "default": false
                         },
-                        "forwardClientCertEnabled": {
-                            "type": "boolean",
-                            "description": "Enable forwarding client certificate to the next service or APIML.",
-                            "default": false
+                        "corsAllowedMethods": {
+                            "type": "string",
+                            "description": "List of allowed HTTP methods when CORS is enabled.",
+                            "default": "GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS"
+                        }
+                    }
+                },
+                "httpclient" : {
+                    "type": "object",
+                    "description": "HTTP client network settings",
+                    "properties": {
+                        "ssl": {
+                            "type": "object",
+                            "description": "SSL/TLS configuration for HTTP client",
+                            "properties": {
+                                "enabled": {
+                                    "type": "object",
+                                    "properties": {
+                                        "protocols": {
+                                            "type": "string",
+                                            "description": "List of enabled SSL/TLS protocols.",
+                                            "pattern": "^TLSv\\d+(\\.\\d+)?(,TLSv\\d+(\\.\\d+)?)*$"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -635,6 +699,18 @@
                     }
                 }
             }
+        },
+        "logging": {
+            "type": "string",
+            "description": "Logging configuration for Gateway service.",
+            "properties": {
+                "config": {
+                    "type": "string",
+                    "description": "Path to custom logback configuration file.",
+                    "minLength": 1,
+                    "maxLength": 1024
+                }
+            }
         }
     },
     "$defs": {
@@ -661,11 +737,6 @@
                 },
                 "required": ["gatewayUrl","serviceUrl"]
             }
-        },
-        "tlsType": {
-            "type": "string",
-            "description": "List of supported SSL/TLS protocols",
-            "enum": ["TLSv1.2", "TLSv1.3", "TLSv1.4"]
         }
     }
 }

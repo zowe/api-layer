@@ -42,7 +42,6 @@
 # - ZWE_configs_apiml_connection_idleConnectionTimeoutSeconds
 # - ZWE_configs_apiml_connection_timeToLive
 # - ZWE_configs_apiml_health_protected
-# - ZWE_configs_apiml_service_forwardClientCertEnabled
 # - ZWE_configs_apiml_security_auth_jwt_customAuthHeader
 # - ZWE_configs_apiml_security_auth_passticket_customUserHeader
 # - ZWE_configs_apiml_security_auth_passticket_customAuthHeader
@@ -55,6 +54,7 @@
 # - ZWE_configs_apiml_security_x509_registry_allowedUsers
 # - ZWE_configs_apiml_service_allowEncodedSlashes
 # - ZWE_configs_apiml_service_corsEnabled
+# - ZWE_configs_apiml_service_corsAllowedMethods
 # - ZWE_configs_apiml_gateway_registry_enabled
 # - ZWE_configs_apiml_gateway_registry_cachePeriodSec
 # - ZWE_configs_apiml_gateway_registry_maxSimultaneousRequests
@@ -311,13 +311,13 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.connection.timeToLive=${ZWE_configs_apiml_connection_timeToLive:-10000} \
     -Dapiml.gateway.cachePeriodSec=${ZWE_configs_apiml_gateway_registry_cachePeriodSec:-120} \
     -Dapiml.gateway.cookieNameForRateLimit=${cookieName:-apimlAuthenticationToken} \
-    -Dapiml.gateway.maxSimultaneousRequests=${ZWE_configs_gateway_registry_maxSimultaneousRequests:-20} \
+    -Dapiml.gateway.maxSimultaneousRequests=${ZWE_configs_apiml_gateway_registry_maxSimultaneousRequests:-20} \
     -Dapiml.gateway.rateLimiterCapacity=${ZWE_configs_apiml_gateway_rateLimiterCapacity:-20} \
     -Dapiml.gateway.rateLimiterRefillDuration=${ZWE_configs_apiml_gateway_rateLimiterRefillDuration:-1} \
     -Dapiml.gateway.rateLimiterTokens=${ZWE_configs_apiml_gateway_rateLimiterTokens:-20} \
-    -Dapiml.gateway.refresh-interval-ms=${ZWE_configs_gateway_registry_refreshIntervalMs:-30000} \
+    -Dapiml.gateway.refresh-interval-ms=${ZWE_configs_apiml_gateway_registry_refreshIntervalMs:-30000} \
     -Dapiml.gateway.registry.enabled=${ZWE_configs_apiml_gateway_registry_enabled:-false} \
-    -Dapiml.gateway.registry.metadata-key-allow-list=${ZWE_configs_gateway_registry_metadataKeyAllowList:-} \
+    -Dapiml.gateway.registry.metadata-key-allow-list=${ZWE_configs_apiml_gateway_registry_metadataKeyAllowList:-} \
     -Dapiml.gateway.servicesToLimitRequestRate=${ZWE_configs_apiml_gateway_servicesToLimitRequestRate:-} \
     -Dapiml.gateway.servicesToDisableRetry=${ZWE_configs_apiml_gateway_servicesToDisableRetry:-} \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-true} \
@@ -328,7 +328,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.auth.passticket.customAuthHeader=${ZWE_configs_apiml_security_auth_passticket_customAuthHeader:-} \
     -Dapiml.security.auth.passticket.customUserHeader=${ZWE_configs_apiml_security_auth_passticket_customUserHeader:-} \
     -Dapiml.security.authorization.endpoint.enabled=${ZWE_configs_apiml_security_authorization_endpoint_enabled:-false} \
-    -Dapiml.security.authorization.endpoint.url=${ZWE_configs_apiml_security_authorization_endpoint_url:-${ZWE_components_gateway_apiml_security_authorization_endpoint_url:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf-auth"}} \
+    -Dapiml.security.authorization.endpoint.url=${ZWE_configs_apiml_security_authorization_endpoint_url:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf-auth"} \
     -Dapiml.security.authorization.provider=${ZWE_configs_apiml_security_authorization_provider:-"native"} \
     -Dapiml.security.forwardHeader.trustedProxies=${ZWE_configs_apiml_security_forwardHeader_trustedProxies:-} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \

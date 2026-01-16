@@ -9,6 +9,31 @@
             "$ref": "#/$defs/port",
             "default": 7554
         },
+        "debug": {
+            "type": "boolean",
+            "description": "Enable debug logs in API Catalog",
+            "default": false
+        },
+        "sslDebug": {
+            "type": "string",
+            "description": "Configure attributes fro SSL config, see java property javax.net.debug."
+        },
+        "heap": {
+            "type": "object",
+            "description": "Configure JVM parameters for heap size",
+            "properties": {
+                "init": {
+                    "type": "integer",
+                    "description": "Initial heap size in MB.",
+                    "default": 32
+                },
+                "max": {
+                    "type": "integer",
+                    "description": "Maximum heap size in MB.",
+                    "default": 512
+                }
+            }
+        },
         "apiml": {
             "type": "object",
             "description": "Zowe API ML specific properties",
@@ -17,12 +42,23 @@
                     "type": "object",
                     "description": "API Catalog customization",
                     "properties": {
+                        "hide": {
+                            "type": "object",
+                            "properties": {
+                                "serviceInfo": {
+                                    "type": "boolean",
+                                    "description": "Hide the instance URL value of all services registered to the API ML in the API Catalog.",
+                                    "default": false
+                                }
+                            }
+                        },
                         "customStyle": {
                             "type": "object",
-                            "description": "",
+                            "description": "Customization of the logotype and selected style options",
                             "properties": {
                                 "logo": {
                                     "type": "string",
+                                    "pattern": "^.*\\.(svg|png|jpe?g)$",
                                     "description": "Location of API Catalog logo"
                                 },
                                 "titlesColor": {
@@ -47,7 +83,36 @@
                                 },
                                 "docLink": {
                                     "type": "string",
+                                    "pattern": "^[^|]+\\|https?:\/\/.+$",
                                     "description": "Custom link that would be displayed in the top right side of the header"
+                                }
+                            }
+                        }
+                    }
+                },
+                "health": {
+                    "type": "object",
+                    "properties": {
+                        "protected": {
+                            "type": "boolean",
+                            "description": "Specifies if the /application/health endpoint is protected or accessible without any credentials.",
+                            "default": true
+                        }
+                    }
+                },
+                "security": {
+                    "type": "object",
+                    "description": "Security configuration of the API Catalog",
+                    "properties": {
+                        "authorization": {
+                            "type": "object",
+                            "description": "Authorization configuration.",
+                            "properties": {
+                                "provider": {
+                                    "type": "string",
+                                    "enum": ["endpoint", "native", "dummy"],
+                                    "default": "native",
+                                    "description": "Specifies security provider to be used by the API Catalog."
                                 }
                             }
                         }
@@ -55,24 +120,48 @@
                 }
             }
         },
-        "debug": {
-            "type": "boolean",
-            "description": "Enable debug logs in API Catalog",
-            "default": false
-        },
-        "heap": {
+        "server": {
             "type": "object",
-            "description": "Configure JVM parameters for heap size",
+            "description": "Configure API Catalog server properties.",
             "properties": {
-                "init": {
-                    "type": "integer",
-                    "description": "Initial heap size in MB.",
-                    "default": 32
-                },
-                "max": {
-                    "type": "integer",
-                    "description": "Maximum heap size in MB.",
-                    "default": 512
+                "ssl": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "To enable SSL/tls layer.",
+                            "default": true
+                        }
+                    }
+                }
+            }
+        },
+        "spring": {
+            "type": "object",
+            "description": "Application framework parameters",
+            "properties": {
+                "profiles": {
+                    "type": "object",
+                    "description": "Profiles that can hold multiple configuration parameters.",
+                    "properties": {
+                        "active": {
+                            "type": "string",
+                            "description": "List of the active configuration profiles.",
+                            "pattern": "^[a-zA-Z0-9]+(,[a-zA-Z0-9]+)*$"
+                        }
+                    }
+                }
+            }
+        },
+        "logging": {
+            "type": "string",
+            "description": "Logging configuration for API Catalog service.",
+            "properties": {
+                "config": {
+                    "type": "string",
+                    "description": "Path to custom logback configuration file.",
+                    "minLength": 1,
+                    "maxLength": 1024
                 }
             }
         }
