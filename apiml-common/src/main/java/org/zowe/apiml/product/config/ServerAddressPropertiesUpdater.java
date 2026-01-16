@@ -83,6 +83,11 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
      */
     private void splitProperty(ConfigurableEnvironment environment, Map<String, Object> overriddenProperties, String addressKey, String portKey, boolean basePort) {
         String addressValue = environment.getProperty(addressKey);
+        if (addressValue == null) {
+            // the value is not configured at all (uses the default one: 0.0.0.0)
+            return;
+        }
+
         var addresses = Arrays.asList(addressValue.split(",")).stream()
             .map(String::trim)
             .toList();
