@@ -83,6 +83,7 @@ dependencies {
     testImplementation libs.reactor.test
     testImplementation libs.rest.assured
     testImplementation libs.rest.assured.web.test.client
+    testImplementation libs.opentelemetry.sdk.testing
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
@@ -123,7 +124,7 @@ bootRun {
 
     debugOptions {
         port = 5009
-        suspend = false
+        suspend = true
         server = true
     }
 
