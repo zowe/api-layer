@@ -77,10 +77,10 @@ To run onboarding-enabler-nodejs-sample-app, follow the steps below:
 
 2. 2. Navigate to [https://localhost:10011]([https://localhost:10011]) and check if the service `HWEXPRESS` is registered to the Discovery Service. You should be able to reach the following endpoints using HTTPS:
    
-       * [https://localhost:10020/swagger.json](https://localhost:10020/swagger.json) which contains the API documentation.
-       * [https://localhost:10020/api/v1/status](https://localhost:10020/api/v1/status) for the health check endpoint containing the status of the application.
-       * [https://localhost:10020/api/v1/info](https://localhost:10020/api/v1/info) for the service information such as service ID and Node.js version.
-       * [https://localhost:10020/api/v1/hello](https://localhost:10020/api/v1/hello) for the greeting endpoint.
+       * [https://localhost:10039/swagger.json](https://localhost:10039/swagger.json) which contains the API documentation.
+       * [https://localhost:10039/api/v1/status](https://localhost:10039/api/v1/status) for the health check endpoint containing the status of the application.
+       * [https://localhost:10039/api/v1/info](https://localhost:10039/api/v1/info) for the service information such as service ID and Node.js version.
+       * [https://localhost:10039/api/v1/hello](https://localhost:10039/api/v1/hello) for the greeting endpoint.
        * [https://localhost:10010/hwexpress/api/v1/hello](https://localhost:10010/hwexpress/api/v1/hello) for the greeting endpoint, routed through API Gateway.
        
        Go to the [API Catalog](https://localhost:10010/apicatalog/ui/v1) and check if the API documentation of the service is retrieved.

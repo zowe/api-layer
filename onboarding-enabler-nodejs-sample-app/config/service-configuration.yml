@@ -12,16 +12,16 @@ eureka:
 instance:
   app: hwexpress
   vipAddress: hwexpress
-  instanceId: localhost:hwexpress:10020
-  homePageUrl: https://localhost:10020/
+  instanceId: localhost:hwexpress:10039
+  homePageUrl: https://localhost:10039/
   hostName: 'localhost'
   ipAddr: '127.0.0.1'
   secureVipAddress: hwexpress
   port:
-    $: 10020
+    $: 10039
     '@enabled': false
   securePort:
-    $: 10020
+    $: 10039
     '@enabled': "true"
 
   dataCenterInfo:
@@ -36,7 +36,7 @@ instance:
     apiml.routes.api_v1.serviceUrl: "/api/v1"
     apiml.apiInfo.0.apiId: org.zowe.hwexpress
     apiml.apiInfo.0.gatewayUrl: "api/v1"
-    apiml.apiInfo.0.swaggerUrl: https://localhost:10020/swagger.json
+    apiml.apiInfo.0.swaggerUrl: https://localhost:10039/swagger.json
     apiml.service.title: 'Zowe Sample Node Service'
     apiml.service.description: 'The Proxy Server is an HTTP HTTPS, and Websocket server built upon NodeJS and ExpressJS.'
 
