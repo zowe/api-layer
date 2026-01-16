@@ -38,12 +38,12 @@ public class ZUtilDummy implements ZUtil {
 
     @Override
     public String getCurrentJobId() {
-        return null;
+        return "STC1111";
     }
 
     @Override
     public String getCurrentJobname() {
-        return null;
+        return "ZWE1AG";
     }
 
     @Override
@@ -68,7 +68,7 @@ public class ZUtilDummy implements ZUtil {
 
     @Override
     public String getCurrentUser() {
-        return null;
+        return "ZWEUSER";
     }
 
     @Override
@@ -108,7 +108,7 @@ public class ZUtilDummy implements ZUtil {
 
     @Override
     public int getPid() {
-        return 0;
+        return 1234567;
     }
 
     @Override
@@ -203,7 +203,20 @@ public class ZUtilDummy implements ZUtil {
 
     @Override
     public String substituteSystemSymbols(String pattern) {
-        return null;
+       return switch (pattern) {
+            case "&SYSNAME." -> {
+                yield "SYSNAME";
+            }
+            case "&SYSCLONE." -> {
+                yield "SYSCLONE";
+            }
+            case "&SYSPLEX." -> {
+                yield "SYSPLEX";
+            }
+            default -> {
+                yield null;
+            }
+        };
     }
 
     @Override

@@ -10,9 +10,20 @@
 
 package org.zowe.apiml.product.opentelemetry;
 
+import io.opentelemetry.api.common.Attributes;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nonnull;
 
 @ConditionalOnMissingBean(ApimlZosOpenTelemetryResourceProvider.class)
-public class ApimlNonZosOpenTelemetryResourceProvider {
+@Component
+public class ApimlNonZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryResourceProvider {
+
+    @Override
+    @Nonnull
+    Attributes calculateAttributes() {
+        return Attributes.empty();
+    }
 
 }
