@@ -39,7 +39,7 @@ COPY src ./src
 COPY config/service-configuration.yml ./config/service-configuration.yml
 
 # ===== expose service port
-EXPOSE 10020
+EXPOSE 10039
 
 # ===== start
 CMD ["npm", "run", "start"]

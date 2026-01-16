@@ -52,10 +52,10 @@ Below is an example of the configuration.
     
     
     description: Hello World REST API Service implemented in Express and Node.js
-    baseUrl: https://localhost:10020/hwexpress
-    homePageRelativeUrl: https://localhost:10020/
-    statusPageRelativeUrl: https://localhost:10020/info
-    healthCheckRelativeUrl: https://localhost:10020/status
+    baseUrl: https://localhost:10039/hwexpress
+    homePageRelativeUrl: https://localhost:10039/
+    statusPageRelativeUrl: https://localhost:10039/info
+    healthCheckRelativeUrl: https://localhost:10039/status
     discoveryServiceUrls:
       - https://localhost:10011/eureka
     routes:
@@ -64,7 +64,7 @@ Below is an example of the configuration.
     apiInfo:
       - apiId: org.zowe.hwexpress
         gatewayUrl: "api/v1"
-        swaggerUrl: https://localhost:10020/swagger.json
+        swaggerUrl: https://localhost:10039/swagger.json
     catalogUiTile:
       id: cademoapps
       title: Sample API Mediation Layer Applications
@@ -73,16 +73,16 @@ Below is an example of the configuration.
     instance:
       app: hwexpress
       vipAddress: hwexpress
-      instanceId: localhost:hwexpress:10020
-      homePageUrl: https://localhost:10020/
+      instanceId: localhost:hwexpress:10039
+      homePageUrl: https://localhost:10039/
       hostName: 'localhost'
       ipAddr: '127.0.0.1'
       secureVipAddress: hwexpress
       port:
-        $: 10020
+        $: 10039
         '@enabled': false
       securePort:
-        $: 10020
+        $: 10039
         '@enabled': "true"
     
       dataCenterInfo:
@@ -97,7 +97,7 @@ Below is an example of the configuration.
         apiml.routes.api_v1.serviceUrl: "/api/v1"
         apiml.apiInfo.0.apiId: org.zowe.hwexpress
         apiml.apiInfo.0.gatewayUrl: "api/v1"
-        apiml.apiInfo.0.swaggerUrl: https://localhost:10020/swagger.json
+        apiml.apiInfo.0.swaggerUrl: https://localhost:10039/swagger.json
         apiml.service.title: 'Zowe Sample Node Service'
         apiml.service.description: 'The Proxy Server is an HTTP HTTPS, and Websocket server built upon NodeJS and ExpressJS.'
     
@@ -129,17 +129,17 @@ Alternatively, you can also pass the config as a json to the client:
       },
       instance: {
         app: hwexpress,
-        instanceId: localhost:hwexpress:10020,
+        instanceId: localhost:hwexpress:10039,
         hostName: 'localhost',
         ipAddr: '127.0.0.1',
-        homePageUrl: https://localhost:10020/,
+        homePageUrl: https://localhost:10039/,
         secureVipAddress: hwexpress,
         port: {
-          $: 10020,
+          $: 10039,
           '@enabled': false
         },
         securePort: {
-          $: 10020,
+          $: 10039,
           '@enabled': true
         },
         dataCenterInfo: {
