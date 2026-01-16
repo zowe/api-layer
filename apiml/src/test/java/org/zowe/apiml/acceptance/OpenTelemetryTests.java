@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -32,6 +33,11 @@ class OpenTelemetryTests {
     @Nested
     @AcceptanceTest
     @ActiveProfiles("OpenTelemetryTest")
+    @TestPropertySource(
+        properties = {
+            "otel.sdk.disabled=false"
+        }
+    )
     class TestClass {
 
         @Autowired

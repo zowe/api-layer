@@ -34,6 +34,11 @@ management:
             base-path: /application
             exposure:
                 include: "*"
+
+otel:
+    sdk:
+        disabled: true
+
 apiml:
     catalog:
         serviceId: apicatalog
