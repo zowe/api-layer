@@ -30,19 +30,19 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
 
     private final ZosSystemInformation zosSystemInformation;
 
-    @Value("${otel.resource.attributes.deployment.environment.name}")
+    @Value("${otel.resource.attributes.deployment.environment.name:#{null}}")
     private String environmentName;
 
-    @Value("${otel.resource.attributes.zos.lpar.name}")
+    @Value("${otel.resource.attributes.zos.lpar.name:#{null}}")
     private String lparName;
 
-    @Value("${otel.resource.attributes.zos.lpar.override}")
+    @Value("${otel.resource.attributes.zos.lpar.override:false}")
     private boolean lparOverride;
 
-    @Value("${otel.resource.attributes.service.namespace}")
+    @Value("${otel.resource.attributes.service.namespace:#{null}}")
     private String serviceNamespace;
 
-    @Value("${otel.resource.attributes.service.name}")
+    @Value("${otel.resource.attributes.service.name:#{null}}")
     private String serviceName;
 
     @SuppressWarnings("null")
