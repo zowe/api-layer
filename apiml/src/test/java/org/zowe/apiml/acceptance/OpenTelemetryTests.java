@@ -25,6 +25,7 @@ import org.springframework.test.context.TestPropertySource;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -52,7 +53,8 @@ class OpenTelemetryTests {
             assertTrue(result.isSuccess());
 
             var data = inMemorySpanExporter.getFinishedSpanItems();
-            data.stream()
+            assertFalse(data.isEmpty(), "No data collected");
+            assertTrue(data.stream()
                 .anyMatch(d -> {
                     var attributes = d.getAttributes();
                     assertEquals("JOB1111", attributes.get(stringKey(null)));
@@ -60,7 +62,8 @@ class OpenTelemetryTests {
                     return true;
                 }
 
-            );
+            ), "No data matches");
+
         }
 
     }
