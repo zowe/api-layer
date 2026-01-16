@@ -24,27 +24,21 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
 import org.apache.catalina.Host;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatProtocolHandlerCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
-import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
@@ -77,8 +71,6 @@ import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
@@ -116,8 +108,6 @@ public class ModulithConfig implements InitializingBean {
     private final EurekaClientConfig eurekaConfig;
     private final CachingServiceEurekaInstanceConfigBean cachingServiceEurekaInstanceConfigBean;
     private final ApplicationEventPublisher eventPublisher;
-    private final ConfigurableListableBeanFactory beanFactory;
-    private final List<TomcatConnectorCustomizer> connectorCustomizers;
 
     private final Timer timer = new Timer("PeerReplicated-StaticServices");
 
