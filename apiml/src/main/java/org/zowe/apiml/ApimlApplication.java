@@ -53,6 +53,11 @@ import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
 public class ApimlApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ApimlApplication.class, args);
+        try {
+            SpringApplication.run(ApimlApplication.class, args);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            System.exit(-1);
+        }
     }
 }

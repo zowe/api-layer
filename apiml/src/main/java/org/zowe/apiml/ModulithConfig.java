@@ -130,14 +130,8 @@ public class ModulithConfig implements InitializingBean {
     @Value("${apiml.service.ipAddress:127.0.0.1}")
     private String ipAddress;
 
-    @Value("${server.address.additional:#{null}}")
-    private List<String> additionalAddresses;
-
     @Value("${apiml.service.port:10010}")
     private int port;
-
-    @Value("${apiml.internal-discovery.port:10011}")
-    private int internalDiscoveryPort;
 
     @Value("${server.attlsServer.enabled:false}")
     private boolean isServerAttlsEnabled;
@@ -387,60 +381,6 @@ public class ModulithConfig implements InitializingBean {
         factory.getTomcatContextCustomizers().addAll(contextCustomizers.orderedStream().toList());
         factory.getTomcatProtocolHandlerCustomizers().addAll(protocolHandlerCustomizers.orderedStream().toList());
         return factory;
-    }
-
-    private WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> createConnector(int port, String address) {
-        return factory -> {
-            var connector = new Connector() {
-                @Override
-                protected void startInternal() throws LifecycleException {
-                    try {
-                        super.startInternal();
-                    } catch (LifecycleException e) {
-
-                        int out = SpringApplication.exit(applicationContext, () -> -1);
-                        log.error("Exit code {}", out, e);
-                        throw e;
-                    }
-                }
-            };
-
-            try {
-                Method method = TomcatReactiveWebServerFactory.class.getDeclaredMethod("customizeConnector",
-                    Connector.class);
-                method.setAccessible(true);
-                method.invoke(factory, connector);
-            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
-
-            connector.setPort(port);
-            if (address != null) {
-                connector.setProperty("address", address);
-            }
-
-            factory.addAdditionalTomcatConnectors(connector);
-            factory.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
-        };
-    }
-
-    /**
-     * Create a custom Tomcat connector(s) with same customizations as the main
-     * external (GW) connector to handle:
-     * 1. "legacy" connections in v3 meant to go to Eureka / Discovery Service
-     * 2. bind the port on multiple network interfaces
-     */
-    @PostConstruct
-    void createTomcatConnectors() {
-        beanFactory.registerSingleton("discoveryTomcatConnector", beanFactory.initializeBean(createConnector(internalDiscoveryPort, null), "discoveryTomcatConnector"));
-
-        if (additionalAddresses == null) return;
-
-        for (ListIterator<String> li = additionalAddresses.listIterator(); li.hasNext(); ) {
-            String address = li.next();
-            beanFactory.registerSingleton("gatewayTomcatConnector" + li.nextIndex(), createConnector(port, address));
-            beanFactory.registerSingleton("discoveryTomcatConnector" + li.nextIndex(), createConnector(internalDiscoveryPort, address));
-        }
     }
 
     static class ServletWithFilters extends TomcatHttpHandlerAdapter {

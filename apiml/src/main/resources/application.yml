@@ -106,7 +106,9 @@ apiml:
         userid: eureka  # Userid that Eureka server will use to check authentication of its clients (other services)
         password: password  # Password that Eureka server will use to check authentication of its clients (other services)
         allPeersUrls: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/eureka/
-
+    internal-discovery:
+        address: ${server.address}
+        port: 10011
     gateway:
         eureka:
             instance:
