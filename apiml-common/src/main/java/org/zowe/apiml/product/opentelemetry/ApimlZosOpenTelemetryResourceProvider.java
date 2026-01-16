@@ -66,7 +66,7 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
         }
 
         if (StringUtils.isBlank(serviceName)) {
-            attributesBuilder.put("service.name", generateServiceName(zosAttributes))
+            attributesBuilder.put("service.name", generateServiceName(zosAttributes));
         }
 
         return attributesBuilder.build();

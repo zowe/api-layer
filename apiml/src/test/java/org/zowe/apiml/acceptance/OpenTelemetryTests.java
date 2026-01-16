@@ -22,6 +22,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.ActiveProfiles;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OpenTelemetryTests {
 
@@ -33,11 +37,24 @@ class OpenTelemetryTests {
         @Autowired
         private InMemorySpanExporter inMemorySpanExporter;
 
+        @SuppressWarnings("null")
         @Test
         void testSomething() {
             // Startup should generate something already
 
+            var result = inMemorySpanExporter.flush();
+            assertTrue(result.isSuccess());
 
+            var data = inMemorySpanExporter.getFinishedSpanItems();
+            data.stream()
+                .anyMatch(d -> {
+                    var attributes = d.getAttributes();
+                    assertEquals("JOB1111", attributes.get(stringKey(null)));
+                    assertEquals(d, data);
+                    return true;
+                }
+
+            );
         }
 
     }
