@@ -42,10 +42,19 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
 
     private static final String ADDITIONAL_SUFFIX = ".additional";
 
+    /**
+     * map of extra connector to bind a port (see key) to a network interface (see value). It shouldn't contain
+     * the main pair (port x network interface), because it is bound by Spring Boot.
+     */
     private static final Map<Integer, List<String>> ADDITIONAL_NETWORKS = new HashMap<>();
 
+    // to know what type of customizer to use (Servlet vs. React)
     private static String webApplicationType;
 
+    /**
+     * To read the META-INF/spring.factories file that contains also the port definition
+     * @return configuration of additional ports
+     */
     private Properties readProperties() {
         Properties properties = new Properties();
         try (
@@ -62,6 +71,16 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
         return properties;
     }
 
+    /**
+     * The method are spliting a original configuration value if there are multiple values. The original value should
+     * contain exact one network interfaces. The rest is stored in a new configuration value (the same name with
+     * suffix .additional)
+     * @param environment Spring env
+     * @param overriddenProperties map to collect all new or modified configuration values
+     * @param addressKey name of configuration value with network interfaces
+     * @param portKey name of configuration to read the port value
+     * @param basePort if true, ignore the first value because it is bound by Spring boot
+     */
     private void splitProperty(ConfigurableEnvironment environment, Map<String, Object> overriddenProperties, String addressKey, String portKey, boolean basePort) {
         String addressValue = environment.getProperty(addressKey);
         var addresses = Arrays.asList(addressValue.split(",")).stream()
@@ -81,6 +100,13 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
         }
     }
 
+    /**
+     * This processor is responsible for normalizing a configuration values. If there are properties like
+     * `server.address` it cannot be a list. The processor update this value to contain one value and if there are
+     * other values they are stored as a new configuration value (the same name with the suffix `.additional`)
+     * @param environment the environment to post-process
+     * @param application the application to which the environment belongs
+     */
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         webApplicationType = environment.getProperty("spring.main.web-application-type");
@@ -109,6 +135,11 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
         }
     }
 
+    /**
+     * This bean is responsible for generating new beans that create a new connector. It is implemented as Tomcat
+     * customizer. Each additional connector has one new bean.
+     * @return processor to create new customizer beans or an empty processor if there are no additional address.
+     */
     @Bean
     public BeanDefinitionRegistryPostProcessor registerAdditionalTomcatConnectors() {
         if (ADDITIONAL_NETWORKS.isEmpty()) {
@@ -132,6 +163,9 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
         };
     }
 
+    /**
+     * Customizer to bind a new connector to a network interface on reactive service
+     */
     @RequiredArgsConstructor
     static class AdditionalConnectorReactive implements WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> {
 
@@ -165,6 +199,9 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
 
     }
 
+    /**
+     * Customizer to bind a new connector to a network interface on servlet service
+     */
     @RequiredArgsConstructor
     static class AdditionalConnectorServlet implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
 
