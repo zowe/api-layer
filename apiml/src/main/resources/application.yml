@@ -250,6 +250,7 @@ apiml:
 server:
     http2:
         enabled: false
+    address: 0.0.0.0
     port: ${apiml.service.port}
     ssl:
         clientAuth: want
