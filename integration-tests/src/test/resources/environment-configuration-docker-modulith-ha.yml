@@ -5,7 +5,7 @@ credentials:
     clientUser: APIMTST
 gatewayServiceConfiguration:
     scheme: https
-    host: apiml,apiml-2
+    host: apiml,apiml-2,apiml-3
     port: 10010
     internalPorts: 10010
     externalPort: 10010
@@ -31,13 +31,13 @@ discoverableClientConfiguration:
 apiCatalogServiceConfiguration:
     scheme: https
     url:
-    host: apiml,apiml-2
+    host: apiml,apiml-2,apiml-3
     port: 10010
     instances: 2
 cachingServiceConfiguration:
     url:
     scheme: https
-    host: apiml,apiml-2
+    host: apiml,apiml-2,apiml-3
     port: 10010
 tlsConfiguration:
     keyAlias: localhost
