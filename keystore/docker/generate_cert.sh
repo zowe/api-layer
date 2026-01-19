@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 if [ $# != 2 ]; then
     echo "Arguments were not provided or they are invalid:"
     echo " 1. argument: <all-services.keystore.p12 and certificate password>"
