@@ -10,16 +10,16 @@ eureka:
 instance:
   app: ${serviceId}
   vipAddress: ${serviceId}
-  instanceId: localhost:hwexpress:10020
+  instanceId: localhost:hwexpress:10039
   homePageUrl: ${homePageRelativeUrl}
   hostname: localhost
   ipAddr: 127.0.0.1
   secureVipAddress: ${serviceId}
   port:
-    $: "10020"
+    $: "10039"
     "@enabled": false
   securePort:
-    $: "10020"
+    $: "10039"
     "@enabled": true
   dataCenterInfo:
     "@class": com.test
@@ -33,7 +33,7 @@ instance:
     apiml.routes.api_v1.serviceUrl: ${routes.serviceUrl}
     apiml.apiInfo.0.apiId: test.test
     apiml.apiInfo.0.gatewayUrl: ${routes.gatewayUrl}
-    apiml.apiInfo.0.swaggerUrl: http://localhost:10020/swagger.json
+    apiml.apiInfo.0.swaggerUrl: http://localhost:10039/swagger.json
     apiml.service.title: Test Service
     apiml.service.description: a service for testing
 ssl:
