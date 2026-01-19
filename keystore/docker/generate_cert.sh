@@ -16,7 +16,7 @@ echo "Generating key pair"
 openssl genrsa -out localhost.key 2048
 
 echo "Generating CSR"
-openssl req -newkey rsa:2048 -nodes -keyout localhost.key -sha256 -out localhost.csr -outform PEM -config all-services.ext
+openssl req -newkey rsa:2048 -nodes -keyout localhost.key -sha256 -out localhost.csr -outform PEM -config all-services.ext -extensions v3_req
 rm all-services.keystore.key
 cp localhost.key all-services.keystore.key
 
@@ -25,7 +25,7 @@ keytool -exportcert -keystore ../local_ca/localca.keystore.p12 -alias localca -s
 openssl pkcs12 -in ../local_ca/localca.keystore.p12 -nodes -nocerts -out local_ca.key -legacy -password pass:${PASSWORD_CA}
 
 echo "Signing CSR"
-openssl x509 -req -in localhost.csr -CA local_ca.pem -CAkey local_ca.key -CAcreateserial -out localhost.crt -days 1825 -sha256 -extfile all-services.ext
+openssl x509 -req -in localhost.csr -CA local_ca.pem -CAkey local_ca.key -CAcreateserial -out localhost.crt -days 1825 -sha256 -extfile all-services.ext -extensions v3_req
 rm all-services.keystore.cer
 cp localhost.crt all-services.keystore.cer
 cat local_ca.pem >> localhost.crt
