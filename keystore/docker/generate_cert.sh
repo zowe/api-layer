@@ -32,6 +32,8 @@ cat local_ca.pem >> localhost.crt
 rm all-services.pem
 cat localhost.key > all-services.pem
 cat localhost.crt >> all-services.pem
+rm all-services.cer
+cp localhost.crt all-services.cer
 
 echo "Creating new keystore"
 openssl pkcs12 -export -out all-services.keystore.p12 -in localhost.crt -inkey localhost.key -name localhost -macalg SHA256 -password pass:${PASSWORD}
