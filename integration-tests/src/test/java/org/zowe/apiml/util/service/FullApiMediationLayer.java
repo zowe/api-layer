@@ -30,7 +30,7 @@ import java.util.Optional;
 @Slf4j
 public class FullApiMediationLayer {
 
-    final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
+    public static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
 
     private RunningService discoveryService;
     private RunningService gatewayService;
