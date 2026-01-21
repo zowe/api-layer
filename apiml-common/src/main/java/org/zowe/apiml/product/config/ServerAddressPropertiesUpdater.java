@@ -151,7 +151,7 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
             return registry -> {};
         }
 
-        Class<?> connectorCustomizerClass = "servlet".equals(webApplicationType) ? AdditionalConnectorServlet.class : AdditionalConnectorReactive.class;
+        Class<?> connectorCustomizerClass = "servlet".equalsIgnoreCase(webApplicationType) ? AdditionalConnectorServlet.class : AdditionalConnectorReactive.class;
         return registry -> {
             for (var entry : ADDITIONAL_NETWORKS.entrySet()) {
                 int port = entry.getKey();
