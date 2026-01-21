@@ -48,7 +48,7 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
      */
     private static final Map<Integer, List<String>> ADDITIONAL_NETWORKS = new HashMap<>();
 
-    // to know what type of customizer to use (Servlet vs. React)
+    // to know what type of customizer to use (Servlet vs. Reactive)
     private static String webApplicationType;
 
     /**
