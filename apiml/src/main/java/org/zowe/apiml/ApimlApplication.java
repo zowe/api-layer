@@ -57,7 +57,7 @@ public class ApimlApplication {
             SpringApplication.run(ApimlApplication.class, args);
         } catch (Throwable t) {
             t.printStackTrace();
-            System.exit(-1);
+            System.exit(2);
         }
     }
 }
