@@ -243,6 +243,16 @@ if [ "${ATTLS_SERVER_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" 
   keystore_location=
 fi
 
+# migration step of Infinispan since version 2.18.4 (see #https://github.com/zowe/api-layer/pull/3960)
+original_infinispan_data_location="${ZWE_configs_storage_infinispan_persistence_dataLocation:-${ZWE_zowe_workspaceDirectory:-$(pwd)}}/caching-service/data"
+if [ -d "${original_infinispan_data_location}" ]; then
+    mv -f "${original_infinispan_data_location}" "${ZWE_zowe_workspaceDirectory:-$(pwd)}/caching-service/${ZWE_haInstance_id:-localhost}/${ZWE_configs_storage_infinispan_persistence_dataLocation:-data}"
+fi
+original_infinispan_index_location="${ZWE_configs_storage_infinispan_persistence_indexLocation:-${ZWE_zowe_workspaceDirectory:-$(pwd)}}/caching-service/index"
+if [ -d "${original_infinispan_index_location}" ]; then
+    mv -f "${original_infinispan_index_location}" "${ZWE_zowe_workspaceDirectory:-$(pwd)}/caching-service/${ZWE_haInstance_id:-localhost}/${ZWE_configs_storage_infinispan_persistence_indexLocation:-index}"
+fi
+
 CACHING_CODE=CS
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
@@ -273,8 +283,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
   -Djgroups.bind.port=${ZWE_configs_storage_infinispan_jgroups_port:-7098} \
   -Djgroups.keyExchange.port=${ZWE_configs_storage_infinispan_jgroups_keyExchange_port:-7118} \
   -Djgroups.tcp.diag.enabled=${ZWE_configs_storage_infinispan_jgroups_tcp_diag_enabled:-false} \
-  -Dcaching.storage.infinispan.persistence.dataLocation=${ZWE_configs_storage_infinispan_persistence_dataLocation:-data} \
-  -Dcaching.storage.infinispan.persistence.indexLocation=${ZWE_configs_storage_infinispan_persistence_indexLocation:-index} \
   -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-localhost[7098]} \
   -Dserver.address=0.0.0.0 \
   -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \

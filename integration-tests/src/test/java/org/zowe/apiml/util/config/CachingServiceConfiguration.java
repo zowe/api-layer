@@ -21,4 +21,7 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CachingServiceConfiguration {
     private String url;
+    private String scheme;
+    private String host;
+    private int port;
 }
