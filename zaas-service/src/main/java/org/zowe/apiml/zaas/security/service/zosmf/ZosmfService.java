@@ -291,6 +291,9 @@ public class ZosmfService extends AbstractZosmfService {
 
             return info.getStatusCode() == HttpStatus.OK;
         } catch (RuntimeException ex) {
+            if(ex instanceof HttpClientErrorException.Unauthorized) {
+                return true;
+            }
             handleExceptionOnCall(infoURIEndpoint, ex);
             return false;
         }
