@@ -317,7 +317,7 @@ jobs:
             -   name: Run Normal HA Tests in Modulith
                 if: ${{ 'normal' == matrix.type }}
                 run: >
-                    ./gradlew runHATests --info -Denvironment.config=-docker-modulith-ha
+                    ./gradlew runHATests --info -Denvironment.config=-docker-modulith-ha -Denvironment.gwCount=3
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1673,7 +1673,7 @@ jobs:
             -   name: Run Normal HA Tests
                 if: ${{ 'normal' == matrix.type }}
                 run: >
-                    ./gradlew runHATests --info -Denvironment.config=-ha
+                    ./gradlew runHATests --info -Denvironment.config=-ha -Denvironment.gwCount=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}

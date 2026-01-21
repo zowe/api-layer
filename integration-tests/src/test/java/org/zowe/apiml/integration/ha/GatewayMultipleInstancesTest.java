@@ -55,7 +55,8 @@ public class GatewayMultipleInstancesTest {
             void gatewayInstancesAreRegistered() {
                 assumeTrue(haGatewayRequests.existing() > 1 && haDiscoveryRequests.existing() > 1);
 
-                assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.GATEWAY), is(3));
+                var expectedGatewayCount = Integer.getInteger("environment.gwCount", 2);
+                assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.GATEWAY), is(expectedGatewayCount));
             }
 
         }
