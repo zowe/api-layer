@@ -190,6 +190,7 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
                 method.setAccessible(true);
                 method.invoke(factory, connector);
             } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
+                log.error("Cannot create the custom Tomcat reactive connector with address {} on port {}: {}", address, port, e.getMessage());
                 throw new RuntimeException(e);
             }
 
@@ -226,6 +227,7 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
                 method.setAccessible(true);
                 method.invoke(factory, connector);
             } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
+                log.error("Cannot create the custom Tomcat servlet connector with address {} on port {}: {}", address, port, e.getMessage());
                 throw new RuntimeException(e);
             }
 
