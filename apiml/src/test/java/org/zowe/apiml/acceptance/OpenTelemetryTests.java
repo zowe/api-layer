@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.acceptance;
 
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
+import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import org.junit.jupiter.api.Nested;
@@ -36,7 +38,8 @@ class OpenTelemetryTests {
     @ActiveProfiles("OpenTelemetryTest")
     @TestPropertySource(
         properties = {
-            "otel.sdk.disabled=false"
+            "otel.sdk.disabled=false",
+            "otel.logs.exporter=in_memory"
         }
     )
     class TestClass {
@@ -44,21 +47,24 @@ class OpenTelemetryTests {
         @Autowired
         private InMemorySpanExporter inMemorySpanExporter;
 
+        @Autowired
+        private InMemoryLogRecordExporter inMemoryLogRecordExporter;
+
         @SuppressWarnings("null")
         @Test
         void testSomething() {
             // Startup should generate something already
 
-            var result = inMemorySpanExporter.flush();
-            assertTrue(result.isSuccess());
+            var spanData = inMemorySpanExporter.getFinishedSpanItems();
+            var logData = inMemoryLogRecordExporter.getFinishedLogRecordItems();
 
-            var data = inMemorySpanExporter.getFinishedSpanItems();
-            assertFalse(data.isEmpty(), "No data collected");
-            assertTrue(data.stream()
+            assertFalse(logData.isEmpty(), "No logs collected");
+            assertFalse(spanData.isEmpty(), "No data collected");
+            assertTrue(spanData.stream()
                 .anyMatch(d -> {
                     var attributes = d.getAttributes();
                     assertEquals("JOB1111", attributes.get(stringKey(null)));
-                    assertEquals(d, data);
+                    assertEquals(d, spanData);
                     return true;
                 }
 
@@ -83,6 +89,17 @@ class OpenTelemetryConfiguration {
     @Bean
     InMemorySpanExporter inMemorySpanExporter(SpanExporter spanExporter) {
         return (InMemorySpanExporter) spanExporter;
+    }
+
+    @Bean
+    @Primary
+    LogRecordExporter logRecordExporter() {
+        return InMemoryLogRecordExporter.create();
+    }
+
+    @Bean
+    InMemoryLogRecordExporter inMemoryLogRecordExporter(LogRecordExporter logRecordExporter) {
+        return (InMemoryLogRecordExporter) logRecordExporter;
     }
 
 }
