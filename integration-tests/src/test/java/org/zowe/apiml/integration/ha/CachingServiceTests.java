@@ -133,9 +133,10 @@ class CachingServiceTests {
         given()
             .config(SslContext.clientCertApiml)
             .header("X-Certificate-DistinguishedName", DN)
-            .when()
+        .when()
             .get(baseUrls.get(index) + "/cachingservice/api/v1/cache-list")
-            .then()
+        .then()
+            .log().ifValidationFails()
             .statusCode(200)
             .body(MAP + "." + MAP_KEY, equalTo(MAP_VALUE));
 
@@ -143,9 +144,10 @@ class CachingServiceTests {
         given()
             .config(SslContext.clientCertApiml)
             .header("X-Certificate-DistinguishedName", DN)
-            .when()
+        .when()
             .get(baseUrls.get(index) + "/cachingservice/api/v1/cache-list/" + MAP)
-            .then()
+        .then()
+            .log().ifValidationFails()
             .statusCode(200)
             .body(MAP_KEY, equalTo(MAP_VALUE));
 
@@ -153,9 +155,10 @@ class CachingServiceTests {
         given()
             .config(SslContext.clientCertApiml)
             .header("X-Certificate-DistinguishedName", DN)
-            .when()
+        .when()
             .get(baseUrls.get(index) + "/cachingservice/api/v1/cache/" + KEY)
-            .then()
+        .then()
+            .log().ifValidationFails()
             .statusCode(200)
             .body("value", equalTo(VALUE));
 
