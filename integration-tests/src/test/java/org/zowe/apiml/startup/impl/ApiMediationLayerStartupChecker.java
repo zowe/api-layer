@@ -114,7 +114,9 @@ public class ApiMediationLayerStartupChecker {
         initSsl();
 
         awaitFor(this::areAllInstancesOnboarded, 2);
-        this.minimumEurekaVersion = getEurekaVersion(Instance.of(discoveryServiceConfiguration).get(0));
+        for (var ds : Instance.of(discoveryServiceConfiguration)) {
+            this.minimumEurekaVersion = Math.max(minimumEurekaVersion, getEurekaVersion(ds));
+        }
         assertTrue(this.minimumEurekaVersion >= 0, "Cannot obtain eurekaVersion from Discovery service");
         awaitFor(this::areAllInstancesRegistryUpToDate, 1);
         awaitFor(this::areAllServicesUp, 1);
@@ -160,22 +162,30 @@ public class ApiMediationLayerStartupChecker {
     }
 
     private boolean areAllInstancesOnboarded() {
-        HttpGet requestToEurekaApps = new HttpGet(HttpRequestUtils.getUriFromService(discoveryServiceConfiguration, "/eureka/apps"));
-        requestToEurekaApps.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
-        try (CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build()) {
-            var response = client.execute(requestToEurekaApps);
-            var entity = response.getEntity();
-            if (entity != null) {
-                String entityString = EntityUtils.toString(entity);
-                log.debug("eureka/apps: {}", entityString);
-                return areAllInstanceOnInEureka(JsonPath.parse(entityString));
-            } else {
-                log.debug("eureka/apps entity is null");
+        for (var ds : Instance.of(discoveryServiceConfiguration)) {
+            HttpGet requestToEurekaApps = new HttpGet(HttpRequestUtils.getUri(
+                discoveryServiceConfiguration.getScheme(), ds.getHostname(), ds.getPort(), "/eureka/apps")
+            );
+            requestToEurekaApps.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
+            try (CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build()) {
+                var response = client.execute(requestToEurekaApps);
+                var entity = response.getEntity();
+                if (entity != null) {
+                    String entityString = EntityUtils.toString(entity);
+                    log.debug("eureka/apps: {}", entityString);
+                    if (!areAllInstanceOnInEureka(JsonPath.parse(entityString))) {
+                        return false;
+                    }
+                } else {
+                    log.debug("eureka/apps entity is null");
+                    return false;
+                }
+            } catch (Exception e) {
+                log.error("Cannot call Eureka apps", e);
+                return false;
             }
-        } catch (Exception e) {
-            log.error("Cannot call Eureka apps", e);
         }
-        return false;
+        return true;
     }
 
     private int getEurekaVersion(Instance instance) {
