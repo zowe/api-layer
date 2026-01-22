@@ -1,19 +1,30 @@
 name: Image specific release
 
 on:
+    schedule:
+        # * is a special character in YAML so you have to quote this string
+        - cron:  '0 0 * * 5'
     workflow_dispatch:
         inputs:
             release_version:
-                description: 'The version that is going to be release'
-                required: true
+                description: 'The version that is going to be released (leave empty to use version from gradle.properties)'
+                required: false
 
 jobs:
     build-services:
         runs-on: ubuntu-latest
+        outputs:
+            version: ${{ steps.get-version.outputs.version }}
         steps:
             -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
+
+            -   name: Get version from gradle.properties
+                id: get-version
+                run: |
+                    VERSION=$(grep "^version=" gradle.properties | cut -d'=' -f2 | sed 's/-SNAPSHOT//')
+                    echo "version=$VERSION" >> $GITHUB_OUTPUT
 
             -   uses: ./.github/actions/setup
 
@@ -27,7 +38,7 @@ jobs:
             - build-services
         uses: zowe/api-layer/.github/workflows/build-conformant-images.yml@v3.x.x
         with:
-            version: ${{ github.event.inputs.release_version }}
+            version: ${{ github.event.inputs.release_version || needs.build-services.outputs.version }}
         secrets:
             registry-user: ${{ secrets.ARTIFACTORY_X_USERNAME }}
             registry-password: ${{ secrets.ARTIFACTORY_X_PASSWORD }}
