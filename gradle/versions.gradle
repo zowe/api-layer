@@ -254,6 +254,8 @@ dependencyResolutionManagement {
             library('xstren', 'com.thoughtworks.xstream', 'xstream').versionRef('xstream') // to avoid security vulnerability CVE-2024-47072
             library('opentelemetry_spring_boot_starter', 'io.opentelemetry.instrumentation','opentelemetry-spring-boot-starter').versionRef('openTelemetry-starter')
             library('opentelemetry_sdk_testing', 'io.opentelemetry','opentelemetry-sdk-testing').versionRef('openTelemetry-core')
+            library('opentelemetry_sdk_extension_autoconfigure_spi', 'io.opentelemetry','opentelemetry-sdk-extension-autoconfigure-spi').versionRef('openTelemetry-core')
+
 
             // Sample apps only
             library('jersey_client4', 'com.sun.jersey.contribs', 'jersey-apache-client4').versionRef('jerseySun')

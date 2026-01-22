@@ -84,6 +84,7 @@ dependencies {
     testImplementation libs.rest.assured
     testImplementation libs.rest.assured.web.test.client
     testImplementation libs.opentelemetry.sdk.testing
+    testImplementation libs.opentelemetry.sdk.extension.autoconfigure.spi
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
