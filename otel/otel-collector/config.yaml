@@ -25,7 +25,7 @@ exporters:
     path: /etc/otel-collector/logs.json
     append: false
     format: json
-  # debug printed to the console
+  # debug printed to the console when added to exporters
   debug:
     verbosity: detailed
   # otlp-http exporter to forward telemetry to the Golden Tester
@@ -76,21 +76,21 @@ service:
       # received traces are exported to console and file only
       receivers: [otlp]
       processors: []
-      exporters: [debug, file/traces]
+      exporters: [file/traces]
     # received traces are exported to console and file only
     metrics:
       receivers: [otlp]
       processors: []
-      exporters: [debug, file/metrics]
+      exporters: [file/metrics]
     # Received metrics are filtered and transformed. For any number of received metrics, at most one will be exported
     # to console, file and Golden Tester.
     metrics/filtered:
         receivers: [ otlp ]
         processors: [ filter/keep_specific_metrics, transform/all_in_one ]
-        exporters: [ debug, file/metrics_filtered, otlphttp/golden ]
+        exporters: [ file/metrics_filtered, otlphttp/golden ]
     # received logs are exported to console and file only
     logs:
       receivers: [otlp]
       processors: []
-      exporters: [debug, file/logs]
+      exporters: [file/logs]
 

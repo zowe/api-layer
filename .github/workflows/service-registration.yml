@@ -76,28 +76,29 @@ jobs:
             -   name: Check OpenTelemetry containers
                 run: |
                     echo "Checking OpenTelemetry Golden Tester..."
-                    curl -s http://localhost:5318/v1/metrics -H "Content-Type: application/json" -d "{}" \
+                    curl -s -v -w "\n" http://localhost:5318/v1/metrics -H "Content-Type: application/json" -d "{}" \
                         --fail \
                         --retry-all-errors \
-                        --retry-delay 2 \
-                        --retry 10
-                    echo ""
-                    echo "curl exit code: "$?
-                    echo ""
+                        --retry-delay 10 \
+                        --retry 3
+                    if [ "$?" -eq 0 ]; then
+                      echo "OpenTelemetry Golden Tester is ready!"
+                    fi
 
+                    echo ""
                     echo "Checking OpenTelemetry Collector..."
-                    curl -s http://localhost:4318/v1/metrics -H "Content-Type: application/json" -d "{}" \
+                    curl -s -v -w "\n" /dev/null http://localhost:4318/v1/metrics -H "Content-Type: application/json" -d "{}" \
                         --fail \
                         --retry-all-errors \
-                        --retry-delay 2 \
-                        --retry 10
-                    echo ""
-                    echo "curl exit code: "$?
+                        --retry-delay 10 \
+                        --retry 3
+                    if [ $? -eq 0 ]; then
+                      echo "OpenTelemetry Collector is ready!"
+                    fi
 
             -   name: Run startup check for modulith
                 run: >
-                    ./gradlew runStartUpCheck --info --scan -Denvironment.startServices=true -Denvironment.modulith=true -Denvironment.config=-modulith
-                    ./gradlew runStartUpCheckWithOpenTelemetry --info --scan -Denvironment.startServices=true -Denvironment.modulith=true
+                    ./gradlew runStartUpCheckWithOpenTelemetry --info --scan -Denvironment.startServices=true -Denvironment.modulith=true -Denvironment.config=-modulith
 
             -   name: Verify OpenTelemetry data with Golden Tester
                 if: always()
@@ -109,7 +110,7 @@ jobs:
 
                     # Display logs to see the diff if it failed
                     echo "Golden container logs:"
-                    docker logs golden
+                    docker logs golden 2>&1 | tee otel/otel-golden/container.log
 
                     echo ""
 
@@ -125,7 +126,7 @@ jobs:
                     docker stop collector -t 60
 
                     echo "Collector container logs:"
-                    docker logs collector
+                    docker logs collector 2>&1 | tee otel/otel-collector/container.log
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
