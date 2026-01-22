@@ -10,12 +10,10 @@
 
 package org.zowe.apiml.gateway.acceptance;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
@@ -122,13 +120,14 @@ class RetryPerServiceTest {
     @Nested
     @MicroservicesAcceptanceTest
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
     class ConnectionReset extends AcceptanceTestWithMockServices {
 
         private MockService mockService;
 
-        @BeforeAll
+        @BeforeEach
         void startMockService() {
-            mockService = mockService("serviceid1").scope(MockService.Scope.CLASS)
+            mockService = mockService("serviceid1").scope(MockService.Scope.TEST)
                 .addEndpoint("/200").responseCode(200)
                 .and().start();
         }
