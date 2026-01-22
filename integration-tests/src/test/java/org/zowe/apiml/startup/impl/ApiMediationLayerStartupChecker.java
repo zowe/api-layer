@@ -80,10 +80,13 @@ public class ApiMediationLayerStartupChecker {
         servicesToCheck.add(new Service("Api Catalog", "$.components.gateway.details.apicatalog"));
         servicesToCheck.add(new Service("Discovery Service", "$.components.gateway.details.discovery"));
 
-        instancesToCheck.addAll(Instance.of(discoveryServiceConfiguration));
+        if (!IS_MODULITH_ENABLED) {
+            // these services are not registered on all sides, and it is not necessary to check (GW check is enough)
+            instancesToCheck.addAll(Instance.of(discoveryServiceConfiguration));
+            instancesToCheck.addAll(Instance.of(apiCatalogServiceConfiguration, "apicatalog.instances"));
+        }
         instancesToCheck.addAll(Instance.of(gatewayConfiguration, "gateway.instances"));
         instancesToCheck.addAll(Instance.of(discoverableClientConfiguration, "discoverableclient.instances"));
-        instancesToCheck.addAll(Instance.of(apiCatalogServiceConfiguration, "apicatalog.instances"));
         instancesToCheck.addAll(Instance.of(cachingServiceConfiguration, "caching.instances"));
     }
 
