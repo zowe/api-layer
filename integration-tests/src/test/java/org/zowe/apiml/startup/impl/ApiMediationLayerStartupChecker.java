@@ -363,6 +363,7 @@ public class ApiMediationLayerStartupChecker {
                     .orElse("")
                     .split("[,;]")
                 )
+                .filter(StringUtils::isNotBlank)
                 .map(String::trim)
                 .map(String::toLowerCase)
                 .map(host -> new Instance(host, serviceConfiguration.getServiceId(), serviceConfiguration.getPort(), serviceConfiguration))
