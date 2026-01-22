@@ -10391,12 +10391,6 @@
         "node": ">=10"
       }
     },
-    "node_modules/lodash": {
-      "version": "4.17.21",
-      "resolved": "https://zowe.jfrog.io/artifactory/api/npm/npm-org/lodash/-/lodash-4.17.21.tgz",
-      "integrity": "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==",
-      "dev": true
-    },
     "node_modules/lodash-deep": {
       "version": "2.0.0",
       "resolved": "https://zowe.jfrog.io/artifactory/api/npm/npm-org/lodash-deep/-/lodash-deep-2.0.0.tgz",
