@@ -54,19 +54,21 @@ public class ConnectionUtil {
         var keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
 
         if (setKeystore) {
-            log.info("Loading keystore: {}: {}", config.getKeyStoreType(), config.getKeyStorePath());
+            log.debug("Loading keystore: {}: {}", config.getKeyStoreType(), config.getKeyStorePath());
             var keyStore = SecurityUtils.loadKeyStore(
                 config.getKeyStoreType(), config.getKeyStorePath(), config.getKeyStorePassword());
             keyManagerFactory.init(keyStore, config.getKeyStorePassword());
             builder.keyManager(x509KeyManagerSelectedAlias(config, keyManagerFactory));
         } else {
+            log.debug("ConnectionUtil.getSslContext - no keystore: using empty keystore");
             var emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
             emptyKeystore.load(null, null);
             keyManagerFactory.init(emptyKeystore, null);
             builder.keyManager(keyManagerFactory);
         }
 
-        if (config.isVerifySslCertificatesOfServices() && config.isNonStrictVerifySslCertificatesOfServices()) {
+        if (!isHostnameVerificationEnabled(config)) {
+            log.debug("ConnectionUtil.getSslContext - NONSTRICT mode: disabling endpointIdentificationAlgorithm");
             builder.endpointIdentificationAlgorithm(null);
         }
 
@@ -75,10 +77,28 @@ public class ConnectionUtil {
 
     public HttpClient getHttpClient(HttpConfig config, HttpClient httpClient, boolean useClientCert) throws UnrecoverableKeyException, CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
         var sslContextBuilder = SslProvider.builder().sslContext(ConnectionUtil.getSslContext(config, useClientCert));
-        if (!config.isNonStrictVerifySslCertificatesOfServices()) {
+        log.debug("ConnectionUtil.getHttpClient - SSL config: verifySslCertificatesOfServices={}, nonStrictVerifySslCertificatesOfServices={}, hostnameVerificationEnabled={}, useClientCert={}",
+            config.isVerifySslCertificatesOfServices(),
+            config.isNonStrictVerifySslCertificatesOfServices(),
+            isHostnameVerificationEnabled(config),
+            useClientCert);
+        if (isHostnameVerificationEnabled(config)) {
+            log.debug("ConnectionUtil.getHttpClient - hostname verification enabled");
             sslContextBuilder.handlerConfigurator(HttpClientSecurityUtils.HOSTNAME_VERIFICATION_CONFIGURER);
+        } else {
+            log.debug("ConnectionUtil.getHttpClient - hostname verification disabled");
+            sslContextBuilder.handlerConfigurator(handler -> {
+                var sslEngine = handler.engine();
+                var sslParameters = sslEngine.getSSLParameters();
+                sslParameters.setEndpointIdentificationAlgorithm(null);
+                sslEngine.setSSLParameters(sslParameters);
+            });
         }
         return httpClient.secure(sslContextBuilder.build());
+    }
+
+    private boolean isHostnameVerificationEnabled(HttpConfig config) {
+        return config.isVerifySslCertificatesOfServices() && !config.isNonStrictVerifySslCertificatesOfServices();
     }
 
     @VisibleForTesting
