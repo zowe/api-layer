@@ -51,7 +51,7 @@ class PHBaseTest {
             Optional<ResponseEntity<?>> result = underTest.apply("information", "", Optional.empty(), mockResponse, headers);
 
             assertThat(result.isPresent(), is(true));
-            assertThat(result.get().getStatusCode(), is(HttpStatus.OK));
+            assertThat(result.get().getStatusCode(), is(HttpStatus.UNAUTHORIZED));
             verify(mockResponse, never()).addCookie(any());
         }
 
