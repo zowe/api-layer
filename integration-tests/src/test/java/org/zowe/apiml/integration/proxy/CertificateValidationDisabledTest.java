@@ -14,8 +14,10 @@ public class CertificateValidationDisabledTest {
     void givenRequestToServiceWithInvalidHostname_thenRequestIsSuccessful() {
         URI uri = HttpRequestUtils.getUriFromGateway(Endpoints.DISCOVERABLE_GREET);
         given()
+            .log().ifValidationFails()
             .get(uri)
             .then()
+            .log().ifValidationFails()
             .statusCode(200);
     }
 }
