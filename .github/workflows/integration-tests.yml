@@ -67,7 +67,7 @@ jobs:
             apiml:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
-                    - /api-defs:/api-defs
+                    - /api-defs-unknown-host:/api-defs
                 env:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: true
                     APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
