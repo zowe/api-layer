@@ -45,7 +45,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class StartupMessageAcceptanceTest {
+class StartupMessageAcceptanceTest {
 
     @AcceptanceTest
     @ExtendWith({MockitoExtension.class, OutputCaptureExtension.class})
@@ -78,10 +78,12 @@ public class StartupMessageAcceptanceTest {
 
     @Nested
     class GivenDefaultProfile extends BaseStartupTest {
+
         @Test
         void whenFullyStartedUp_thenEmitMessage(CapturedOutput output) {
             verifyStartupMessage(output);
         }
+
     }
 
     @Nested
@@ -131,5 +133,7 @@ public class StartupMessageAcceptanceTest {
 
             verifyStartupMessage(output);
         }
+
     }
+
 }

@@ -11,7 +11,6 @@
 package org.zowe.apiml.acceptance;
 
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
-import io.opentelemetry.sdk.metrics.data.MetricData;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -24,9 +23,9 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import java.util.Collection;
+import javax.annotation.Nonnull;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @TestInstance(Lifecycle.PER_CLASS)
 class OpenTelemetryMetricsTest {
@@ -40,6 +39,7 @@ class OpenTelemetryMetricsTest {
             "otel.metrics.exporter=none",
             "otel.traces.exporter=none",
             "otel.logs.exporter=none",
+            "os.name=z/OS"
         }
     )
     class WhenOpenTelemetryEnabled {
@@ -49,15 +49,15 @@ class OpenTelemetryMetricsTest {
 
         @Test
         void testJvmMetrics() {
-            Collection<MetricData> metrics = metricReader.collectAllMetrics();
+            var metrics = metricReader.collectAllMetrics();
+            assertFalse(metrics.isEmpty(), "No data received");
 
-            if (metrics.isEmpty()) {
-                System.out.println("WARNING: No metrics found in reader.");
-            } else {
-                metrics.forEach(m -> System.out.println("Found metric: " + m.getName()));
-            }
+            metrics.forEach(
+                metric -> {
 
-            assertThat(metrics).isNotEmpty();
+                }
+            );
+
         }
 
         @Profile("OpenTelemetryTest")
@@ -65,12 +65,12 @@ class OpenTelemetryMetricsTest {
         static class TestConfig {
 
             @Bean
-            public InMemoryMetricReader inMemoryMetricReader() {
+            InMemoryMetricReader inMemoryMetricReader() {
                 return InMemoryMetricReader.create();
             }
 
             @Bean
-            public AutoConfigurationCustomizerProvider otelCustomizer(InMemoryMetricReader reader) {
+            AutoConfigurationCustomizerProvider otelCustomizer(@Nonnull InMemoryMetricReader reader) {
                 return p -> p.addMeterProviderCustomizer((meterProviderBuilder, configProperties) ->
                     meterProviderBuilder.registerMetricReader(reader));
             }

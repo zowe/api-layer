@@ -15,16 +15,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.product.zos.ZosSystemInformation;
 
 import javax.annotation.Nonnull;
 
 import java.util.Map;
+import java.util.Optional;
+
+import static org.zowe.apiml.product.zos.ZosSystemInformation.*;
 
 @Component
 @RequiredArgsConstructor
-//@ConditionalOnExpression -> Expression should depend on ZosSystemInformation.isRunningOnZos()
+@ConditionalOnMissingBean(ApimlNonZosOpenTelemetryResourceProvider.class)
 @Slf4j
 public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryResourceProvider {
 
@@ -44,6 +48,10 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
 
     @Value("${otel.resource.attributes.service.name:#{null}}")
     private String serviceName;
+
+    @Value("${apiml.service.apimlId:#{null}}")
+    private String apimlId;
+
 
     @SuppressWarnings("null")
     @Override
@@ -69,17 +77,36 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
             attributesBuilder.put("service.name", generateServiceName(zosAttributes));
         }
 
+        Optional.ofNullable(zosAttributes.get(ZOS_JOB_ID)).map(String::valueOf)
+            .ifPresent(zosJobId -> attributesBuilder.put("", zosJobId));
+
+        Optional.ofNullable(zosAttributes.get(ZOS_JOB_NAME)).map(String::valueOf)
+            .ifPresent(zosJobName -> attributesBuilder.put("", zosJobName));
+
+        Optional.ofNullable(zosAttributes.get(ZOS_USER_ID)).map(String::valueOf)
+            .ifPresent(zosUserId -> attributesBuilder.put("", zosUserId));
+
+        Optional.ofNullable(zosAttributes.get(ZOS_PID)).map(String::valueOf)
+            .ifPresent(zosPid -> attributesBuilder.put("", zosPid));
+
+        Optional.ofNullable(zosAttributes.get(ZOS_SYSNAME)).map(String::valueOf)
+            .ifPresent(zosSysname -> attributesBuilder.put("", zosSysname));
+
+        Optional.ofNullable(zosAttributes.get(ZOS_SYSCLONE)).map(String::valueOf)
+            .ifPresent(zosSysclone -> attributesBuilder.put("", zosSysclone));
+
+        Optional.ofNullable(zosAttributes.get(ZOS_SYSPLEX)).map(String::valueOf)
+            .ifPresent(zosSysplex -> attributesBuilder.put("", zosSysplex));
+
         return attributesBuilder.build();
     }
 
     private String generateServiceName(Map<String,Object> zosAttributes) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'generateServiceName'");
+        return "";
     }
 
     private String generateServiceNamespace(Map<String,Object> zosAttributes) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'generateServiceNamespace'");
+        return "";
     }
 
 }
