@@ -70,8 +70,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
             originalCerts,
             filteredCerts,
             publicKeyCertificatesBase64,
-            log,
-            CategorizeCertsFilter::base64EncodePublicKey
+            log
         );
     }
 
@@ -199,13 +198,9 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
             .toArray(X509Certificate[]::new);
     }
 
-    public static String base64EncodePublicKey(X509Certificate cert) {
-        return Base64.getEncoder().encodeToString(cert.getPublicKey().getEncoded());
-    }
-
     @Setter
-    Predicate<X509Certificate> certificateForClientAuth = crt -> !getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(crt));
+    Predicate<X509Certificate> certificateForClientAuth = crt -> !getPublicKeyCertificatesBase64().contains(CertificateLoggingUtils.base64EncodePublicKey(crt));
     @Setter
-    Predicate<X509Certificate> apimlCertificate = crt -> getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(crt));
+    Predicate<X509Certificate> apimlCertificate = crt -> getPublicKeyCertificatesBase64().contains(CertificateLoggingUtils.base64EncodePublicKey(crt));
 
 }

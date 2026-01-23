@@ -56,11 +56,11 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
 
     @Setter
     private Predicate<X509Certificate> certificateForClientAuth = cert ->
-        !getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(cert));
+        !getPublicKeyCertificatesBase64().contains(CertificateLoggingUtils.base64EncodePublicKey(cert));
 
     @Setter
     private Predicate<X509Certificate> apimlCertificate = cert ->
-        getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(cert));
+        getPublicKeyCertificatesBase64().contains(CertificateLoggingUtils.base64EncodePublicKey(cert));
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -146,8 +146,7 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
             originalCerts,
             filteredCerts,
             publicKeyCertificatesBase64,
-            log,
-            CategorizeCertsWebFilter::base64EncodePublicKey
+            log
         );
     }
 
@@ -192,15 +191,6 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
             .build();
     }
 
-    /**
-     * Encodes the public key of an X.509 certificate to a Base64 string.
-     *
-     * @param cert The X.509 certificate.
-     * @return The Base64 encoded string of the public key.
-     */
-    public static String base64EncodePublicKey(X509Certificate cert) {
-        return Base64.getEncoder().encodeToString(cert.getPublicKey().getEncoded());
-    }
 
     /**
      * Defines the order of this filter. It should run relatively early
