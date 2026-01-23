@@ -230,7 +230,6 @@ if [ -n "${ZWE_configs_storage_vsam_name}" ]; then
 fi
 
 #Set the external URL only if the variables are defined so the APIML can fallback if the property is null
-EXTERNAL_URL=""
 if [ -n "${externalProtocol}" ] && [ -n "${ZWE_zowe_externalDomains_0}" ] && [ -n "${ZWE_zowe_externalPort}" ]; then
     EXTERNAL_URL="-Dapiml.service.externalUrl=${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}"
 fi
