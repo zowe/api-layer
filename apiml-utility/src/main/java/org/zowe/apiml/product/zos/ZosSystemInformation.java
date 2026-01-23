@@ -30,7 +30,7 @@ public class ZosSystemInformation {
 
     private ZUtil zUtil;
 
-    public boolean isRunningOnZos() {
+    public static boolean isRunningOnZos() {
         return "z/OS".equals(System.getProperty(OS_NAME));
     }
 
