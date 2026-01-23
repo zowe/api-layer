@@ -74,6 +74,7 @@ jobs:
             discoverable-client-unknown:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
+                    APIML_SERVICE_HOSTNAME: discoverable-client-unknown
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
                     SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
                     SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
