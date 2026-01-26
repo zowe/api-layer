@@ -19,8 +19,8 @@ You can start the service using by running:
 
 If the APIML is already running then you should see the following messages:
 
-    hwexpress service listening on port 10020
-    registered with eureka:  hwexpress/localhost:hwexpress:10020
+    hwexpress service listening on port 10039
+    registered with eureka:  hwexpress/localhost:hwexpress:10039
 
 Then you can access it via Gateway by issuing the following command:
 
