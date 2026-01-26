@@ -55,4 +55,21 @@ public class RSU2012 extends FunctionalApar {
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @Override
+    protected ResponseEntity<?> handleInformation(Map<String, String> headers, HttpServletResponse response) {
+        return new ResponseEntity<>("{\n" +
+            "  \"zos_version\": \"04.27.00\",\n" +
+            "  \"zosmf_port\": \"1443\",\n" +
+            "  \"zosmf_version\": \"27\",\n" +
+            "  \"zosmf_hostname\": \"usilca32.lvn.broadcom.net\",\n" +
+            "  \"plugins\": {\n" +
+            "    \"msgId\": \"IZUG612E\",\n" +
+            "    \"msgText\": \"IZUG612E\"\n" +
+            "  },\n" +
+            "  \"zosmf_saf_realm\": \"SAFRealm\",\n" +
+            "  \"zosmf_full_version\": \"27.0\",\n" +
+            "  \"api_version\": \"1\"\n" +
+            "}", HttpStatus.OK);
+    }
 }
