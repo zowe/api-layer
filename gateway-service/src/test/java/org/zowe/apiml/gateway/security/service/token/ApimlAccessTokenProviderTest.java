@@ -233,7 +233,6 @@ class ApimlAccessTokenProviderTest {
             assertSame(unexpectedError, thrownException);
         }
 
-        @Test
         void givenNoSaltInCache_whenInitializing_thenCreateNewOne() {
             Exception noRecordException = new CachingServiceClientException("no record");
             doThrow(noRecordException).when(cachingServiceClient).read("salt");
