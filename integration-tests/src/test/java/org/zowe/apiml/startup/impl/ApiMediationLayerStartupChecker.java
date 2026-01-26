@@ -135,8 +135,8 @@ public class ApiMediationLayerStartupChecker {
     public void waitUntilReady() {
         initSsl();
 
-        awaitFor(this::areAllInstancesOnboarded, 2);
-        awaitFor(this::areDiscoveryInSync, 1);
+        awaitFor(this::areAllInstancesOnboarded, 5);
+        awaitFor(this::areDiscoveryInSync, 2);
         awaitFor(this::areAllInstancesRegistryUpToDate, 1);
         awaitFor(this::areAllServicesUp, 1);
     }
