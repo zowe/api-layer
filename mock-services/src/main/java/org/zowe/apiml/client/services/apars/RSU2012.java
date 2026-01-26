@@ -58,6 +58,15 @@ public class RSU2012 extends FunctionalApar {
 
     @Override
     protected ResponseEntity<?> handleInformation(Map<String, String> headers, HttpServletResponse response) {
+        if (containsInvalidOrNoUser(headers)) {
+            return validInfo();
+        }
+
+        setLtpaToken(response);
+        return validInfo();
+    }
+
+    private ResponseEntity<?> validInfo() {
         return new ResponseEntity<>("{\n" +
             "  \"zos_version\": \"04.27.00\",\n" +
             "  \"zosmf_port\": \"1443\",\n" +
