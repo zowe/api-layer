@@ -81,7 +81,7 @@ public class ApiMediationLayerStartupChecker {
 
         if (!IS_MODULITH_ENABLED) {
             // these services are not registered on all sides, and it is not necessary to check (GW check is enough)
-            instancesToCheck.addAll(Instance.of(discoveryServiceConfiguration));
+            instancesToCheck.addAll(Instance.of(discoveryServiceConfiguration, "discovery.instances"));
             instancesToCheck.addAll(Instance.of(apiCatalogServiceConfiguration, "apicatalog.instances"));
         }
         instancesToCheck.addAll(Instance.of(gatewayConfiguration, "gateway.instances"));
