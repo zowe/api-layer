@@ -22,6 +22,7 @@ import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.AbstractConfigurableWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -168,37 +169,63 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
         };
     }
 
-    /**
-     * Customizer to bind a new connector to a network interface on reactive service
-     */
     @RequiredArgsConstructor
-    static class AdditionalConnectorReactive implements WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> {
+    static abstract class AbstractAdditionalConnector<F extends AbstractConfigurableWebServerFactory> implements WebServerFactoryCustomizer<F> {
 
-        private final List<TomcatConnectorCustomizer> connectorCustomizers;
+        protected final List<TomcatConnectorCustomizer> connectorCustomizers;
 
         @Setter
-        private int port;
+        protected int port;
         @Setter
-        private String address;
+        protected String address;
 
-        @Override
-        public void customize(TomcatReactiveWebServerFactory factory) {
-            var connector = new Connector();
+        protected Connector connector = new Connector();
 
+        private void invokeCustomizer(F factory, Class<? super F> factoryClass, Connector connector) {
+            Exception exception;
             try {
-                Method method = TomcatReactiveWebServerFactory.class.getDeclaredMethod("customizeConnector", Connector.class);
+                Method method = factoryClass.getDeclaredMethod("customizeConnector", Connector.class);
                 method.setAccessible(true);
                 method.invoke(factory, connector);
-            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
-                log.error("Cannot create the custom Tomcat reactive connector with address {} on port {}: {}", address, port, e.getMessage());
-                throw new RuntimeException(e);
+                return;
+            } catch (NoSuchMethodException e) {
+                if (factoryClass != Object.class) {
+                    invokeCustomizer(factory, factoryClass.getSuperclass(), connector);
+                    return;
+                }
+                exception = e;
+            } catch (SecurityException | IllegalAccessException | InvocationTargetException e) {
+                exception = e;
             }
+            log.error("Cannot create the custom Tomcat reactive connector with address {} on port {}: {}", address, port, exception.getMessage());
+            throw new RuntimeException(exception);
+        }
 
+        @Override
+        public void customize(F factory) {
+            invokeCustomizer(factory, (Class<? super F>) factory.getClass(), connector);
             connector.setPort(port);
             if (address != null) {
                 connector.setProperty("address", address);
             }
+            initFactory(factory);
+        }
 
+        protected abstract void initFactory(F factory);
+
+    }
+
+    /**
+     * Customizer to bind a new connector to a network interface on reactive service
+     */
+    static class AdditionalConnectorReactive extends AbstractAdditionalConnector<TomcatReactiveWebServerFactory> {
+
+        public AdditionalConnectorReactive(List<TomcatConnectorCustomizer> connectorCustomizers) {
+            super(connectorCustomizers);
+        }
+
+        @Override
+        protected void initFactory(TomcatReactiveWebServerFactory factory) {
             factory.addAdditionalTomcatConnectors(connector);
             factory.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
         }
@@ -208,34 +235,14 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
     /**
      * Customizer to bind a new connector to a network interface on servlet service
      */
-    @RequiredArgsConstructor
-    static class AdditionalConnectorServlet implements WebServerFactoryCustomizer<TomcatServletWebServerFactory> {
+    static class AdditionalConnectorServlet extends AbstractAdditionalConnector<TomcatServletWebServerFactory> {
 
-        private final List<TomcatConnectorCustomizer> connectorCustomizers;
-
-        @Setter
-        private int port;
-        @Setter
-        private String address;
+        public AdditionalConnectorServlet(List<TomcatConnectorCustomizer> connectorCustomizers) {
+            super(connectorCustomizers);
+        }
 
         @Override
-        public void customize(TomcatServletWebServerFactory factory) {
-            var connector = new Connector();
-
-            try {
-                Method method = TomcatServletWebServerFactory.class.getDeclaredMethod("customizeConnector", Connector.class);
-                method.setAccessible(true);
-                method.invoke(factory, connector);
-            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
-                log.error("Cannot create the custom Tomcat servlet connector with address {} on port {}: {}", address, port, e.getMessage());
-                throw new RuntimeException(e);
-            }
-
-            connector.setPort(port);
-            if (address != null) {
-                connector.setProperty("address", address);
-            }
-
+        protected void initFactory(TomcatServletWebServerFactory factory) {
             factory.addAdditionalTomcatConnectors(connector);
             factory.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
         }
