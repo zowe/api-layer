@@ -371,13 +371,22 @@ public class ApiMediationLayerStartupChecker {
             this.serviceConfiguration = serviceConfiguration;
         }
 
+        static List<String> getAllHosts(ServiceConfiguration serviceConfiguration) {
+            List<String> hosts = new ArrayList<>();
+            if (StringUtils.isNotBlank(serviceConfiguration.getHost())) {
+                hosts.addAll(Arrays.asList(serviceConfiguration.getHost().split("[,;]")));
+            }
+            if (serviceConfiguration instanceof DiscoveryServiceConfiguration discoveryServiceConfiguration) {
+                String additionalHost = discoveryServiceConfiguration.getAdditionalHost();
+                if (StringUtils.isNotBlank(additionalHost)) {
+                    hosts.add(additionalHost);
+                }
+            }
+            return hosts;
+        }
+
         static List<Instance> of(ServiceConfiguration serviceConfiguration) {
-            return Arrays.stream(
-                Optional.ofNullable(serviceConfiguration)
-                    .map(ServiceConfiguration::getHost)
-                    .orElse("")
-                    .split("[,;]")
-                )
+            return getAllHosts(serviceConfiguration).stream()
                 .filter(StringUtils::isNotBlank)
                 .map(String::trim)
                 .map(String::toLowerCase)
