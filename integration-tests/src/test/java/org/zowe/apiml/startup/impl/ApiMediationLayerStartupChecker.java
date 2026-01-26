@@ -39,7 +39,6 @@ import static io.netty.handler.codec.http.HttpHeaders.Values.APPLICATION_JSON;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Checks and waits until the testing environment is ready to be tested.
@@ -110,16 +109,34 @@ public class ApiMediationLayerStartupChecker {
             .until(check);
     }
 
+    boolean areDiscoveryInSync() {
+        int sharedVersion = -1;
+        for (var ds : Instance.of(discoveryServiceConfiguration)) {
+            int version = getEurekaVersion(ds);
+            log.debug("Version at {} is {}", ds.getInstanceId(), version);
+            if (version < 0) {
+                // eureka is not initialized yet
+                return false;
+            }
+            if (sharedVersion < 0) {
+                // first fetched value
+                sharedVersion = version;
+            }
+            if (sharedVersion != version) {
+                // versions are not in sync
+                return false;
+            }
+        }
+
+        this.minimumEurekaVersion = sharedVersion;
+        return true;
+    }
+
     public void waitUntilReady() {
         initSsl();
 
         awaitFor(this::areAllInstancesOnboarded, 2);
-        for (var ds : Instance.of(discoveryServiceConfiguration)) {
-            int version = getEurekaVersion(ds);
-            this.minimumEurekaVersion = Math.max(minimumEurekaVersion, version);
-            log.debug("Version at {} is {}", ds.getInstanceId(), version);
-        }
-        assertTrue(this.minimumEurekaVersion >= 0, "Cannot obtain eurekaVersion from Discovery service");
+        awaitFor(this::areDiscoveryInSync, 1);
         awaitFor(this::areAllInstancesRegistryUpToDate, 1);
         awaitFor(this::areAllServicesUp, 1);
     }
