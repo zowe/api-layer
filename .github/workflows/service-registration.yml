@@ -29,9 +29,15 @@ jobs:
             -   name: Build with Gradle
                 run: >
                     ./gradlew clean build --info --scan
-            -   name: Run startup check
+
+            -   name: Run startup check for microservices
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.startServices=true
+
+            -   name: Run startup check for modulith
+                run: >
+                    ./gradlew runStartUpCheck --info --scan -Denvironment.startServices=true -Denvironment.modulith=true
+
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
