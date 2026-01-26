@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -43,11 +44,28 @@ import java.util.Collection;
 @Slf4j
 public class EurekaConfig {
 
+    private static final String PEER_AWARE_INSTANCE_REGISTRY = "peerAwareInstanceRegistry";
+
     @Value("${apiml.discovery.serviceIdPrefixReplacer:#{null}}")
     private String tuple;
 
     @Value("${apiml.discovery.maxPeerRetries:10}")
     private int maxPeerRetries;
+
+    /**
+     * This is a fix of impossible overriding of the original bean.
+     * @return bean definition processor to remove original bean peerAwareInstanceRegistry
+     */
+    @Bean
+    public BeanDefinitionRegistryPostProcessor deleteEurekaPeerAwareInstanceRegistry() {
+        return registry -> {
+            var definition = registry.getBeanDefinition(PEER_AWARE_INSTANCE_REGISTRY);
+            if (definition != null) {
+                log.debug("The overriden bean {} is still in the registry. It is redundant and will be removed.", PEER_AWARE_INSTANCE_REGISTRY);
+                registry.removeBeanDefinition(PEER_AWARE_INSTANCE_REGISTRY);
+            }
+        };
+    }
 
     @Bean
     @Primary
