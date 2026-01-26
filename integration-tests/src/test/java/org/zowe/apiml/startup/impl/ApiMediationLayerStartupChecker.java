@@ -115,7 +115,9 @@ public class ApiMediationLayerStartupChecker {
 
         awaitFor(this::areAllInstancesOnboarded, 2);
         for (var ds : Instance.of(discoveryServiceConfiguration)) {
-            this.minimumEurekaVersion = Math.max(minimumEurekaVersion, getEurekaVersion(ds));
+            int version = getEurekaVersion(ds);
+            this.minimumEurekaVersion = Math.max(minimumEurekaVersion, version);
+            log.debug("Version at {} is {}", ds.getInstanceId(), version);
         }
         assertTrue(this.minimumEurekaVersion >= 0, "Cannot obtain eurekaVersion from Discovery service");
         awaitFor(this::areAllInstancesRegistryUpToDate, 1);
@@ -208,7 +210,7 @@ public class ApiMediationLayerStartupChecker {
         for (Instance instance : instancesToCheck) {
             int version = getEurekaVersion(instance);
             if (version < this.minimumEurekaVersion) {
-                notUpdated.add(instance.getInstanceId());
+                notUpdated.add(String.format("%s (%d / %s)", instance.getInstanceId(), version, this.minimumEurekaVersion));
             }
         }
         if (notUpdated.isEmpty()) {
