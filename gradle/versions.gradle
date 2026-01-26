@@ -133,7 +133,7 @@ dependencyResolutionManagement {
             version('swaggerInflector', '2.0.14')
             version('swaggerJaxrs2', '2.2.42')
             version('thymeleaf', '3.1.3.RELEASE')
-            version('tomcat', '9.0.113')
+            version('tomcat', '9.0.115')
             version('velocity', '2.4.1')
             version('woodstoxCore', '7.1.1')
             version('woodstoxStax2', '4.2.2')
