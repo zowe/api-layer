@@ -5,11 +5,11 @@ credentials:
     clientUser: APIMTST
 gatewayServiceConfiguration:
     scheme: https
-    host: apiml,apiml-2
+    host: apiml,apiml-2,apiml-3
     port: 10010
     internalPorts: 10010
     externalPort: 10010
-    instances: 2
+    instances: 3
     servicesEndpoint: gateway/api/v1/services
     bucketCapacity: 40
     authProvider: zosmf
@@ -18,24 +18,27 @@ discoveryServiceConfiguration:
     user: user
     password: user
     host: apiml
-    additionalHost: apiml-2
+    additionalHost: apiml-2,apiml-3
     additionalPort: 10011
     port: 10011
-    instances: 2
+    instances: 3
 discoverableClientConfiguration:
     scheme: https
     port: 10012
     applId: ZOWEAPPL
     host: discoverable-client,discoverable-client-2
-    instances: 1
+    instances: 2
 apiCatalogServiceConfiguration:
     scheme: https
     url:
-    host: apiml,apiml-2
+    host: apiml,apiml-2,apiml-3
     port: 10010
-    instances: 2
+    instances: 3
 cachingServiceConfiguration:
     url:
+    scheme: https
+    host: apiml,apiml-2,apiml-3
+    port: 10010
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password
