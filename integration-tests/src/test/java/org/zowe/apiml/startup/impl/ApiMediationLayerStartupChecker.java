@@ -26,10 +26,10 @@ import org.apache.http.util.EntityUtils;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.util.config.*;
-import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Predicate;
@@ -181,9 +181,12 @@ public class ApiMediationLayerStartupChecker {
                 .until(check);
         }
 
-        private DocumentContext getDocumentAsContext(HttpGet request) {
-            try {
-                final HttpResponse response = HttpClientUtils.client().execute(request);
+        private DocumentContext getDocumentAsContext(URI uri) {
+            HttpGet request = new HttpGet(uri);
+            request.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
+            request.addHeader(HttpHeaders.AUTHORIZATION, CREDENTIALS_HEADER);
+            try (CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build()) {
+                final HttpResponse response = client.execute(request);
                 if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                     log.warn("Unexpected HTTP status code: {} for URI: {}. Message: {}", response.getStatusLine().getStatusCode(), request.getURI().toString(), EntityUtils.toString(response.getEntity()));
                     return null;
@@ -222,25 +225,10 @@ public class ApiMediationLayerStartupChecker {
 
         private boolean areAllInstancesOnboarded() {
             for (var ds : get(CoreService.DISCOVERY)) {
-                HttpGet requestToEurekaApps = new HttpGet(HttpRequestUtils.getUri(
-                    ds.getScheme(), ds.getHostname(), ds.getPort(), "/eureka/apps")
-                );
-                requestToEurekaApps.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
-                try (CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build()) {
-                    var response = client.execute(requestToEurekaApps);
-                    var entity = response.getEntity();
-                    if (entity != null) {
-                        String entityString = EntityUtils.toString(entity);
-                        log.debug("eureka/apps: {}", entityString);
-                        if (!areAllInstanceOnInEureka(JsonPath.parse(entityString))) {
-                            return false;
-                        }
-                    } else {
-                        log.debug("eureka/apps entity is null");
-                        return false;
-                    }
-                } catch (Exception e) {
-                    log.error("Cannot call Eureka apps", e);
+                var documentContext = getDocumentAsContext(HttpRequestUtils.getUri(
+                    ds.getScheme(), ds.getHostname(), ds.getPort(), "/eureka/apps"
+                ));
+                if (!areAllInstanceOnInEureka(documentContext)) {
                     return false;
                 }
             }
@@ -248,17 +236,11 @@ public class ApiMediationLayerStartupChecker {
         }
 
         private int getEurekaVersion(Instance instance) {
-            HttpGet requestToEurekaApps = new HttpGet(instance.getEurekaVersionUrl());
-            requestToEurekaApps.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
-            if (instance.serviceConfiguration.isBasicSupported()) {
-                requestToEurekaApps.addHeader(HttpHeaders.AUTHORIZATION, CREDENTIALS_HEADER);
+            var documentContext = getDocumentAsContext(URI.create(instance.getEurekaVersionUrl()));
+            if (documentContext != null) {
+                return documentContext.read("version");
             }
-            try (CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build()) {
-                var doc = JsonPath.parse(EntityUtils.toString(client.execute(requestToEurekaApps).getEntity()));
-                return doc.read("version");
-            } catch (Exception e) {
-                log.debug("Eurekaversion endpoint is on accessible on " + instance.getInstanceId(), e);
-            }
+            log.debug("Eurekaversion endpoint is on accessible on " + instance.getInstanceId());
             return -1;
         }
 
@@ -304,17 +286,10 @@ public class ApiMediationLayerStartupChecker {
         boolean areAllInstancesAreUp() {
             List<String> downInstances = new ArrayList<>();
             for (var instance : registryVersionCheckInstances) {
-                HttpGet requestToEurekaApps = new HttpGet(instance.getHealthEndpointUrl());
-                requestToEurekaApps.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
-                if (instance.serviceConfiguration.isBasicSupported()) {
-                    requestToEurekaApps.addHeader(HttpHeaders.AUTHORIZATION, CREDENTIALS_HEADER);
-                }
+                var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()));
                 String status = "N/A";
-                try (CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build()) {
-                    var doc = JsonPath.parse(EntityUtils.toString(client.execute(requestToEurekaApps).getEntity()));
-                    status = doc.read("status");
-                } catch (Exception e) {
-                    log.debug("Eurekaversion endpoint is on accessible on " + instance.getInstanceId(), e);
+                if (documentContext != null) {
+                    status = documentContext.read("status");
                 }
                 if (!"UP".equals(status)) {
                     downInstances.add(String.format("%s (%s)", instance.getInstanceId(), status));
@@ -330,12 +305,10 @@ public class ApiMediationLayerStartupChecker {
             var serviceId = IS_MODULITH_ENABLED ? CoreService.GATEWAY : CoreService.ZAAS;
             List<String> downZaasInstances = new ArrayList<>();
             for (var instance : get(serviceId)) {
-                HttpGet requestToZaas = new HttpGet(instance.getHealthEndpointUrl());
-                requestToZaas.addHeader("Authorization", CREDENTIALS_HEADER);
-                DocumentContext zaasContext = getDocumentAsContext(requestToZaas);
+                var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()));
                 var status = "N/A";
-                if (zaasContext == null) {
-                    status = zaasContext.read("$.components." + serviceId.getServiceId() + ".details.auth");
+                if (documentContext != null) {
+                    status = documentContext.read("$.components." + serviceId.getServiceId() + ".details.auth");
                 }
                 if (!"UP".equals(status)) {
                     downZaasInstances.add(String.format("%s (%s)", instance.getInstanceId(), status));
