@@ -416,6 +416,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runContainerTests --info -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -DcentralHosts=discovery-service-2
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
             -   name: Store results

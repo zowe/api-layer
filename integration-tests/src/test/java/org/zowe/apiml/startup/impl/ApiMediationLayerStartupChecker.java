@@ -26,6 +26,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.web.util.DefaultUriBuilderFactory;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.util.config.*;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -33,6 +34,7 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static io.netty.handler.codec.http.HttpHeaders.Values.APPLICATION_JSON;
@@ -50,18 +52,21 @@ public class ApiMediationLayerStartupChecker {
 
     private static final long POOL_INTERVAL = 5;
 
-    private final GatewayServiceConfiguration gatewayConfiguration;
-    private final DiscoverableClientConfiguration discoverableClientConfiguration;
-    private final DiscoveryServiceConfiguration discoveryServiceConfiguration;
-    private final ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
-    private final CachingServiceConfiguration cachingServiceConfiguration;
+    // deprecated
+    private static GatewayServiceConfiguration gatewayConfiguration;
+    private static DiscoverableClientConfiguration discoverableClientConfiguration;
+    private static DiscoveryServiceConfiguration discoveryServiceConfiguration;
+    private static ApiCatalogServiceConfiguration apiCatalogServiceConfiguration;
+    private static CachingServiceConfiguration cachingServiceConfiguration;
+
     private final Credentials credentials;
-    private final String credentialsHeader;
+
+    // deprecated
+    private static String credentialsHeader;
+
     private final List<Service> servicesToCheck = new ArrayList<>();
     private final List<Instance> instancesToCheck = new ArrayList<>();
     private final String healthEndpoint = "/application/health";
-
-    private int minimumEurekaVersion;
 
     public ApiMediationLayerStartupChecker() {
         gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
@@ -101,7 +106,7 @@ public class ApiMediationLayerStartupChecker {
         }
     }
 
-    void awaitFor(Callable<Boolean> check, int durationMin) {
+    static void awaitFor(Callable<Boolean> check, int durationMin) {
         await()
             .atMost(durationMin, MINUTES)
             .pollDelay(0, SECONDS)
@@ -109,35 +114,12 @@ public class ApiMediationLayerStartupChecker {
             .until(check);
     }
 
-    boolean areDiscoveryInSync() {
-        int sharedVersion = -1;
-        for (var ds : Instance.of(discoveryServiceConfiguration)) {
-            int version = getEurekaVersion(ds);
-            log.debug("Version at {} is {}", ds.getInstanceId(), version);
-            if (version < 0) {
-                // eureka is not initialized yet
-                return false;
-            }
-            if (sharedVersion < 0) {
-                // first fetched value
-                sharedVersion = version;
-            }
-            if (sharedVersion != version) {
-                // versions are not in sync
-                return false;
-            }
-        }
-
-        this.minimumEurekaVersion = sharedVersion;
-        return true;
-    }
-
     public void waitUntilReady() {
         initSsl();
 
-        awaitFor(this::areAllInstancesOnboarded, 5);
-        awaitFor(this::areDiscoveryInSync, 5);
-        awaitFor(this::areAllInstancesRegistryUpToDate, 2);
+        ApimlInstance.load().forEach(ApimlInstance::waitUntilReady);
+
+        // TODO: refactor as part of APIML instance
         awaitFor(this::areAllServicesUp, 2);
     }
 
@@ -159,83 +141,6 @@ public class ApiMediationLayerStartupChecker {
             log.warn("Check failed on getting the document: {}", e.getMessage());
             return null;
         }
-    }
-
-    private boolean areAllInstanceOnInEureka(DocumentContext documentContext) {
-        Set<String> onboarded = ((JSONArray) documentContext.read("applications.application.*.instance.*.instanceId")).stream()
-            .map(String.class::cast)
-            .map(String::toLowerCase)
-            .collect(Collectors.toSet());
-        Set<String> expectedInstanceIds = instancesToCheck.stream()
-            .map(Instance::getInstanceId)
-            .map(String::toLowerCase)
-            .collect(Collectors.toSet());
-
-        List<String> missing = expectedInstanceIds.stream().filter(id -> !onboarded.contains(id)).sorted().toList();
-        if (missing.isEmpty()) {
-            return true;
-        }
-
-        log.debug("{} services has not onboarded yet: {}", missing.size(), StringUtils.join(missing, ", "));
-        return false;
-    }
-
-    private boolean areAllInstancesOnboarded() {
-        for (var ds : Instance.of(discoveryServiceConfiguration)) {
-            HttpGet requestToEurekaApps = new HttpGet(HttpRequestUtils.getUri(
-                discoveryServiceConfiguration.getScheme(), ds.getHostname(), ds.getPort(), "/eureka/apps")
-            );
-            requestToEurekaApps.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
-            try (CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build()) {
-                var response = client.execute(requestToEurekaApps);
-                var entity = response.getEntity();
-                if (entity != null) {
-                    String entityString = EntityUtils.toString(entity);
-                    log.debug("eureka/apps: {}", entityString);
-                    if (!areAllInstanceOnInEureka(JsonPath.parse(entityString))) {
-                        return false;
-                    }
-                } else {
-                    log.debug("eureka/apps entity is null");
-                    return false;
-                }
-            } catch (Exception e) {
-                log.error("Cannot call Eureka apps", e);
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private int getEurekaVersion(Instance instance) {
-        HttpGet requestToEurekaApps = new HttpGet(instance.getEurekaVersionUrl());
-        requestToEurekaApps.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
-        if (instance.serviceConfiguration.isBasicSupported()) {
-            requestToEurekaApps.addHeader(HttpHeaders.AUTHORIZATION, credentialsHeader);
-        }
-        try (CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build()) {
-            var doc = JsonPath.parse(EntityUtils.toString(client.execute(requestToEurekaApps).getEntity()));
-            return doc.read("version");
-        } catch (Exception e) {
-            log.debug("Eurekaversion endpoint is on accessible on " + instance.getInstanceId(), e);
-        }
-        return -1;
-    }
-
-    private boolean areAllInstancesRegistryUpToDate() {
-        List<String> notUpdated = new ArrayList<>();
-        for (Instance instance : instancesToCheck) {
-            int version = getEurekaVersion(instance);
-            if (version < this.minimumEurekaVersion) {
-                notUpdated.add(String.format("%s (%d / %s)", instance.getInstanceId(), version, this.minimumEurekaVersion));
-            }
-        }
-        if (notUpdated.isEmpty()) {
-            return true;
-        }
-
-        log.debug("There are instances that has not been updated yet: {}", StringUtils.join(notUpdated, ", "));
-        return false;
     }
 
     private boolean areAllServicesUp() {
@@ -443,6 +348,171 @@ public class ApiMediationLayerStartupChecker {
 
         public String getInstanceId() {
             return (this.hostname + ":" + this.serviceId + ":" + this.port).toLowerCase();
+        }
+
+    }
+
+    private static class ApimlInstance {
+
+        private int minimumEurekaVersion = -1;
+
+        private final List<Instance> allInstances;
+        private final List<Instance> registryCheckInstances;
+        private final List<Instance> registryVersionCheckInstances;
+
+        private ApimlInstance(Predicate<Instance> instanceMatcher) {
+            var config = ConfigReader.environmentConfiguration();
+
+            var instances = new ArrayList<Instance>();
+            instances.addAll(Instance.of(config.getDiscoveryServiceConfiguration(), "discovery.instances"));
+            instances.addAll(Instance.of(config.getApiCatalogServiceConfiguration(), "apicatalog.instances"));
+            instances.addAll(Instance.of(config.getGatewayServiceConfiguration(), "gateway.instances"));
+            instances.addAll(Instance.of(config.getDiscoverableClientConfiguration(), "discoverableclient.instances"));
+            instances.addAll(Instance.of(config.getCachingServiceConfiguration(), "caching.instances"));
+            allInstances = instances.stream().filter(instanceMatcher).toList();
+
+            if (!IS_MODULITH_ENABLED) {
+                // these services are not registered on all sides, and it is not necessary to check (GW check is enough)
+                registryVersionCheckInstances = this.without(CoreService.API_CATALOG, CoreService.DISCOVERY, CoreService.CACHING);
+                registryCheckInstances = this.without(CoreService.API_CATALOG, CoreService.DISCOVERY);
+            } else {
+                registryVersionCheckInstances = registryCheckInstances = allInstances;
+            }
+        }
+
+        private boolean areAllInstanceOnInEureka(DocumentContext documentContext) {
+            Set<String> onboarded = ((JSONArray) documentContext.read("applications.application.*.instance.*.instanceId")).stream()
+                .map(String.class::cast)
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+            Set<String> expectedInstanceIds = registryCheckInstances.stream()
+                .map(Instance::getInstanceId)
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+
+            List<String> missing = expectedInstanceIds.stream().filter(id -> !onboarded.contains(id)).sorted().toList();
+            if (missing.isEmpty()) {
+                return true;
+            }
+
+            log.debug("{} services has not onboarded yet: {}", missing.size(), StringUtils.join(missing, ", "));
+            return false;
+        }
+
+        private boolean areAllInstancesOnboarded() {
+            for (var ds : get(CoreService.DISCOVERY)) {
+                HttpGet requestToEurekaApps = new HttpGet(HttpRequestUtils.getUri(
+                    discoveryServiceConfiguration.getScheme(), ds.getHostname(), ds.getPort(), "/eureka/apps")
+                );
+                requestToEurekaApps.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
+                try (CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build()) {
+                    var response = client.execute(requestToEurekaApps);
+                    var entity = response.getEntity();
+                    if (entity != null) {
+                        String entityString = EntityUtils.toString(entity);
+                        log.debug("eureka/apps: {}", entityString);
+                        if (!areAllInstanceOnInEureka(JsonPath.parse(entityString))) {
+                            return false;
+                        }
+                    } else {
+                        log.debug("eureka/apps entity is null");
+                        return false;
+                    }
+                } catch (Exception e) {
+                    log.error("Cannot call Eureka apps", e);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private int getEurekaVersion(Instance instance) {
+            HttpGet requestToEurekaApps = new HttpGet(instance.getEurekaVersionUrl());
+            requestToEurekaApps.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
+            if (instance.serviceConfiguration.isBasicSupported()) {
+                requestToEurekaApps.addHeader(HttpHeaders.AUTHORIZATION, credentialsHeader);
+            }
+            try (CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build()) {
+                var doc = JsonPath.parse(EntityUtils.toString(client.execute(requestToEurekaApps).getEntity()));
+                return doc.read("version");
+            } catch (Exception e) {
+                log.debug("Eurekaversion endpoint is on accessible on " + instance.getInstanceId(), e);
+            }
+            return -1;
+        }
+
+        private boolean areAllInstancesRegistryUpToDate() {
+            List<String> notUpdated = new ArrayList<>();
+            for (Instance instance : registryVersionCheckInstances) {
+                int version = getEurekaVersion(instance);
+                if (version < this.minimumEurekaVersion) {
+                    notUpdated.add(String.format("%s (%d / %s)", instance.getInstanceId(), version, this.minimumEurekaVersion));
+                }
+            }
+            if (notUpdated.isEmpty()) {
+                return true;
+            }
+
+            log.debug("There are instances that has not been updated yet: {}", StringUtils.join(notUpdated, ", "));
+            return false;
+        }
+
+        boolean areDiscoveryInSync() {
+            int sharedVersion = -1;
+            for (var ds : get(CoreService.DISCOVERY)) {
+                int version = getEurekaVersion(ds);
+                log.debug("Version at {} is {}", ds.getInstanceId(), version);
+                if (version < 0) {
+                    // eureka is not initialized yet
+                    return false;
+                }
+                if (sharedVersion < 0) {
+                    // first fetched value
+                    sharedVersion = version;
+                }
+                if (sharedVersion != version) {
+                    // versions are not in sync
+                    return false;
+                }
+            }
+
+            this.minimumEurekaVersion = sharedVersion;
+            return true;
+        }
+
+        public void waitUntilReady() {
+            awaitFor(this::areAllInstancesOnboarded, 5);
+            awaitFor(this::areDiscoveryInSync, 5);
+            awaitFor(this::areAllInstancesRegistryUpToDate, 2);
+        }
+
+        public List<Instance> get(CoreService type) {
+            return registryCheckInstances.stream().filter(i -> type.equals(i.getServiceId())).toList();
+        }
+
+        public List<Instance> without(CoreService...types) {
+            var serviceIds = Arrays.stream(types).map(CoreService::getServiceId).toArray(String[]::new);
+            return registryCheckInstances.stream().filter(i -> !StringUtils.equalsAnyIgnoreCase(i.getServiceId(), serviceIds)).toList();
+        }
+
+        public static List<ApimlInstance> load() {
+            String centralHostsConfig = System.getProperty("centralHosts");
+            if (StringUtils.isBlank(centralHostsConfig)) {
+                return Collections.singletonList(new ApimlInstance(x -> true));
+            }
+
+            var centralHosts = Arrays.stream(centralHostsConfig.split("[,;]]"))
+                .map(String::trim)
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+            var domain = new ApimlInstance(i -> !centralHosts.contains(i.getHostname().toLowerCase()));
+            var central = new ApimlInstance(i -> centralHosts.contains(i.getHostname().toLowerCase()));
+            central.registryCheckInstances.addAll(domain.get(CoreService.GATEWAY));
+
+            log.debug("Domain = {}", domain.allInstances);
+            log.debug("Central = {}", central.allInstances);
+
+            return Arrays.asList(domain, central);
         }
 
     }
