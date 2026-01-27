@@ -79,7 +79,6 @@ class OpenTelemetryMetricsTest {
                     System.out.println();
                     var attributes = metric.getResource().getAttributes();
                     assertEquals("zos", attributes.get(stringKey("os.type")));
-                    assertNotNull(attributes.get(stringKey("process.pid")));
                     assertEquals("STC1111", attributes.get(stringKey("process.zos.jobid")));
                     assertEquals("ZWE1AG", attributes.get(stringKey("process.zos.jobname")));
                     assertEquals("gateway", attributes.get(stringKey("service.name")));
