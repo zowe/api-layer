@@ -1,0 +1,5 @@
+org.springframework.boot.env.EnvironmentPostProcessor=org.zowe.apiml.product.config.ServerAddressPropertiesUpdater
+
+org.zowe.apiml.product.config.ServerAddressPropertiesUpdater.connector.0.main = true
+org.zowe.apiml.product.config.ServerAddressPropertiesUpdater.connector.0.addressKey = server.address
+org.zowe.apiml.product.config.ServerAddressPropertiesUpdater.connector.0.portKey = server.port
