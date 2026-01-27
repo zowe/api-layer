@@ -15,16 +15,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.infinispan.lock.api.ClusteredLock;
-import org.zowe.apiml.caching.model.KeyValue;
-import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
+import org.zowe.apiml.caching.model.KeyValue;
+import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.models.AccessTokenContainer;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -33,13 +37,17 @@ public class InfinispanStorage implements Storage {
 
     private final ConcurrentMap<String, KeyValue> cache;
     private final ConcurrentMap<String, Map<String, String>> tokenCache;
-    private final ClusteredLock lock;
+    private final Supplier<ClusteredLock> lockSupplier;
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public InfinispanStorage(ConcurrentMap<String, KeyValue> cache, ConcurrentMap<String, Map<String, String>> tokenCache, ClusteredLock lock) {
+    public InfinispanStorage(
+        ConcurrentMap<String, KeyValue> cache,
+        ConcurrentMap<String, Map<String, String>> tokenCache,
+        Supplier<ClusteredLock> lockSupplier
+    ) {
         this.cache = cache;
         this.tokenCache = tokenCache;
-        this.lock = lock;
+        this.lockSupplier = lockSupplier;
     }
 
     static {
@@ -61,6 +69,7 @@ public class InfinispanStorage implements Storage {
 
     @Override
     public KeyValue storeMapItem(String serviceId, String mapKey, KeyValue toCreate) {
+        ClusteredLock lock = lockSupplier.get();
         CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
             if (Boolean.TRUE.equals(r)) {
                 try {
@@ -90,10 +99,21 @@ public class InfinispanStorage implements Storage {
     @Override
     public Map<String, Map<String, String>> getAllMaps(String serviceId) {
         log.info("Reading all records from token cache for service {} ", serviceId);
-        // filter all maps which belong given service and remove the service name from key names.
-        return tokenCache.entrySet().stream().filter(
-            entry -> entry.getKey().startsWith(serviceId))
-            .collect(Collectors.toMap(e -> e.getKey().substring(serviceId.length()), Map.Entry::getValue));
+
+        /**
+         * Original implementation with stream, collect and lambdas to read keys leads to serializing of lambdas,
+         * see org.infinispan.marshall.core.LambdaMarshaller#write(java.io.ObjectOutput, java.lang.Object).
+         * It is difficult to support and also slower (see exchanging lambdas between nodes).
+         */
+        Map<String, Map<String, String>> result = new HashMap<>();
+        for (String key : tokenCache.keySet()) {
+            if (!key.startsWith(serviceId)) continue;
+
+            String newKey = key.substring(serviceId.length());
+            result.put(newKey, tokenCache.get(key));
+        }
+
+        return result;
     }
 
     @Override
@@ -154,6 +174,7 @@ public class InfinispanStorage implements Storage {
 
     @Override
     public void removeNonRelevantTokens(String serviceId, String mapKey) {
+        ClusteredLock lock = lockSupplier.get();
         CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
             if (Boolean.TRUE.equals(r)) {
                 try {
@@ -184,6 +205,7 @@ public class InfinispanStorage implements Storage {
 
     @Override
     public void removeNonRelevantRules(String serviceId, String mapKey) {
+        ClusteredLock lock = lockSupplier.get();
         CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
             if (Boolean.TRUE.equals(r)) {
                 try {
@@ -217,4 +239,5 @@ public class InfinispanStorage implements Storage {
             }
         }
     }
+
 }

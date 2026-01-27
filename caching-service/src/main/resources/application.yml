@@ -1,5 +1,6 @@
 # for back-compatibility
 spring.profiles.group.attls: attlsServer,attlsClient
+spring.profiles.group.dev: debug,diag
 
 caching:
     storage:
@@ -116,6 +117,10 @@ spring:
         gateway:
             mvc.enabled: false
             enabled: false
+        discovery:
+            client:
+                health-indicator:
+                    enabled: false
     application:
         name: Caching service
     output.ansi.enabled: always
@@ -167,25 +172,33 @@ management:
         health:
             showDetails: always
 ---
+spring.config.activate.on-profile: debug
+
 logging:
     level:
         ROOT: INFO
-        com.netflix.discovery.shared.transport.decorator: DEBUG
         org.zowe.apiml: DEBUG
         org.zowe.apiml.enable: DEBUG
         org.zowe.apiml.caching: DEBUG
         org.springframework: INFO
         org.apache: INFO
         org.apache.http: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         com.netflix: INFO
         org.hibernate: INFO
         org.jgroups.protocols: ERROR
         org.springframework.web.servlet.PageNotFound: WARN
         org.ehcache: INFO
         org.apache.tomcat.util.net: DEBUG
+        com.netflix.discovery.shared.transport.decorator: DEBUG
         org.springframework.security.web: DEBUG
         javax.net.ssl: ERROR
-
+        org.apache.coyote.http11.Http11InputBuffer: TRACE
+        org.apache.tomcat: DEBUG
+        org.apache.catalina: DEBUG
+        org.jgroups: TRACE
+        org.infinispan: DEBUG
+---
 spring.config.activate.on-profile: dev
 
 logbackServiceName: ZWEACS1
@@ -215,13 +228,4 @@ eureka:
         nonSecurePortEnabled: true
         securePortEnabled: false
 
----
-spring.config.activate.on-profile: debug
 
-logging:
-    level:
-        ROOT: INFO
-        org.apache.tomcat.util.net: DEBUG
-        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
-        org.jgroups: DEBUG
-        org.infinispan: DEBUG
