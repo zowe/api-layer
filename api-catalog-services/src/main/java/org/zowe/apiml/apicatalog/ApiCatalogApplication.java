@@ -14,9 +14,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.zowe.apiml.product.config.ServerAddressPropertiesUpdater;
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
 import org.zowe.apiml.product.version.BuildInfo;
@@ -32,6 +34,7 @@ import org.zowe.apiml.product.version.BuildInfo;
     "org.zowe.apiml.product.service",
     "org.zowe.apiml.filter"
 })
+@Import(ServerAddressPropertiesUpdater.class)
 @EnableScheduling
 @EnableRetry
 @EnableAsync
