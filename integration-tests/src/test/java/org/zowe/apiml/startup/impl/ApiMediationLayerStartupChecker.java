@@ -136,9 +136,9 @@ public class ApiMediationLayerStartupChecker {
         initSsl();
 
         awaitFor(this::areAllInstancesOnboarded, 5);
-        awaitFor(this::areDiscoveryInSync, 2);
-        awaitFor(this::areAllInstancesRegistryUpToDate, 1);
-        awaitFor(this::areAllServicesUp, 1);
+        awaitFor(this::areDiscoveryInSync, 5);
+        awaitFor(this::areAllInstancesRegistryUpToDate, 2);
+        awaitFor(this::areAllServicesUp, 2);
     }
 
     private DocumentContext getDocumentAsContext(HttpGet request) {

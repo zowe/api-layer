@@ -57,7 +57,7 @@ public class EurekaConfig {
      * @return bean definition processor to remove original bean peerAwareInstanceRegistry
      */
     @Bean
-    public BeanDefinitionRegistryPostProcessor deleteEurekaPeerAwareInstanceRegistry() {
+    public static BeanDefinitionRegistryPostProcessor deleteEurekaPeerAwareInstanceRegistry() {
         return registry -> {
             var definition = registry.getBeanDefinition(PEER_AWARE_INSTANCE_REGISTRY);
             if (definition != null) {
