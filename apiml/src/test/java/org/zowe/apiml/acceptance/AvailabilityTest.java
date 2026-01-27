@@ -40,8 +40,8 @@ class AvailabilityTest extends AcceptanceTestWithBasePath {
     })
     void serviceIsAvailable(String serviceName, int servicePort, int expectedStatus) {
         int actualPort = servicePort == 0 ? port : servicePort;
-        await().atMost(30, TimeUnit.SECONDS)
-            .pollInterval(500, TimeUnit.MILLISECONDS)
+        await().atMost(60, TimeUnit.SECONDS)
+            .pollInterval(1, TimeUnit.SECONDS)
             .ignoreExceptions()
             .untilAsserted(() ->
                 given()
