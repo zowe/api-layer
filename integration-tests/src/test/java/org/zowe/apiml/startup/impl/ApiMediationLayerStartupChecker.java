@@ -487,12 +487,12 @@ public class ApiMediationLayerStartupChecker {
         }
 
         public List<Instance> get(CoreService type) {
-            return registryCheckInstances.stream().filter(i -> type.equals(i.getServiceId())).toList();
+            return allInstances.stream().filter(i -> type.equals(i.getServiceId())).toList();
         }
 
         public List<Instance> without(CoreService...types) {
             var serviceIds = Arrays.stream(types).map(CoreService::getServiceId).toArray(String[]::new);
-            return registryCheckInstances.stream().filter(i -> !StringUtils.equalsAnyIgnoreCase(i.getServiceId(), serviceIds)).toList();
+            return allInstances.stream().filter(i -> !StringUtils.equalsAnyIgnoreCase(i.getServiceId(), serviceIds)).toList();
         }
 
         public static List<ApimlInstance> load() {
@@ -507,6 +507,7 @@ public class ApiMediationLayerStartupChecker {
                 .collect(Collectors.toSet());
             var domain = new ApimlInstance(i -> !centralHosts.contains(i.getHostname().toLowerCase()));
             var central = new ApimlInstance(i -> centralHosts.contains(i.getHostname().toLowerCase()));
+            central.allInstances.addAll(domain.get(CoreService.GATEWAY));
             central.registryCheckInstances.addAll(domain.get(CoreService.GATEWAY));
 
             log.debug("Domain = {}", domain.allInstances);
