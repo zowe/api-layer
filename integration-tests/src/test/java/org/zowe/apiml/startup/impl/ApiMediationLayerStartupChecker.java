@@ -230,7 +230,7 @@ public class ApiMediationLayerStartupChecker {
                 var documentContext = getDocumentAsContext(HttpRequestUtils.getUri(
                     ds.getScheme(), ds.getHostname(), ds.getPort(), "/eureka/apps"
                 ), ds.getServiceConfiguration().isBasicSupported());
-                if (!areAllInstanceOnInEureka(documentContext)) {
+                if (documentContext == null || !areAllInstanceOnInEureka(documentContext)) {
                     return false;
                 }
             }
@@ -242,7 +242,7 @@ public class ApiMediationLayerStartupChecker {
             if (documentContext != null) {
                 return documentContext.read("version");
             }
-            log.debug("Eurekaversion endpoint is on accessible on " + instance.getInstanceId());
+            log.debug("Eurekaversion endpoint is not accessible on " + instance.getInstanceId());
             return -1;
         }
 
@@ -331,7 +331,7 @@ public class ApiMediationLayerStartupChecker {
         }
 
         public List<Instance> get(CoreService type) {
-            return allInstances.stream().filter(i -> type.equals(i.getServiceId())).toList();
+            return allInstances.stream().filter(i -> type.getServiceId().equals(i.getServiceId())).toList();
         }
 
         public List<Instance> without(CoreService...types) {
