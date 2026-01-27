@@ -181,10 +181,12 @@ public class ApiMediationLayerStartupChecker {
                 .until(check);
         }
 
-        private DocumentContext getDocumentAsContext(URI uri) {
+        private DocumentContext getDocumentAsContext(URI uri, boolean basicAuth) {
             HttpGet request = new HttpGet(uri);
             request.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
-            request.addHeader(HttpHeaders.AUTHORIZATION, CREDENTIALS_HEADER);
+            if (basicAuth) {
+                request.addHeader(HttpHeaders.AUTHORIZATION, CREDENTIALS_HEADER);
+            }
             try (CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build()) {
                 final HttpResponse response = client.execute(request);
                 if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
@@ -227,7 +229,7 @@ public class ApiMediationLayerStartupChecker {
             for (var ds : get(CoreService.DISCOVERY)) {
                 var documentContext = getDocumentAsContext(HttpRequestUtils.getUri(
                     ds.getScheme(), ds.getHostname(), ds.getPort(), "/eureka/apps"
-                ));
+                ), ds.getServiceConfiguration().isBasicSupported());
                 if (!areAllInstanceOnInEureka(documentContext)) {
                     return false;
                 }
@@ -236,7 +238,7 @@ public class ApiMediationLayerStartupChecker {
         }
 
         private int getEurekaVersion(Instance instance) {
-            var documentContext = getDocumentAsContext(URI.create(instance.getEurekaVersionUrl()));
+            var documentContext = getDocumentAsContext(URI.create(instance.getEurekaVersionUrl()), instance.getServiceConfiguration().isBasicSupported());
             if (documentContext != null) {
                 return documentContext.read("version");
             }
@@ -286,7 +288,7 @@ public class ApiMediationLayerStartupChecker {
         boolean areAllInstancesAreUp() {
             List<String> downInstances = new ArrayList<>();
             for (var instance : registryVersionCheckInstances) {
-                var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()));
+                var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()), instance.getServiceConfiguration().isBasicSupported());
                 String status = "N/A";
                 if (documentContext != null) {
                     status = documentContext.read("status");
@@ -305,7 +307,7 @@ public class ApiMediationLayerStartupChecker {
             var serviceId = IS_MODULITH_ENABLED ? CoreService.GATEWAY : CoreService.ZAAS;
             List<String> downZaasInstances = new ArrayList<>();
             for (var instance : get(serviceId)) {
-                var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()));
+                var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()), instance.getServiceConfiguration().isBasicSupported());
                 var status = "N/A";
                 if (documentContext != null) {
                     status = documentContext.read("$.components." + serviceId.getServiceId() + ".details.auth");
