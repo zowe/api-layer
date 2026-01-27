@@ -78,7 +78,7 @@ public class ApiMediationLayerStartupChecker {
         private final int port;
         private final ServiceConfiguration serviceConfiguration;
 
-        Instance(String hostname, String serviceId, int port, ServiceConfiguration serviceConfiguration) {
+        private Instance(String hostname, String serviceId, int port, ServiceConfiguration serviceConfiguration) {
             this.scheme = serviceConfiguration.getScheme();
             this.hostname = hostname;
             this.serviceId = serviceId;
@@ -86,7 +86,7 @@ public class ApiMediationLayerStartupChecker {
             this.serviceConfiguration = serviceConfiguration;
         }
 
-        static List<String> getAllHosts(ServiceConfiguration serviceConfiguration) {
+        private static List<String> getAllHosts(ServiceConfiguration serviceConfiguration) {
             List<String> hosts = new ArrayList<>();
             if (StringUtils.isNotBlank(serviceConfiguration.getHost())) {
                 hosts.addAll(Arrays.asList(serviceConfiguration.getHost().split("[,;]")));
@@ -94,13 +94,13 @@ public class ApiMediationLayerStartupChecker {
             if (serviceConfiguration instanceof DiscoveryServiceConfiguration discoveryServiceConfiguration) {
                 String additionalHost = discoveryServiceConfiguration.getAdditionalHost();
                 if (StringUtils.isNotBlank(additionalHost)) {
-                    hosts.add(additionalHost);
+                    hosts.addAll(Arrays.asList(additionalHost.split("[,;]")));
                 }
             }
             return hosts;
         }
 
-        static List<Instance> of(ServiceConfiguration serviceConfiguration) {
+        private static List<Instance> of(ServiceConfiguration serviceConfiguration) {
             return getAllHosts(serviceConfiguration).stream()
                 .filter(StringUtils::isNotBlank)
                 .map(String::trim)
@@ -109,7 +109,7 @@ public class ApiMediationLayerStartupChecker {
                 .toList();
         }
 
-        static List<Instance> of(ServiceConfiguration serviceConfiguration, String countProperty) {
+        private static List<Instance> of(ServiceConfiguration serviceConfiguration, String countProperty) {
             List<Instance> allInstances = of(serviceConfiguration);
             String countString = System.getProperty(countProperty);
             if (StringUtils.isNotBlank(countString)) {
@@ -122,7 +122,7 @@ public class ApiMediationLayerStartupChecker {
             return allInstances;
         }
 
-        String getUrl(String basePath) {
+        private String getUrl(String basePath) {
             return new DefaultUriBuilderFactory().builder()
                 .scheme("https")
                 .host(this.hostname)
@@ -164,7 +164,7 @@ public class ApiMediationLayerStartupChecker {
             instances.addAll(Instance.of(config.getCachingServiceConfiguration(), "caching.instances"));
             allInstances = instances.stream().filter(instanceMatcher).toList();
 
-            if (!IS_MODULITH_ENABLED) {
+            if (IS_MODULITH_ENABLED) {
                 // these services are not registered on all sides, and it is not necessary to check (GW check is enough)
                 registryVersionCheckInstances = this.without(CoreService.API_CATALOG, CoreService.DISCOVERY, CoreService.CACHING);
                 registryCheckInstances = this.without(CoreService.API_CATALOG, CoreService.DISCOVERY);
