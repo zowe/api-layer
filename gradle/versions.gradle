@@ -256,7 +256,6 @@ dependencyResolutionManagement {
             library('opentelemetry_sdk_testing', 'io.opentelemetry','opentelemetry-sdk-testing').versionRef('openTelemetry-core')
             library('opentelemetry_sdk_extension_autoconfigure_spi', 'io.opentelemetry','opentelemetry-sdk-extension-autoconfigure-spi').versionRef('openTelemetry-core')
 
-
             // Sample apps only
             library('jersey_client4', 'com.sun.jersey.contribs', 'jersey-apache-client4').versionRef('jerseySun')
             library('jersey_client', 'com.sun.jersey', 'jersey-client').versionRef('jerseySun')

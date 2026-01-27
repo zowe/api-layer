@@ -67,7 +67,7 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
     @SuppressWarnings("null")
     @Override
     @Nonnull
-    Attributes calculateAttributes() {
+    public Attributes calculateAttributes() {
         var attributesBuilder = Attributes.builder();
 
         var zosAttributes = zosSystemInformation.get();

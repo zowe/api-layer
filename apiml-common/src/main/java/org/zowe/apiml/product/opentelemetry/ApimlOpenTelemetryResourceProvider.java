@@ -19,7 +19,7 @@ import javax.annotation.Nonnull;
 
 public abstract class ApimlOpenTelemetryResourceProvider implements ResourceProvider {
 
-    abstract @Nonnull Attributes calculateAttributes();
+    public abstract @Nonnull Attributes calculateAttributes();
 
     @Override
     public Resource createResource(@Nonnull ConfigProperties config) {

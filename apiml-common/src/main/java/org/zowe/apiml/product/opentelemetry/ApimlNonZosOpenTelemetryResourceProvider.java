@@ -22,7 +22,7 @@ public class ApimlNonZosOpenTelemetryResourceProvider extends ApimlOpenTelemetry
 
     @Override
     @Nonnull
-    Attributes calculateAttributes() {
+    public Attributes calculateAttributes() {
         return Attributes.empty();
     }
 
