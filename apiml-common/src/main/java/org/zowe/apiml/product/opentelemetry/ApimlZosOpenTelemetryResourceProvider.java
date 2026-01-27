@@ -25,7 +25,10 @@ import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.zowe.apiml.product.zos.ZosSystemInformation.*;
+import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_JOB_ID;
+import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_JOB_NAME;
+import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_SYSPLEX;
+import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_USER_ID;
 
 @Component
 @RequiredArgsConstructor
@@ -53,6 +56,9 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
     @Value("${apiml.service.apimlId:#{null}}")
     private String apimlId;
 
+    @Value("${apiml.service.port:10010}")
+    private int port;
+
     @PostConstruct
     void afterPropertiesSet() {
         log.debug("Using ZOS OpenTelemetry resource provider");
@@ -62,56 +68,45 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
     @Override
     @Nonnull
     Attributes calculateAttributes() {
-        if (!ZosSystemInformation.isRunningOnZos()) {
-            log.error("OpenTelemetry attributes provider running outside of z/OS");
-            return Attributes.empty();
-        }
         var attributesBuilder = Attributes.builder();
 
         var zosAttributes = zosSystemInformation.get();
 
         if (lparOverride && StringUtils.isNotBlank(lparName)) {
+            log.debug("LPAR name override for OpenTelemetry metrics");
             attributesBuilder.put("mainframe.lpar.name", lparName);
         }
 
         if (StringUtils.isBlank(serviceNamespace)) {
+            log.debug("service.namespace not provided in configuration, generating default");
             attributesBuilder.put("service.namespace", generateServiceNamespace(zosAttributes));
         }
 
         if (StringUtils.isBlank(serviceName)) {
+            log.debug("service.name not provided in configuration, generating default");
             attributesBuilder.put("service.name", generateServiceName(zosAttributes));
         }
 
         Optional.ofNullable(zosAttributes.get(ZOS_JOB_ID)).map(String::valueOf)
-            .ifPresent(zosJobId -> attributesBuilder.put("zos.jobid", zosJobId));
+            .ifPresent(zosJobId -> attributesBuilder.put("process.zos.jobid", zosJobId));
 
         Optional.ofNullable(zosAttributes.get(ZOS_JOB_NAME)).map(String::valueOf)
-            .ifPresent(zosJobName -> attributesBuilder.put("zos.jobname", zosJobName));
+            .ifPresent(zosJobName -> attributesBuilder.put("process.zos.jobname", zosJobName));
 
         Optional.ofNullable(zosAttributes.get(ZOS_USER_ID)).map(String::valueOf)
-            .ifPresent(zosUserId -> attributesBuilder.put("zos.userid", zosUserId));
-
-        Optional.ofNullable(zosAttributes.get(ZOS_PID)).map(String::valueOf)
-            .ifPresent(zosPid -> attributesBuilder.put("zos.pid", zosPid));
-
-        Optional.ofNullable(zosAttributes.get(ZOS_SYSNAME)).map(String::valueOf)
-            .ifPresent(zosSysname -> attributesBuilder.put("zos.sysname", zosSysname));
-
-        Optional.ofNullable(zosAttributes.get(ZOS_SYSCLONE)).map(String::valueOf)
-            .ifPresent(zosSysclone -> attributesBuilder.put("zos.sysclone", zosSysclone));
-
-        Optional.ofNullable(zosAttributes.get(ZOS_SYSPLEX)).map(String::valueOf)
-            .ifPresent(zosSysplex -> attributesBuilder.put("zos.sysplex", zosSysplex));
+            .ifPresent(zosUserId -> attributesBuilder.put("process.zos.userid", zosUserId));
 
         return attributesBuilder.build();
     }
 
     private String generateServiceName(Map<String,Object> zosAttributes) {
-        return "service_name";
+        var systemName = StringUtils.isBlank(apimlId) ? zosAttributes.get(ZOS_SYSPLEX) : apimlId;
+
+        return systemName + ":" + port;
     }
 
     private String generateServiceNamespace(Map<String,Object> zosAttributes) {
-        return "service_namespace";
+        return "apiml:" + generateServiceName(zosAttributes);
     }
 
 }

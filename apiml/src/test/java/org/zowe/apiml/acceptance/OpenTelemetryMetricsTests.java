@@ -54,7 +54,7 @@ class OpenTelemetryMetricsTest {
 
             metrics.forEach(
                 metric -> {
-
+                    System.out.println();
                 }
             );
 
