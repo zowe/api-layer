@@ -39,14 +39,13 @@ import java.util.List;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
+import static org.zowe.apiml.util.config.ConfigReader.IS_MODULITH_ENABLED;
 
 /**
  * Checks and waits until the testing environment is ready to be tested.
  */
 @Slf4j
 public class ApiMediationLayerStartupChecker {
-
-    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
 
     private final GatewayServiceConfiguration gatewayConfiguration;
     private final DiscoverableClientConfiguration discoverableClientConfiguration;

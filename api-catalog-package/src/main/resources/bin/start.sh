@@ -135,6 +135,12 @@ then
         ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
     fi
 fi
+
+#Set the external URL only if the variables are defined so the APIML can fallback if the property is null
+if [ -n "${externalProtocol}" ] && [ -n "${ZWE_zowe_externalDomains_0}" ] && [ -n "${ZWE_zowe_externalPort}" ]; then
+    EXTERNAL_URL="-Dapiml.service.externalUrl=${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}"
+fi
+
 LIBPATH="$LIBPATH":"/lib"
 LIBPATH="$LIBPATH":"/usr/lib"
 LIBPATH="$LIBPATH":"${JAVA_HOME}"/bin
@@ -287,6 +293,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     ${ADD_OPENS} \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
+    ${EXTERNAL_URL} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
@@ -298,7 +305,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.service.gatewayHostname=${ZWE_GATEWAY_HOST:-${ZWE_haInstance_hostname:-localhost}} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-true} \
-    -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
