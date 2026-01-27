@@ -98,7 +98,7 @@
         "@reduxjs/toolkit": "2.11.2",
         "ajv": "8.17.1",
         "ansi-regex": "6.2.2",
-        "body-parser": "1.20.4",
+        "body-parser": "2.2.2",
         "caniuse-lite": "1.0.30001766",
         "concurrently": "9.2.1",
         "cors": "2.8.6",
@@ -116,7 +116,7 @@
         "eslint-plugin-jsx-a11y": "6.10.2",
         "eslint-plugin-prettier": "5.5.5",
         "eslint-plugin-react": "7.37.5",
-        "express": "4.22.1",
+        "express": "5.2.1",
         "globals": "15.15.0",
         "html-loader": "5.1.0",
         "jest": "29.7.0",
@@ -165,7 +165,8 @@
             },
             "prismjs": "1.30.0"
         },
-        "js-yaml": "4.1.1"
+        "js-yaml": "4.1.1",
+        "qs": "6.14.1"
     },
     "engines": {
         "npm": "=10.9.4",
