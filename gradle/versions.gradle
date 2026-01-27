@@ -5,8 +5,8 @@ dependencyResolutionManagement {
             version('projectNode', '20.19.6')
             version('projectNpm', '10.9.4')
 
-            version('springBoot', '3.5.9')
-            version('springBootGraphQl', '3.5.9')
+            version('springBoot', '3.5.10')
+            version('springBootGraphQl', '3.5.10')
             version('springCloudNetflix', '4.3.1')
             version('springCloudCommons', '4.3.1')
             version('springCloudCB', '3.3.1')
@@ -14,7 +14,7 @@ dependencyResolutionManagement {
             version('springFramework', '6.2.15')
             version('springRetry', '2.0.12')
 
-            version('modulith', '1.4.6')
+            version('modulith', '1.4.7')
             version('jmolecules', '2023.3.4')
 
             version('glassfishHk2', '3.1.1')
@@ -284,7 +284,7 @@ dependencyResolutionManagement {
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - do not use in Spring unless really necessary
-            version('logback', '1.5.25')
+            version('logback', '1.5.26')
             version('mockitoCore', '5.21.0')
             version('mockitoInline', '5.2.0')
 
