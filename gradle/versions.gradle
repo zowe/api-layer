@@ -61,7 +61,7 @@ dependencyResolutionManagement {
                 strictly '[2.3.9,3.0.0)'
                 prefer '2.3.9'
             }
-            version('jbossLogging', '3.6.1.Final')
+            version('jbossLogging', '3.6.2.Final')
             version('jerseySun', '1.19.4')
             version('jettyWebSocketClient', '12.1.5')
             version('jettison', '1.5.4')
@@ -83,7 +83,7 @@ dependencyResolutionManagement {
             // netty reactor contains a bug: https://github.com/reactor/reactor-netty/issues/3559 > https://github.com/reactor/reactor-netty/pull/3581
             version('nettyReactor', '1.3.2')
             version('nimbusJoseJwt', '10.7')
-            version('openApiDiff', '2.1.6')
+            version('openApiDiff', '2.1.7')
             version('picocli', '4.7.7')
 
             version('reactor', '3.8.2')
