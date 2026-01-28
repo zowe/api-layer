@@ -338,9 +338,9 @@ public class ApiMediationLayerStartupChecker {
         }
 
         public void waitUntilReady() {
-            awaitFor(this::areAllInstancesOnboarded, 8);
-            awaitFor(this::areDiscoveryInSync, 2);
-            awaitFor(this::areAllInstancesRegistryUpToDate, 2);
+            awaitFor(this::areAllInstancesOnboarded, 5);
+            awaitFor(this::areDiscoveryInSync, 1);
+            awaitFor(this::areAllInstancesRegistryUpToDate, 1);
             awaitFor(this::areAllInstancesAreUp, 1);
             awaitFor(this::isAuthUp, 1);
         }
