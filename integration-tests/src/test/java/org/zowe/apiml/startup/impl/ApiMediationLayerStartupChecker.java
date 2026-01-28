@@ -88,6 +88,9 @@ public class ApiMediationLayerStartupChecker {
 
         private static List<String> getAllHosts(ServiceConfiguration serviceConfiguration) {
             List<String> hosts = new ArrayList<>();
+            if (serviceConfiguration == null) {
+                return hosts;
+            }
             if (StringUtils.isNotBlank(serviceConfiguration.getHost())) {
                 hosts.addAll(Arrays.asList(serviceConfiguration.getHost().split("[,;]")));
             }
@@ -162,6 +165,8 @@ public class ApiMediationLayerStartupChecker {
             instances.addAll(Instance.of(config.getGatewayServiceConfiguration(), "gateway.instances"));
             instances.addAll(Instance.of(config.getDiscoverableClientConfiguration(), "discoverableclient.instances"));
             instances.addAll(Instance.of(config.getCachingServiceConfiguration(), "caching.instances"));
+            instances.addAll(Instance.of(config.getZosmfServiceConfiguration(), "zosmf.instances"));
+            instances.addAll(Instance.of(config.getZaasConfiguration(), "zaas.instances"));
             allInstances = instances.stream().filter(instanceMatcher).toList();
 
             if (IS_MODULITH_ENABLED) {
@@ -169,7 +174,8 @@ public class ApiMediationLayerStartupChecker {
                 registryVersionCheckInstances = this.without(CoreService.API_CATALOG, CoreService.DISCOVERY, CoreService.CACHING);
                 registryCheckInstances = this.without(CoreService.API_CATALOG, CoreService.DISCOVERY);
             } else {
-                registryVersionCheckInstances = registryCheckInstances = allInstances;
+                registryVersionCheckInstances = this.without(config.getZosmfServiceConfiguration().getServiceId());
+                registryCheckInstances = allInstances;
             }
         }
 
@@ -305,12 +311,17 @@ public class ApiMediationLayerStartupChecker {
 
         boolean isAuthUp() {
             var serviceId = IS_MODULITH_ENABLED ? CoreService.GATEWAY : CoreService.ZAAS;
+            var key = "$.components.zaas.details.auth";
             List<String> downZaasInstances = new ArrayList<>();
             for (var instance : get(serviceId)) {
                 var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()), instance.getServiceConfiguration().isBasicSupported());
                 var status = "N/A";
                 if (documentContext != null) {
-                    status = documentContext.read("$.components." + serviceId.getServiceId() + ".details.auth");
+                    try {
+                        status = documentContext.read(key);
+                    } catch (Exception e) {
+                        log.debug("Cannot parse {} on {}", key, instance.getInstanceId());
+                    }
                 }
                 if (!"UP".equals(status)) {
                     downZaasInstances.add(String.format("%s (%s)", instance.getInstanceId(), status));
@@ -334,9 +345,13 @@ public class ApiMediationLayerStartupChecker {
             return allInstances.stream().filter(i -> type.getServiceId().equals(i.getServiceId())).toList();
         }
 
+        public List<Instance> without(String...serviceIds) {
+            return allInstances.stream().filter(i -> !StringUtils.equalsAnyIgnoreCase(i.getServiceId(), serviceIds)).toList();
+        }
+
         public List<Instance> without(CoreService...types) {
             var serviceIds = Arrays.stream(types).map(CoreService::getServiceId).toArray(String[]::new);
-            return allInstances.stream().filter(i -> !StringUtils.equalsAnyIgnoreCase(i.getServiceId(), serviceIds)).toList();
+            return without(serviceIds);
         }
 
         public static List<ApimlInstance> load() {
