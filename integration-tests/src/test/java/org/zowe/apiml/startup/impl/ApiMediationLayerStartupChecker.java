@@ -160,8 +160,7 @@ public class ApiMediationLayerStartupChecker {
         private int minimumEurekaVersion = -1;
 
         private final List<Instance> allInstances;
-        private final List<Instance> registryCheckInstances;
-        private final List<Instance> registryVersionCheckInstances;
+        private final List<Instance> additionalRegistration = new ArrayList<>();
 
         private ApimlInstance(Predicate<Instance> instanceMatcher) {
             var config = ConfigReader.environmentConfiguration();
@@ -175,18 +174,48 @@ public class ApiMediationLayerStartupChecker {
             instances.addAll(Instance.of(config.getZosmfServiceConfiguration(), "zosmf.instances"));
             instances.addAll(Instance.of(config.getZaasConfiguration(), "zaas.instances"));
             allInstances = instances.stream().filter(instanceMatcher).collect(Collectors.toList());
+        }
 
+        private List<Instance> getInstancesRegistryCheck(Instance ds) {
+            var instances = new ArrayList<>(allInstances);
+            instances.addAll(additionalRegistration);
             if (IS_MODULITH_ENABLED) {
-                // these services are not registered on all sides, and it is not necessary to check (GW check is enough)
-                registryVersionCheckInstances = this.without(
-                    CoreService.API_CATALOG.getServiceId(), CoreService.DISCOVERY.getServiceId(),
-                    CoreService.CACHING.getServiceId(), config.getZosmfServiceConfiguration().getServiceId()
-                );
-                registryCheckInstances = this.without(CoreService.API_CATALOG, CoreService.DISCOVERY);
-            } else {
-                registryVersionCheckInstances = this.without(config.getZosmfServiceConfiguration().getServiceId());
-                registryCheckInstances = allInstances;
+                return instances.stream().filter(instance ->
+                    !Strings.CI.equalsAny(instance.getServiceId(),
+                        CoreService.API_CATALOG.getServiceId(),
+                        CoreService.DISCOVERY.getServiceId(),
+                        CoreService.CACHING.getServiceId()
+                    ) ||
+                    !Strings.CI.equals(instance.getHostname(), ds.getHostname())
+                ).toList();
             }
+            return instances;
+        }
+
+        private List<Instance> getInstancesEurekaVersionCheck() {
+            var instances = allInstances.stream();
+            if (IS_MODULITH_ENABLED) {
+                instances = instances.filter(instance -> !Strings.CI.equalsAny(instance.getServiceId(),
+                    CoreService.API_CATALOG.getServiceId(),
+                    CoreService.GATEWAY.getServiceId(),
+                    CoreService.CACHING.getServiceId()
+                ));
+            }
+            instances = instances.filter(instance -> !Strings.CI.equalsAny(instance.getServiceId(),
+                CoreService.DISCOVERY.getServiceId(), // the source of version
+                ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId() // does not support the endpoint
+            ));
+            return instances.toList();
+        }
+
+        private List<Instance> getInstancesHealthCheck() {
+            if (IS_MODULITH_ENABLED) {
+                return allInstances.stream().filter(instance -> !Strings.CI.equalsAny(instance.getServiceId(),
+                    CoreService.API_CATALOG.getServiceId(),
+                    CoreService.CACHING.getServiceId()
+                )).toList();
+            }
+            return allInstances;
         }
 
         private void awaitFor(Callable<Boolean> check, int durationMin) {
@@ -222,12 +251,13 @@ public class ApiMediationLayerStartupChecker {
             }
         }
 
-        private boolean areAllInstanceOnInEureka(DocumentContext documentContext) {
+        private boolean areAllInstanceOnInEureka(Instance ds, DocumentContext documentContext) {
+            var expectedInstances = getInstancesRegistryCheck(ds);
             Set<String> onboarded = ((JSONArray) documentContext.read("applications.application.*.instance.*.instanceId")).stream()
                 .map(String.class::cast)
                 .map(String::toLowerCase)
                 .collect(Collectors.toSet());
-            Set<String> expectedInstanceIds = registryCheckInstances.stream()
+            Set<String> expectedInstanceIds = expectedInstances.stream()
                 .map(Instance::getInstanceId)
                 .map(String::toLowerCase)
                 .collect(Collectors.toSet());
@@ -246,7 +276,7 @@ public class ApiMediationLayerStartupChecker {
                 var documentContext = getDocumentAsContext(HttpRequestUtils.getUri(
                     ds.getScheme(), ds.getHostname(), ds.getPort(), "/eureka/apps"
                 ), ds.getServiceConfiguration().isBasicAuthenticationSupported());
-                if (documentContext == null || !areAllInstanceOnInEureka(documentContext)) {
+                if (documentContext == null || !areAllInstanceOnInEureka(ds, documentContext)) {
                     return false;
                 }
             }
@@ -264,7 +294,7 @@ public class ApiMediationLayerStartupChecker {
 
         private boolean areAllInstancesRegistryUpToDate() {
             List<String> notUpdated = new ArrayList<>();
-            for (Instance instance : registryVersionCheckInstances) {
+            for (Instance instance : getInstancesEurekaVersionCheck()) {
                 int version = getEurekaVersion(instance);
                 if (version < this.minimumEurekaVersion) {
                     notUpdated.add(String.format("%s (%d / %s)", instance.getInstanceId(), version, this.minimumEurekaVersion));
@@ -303,7 +333,7 @@ public class ApiMediationLayerStartupChecker {
 
         boolean areAllInstancesAreUp() {
             List<String> downInstances = new ArrayList<>();
-            for (var instance : registryVersionCheckInstances) {
+            for (var instance : getInstancesHealthCheck()) {
                 var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()), instance.getServiceConfiguration().isBasicAuthenticationSupported());
                 String status = "N/A";
                 if (documentContext != null) {
@@ -355,15 +385,6 @@ public class ApiMediationLayerStartupChecker {
             return allInstances.stream().filter(instance -> type.getServiceId().equals(instance.getServiceId())).toList();
         }
 
-        public List<Instance> without(String... serviceIds) {
-            return allInstances.stream().filter(i -> !Strings.CI.equalsAny(i.getServiceId(), serviceIds)).collect(Collectors.toList());
-        }
-
-        public List<Instance> without(CoreService... types) {
-            var serviceIds = Arrays.stream(types).map(CoreService::getServiceId).toArray(String[]::new);
-            return without(serviceIds);
-        }
-
         public static List<ApimlInstance> load() {
             String centralHostsConfig = System.getProperty("centralHosts");
             if (StringUtils.isBlank(centralHostsConfig)) {
@@ -376,8 +397,7 @@ public class ApiMediationLayerStartupChecker {
                 .collect(Collectors.toSet());
             var domain = new ApimlInstance(instance -> !centralHosts.contains(instance.getHostname().toLowerCase()));
             var central = new ApimlInstance(instance -> centralHosts.contains(instance.getHostname().toLowerCase()));
-            central.allInstances.addAll(domain.get(CoreService.GATEWAY));
-            central.registryCheckInstances.addAll(domain.get(CoreService.GATEWAY));
+            central.additionalRegistration.addAll(domain.get(CoreService.GATEWAY));
 
             log.debug("Domain = {}", domain.allInstances);
             log.debug("Central = {}", central.allInstances);
