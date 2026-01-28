@@ -321,7 +321,7 @@ public class ApiMediationLayerStartupChecker {
 
         boolean isAuthUp() {
             var serviceId = IS_MODULITH_ENABLED ? CoreService.GATEWAY : CoreService.ZAAS;
-            var key = "$.components." + serviceId + ".details.auth";
+            var key = "$.components.zaas.details.auth";
             List<String> downZaasInstances = new ArrayList<>();
             for (var instance : get(serviceId)) {
                 var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()), instance.getServiceConfiguration().isBasicSupported());
