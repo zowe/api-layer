@@ -449,7 +449,7 @@ jobs:
                 if: always()
                 timeout-minutes: 4
                 run: >
-                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker -DcentralHosts=discovery-service-2
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -459,7 +459,6 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runContainerTests --info -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-                    -DcentralHosts=discovery-service-2
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
             -   name: Store results
