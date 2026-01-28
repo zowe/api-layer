@@ -187,7 +187,7 @@ jobs:
                 if: always()
                 timeout-minutes: 4
                 run: >
-                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1 -Denvironment.gwCount=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -221,7 +221,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                type: ["normal", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic"]
+                type: ["normal", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic", "caching-chaotic"]
         services:
             apiml:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
@@ -239,6 +239,11 @@ jobs:
                     APIML_SERVICE_HOSTNAME: apiml
                     logbackService: ZWEAGW1
                     APIML_HEALTH_PROTECTED: false
+                    CACHING_STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_BIND_ADDRESS: apiml
+                    JGROUPS_KEYEXCHANGE_PORT: 7601
             apiml-2:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -250,11 +255,37 @@ jobs:
                     SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: 16348
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka,https://apiml-3:10011/eureka
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka,https://apiml-3:10011/eureka
                     APIML_SERVICE_HOSTNAME: apiml-2
                     logbackService: ZWEAGW2
                     APIML_HEALTH_PROTECTED: false
+                    CACHING_STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_BIND_ADDRESS: apiml-2
+                    JGROUPS_KEYEXCHANGE_PORT: 7601
+            apiml-3:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
+                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
+                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
+                    APIML_SECURITY_X509_ENABLED: true
+                    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
+                    SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: 16348
+                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka,https://apiml-3:10011/eureka
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka,https://apiml-3:10011/eureka
+                    APIML_SERVICE_HOSTNAME: apiml-3
+                    logbackService: ZWEAGW3
+                    APIML_HEALTH_PROTECTED: false
+                    CACHING_STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_BIND_ADDRESS: apiml-3
+                    JGROUPS_KEYEXCHANGE_PORT: 7601
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -286,7 +317,7 @@ jobs:
             -   name: Run Normal HA Tests in Modulith
                 if: ${{ 'normal' == matrix.type }}
                 run: >
-                    ./gradlew runHATests --info -Denvironment.config=-docker-modulith-ha
+                    ./gradlew runHATests --info -Denvironment.config=-docker-modulith-ha -Denvironment.gwCount=3
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -318,6 +349,17 @@ jobs:
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
                     --info -Denvironment.config=-docker-modulith-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Run Caching Chaotic HA Tests
+                if: ${{ 'caching-chaotic' == matrix.type }}
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingServiceTests
+                    --info -Denvironment.config=-docker-modulith-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false
+                    -Denvironment.modulith=true -Denvironment.chaotic=true
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -1309,7 +1351,7 @@ jobs:
                 if: always()
                 timeout-minutes: 4
                 run: >
-                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2 -Denvironment.gwCount=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1523,7 +1565,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                type: ["normal", "discovery-chaotic", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic"]
+                type: ["normal", "discovery-chaotic", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic", "caching-chaotic"]
         services:
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
@@ -1538,6 +1580,40 @@ jobs:
                     APIML_HEALTH_PROTECTED: false
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    CACHING_STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_BIND_ADDRESS: caching-service
+                    JGROUPS_KEYEXCHANGE_PORT: 7601
+                    APIML_SERVICE_HOSTNAME: caching-service
+                    APIML_HEALTH_PROTECTED: false
+                    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
+                    MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
+            caching-service-2:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    CACHING_STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_BIND_ADDRESS: caching-service-2
+                    JGROUPS_KEYEXCHANGE_PORT: 7601
+                    APIML_SERVICE_HOSTNAME: caching-service-2
+                    APIML_HEALTH_PROTECTED: false
+                    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
+                    MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
+            caching-service-3:
+                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    CACHING_STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_BIND_ADDRESS: caching-service-3
+                    JGROUPS_KEYEXCHANGE_PORT: 7601
+                    APIML_SERVICE_HOSTNAME: caching-service-3
+                    APIML_HEALTH_PROTECTED: false
+                    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
+                    MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client-2:
@@ -1597,7 +1673,7 @@ jobs:
             -   name: Run Normal HA Tests
                 if: ${{ 'normal' == matrix.type }}
                 run: >
-                    ./gradlew runHATests --info -Denvironment.config=-ha
+                    ./gradlew runHATests --info -Denvironment.config=-ha -Denvironment.gwCount=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1638,6 +1714,16 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
                     --info -Denvironment.config=-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Run Caching Chaotic HA Tests
+                if: ${{ 'caching-chaotic' == matrix.type }}
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingServiceTests
+                    --info -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false -Denvironment.chaotic=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
