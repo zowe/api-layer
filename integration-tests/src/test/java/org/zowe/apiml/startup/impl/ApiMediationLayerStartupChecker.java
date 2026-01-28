@@ -120,7 +120,7 @@ public class ApiMediationLayerStartupChecker {
                 if ((count >= 0) && (count <= allInstances.size())) {
                     return allInstances.subList(0, count);
                 }
-                log.warn("Invalid count of services: {}", countString);
+                log.warn("Invalid count of services {}: {}", serviceConfiguration.getServiceId(), countString);
             }
             return allInstances;
         }
@@ -338,9 +338,9 @@ public class ApiMediationLayerStartupChecker {
         }
 
         public void waitUntilReady() {
-            awaitFor(this::areAllInstancesOnboarded, 5);
-            awaitFor(this::areDiscoveryInSync, 1);
-            awaitFor(this::areAllInstancesRegistryUpToDate, 1);
+            awaitFor(this::areAllInstancesOnboarded, 8);
+            awaitFor(this::areDiscoveryInSync, 2);
+            awaitFor(this::areAllInstancesRegistryUpToDate, 2);
             awaitFor(this::areAllInstancesAreUp, 1);
             awaitFor(this::isAuthUp, 1);
         }
@@ -350,7 +350,7 @@ public class ApiMediationLayerStartupChecker {
         }
 
         public List<Instance> without(String...serviceIds) {
-            return allInstances.stream().filter(i -> !StringUtils.equalsAnyIgnoreCase(i.getServiceId(), serviceIds)).toList();
+            return allInstances.stream().filter(i -> !StringUtils.equalsAnyIgnoreCase(i.getServiceId(), serviceIds)).collect(Collectors.toList());
         }
 
         public List<Instance> without(CoreService...types) {
