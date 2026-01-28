@@ -245,7 +245,7 @@ public class ApiMediationLayerStartupChecker {
             for (var ds : get(CoreService.DISCOVERY)) {
                 var documentContext = getDocumentAsContext(HttpRequestUtils.getUri(
                     ds.getScheme(), ds.getHostname(), ds.getPort(), "/eureka/apps"
-                ), ds.getServiceConfiguration().isBasicSupported());
+                ), ds.getServiceConfiguration().isBasicAuthenticationSupported());
                 if (documentContext == null || !areAllInstanceOnInEureka(documentContext)) {
                     return false;
                 }
@@ -254,7 +254,7 @@ public class ApiMediationLayerStartupChecker {
         }
 
         private int getEurekaVersion(Instance instance) {
-            var documentContext = getDocumentAsContext(URI.create(instance.getEurekaVersionUrl()), instance.getServiceConfiguration().isBasicSupported());
+            var documentContext = getDocumentAsContext(URI.create(instance.getEurekaVersionUrl()), instance.getServiceConfiguration().isBasicAuthenticationSupported());
             if (documentContext != null) {
                 return documentContext.read("version");
             }
@@ -304,7 +304,7 @@ public class ApiMediationLayerStartupChecker {
         boolean areAllInstancesAreUp() {
             List<String> downInstances = new ArrayList<>();
             for (var instance : registryVersionCheckInstances) {
-                var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()), instance.getServiceConfiguration().isBasicSupported());
+                var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()), instance.getServiceConfiguration().isBasicAuthenticationSupported());
                 String status = "N/A";
                 if (documentContext != null) {
                     status = documentContext.read("status");
@@ -324,7 +324,7 @@ public class ApiMediationLayerStartupChecker {
             var key = "$.components.zaas.details.auth";
             List<String> downZaasInstances = new ArrayList<>();
             for (var instance : get(serviceId)) {
-                var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()), instance.getServiceConfiguration().isBasicSupported());
+                var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()), instance.getServiceConfiguration().isBasicAuthenticationSupported());
                 var status = "N/A";
                 if (documentContext != null) {
                     try {

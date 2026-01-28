@@ -39,7 +39,7 @@ public class DiscoverableClientConfiguration implements ServiceConfiguration {
     }
 
     @Override
-    public boolean isBasicSupported() {
+    public boolean isBasicAuthenticationSupported() {
         return false;
     }
 
