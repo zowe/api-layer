@@ -333,6 +333,12 @@ if [ -n "${ZWE_java_home}" ]; then
     JAVA_BIN_DIR=${ZWE_java_home}/bin/
 fi
 
+if [ "$ZWE_configs_telemetry_enabled" = "true" ]; then
+    DISABLE_OTEL=false
+else
+    DISABLE_OTEL=true
+fi
+
 APIML_CODE=AG
 
 SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal"
@@ -455,7 +461,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dotel.resource.attributes.zos.sysplex.name="${ZWE_configs_telemetry_attributes_zos_sysplex_name:-}" \
     -Dotel.resource.attributes.zos.lpar.override="${ZWE_configs_telemetry_attributes_zos_lpar_override:-false}" \
     -Dotel.resource.attributes.zos.lpar.name="${ZWE_configs_telemetry_attributes_zos_lpar_name:-${ZWE_haInstance_sysname:-${ZWE_haInstance_id:-}}}" \
-    -Dotel.sdk.disabled=${false} \
+    -Dotel.sdk.disabled=${DISABLE_OTEL} \
     -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \
     -Dserver.maxConnectionsPerRoute=${ZWE_components_gateway_server_maxConnectionsPerRoute:-${ZWE_configs_server_maxConnectionsPerRoute:-100}} \
     -Dserver.maxTotalConnections=${ZWE_components_gateway_server_maxTotalConnections:-${ZWE_configs_server_maxTotalConnections:-1000}} \
