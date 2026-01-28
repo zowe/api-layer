@@ -12,10 +12,12 @@ package org.zowe.apiml.startup.impl;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import io.netty.handler.codec.http.HttpHeaderValues;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -35,7 +37,6 @@ import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static io.netty.handler.codec.http.HttpHeaders.Values.APPLICATION_JSON;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
@@ -51,6 +52,7 @@ public class ApiMediationLayerStartupChecker {
     private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
     private static final Credentials CREDENTIALS = ConfigReader.environmentConfiguration().getCredentials();
     private static final String CREDENTIALS_HEADER = "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", CREDENTIALS.getUser(), CREDENTIALS.getPassword()).getBytes());
+    private static final String APPLICATION_JSON_HEADER = HttpHeaderValues.APPLICATION_JSON.toString();
 
     void initSsl() {
         if (SslContext.sslClientCertValid == null) {
@@ -78,11 +80,11 @@ public class ApiMediationLayerStartupChecker {
         private final int port;
         private final ServiceConfiguration serviceConfiguration;
 
-        private Instance(String hostname, String serviceId, int port, ServiceConfiguration serviceConfiguration) {
+        private Instance(String hostname, ServiceConfiguration serviceConfiguration) {
             this.scheme = serviceConfiguration.getScheme();
             this.hostname = hostname;
-            this.serviceId = serviceId;
-            this.port = port;
+            this.serviceId = serviceConfiguration.getServiceId();
+            this.port = serviceConfiguration.getPort();
             this.serviceConfiguration = serviceConfiguration;
         }
 
@@ -108,7 +110,7 @@ public class ApiMediationLayerStartupChecker {
                 .filter(StringUtils::isNotBlank)
                 .map(String::trim)
                 .map(String::toLowerCase)
-                .map(host -> new Instance(host, serviceConfiguration.getServiceId(), serviceConfiguration.getPort(), serviceConfiguration))
+                .map(host -> new Instance(host, serviceConfiguration))
                 .toList();
         }
 
@@ -116,11 +118,15 @@ public class ApiMediationLayerStartupChecker {
             List<Instance> allInstances = of(serviceConfiguration);
             String countString = System.getProperty(countProperty);
             if (StringUtils.isNotBlank(countString)) {
-                int count = Integer.parseInt(countString);
-                if ((count >= 0) && (count <= allInstances.size())) {
-                    return allInstances.subList(0, count);
+                try {
+                    int count = Integer.parseInt(countString);
+                    if (count >= 0 && count <= allInstances.size()) {
+                        return allInstances.subList(0, count);
+                    }
+                    log.warn("Invalid count of services {}: {}", serviceConfiguration.getServiceId(), countString);
+                } catch (NumberFormatException e) {
+                    log.warn("Invalid service instances value: {} -> {}", countProperty, countString);
                 }
-                log.warn("Invalid count of services {}: {}", serviceConfiguration.getServiceId(), countString);
             }
             return allInstances;
         }
@@ -193,7 +199,7 @@ public class ApiMediationLayerStartupChecker {
 
         private DocumentContext getDocumentAsContext(URI uri, boolean basicAuth) {
             HttpGet request = new HttpGet(uri);
-            request.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
+            request.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON_HEADER);
             if (basicAuth) {
                 request.addHeader(HttpHeaders.AUTHORIZATION, CREDENTIALS_HEADER);
             }
@@ -252,7 +258,7 @@ public class ApiMediationLayerStartupChecker {
             if (documentContext != null) {
                 return documentContext.read("version");
             }
-            log.debug("Eurekaversion endpoint is not accessible on " + instance.getInstanceId());
+            log.debug("Eurekaversion endpoint is not accessible on {}", instance.getInstanceId());
             return -1;
         }
 
@@ -274,9 +280,9 @@ public class ApiMediationLayerStartupChecker {
 
         boolean areDiscoveryInSync() {
             int sharedVersion = -1;
-            for (var ds : get(CoreService.DISCOVERY)) {
-                int version = getEurekaVersion(ds);
-                log.debug("Version at {} is {}", ds.getInstanceId(), version);
+            for (var discoveryServiceInstance : get(CoreService.DISCOVERY)) {
+                int version = getEurekaVersion(discoveryServiceInstance);
+                log.debug("Version at {} is {}", discoveryServiceInstance.getInstanceId(), version);
                 if (version < 0) {
                     // eureka is not initialized yet
                     return false;
@@ -315,7 +321,7 @@ public class ApiMediationLayerStartupChecker {
 
         boolean isAuthUp() {
             var serviceId = IS_MODULITH_ENABLED ? CoreService.GATEWAY : CoreService.ZAAS;
-            var key = "$.components.zaas.details.auth";
+            var key = "$.components." + serviceId + ".details.auth";
             List<String> downZaasInstances = new ArrayList<>();
             for (var instance : get(serviceId)) {
                 var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()), instance.getServiceConfiguration().isBasicSupported());
@@ -346,14 +352,14 @@ public class ApiMediationLayerStartupChecker {
         }
 
         public List<Instance> get(CoreService type) {
-            return allInstances.stream().filter(i -> type.getServiceId().equals(i.getServiceId())).toList();
+            return allInstances.stream().filter(instance -> type.getServiceId().equals(instance.getServiceId())).toList();
         }
 
-        public List<Instance> without(String...serviceIds) {
-            return allInstances.stream().filter(i -> !StringUtils.equalsAnyIgnoreCase(i.getServiceId(), serviceIds)).collect(Collectors.toList());
+        public List<Instance> without(String... serviceIds) {
+            return allInstances.stream().filter(i -> !Strings.CI.equalsAny(i.getServiceId(), serviceIds)).collect(Collectors.toList());
         }
 
-        public List<Instance> without(CoreService...types) {
+        public List<Instance> without(CoreService... types) {
             var serviceIds = Arrays.stream(types).map(CoreService::getServiceId).toArray(String[]::new);
             return without(serviceIds);
         }
@@ -368,8 +374,8 @@ public class ApiMediationLayerStartupChecker {
                 .map(String::trim)
                 .map(String::toLowerCase)
                 .collect(Collectors.toSet());
-            var domain = new ApimlInstance(i -> !centralHosts.contains(i.getHostname().toLowerCase()));
-            var central = new ApimlInstance(i -> centralHosts.contains(i.getHostname().toLowerCase()));
+            var domain = new ApimlInstance(instance -> !centralHosts.contains(instance.getHostname().toLowerCase()));
+            var central = new ApimlInstance(instance -> centralHosts.contains(instance.getHostname().toLowerCase()));
             central.allInstances.addAll(domain.get(CoreService.GATEWAY));
             central.registryCheckInstances.addAll(domain.get(CoreService.GATEWAY));
 
