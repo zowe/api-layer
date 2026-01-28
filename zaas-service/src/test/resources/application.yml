@@ -5,23 +5,24 @@ logging:
 apiml:
     service:
         # The `apiml.service` node contains information required by any APIML service
-        id: zaas  # Service ID of this service. It is fixed for ZAAS
-        hostname: localhost  # Hostname that is advertised in Eureka. Contains the actual hostname of the instance.
+        id: zaas # Service ID of this service. It is fixed for ZAAS
+        hostname: localhost # Hostname that is advertised in Eureka. Contains the actual hostname of the instance.
         # Default is valid only for localhost
-        port: 10023  # Default port name for zaas service
-        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
-        scheme: https  # "https" or "http"
+        port: 10023 # Default port name for zaas service
+        ipAddress: 127.0.0.1 # IP address that is advertised in Eureka. Default is valid only for localhost
+        scheme: https # "https" or "http"
         preferIpAddress: false
         discoveryServiceUrls: https://localhost:10011/eureka/
     zaas:
         # The `apiml.zaas` node contains zaas-service only configuration
-        hostname: ${apiml.service.hostname}  # The hostname for other services to access the zaas. For example Catalog uses
-          # for transforming the URLs in DVIPA mode.
-          # In Zowe, this is the same as apiml.service.hostname. Zowe has one ZAAS
+        hostname: ${apiml.service.hostname}
+            # The hostname for other services to access the zaas. For example Catalog uses
+            # for transforming the URLs in DVIPA mode.
+            # In Zowe, this is the same as apiml.service.hostname. Zowe has one ZAAS
         # and is all run from single host.
         # In Brightside, this holds the DVIPA address and is overridden in PARMLIB to work
         # properly.
-        timeoutMillis: 30000  # Timeout for connection to the services
+        timeoutMillis: 30000 # Timeout for connection to the services
     security:
         personalAccessToken:
             enabled: true
@@ -45,7 +46,7 @@ apiml:
         auth:
             provider: dummy
             zosmf:
-                serviceId: zosmf  # Replace me with the correct z/OSMF service id
+                serviceId: zosmf # Replace me with the correct z/OSMF service id
                 jwtAutoconfiguration: jwt
         saf:
             provider: rest
@@ -132,10 +133,10 @@ eureka:
                         gatewayUrl: /api/v1
                         serviceUrl: /zaas
                 apiInfo:
-                    - apiId: zowe.apiml.zaas
-                      gatewayUrl: api/v1
-                      swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/api-doc
-                      documentationUrl: https://zowe.github.io/docs-site/
+                  - apiId: zowe.apiml.zaas
+                    gatewayUrl: api/v1
+                    swaggerUrl: https://${apiml.service.hostname}:${apiml.service.port}/api-doc
+                    documentationUrl: https://zowe.github.io/docs-site/
                 service:
                     title: ZAAS
                     description: Zowe Authentication and Authorization Service.
@@ -147,7 +148,6 @@ eureka:
             defaultZone: ${apiml.service.discoveryServiceUrls}
         healthcheck:
             enabled: true
-
 ---
 spring:
     config.activate.on-profile: debug
@@ -170,7 +170,6 @@ logging:
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
         org.ehcache: INFO
-
 ---
 spring.config.activate.on-profile: diag
 
@@ -180,12 +179,10 @@ management:
             base-path: /application
             exposure:
                 include: "*"
-
 ---
 spring.config.activate.on-profile: dev
 
 logbackServiceName: ZWEAZS1
-
 ---
 spring.config.activate.on-profile: attlsServer
 
@@ -203,7 +200,6 @@ server:
 apiml:
     service:
         corsEnabled: true
-
 ---
 spring.config.activate.on-profile: attlsClient
 
@@ -226,7 +222,7 @@ eureka:
         metadata-map:
             apiml:
                 apiInfo:
-                    -   apiId: zowe.apiml.zaas
-                        gatewayUrl: api/v1
-                        swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/api-doc
-                        documentationUrl: https://zowe.github.io/docs-site/
+                  - apiId: zowe.apiml.zaas
+                    gatewayUrl: api/v1
+                    swaggerUrl: http://${apiml.service.hostname}:${apiml.service.port}/api-doc
+                    documentationUrl: https://zowe.github.io/docs-site/
