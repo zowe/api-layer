@@ -143,7 +143,8 @@ public class ApiMediationLayerStartupChecker {
         }
 
         public String getInstanceId() {
-            return (this.hostname + ":" + this.serviceId + ":" + this.port).toLowerCase();
+            String prefix = this.serviceConfiguration.isStaticallyRegistred() ? "STATIC-" : "";
+            return prefix + (this.hostname + ":" + this.serviceId + ":" + this.port).toLowerCase();
         }
 
     }

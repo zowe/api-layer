@@ -16,9 +16,15 @@ public interface ServiceConfiguration {
     String getHost();
     int getPort();
     String getServiceId();
+
+    default boolean isStaticallyRegistred() {
+        return false;
+    }
+
     default String getServletContext() {
         return "/";
     }
+
     default boolean isBasicSupported() {
         return true;
     }
