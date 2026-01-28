@@ -343,6 +343,53 @@ public class NewSecurityConfiguration {
         }
 
 
+
+               /**
+         * Secures endpoints:
+         *  - /auth/delegate/passticket
+         *
+         * Requires authentication by a client certificate forwarded form Gateway or basic authentication, supports only credentials in header.
+         * Order of custom filters:
+         *  - CategorizeCertsFilter - checks for forwarded client certificate and put it into a custom request attribute
+         *  - X509AuthAwareFilter - attempts to log in using a user using forwarded client certificate, replaces pre-authentication in security context by the authentication result
+         */
+        @Configuration
+        @RequiredArgsConstructor
+        @Order(10)
+        class DelegatePassticketProtectedEndpoints {
+
+            private final CompoundAuthProvider compoundAuthProvider;
+
+            @Bean
+            SecurityFilterChain passticketProtectedEndpointsFilterChain(HttpSecurity http) throws Exception {
+                baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
+                        "/zaas/api/v1/auth/delegate/passticket"
+                )))
+                    .authorizeHttpRequests(requests -> requests
+                        .anyRequest().authenticated())
+                    .authenticationProvider(compoundAuthProvider) // for authenticating credentials
+                    .with(new CustomSecurityFilters(), Customizer.withDefaults());
+                return http.build();
+            }
+
+            private class CustomSecurityFilters extends AbstractHttpConfigurer<AccessToken.CustomSecurityFilters, HttpSecurity> {
+                @Override
+                public void configure(HttpSecurity http) {
+                    http.addFilterAfter(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                        .addFilterAfter(x509ForwardingAwareAuthenticationFilter(), CategorizeCertsFilter.class);
+                }
+
+                private X509ForwardingAwareAuthenticationFilter x509ForwardingAwareAuthenticationFilter() {
+                    return new X509AuthAwareFilter("/**",
+                        handlerInitializer.getAuthenticationFailureHandler(),
+                        x509AuthenticationProvider);
+                }
+
+            }
+
+        }
+
+
         /**
          * Query and Ticket and Refresh endpoints share single filter that handles auth with and without certificate. This logic is encapsulated in the queryFilter or ticketFilter.
          * Query endpoint does not require certificate to be present in RequestContext. It verifies JWT token.
