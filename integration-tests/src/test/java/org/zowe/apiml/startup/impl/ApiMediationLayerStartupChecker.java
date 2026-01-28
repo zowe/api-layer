@@ -172,7 +172,10 @@ public class ApiMediationLayerStartupChecker {
 
             if (IS_MODULITH_ENABLED) {
                 // these services are not registered on all sides, and it is not necessary to check (GW check is enough)
-                registryVersionCheckInstances = this.without(CoreService.API_CATALOG, CoreService.DISCOVERY, CoreService.CACHING);
+                registryVersionCheckInstances = this.without(
+                    CoreService.API_CATALOG.getServiceId(), CoreService.DISCOVERY.getServiceId(),
+                    CoreService.CACHING.getServiceId(), config.getZosmfServiceConfiguration().getServiceId()
+                );
                 registryCheckInstances = this.without(CoreService.API_CATALOG, CoreService.DISCOVERY);
             } else {
                 registryVersionCheckInstances = this.without(config.getZosmfServiceConfiguration().getServiceId());
