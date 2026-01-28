@@ -28,6 +28,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
+import org.zowe.apiml.security.common.util.CertificateLoggingUtils;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -84,7 +85,7 @@ class CategorizeCertsWebFilterTest {
     void setUp() {
 
         Set<String> gatewayPublicKeys = new HashSet<>();
-        gatewayPublicKeys.add(CategorizeCertsWebFilter.base64EncodePublicKey(gatewayCert));
+        gatewayPublicKeys.add(CertificateLoggingUtils.base64EncodePublicKey(gatewayCert));
 
         filter = new CategorizeCertsWebFilter(gatewayPublicKeys, mockCertificateValidator);
 

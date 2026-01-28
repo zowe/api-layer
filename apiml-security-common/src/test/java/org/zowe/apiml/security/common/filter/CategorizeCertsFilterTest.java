@@ -26,6 +26,7 @@ import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.zowe.apiml.security.common.utils.X509Utils;
+import org.zowe.apiml.security.common.util.CertificateLoggingUtils;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 
 import java.io.ByteArrayInputStream;
@@ -198,8 +199,8 @@ class CategorizeCertsFilterTest {
 
             @Test
             void thenAllApimlCertificatesWithReversedLogic() throws IOException, ServletException {
-                filter.setCertificateForClientAuth(crt -> filter.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
-                filter.setApimlCertificate(crt -> !filter.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
+                filter.setCertificateForClientAuth(crt -> filter.getPublicKeyCertificatesBase64().contains(CertificateLoggingUtils.base64EncodePublicKey(crt)));
+                filter.setApimlCertificate(crt -> !filter.getPublicKeyCertificatesBase64().contains(CertificateLoggingUtils.base64EncodePublicKey(crt)));
 
                 filter.doFilter(request, response, chain);
                 HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
@@ -408,8 +409,8 @@ class CategorizeCertsFilterTest {
 
             @Test
             void thenCategorizedCertsWithReversedLogic() throws IOException, ServletException {
-                filter.setCertificateForClientAuth(crt -> filter.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
-                filter.setApimlCertificate(crt -> !filter.getPublicKeyCertificatesBase64().contains(CategorizeCertsFilter.base64EncodePublicKey(crt)));
+                filter.setCertificateForClientAuth(crt -> filter.getPublicKeyCertificatesBase64().contains(CertificateLoggingUtils.base64EncodePublicKey(crt)));
+                filter.setApimlCertificate(crt -> !filter.getPublicKeyCertificatesBase64().contains(CertificateLoggingUtils.base64EncodePublicKey(crt)));
                 request.setAttribute("jakarta.servlet.request.X509Certificate", clientCerts);
                 filter.doFilter(request, response, chain);
                 HttpServletRequest nextRequest = (HttpServletRequest) chain.getRequest();
