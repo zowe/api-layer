@@ -22,6 +22,7 @@ import com.netflix.eureka.util.EurekaMonitors;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
@@ -54,15 +55,17 @@ public class EurekaConfig {
 
     /**
      * This is a fix of impossible overriding of the original bean.
+     *
      * @return bean definition processor to remove original bean peerAwareInstanceRegistry
      */
     @Bean
     public static BeanDefinitionRegistryPostProcessor deleteEurekaPeerAwareInstanceRegistry() {
         return registry -> {
-            var definition = registry.getBeanDefinition(PEER_AWARE_INSTANCE_REGISTRY);
-            if (definition != null) {
-                log.debug("The overriden bean {} is still in the registry. It is redundant and will be removed.", PEER_AWARE_INSTANCE_REGISTRY);
+            try {
                 registry.removeBeanDefinition(PEER_AWARE_INSTANCE_REGISTRY);
+                log.debug("The overridden bean {} is still in the registry. It is redundant and will be removed.", PEER_AWARE_INSTANCE_REGISTRY);
+            } catch (NoSuchBeanDefinitionException ex) {
+                log.debug("The overridden bean {} is not found in the registry.", PEER_AWARE_INSTANCE_REGISTRY);
             }
         };
     }

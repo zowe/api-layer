@@ -209,32 +209,6 @@ public class EurekaConfiguration implements WebMvcConfigurer {
     }
 
     @Bean
-    PeerAwareInstanceRegistry peerAwareInstanceRegistry(ServerCodecs serverCodecs,
-                                                        EurekaServerHttpClientFactory eurekaServerHttpClientFactory,
-                                                        EurekaInstanceConfigBean eurekaInstanceConfigBean) {
-        if (eurekaInstanceConfigBean.isAsyncClientInitialization()) {
-            if (log.isDebugEnabled()) {
-                log.debug("Initializing client asynchronously...");
-            }
-
-            ExecutorService executorService = Executors.newSingleThreadExecutor();
-            executorService.submit(() -> {
-                this.eurekaClient.getApplications();
-                if (log.isDebugEnabled()) {
-                    log.debug("Asynchronous client initialization done.");
-                }
-            });
-        } else {
-            this.eurekaClient.getApplications(); // force initialization
-        }
-
-        return new InstanceRegistry(this.eurekaServerConfig, this.eurekaClientConfig, serverCodecs, this.eurekaClient,
-            eurekaServerHttpClientFactory,
-            this.instanceRegistryProperties.getExpectedNumberOfClientsSendingRenews(),
-            this.instanceRegistryProperties.getDefaultOpenForTrafficCount());
-    }
-
-    @Bean
     @ConditionalOnMissingBean
     EurekaServerContext eurekaServerContext(ServerCodecs serverCodecs, PeerAwareInstanceRegistry registry,
                                             PeerEurekaNodes peerEurekaNodes) {
