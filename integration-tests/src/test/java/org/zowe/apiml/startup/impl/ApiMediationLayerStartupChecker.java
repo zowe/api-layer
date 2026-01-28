@@ -168,7 +168,7 @@ public class ApiMediationLayerStartupChecker {
             instances.addAll(Instance.of(config.getCachingServiceConfiguration(), "caching.instances"));
             instances.addAll(Instance.of(config.getZosmfServiceConfiguration(), "zosmf.instances"));
             instances.addAll(Instance.of(config.getZaasConfiguration(), "zaas.instances"));
-            allInstances = instances.stream().filter(instanceMatcher).toList();
+            allInstances = instances.stream().filter(instanceMatcher).collect(Collectors.toList());
 
             if (IS_MODULITH_ENABLED) {
                 // these services are not registered on all sides, and it is not necessary to check (GW check is enough)
