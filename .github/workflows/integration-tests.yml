@@ -553,7 +553,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-ha -Ddiscoverableclient.instances=1
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                    -Dzosmf.instances=0
+                    -Dcaching.instances=1 -Dzosmf.instances=0
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -660,6 +660,10 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
+            api-catalog-services:
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -730,7 +734,7 @@ jobs:
                     ./gradlew runStartUpCheck :integration-tests:runGatewayCentralRegistryTest --info
                     -Denvironment.config=-docker -Dgateway.instances=2 -Ddiscoverableclient.instances=0
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-
+                    -DcentralHosts=central-gateway-service,api-catalog-services-2,discovery-service-2
             -   name: Dump CGW jacoco data
                 run: >
                     java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
@@ -808,8 +812,9 @@ jobs:
                 if: always()
                 timeout-minutes: 4
                 run: >
-                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith -Ddiscoverableclient.instances=0 -Denvironment.modulith=true -Dgateway.instances=2 -Dgateway.host=central-gateway-service
-
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith -Ddiscoverableclient.instances=0
+                    -Denvironment.modulith=true -Dgateway.instances=2 -Dgateway.host=central-gateway-service
+                    -DcentralHosts=central-gateway-service
             -   name: Run CI Tests
                 timeout-minutes: 4
                 run: >
@@ -1244,6 +1249,8 @@ jobs:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: zaas-service-2
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1277,7 +1284,7 @@ jobs:
             -   name: Run HA Tests
                 run: >
                     ./gradlew runStartUpCheck runDeterministicLbHaTests --info
-                    -Denvironment.config=-ha -Ddiscoverableclient.instances=2
+                    -Denvironment.config=-ha -Ddiscoverableclient.instances=2 -Dcaching.instances=1
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1359,7 +1366,9 @@ jobs:
                 if: always()
                 timeout-minutes: 4
                 run: >
-                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2 -Denvironment.gwCount=2
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha
+                    -Ddiscoverableclient.instances=2 -Denvironment.gwCount=2 -Dgateway.instances=2 -Ddiscovery.instances=2
+                    -Dcaching.instances=2 -Dapicatalog.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
