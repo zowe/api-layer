@@ -31,7 +31,6 @@ import org.apache.catalina.Context;
 import org.apache.catalina.Host;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -100,7 +99,7 @@ import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
     name = "ClientCert",
     description = "Client certificate X509"
 )
-public class ModulithConfig implements InitializingBean {
+public class ModulithConfig {
 
     private final ApplicationContext applicationContext;
     private final Map<String, InstanceInfo> instances = new HashMap<>();
@@ -206,11 +205,6 @@ public class ModulithConfig implements InitializingBean {
             .orElse(null);
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        createLocalInstances();
-    }
-
     void createLocalInstances() {
         instances.put(CoreService.GATEWAY.getServiceId(), getInstanceInfo(CoreService.GATEWAY.getServiceId()));
         instances.put(CoreService.DISCOVERY.getServiceId(), getInstanceInfo(CoreService.DISCOVERY.getServiceId()));
@@ -224,6 +218,8 @@ public class ModulithConfig implements InitializingBean {
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationStart() {
+        createLocalInstances();
+
         log.info("Initialize timer for static services peer-replicated heartbeats");
         eventPublisher.publishEvent(new ApiCatalogServiceAvailableEvent(new Object()));
 
