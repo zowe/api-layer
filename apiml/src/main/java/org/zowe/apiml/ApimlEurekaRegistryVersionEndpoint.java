@@ -10,32 +10,40 @@
 
 package org.zowe.apiml;
 
-import com.netflix.eureka.EurekaServerContext;
-import com.netflix.eureka.registry.ResponseCache;
+import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import lombok.Builder;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.stereotype.Component;
 
+import java.util.regex.Pattern;
+
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Component
+@RequiredArgsConstructor
 @Endpoint(id = "eurekaversion")
 @Slf4j
 public class ApimlEurekaRegistryVersionEndpoint {
 
-    private final ResponseCache responseCache;
+    private static final Pattern VERSION_PATTERN = Pattern.compile("_([0-9]+)_");
 
-    public ApimlEurekaRegistryVersionEndpoint(EurekaServerContext eurekaServer) {
-        var registry = eurekaServer.getRegistry();
-        this.responseCache = registry.getResponseCache();
-    }
+    private final PeerAwareInstanceRegistry peerAwareInstanceRegistry;
 
     @ReadOperation(produces = APPLICATION_JSON)
     public VersionDto status() {
-        return VersionDto.builder().version(responseCache.getVersionDelta().get()).build();
+        long version = -1;
+        var hashCode = peerAwareInstanceRegistry.getApplications().getAppsHashCode();
+        var matcher = VERSION_PATTERN.matcher(hashCode);
+        if (matcher.matches()) {
+            version = Long.parseLong(matcher.group(1));
+        } else {
+            log.debug("Unexpected Eureka registry hashCode: {}", hashCode);
+        }
+        return VersionDto.builder().version(version).build();
     }
 
     @Builder

@@ -20,6 +20,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 
+import java.util.regex.Pattern;
+
 import static io.netty.handler.codec.http.HttpHeaders.Values.APPLICATION_JSON;
 
 @Component
@@ -29,14 +31,22 @@ import static io.netty.handler.codec.http.HttpHeaders.Values.APPLICATION_JSON;
 @Slf4j
 public class CachingEurekaRegistryVersionEndpoint {
 
+    private static final Pattern VERSION_PATTERN = Pattern.compile("_([0-9]+)_");
+
     private final ApiMediationClient apiMediationClient;
 
     @ReadOperation(produces = APPLICATION_JSON)
     public VersionDto status() {
-        var eurekaClient = apiMediationClient.getEurekaClient();
         long version = -1;
+        var eurekaClient = apiMediationClient.getEurekaClient();
         if (eurekaClient != null) {
-            version = eurekaClient.getApplications().getVersion();
+            var hashCode = eurekaClient.getApplications().getAppsHashCode();
+            var matcher = VERSION_PATTERN.matcher(hashCode);
+            if (matcher.matches()) {
+                version = Long.parseLong(matcher.group(1));
+            } else {
+                log.debug("Unexpected Eureka registry hashCode: {}", hashCode);
+            }
         }
         return VersionDto.builder().version(version).build();
     }

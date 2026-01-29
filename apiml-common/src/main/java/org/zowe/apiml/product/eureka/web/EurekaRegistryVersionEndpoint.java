@@ -10,8 +10,8 @@
 
 package org.zowe.apiml.product.eureka.web;
 
-import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.EurekaEvent;
 import jakarta.annotation.PostConstruct;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +23,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.util.regex.Pattern;
+
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 
 @Component
@@ -32,6 +34,8 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 @Slf4j
 public class EurekaRegistryVersionEndpoint {
 
+    private static final Pattern VERSION_PATTERN = Pattern.compile("_([0-9]+)_");
+
     private Long version = -1L;
 
     private final EurekaClient eurekaClient;
@@ -39,16 +43,20 @@ public class EurekaRegistryVersionEndpoint {
     @PostConstruct
     void registerListener() {
         eurekaClient.registerEventListener(event -> {
-            if (event instanceof CacheRefreshedEvent eventCacheRefreshedEvent) {
-                onRegistryUpdate(eventCacheRefreshedEvent);
-            }
+            onRegistryUpdate(event);
         });
     }
 
     @EventListener
-    void onRegistryUpdate(CacheRefreshedEvent event) {
-        this.version = eurekaClient.getApplications().getVersion();
-        log.debug("New Eureka registry version: {}", this.version);
+    void onRegistryUpdate(EurekaEvent event) {
+        var hashCode = eurekaClient.getApplications().getAppsHashCode();
+        var matcher = VERSION_PATTERN.matcher(hashCode);
+        if (matcher.matches()) {
+            version = Long.parseLong(matcher.group(1));
+            log.debug("New Eureka registry version: {}", this.version);
+        } else {
+            log.debug("Unexpected Eureka registry hashCode: {}", hashCode);
+        }
     }
 
     @ReadOperation(produces = APPLICATION_JSON)
