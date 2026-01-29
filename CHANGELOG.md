@@ -2,6 +2,21 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `3.4.1 (2025-04-01)`
+
+* Feature:  Support binding on multiple network interfaces (#4457) ([581217a](https://github.com/zowe/api-layer/commit/581217a)), closes [#4457](https://github.com/zowe/api-layer/issues/4457)
+
+
+* Bugfix:  Fix infinispan configuration, exception handling, and the whole cache operation (v3) (#4450) ([c2133d8](https://github.com/zowe/api-layer/commit/c2133d8)), closes [#4450](https://github.com/zowe/api-layer/issues/4450)
+* Bugfix:  expect 401 on info endpoint (#4460) ([cc98e7c](https://github.com/zowe/api-layer/commit/cc98e7c)), closes [#4460](https://github.com/zowe/api-layer/issues/4460)
+* Bugfix:  disable hostname validation (#4452) ([4f546b6](https://github.com/zowe/api-layer/commit/4f546b6)), closes [#4452](https://github.com/zowe/api-layer/issues/4452)
+* Bugfix:  Fix error message during  the shutdown of the Discovery service (#4390) ([4955206](https://github.com/zowe/api-layer/commit/4955206)), closes [#4390](https://github.com/zowe/api-layer/issues/4390)
+* Bugfix:  Loading jwks with nonstrict certificate validation (#4442) ([45de135](https://github.com/zowe/api-layer/commit/45de135)), closes [#4442](https://github.com/zowe/api-layer/issues/4442)
+* Bugfix:  remove reversecategorize filter from attls (#4441) ([2a26ebb](https://github.com/zowe/api-layer/commit/2a26ebb)), closes [#4441](https://github.com/zowe/api-layer/issues/4441)
+* Bugfix:  AT-tLS in single service mode fixes (#4435) ([5e7c275](https://github.com/zowe/api-layer/commit/5e7c275)), closes [#4435](https://github.com/zowe/api-layer/issues/4435)
+* Bugfix:  Fix Node.js enabler (#4434) ([172ec16](https://github.com/zowe/api-layer/commit/172ec16)), closes [#4434](https://github.com/zowe/api-layer/issues/4434)
+* Bugfix:  Loading JWKs from z/OSMF (#4432) ([d592a4e](https://github.com/zowe/api-layer/commit/d592a4e)), closes [#4432](https://github.com/zowe/api-layer/issues/4432)
+
 ## `APIML 3.4.0 / Zowe 3.4.0 (2025-11-12)`
 
 * Feature:  Enable opentelemetry for modulith  (#4380) ([259a2fc](https://github.com/zowe/api-layer/commit/259a2fc)), closes [#4380](https://github.com/zowe/api-layer/issues/4380)
