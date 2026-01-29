@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
 import org.apache.catalina.Host;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -121,7 +122,10 @@ public class ModulithConfig implements InitializingBean {
     private String ipAddress;
 
     @Value("${apiml.service.port:10010}")
-    private int port;
+    private int gatewayPort;
+
+    @Value("${apiml.internal-discovery.port:10011}")
+    private int discoveryPort;
 
     @Value("${server.attlsServer.enabled:false}")
     private boolean isServerAttlsEnabled;
@@ -136,7 +140,13 @@ public class ModulithConfig implements InitializingBean {
             .authServiceId(CoreService.GATEWAY.getServiceId()).build();
     }
 
+    private int getPort(String serviceId) {
+        return Strings.CI.equals(serviceId, CoreService.DISCOVERY.getServiceId()) ? discoveryPort : gatewayPort;
+    }
+
     private InstanceInfo getInstanceInfo(String serviceId) {
+        int port = getPort(serviceId);
+
         var leaseInfo = LeaseInfo.Builder.newBuilder()
             .setDurationInSecs(90)
             .setRegistrationTimestamp(System.currentTimeMillis())
