@@ -53,7 +53,7 @@ public class StsController {
 
     @PostMapping(value = StsController.PASSTICKET_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ConditionalOnProperty(value = "apiml.security.delegatePassticket.enabled", havingValue = "true", matchIfMissing = false)
-    @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('WXA4Z_AUTH', 'READ')")
+    @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('WXA4Z.AUTH', 'READ',#root)")
     @Hidden
     public ResponseEntity<PassTicketResponse> getPassTicket(@RequestBody PassTicketRequest passticketRequest)
             throws Exception {
