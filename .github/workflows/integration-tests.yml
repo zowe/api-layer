@@ -385,13 +385,6 @@ jobs:
         timeout-minutes: 15
 
         services:
-            api-catalog-services-2:
-                image: ghcr.io/balhar-jakub/api-catalog-services-standalone:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: api-catalog-services-2
-                    APIML_HEALTH_PROTECTED: false
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
@@ -494,7 +487,7 @@ jobs:
 
         services:
             api-catalog-services-2:
-                image: ghcr.io/balhar-jakub/api-catalog-services-standalone:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:

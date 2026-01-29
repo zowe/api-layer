@@ -186,7 +186,7 @@ public class ApiMediationLayerStartupChecker {
                         CoreService.DISCOVERY.getServiceId(),
                         CoreService.CACHING.getServiceId()
                     ) ||
-                    !Strings.CI.equals(instance.getHostname(), ds.getHostname())
+                    Strings.CI.equals(instance.getHostname(), ds.getHostname())
                 ).toList();
             }
             return instances;
