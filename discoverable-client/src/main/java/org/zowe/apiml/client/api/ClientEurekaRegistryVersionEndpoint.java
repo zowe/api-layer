@@ -42,6 +42,7 @@ public class ClientEurekaRegistryVersionEndpoint {
             var matcher = VERSION_PATTERN.matcher(hashCode);
             if (matcher.matches()) {
                 version = Long.parseLong(matcher.group(1));
+                log.debug("New Eureka registry version: {}", version);
             } else {
                 log.debug("Unexpected Eureka registry hashCode: {}", hashCode);
             }
