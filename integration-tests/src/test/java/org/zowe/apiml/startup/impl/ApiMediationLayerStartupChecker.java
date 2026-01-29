@@ -267,7 +267,7 @@ public class ApiMediationLayerStartupChecker {
                 return true;
             }
 
-            log.debug("{} services has not onboarded yet: {}", missing.size(), StringUtils.join(missing, ", "));
+            log.debug("{} services has not onboarded on {} yet: {}", missing.size(), ds.getInstanceId(), StringUtils.join(missing, ", "));
             return false;
         }
 
