@@ -81,7 +81,7 @@ import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
 @Configuration
 @RequiredArgsConstructor
 @EnableConfigurationProperties
-@DependsOn(value = {"gatewayHealthIndicator"})
+@DependsOn(value = {"gatewayHealthIndicator", "apimlInstanceRegistry"})
 @Slf4j
 @OpenAPIDefinition(
     security = {
