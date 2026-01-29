@@ -29,7 +29,7 @@ import static io.netty.handler.codec.http.HttpHeaders.Values.APPLICATION_JSON;
 @Slf4j
 public class ClientEurekaRegistryVersionEndpoint {
 
-    private static final Pattern VERSION_PATTERN = Pattern.compile("_([0-9]+)_");
+    private static final Pattern VERSION_PATTERN = Pattern.compile("^.*_([0-9]+)_.*$");
 
     private final ApiMediationClient apiMediationClient;
 

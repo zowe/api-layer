@@ -29,7 +29,7 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 @Slf4j
 public class ApimlEurekaRegistryVersionEndpoint {
 
-    private static final Pattern VERSION_PATTERN = Pattern.compile("_([0-9]+)_");
+    private static final Pattern VERSION_PATTERN = Pattern.compile("^.*_([0-9]+)_.*$");
 
     private final PeerAwareInstanceRegistry peerAwareInstanceRegistry;
 
