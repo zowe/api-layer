@@ -67,6 +67,7 @@ public class ApiMediationLayerStartupChecker {
     }
 
     public void waitUntilReady() {
+        log.debug("Modulith: {}", IS_MODULITH_ENABLED);
         initSsl();
         ApimlInstance.load().forEach(ApimlInstance::waitUntilReady);
     }
@@ -388,7 +389,9 @@ public class ApiMediationLayerStartupChecker {
         public static List<ApimlInstance> load() {
             String centralHostsConfig = System.getProperty("centralHosts");
             if (StringUtils.isBlank(centralHostsConfig)) {
-                return Collections.singletonList(new ApimlInstance(x -> true));
+                var apiml = new ApimlInstance(x -> true);
+                log.debug("All instances = {}", apiml.allInstances);
+                return Collections.singletonList(apiml);
             }
 
             var centralHosts = Arrays.stream(centralHostsConfig.split("[,;]"))
