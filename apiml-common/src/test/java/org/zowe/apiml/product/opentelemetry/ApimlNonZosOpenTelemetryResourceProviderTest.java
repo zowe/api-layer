@@ -10,12 +10,14 @@
 
 package org.zowe.apiml.product.opentelemetry;
 
+import io.opentelemetry.sdk.autoconfigure.spi.ConfigProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class ApimlNonZosOpenTelemetryResourceProviderTest {
@@ -31,6 +33,12 @@ class ApimlNonZosOpenTelemetryResourceProviderTest {
     void testCalculateAttributes() {
         var result = resourceProvider.calculateAttributes();
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testCreateResource() {
+        var result = resourceProvider.createResource(mock(ConfigProperties.class));
+        assertTrue(result.getAttributes().isEmpty());
     }
 
 }
