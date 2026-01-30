@@ -98,9 +98,19 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    -Ddiscoverableclient.instances=1
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Run Modulith CI Tests
                 run: >
-                    ENV_CONFIG=docker-modulith ./gradlew runStartUpCheck :integration-tests:runContainerModulithTests --info
+                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runContainerModulithTests --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
@@ -458,6 +468,7 @@ jobs:
                 with:
                     name: ContainerCITests-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
 
@@ -560,6 +571,7 @@ jobs:
                 with:
                     name: CITestsSAFProviderHA-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
 
@@ -618,6 +630,15 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Run CI Tests
                 run: >
                     ./gradlew :integration-tests:runGatewayProxyTest --info -Denvironment.config=-docker
@@ -633,6 +654,7 @@ jobs:
                 with:
                     name: GatewayProxy-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
 
@@ -718,9 +740,20 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
+                    -Ddiscoverableclient.instances=0 -Dgateway.instances=2
+                    -DcentralHosts=central-gateway-service,api-catalog-services-2,discovery-service-2
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Run CI Tests
                 run: >
-                    ./gradlew runStartUpCheck :integration-tests:runGatewayCentralRegistryTest --info
+                    ./gradlew :integration-tests:runGatewayCentralRegistryTest --info
                     -Denvironment.config=-docker -Dgateway.instances=2 -Ddiscoverableclient.instances=0
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
                     -DcentralHosts=central-gateway-service,api-catalog-services-2,discovery-service-2
@@ -734,6 +767,7 @@ jobs:
                 with:
                     name: GatewayCentralRegistry-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
 
@@ -803,6 +837,7 @@ jobs:
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith -Ddiscoverableclient.instances=0
                     -Denvironment.modulith=true -Dgateway.host=central-gateway-service
                     -DcentralHosts=central-gateway-service
+
             -   name: Run CI Tests
                 timeout-minutes: 4
                 run: >
@@ -817,6 +852,7 @@ jobs:
                 with:
                     name: ModulithCentralRegistry-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
@@ -854,6 +890,15 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Run CI Tests
                 run: >
                     ./gradlew :integration-tests:runRegistrationTests --info -Denvironment.config=-docker
@@ -866,6 +911,7 @@ jobs:
                 with:
                     name: ContainerCITestsRegistration-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
@@ -925,9 +971,19 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
+                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Build with Gradle
                 run: >
-                    ./gradlew runStartUpCheck :integration-tests:runZaasTest --info -Denvironment.config=-docker
+                    ./gradlew :integration-tests:runZaasTest --info -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
                     -Doidc.client.id=${{ secrets.OIDC_CLIENT_ID }} -Doidc.client.secret=${{ secrets.OIDC_CLIENT_SECRET }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
                     -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }} -Doidc.test.alt_user=${{ secrets.OIDC_WINNIE_USER }}
@@ -944,6 +1000,7 @@ jobs:
                 with:
                     name: ContainerCITestsZaas-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
 
@@ -991,6 +1048,15 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest --info -Denvironment.config=-docker
@@ -1002,6 +1068,7 @@ jobs:
                 with:
                     name: ContainerCITestsZosmfWithoutJwt-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
@@ -1039,6 +1106,15 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest --info
@@ -1051,6 +1127,7 @@ jobs:
                 with:
                     name: ContainerCITestsZosmfWithoutJwtModulith-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
@@ -1079,7 +1156,7 @@ jobs:
 
             -   name: Run Caching Service tests
                 run: >
-                    ./gradlew :integration-tests:runCachingServiceTests --info
+                    ./gradlew runStartUpCheck :integration-tests:runCachingServiceTests --info
                     -DtlsConfiguration.clientKeyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
                     -DtlsConfiguration.keyAlias=apimtst
                     -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
@@ -1117,6 +1194,7 @@ jobs:
                 with:
                     name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
@@ -1145,7 +1223,7 @@ jobs:
 
             -   name: Run Caching Service tests
                 run: >
-                    ./gradlew :integration-tests:runCachingServiceTests --info
+                    ./gradlew runStartUpCheck :integration-tests:runCachingServiceTests --info
                     -DtlsConfiguration.clientKeyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
                     -DtlsConfiguration.keyAlias=apimtst
                     -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
@@ -1189,6 +1267,7 @@ jobs:
                 with:
                     name: ContainerCITestsWithRedisSentinel-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
@@ -1269,22 +1348,35 @@ jobs:
                     apt-cache policy docker-ce
                     apt install -y docker-ce
 
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-ha
+                    -Ddiscoverableclient.instances=2 -Dcaching.instances=1
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Run HA Tests
                 run: >
-                    ./gradlew runStartUpCheck runDeterministicLbHaTests --info
+                    ./gradlew runDeterministicLbHaTests --info
                     -Denvironment.config=-ha -Ddiscoverableclient.instances=2 -Dcaching.instances=1
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Get Container Logs
                 if: ${{ false }} # Debug of containers
                 run: |
                     docker ps -a
                     docker ps -q | xargs -L 1 docker logs
+
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
+
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -1292,6 +1384,7 @@ jobs:
                 with:
                     name: DeterministicLbHaTest-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
@@ -1384,6 +1477,7 @@ jobs:
                 with:
                     name: DeterministicLbHaTestModulith-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
@@ -1459,6 +1553,15 @@ jobs:
                     apt-cache policy docker-ce
                     apt install -y docker-ce
 
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Run HA Tests
                 run: >
                     ./gradlew runStickySessionLbHaTests --info -Denvironment.config=-ha
@@ -1466,14 +1569,17 @@ jobs:
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Get Container Logs
                 if: ${{ false }} # Debug of containers
                 run: |
                     docker ps -a
                     docker ps -q | xargs -L 1 docker logs
+
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
+
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -1481,6 +1587,7 @@ jobs:
                 with:
                     name: StickySessionLbHaTest-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
@@ -1535,6 +1642,15 @@ jobs:
                     apt-cache policy docker-ce
                     apt install -y docker-ce
 
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Run HA Tests
                 run: >
                     ./gradlew runStickySessionLbHaTests --info -Denvironment.config=-docker-modulith-ha
@@ -1557,6 +1673,7 @@ jobs:
                 with:
                     name: StickySessionLbHaTestModulith-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
@@ -1755,6 +1872,7 @@ jobs:
                 with:
                     name: CITestsHA-${{ env.JOB_ID }}-${{ matrix.type }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
@@ -1817,6 +1935,15 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew :integration-tests:runInfinispanServiceTests --info -Denvironment.config=-docker
@@ -1831,6 +1958,7 @@ jobs:
                 with:
                     name: CITestsWithInfinispan-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
 
@@ -1889,6 +2017,16 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith
+                    -Denvironment.modulith=true -Ddiscoverableclient.instances=1
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Build with Gradle
                 run: >
                     ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runModulithInfinispanServiceTests --info
@@ -1904,6 +2042,7 @@ jobs:
                 with:
                     name: CITestsModulithWithInfinispan-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
 
@@ -1994,9 +2133,11 @@ jobs:
                         ~/.cache/Cypress
                         api-catalog-ui/frontend/node_modules
                     key: my-cache-${{ runner.os }}-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
+
             -   name: Run startup check
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1 -Dgateway.instances=1
+
             -   name: Show status when APIML is not ready yet
                 if: failure()
                 shell: bash
@@ -2005,24 +2146,29 @@ jobs:
                     apt install -y apt-transport-https ca-certificates curl software-properties-common
                     curl -k -s https://gateway-service:10010/application/health
                     curl -k -s https://gateway-service-2:10010/application/health
+
             -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend
                     export CYPRESS_AUTH0_USERNAME=${{ secrets.OIDC_WINNIE_USER }}
                     export CYPRESS_AUTH0_PASSWORD=${{ secrets.OIDC_WINNIE_PASS }}
                     npm run cy:e2e:ci
+
             -   name: Dump CGW jacoco data
                 run: >
                     java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
+
             -   name: Correct Permissions
                 run: |
                     chmod 755 -R .gradle
+
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: E2EUITests-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         results/**
 
             -   name: Upload screenshots API Catalog
@@ -2105,10 +2251,12 @@ jobs:
                         ~/.cache/Cypress
                         api-catalog-ui/frontend/node_modules
                     key: my-cache-${{ runner.os }}-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
+
             -   name: Run startup check
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1 -Denvironment.modulith=true -Denvironment.gwCount=1
                     -Dgateway.host=gateway-service,gateway-service-2 -Ddiscovery.host=gateway-service -Ddiscovery.additionalHost=gateway-service-2
+
             -   name: Show status when APIML is not ready yet
                 if: failure()
                 shell: bash
@@ -2117,24 +2265,29 @@ jobs:
                     apt install -y apt-transport-https ca-certificates curl software-properties-common
                     curl -k -s https://gateway-service:10010/application/health
                     curl -k -s https://gateway-service-2:10010/application/health
+
             -   name: Cypress run API Catalog
                 run: |
                     cd api-catalog-ui/frontend
                     export CYPRESS_AUTH0_USERNAME=${{ secrets.OIDC_WINNIE_USER }}
                     export CYPRESS_AUTH0_PASSWORD=${{ secrets.OIDC_WINNIE_PASS }}
                     npm run cy:e2e:ci:modulith
+
             -   name: Dump CGW jacoco data
                 run: >
                     java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6310 --destfile ./results/gateway-service.exec
+
             -   name: Correct Permissions
                 run: |
                     chmod 755 -R .gradle
+
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: E2EUITestsModulith-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         results/**
 
             -   name: Upload screenshots API Catalog
@@ -2177,6 +2330,15 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Run Service ID Prefix Replacer Tests
                 run: >
                     ./gradlew :integration-tests:runIdPrefixReplacerTests --info -Denvironment.config=-docker
@@ -2188,6 +2350,7 @@ jobs:
                 with:
                     name: CITestsServicePrefixReplacer-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
 
@@ -2219,6 +2382,16 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith
+                    -Denvironment.modulith=true
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Run Node.JS and Python Services Tests
                 run: >
                     ./gradlew :integration-tests:runNodeAndPythonSampleServiceTests --info -Denvironment.config=-docker-modulith
@@ -2230,6 +2403,7 @@ jobs:
                 with:
                     name: CITestsNodeJsAndPythonServices-${{ env.JOB_ID }}
                     path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
 
