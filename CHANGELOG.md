@@ -2,6 +2,14 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `APIML 2.18.20 / Zowe 2.18.4 (2026-01-29)`
+
+* Bugfix: expect 401 status code (#4465) ([768f66a](https://github.com/zowe/api-layer/commit/768f66a3407bef90c08030e98c1da775934de967)), closes [#4465](https://github.com/zowe/api-layer/pull/4465)
+* Bugfix: Fix configuration of internal port on Gateway (#4391) ([cd61d79](https://github.com/zowe/api-layer/commit/cd61d799e5d22b69219bf0265aadc6841e699b56)), closes [4391](https://github.com/zowe/api-layer/pull/4391)
+* Bugfix: Fix infinispan configuration, exception handling, and the whole cache operation (#4408) ([566b9ef
+](https://github.com/zowe/api-layer/commit/566b9ef8c433bd61f309cf2782ce3cc19c17e340)), closes [#4408](https://github.com/zowe/api-layer/pull/4408)
+* Bugfix: Loading JWKs from z/OSMF (#4432) ([d592a4e](https://github.com/zowe/api-layer/commit/d592a4e)), closes [#4432](https://github.com/zowe/api-layer/pull/4432)
+
 ## `APIML 2.18.19 / Zowe 2.18.3 (2025-10-31)`
 
 * Feature:  Support PATCH method in CORS. (#4255) ([1d86960](https://github.com/zowe/api-layer/commit/1d86960)), closes [#4255](https://github.com/zowe/api-layer/issues/4255)
