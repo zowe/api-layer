@@ -51,7 +51,6 @@ public class FullApiMediationLayer {
     @Getter
     private static final FullApiMediationLayer instance = new FullApiMediationLayer();
 
-
     private FullApiMediationLayer() {
         env = ConfigReader.environmentConfiguration().getInstanceEnv();
 
