@@ -89,6 +89,14 @@ public class ApiMediationLayerStartupChecker {
             this.serviceConfiguration = serviceConfiguration;
         }
 
+        private Instance(Instance instance, String serviceId) {
+            this.scheme = instance.getScheme();
+            this.hostname = instance.getHostname();
+            this.serviceId = serviceId;
+            this.port = instance.getPort();
+            this.serviceConfiguration = instance.getServiceConfiguration();
+        }
+
         private static List<String> getAllHosts(ServiceConfiguration serviceConfiguration) {
             List<String> hosts = new ArrayList<>();
             if (serviceConfiguration == null) {
@@ -104,6 +112,10 @@ public class ApiMediationLayerStartupChecker {
                 }
             }
             return hosts;
+        }
+
+        private static Instance of(Instance instance, String serviceId) {
+            return new Instance(instance, serviceId);
         }
 
         private static List<Instance> of(ServiceConfiguration serviceConfiguration) {
@@ -174,7 +186,19 @@ public class ApiMediationLayerStartupChecker {
             instances.addAll(Instance.of(config.getCachingServiceConfiguration(), "caching.instances"));
             instances.addAll(Instance.of(config.getZosmfServiceConfiguration(), "zosmf.instances"));
             instances.addAll(Instance.of(config.getZaasConfiguration(), "zaas.instances"));
-            allInstances = instances.stream().filter(instanceMatcher).collect(Collectors.toList());
+            allInstances = instances.stream()
+                .map(i -> {
+                    String replacement = System.getProperty("serviceIdReplaced", "");
+                    for (String rule : StringUtils.split(replacement, "[,;]")) {
+                        var ids = rule.split(":");
+                        if (Strings.CI.equals(i.getServiceId(), ids[0])) {
+                            return Instance.of(i, ids[1]);
+                        }
+                    }
+                    return i;
+                })
+                .filter(instanceMatcher)
+                .collect(Collectors.toList());
         }
 
         private List<Instance> getInstancesRegistryCheck(Instance ds) {
