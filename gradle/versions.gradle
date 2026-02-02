@@ -62,7 +62,7 @@ dependencyResolutionManagement {
             }
             version('jbossLogging', '3.6.2.Final')
             version('jerseySun', '1.19.4')
-            version('jettyWebSocketClient', '12.1.5')
+            version('jettyWebSocketClient', '12.1.6')
             version('jettison', '1.5.4')
             //0.12.x version contains breaking changes
             version('jjwt', '0.13.0')
@@ -280,7 +280,7 @@ dependencyResolutionManagement {
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - do not use in Spring unless really necessary
-            version('logback', '1.5.26')
+            version('logback', '1.5.27')
             version('mockitoCore', '5.21.0')
             version('mockitoInline', '5.2.0')
 
