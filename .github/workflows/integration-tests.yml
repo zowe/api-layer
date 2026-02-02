@@ -234,7 +234,7 @@ jobs:
                     logbackService: ZWEAGW1
                     APIML_HEALTH_PROTECTED: false
                     CACHING_STORAGE_MODE: infinispan
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600],apiml-3[7600]"
                     JGROUPS_BIND_PORT: 7600
                     JGROUPS_BIND_ADDRESS: apiml
                     JGROUPS_KEYEXCHANGE_PORT: 7601
@@ -255,7 +255,7 @@ jobs:
                     logbackService: ZWEAGW2
                     APIML_HEALTH_PROTECTED: false
                     CACHING_STORAGE_MODE: infinispan
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600],apiml-3[7600]"
                     JGROUPS_BIND_PORT: 7600
                     JGROUPS_BIND_ADDRESS: apiml-2
                     JGROUPS_KEYEXCHANGE_PORT: 7601
@@ -276,7 +276,7 @@ jobs:
                     logbackService: ZWEAGW3
                     APIML_HEALTH_PROTECTED: false
                     CACHING_STORAGE_MODE: infinispan
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600],apiml-3[7600]"
                     JGROUPS_BIND_PORT: 7600
                     JGROUPS_BIND_ADDRESS: apiml-3
                     JGROUPS_KEYEXCHANGE_PORT: 7601
@@ -720,6 +720,7 @@ jobs:
             discovery-service-2:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
+                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
                     APIML_SERVICE_HOSTNAME: discovery-service-2
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
@@ -895,6 +896,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Ddiscovery.instances=1
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -1053,6 +1055,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Ddiscovery.instances=1
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -1493,17 +1496,23 @@ jobs:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discoverable-client-2:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
@@ -1511,18 +1520,23 @@ jobs:
                 volumes:
                     - /api-defs:/api-defs
                 env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
+                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             discovery-service-2:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
+                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SERVICE_HOSTNAME: zaas-service-2
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1532,7 +1546,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     logbackService: ZWEAGW2
         steps:
@@ -1558,6 +1572,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Dapicatalog.instances=1 -Dcaching.instances=1
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -1603,17 +1618,19 @@ jobs:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             discoverable-client-2:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
+                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             apiml:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
                     APIML_SERVICE_HOSTNAME: apiml
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     logbackService: ZWEAGW1
@@ -1647,6 +1664,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -1895,7 +1913,7 @@ jobs:
                     JGROUPS_BIND_PORT: "7600"
                     SERVER_SSL_KEYSTORETYPE: "PKCS12"
                     CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data_replica"
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service-2[7600]"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600]"
                     CACHING_STORAGE_MODE: "infinispan"
                     APIML_SERVICE_PORT: "10022"
                     JGROUPS_BIND_ADDRESS: "caching-service"
@@ -1907,7 +1925,7 @@ jobs:
                     JGROUPS_BIND_PORT: "7600"
                     SERVER_SSL_KEYSTORETYPE: "PKCS12"
                     CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data"
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600]"
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600]"
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "caching-service-2"
                     APIML_SERVICE_HOSTNAME: "caching-service-2"
@@ -1940,6 +1958,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Ddiscovery.instances=1
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
