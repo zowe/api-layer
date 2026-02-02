@@ -41,6 +41,8 @@ public class CachingHealthIndicator extends AbstractHealthIndicator implements A
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {
+        builder.up();
+
         boolean gatewayUp = Optional.ofNullable(apiMediationClient.getEurekaClient())
             .map(eurekaClient -> eurekaClient.getApplication(CoreService.GATEWAY.getServiceId()))
             .map(Application::getInstances)
