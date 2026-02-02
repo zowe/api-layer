@@ -2159,7 +2159,8 @@ jobs:
             -   name: Run startup check
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
-                    -Dgateway.instances=1 -DcentralHosts=api-catalog-services,discoverable-client,discovery-service,gateway-service,zaas-service,caching-service
+                    -Dgateway.instances=1 -Dcaching.instances=1 -Dapicatalog.instances=1
+                    -DcentralHosts=api-catalog-services,discoverable-client,discovery-service,gateway-service,zaas-service,caching-service
 
             -   name: Show status when APIML is not ready yet
                 if: failure()
