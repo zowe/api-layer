@@ -10,6 +10,11 @@
 
 package org.zowe.apiml.filter;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,11 +22,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
+import org.zowe.apiml.security.common.util.CertificateLoggingUtils;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -63,6 +70,8 @@ class CategorizeCertsWebFilterTest {
     private static X509Certificate gatewayCert;
     private static X509Certificate clientCert;
     private static X509Certificate headerCert;
+    private Logger logger;
+    private ListAppender<ILoggingEvent> logAppender;
 
     @BeforeAll
     static void init() throws Exception {
@@ -76,7 +85,7 @@ class CategorizeCertsWebFilterTest {
     void setUp() {
 
         Set<String> gatewayPublicKeys = new HashSet<>();
-        gatewayPublicKeys.add(CategorizeCertsWebFilter.base64EncodePublicKey(gatewayCert));
+        gatewayPublicKeys.add(CertificateLoggingUtils.base64EncodePublicKey(gatewayCert));
 
         filter = new CategorizeCertsWebFilter(gatewayPublicKeys, mockCertificateValidator);
 
@@ -89,7 +98,18 @@ class CategorizeCertsWebFilterTest {
         when(mockRequestBuilder.build()).thenReturn(mockRequest);
         when(mockRequestBuilder.headers(any())).thenReturn(mockRequestBuilder);
         when(mockRequestBuilder.build()).thenReturn(mockRequest);
+        logger = (Logger) LoggerFactory.getLogger(CategorizeCertsWebFilter.class);
+        logAppender = new ListAppender<>();
+        logAppender.start();
+        logger.addAppender(logAppender);
+        logger.setLevel(Level.DEBUG); // Ensure DEBUG level is enabled
+    }
 
+    @AfterEach
+    void tearDown() {
+        if (logger != null && logAppender != null) {
+            logger.detachAppender(logAppender);
+        }
     }
 
 
@@ -132,6 +152,55 @@ class CategorizeCertsWebFilterTest {
 
         assertNotNull(gatewayCerts);
         assertEquals(0, gatewayCerts.length); // No gateway certs were found
+
+        // Verify no ignored certificate logs when only client cert is present
+        List<ILoggingEvent> logsList = logAppender.list;
+        boolean hasIgnoredLog = logsList.stream()
+            .anyMatch(event -> event.getMessage().contains("Certificates ignored/not used for authentication"));
+        assertFalse(hasIgnoredLog, "Should not log ignored certificates when only client cert is present");
+    }
+
+    @Test
+    void filter_standardPath_withMixedCertChain_logsOnlyIgnoredOnes() {
+        Map<String, Object> attributes = new HashMap<>();
+        X509Certificate[] certChain = {clientCert, gatewayCert};
+
+        when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
+        when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
+        when(mockExchange.getAttributes()).thenReturn(attributes);
+        when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
+        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
+        when(mockHeaders.getFirst(CLIENT_CERT_HEADER)).thenReturn("");
+        when(mockCertificateValidator.isForwardingEnabled()).thenReturn(false);
+
+        StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
+
+        X509Certificate[] clientAuthCerts = (X509Certificate[]) attributes.get(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
+        X509Certificate[] gatewayCerts = (X509Certificate[]) attributes.get(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
+
+        assertNotNull(clientAuthCerts);
+        assertEquals(1, clientAuthCerts.length);
+        assertEquals(clientCert, clientAuthCerts[0]);
+
+        assertNotNull(gatewayCerts);
+        assertEquals(1, gatewayCerts.length);
+        assertEquals(gatewayCert, gatewayCerts[0]);
+
+        // Verify logging for ignored certificates in mixed chain
+        List<ILoggingEvent> logsList = logAppender.list;
+        assertTrue(logsList.stream().anyMatch(event -> event.getMessage().contains("Certificates ignored/not used for authentication")),
+            "Should log ignored certificates in mixed chain");
+
+        String gatewayCertSubject = gatewayCert.getSubjectX500Principal().getName();
+        assertTrue(logsList.stream().anyMatch(event -> event.getFormattedMessage().contains(gatewayCertSubject)),
+            "Should mention ignored gateway certificate");
+
+        String clientCertSubject = clientCert.getSubjectX500Principal().getName();
+        long clientCertIgnoredMentions = logsList.stream()
+            .filter(event -> event.getMessage().contains("ignored"))
+            .filter(event -> event.getFormattedMessage().contains(clientCertSubject))
+            .count();
+        assertEquals(0, clientCertIgnoredMentions, "Should NOT log client certificate as ignored");
     }
 
     @Test
@@ -158,6 +227,19 @@ class CategorizeCertsWebFilterTest {
         assertNotNull(gatewayCerts);
         assertEquals(1, gatewayCerts.length);
         assertEquals(gatewayCert, gatewayCerts[0]);
+
+        List<ILoggingEvent> logsList = logAppender.list;
+        List<ILoggingEvent> ignoredCertLogs = logsList.stream()
+            .filter(event -> event.getMessage().contains("ignored"))
+            .toList();
+
+        assertFalse(ignoredCertLogs.isEmpty(), "Should have logged information about ignored certificates");
+        assertTrue(logsList.stream().anyMatch(event -> event.getMessage().contains("Certificates ignored/not used for authentication")),
+            "Should have summary log about ignored certificates");
+        assertTrue(logsList.stream().anyMatch(event -> event.getFormattedMessage().contains("is an APIML Gateway certificate")),
+            "Should explain that certificate IS an APIML Gateway certificate");
+        assertTrue(logsList.stream().anyMatch(event -> event.getFormattedMessage().contains(gatewayCert.getSubjectX500Principal().getName())),
+            "Should mention the gateway certificate subject");
     }
 
     @Test
@@ -219,6 +301,7 @@ class CategorizeCertsWebFilterTest {
             return (X509Certificate) keystore.getCertificate(alias);
         }
     }
+
 
 
 }
