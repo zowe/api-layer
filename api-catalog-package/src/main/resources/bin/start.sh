@@ -119,6 +119,8 @@ if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
     if [ $JAVA_VERSION -ge 65 ]; then # Java 21
         ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
+        # Set console encoding before application initialization on Java 21+ on z/OS.
+        JAVA21_CONSOLE_ENCODING="-Dstdout.encoding=${ZOWE_CONSOLE_LOG_CHARSET} -Dstderr.encoding=${ZOWE_CONSOLE_LOG_CHARSET}"
     fi
 fi
 
@@ -280,6 +282,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
+    ${JAVA21_CONSOLE_ENCODING} \
     ${ADD_OPENS} \
     ${LOGBACK} \
     -Dsun.io.useCanonCaches=false \
