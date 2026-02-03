@@ -27,6 +27,8 @@ import java.util.Optional;
 
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_JOB_ID;
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_JOB_NAME;
+import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_SYSCLONE;
+import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_SYSNAME;
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_SYSPLEX;
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_USER_ID;
 
@@ -53,6 +55,15 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
     @Value("${apiml.service.port:10010}")
     private int port;
 
+    @Value("${otel.resource.attributes.zos.sysplex.name:#{null}}")
+    private String sysplexName;
+
+    @Value("${otel.resource.attributes.mainframe.lpar.name:#{null}}")
+    private String lparName;
+
+    @Value("${otel.resource.attributes.zos.smf.id:#{null}}")
+    private String smfId;
+
     @PostConstruct
     void afterPropertiesSet() {
         log.debug("Using ZOS OpenTelemetry resource provider");
@@ -78,13 +89,46 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
             log.debug("service.name not provided in configuration, using generated default {}", generatedServiceName);
         }
 
-        Optional.ofNullable(zosAttributes.get(ZOS_JOB_ID)).map(String::valueOf)
+        if (StringUtils.isBlank(sysplexName)) {
+            var sysplexName = zosAttributes.get(ZOS_SYSPLEX);
+            if (sysplexName != null && StringUtils.isNotBlank(sysplexName.toString())) {
+                log.debug("zos.sysplex.name not provided in configuration, using system-obtained {}", sysplexName);
+            } else {
+                log.debug("zos.sysplex.name not provided in configuration. Could not determine name from system");
+            }
+        }
+
+        if (StringUtils.isBlank(lparName)) {
+            var lparName = zosAttributes.get(ZOS_SYSNAME);
+            if (lparName != null && StringUtils.isNotBlank(lparName.toString())) {
+                log.debug("mainframe.lpar.name not provided in configuration, using system-obtained {}", lparName);
+            } else {
+                log.debug("mainframe.lpar.name not provided in configuration. Could not determine name from system");
+            }
+        }
+
+        if (StringUtils.isBlank(smfId)) {
+            var smfId = zosAttributes.get(ZOS_SYSCLONE);
+            if (smfId != null && StringUtils.isNotBlank(smfId.toString())) {
+                log.debug("zos.smf.id not provided in configuration, using system-obtained {}", smfId);
+            } else {
+                log.debug("zos.smf.id not provided in configuration. Could not determine ID from system");
+            }
+        }
+
+        Optional.ofNullable(zosAttributes.get(ZOS_JOB_ID))
+            .map(String::valueOf)
+            .filter(StringUtils::isNotBlank)
             .ifPresent(zosJobId -> attributesBuilder.put(ZosAttributes.ZOS_JOBID, zosJobId));
 
-        Optional.ofNullable(zosAttributes.get(ZOS_JOB_NAME)).map(String::valueOf)
+        Optional.ofNullable(zosAttributes.get(ZOS_JOB_NAME))
+            .map(String::valueOf)
+            .filter(StringUtils::isNotBlank)
             .ifPresent(zosJobName -> attributesBuilder.put(ZosAttributes.ZOS_JOBNAME, zosJobName));
 
-        Optional.ofNullable(zosAttributes.get(ZOS_USER_ID)).map(String::valueOf)
+        Optional.ofNullable(zosAttributes.get(ZOS_USER_ID))
+            .map(String::valueOf)
+            .filter(StringUtils::isNotBlank)
             .ifPresent(zosUserId -> attributesBuilder.put(ZosAttributes.ZOS_USERID, zosUserId));
 
         return attributesBuilder.build();
