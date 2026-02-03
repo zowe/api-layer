@@ -1154,13 +1154,19 @@ jobs:
                     chmod +x run-redis.sh
                     ./run-redis.sh -l -t -a ${{ env.JOB_ID }}
 
-            -   uses: ./.github/actions/validate-apiml-healthy
-                with:
-                    caching-service: "true"
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
+                    -Ddiscoverableclient.instances=0 -Dapicatalog.instances=0 -Ddiscovery.instances=1
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Caching Service tests
                 run: >
-                    ./gradlew runStartUpCheck :integration-tests:runCachingServiceTests --info
+                    ./gradlew :integration-tests:runCachingServiceTests --info
                     -DtlsConfiguration.clientKeyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
                     -DtlsConfiguration.keyAlias=apimtst
                     -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
@@ -1225,13 +1231,19 @@ jobs:
                     chmod +x run-redis.sh
                     ./run-redis.sh -l -s -t -a ${{ env.JOB_ID }}
 
-            -   uses: ./.github/actions/validate-apiml-healthy
-                with:
-                    caching-service: "true"
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
+                    -Ddiscoverableclient.instances=0 -Dapicatalog.instances=0 -Ddiscovery.instances=1
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Caching Service tests
                 run: >
-                    ./gradlew runStartUpCheck :integration-tests:runCachingServiceTests --info
+                    ./gradlew :integration-tests:runCachingServiceTests --info
                     -DtlsConfiguration.clientKeyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
                     -DtlsConfiguration.keyAlias=apimtst
                     -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
