@@ -203,19 +203,11 @@ public class ZUtilDummy implements ZUtil {
 
     @Override
     public String substituteSystemSymbols(String pattern) {
-       return switch (pattern) {
-            case "&SYSNAME." -> {
-                yield "SYSNAME";
-            }
-            case "&SYSCLONE." -> {
-                yield "SYSCLONE";
-            }
-            case "&SYSPLEX." -> {
-                yield "SYSPLEX";
-            }
-            default -> {
-                yield null;
-            }
+          return switch (pattern) {
+            case "&SYSNAME." -> "SYSNAME";
+            case "&SYSCLONE." -> "SYSCLONE";
+            case "&SYSPLEX." -> "SYSPLEX";
+            default -> null;
         };
     }
 

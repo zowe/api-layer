@@ -47,8 +47,7 @@ class OpenTelemetryMetricsTest {
             "otel.sdk.disabled=false",
             "otel.metrics.exporter=none",
             "otel.traces.exporter=none",
-            "otel.logs.exporter=none",
-            "os.name=z/OS"
+            "otel.logs.exporter=none"
         }
     )
     @TestInstance(Lifecycle.PER_CLASS)
@@ -70,13 +69,12 @@ class OpenTelemetryMetricsTest {
         }
 
         @Test
-        void testJvmMetrics() {
+        void whenZos_thenLogCustomAttributes() {
             var metrics = metricReader.collectAllMetrics();
             assertFalse(metrics.isEmpty(), "No data received");
 
             metrics.forEach(
                 metric -> {
-                    System.out.println();
                     var attributes = metric.getResource().getAttributes();
                     assertEquals("zos", attributes.get(stringKey("os.type")));
                     assertEquals("STC1111", attributes.get(stringKey("process.zos.jobid")));

@@ -73,18 +73,20 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
         var zosAttributes = zosSystemInformation.get();
 
         if (lparOverride && StringUtils.isNotBlank(lparName)) {
-            log.debug("LPAR name override for OpenTelemetry metrics");
+            log.debug("mainframe.lpar.name override for OpenTelemetry metrics: {}", lparName);
             attributesBuilder.put("mainframe.lpar.name", lparName);
         }
 
         if (StringUtils.isBlank(serviceNamespace)) {
-            log.debug("service.namespace not provided in configuration, generating default");
-            attributesBuilder.put("service.namespace", generateServiceNamespace(zosAttributes));
+            var generatedDefaultNamespace = generateServiceNamespace(zosAttributes);
+            attributesBuilder.put("service.namespace", generatedDefaultNamespace);
+            log.debug("service.namespace not provided in configuration, using generated default {}", generatedDefaultNamespace);
         }
 
         if (StringUtils.isBlank(serviceName)) {
-            log.debug("service.name not provided in configuration, generating default");
-            attributesBuilder.put("service.name", generateServiceName(zosAttributes));
+            var generatedServiceName = generateServiceName(zosAttributes);
+            attributesBuilder.put("service.name", generatedServiceName);
+            log.debug("service.name not provided in configuration, using generated default {}", generatedServiceName);
         }
 
         Optional.ofNullable(zosAttributes.get(ZOS_JOB_ID)).map(String::valueOf)
