@@ -1191,6 +1191,10 @@ jobs:
                 if: always()
                 run: docker logs discovery-service
 
+            -   name: Output Mock services container logs
+                if: always()
+                run: docker logs mock-services
+
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -1263,6 +1267,10 @@ jobs:
             -   name: Output Discovery container logs
                 if: always()
                 run: docker logs discovery-service
+
+            -   name: Output Mock services container logs
+                if: always()
+                run: docker logs mock-services
 
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
