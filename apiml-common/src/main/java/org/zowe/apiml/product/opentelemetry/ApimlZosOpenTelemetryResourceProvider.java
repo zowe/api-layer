@@ -90,13 +90,13 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
         }
 
         Optional.ofNullable(zosAttributes.get(ZOS_JOB_ID)).map(String::valueOf)
-            .ifPresent(zosJobId -> attributesBuilder.put("process.zos.jobid", zosJobId));
+            .ifPresent(zosJobId -> attributesBuilder.put(ZosAttributes.ZOS_JOBID, zosJobId));
 
         Optional.ofNullable(zosAttributes.get(ZOS_JOB_NAME)).map(String::valueOf)
-            .ifPresent(zosJobName -> attributesBuilder.put("process.zos.jobname", zosJobName));
+            .ifPresent(zosJobName -> attributesBuilder.put(ZosAttributes.ZOS_JOBNAME, zosJobName));
 
         Optional.ofNullable(zosAttributes.get(ZOS_USER_ID)).map(String::valueOf)
-            .ifPresent(zosUserId -> attributesBuilder.put("process.zos.userid", zosUserId));
+            .ifPresent(zosUserId -> attributesBuilder.put(ZosAttributes.ZOS_USERID, zosUserId));
 
         return attributesBuilder.build();
     }
