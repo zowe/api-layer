@@ -162,9 +162,12 @@ public class InfinispanConfig implements InitializingBean {
             .clustering().cacheMode(CacheMode.DIST_SYNC);
 
         var caches = Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN, "zosmfAuthenticationEndpoint", "invalidatedJwtTokens", "validationJwtToken", "zosmfInfo", "zosmfJwtEndpoint", "trustedCertificates", "parseOIDCToken", "validationOIDCToken");
-        caches.forEach(cacheName -> cacheManager.administration()
-            .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
-            .getOrCreateCache(cacheName, builder.build()));
+        caches.forEach(cacheName -> {
+            cacheManager.defineConfiguration(cacheName, builder.build());
+            cacheManager.administration()
+                .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+                .getOrCreateCache(cacheName, builder.build());
+        });
 
         oldKeyStoreType.ifPresent(kst -> System.setProperty(SERVER_SSL_KEY_STORE_TYPE, kst));
         oldKeyStore.ifPresent(ks -> System.setProperty(SERVER_SSL_KEY_STORE, ks));
