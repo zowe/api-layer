@@ -26,9 +26,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cache.CacheManager;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -37,18 +39,32 @@ import static org.mockito.Mockito.*;
 class CachesHealthIndicatorTest {
 
     @Nested
+    class BeforeSpringStartup {
+
+        @Test
+        void givenApplication_whenStarting_thenReturnUnknownStatus() {
+            var cachesHealthIndicator = new CachesHealthIndicator();
+            var builder = mock(Health.Builder.class);
+            cachesHealthIndicator.doHealthCheck(builder);
+            verify(builder).unknown();
+        }
+
+    }
+
+    @Nested
     class UnsupportedCacheManager {
 
         @Test
         void givenUnsupportedCacheManager_whenBuildHealth_thenNoDetailsAdded() {
-            var cachesHealthIndicator = new CachesHealthIndicator(mock(CacheManager.class));
+            var cachesHealthIndicator = new CachesHealthIndicator();
+            ((AtomicReference<CacheManager>) ReflectionTestUtils.getField(cachesHealthIndicator, "cacheManager"))
+                .set(mock(CacheManager.class));
             var builder = mock(Health.Builder.class);
             cachesHealthIndicator.doHealthCheck(builder);
             verify(builder, never()).withDetail(any(), any());
         }
 
     }
-
 
     @Nested
     @ExtendWith(MockitoExtension.class)
@@ -88,7 +104,9 @@ class CachesHealthIndicatorTest {
             doReturn(cache).when(nativeCacheManager).getCache(CACHE_1);
             doReturn(cacheStatus).when(cache).getStatus();
 
-            var cachesHealthIndicator = new CachesHealthIndicator(cacheManager);
+            var cachesHealthIndicator = new CachesHealthIndicator();
+            ((AtomicReference<CacheManager>) ReflectionTestUtils.getField(cachesHealthIndicator, "cacheManager"))
+                .set(cacheManager);
             var builder = mock(Health.Builder.class);
             cachesHealthIndicator.doHealthCheck(builder);
 

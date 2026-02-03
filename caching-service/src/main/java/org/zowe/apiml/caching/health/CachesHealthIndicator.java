@@ -10,28 +10,35 @@
 
 package org.zowe.apiml.caching.health;
 
-import lombok.RequiredArgsConstructor;
 import org.infinispan.spring.embedded.provider.SpringEmbeddedCacheManager;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
-@RequiredArgsConstructor
 @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "infinispan")
 public class CachesHealthIndicator extends AbstractHealthIndicator {
 
-    private final CacheManager cacheManager;
+    private final AtomicReference<CacheManager> cacheManager = new AtomicReference<>();
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {
+        var cm = cacheManager.get();
+        if (cm == null) {
+            builder.unknown();
+            return;
+        }
+
         boolean health = true;
-        if (cacheManager instanceof SpringEmbeddedCacheManager springEmbeddedCacheManager) {
+        if (cm instanceof SpringEmbeddedCacheManager springEmbeddedCacheManager) {
             var nativeCacheManager = springEmbeddedCacheManager.getNativeCacheManager();
             var status = nativeCacheManager.getStatus();
 
@@ -40,7 +47,7 @@ public class CachesHealthIndicator extends AbstractHealthIndicator {
 
             health &= status.allowInvocations();
             var caches = new HashMap<String, Object>();
-            for (String cacheName : cacheManager.getCacheNames()) {
+            for (String cacheName : cm.getCacheNames()) {
                 var cacheStatus = nativeCacheManager.getCache(cacheName).getStatus();
                 caches.put(cacheName, cacheStatus);
                 health &= cacheStatus.allowInvocations();
@@ -50,6 +57,12 @@ public class CachesHealthIndicator extends AbstractHealthIndicator {
         }
 
         builder.status(health ? Status.UP : Status.DOWN);
+    }
+
+    @EventListener
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        var context = event.getApplicationContext();
+        cacheManager.set(context.getBean(CacheManager.class));
     }
 
 }
