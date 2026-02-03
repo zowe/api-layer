@@ -131,7 +131,6 @@ else
 fi
 
 ZOWE_CONSOLE_LOG_CHARSET=UTF-8
-JAVA21_CONSOLE_ENCODING=""
 GATEWAY_LOADER_PATH=${COMMON_LIB}
 if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
@@ -144,7 +143,7 @@ if [ "$(uname)" = "OS/390" ]; then
         ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
         # Java 21+ changed default encoding to UTF-8 (JEP 400). Set console encoding
         # to EBCDIC for z/OS SYSPRINT to prevent garbled characters in early startup logs
-        JAVA21_CONSOLE_ENCODING="-Dstdout.encoding=IBM-1047 -Dstderr.encoding=IBM-1047"
+        JAVA21_CONSOLE_ENCODING="-Dstdout.encoding=${ZOWE_CONSOLE_LOG_CHARSET} -Dstderr.encoding=${ZOWE_CONSOLE_LOG_CHARSET}"
     fi
 fi
 
