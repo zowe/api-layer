@@ -1155,7 +1155,6 @@ jobs:
                     ./run-redis.sh -l -t -a ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
-                if: always()
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker
                     -Ddiscoverableclient.instances=0 -Dapicatalog.instances=0 -Ddiscovery.instances=1
@@ -1232,7 +1231,6 @@ jobs:
                     ./run-redis.sh -l -s -t -a ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
-                if: always()
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker
                     -Ddiscoverableclient.instances=0 -Dapicatalog.instances=0 -Ddiscovery.instances=1
