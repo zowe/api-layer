@@ -41,12 +41,6 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
     @Value("${otel.resource.attributes.deployment.environment.name:#{null}}")
     private String environmentName;
 
-    @Value("${otel.resource.attributes.zos.lpar.name:#{null}}")
-    private String lparName;
-
-    @Value("${otel.resource.attributes.zos.lpar.override:false}")
-    private boolean lparOverride;
-
     @Value("${otel.resource.attributes.service.namespace:#{null}}")
     private String serviceNamespace;
 
@@ -71,11 +65,6 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
         var attributesBuilder = Attributes.builder();
 
         var zosAttributes = zosSystemInformation.get();
-
-        if (lparOverride && StringUtils.isNotBlank(lparName)) {
-            log.debug("mainframe.lpar.name override for OpenTelemetry metrics: {}", lparName);
-            attributesBuilder.put("mainframe.lpar.name", lparName);
-        }
 
         if (StringUtils.isBlank(serviceNamespace)) {
             var generatedDefaultNamespace = generateServiceNamespace(zosAttributes);

@@ -333,10 +333,30 @@ if [ -n "${ZWE_java_home}" ]; then
     JAVA_BIN_DIR=${ZWE_java_home}/bin/
 fi
 
+# OpenTelemetry
 if [ "$ZWE_configs_telemetry_enabled" = "true" ]; then
     DISABLE_OTEL=false
 else
     DISABLE_OTEL=true
+fi
+
+if [ -n "${ZWE_configs_telemetry_attributes_deployment_environment}" ]; then
+    OTEL_ATTRIBUTES="-Dotel.resource.attributes.deployment.environment=${ZWE_configs_telemetry_attributes_deployment_environment}"
+fi
+if [ -n "${ZWE_configs_telemetry_service_name}" ]; then
+    OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.service.name=${ZWE_configs_telemetry_service_name}"
+fi
+if [ -n "${ZWE_configs_telemetry_service_namespace}" ]; then
+    OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.service.namespace=${ZWE_configs_telemetry_service_namespace}"
+fi
+if [ -n "${ZWE_configs_telemetry_attributes_zos_sysplex_name}" ]; then
+    OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.zos.sysplex.name=${ZWE_configs_telemetry_attributes_zos_sysplex_name}"
+fi
+if [ -n "${ZWE_configs_telemetry_attributes_zos_smf_id}" ]; then
+    OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.zos.smf.id=${ZWE_configs_telemetry_attributes_zos_smf_id}"
+fi
+if [ -n "${ZWE_configs_telemetry_attributes_mainframe_lpar_name}" ]; then
+    OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.mainframe.lpar.name=${ZWE_configs_telemetry_attributes_mainframe_lpar_name}"
 fi
 
 APIML_CODE=AG
@@ -346,12 +366,14 @@ _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Xms${ZWE_configs_heap_init:-${ZWE_components_gateway_heap_init:-32}}m -Xmx${ZWE_configs_heap_max:-${ZWE_components_gateway_heap_max:-512}}m \
     -XX:+ExitOnOutOfMemoryError \
+    -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=5009,suspend=y \
     ${QUICK_START} \
     ${SHARED_CLASSES_OPTS} \
     ${ADD_OPENS} \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
     ${EXTERNAL_URL} \
+    ${OTEL_ATTRIBUTES} \
     -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_haInstance_id:-localhost} \
     -Dapiml.catalog.customStyle.backgroundColor=${ZWE_components_apicatalog_apiml_catalog_customStyle_backgroundColor:-${ZWE_configs_apiml_catalog_customStyle_backgroundColor:-}} \
     -Dapiml.catalog.customStyle.docLink=${ZWE_components_apicatalog_apiml_catalog_customStyle_docLink:-${ZWE_configs_apiml_catalog_customStyle_docLink:-}} \
@@ -454,14 +476,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dotel.exporter.otlp.endpoint="${ZWE_configs_telemetry_exporter_endpoint:-http://localhost:4318}" \
     -Dotel.logs.exporter="${ZWE_configs_telemetry_logs_exporter:-none}" \
     -Dotel.metrics.exporter="${ZWE_configs_telemetry_metrics_exporter:-none}" \
-    -Dotel.resource.attributes.deployment.environment.name="${ZWE_configs_telemetry_attributes_deployment_environment_name:-}" \
-    -Dotel.resource.attributes.deployment.environment="${ZWE_configs_telemetry_attributes_deployment_environment:-prod}" \
-    -Dotel.resource.attributes.service.name="${ZWE_configs_telemetry_service_name:-${ZWE_components_gateway_apimlId:-${ZWE_configs_apimlId}}}" \
-    -Dotel.resource.attributes.service.namespace="${ZWE_configs_telemetry_service_namespace:-}" \
-    -Dotel.resource.attributes.zos.lpar.name="${ZWE_configs_telemetry_attributes_zos_lpar_name:-${ZWE_haInstance_sysname:-${ZWE_haInstance_id:-}}}" \
-    -Dotel.resource.attributes.zos.lpar.override="${ZWE_configs_telemetry_attributes_zos_lpar_override:-false}" \
-    -Dotel.resource.attributes.zos.smf.id="${ZWE_configs_telemetry_attributes_zos_smf_id:-}" \
-    -Dotel.resource.attributes.zos.sysplex.name="${ZWE_configs_telemetry_attributes_zos_sysplex_name:-}" \
     -Dotel.traces.exporter="${ZWE_configs_telemetry_traces_exporter:-none}" \
     -Dotel.sdk.disabled=${DISABLE_OTEL} \
     -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \
