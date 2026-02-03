@@ -16,7 +16,7 @@
         },
         "sslDebug": {
             "type": "string",
-            "description": "Configure attributes fro SSL config, see java property javax.net.debug."
+            "description": "Configure attributes for SSL config, see java property javax.net.debug."
         },
         "heap": {
             "type": "object",

@@ -7,7 +7,7 @@
     "properties": {
         "port": {
             "$ref": "#/$defs/port",
-            "default": 7553
+            "default": 7554
         },
         "debug": {
             "type": "boolean",
@@ -16,7 +16,7 @@
         },
         "sslDebug": {
             "type": "string",
-            "description": "Configure attributes fro SSL config, see java property javax.net.debug."
+            "description": "Configure attributes for SSL config, see java property javax.net.debug."
         },
         "heap": {
             "type": "object",

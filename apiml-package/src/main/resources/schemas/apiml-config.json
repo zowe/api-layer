@@ -16,7 +16,7 @@
         },
         "sslDebug": {
             "type": "string",
-            "description": "Configure attributes fro SSL config, see java property javax.net.debug."
+            "description": "Configure attributes for SSL config, see java property javax.net.debug."
         },
         "heap": {
             "type": "object",
@@ -505,7 +505,6 @@
                                 "provider": {
                                     "type": "string",
                                     "description": "Method of communication used by the SAF IDT provider implementation. REST is used if no value is provided.",
-                                    "enum": ["rest"],
                                     "default": "rest"
                                 },
                                 "urls": {

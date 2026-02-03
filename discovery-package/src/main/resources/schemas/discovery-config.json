@@ -7,7 +7,7 @@
     "properties": {
         "port": {
             "$ref": "#/$defs/port",
-            "default": 7552
+            "default": 7553
         },
         "debug": {
             "type": "boolean",
@@ -16,7 +16,7 @@
         },
         "sslDebug": {
             "type": "string",
-            "description": "Configure attributes fro SSL config, see java property javax.net.debug."
+            "description": "Configure attributes for SSL config, see java property javax.net.debug."
         },
         "heap": {
             "type": "object",
@@ -68,7 +68,7 @@
                     "properties": {
                         "enabled": {
                             "type": "boolean",
-                            "description": "To enable SSL/tls layer.",
+                            "description": "To enable SSL/TLS layer.",
                             "default": true
                         }
                     }
