@@ -1156,7 +1156,7 @@ jobs:
 
             -   name: Run Startup Check
                 run: >
-                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck --info
                     -Ddiscoverableclient.instances=0 -Dapicatalog.instances=0 -Ddiscovery.instances=1
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -1232,7 +1232,7 @@ jobs:
 
             -   name: Run Startup Check
                 run: >
-                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck --info
                     -Ddiscoverableclient.instances=0 -Dapicatalog.instances=0 -Ddiscovery.instances=1
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
