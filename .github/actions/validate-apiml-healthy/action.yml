@@ -33,7 +33,7 @@ runs:
           run: |
             set +e # curl -s doesn't swallow the error alone
             attemptCounter=1
-            maxAttempts=18
+            maxAttempts=50
             valid="false"
             until [ $attemptCounter -gt $maxAttempts ]; do
               sleep 10
