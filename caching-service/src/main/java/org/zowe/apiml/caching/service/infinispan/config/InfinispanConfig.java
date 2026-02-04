@@ -22,6 +22,7 @@ import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.lock.EmbeddedClusteredLockManagerFactory;
 import org.infinispan.lock.api.ClusteredLock;
 import org.infinispan.lock.api.ClusteredLockManager;
+import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.partitionhandling.AvailabilityException;
 import org.springframework.beans.factory.InitializingBean;
@@ -121,7 +122,11 @@ public class InfinispanConfig implements InitializingBean {
     }
 
     @Bean(destroyMethod = "stop")
-    synchronized DefaultCacheManager cacheManager(ResourceLoader resourceLoader) {
+    synchronized CacheContainer cacheManager(ResourceLoader resourceLoader) {
+        return new LazyCacheManager(() -> createCacheManager(resourceLoader));
+    }
+
+    DefaultCacheManager createCacheManager(ResourceLoader resourceLoader) {
         System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
         System.setProperty("jgroups.bind.port", port);
         System.setProperty("jgroups.bind.address", address);
@@ -155,27 +160,37 @@ public class InfinispanConfig implements InitializingBean {
 
         DefaultCacheManager cacheManager = new DefaultCacheManager(holder, true);
 
-        ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder
-            .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
-            .persistence().addSoftIndexFileStore().clustering()
-            .clustering().cacheMode(CacheMode.DIST_SYNC);
+        try {
+            ConfigurationBuilder builder = new ConfigurationBuilder();
+            builder
+                .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
+                .persistence().addSoftIndexFileStore().clustering()
+                .clustering().cacheMode(CacheMode.DIST_SYNC);
 
-        var caches = Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN, "zosmfAuthenticationEndpoint", "invalidatedJwtTokens", "validationJwtToken", "zosmfInfo", "zosmfJwtEndpoint", "trustedCertificates", "parseOIDCToken", "validationOIDCToken");
-        caches.forEach(cacheName -> {
-            cacheManager.administration()
-                .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
-                .getOrCreateCache(cacheName, builder.build());
-        });
+            var caches = Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN, "zosmfAuthenticationEndpoint", "invalidatedJwtTokens", "validationJwtToken", "zosmfInfo", "zosmfJwtEndpoint", "trustedCertificates", "parseOIDCToken", "validationOIDCToken");
+            caches.forEach(cacheName -> {
+                cacheManager.administration()
+                    .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+                    .getOrCreateCache(cacheName, builder.build());
+            });
 
-        oldKeyStoreType.ifPresent(kst -> System.setProperty(SERVER_SSL_KEY_STORE_TYPE, kst));
-        oldKeyStore.ifPresent(ks -> System.setProperty(SERVER_SSL_KEY_STORE, ks));
-        oldKeyStorePassword.ifPresent(p -> System.setProperty(SERVER_SSL_KEY_STORE_PASSWORD, p));
+            oldKeyStoreType.ifPresent(kst -> System.setProperty(SERVER_SSL_KEY_STORE_TYPE, kst));
+            oldKeyStore.ifPresent(ks -> System.setProperty(SERVER_SSL_KEY_STORE, ks));
+            oldKeyStorePassword.ifPresent(p -> System.setProperty(SERVER_SSL_KEY_STORE_PASSWORD, p));
+        } catch (Exception e) {
+            log.warn("Error during creation of default cache manager", e);
+            try {
+                cacheManager.stop();
+            } catch (Exception e2) {
+                log.debug("Cannot stop cache manager", e2);
+            }
+            return null;
+        }
 
         return cacheManager;
     }
 
-    private ClusteredLock lock(DefaultCacheManager cacheManager) {
+    private ClusteredLock lock(CacheContainer cacheManager) {
         ClusteredLock lock = zoweInvalidatedTokenLock.get();
         if (lock != null) {
             return lock;
@@ -184,8 +199,8 @@ public class InfinispanConfig implements InitializingBean {
         try {
             synchronized (zoweInvalidatedTokenLock) {
                 lock = zoweInvalidatedTokenLock.get();
-                if (lock == null) {
-                    ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(cacheManager);
+                if (lock == null && cacheManager instanceof LazyCacheManager lazyCacheManager) {
+                    ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(lazyCacheManager.getOriginal());
                     // it can throw AvailabilityException
                     clm.defineLock(LOCK_ZOWE_INVALIDATED);
                     lock = clm.get(LOCK_ZOWE_INVALIDATED);
@@ -200,7 +215,7 @@ public class InfinispanConfig implements InitializingBean {
     }
 
     @Bean
-    public Storage storage(DefaultCacheManager cacheManager) {
+    public Storage storage(CacheContainer cacheManager) {
         return new InfinispanStorage(
             cacheManager.getCache(CACHE_ZOWE),
             cacheManager.getCache(CACHE_ZOWE_INVALIDATED_TOKEN),
