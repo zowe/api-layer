@@ -289,6 +289,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
+                    logbackService: ZWEADC2
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
@@ -424,6 +425,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
+                    logbackService: ZWEADS2
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -439,6 +441,7 @@ jobs:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
+                    logbackService: ZWEAZS2
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -489,6 +492,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: api-catalog-services-2
                     APIML_HEALTH_PROTECTED: false
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
+                    logbackService: ZWEAAC2
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
@@ -513,6 +517,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
+                    logbackService: ZWEADS2
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -542,6 +547,7 @@ jobs:
                     APIML_SECURITY_AUTH_PROVIDER: saf
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
+                    logbackService: ZWEAZS2
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -611,6 +617,7 @@ jobs:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
                     APIML_SERVICE_HOSTNAME: zaas-service-2
+                    logbackService: ZWEAZS2
             central-gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -718,11 +725,13 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: api-catalog-services-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
+                    logbackService: ZWEAAC2
             discovery-service-2:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
                     APIML_SERVICE_HOSTNAME: discovery-service-2
+                    logbackService: ZWEADS2
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -731,7 +740,7 @@ jobs:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
-                    logbackService: ZWEAAZ1
+                    logbackService: ZWEAZS2
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
@@ -1319,6 +1328,7 @@ jobs:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: api-catalog-services-2
+                    logbackService: ZWEAAC2
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
@@ -1335,6 +1345,7 @@ jobs:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
+                    logbackService: ZWEADC2
             discovery-service-2:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
@@ -1342,12 +1353,14 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
+                    logbackService: ZWEADS2
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service-2
+                    logbackService: ZWEAZS2
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1435,6 +1448,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+                    logbackService: ZWEADC2
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1540,6 +1554,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
+                    logbackService: ZWEADC2
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
@@ -1555,6 +1570,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
+                    logbackService: ZWEADS2
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1564,6 +1580,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
+                    logbackService: ZWEAZS2
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1652,6 +1669,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
+                    logbackService: ZWEADC2
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             apiml:
@@ -1747,6 +1765,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: api-catalog-services-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     APIML_HEALTH_PROTECTED: false
+                    logbackService: ZWEAAC2
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1773,6 +1792,7 @@ jobs:
                     MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
                     MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
+                    logbackService: ZWEACS2
             caching-service-3:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1786,6 +1806,7 @@ jobs:
                     MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
                     MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
+                    logbackService: ZWEACS3
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1795,6 +1816,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
+                    logbackService: ZWEADC2
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1812,6 +1834,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
+                    logbackService: ZWEADS2
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1822,6 +1845,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
+                    logbackService: ZWEAZS2
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1944,7 +1968,6 @@ jobs:
                     CACHING_STORAGE_MODE: "infinispan"
                     APIML_SERVICE_PORT: "10022"
                     JGROUPS_BIND_ADDRESS: "caching-service"
-
             caching-service-2:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1956,7 +1979,7 @@ jobs:
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "caching-service-2"
                     APIML_SERVICE_HOSTNAME: "caching-service-2"
-
+                    logbackService: ZWEACS2
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
@@ -2029,7 +2052,6 @@ jobs:
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "apiml"
-
             apiml-2:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -2044,7 +2066,7 @@ jobs:
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "apiml-2"
                     APIML_SERVICE_HOSTNAME: "apiml-2"
-
+                    logbackService: ZWEAGW2
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
@@ -2143,6 +2165,7 @@ jobs:
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
+                    logbackService: ZWEADS2
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -2163,6 +2186,7 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
                     APIML_HEALTH_PROTECTED: false
                     APIML_SERVICE_HOSTNAME: zaas-service-2
+                    logbackService: ZWEAZS2
 
         steps:
             -   uses: actions/checkout@v4
