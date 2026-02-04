@@ -61,8 +61,8 @@ public class InfinispanConfig implements InitializingBean {
 
     private static final String ZWE_HAINSTANCE_ID = "ZWE_haInstance_id";
     private static final String LOCK_ZOWE_INVALIDATED = "zoweInvalidatedTokenLock";
-    private static final String CACHE_ZOWE = "zoweCache";
-    private static final String CACHE_ZOWE_INVALIDATED_TOKEN = "zoweInvalidatedTokenCache";
+    public static final String CACHE_ZOWE = "zoweCache";
+    public static final String CACHE_ZOWE_INVALIDATED_TOKEN = "zoweInvalidatedTokenCache";
 
     @Value("${caching.storage.infinispan.initialHosts}")
     private String initialHosts;
@@ -215,10 +215,9 @@ public class InfinispanConfig implements InitializingBean {
     }
 
     @Bean
-    public Storage storage(CacheContainer cacheManager) {
+    public Storage storage(DefaultCacheManager cacheManager) {
         return new InfinispanStorage(
-            cacheManager.getCache(CACHE_ZOWE),
-            cacheManager.getCache(CACHE_ZOWE_INVALIDATED_TOKEN),
+            cacheManager,
             () -> lock(cacheManager)
         );
     }
