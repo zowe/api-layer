@@ -119,6 +119,7 @@ class OpenTelemetryMetricsTest {
             @Override
             public Attributes calculateAttributes() {
                 var attributes = super.calculateAttributes();
+                // Restore os.name to test runner's platform to avoid issues with classes that are not available on z/OS (for instance mockito fails)
                 System.setProperty("os.name", defaultPlatform);
                 return attributes;
             }
