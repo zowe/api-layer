@@ -185,6 +185,7 @@ dependencyResolutionManagement {
             library('infinispan_spring_boot3_starter_embedded', 'org.infinispan', 'infinispan-spring-boot3-starter-embedded').versionRef('infinispan')
             library('infinispan_lock', 'org.infinispan', 'infinispan-clustered-lock').versionRef('infinispan')
             library('infinispan_jboss_marshalling', 'org.infinispan', 'infinispan-jboss-marshalling').versionRef('infinispan')
+            library('infinispan_annotations', 'org.infinispan', 'infinispan-component-annotations').versionRef('infinispan')
             library('jackson_annotations', 'com.fasterxml.jackson.core', 'jackson-annotations').versionRef('jacksonAnnotations')
             library('jackson_core', 'com.fasterxml.jackson.core', 'jackson-core').versionRef('jacksonCore')
             library('jackson_databind', 'com.fasterxml.jackson.core', 'jackson-databind').versionRef('jacksonDatabind')
@@ -289,7 +290,7 @@ dependencyResolutionManagement {
             library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInline')
 
 
-            bundle('infinispan', [ 'infinispan_spring_boot3_starter_embedded', 'infinispan_lock', 'infinispan_jboss_marshalling' ])
+            bundle('infinispan', [ 'infinispan_spring_boot3_starter_embedded', 'infinispan_lock', 'infinispan_jboss_marshalling', 'infinispan_annotations' ])
             bundle('jaxb', ['jaxbApi', 'jaxbImpl'])
             bundle('modulith', ['modulith', 'modulith_core', 'jmolecules'])
         }

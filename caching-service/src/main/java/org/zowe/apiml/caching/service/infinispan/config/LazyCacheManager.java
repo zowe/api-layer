@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.caching.service.infinispan.config;
 
-import lombok.RequiredArgsConstructor;
 import org.infinispan.Cache;
 import org.infinispan.commons.configuration.ClassAllowList;
 import org.infinispan.configuration.cache.Configuration;
@@ -32,12 +31,16 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-@RequiredArgsConstructor
-public class LazyCacheManager implements CacheContainer, EmbeddedCacheManager {
+public class LazyCacheManager extends DefaultCacheManager {
 
     private final Supplier<DefaultCacheManager> cacheContainerSupplier;
 
     private final AtomicReference<DefaultCacheManager> cacheContainer = new AtomicReference<>();
+
+    public LazyCacheManager(Supplier<DefaultCacheManager> cacheContainerSupplier) {
+        super(false);
+        this.cacheContainerSupplier = cacheContainerSupplier;
+    }
 
     private DefaultCacheManager getCacheContainer() {
         var container = cacheContainer.get();
