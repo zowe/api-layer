@@ -169,6 +169,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         try {
             replicateToPeersMethodHandle.invokeWithArguments(this, Action.Heartbeat, instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, false);
         } catch (Throwable e) {
+            log.warn("Unexpected error occurred while replicateToPeers: {}", instanceInfo.getInstanceId(), e);
             throw new IllegalStateException(EXCEPTION_MESSAGE, e);
         }
     }
