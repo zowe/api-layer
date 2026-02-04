@@ -358,7 +358,8 @@ task runAllIntegrationTestsForZoweModulithHaTestingOnZos(type: Test) {
             'ChaoticHATest',
             'GraphQLTest',
             'GraphQLTest',
-            'ZaasTest' // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
+            'ZaasTest', // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
+            'NonModulithTest'
         )
     }
 

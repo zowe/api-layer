@@ -26,7 +26,8 @@ public enum Messages {
     PAYLOAD_TOO_LARGE("org.zowe.apiml.cache.payloadTooLarge", HttpStatus.BAD_REQUEST),
     INTERNAL_SERVER_ERROR("org.zowe.apiml.common.internalRequestError", HttpStatus.INTERNAL_SERVER_ERROR),
     MISSING_CERTIFICATE("org.zowe.apiml.cache.missingCertificate", HttpStatus.UNAUTHORIZED),
-    INCOMPATIBLE_STORAGE_METHOD("org.zowe.apiml.cache.incompatibleStorageMethod", HttpStatus.BAD_REQUEST);
+    INCOMPATIBLE_STORAGE_METHOD("org.zowe.apiml.cache.incompatibleStorageMethod", HttpStatus.BAD_REQUEST),
+    CACHE_NOT_AVAILABLE("org.zowe.apiml.cache.notAvailable", HttpStatus.SERVICE_UNAVAILABLE);
     private final String key;
     private final HttpStatus status;
 }

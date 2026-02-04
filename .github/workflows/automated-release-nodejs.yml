@@ -71,7 +71,7 @@ jobs:
                   cd ..
               env:
                   DEFAULT_SCOPE: 'patch'
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  NPM_TOKEN: ${{ secrets.NPM_PUBLIC_TOKEN }}
 
             -  uses: ./.github/actions/teardown
 

@@ -30,6 +30,7 @@ import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 @SpringBootApplication
 @ComponentScan({
     "org.zowe.apiml.discovery",
+    "org.zowe.apiml.product.config",
     "org.zowe.apiml.product.security",
     "org.zowe.apiml.product.web",
     "org.zowe.apiml.product.service",

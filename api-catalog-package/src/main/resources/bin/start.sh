@@ -133,6 +133,9 @@ then
 
     if [ $JAVA_VERSION -ge 65 ]; then # Java 21
         ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
+        # Java 21+ changed default encoding to UTF-8 (JEP 400). Set console encoding
+        # to EBCDIC for z/OS SYSPRINT to prevent garbled characters in early startup logs
+        JAVA21_CONSOLE_ENCODING="-Dstdout.encoding=${ZOWE_CONSOLE_LOG_CHARSET} -Dstderr.encoding=${ZOWE_CONSOLE_LOG_CHARSET}"
     fi
 fi
 
@@ -290,6 +293,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
     ${SHARED_CLASSES_OPTS} \
+    ${JAVA21_CONSOLE_ENCODING} \
     ${ADD_OPENS} \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
