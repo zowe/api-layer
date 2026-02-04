@@ -10,21 +10,25 @@
 
 package org.zowe.apiml.zaas.controllers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.anyString;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.zaas.security.mapping.NativeMapperWrapper;
 import org.zowe.commons.usermap.MapperResponse;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-class StsControllerTest {
+class SecurityTokenServiceControllerTest {
 
     @Mock
     private PassTicketService passTicketService;
@@ -33,12 +37,12 @@ class StsControllerTest {
     private NativeMapperWrapper nativeMapper;
 
     @InjectMocks
-    private StsController stsController;
+    private SecurityTokenServiceController SecurityTokenServiceController;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        stsController.registry = "testRegistry";
+        SecurityTokenServiceController.registry = "testRegistry";
     }
 
     @Nested
@@ -46,7 +50,7 @@ class StsControllerTest {
 
         @Test
         void shouldReturnPassTicketWhenRequestIsValid() throws Exception {
-            StsController.PassTicketRequest request = new StsController.PassTicketRequest();
+            SecurityTokenServiceController.PassTicketRequest request = new SecurityTokenServiceController.PassTicketRequest();
             request.setApplId("TESTAPP");
             request.setEmailId("test@company.com");
 
@@ -57,8 +61,8 @@ class StsControllerTest {
             when(passTicketService.generate("ZOSUSER", "TESTAPP"))
                 .thenReturn("TICKET123");
 
-            ResponseEntity<StsController.PassTicketResponse> response =
-                stsController.getPassTicket(request);
+            ResponseEntity<SecurityTokenServiceController.PassTicketResponse> response =
+                SecurityTokenServiceController.getPassTicket(request);
 
             assertEquals(200, response.getStatusCode().value());
             assertNotNull(response.getBody());
@@ -73,7 +77,7 @@ class StsControllerTest {
 
         @Test
         void shouldReturnPassTicketWhenMapperReturnsEmptyUser() throws Exception {
-            StsController.PassTicketRequest request = new StsController.PassTicketRequest();
+            SecurityTokenServiceController.PassTicketRequest request = new SecurityTokenServiceController.PassTicketRequest();
             request.setApplId("APPID");
             request.setEmailId("test@company.com");
 
@@ -84,8 +88,8 @@ class StsControllerTest {
             when(passTicketService.generate("", "APPID"))
                 .thenReturn("TICKET123");
 
-            ResponseEntity<StsController.PassTicketResponse> response =
-                stsController.getPassTicket(request);
+            ResponseEntity<SecurityTokenServiceController.PassTicketResponse> response =
+                SecurityTokenServiceController.getPassTicket(request);
 
             assertEquals(200, response.getStatusCode().value());
             assertEquals("TICKET123", response.getBody().getPassticket());
@@ -98,12 +102,12 @@ class StsControllerTest {
 
         @Test
         void shouldReturnBadRequestWhenEmailIsBlank() throws Exception {
-            StsController.PassTicketRequest request = new StsController.PassTicketRequest();
+            SecurityTokenServiceController.PassTicketRequest request = new SecurityTokenServiceController.PassTicketRequest();
             request.setApplId("APPID");
             request.setEmailId("");
 
-            ResponseEntity<StsController.PassTicketResponse> response =
-                stsController.getPassTicket(request);
+            ResponseEntity<SecurityTokenServiceController.PassTicketResponse> response =
+                SecurityTokenServiceController.getPassTicket(request);
 
             assertEquals(400, response.getStatusCode().value());
             verifyNoInteractions(passTicketService, nativeMapper);
@@ -111,12 +115,12 @@ class StsControllerTest {
 
         @Test
         void shouldReturnBadRequestWhenApplIdIsBlank() throws Exception {
-            StsController.PassTicketRequest request = new StsController.PassTicketRequest();
+            SecurityTokenServiceController.PassTicketRequest request = new SecurityTokenServiceController.PassTicketRequest();
             request.setEmailId("test@company.com");
             request.setApplId("");
 
-            ResponseEntity<StsController.PassTicketResponse> response =
-                stsController.getPassTicket(request);
+            ResponseEntity<SecurityTokenServiceController.PassTicketResponse> response =
+                SecurityTokenServiceController.getPassTicket(request);
 
             assertEquals(400, response.getStatusCode().value());
             verifyNoInteractions(passTicketService, nativeMapper);
@@ -128,7 +132,7 @@ class StsControllerTest {
 
         @Test
         void shouldPropagateExceptionWhenNativeMapperFails() throws Exception {
-            StsController.PassTicketRequest request = new StsController.PassTicketRequest();
+            SecurityTokenServiceController.PassTicketRequest request = new SecurityTokenServiceController.PassTicketRequest();
             request.setApplId("APPID");
             request.setEmailId("test@company.com");
 
@@ -137,7 +141,7 @@ class StsControllerTest {
 
             RuntimeException exception = assertThrows(
                 RuntimeException.class,
-                () -> stsController.getPassTicket(request)
+                () -> SecurityTokenServiceController.getPassTicket(request)
             );
 
             assertEquals("Mapper failed", exception.getMessage());

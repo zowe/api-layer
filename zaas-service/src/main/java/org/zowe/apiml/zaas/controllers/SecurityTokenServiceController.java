@@ -10,26 +10,27 @@
 
 package org.zowe.apiml.zaas.controllers;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.zowe.apiml.passticket.PassTicketException;
+import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.zaas.security.mapping.NativeMapperWrapper;
+import org.zowe.commons.usermap.MapperResponse;
+
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.web.bind.annotation.*;
-import org.zowe.commons.usermap.MapperResponse;
-import org.zowe.apiml.passticket.PassTicketService;
-import org.zowe.apiml.zaas.security.mapping.NativeMapperWrapper;
 
 /**
  * Controller offer method to control security. It can contain method for user
@@ -38,9 +39,9 @@ import org.zowe.apiml.zaas.security.mapping.NativeMapperWrapper;
  */
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(StsController.CONTROLLER_PATH)
+@RequestMapping(SecurityTokenServiceController.CONTROLLER_PATH)
 @Slf4j
-public class StsController {
+public class SecurityTokenServiceController {
 
     @Value("${apiml.security.oidc.registry:}")
     protected String registry;
@@ -51,7 +52,7 @@ public class StsController {
     public static final String CONTROLLER_PATH = "/zaas/api/v1/auth/delegate";
     public static final String PASSTICKET_PATH = "/passticket";
 
-    @PostMapping(value = StsController.PASSTICKET_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = SecurityTokenServiceController.PASSTICKET_PATH, produces = MediaType.APPLICATION_JSON_VALUE)
     @ConditionalOnProperty(value = "apiml.security.delegatePassticket.enabled", havingValue = "true", matchIfMissing = false)
     @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('DELEGATE.PASSTICKET', 'READ',#root)")
     @Hidden
@@ -62,7 +63,7 @@ public class StsController {
         String zosUserId = "";
 
         if (Strings.isBlank(emailID) || Strings.isBlank(applID)) {
-            log.debug("Sts.getPassTicket: Invalid applID or EmailId");
+            log.debug("getPassTicket: Invalid applId or EmailId");
             return ResponseEntity.badRequest().build();
         }
         try {
@@ -70,13 +71,13 @@ public class StsController {
             if (response.getRc() == 0 && StringUtils.isNotEmpty(response.getUserId())) {
                 zosUserId = response.getUserId();
             }
-            log.info("Sts.getPassTicket: Getting ZOS_User_id: {} ", zosUserId);
+            log.debug("getPassTicket: Processing request for ZOS userId: {}", zosUserId);
             var ticket = passTicketService.generate(zosUserId, applID);
-            log.info("Sts.getPassTicket: Getting request email id: {} and ZOS_Userid: {}", emailID, zosUserId);
+            log.debug("getPassTicket: Request processed with emailId: {} and ZOS userId: {}", emailID, zosUserId);
             return ResponseEntity.ok(new PassTicketResponse(ticket, zosUserId));
-        } catch (Exception ex) {
-            log.error("Sts.getPassTicket: Error calling delegate passticket api", ex);
-            throw ex;
+        } catch (PassTicketException ex) {
+            log.error("getPassTicket: Failed to generate passticket", ex);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
