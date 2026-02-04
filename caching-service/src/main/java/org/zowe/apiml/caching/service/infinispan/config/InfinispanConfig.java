@@ -122,7 +122,7 @@ public class InfinispanConfig implements InitializingBean {
     }
 
     @Bean(destroyMethod = "stop")
-    synchronized CacheContainer cacheManager(ResourceLoader resourceLoader) {
+    synchronized LazyCacheManager cacheManager(ResourceLoader resourceLoader) {
         return new LazyCacheManager(() -> createCacheManager(resourceLoader));
     }
 
