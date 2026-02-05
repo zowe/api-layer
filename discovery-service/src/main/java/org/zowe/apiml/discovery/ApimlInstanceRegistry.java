@@ -258,7 +258,8 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      * Only lowercase letters, digits, and hyphens allowed, must not start or end with a hyphen, and must not exceed 63 characters.
      * Unfortunately the java enabler converts the appName to uppercase when sending the registration request.
      * Therefore, the validation is case-insensitive.
-     * The instanceId must follow the format 'hostname:serviceId:port'.
+     * The instanceId must follow the format 'hostname:serviceId:port' for IPv4/hostnames,
+     * or '[ipv6address]:serviceId:port' for IPv6 addresses (with brackets around the IPv6 address).
      * The serviceId extracted from the instanceId must match the appName, the check is again case-insensitive for the reason
      * described above. For backwards compatibility the validation prints warnings only for non-conformant values.
      * @param info the instance info
@@ -277,7 +278,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         try {
             EurekaUtils.validateServiceId(serviceId);
         } catch (MetadataValidationException e) {
-            log.warn("Conformance criteria violation in serviceId or instanceId, instanceId expected format 'hostname:serviceid:port' but is '{}' in instanceInfo: {}. Cause: {}",
+            log.warn("Conformance criteria violation in serviceId or instanceId, instanceId expected format 'hostname:serviceid:port' or '[ipv6]:serviceid:port' but is '{}' in instanceInfo: {}. Cause: {}",
                 info.getInstanceId(), info, e.getMessage());
         }
 

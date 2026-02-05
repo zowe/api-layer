@@ -62,6 +62,7 @@ import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.common.util.ConnectionUtil;
 import org.zowe.apiml.util.CorsUtils;
+import org.zowe.apiml.util.UrlUtils;
 import reactor.netty.http.client.HttpClient;
 
 import java.net.MalformedURLException;
@@ -293,11 +294,16 @@ public class ConnectionsConfig {
         if (!namespace.endsWith(".")) {
             namespace = namespace + ".";
         }
+
+        // This ensures IPv6 addresses like "https://2001:db8::1:8080" become "https://[2001:db8::1]:8080"
+        String formattedExternalUrl = UrlUtils.formatUrlWithIPv6Support(externalUrl);
+
         URL url;
         try {
-            url = new URL(externalUrl);
+            url = new URL(formattedExternalUrl);
         } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+            log.error("Failed to parse external URL '{}' (formatted: '{}'): {}", externalUrl, formattedExternalUrl, e.getMessage());
+            throw new RuntimeException("Invalid external URL configuration: " + externalUrl, e);
         }
 
         builder
@@ -314,8 +320,8 @@ public class ConnectionsConfig {
             .enablePort(InstanceInfo.PortType.SECURE, config.getSecurePortEnabled())
             .setVIPAddress(config.getVirtualHostName())
             .setSecureVIPAddress(config.getSecureVirtualHostName())
-            .setHomePageUrl(null, UriComponentsBuilder.fromUriString(externalUrl).path(config.getHomePageUrlPath()).toUriString())
-            .setStatusPageUrl(null, UriComponentsBuilder.fromUriString(externalUrl).path(config.getStatusPageUrlPath()).toUriString())
+            .setHomePageUrl(null, UriComponentsBuilder.fromUriString(formattedExternalUrl).path(config.getHomePageUrlPath()).toUriString())
+            .setStatusPageUrl(null, UriComponentsBuilder.fromUriString(formattedExternalUrl).path(config.getStatusPageUrlPath()).toUriString())
             .setHealthCheckUrls(config.getHealthCheckUrlPath(), null, null)
             .setASGName(config.getASGName());
 
@@ -336,7 +342,7 @@ public class ConnectionsConfig {
 
         // Add any user-specific metadata information
         var fromUrl = UriComponentsBuilder.fromUriString(config.getHomePageUrl()).path("/").toUriString();
-        var toUrl = UriComponentsBuilder.fromUriString(externalUrl).path("/").toUriString();
+        var toUrl = UriComponentsBuilder.fromUriString(formattedExternalUrl).path("/").toUriString();
         for (Map.Entry<String, String> mapEntry : config.getMetadataMap().entrySet()) {
             String key = mapEntry.getKey();
             String value = mapEntry.getValue();

@@ -34,25 +34,56 @@ public class EurekaUtils {
     public static final Pattern SERVICE_ID_PATTERN = Pattern.compile("^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$");
 
     /**
-     * Extract serviceId from instanceId
-     * @param instanceId input, instanceId in format "host:service:random number to unique instanceId"
-     * @return second part, it means serviceId. If it doesn't exist return null;
+     * Extract serviceId from instanceId.
+     * The instanceId format is "hostname:serviceId:port".
+     * For IPv6 addresses (which contain colons), the hostname may be bracketed like "[2001:db8::1]".
+     * @param instanceId input, instanceId in format "host:service:port" or "[ipv6]:service:port"
+     * @return the serviceId part. If it doesn't exist or format is invalid, return null.
      */
     public String getServiceIdFromInstanceId(String instanceId) {
         if (StringUtils.isBlank(instanceId)) {
             return null;
         }
-        String[] parts = instanceId.split(":");
-        if (parts.length != 3) {
+
+        if (instanceId.startsWith("[")) {
+            int closingBracket = instanceId.indexOf("]");
+            if (closingBracket > 0 && closingBracket < instanceId.length() - 1) {
+                // After the closing bracket, we expect :serviceId:port
+                String afterBracket = instanceId.substring(closingBracket + 1);
+                if (afterBracket.startsWith(":")) {
+                    String[] remainingParts = afterBracket.substring(1).split(":");
+                    if (remainingParts.length == 2) {
+                        String serviceId = remainingParts[0].trim();
+                        return serviceId.isEmpty() ? null : serviceId;
+                    }
+                }
+            }
             return null;
         }
 
-        String serviceId = parts[1].trim();
-        if (serviceId.isEmpty()) {
+        // For non-bracketed addresses, we need to handle both:
+        // 1. hostname:serviceId:port (3 parts)
+        // 2. ipv6Address:serviceId:port (many colons from IPv6)
+        // Parse from the end: last part is port, second-to-last is serviceId
+        int lastColon = instanceId.lastIndexOf(':');
+        if (lastColon <= 0) {
             return null;
         }
 
-        return serviceId;
+        // Validate that port part is not empty
+        String portPart = instanceId.substring(lastColon + 1).trim();
+        if (portPart.isEmpty()) {
+            return null;
+        }
+
+        String beforeLastColon = instanceId.substring(0, lastColon);
+        int secondLastColon = beforeLastColon.lastIndexOf(':');
+        if (secondLastColon < 0) {
+            return null;
+        }
+
+        String serviceId = beforeLastColon.substring(secondLastColon + 1).trim();
+        return serviceId.isEmpty() ? null : serviceId;
     }
 
     /**
@@ -74,15 +105,17 @@ public class EurekaUtils {
     }
 
     /**
-     * Construct base URL for specific InstanceInfo
+     * Construct base URL for specific InstanceInfo.
+     * Handles IPv6 addresses by formatting the hostname with brackets if needed.
      * @param instanceInfo Instance of service, for which we want to get an URL
      * @return URL to the instance
      */
     public String getUrl(InstanceInfo instanceInfo) {
+        String formattedHostname = UrlUtils.formatHostnameForUrl(instanceInfo.getHostName());
         if (instanceInfo.getSecurePort() == 0 || !instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE)) {
-            return "http://" + instanceInfo.getHostName() + ":" + instanceInfo.getPort();
+            return "http://" + formattedHostname + ":" + instanceInfo.getPort();
         } else {
-            return "https://" + instanceInfo.getHostName() + ":" + instanceInfo.getSecurePort();
+            return "https://" + formattedHostname + ":" + instanceInfo.getSecurePort();
         }
     }
 

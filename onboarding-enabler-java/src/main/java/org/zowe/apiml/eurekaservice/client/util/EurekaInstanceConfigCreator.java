@@ -37,7 +37,9 @@ public class EurekaInstanceConfigCreator {
         URL baseUrl;
 
         try {
-            baseUrl = new URL(config.getBaseUrl());
+            // Format URL to handle IPv6 addresses properly (add brackets if needed)
+            String formattedBaseUrl = UrlUtils.formatUrlWithIPv6Support(config.getBaseUrl());
+            baseUrl = new URL(formattedBaseUrl);
             hostname = baseUrl.getHost();
             port = baseUrl.getPort();
         } catch (MalformedURLException e) {
@@ -46,10 +48,12 @@ public class EurekaInstanceConfigCreator {
         }
         if (config.isPreferIpAddress()) {
             hostname = config.getServiceIpAddress();
-            config.setBaseUrl(baseUrl.getProtocol() + "://" + hostname + ":" + port);
+            config.setBaseUrl(baseUrl.getProtocol() + "://" + UrlUtils.formatHostnameForUrl(hostname) + ":" + port);
         }
 
-        result.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port));
+        // Format hostname for IPv6 when constructing instanceId (use brackets for IPv6 addresses)
+        String formattedHostnameForInstanceId = UrlUtils.formatHostnameForUrl(hostname);
+        result.setInstanceId(String.format("%s:%s:%s", formattedHostnameForInstanceId, config.getServiceId(), port));
         result.setAppname(config.getServiceId());
         result.setAppGroupName(config.getServiceId());
         result.setHostName(hostname);

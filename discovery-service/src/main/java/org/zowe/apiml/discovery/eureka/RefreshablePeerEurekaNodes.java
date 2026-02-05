@@ -44,6 +44,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.context.ApplicationListener;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
+import org.zowe.apiml.util.UrlUtils;
 
 import javax.net.ssl.SSLContext;
 import java.net.InetAddress;
@@ -98,8 +99,10 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
         EurekaJersey3Client jerseyClient;
         try {
             String hostname;
+            // Format the service URL to properly handle IPv6 addresses
+            String formattedServiceUrl = UrlUtils.formatUrlWithIPv6Support(serviceUrl);
             try {
-                hostname = new URL(serviceUrl).getHost();
+                hostname = new URL(formattedServiceUrl).getHost();
             } catch (MalformedURLException e) {
                 hostname = serviceUrl;
             }

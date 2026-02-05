@@ -165,10 +165,15 @@ public class UrlUtils {
             return hostname;
         }
 
-        // Check for hostname:port format by looking at the last colon
-        // We check this BEFORE checking if the entire string is IPv6 because:
-        // 1. "2001:db8::1:8080" could be ambiguous - is 8080 part of IPv6 or a port?
-        // 2. If the last segment after colon is a valid port number, we should treat it as such
+        // FIRST: Check if the ENTIRE string is a valid IPv6 address
+        // This must be done BEFORE attempting to split by colon
+        // because IPv6 addresses contain colons as part of the address
+        if (isIPv6Address(hostname)) {
+            return "[" + hostname + "]";
+        }
+
+        // Not a pure IPv6 address - check for hostname:port format
+        // by looking at the last colon
         int lastColonIndex = hostname.lastIndexOf(':');
         if (lastColonIndex > -1) {
             String possibleHost = hostname.substring(0, lastColonIndex);
@@ -180,18 +185,9 @@ public class UrlUtils {
                 if (isIPv6Address(possibleHost)) {
                     return "[" + possibleHost + "]:" + possiblePort;
                 }
-                // If the full string is NOT IPv6, return as-is (hostname:port or IPv4:port)
-                if (!isIPv6Address(hostname)) {
-                    return hostname;
-                }
-                // Edge case: If full hostname IS IPv6 but possibleHost is not,
-                // fall through to check if it's a plain IPv6 address without port
+                // Not IPv6, return as-is (hostname:port or IPv4:port)
+                return hostname;
             }
-        }
-
-        // No valid port found, check if it's a plain IPv6 address
-        if (isIPv6Address(hostname)) {
-            return "[" + hostname + "]";
         }
 
         return hostname;
@@ -226,14 +222,77 @@ public class UrlUtils {
 
         if (hostWithPort == null || hostWithPort.isEmpty()) {
         throw new IllegalArgumentException("Host cannot be null or empty");
-        }   
+        }
 
         // Remove any existing scheme if present
         String cleanHostWithPort = hostWithPort.replaceFirst("^[a-zA-Z][a-zA-Z0-9+.-]*://", "");
-        
+
         // Format the hostname part properly
         String formattedHost = formatHostnameForUrl(cleanHostWithPort);
-        
+
         return String.format("%s://%s", scheme, formattedHost);
+    }
+
+    /**
+     * Formats a URL string to ensure IPv6 addresses are properly bracketed.
+     * <p>
+     * For example, if a URL is constructed as "https://2001:db8::1:8080/path",
+     * this method will convert it to "https://[2001:db8::1]:8080/path".
+     *
+     * @param urlString The URL string that may contain an un-bracketed IPv6 address
+     * @return A properly formatted URL with IPv6 addresses enclosed in brackets,
+     *         or the original string if it's not a valid URL or doesn't need formatting
+     */
+    public String formatUrlWithIPv6Support(String urlString) {
+        if (urlString == null || urlString.isEmpty()) {
+            return urlString;
+        }
+
+        if (urlString.contains("[") && urlString.contains("]")) {
+            return urlString;
+        }
+
+        int schemeEnd = urlString.indexOf("://");
+        if (schemeEnd == -1) {
+            return urlString; // Not a URL with scheme
+        }
+
+        String scheme = urlString.substring(0, schemeEnd);
+        String rest = urlString.substring(schemeEnd + 3); // Skip "://"
+
+        // Find where the host:port ends (first slash or end of string)
+        int pathStart = rest.indexOf('/');
+        String hostPort;
+        String pathAndQuery;
+        if (pathStart == -1) {
+            hostPort = rest;
+            pathAndQuery = "";
+        } else {
+            hostPort = rest.substring(0, pathStart);
+            pathAndQuery = rest.substring(pathStart);
+        }
+
+        // Check if hostPort contains an IPv6 address (multiple colons without brackets)
+        long colonCount = hostPort.chars().filter(ch -> ch == ':').count();
+        if (colonCount > 1) {
+            // Find the port by looking for the last segment that's a valid port number
+            int lastColon = hostPort.lastIndexOf(':');
+            if (lastColon > 0) {
+                String possiblePort = hostPort.substring(lastColon + 1);
+                if (isValidPort(possiblePort)) {
+                    // Everything before the last colon is the IPv6 address
+                    String ipv6Address = hostPort.substring(0, lastColon);
+                    if (isIPv6Address(ipv6Address)) {
+                        return scheme + "://[" + ipv6Address + "]:" + possiblePort + pathAndQuery;
+                    }
+                }
+            }
+            // If no valid port found, the entire hostPort might be an IPv6 address
+            if (isIPv6Address(hostPort)) {
+                return scheme + "://[" + hostPort + "]" + pathAndQuery;
+            }
+        }
+
+        return urlString;
     }
 }

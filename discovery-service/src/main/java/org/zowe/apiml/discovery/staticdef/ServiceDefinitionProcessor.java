@@ -242,7 +242,9 @@ public class ServiceDefinitionProcessor {
 
         String serviceId = service.getServiceId();
         try {
-            URL url = new URL(instanceBaseUrl);
+            // Format URL to handle IPv6 addresses properly (add brackets if needed)
+            String formattedInstanceBaseUrl = UrlUtils.formatUrlWithIPv6Support(instanceBaseUrl);
+            URL url = new URL(formattedInstanceBaseUrl);
             if (url.getHost().isEmpty()) {
                 throw new ServiceDefinitionException(String.format("The URL %s does not contain a hostname. The instance of %s will not be created",
                     instanceBaseUrl, serviceId));

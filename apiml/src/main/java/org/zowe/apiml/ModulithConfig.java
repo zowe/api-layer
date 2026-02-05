@@ -32,6 +32,7 @@ import org.apache.catalina.Host;
 import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.zowe.apiml.util.UrlUtils;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -172,11 +173,14 @@ public class ModulithConfig implements InitializingBean {
             scheme = "http";
         }
 
+        // Format hostname for IPv6 addresses (use brackets)
+        String formattedHostname = UrlUtils.formatHostnameForUrl(hostname);
+
         return InstanceInfo.Builder.newBuilder()
-            .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
+            .setInstanceId(String.format("%s:%s:%d", formattedHostname, serviceId, port))
             .setAppName(serviceId)
             .setHostName(hostname)
-            .setHomePageUrl(null, String.format("%s://%s:%d%s", scheme, hostname, port, homePagePath))
+            .setHomePageUrl(null, String.format("%s://%s:%d%s", scheme, formattedHostname, port, homePagePath))
             .setStatus(InstanceInfo.InstanceStatus.UP)
             .setIPAddr(ipAddress)
             .setPort(port)

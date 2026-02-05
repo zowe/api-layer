@@ -97,7 +97,10 @@ class ApimlInstanceRegistryTest {
                 Arguments.of( "hostname:-serviceclient:10010", "-serviceclient"),
                 Arguments.of( "hostname:serviceclient-:10010", "serviceclient-"),
                 Arguments.of( "hostname:invalidserviceidididididididididididdididididididididididdidididididididididid:10010", "invalidserviceidididididididididididdididididididididididdidididididididididid"),
-                Arguments.of( null, "service")
+                Arguments.of( null, "service"),
+                // IPv6 format test cases (with brackets)
+                Arguments.of( "[2620:117:10:4300::55:28]:service_client:12314", "service_client"),
+                Arguments.of( "[::1]:service-client-:10010", "service-client-")
             );
         }
 

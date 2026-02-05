@@ -35,15 +35,77 @@ import static org.zowe.apiml.product.constants.CoreService.GATEWAY;
 
 class EurekaUtilsTest {
 
-    @Test
-    void test() {
-        assertEquals("abc", EurekaUtils.getServiceIdFromInstanceId("123:abc:def"));
-        assertNull(EurekaUtils.getServiceIdFromInstanceId("123:abc:def:::::xyz"));
-        assertNull(EurekaUtils.getServiceIdFromInstanceId("hostname:123:"));
-        assertNull(EurekaUtils.getServiceIdFromInstanceId("::"));
-        assertNull(EurekaUtils.getServiceIdFromInstanceId("123::def"));
-        assertNull(EurekaUtils.getServiceIdFromInstanceId(":"));
-        assertNull(EurekaUtils.getServiceIdFromInstanceId(""));
+    @Nested
+    class GetServiceIdFromInstanceIdTests {
+
+        @Test
+        void givenStandardInstanceId_thenExtractServiceId() {
+            assertEquals("abc", EurekaUtils.getServiceIdFromInstanceId("hostname:abc:123"));
+            assertEquals("service", EurekaUtils.getServiceIdFromInstanceId("host:service:8080"));
+            assertEquals("my-service", EurekaUtils.getServiceIdFromInstanceId("my.host.com:my-service:443"));
+        }
+
+        @Test
+        void givenIPv4InstanceId_thenExtractServiceId() {
+            assertEquals("gateway", EurekaUtils.getServiceIdFromInstanceId("192.168.1.1:gateway:8080"));
+            assertEquals("api", EurekaUtils.getServiceIdFromInstanceId("10.0.0.1:api:443"));
+            assertEquals("service", EurekaUtils.getServiceIdFromInstanceId("127.0.0.1:service:80"));
+        }
+
+        @Test
+        void givenBracketedIPv6InstanceId_thenExtractServiceId() {
+            // IPv6 address with brackets: [ipv6]:serviceId:port
+            assertEquals("gateway", EurekaUtils.getServiceIdFromInstanceId("[2620:117:10:4300::55:28]:gateway:12314"));
+            assertEquals("discovery", EurekaUtils.getServiceIdFromInstanceId("[::1]:discovery:8080"));
+            assertEquals("service", EurekaUtils.getServiceIdFromInstanceId("[2001:db8::1]:service:443"));
+            assertEquals("api", EurekaUtils.getServiceIdFromInstanceId("[fe80::1]:api:8080"));
+            assertEquals("svc", EurekaUtils.getServiceIdFromInstanceId("[::]:svc:80"));  // unspecified address
+        }
+
+        @Test
+        void givenUnbracketedIPv6InstanceId_thenExtractServiceIdFromEnd() {
+            // Unbracketed IPv6 address: parse from the end (port is last, serviceId is second-to-last)
+            assertEquals("gateway", EurekaUtils.getServiceIdFromInstanceId("2620:117:10:4300::55:28:gateway:12314"));
+            assertEquals("apicatalog", EurekaUtils.getServiceIdFromInstanceId("2620:117:10:4300::55:28:apicatalog:12312"));
+            assertEquals("discovery", EurekaUtils.getServiceIdFromInstanceId("::1:discovery:8080"));  // loopback
+            assertEquals("service", EurekaUtils.getServiceIdFromInstanceId("2001:db8::1:service:443"));
+            assertEquals("api", EurekaUtils.getServiceIdFromInstanceId("fe80::1:api:8080"));  // link-local
+        }
+
+        @Test
+        void givenInvalidInstanceId_thenReturnNull() {
+            assertNull(EurekaUtils.getServiceIdFromInstanceId("hostname:123:"));  // empty port
+            assertNull(EurekaUtils.getServiceIdFromInstanceId("::"));
+            assertNull(EurekaUtils.getServiceIdFromInstanceId(":"));
+            assertNull(EurekaUtils.getServiceIdFromInstanceId(""));
+            assertNull(EurekaUtils.getServiceIdFromInstanceId(null));
+            assertNull(EurekaUtils.getServiceIdFromInstanceId("onlyhostname"));
+            assertNull(EurekaUtils.getServiceIdFromInstanceId("hostname:service"));  // only 2 parts
+        }
+
+        @Test
+        void givenEmptyServiceId_thenReturnNull() {
+            assertNull(EurekaUtils.getServiceIdFromInstanceId("hostname::123"));  // empty serviceId
+            assertNull(EurekaUtils.getServiceIdFromInstanceId("192.168.1.1::8080"));  // IPv4 with empty serviceId
+        }
+
+        @Test
+        void givenMalformedBracketedIPv6_thenReturnNull() {
+            assertNull(EurekaUtils.getServiceIdFromInstanceId("[2001:db8::1]"));  // no serviceId/port after brackets
+            assertNull(EurekaUtils.getServiceIdFromInstanceId("[2001:db8::1]:"));  // missing serviceId and port
+            assertNull(EurekaUtils.getServiceIdFromInstanceId("[2001:db8::1]:service"));  // missing port
+            assertNull(EurekaUtils.getServiceIdFromInstanceId("[2001:db8::1]service:8080"));  // missing colon after bracket
+            assertNull(EurekaUtils.getServiceIdFromInstanceId("[2001:db8::1]:svc:extra:8080"));  // extra colons
+            assertNull(EurekaUtils.getServiceIdFromInstanceId("[]::8080"));  // empty brackets
+        }
+
+        @Test
+        void givenEdgeCaseHostnames_thenExtractServiceId() {
+            // Empty hostname is technically allowed (extracts serviceId correctly)
+            assertEquals("service", EurekaUtils.getServiceIdFromInstanceId(":service:8080"));
+            // Very long serviceId
+            assertEquals("a".repeat(63), EurekaUtils.getServiceIdFromInstanceId("host:" + "a".repeat(63) + ":8080"));
+        }
     }
 
     private InstanceInfo createInstanceInfo(String host, int port, int securePort, boolean isSecureEnabled) {
@@ -58,10 +120,22 @@ class EurekaUtilsTest {
     @Test
     void testGetUrl() {
         InstanceInfo ii1 = createInstanceInfo("hostname1", 80, 0, false);
-        InstanceInfo ii2 = createInstanceInfo("locahost", 80, 443, true);
+        InstanceInfo ii2 = createInstanceInfo("localhost", 80, 443, true);
 
         assertEquals("http://hostname1:80", EurekaUtils.getUrl(ii1));
-        assertEquals("https://locahost:443", EurekaUtils.getUrl(ii2));
+        assertEquals("https://localhost:443", EurekaUtils.getUrl(ii2));
+    }
+
+    @Test
+    void testGetUrlWithIPv6() {
+        // IPv6 addresses should be wrapped in brackets in URLs
+        InstanceInfo iiIPv6Http = createInstanceInfo("2620:117:10:4300::55:28", 8080, 0, false);
+        InstanceInfo iiIPv6Https = createInstanceInfo("2001:db8::1", 80, 443, true);
+        InstanceInfo iiIPv6Loopback = createInstanceInfo("::1", 8080, 0, false);
+
+        assertEquals("http://[2620:117:10:4300::55:28]:8080", EurekaUtils.getUrl(iiIPv6Http));
+        assertEquals("https://[2001:db8::1]:443", EurekaUtils.getUrl(iiIPv6Https));
+        assertEquals("http://[::1]:8080", EurekaUtils.getUrl(iiIPv6Loopback));
     }
 
     @Nested

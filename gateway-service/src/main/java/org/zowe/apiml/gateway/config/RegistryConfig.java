@@ -44,7 +44,9 @@ public class RegistryConfig {
         @Value("${server.port}") int port
     ) throws URISyntaxException {
         if (externalUrl != null) {
-            URI uri = new URI(externalUrl);
+            // Format the URL to handle IPv6 addresses properly (add brackets if needed)
+            String formattedExternalUrl = UrlUtils.formatUrlWithIPv6Support(externalUrl);
+            URI uri = new URI(formattedExternalUrl);
             String host = uri.getHost();
 
             // Validate that the external URL has a valid host component
