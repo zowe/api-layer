@@ -159,6 +159,7 @@
                                 },
                                 "certificatesUrl": {
                                     "type": "string",
+                                    "deprecated": true,
                                     "format": "uri",
                                     "pattern": "^(https?):\/\/",
                                     "description": "URL of the trusted caller to obtain used certificate. Request signed by this certificate are authorized to accept client certificate provided in the header."
