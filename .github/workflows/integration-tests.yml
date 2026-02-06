@@ -102,7 +102,7 @@ jobs:
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith -Denvironment.modulith=true
-                    -Ddiscoverableclient.instances=1
+                    -Ddiscoverableclient.instances=1 -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -452,7 +452,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker -DcentralGateway.instances=0
                     -DcentralHosts=discovery-service-2,gateway-service-2,zaas-service-2
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -906,7 +906,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                    -Ddiscovery.instances=1
+                    -Ddiscovery.instances=1 -DcentralGateway.instances=0
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -1065,7 +1065,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                    -Ddiscovery.instances=1
+                    -Ddiscovery.instances=1 -DcentralGateway.instances=0
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -1124,6 +1124,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -DcentralGateway.instances=0
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -2008,7 +2009,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                    -Ddiscovery.instances=1
+                    -Ddiscovery.instances=1 -DcentralGateway.instances=0
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -2091,7 +2092,7 @@ jobs:
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith
-                    -Denvironment.modulith=true -Ddiscoverableclient.instances=1
+                    -Denvironment.modulith=true -Ddiscoverableclient.instances=1 -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -2411,6 +2412,7 @@ jobs:
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Ddiscovery.instances=1 -DserviceIdReplaced=discoverableclient:sampleclient
+                    -DcentralGateway.instances=0
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -2462,7 +2464,7 @@ jobs:
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith
-                    -Denvironment.modulith=true -Ddiscoverableclient.instances=0
+                    -Denvironment.modulith=true -Ddiscoverableclient.instances=0 -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}

@@ -186,6 +186,7 @@ public class ApiMediationLayerStartupChecker {
             instances.addAll(Instance.of(config.getCachingServiceConfiguration(), "caching.instances"));
             instances.addAll(Instance.of(config.getZosmfServiceConfiguration(), "zosmf.instances"));
             instances.addAll(Instance.of(config.getZaasConfiguration(), "zaas.instances"));
+            instances.addAll(Instance.of(config.getCentralGatewayServiceConfiguration(), "centralGateway.instances"));
             allInstances = instances.stream()
                 .map(i -> {
                     String replacement = System.getProperty("serviceIdReplaced", "");
