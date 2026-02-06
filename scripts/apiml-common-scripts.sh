@@ -271,5 +271,14 @@ SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal"
 ################################################################################
 # Source the custom JVM parameters parser
 ################################################################################
+# In production, parse_jvm_args.sh is in the same directory as start.sh
+# In development, it's in the scripts/ directory relative to the project root
 COMMON_SCRIPT_DIR=$(dirname "$0")
-. "${COMMON_SCRIPT_DIR}/parse_jvm_args.sh"
+if [ -f "${COMMON_SCRIPT_DIR}/parse_jvm_args.sh" ]; then
+    . "${COMMON_SCRIPT_DIR}/parse_jvm_args.sh"
+elif [ -f "scripts/parse_jvm_args.sh" ]; then
+    . "scripts/parse_jvm_args.sh"
+else
+    echo "ERROR: Cannot find parse_jvm_args.sh"
+    exit 1
+fi

@@ -45,7 +45,16 @@
 
 # Source common APIML scripts (sets up common variables and functions)
 SCRIPT_DIR=$(dirname "$0")
-. "${SCRIPT_DIR}/apiml-common-scripts.sh"
+# In production, apiml-common-scripts.sh is in the same directory as start.sh
+# In development, it's in the scripts/ directory relative to the project root
+if [ -f "${SCRIPT_DIR}/apiml-common-scripts.sh" ]; then
+    . "${SCRIPT_DIR}/apiml-common-scripts.sh"
+elif [ -f "scripts/apiml-common-scripts.sh" ]; then
+    . "scripts/apiml-common-scripts.sh"
+else
+    echo "ERROR: Cannot find apiml-common-scripts.sh"
+    exit 1
+fi
 
 # JAR file location
 if [ -n "${LAUNCH_COMPONENT}" ]; then
