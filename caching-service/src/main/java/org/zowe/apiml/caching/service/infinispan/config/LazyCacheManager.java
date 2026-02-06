@@ -10,10 +10,15 @@
 
 package org.zowe.apiml.caching.service.infinispan.config;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.infinispan.Cache;
+import org.infinispan.commons.api.CacheContainerAdmin;
 import org.infinispan.commons.configuration.ClassAllowList;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.health.Health;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.CacheContainer;
@@ -25,31 +30,37 @@ import org.infinispan.stats.CacheContainerStats;
 
 import javax.security.auth.Subject;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 
+@Slf4j
 public class LazyCacheManager extends DefaultCacheManager {
 
-    private final Supplier<DefaultCacheManager> cacheContainerSupplier;
+    private static final int RETRY = 2;
 
-    private final AtomicReference<DefaultCacheManager> cacheContainer = new AtomicReference<>();
+    private final AtomicReference<DefaultCacheManager> cacheManager = new AtomicReference<>();
+    private final CacheInitializer cacheInitializer;
 
-    public LazyCacheManager(Supplier<DefaultCacheManager> cacheContainerSupplier) {
+    public LazyCacheManager(
+        ConfigurationBuilderHolder cacheManagerConfig,
+        ConfigurationBuilder cacheConfig,
+        Collection<String> cacheNames
+    ) {
         super(false);
-        this.cacheContainerSupplier = cacheContainerSupplier;
+        cacheInitializer = new CacheInitializer(cacheManagerConfig, cacheConfig, cacheNames);
     }
 
-    private DefaultCacheManager getCacheContainer() {
-        var container = cacheContainer.get();
+    private DefaultCacheManager getCacheManager() {
+        var container = cacheManager.get();
         if (container == null) {
             synchronized (this) {
-                container = cacheContainer.get();
+                container = cacheManager.get();
                 if (container == null) {
-                    container = cacheContainerSupplier.get();
-                    cacheContainer.set(container);
+                    container = cacheInitializer.getDefaultCacheManager();
                 }
             }
             if (container == null) {
@@ -61,186 +72,237 @@ public class LazyCacheManager extends DefaultCacheManager {
 
     @Override
     public Configuration defineConfiguration(String cacheName, Configuration configuration) {
-        return getCacheContainer().defineConfiguration(cacheName, configuration);
+        return getCacheManager().defineConfiguration(cacheName, configuration);
     }
 
     @Override
     public Configuration defineConfiguration(String cacheName, String templateCacheName, Configuration configurationOverride) {
-        return getCacheContainer().defineConfiguration(cacheName, templateCacheName, configurationOverride);
+        return getCacheManager().defineConfiguration(cacheName, templateCacheName, configurationOverride);
     }
 
     @Override
     public void undefineConfiguration(String configurationName) {
-        getCacheContainer().undefineConfiguration(configurationName);
+        getCacheManager().undefineConfiguration(configurationName);
     }
 
     @Override
     public String getClusterName() {
-        return getCacheContainer().getClusterName();
+        return getCacheManager().getClusterName();
     }
 
     @Override
     public List<Address> getMembers() {
-        return getCacheContainer().getMembers();
+        return getCacheManager().getMembers();
     }
 
     @Override
     public Address getAddress() {
-        return getCacheContainer().getAddress();
+        return getCacheManager().getAddress();
     }
 
     @Override
     public Address getCoordinator() {
-        return getCacheContainer().getCoordinator();
+        return getCacheManager().getCoordinator();
     }
 
     @Override
     public boolean isCoordinator() {
-        return getCacheContainer().isCoordinator();
+        return getCacheManager().isCoordinator();
     }
 
     @Override
     public ComponentStatus getStatus() {
-        return getCacheContainer().getStatus();
+        return getCacheManager().getStatus();
     }
 
     @Override
     public GlobalConfiguration getCacheManagerConfiguration() {
-        return getCacheContainer().getCacheManagerConfiguration();
+        return getCacheManager().getCacheManagerConfiguration();
     }
 
     @Override
     public Configuration getCacheConfiguration(String name) {
-        return getCacheContainer().getCacheConfiguration(name);
+        return getCacheManager().getCacheConfiguration(name);
     }
 
     @Override
     public Configuration getDefaultCacheConfiguration() {
-        return getCacheContainer().getDefaultCacheConfiguration();
+        return getCacheManager().getDefaultCacheConfiguration();
     }
 
     @Override
     public Set<String> getAccessibleCacheNames() {
-        return getCacheContainer().getAccessibleCacheNames();
+        return getCacheManager().getAccessibleCacheNames();
     }
 
     @Override
     public boolean isRunning(String cacheName) {
-        return getCacheContainer().isRunning(cacheName);
+        return getCacheManager().isRunning(cacheName);
     }
 
     @Override
     public boolean isDefaultRunning() {
-        return getCacheContainer().isDefaultRunning();
+        return getCacheManager().isDefaultRunning();
     }
 
     @Override
     public boolean cacheExists(String cacheName) {
-        return getCacheContainer().cacheExists(cacheName);
+        return getCacheManager().cacheExists(cacheName);
     }
 
     @Override
     public boolean cacheConfigurationExists(String name) {
-        return getCacheContainer().cacheConfigurationExists(name);
+        return getCacheManager().cacheConfigurationExists(name);
     }
 
     @Override
     public <K, V> Cache<K, V> getCache() {
-        return getCacheContainer().getCache();
+        return getCacheManager().getCache();
     }
 
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName) {
-        return getCacheContainer().getCache(cacheName);
+        return getCacheManager().getCache(cacheName);
     }
 
     @Override
     public <K, V> Cache<K, V> createCache(String name, Configuration configuration) {
-        return getCacheContainer().createCache(name, configuration);
+        return getCacheManager().createCache(name, configuration);
     }
 
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, boolean createIfAbsent) {
-        return getCacheContainer().getCache(cacheName, createIfAbsent);
+        return getCacheManager().getCache(cacheName, createIfAbsent);
     }
 
     @Override
     public EmbeddedCacheManager startCaches(String... cacheNames) {
-        return getCacheContainer().startCaches(cacheNames);
+        return getCacheManager().startCaches(cacheNames);
     }
 
     @Override
     public void addCacheDependency(String from, String to) {
-        getCacheContainer().addCacheDependency(from, to);
+        getCacheManager().addCacheDependency(from, to);
     }
 
     @Override
     public CacheContainerStats getStats() {
-        return getCacheContainer().getStats();
+        return getCacheManager().getStats();
     }
 
     @Override
     public Health getHealth() {
-        return getCacheContainer().getHealth();
+        return getCacheManager().getHealth();
     }
 
     @Override
     public CacheManagerInfo getCacheManagerInfo() {
-        return getCacheContainer().getCacheManagerInfo();
+        return getCacheManager().getCacheManagerInfo();
     }
 
     @Override
     public ClassAllowList getClassWhiteList() {
-        return getCacheContainer().getClassWhiteList();
+        return getCacheManager().getClassWhiteList();
     }
 
     @Override
     public ClassAllowList getClassAllowList() {
-        return getCacheContainer().getClassAllowList();
+        return getCacheManager().getClassAllowList();
     }
 
     @Override
     public Subject getSubject() {
-        return getCacheContainer().getSubject();
+        return getCacheManager().getSubject();
     }
 
     @Override
     public EmbeddedCacheManager withSubject(Subject subject) {
-        return getCacheContainer().withSubject(subject);
+        return getCacheManager().withSubject(subject);
     }
 
     @Override
     public Set<String> getCacheNames() {
-        return getCacheContainer().getCacheNames();
+        return getCacheManager().getCacheNames();
     }
 
     @Override
     public void start() {
-        getCacheContainer().start();
+        getCacheManager().start();
     }
 
     @Override
     public void stop() {
-        getCacheContainer().stop();
+        getCacheManager().stop();
     }
 
     public <T extends CacheContainer> T getOriginal() {
-        return (T) getCacheContainer();
+        return (T) getCacheManager();
     }
 
     @Override
     public void close() throws IOException {
-        getCacheContainer().close();
+        getCacheManager().close();
     }
 
     @Override
     public CompletionStage<Void> addListenerAsync(Object listener) {
-        return getCacheContainer().addListenerAsync(listener);
+        return getCacheManager().addListenerAsync(listener);
     }
 
     @Override
     public CompletionStage<Void> removeListenerAsync(Object listener) {
-        return getCacheContainer().removeListenerAsync(listener);
+        return getCacheManager().removeListenerAsync(listener);
+    }
+
+    @RequiredArgsConstructor
+    class CacheInitializer {
+
+        private DefaultCacheManager underInit;
+
+        private final ConfigurationBuilderHolder cacheManagerConfig;
+        private final ConfigurationBuilder cacheConfig;
+        private final Collection<String> cacheNames;
+
+        public DefaultCacheManager getDefaultCacheManager() {
+            if (underInit == null) {
+                underInit = new DefaultCacheManager(cacheManagerConfig, true);
+            }
+
+            for (int i = 0; i < 1 + RETRY; i++) {
+                if (createCaches()) {
+                    break;
+                }
+            }
+
+            if (cacheNames.isEmpty()) {
+                cacheManager.set(underInit);
+            }
+
+            return underInit;
+        }
+
+        private boolean createCaches() {
+            for (Iterator<String> i = cacheNames.iterator(); i.hasNext();) {
+                String cacheName = i.next();
+                if (createCache(cacheName)) {
+                    i.remove();
+                }
+            }
+            return cacheNames.isEmpty();
+        }
+
+        private boolean createCache(String cacheName) {
+            try {
+                underInit.administration()
+                    .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
+                    .getOrCreateCache(cacheName, cacheConfig.build());
+                return true;
+            } catch (Exception e) {
+                log.warn("Error during initialization of cache {}", cacheName, e);
+                return false;
+            }
+        }
+
     }
 
 }

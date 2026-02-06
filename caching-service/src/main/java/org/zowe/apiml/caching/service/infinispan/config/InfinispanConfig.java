@@ -55,9 +55,6 @@ import static org.zowe.apiml.security.SecurityUtils.isKeyring;
 public class InfinispanConfig implements InitializingBean {
 
     private static final String KEYRING_PASSWORD = "password";
-    private static final String SERVER_SSL_KEY_STORE_TYPE = "server.ssl.keyStoreType";
-    private static final String SERVER_SSL_KEY_STORE = "server.ssl.keyStore";
-    private static final String SERVER_SSL_KEY_STORE_PASSWORD = "server.ssl.keyStorePassword";
 
     private static final String ZWE_HAINSTANCE_ID = "ZWE_haInstance_id";
     private static final String LOCK_ZOWE_INVALIDATED = "zoweInvalidatedTokenLock";
@@ -75,6 +72,15 @@ public class InfinispanConfig implements InitializingBean {
 
     @Value("${server.ssl.keyStorePassword}")
     private String keyStorePass;
+
+    @Value("${server.ssl.trustStoreType}")
+    private String trustStoreType;
+
+    @Value("${server.ssl.trustStore}")
+    private String trustStore;
+
+    @Value("${server.ssl.trustStorePassword}")
+    private String trustStorePass;
 
     @Value("${jgroups.bind.port}")
     private String port;
@@ -104,6 +110,10 @@ public class InfinispanConfig implements InitializingBean {
             keyStore = formatKeyringUrl(keyStore);
             if (StringUtils.isBlank(keyStorePass)) keyStorePass = KEYRING_PASSWORD;
         }
+        if (isKeyring(trustStore)) {
+            trustStore = formatKeyringUrl(trustStore);
+            if (StringUtils.isBlank(trustStorePass)) trustStorePass = KEYRING_PASSWORD;
+        }
     }
 
     static String getRootFolder() {
@@ -121,30 +131,8 @@ public class InfinispanConfig implements InitializingBean {
         }
     }
 
-    @Bean(destroyMethod = "stop")
-    synchronized LazyCacheManager cacheManager(ResourceLoader resourceLoader) {
-        return new LazyCacheManager(() -> createCacheManager(resourceLoader));
-    }
-
-    DefaultCacheManager createCacheManager(ResourceLoader resourceLoader) {
-        System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
-        System.setProperty("jgroups.bind.port", port);
-        System.setProperty("jgroups.bind.address", address);
-        System.setProperty("jgroups.keyExchange.port", keyExchangePort);
-        System.setProperty("jgroups.tcp.diag.enabled", String.valueOf(Boolean.parseBoolean(tcpDiagEnabled)));
-
-        var oldKeyStoreType = Optional.ofNullable(System.getProperty(SERVER_SSL_KEY_STORE_TYPE));
-        var oldKeyStore = Optional.ofNullable(System.getProperty(SERVER_SSL_KEY_STORE));
-        var oldKeyStorePassword = Optional.ofNullable(System.getProperty(SERVER_SSL_KEY_STORE_PASSWORD));
-
-        if (!isServerAttlsEnabled) {
-            System.setProperty(SERVER_SSL_KEY_STORE_TYPE, keyStoreType);
-            System.setProperty(SERVER_SSL_KEY_STORE, keyStore);
-            System.setProperty(SERVER_SSL_KEY_STORE_PASSWORD, keyStorePass);
-        }
-
+    private ConfigurationBuilderHolder getCacheManagerConfig(ResourceLoader resourceLoader) {
         ConfigurationBuilderHolder holder;
-
         var infinispanConfigFile = isServerAttlsEnabled ? "infinispan-attls.xml" : "infinispan.xml";
         try (InputStream configurationStream = resourceLoader.getResource("classpath:" + infinispanConfigFile).getInputStream()) {
             holder = new ParserRegistry().parse(configurationStream, MediaType.APPLICATION_XML);
@@ -155,39 +143,39 @@ public class InfinispanConfig implements InitializingBean {
         holder.newConfigurationBuilder("default")
             .persistence()
             .addSoftIndexFileStore()
-            .clustering().cacheMode(CacheMode.DIST_SYNC);
+            .clustering().cacheMode(CacheMode.REPL_SYNC);
         holder.getGlobalConfigurationBuilder().defaultCacheName("default");
+        return holder;
+    }
 
-        DefaultCacheManager cacheManager = new DefaultCacheManager(holder, true);
+    private ConfigurationBuilder getCacheConfig() {
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder
+            .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
+            .persistence().addSoftIndexFileStore().clustering()
+            .clustering().cacheMode(CacheMode.REPL_SYNC);
+        return builder;
+    }
 
-        try {
-            ConfigurationBuilder builder = new ConfigurationBuilder();
-            builder
-                .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
-                .persistence().addSoftIndexFileStore().clustering()
-                .clustering().cacheMode(CacheMode.DIST_SYNC);
+    @Bean(destroyMethod = "stop")
+    synchronized LazyCacheManager cacheManager(ResourceLoader resourceLoader) {
+        System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
+        System.setProperty("jgroups.bind.port", port);
+        System.setProperty("jgroups.bind.address", address);
+        System.setProperty("jgroups.keyExchange.port", keyExchangePort);
+        System.setProperty("jgroups.tcp.diag.enabled", String.valueOf(Boolean.parseBoolean(tcpDiagEnabled)));
 
-            var caches = Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN, "zosmfAuthenticationEndpoint", "invalidatedJwtTokens", "validationJwtToken", "zosmfInfo", "zosmfJwtEndpoint", "trustedCertificates", "parseOIDCToken", "validationOIDCToken");
-            caches.forEach(cacheName -> {
-                cacheManager.administration()
-                    .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
-                    .getOrCreateCache(cacheName, builder.build());
-            });
+        System.setProperty("infinispan.ssl.keyStoreType", keyStoreType);
+        System.setProperty("infinispan.ssl.keyStore", keyStore);
+        System.setProperty("infinispan.ssl.keyStorePassword", keyStorePass);
 
-            oldKeyStoreType.ifPresent(kst -> System.setProperty(SERVER_SSL_KEY_STORE_TYPE, kst));
-            oldKeyStore.ifPresent(ks -> System.setProperty(SERVER_SSL_KEY_STORE, ks));
-            oldKeyStorePassword.ifPresent(p -> System.setProperty(SERVER_SSL_KEY_STORE_PASSWORD, p));
-        } catch (Exception e) {
-            log.warn("Error during creation of default cache manager", e);
-            try {
-                cacheManager.stop();
-            } catch (Exception e2) {
-                log.debug("Cannot stop cache manager", e2);
-            }
-            return null;
-        }
+        System.setProperty("infinispan.ssl.trustStoreType", keyStoreType);
+        System.setProperty("infinispan.ssl.trustStore", keyStore);
+        System.setProperty("infinispan.ssl.trustStorePassword", keyStorePass);
 
-        return cacheManager;
+        var caches = Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN, "zosmfAuthenticationEndpoint", "invalidatedJwtTokens", "validationJwtToken", "zosmfInfo", "zosmfJwtEndpoint", "trustedCertificates", "parseOIDCToken", "validationOIDCToken");
+
+        return new LazyCacheManager(getCacheManagerConfig(resourceLoader), getCacheConfig(), caches);
     }
 
     private ClusteredLock lock(CacheContainer cacheManager) {

@@ -27,9 +27,12 @@
                     port_range="0"
             />
             <VERIFY_SUSPECT timeout="1000"/>
-            <SSL_KEY_EXCHANGE keystore_name="${server.ssl.keyStore}"
-                              keystore_type="${server.ssl.keyStoreType}"
-                              keystore_password="${server.ssl.keyStorePassword}"
+            <SSL_KEY_EXCHANGE keystore_name="${infinispan.ssl.keyStore}"
+                              keystore_type="${infinispan.ssl.keyStoreType}"
+                              keystore_password="${infinispan.ssl.keyStorePassword}"
+                              truststore_name="${infinispan.ssl.trustStore}"
+                              truststore_type="${infinispan.ssl.trustStoreType}"
+                              truststore_password="${infinispan.ssl.trustStorePassword}"
                               secret_key_algorithm="AES"
                               port="${jgroups.keyExchange.port}"
             />
@@ -37,8 +40,8 @@
             <!-- The use_external_key_exchange = "true" attribute configures nodes to use the `SSL_KEY_EXCHANGE` protocol for certificate authentication. -->
             <ASYM_ENCRYPT asym_keylength="2048"
                           asym_algorithm="RSA"
-                          change_key_on_coord_leave="false"
-                          change_key_on_leave="false"
+                          change_key_on_coord_leave="true"
+                          change_key_on_leave="true"
                           use_external_key_exchange="true"
                           sym_keylength="128"
                           sym_algorithm="AES/CBC/PKCS5Padding"
