@@ -13,6 +13,7 @@ package org.zowe.apiml.caching.health;
 import org.infinispan.Cache;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.remoting.transport.Address;
 import org.infinispan.spring.embedded.provider.SpringEmbeddedCacheManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -29,6 +30,8 @@ import org.springframework.cache.CacheManager;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -73,11 +76,14 @@ class CachesHealthIndicatorTest {
         private static final String CACHES = "caches";
         private static final String INFINISPAN = "infinispan";
         private static final String STATUS = "status";
+        private static final String CLUSTER = "cluster";
         private static final String CACHE_1 = "cache_1";
 
         private SpringEmbeddedCacheManager cacheManager = mock(SpringEmbeddedCacheManager.class);
         private EmbeddedCacheManager nativeCacheManager = mock(EmbeddedCacheManager.class);
         private Cache cache = mock(Cache.class);
+        private Address address = mock(Address.class);
+        private List<Address> members = Collections.singletonList(address);
 
         @Captor
         private ArgumentCaptor<Map> mapCaptor;
@@ -101,20 +107,24 @@ class CachesHealthIndicatorTest {
         ) {
             doReturn(Arrays.asList(CACHE_1)).when(cacheManager).getCacheNames();
             doReturn(wholeStatus).when(nativeCacheManager).getStatus();
+            doReturn(address).when(nativeCacheManager).getAddress();
+            doReturn(members).when(nativeCacheManager).getMembers();
             doReturn(cache).when(nativeCacheManager).getCache(CACHE_1);
             doReturn(cacheStatus).when(cache).getStatus();
 
             var cachesHealthIndicator = new CachesHealthIndicator();
             ((AtomicReference<CacheManager>) ReflectionTestUtils.getField(cachesHealthIndicator, "cacheManager"))
                 .set(cacheManager);
+            ReflectionTestUtils.setField(cachesHealthIndicator, "initialHosts", "");
             var builder = mock(Health.Builder.class);
             cachesHealthIndicator.doHealthCheck(builder);
 
             verify(builder).withDetail(eq(INFINISPAN), mapCaptor.capture());
             var mapDetails = mapCaptor.getValue();
-            assertEquals(2, mapDetails.size());
+            assertEquals(3, mapDetails.size());
             assertTrue(mapDetails.containsKey(CACHES));
             assertTrue(mapDetails.containsKey(STATUS));
+            assertTrue(mapDetails.containsKey(CLUSTER));
             var caches = (Map) mapDetails.get(CACHES);
             assertEquals(cacheStatus, caches.get(CACHE_1));
             assertEquals(wholeStatus, mapDetails.get(STATUS));
