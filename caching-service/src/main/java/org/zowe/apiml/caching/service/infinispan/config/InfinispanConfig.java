@@ -88,8 +88,11 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${jgroups.bind.port}")
     private String port;
 
-    @Value("${jgroups.bind.address}")
-    private String address;
+    @Value("${jgroups.bind.address:0.0.0.0}")
+    private String jgroupAddress;
+
+    @Value("${jgroups.keyExchange.address:0.0.0.0}")
+    private String exchangeAddress;
 
     @Value("${jgroups.keyExchange.port:7601}")
     private String keyExchangePort;
@@ -196,8 +199,9 @@ public class InfinispanConfig implements InitializingBean {
 
         System.setProperty("jgroups.tcpping.initial_hosts", getOrderedInitialHosts());
         System.setProperty("jgroups.bind.port", port);
-        System.setProperty("jgroups.bind.address", address);
+        System.setProperty("jgroups.bind.address", jgroupAddress);
         System.setProperty("jgroups.keyExchange.port", keyExchangePort);
+        System.setProperty("jgroups.keyExchange.address", exchangeAddress);
         System.setProperty("jgroups.tcp.diag.enabled", String.valueOf(Boolean.parseBoolean(tcpDiagEnabled)));
 
         System.setProperty("infinispan.ssl.keyStoreType", keyStoreType);
