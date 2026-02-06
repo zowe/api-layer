@@ -88,10 +88,10 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${jgroups.bind.port}")
     private String port;
 
-    @Value("${jgroups.bind.address:0.0.0.0}")
+    @Value("${jgroups.bind.address:localhost}")
     private String jgroupAddress;
 
-    @Value("${jgroups.keyExchange.address:0.0.0.0}")
+    @Value("${jgroups.keyExchange.address:localhost}")
     private String exchangeAddress;
 
     @Value("${jgroups.keyExchange.port:7601}")
