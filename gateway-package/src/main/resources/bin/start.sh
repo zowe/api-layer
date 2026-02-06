@@ -84,6 +84,7 @@
 
 # Source common APIML scripts (sets up common variables and functions)
 SCRIPT_DIR=$(dirname "$0")
+echo "SCRIPT_DIR: ${SCRIPT_DIR}"
 . "${SCRIPT_DIR}/apiml-common-scripts.sh"
 
 # JAR file location
@@ -140,6 +141,15 @@ fi
 if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]; then
     LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
 fi
+
+echo "QUICK_START: ${QUICK_START}" 
+echo "SHARED_CLASSES_OPTS: ${SHARED_CLASSES_OPTS}" 
+echo "JAVA21_CONSOLE_ENCODING: ${JAVA21_CONSOLE_ENCODING}" 
+echo "ADD_OPENS: ${ADD_OPENS}" 
+echo "LOGBACK: ${LOGBACK}" 
+echo "JVM_SECURITY_PROPERTIES: ${JVM_SECURITY_PROPERTIES}" 
+echo "EXTERNAL_URL: ${EXTERNAL_URL}" 
+echo "CUSTOM_JVM_OPTS: ${CUSTOM_JVM_OPTS}"
 
 GATEWAY_CODE=AG
 _BPXK_AUTOCVT=OFF
