@@ -102,27 +102,6 @@ JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
     | grep "major version" \
     | cut -d " " -f5)
 ADD_OPENS=""
-if [ $JAVA_VERSION -ge 61 ]; then
-    ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
-                --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
-                --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
-                --add-opens=java.base/java.util=ALL-UNNAMED
-                --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
-                --add-opens=java.base/javax.net.ssl=ALL-UNNAMED
-                --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
-                --add-opens=java.base/java.io=ALL-UNNAMED"
-
-    if [ "${keystore_type}" = "JCERACFKS" ]; then
-        keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
-        truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
-    elif [ "${keystore_type}" = "JCECCARACFKS" ]; then
-        keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
-        truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
-    elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
-        keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
-        truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
-    fi
-fi
 
 if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
@@ -243,6 +222,28 @@ truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certi
 keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}"
 truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
 #echo "keystore='$keystore_location' truststore='$truststore_location'"
+
+if [ $JAVA_VERSION -ge 61 ]; then
+    ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
+                --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
+                --add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED
+                --add-opens=java.base/java.util=ALL-UNNAMED
+                --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+                --add-opens=java.base/javax.net.ssl=ALL-UNNAMED
+                --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+                --add-opens=java.base/java.io=ALL-UNNAMED"
+
+    if [ "${keystore_type}" = "JCERACFKS" ]; then
+        keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
+        truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    elif [ "${keystore_type}" = "JCECCARACFKS" ]; then
+        keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+        truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
+        keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+        truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    fi
+fi
 
 # NOTE: these are moved from below
 # -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
