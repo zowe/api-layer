@@ -1176,7 +1176,7 @@ jobs:
                     -DtlsConfiguration.keyAlias=apimtst
                     -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
                     -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
-                    -Ddiscoverableclient.instances=0 -Dapicatalog.instances=0 -Ddiscovery.instances=1
+                    -Ddiscoverableclient.instances=0 -Dapicatalog.instances=0 -Ddiscovery.instances=1 -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1256,7 +1256,7 @@ jobs:
                     -DtlsConfiguration.keyAlias=apimtst
                     -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
                     -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
-                    -Ddiscoverableclient.instances=0 -Dapicatalog.instances=0 -Ddiscovery.instances=1
+                    -Ddiscoverableclient.instances=0 -Dapicatalog.instances=0 -Ddiscovery.instances=1 -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
