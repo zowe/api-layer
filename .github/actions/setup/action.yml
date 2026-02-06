@@ -31,7 +31,9 @@ runs:
                 path: |
                     ~/.gradle/caches
                     ~/.gradle/wrapper
-                key: ${{ runner.os }}-gradle-${{ hashFiles('build.gradle', 'settings.gradle', '*/build.gradle', '*/gradle/**/*.gradle', '*/gradle/**/*.properties') }}
+                key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle', '**/gradle-wrapper.properties', 'gradle.properties') }}
+                restore-keys: |
+                    ${{ runner.os }}-gradle-
         -   name: Cache Node.js modules of root folder
             uses: actions/cache@v4
             with:
