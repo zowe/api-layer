@@ -11,8 +11,6 @@
 package org.zowe.apiml.caching.health;
 
 import org.apache.commons.lang3.StringUtils;
-import org.infinispan.manager.DefaultCacheManager;
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.spring.embedded.provider.SpringEmbeddedCacheManager;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +22,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.caching.service.infinispan.config.LazyCacheManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,15 +62,15 @@ public class CachesHealthIndicator extends AbstractHealthIndicator {
             infinispan.put("caches", caches);
 
             var initialHostsArray = StringUtils.split(initialHosts, ",");
+            boolean allMembers = initialHostsArray.length <= nativeCacheManager.getMembers().size();
             var cluster = Map.of(
+                "status", allMembers ? Status.UP : Status.DOWN,
                 "address", nativeCacheManager.getAddress().toString(),
                 "initialHosts", initialHostsArray,
                 "members", nativeCacheManager.getMembers().stream().map(Address::toString).toList()
             );
             infinispan.put("cluster", cluster);
-            if (initialHostsArray.length > nativeCacheManager.getMembers().size()) {
-                health = false;
-            }
+            health &= allMembers;
 
             builder.withDetail("infinispan", infinispan);
         }
