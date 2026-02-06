@@ -10,7 +10,7 @@
         <stack name="prod">
             <!-- jgroups.tcp.address is deprecated and will be removed, see ISPN-11867 -->
             <TCP bind_addr="${jgroups.bind.address,jgroups.tcp.address:SITE_LOCAL}"
-                 bind_port="${jgroups.bind.port,jgroups.tcp.port:7800}"
+                 bind_port="${jgroups.bind.port,jgroups.tcp.port:7600}"
 
                  thread_naming_pattern="pl"
                  send_buf_size="640k"
