@@ -104,6 +104,10 @@
 # - ZWE_configs_storage_mode
 # - ZWE_configs_storage_size
 # - ZWE_configs_storage_vsam_name
+# - ZWE_configs_jvm_* - Any environment variable with this prefix will be passed as a JVM parameter
+#                       Example: ZWE_configs_jvm_Xss=512k becomes -Xss512k
+#                                ZWE_configs_jvm_Dmy_custom_property=value becomes -Dmy.custom.property=value
+#                       Note: Underscores in the property name (after 'D') are converted to dots
 # Optional variables:
 
 if [ -n "${LAUNCH_COMPONENT}" ]; then
@@ -336,6 +340,11 @@ if [ -n "${ZWE_java_home}" ]; then
     JAVA_BIN_DIR=${ZWE_java_home}/bin/
 fi
 
+# Source the custom JVM parameters parser
+# This parses ZWE_configs_jvm_* environment variables and populates CUSTOM_JVM_OPTS
+SCRIPT_DIR=$(dirname "$0")
+. "${SCRIPT_DIR}/parse_jvm_args.sh"
+
 APIML_CODE=AG
 
 SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal"
@@ -350,6 +359,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
     ${EXTERNAL_URL} \
+    ${CUSTOM_JVM_OPTS} \
     -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_haInstance_id:-localhost} \
     -Dapiml.catalog.customStyle.backgroundColor=${ZWE_components_apicatalog_apiml_catalog_customStyle_backgroundColor:-${ZWE_configs_apiml_catalog_customStyle_backgroundColor:-}} \
     -Dapiml.catalog.customStyle.docLink=${ZWE_components_apicatalog_apiml_catalog_customStyle_docLink:-${ZWE_configs_apiml_catalog_customStyle_docLink:-}} \

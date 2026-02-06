@@ -26,6 +26,7 @@ task packageZaas(type: Zip) {
         from configurations.zaasServiceJar
         from "$resourceDir/bin/start.sh"
         from "$resourceDir/bin/validate.sh"
+        from "../scripts/parse_jvm_args.sh"
     }
 }
 

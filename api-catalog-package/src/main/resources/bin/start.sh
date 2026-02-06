@@ -285,6 +285,11 @@ if [ -n "${ZWE_java_home}" ]; then
     JAVA_BIN_DIR=${ZWE_java_home}/bin/
 fi
 
+# Source the custom JVM parameters parser
+# This parses ZWE_configs_jvm_* environment variables and populates CUSTOM_JVM_OPTS
+SCRIPT_DIR=$(dirname "$0")
+. "${SCRIPT_DIR}/parse_jvm_args.sh"
+
 CATALOG_CODE=AC
 SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal"
 _BPXK_AUTOCVT=OFF
@@ -298,6 +303,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
     ${EXTERNAL_URL} \
+    ${CUSTOM_JVM_OPTS} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
     -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \

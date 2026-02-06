@@ -27,6 +27,7 @@ task packageApiml(type: Zip) {
         from configurations.apimlServiceJar
         from "$resourceDir/bin/start.sh"
         from "$resourceDir/bin/validate.sh"
+        from "../scripts/parse_jvm_args.sh"
     }
 }
 
