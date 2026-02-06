@@ -30,10 +30,7 @@ import org.infinispan.stats.CacheContainerStats;
 
 import javax.security.auth.Subject;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -51,7 +48,7 @@ public class LazyCacheManager extends DefaultCacheManager {
         Collection<String> cacheNames
     ) {
         super(false);
-        cacheInitializer = new CacheInitializer(cacheManagerConfig, cacheConfig, cacheNames);
+        cacheInitializer = new CacheInitializer(cacheManagerConfig, cacheConfig, new ArrayList<>(cacheNames));
     }
 
     private DefaultCacheManager getCacheManager() {
