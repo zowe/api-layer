@@ -35,6 +35,7 @@ bats --tap scripts/test/start_test.bats
 
 # Run specific test by name pattern
 bats --filter "parse_jvm_args" scripts/test/start_test.bats
+bats --filter "apiml-common-scripts" scripts/test/start_test.bats
 ```
 
 ## Writing New Tests
@@ -43,16 +44,14 @@ BATS tests follow this structure:
 
 ```bash
 @test "description of what is being tested" {
-    # Setup
+    # Setup - set environment variables
     export SOME_VAR="value"
     
-    # Execute
-    result=$(some_command)
+    # Execute - source the script
+    . "${SCRIPTS_DIR}/apiml-common-scripts.sh"
     
-    # Assert
-    [ "$result" = "expected" ]
-    # or
-    [[ "$result" == *"partial match"* ]]
+    # Assert - verify variables are set correctly
+    [ "$result_var" = "expected" ]
 }
 ```
 
@@ -61,5 +60,13 @@ Common assertions:
 - `[ -z "$var" ]` - variable is empty
 - `[ -n "$var" ]` - variable is not empty
 - `[[ "$var" == *"pattern"* ]]` - pattern match
-- `[ "$status" -eq 0 ]` - exit status check
+- `type function_name` - verify function exists
 
+## Test Structure
+
+Each test:
+1. Sets up required environment variables in `setup()`
+2. May override specific variables for the test case
+3. Sources the actual script being tested
+4. Verifies the script populated variables correctly
+5. Cleans up in `teardown()`
