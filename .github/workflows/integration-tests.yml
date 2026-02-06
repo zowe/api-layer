@@ -1885,7 +1885,7 @@ jobs:
                 if: ${{ 'discovery-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
-                    --info -Denvironment.config=-ha -Ddiscoverableclient.instances=1
+                    --info -Denvironment.config=-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
