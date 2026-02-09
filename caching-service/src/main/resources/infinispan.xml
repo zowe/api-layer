@@ -34,7 +34,6 @@
                               truststore_type="${infinispan.ssl.trustStoreType}"
                               truststore_password="${infinispan.ssl.trustStorePassword}"
                               secret_key_algorithm="AES"
-                              bind_addr="${jgroups.keyExchange.address}"
                               port="${jgroups.keyExchange.port}"
                               stack.combine="INSERT_AFTER"
                               stack.position="VERIFY_SUSPECT"
