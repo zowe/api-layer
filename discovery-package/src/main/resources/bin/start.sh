@@ -44,16 +44,14 @@
 # - ZWE_configs_apiml_discovery_serviceIdPrefixReplacer - The service ID prefix replacer to be V2 conformant
 
 # Source common APIML scripts (sets up common variables and functions)
-SCRIPT_DIR=$(dirname "$0")
-# In production, apiml-common-scripts.sh is in the same directory as start.sh
-# In development, it's in the scripts/ directory relative to the project root
-if [ -f "${SCRIPT_DIR}/apiml-common-scripts.sh" ]; then
-    . "${SCRIPT_DIR}/apiml-common-scripts.sh"
-elif [ -f "scripts/apiml-common-scripts.sh" ]; then
-    . "scripts/apiml-common-scripts.sh"
+if [ -n "${LAUNCH_COMPONENT}" ]; then
+    echo "lnch"
+    echo "${LAUNCH_COMPONENT}/apiml-common-scripts.sh"
+    . "${LAUNCH_COMPONENT}/apiml-common-scripts.sh"
 else
-    echo "ERROR: Cannot find apiml-common-scripts.sh"
-    exit 1
+    echo "pwd"
+    echo "$(pwd)/bin/apiml-common-scripts.sh"
+    . "$(pwd)/bin/apiml-common-scripts.sh"
 fi
 
 # JAR file location
