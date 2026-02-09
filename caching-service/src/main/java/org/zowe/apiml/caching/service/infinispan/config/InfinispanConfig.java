@@ -154,6 +154,7 @@ public class InfinispanConfig implements InitializingBean {
             .addSoftIndexFileStore()
             .clustering().cacheMode(CacheMode.REPL_SYNC);
         holder.getGlobalConfigurationBuilder().defaultCacheName("default");
+        holder.getGlobalConfigurationBuilder().transport().stack("prod");
         return holder;
     }
 
