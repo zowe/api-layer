@@ -235,8 +235,9 @@ jobs:
                     APIML_HEALTH_PROTECTED: false
                     CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600],apiml-3[7600]"
-                    JGROUPS_BIND_PORT: 7600
                     JGROUPS_BIND_ADDRESS: apiml
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_KEYEXCHANGE_BIND_ADDRESS: apiml
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             apiml-2:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
@@ -256,8 +257,9 @@ jobs:
                     APIML_HEALTH_PROTECTED: false
                     CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600],apiml-3[7600]"
-                    JGROUPS_BIND_PORT: 7600
                     JGROUPS_BIND_ADDRESS: apiml-2
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_KEYEXCHANGE_BIND_ADDRESS: apiml-2
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             apiml-3:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
@@ -277,8 +279,9 @@ jobs:
                     APIML_HEALTH_PROTECTED: false
                     CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600],apiml-3[7600]"
-                    JGROUPS_BIND_PORT: 7600
                     JGROUPS_BIND_ADDRESS: apiml-3
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_KEYEXCHANGE_BIND_ADDRESS: apiml-3
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
@@ -942,6 +945,8 @@ jobs:
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "caching-service"
                     JGROUPS_BIND_PORT: "7600"
+                    JGROUPS_KEYEXCHANGE_BIND_ADDRESS: "caching-service"
+                    JGROUPS_KEYEXCHANGE_PORT: 7601
             central-gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1777,8 +1782,9 @@ jobs:
                 env:
                     CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
-                    JGROUPS_BIND_PORT: 7600
                     JGROUPS_BIND_ADDRESS: caching-service
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_KEYEXCHANGE_BIND_ADDRESS: caching-service
                     JGROUPS_KEYEXCHANGE_PORT: 7601
                     APIML_SERVICE_HOSTNAME: caching-service
                     APIML_HEALTH_PROTECTED: false
@@ -1790,8 +1796,9 @@ jobs:
                 env:
                     CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
-                    JGROUPS_BIND_PORT: 7600
                     JGROUPS_BIND_ADDRESS: caching-service-2
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_KEYEXCHANGE_BIND_ADDRESS: caching-service-2
                     JGROUPS_KEYEXCHANGE_PORT: 7601
                     APIML_SERVICE_HOSTNAME: caching-service-2
                     APIML_HEALTH_PROTECTED: false
@@ -1804,8 +1811,9 @@ jobs:
                 env:
                     CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
-                    JGROUPS_BIND_PORT: 7600
                     JGROUPS_BIND_ADDRESS: caching-service-3
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_KEYEXCHANGE_BIND_ADDRESS: caching-service-3
                     JGROUPS_KEYEXCHANGE_PORT: 7601
                     APIML_SERVICE_HOSTNAME: caching-service-3
                     APIML_HEALTH_PROTECTED: false
@@ -1974,6 +1982,7 @@ jobs:
                     CACHING_STORAGE_MODE: "infinispan"
                     APIML_SERVICE_PORT: "10022"
                     JGROUPS_BIND_ADDRESS: "caching-service"
+                    JGROUPS_KEYEXCHANGE_BIND_ADDRESS: "caching-service"
             caching-service-2:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1984,6 +1993,7 @@ jobs:
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600]"
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "caching-service-2"
+                    JGROUPS_KEYEXCHANGE_BIND_ADDRESS: "caching-service-2"
                     APIML_SERVICE_HOSTNAME: "caching-service-2"
                     logbackService: ZWEACS2
             discoverable-client:
@@ -2058,6 +2068,7 @@ jobs:
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "apiml"
+                    JGROUPS_KEYEXCHANGE_BIND_ADDRESS: "apiml"
             apiml-2:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -2071,6 +2082,7 @@ jobs:
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "apiml-2"
+                    JGROUPS_KEYEXCHANGE_BIND_ADDRESS: "apiml-2"
                     APIML_SERVICE_HOSTNAME: "apiml-2"
                     logbackService: ZWEAGW2
             api-catalog-services:
