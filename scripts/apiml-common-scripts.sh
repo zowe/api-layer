@@ -273,12 +273,12 @@ SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal"
 ################################################################################
 # In production, parse_jvm_args.sh is in the same directory as start.sh
 # In development, it's in the scripts/ directory relative to the project root
-COMMON_SCRIPT_DIR=$(dirname "$0")
-if [ -f "${COMMON_SCRIPT_DIR}/parse_jvm_args.sh" ]; then
-    . "${COMMON_SCRIPT_DIR}/parse_jvm_args.sh"
-elif [ -f "scripts/parse_jvm_args.sh" ]; then
-    . "scripts/parse_jvm_args.sh"
+if [ -n "${LAUNCH_COMPONENT}" ]; then
+    echo "lnch common.sh"
+    echo "${LAUNCH_COMPONENT}/parse_jvm_args.sh"
+    . "${LAUNCH_COMPONENT}/parse_jvm_args.sh"
 else
-    echo "ERROR: Cannot find parse_jvm_args.sh"
-    exit 1
+    echo "pwd common.sh"
+    echo "$(pwd)/bin/parse_jvm_args.sh"
+    . "$(pwd)/bin/parse_jvm_args.sh"
 fi
