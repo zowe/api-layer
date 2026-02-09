@@ -16,7 +16,7 @@ setup() {
     BATS_TEST_DIRNAME="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)"
     PROJECT_ROOT="$(cd "${BATS_TEST_DIRNAME}/../.." && pwd)"
     SCRIPTS_DIR="${PROJECT_ROOT}/scripts"
-    
+    LAUNCH_COMPONENT="${PROJECT_ROOT}/scripts"
     # Create a temporary directory for test artifacts
     TEST_TEMP_DIR="$(mktemp -d)"
     
