@@ -41,7 +41,6 @@
 #   - COMMON_LIB
 #   - LIBRARY_PATH
 #   - ZWE_DISCOVERY_SERVICES_LIST
-#   - CUSTOM_JVM_OPTS (from parse_jvm_args.sh)
 
 ################################################################################
 # Function: add_profile
@@ -98,6 +97,7 @@ fi
 ZOWE_CONSOLE_LOG_CHARSET=UTF-8
 if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
+    SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal"
 
     JAVA_VERSION=$(${JAVA_HOME}/bin/javap -J-Xms4m -J-Xmx16m -verbose java.lang.String \
         | grep "major version" \
@@ -262,8 +262,3 @@ fi
 if [ -n "${ZWE_java_home}" ]; then
     JAVA_BIN_DIR=${ZWE_java_home}/bin/
 fi
-
-################################################################################
-# Shared classes options
-################################################################################
-SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal"
