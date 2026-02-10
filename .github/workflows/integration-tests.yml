@@ -70,7 +70,8 @@ jobs:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: true
                     APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
                     APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES: /docker/api-defs-unknown-host
-
+                volumes:
+                    - /api-defs:/api-defs
             discoverable-client-unknown:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -92,7 +93,7 @@ jobs:
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith -Denvironment.modulith=true
-                    -Ddiscoverableclient.instances=1 -DcentralGateway.instances=0
+                    -Ddiscoverableclient.instances=1 -DcentralGateway.instances=0 -DserviceIdReplaced=discoverable-client:discoverable-client-unknown
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
