@@ -262,7 +262,18 @@ public class LazyCacheManager extends DefaultCacheManager {
 
         public DefaultCacheManager getDefaultCacheManager() {
             if (underInit == null) {
-                underInit = new DefaultCacheManager(cacheManagerConfig, true);
+                for (int i = 0; i < 1 + RETRY; i++) {
+                    try {
+                        underInit = new DefaultCacheManager(cacheManagerConfig, true);
+                        break;
+                    } catch (Exception e) {
+                        log.warn("Cannot initialize DefaultCacheManager", e);
+                    }
+                }
+            }
+
+            if (underInit == null) {
+                return null;
             }
 
             for (int i = 0; i < 1 + RETRY; i++) {
