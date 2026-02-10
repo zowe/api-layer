@@ -50,21 +50,18 @@
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 
 # Source common APIML scripts (sets up common variables and functions)
-if [ -n "${LAUNCH_COMPONENT}" ]; then
-    echo "lnch"
-    echo "${LAUNCH_COMPONENT}/apiml-common-scripts.sh"
-    . "${LAUNCH_COMPONENT}/apiml-common-scripts.sh"
-else
-    echo "pwd"
-    echo "$(pwd)/bin/apiml-common-scripts.sh"
-    . "$(pwd)/bin/apiml-common-scripts.sh"
-fi
 
 # JAR file location
 if [ -n "${LAUNCH_COMPONENT}" ]; then
+    echo "lnch ${LAUNCH_COMPONENT}/apiml-common-scripts.sh"
     JAR_FILE="${LAUNCH_COMPONENT}/api-catalog-services-lite.jar"
+    . "scripts/apiml-common-scripts.sh"
+    . "scripts/parse_jvm_args.sh"
 else
+    echo "$(pwd)/bin/apiml-common-scripts.sh"
     JAR_FILE="$(pwd)/bin/api-catalog-services-lite.jar"
+    . "$(pwd)/bin/apiml-common-scripts.sh"
+    . "$(pwd)/bin/parse_jvm_args.sh"
 fi
 echo "jar file: ${JAR_FILE}"
 

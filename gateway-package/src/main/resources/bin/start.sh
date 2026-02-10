@@ -84,13 +84,15 @@
 
 # Source common APIML scripts (sets up common variables and functions)
 if [ -n "${LAUNCH_COMPONENT}" ]; then
-    echo "lnch"
-    echo "${LAUNCH_COMPONENT}/apiml-common-scripts.sh"
-    . "${LAUNCH_COMPONENT}/apiml-common-scripts.sh"
+    echo "lnch ${LAUNCH_COMPONENT}/apiml-common-scripts.sh"
+    JAR_FILE="${LAUNCH_COMPONENT}/api-catalog-services-lite.jar"
+    . "scripts/apiml-common-scripts.sh"
+    . "scripts/parse_jvm_args.sh"
 else
-    echo "pwd"
     echo "$(pwd)/bin/apiml-common-scripts.sh"
+    JAR_FILE="$(pwd)/bin/api-catalog-services-lite.jar"
     . "$(pwd)/bin/apiml-common-scripts.sh"
+    . "$(pwd)/bin/parse_jvm_args.sh"
 fi
 
 # JAR file location
@@ -148,13 +150,13 @@ if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]; then
     LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
 fi
 
-echo "QUICK_START: ${QUICK_START}" 
-echo "SHARED_CLASSES_OPTS: ${SHARED_CLASSES_OPTS}" 
-echo "JAVA21_CONSOLE_ENCODING: ${JAVA21_CONSOLE_ENCODING}" 
-echo "ADD_OPENS: ${ADD_OPENS}" 
-echo "LOGBACK: ${LOGBACK}" 
-echo "JVM_SECURITY_PROPERTIES: ${JVM_SECURITY_PROPERTIES}" 
-echo "EXTERNAL_URL: ${EXTERNAL_URL}" 
+echo "QUICK_START: ${QUICK_START}"
+echo "SHARED_CLASSES_OPTS: ${SHARED_CLASSES_OPTS}"
+echo "JAVA21_CONSOLE_ENCODING: ${JAVA21_CONSOLE_ENCODING}"
+echo "ADD_OPENS: ${ADD_OPENS}"
+echo "LOGBACK: ${LOGBACK}"
+echo "JVM_SECURITY_PROPERTIES: ${JVM_SECURITY_PROPERTIES}"
+echo "EXTERNAL_URL: ${EXTERNAL_URL}"
 echo "CUSTOM_JVM_OPTS: ${CUSTOM_JVM_OPTS}"
 
 GATEWAY_CODE=AG
