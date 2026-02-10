@@ -20,6 +20,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
@@ -36,6 +37,7 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class OpenTelemetryMetricsTest {
 
@@ -53,6 +55,9 @@ class OpenTelemetryMetricsTest {
     @TestInstance(Lifecycle.PER_CLASS)
     @DirtiesContext
     class WhenOpenTelemetryEnabled {
+
+        @LocalServerPort
+        private int port;
 
         private static String defaultPlatform = System.getProperty("os.name");
 
@@ -81,8 +86,11 @@ class OpenTelemetryMetricsTest {
                     assertEquals("STC1111", attributes.get(stringKey("process.zos.jobid")));
                     assertEquals("ZWE1AG", attributes.get(stringKey("process.zos.jobname")));
                     assertEquals("gateway", attributes.get(stringKey("service.name")));
-                    assertEquals("apiml:apiml1:40985", attributes.get(stringKey("service.namespace")));
+                    assertNull(attributes.get(stringKey("service.namespace")));
                     assertNotNull(attributes.get(stringKey("service.version")));
+                    assertEquals("030200", attributes.get(stringKey("os.version")));
+                    assertEquals("LR10", attributes.get(stringKey("zos.smf.id")));
+                    assertEquals("localhost:gateway:" + port, attributes.get(stringKey("service.instance.id")));
                 }
             );
 

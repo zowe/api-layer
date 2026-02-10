@@ -28,7 +28,7 @@ import java.util.Optional;
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_ENVIRON;
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_JOB_ID;
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_JOB_NAME;
-import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_SYSCLONE;
+import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_SMF_ID;
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_SYSNAME;
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_SYSPLEX;
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_USER_ID;
@@ -123,7 +123,7 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
         }
 
         if (StringUtils.isBlank(smfId)) {
-            var smfId = zosAttributes.get(ZOS_SYSCLONE);
+            var smfId = zosAttributes.get(ZOS_SMF_ID);
             if (smfId != null && StringUtils.isNotBlank(smfId.toString())) {
                 log.debug("zos.smf.id not provided in configuration, using system-obtained {}", smfId);
                 attributesBuilder.put("zos.smf.id", smfId.toString());

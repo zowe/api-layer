@@ -39,6 +39,7 @@ class ApimlZosOpenTelemetryResourceProviderTest {
     void setUp() {
         resourceProvider = new ApimlZosOpenTelemetryResourceProvider(zosSystemInformation);
         ReflectionTestUtils.setField(resourceProvider, "port", 10010);
+        ReflectionTestUtils.setField(resourceProvider, "hostname", "localhost");
     }
 
     @Nested
@@ -53,17 +54,20 @@ class ApimlZosOpenTelemetryResourceProviderTest {
                 "zos.pid", 123456,
                 "zos.sysname", "SYSA",
                 "zos.sysclone", "16",
-                "zos.sysplex", "PLEX1"
+                "zos.sysplex", "PLEX1",
+                "zos.smfid", "SYSA"
             ));
             var attributes = resourceProvider.calculateAttributes();
 
             assertFalse(attributes.isEmpty());
-            assertNull(attributes.get(stringKey("mainframe.lpar.name")));
 
+            assertEquals("SYSA", attributes.get(stringKey("mainframe.lpar.name")));
+            assertEquals("SYSA", attributes.get(stringKey("zos.smf.id")));
             assertEquals("JOB12345", attributes.get(stringKey("process.zos.jobid")));
             assertEquals("JOBN12", attributes.get(stringKey("process.zos.jobname")));
             assertEquals("ZWEUSR", attributes.get(stringKey("process.zos.userid")));
-            assertEquals("apiml:PLEX1:10010", attributes.get(stringKey("service.namespace")));
+            assertNull(attributes.get(stringKey("service.namespace")));
+            assertEquals("localhost:gateway:10010", attributes.get(stringKey("service.instance.id")));
             assertEquals("PLEX1:10010", attributes.get(stringKey("service.name")));
         }
 
