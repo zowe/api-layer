@@ -25,6 +25,7 @@ import org.infinispan.manager.DefaultCacheManager;
 import org.jgroups.stack.Protocol;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -50,12 +51,12 @@ import static org.junit.jupiter.api.Assertions.fail;
         "jgroups.keyExchange.port=17601",
         "caching.storage.infinispan.initialHosts=localhost[17600],localhost[27600]",
 
-        "server.ssl.keyStore=config/localhost/localhost.keystore.p12",
+        "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
         "server.ssl.keyStoreType=PKCS12",
         "server.ssl.keyStorePassword=password",
         "server.ssl.keyAlias=localhost",
         "server.ssl.keyPassword=password",
-        "server.ssl.trustStore=config/localhost/localhost.truststore.p12",
+        "server.ssl.trustStore=../keystore/localhost/localhost.truststore.p12",
         "server.ssl.trustStoreType=PKCS12",
         "server.ssl.trustStorePassword=password",
 
@@ -99,12 +100,12 @@ public class JGroupStabilityTest {
         env.put("ZWE_configs_storage_infinispan_jgroups_keyExchange_port", "17601");
         env.put("ZWE_configs_storage_infinispan_initialHosts", "localhost[17600],localhost[27600]");
 
-        env.put("ZWE_zowe_certificate_keystore_file", "config/localhost/localhost.keystore.p12");
+        env.put("ZWE_zowe_certificate_keystore_file", "../keystore/localhost/localhost.keystore.p12");
         env.put("ZWE_zowe_certificate_keystore_password", "password");
         env.put("ZWE_zowe_certificate_keystore_alias", "localhost");
         env.put("ZWE_zowe_certificate_key_password", "password");
 
-        env.put("ZWE_zowe_certificate_truststore_file", "config/localhost/localhost.truststore.p12");
+        env.put("ZWE_zowe_certificate_truststore_file", "../keystore/localhost/localhost.truststore.p12");
         env.put("ZWE_zowe_certificate_truststore_password", "password");
 
         env.put("ZWE_configs_apiml_health_protected", "false");
