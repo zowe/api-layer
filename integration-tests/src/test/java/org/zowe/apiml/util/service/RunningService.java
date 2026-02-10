@@ -67,14 +67,18 @@ public class RunningService {
             "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
             "--add-opens=java.base/java.io=ALL-UNNAMED"
         ));
-        parametersBefore
-            .forEach((key1, value1) -> shellCommand.add(key1 + '=' + value1));
+        if (parametersBefore != null) {
+            parametersBefore
+                .forEach((key1, value1) -> shellCommand.add(key1 + '=' + value1));
+        }
 
         shellCommand.add("-jar");
         shellCommand.add(jarFile);
 
-        parametersAfter
-            .forEach((key, value) -> shellCommand.add(key + '=' + value));
+        if (parametersAfter != null) {
+            parametersAfter
+                .forEach((key, value) -> shellCommand.add(key + '=' + value));
+        }
 
         try {
             ProcessBuilder builder1 = new ProcessBuilder(shellCommand);
