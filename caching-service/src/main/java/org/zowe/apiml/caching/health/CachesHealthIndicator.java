@@ -22,6 +22,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.caching.service.infinispan.config.LazyCacheManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +48,10 @@ public class CachesHealthIndicator extends AbstractHealthIndicator {
         boolean health = true;
         if (cm instanceof SpringEmbeddedCacheManager springEmbeddedCacheManager) {
             var nativeCacheManager = springEmbeddedCacheManager.getNativeCacheManager();
+            if (nativeCacheManager instanceof LazyCacheManager lazyCacheManager) {
+                health &= lazyCacheManager.isInitialized();
+            }
+
             var infinispan = new HashMap<String, Object>();
 
             var status = nativeCacheManager.getStatus();

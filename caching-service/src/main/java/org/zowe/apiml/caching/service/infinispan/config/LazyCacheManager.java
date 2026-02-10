@@ -67,6 +67,10 @@ public class LazyCacheManager extends DefaultCacheManager {
         return container;
     }
 
+    public boolean isInitialized() {
+        return cacheInitializer.isInitialized();
+    }
+
     @Override
     public Configuration defineConfiguration(String cacheName, Configuration configuration) {
         return getCacheManager().defineConfiguration(cacheName, configuration);
@@ -309,6 +313,10 @@ public class LazyCacheManager extends DefaultCacheManager {
                 log.warn("Error during initialization of cache {}", cacheName, e);
                 return false;
             }
+        }
+
+        public boolean isInitialized() {
+            return underInit != null && cacheNames.isEmpty();
         }
 
     }
