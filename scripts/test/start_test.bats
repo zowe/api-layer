@@ -154,6 +154,14 @@ teardown() {
     [[ "$CUSTOM_JVM_OPTS" == *"-Denable.feature"* ]]
 }
 
+@test "parse_jvm_args: handles - property" {
+    export ZWE_configs_jvm_agentpath=":/u/users/cai/sysview/runtime/cnm4h00/CNM4JVMD/libgsvoagt4.so"
+
+    . "${SCRIPTS_DIR}/parse_jvm_args.sh"
+
+    [[ "$CUSTOM_JVM_OPTS" == *"-agentpath:/u/users/cai/sysview/runtime/cnm4h00/CNM4JVMD/libgsvoagt4.so"* ]]
+}
+
 @test "parse_jvm_args: handles multiple JVM options" {
     export ZWE_configs_jvm_Xss="512k"
     export ZWE_configs_jvm_Xmn="256m"
@@ -445,9 +453,13 @@ teardown() {
     [ "$JAVA_BIN_DIR" = "/custom/java/bin/" ]
 }
 
-@test "apiml-common-scripts: sets SHARED_CLASSES_OPTS" {
+@test "apiml-common-scripts: sets SHARED_CLASSES_OPTS and QUICK_START when runs on zOS" {
+    uname() {
+        echo "OS/390"
+    }
+    export -f uname
     . "${SCRIPTS_DIR}/apiml-common-scripts.sh"
-
+    [ "$QUICK_START" = "-Xquickstart" ]
     [ "$SHARED_CLASSES_OPTS" = "-Xshareclasses:name=apiml_shared_classes,nonfatal" ]
 }
 
