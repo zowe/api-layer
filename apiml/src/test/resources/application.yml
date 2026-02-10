@@ -36,16 +36,6 @@ management:
                 include: "*"
 
 otel:
-    resource:
-        attributes:
-            deployment.environment: dev
-    traces:
-        exporter: none
-    metrics:
-        exporter: none
-    logs:
-        exporter: logging
-        include-trace-context: true
     sdk:
         disabled: true
 

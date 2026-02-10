@@ -13,10 +13,12 @@ package org.zowe.apiml.product.opentelemetry;
 /**
  * Set of attributes set by API ML
  */
-public class ZosAttributes {
+public class ZosOpenTelemetryAttributes {
 
-    public static final String ZOS_JOBNAME = "process.zos.jobname";
-    public static final String ZOS_USERID = "process.zos.userid";
-    public static final String ZOS_JOBID = "process.zos.jobid";
+    public static final String OTEL_ZOS_JOBNAME = "process.zos.jobname";
+    public static final String OTEL_ZOS_USERID = "process.zos.userid";
+    public static final String OTEL_ZOS_JOBID = "process.zos.jobid";
+    public static final String OTEL_ZOS_INSTANCE_ID = "service.instance.id";
+    public static final String OTEL_OS_VERSION = "os.version";
 
 }

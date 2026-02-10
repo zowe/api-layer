@@ -57,6 +57,7 @@ class OpenTelemetryMetricsTest {
         private static String defaultPlatform = System.getProperty("os.name");
 
         static {
+            // Used to enable z/OS resource attribute bean
             System.setProperty("os.name", "z/OS");
         }
 

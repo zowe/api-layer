@@ -43,6 +43,9 @@ class ZosSystemInformationTest {
         when(zUtil.substituteSystemSymbols("&SYSNAME.")).thenReturn("SYSNAME");
         when(zUtil.substituteSystemSymbols("&SYSCLONE.")).thenReturn("32");
         when(zUtil.substituteSystemSymbols("&SYSPLEX.")).thenReturn("PLEX");
+        when(zUtil.substituteSystemSymbols("&SMFID.")).thenReturn("LP32");
+        when(zUtil.substituteSystemSymbols("&ENVIRON.")).thenReturn("PROD");
+        when(zUtil.substituteSystemSymbols("&OSLEVEL.")).thenReturn("030200");
 
         var data = zosSystemInformation.get();
         assertFalse(data.isEmpty());

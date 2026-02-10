@@ -26,6 +26,9 @@ public class ZosSystemInformation {
     public static final String ZOS_SYSNAME = "zos.sysname";
     public static final String ZOS_SYSCLONE = "zos.sysclone";
     public static final String ZOS_SYSPLEX = "zos.sysplex";
+    public static final String ZOS_SMF_ID = "zos.smfid";
+    public static final String ZOS_ENVIRON = "zos.environ";
+    public static final String ZOS_VERSION = "zos.version";
     public static final String OS_NAME = "os.name";
 
     private ZUtil zUtil;
@@ -42,7 +45,10 @@ public class ZosSystemInformation {
             ZOS_PID, zUtil.getPid(),
             ZOS_SYSNAME, zUtil.substituteSystemSymbols("&SYSNAME."),
             ZOS_SYSCLONE, zUtil.substituteSystemSymbols("&SYSCLONE."),
-            ZOS_SYSPLEX, zUtil.substituteSystemSymbols("&SYSPLEX.")
+            ZOS_SYSPLEX, zUtil.substituteSystemSymbols("&SYSPLEX."),
+            ZOS_SMF_ID, zUtil.substituteSystemSymbols("&SMFID."),
+            ZOS_ENVIRON, zUtil.substituteSystemSymbols("&ENVIRON."),
+            ZOS_VERSION, zUtil.substituteSystemSymbols("&OSLEVEL.")
         );
     }
 

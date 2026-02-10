@@ -207,6 +207,9 @@ public class ZUtilDummy implements ZUtil {
             case "&SYSNAME." -> "SYSNAME";
             case "&SYSCLONE." -> "SYSCLONE";
             case "&SYSPLEX." -> "SYSPLEX";
+            case "&SMFID." -> "LR10";
+            case "&ENVIRON." -> "DEV";
+            case "&OSLEVEL." -> "030200";
             default -> null;
         };
     }
