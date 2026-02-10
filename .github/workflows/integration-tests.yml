@@ -88,10 +88,19 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
-            -   name: Run CI Tests with Unknown Hostnames
-                timeout-minutes: 4
+            -   name: Run Startup Check
+                if: always()
                 run: >
-                    ENV_CONFIG=docker-modulith ./gradlew runStartUpCheck :integration-tests:runUnknownHostnamesTests --info
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    -Ddiscoverableclient.instances=1 -DcentralGateway.instances=0
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Run CI Tests with Unknown Hostnames
+                run: >
+                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runUnknownHostnamesTests --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -150,8 +159,8 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith -Denvironment.modulith=true
-                    -Ddiscoverableclient.instances=1 -DcentralGateway.instances=0
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith
+                    -Denvironment.modulith=true -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
