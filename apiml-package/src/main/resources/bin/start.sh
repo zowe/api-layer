@@ -370,7 +370,6 @@ _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Xms${ZWE_configs_heap_init:-${ZWE_components_gateway_heap_init:-32}}m -Xmx${ZWE_configs_heap_max:-${ZWE_components_gateway_heap_max:-512}}m \
     -XX:+ExitOnOutOfMemoryError \
-    -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=5009,suspend=y \
     ${QUICK_START} \
     ${SHARED_CLASSES_OPTS} \
     ${JAVA21_CONSOLE_ENCODING} \
