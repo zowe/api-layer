@@ -47,6 +47,7 @@ import java.util.concurrent.TimeUnit;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Slf4j
@@ -96,6 +97,7 @@ public class JGroupStabilityTest {
                 }
             }
         } catch (IOException ioException) {
+            terminalCommandProcess = null;
             fail(ioException);
         }
     }
@@ -122,13 +124,15 @@ public class JGroupStabilityTest {
 
         env.put("ZWE_configs_apiml_health_protected", "false");
 
-        ProcessBuilder builder = new ProcessBuilder("../caching-service-package/src/main/resources/bin/start.sh");
+        ProcessBuilder builder = new ProcessBuilder("caching-service-package/src/main/resources/bin/start.sh");
         builder.environment().putAll(env);
 
         File binFolder = new File("../");
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         builder.directory(binFolder);
         executorService.submit(() -> executeCommand(builder));
+
+        assertNotNull(terminalCommandProcess);
     }
 
     @AfterAll
