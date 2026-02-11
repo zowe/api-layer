@@ -13,7 +13,6 @@ package org.zowe.apiml.caching.service.infinispan.config;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -42,11 +41,9 @@ import org.zowe.apiml.config.ApplicationInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
 
 import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
 import static org.zowe.apiml.security.SecurityUtils.isKeyring;
@@ -63,8 +60,6 @@ public class InfinispanConfig implements InitializingBean {
     private static final String LOCK_ZOWE_INVALIDATED = "zoweInvalidatedTokenLock";
     public static final String CACHE_ZOWE = "zoweCache";
     public static final String CACHE_ZOWE_INVALIDATED_TOKEN = "zoweInvalidatedTokenCache";
-
-    private static Pattern MEMBER = Pattern.compile("^\\s*([^\\[\\s]+)\\s*\\[\\s*([0-9]+)\\s*\\]\\s*$");
 
     @Value("${caching.storage.infinispan.initialHosts}")
     private String initialHosts;
@@ -166,38 +161,9 @@ public class InfinispanConfig implements InitializingBean {
         return builder;
     }
 
-    private boolean isMe(String member) {
-        var matcher = MEMBER.matcher(member);
-        if (matcher.matches()) {
-            var hostname = matcher.group(1);
-            var port = matcher.group(2);
-            return
-                Strings.CI.equals(hostname, this.hostname) &&
-                Strings.CS.equals(port, this.port);
-        }
-        return false;
-    }
-
-    private String getOrderedInitialHosts() {
-        var local = new ArrayList<String>();
-        var response = new ArrayList<String>();
-        for (String member : StringUtils.split(initialHosts, ",")) {
-            if (isMe(member)) {
-                local.add(member);
-            } else {
-                response.add(member);
-            }
-        }
-        response.addAll(local);
-        return StringUtils.join(response, ",");
-    }
-
     @Bean(destroyMethod = "stop")
     synchronized LazyCacheManager cacheManager(ResourceLoader resourceLoader, ApplicationInfo applicationInfo) {
-        var orderedInitialHosts = getOrderedInitialHosts();
-        log.debug("Ordered initial hosts list: {}", orderedInitialHosts);
-
-        System.setProperty("jgroups.tcpping.initial_hosts", getOrderedInitialHosts());
+        System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
         System.setProperty("jgroups.bind.port", port);
         System.setProperty("jgroups.bind.address", address);
         System.setProperty("jgroups.keyExchange.port", keyExchangePort);
