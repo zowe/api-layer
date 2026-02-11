@@ -245,16 +245,6 @@ if [ -n "${ZWE_configs_logging_config}" ]; then
     LOGBACK="-Dlogging.config=${ZWE_configs_logging_config}"
 fi
 
-################################################################################
-# AT-TLS keyring clearing (when using AT-TLS with external keyring)
-################################################################################
-if [ "${ATTLS_SERVER_ENABLED}" = "true" ] && [ "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
-    keystore_type=
-    keystore_pass=
-    key_pass=
-    key_alias=
-    keystore_location=
-fi
 
 ################################################################################
 # Java binary directory

@@ -15,15 +15,7 @@
 #
 # Usage: Source this file to populate CUSTOM_JVM_OPTS variable
 #   . ./parse_jvm_args.sh
-#
-# Examples:
-#   ZWE_configs_jvm_Xss=512k           -> -Xss512k
-#   ZWE_configs_jvm_Xmn=256m           -> -Xmn256m
-#   ZWE_configs_jvm_XX_UseG1GC=        -> -XX:+UseG1GC (empty value with XX_ prefix adds +)
-#   ZWE_configs_jvm_XX_UseG1GC=true    -> -XX:+UseG1GC
-#   ZWE_configs_jvm_XX_UseG1GC=false   -> -XX:-UseG1GC
-#   ZWE_configs_jvm_XX_MaxGCPauseMillis=200 -> -XX:MaxGCPauseMillis=200
-#   ZWE_configs_jvm_Dmy_custom_prop=value   -> -Dmy.custom.prop=value (underscores become dots after D)
+
 
 CUSTOM_JVM_OPTS=""
 for var in $(env | grep "^ZWE_configs_jvm_" | cut -d= -f1); do
