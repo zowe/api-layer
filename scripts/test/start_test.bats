@@ -106,6 +106,14 @@ teardown() {
     [[ "$CUSTOM_JVM_OPTS" == *"-Xmn256m"* ]]
 }
 
+@test "parse_jvm_args: handles -Xverbosegclog /verbousloggc.xml" {
+    export ZWE_configs_jvm_Xverbosegclog=":/verbousloggc.xml"
+
+    . "${SCRIPTS_DIR}/parse_jvm_args.sh"
+
+    [[ "$CUSTOM_JVM_OPTS" == *"-Xverbosegclog:/verbousloggc.xml"* ]]
+}
+
 @test "parse_jvm_args: handles -XX:+UseG1GC (empty value)" {
     export ZWE_configs_jvm_XX_UseG1GC=""
 
