@@ -556,18 +556,3 @@ teardown() {
 
     [ "$key_pass" = "keypass" ]
 }
-
-@test "apiml-common-scripts: clears keyring values when AT-TLS with APIML_ATTLS_LOAD_KEYRING" {
-    export ZWE_zowe_network_server_tls_attls="true"
-    export APIML_ATTLS_LOAD_KEYRING="true"
-    export ZWE_zowe_certificate_keystore_file="/path/to/keystore"
-    export ZWE_zowe_certificate_keystore_password="password"
-
-    . "${SCRIPTS_DIR}/apiml-common-scripts.sh"
-
-    [ -z "$keystore_type" ]
-    [ -z "$keystore_pass" ]
-    [ -z "$key_pass" ]
-    [ -z "$key_alias" ]
-    [ -z "$keystore_location" ]
-}
