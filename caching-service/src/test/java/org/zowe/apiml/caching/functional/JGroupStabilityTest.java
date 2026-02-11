@@ -17,6 +17,7 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -31,7 +32,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import javax.net.ssl.*;
 import java.io.*;
+import java.net.Socket;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -53,8 +61,6 @@ import static org.junit.jupiter.api.Assertions.fail;
         "caching.storage.infinispan.initialHosts=localhost[17600],localhost[27600]",
         "caching.storage.mode=infinispan",
         "infinispan.embedded.enabled=true",
-
-        "management.endpoints.web.exposure.include=true",
 
         "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
         "server.ssl.keyStoreType=PKCS12",
@@ -135,7 +141,7 @@ public class JGroupStabilityTest {
     private boolean isUp(boolean local) {
         HttpGet request = new HttpGet(local ? "https://localhost:27025/cachingservice/application/health" : "https://localhost:17025/cachingservice/application/health");
         request.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
-        try (CloseableHttpClient client = HttpClients.custom().setSSLHostnameVerifier((hostname, session) -> true).build()) {
+        try (CloseableHttpClient client = HttpClients.custom().setSSLContext(ignoreSslContext()).setSSLHostnameVerifier(new NoopHostnameVerifier()).build()) {
             final HttpResponse response = client.execute(request);
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 log.warn("Unexpected HTTP status code: {} for URI: {}. Message: {}", response.getStatusLine().getStatusCode(), request.getURI().toString(), EntityUtils.toString(response.getEntity()));
@@ -201,6 +207,57 @@ public class JGroupStabilityTest {
             .until(this::isUp);
     }
 
+    public static SSLContext ignoreSslContext() {
+        try {
+            TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509ExtendedTrustManager() {
+                    @Override
+                    public void checkClientTrusted(X509Certificate[] x509Certificates, String s, Socket socket) throws CertificateException {
+
+                    }
+
+                    @Override
+                    public void checkServerTrusted(X509Certificate[] x509Certificates, String s, Socket socket) throws CertificateException {
+
+                    }
+
+                    @Override
+                    public void checkClientTrusted(X509Certificate[] x509Certificates, String s, SSLEngine sslEngine) throws CertificateException {
+
+                    }
+
+                    @Override
+                    public void checkServerTrusted(X509Certificate[] x509Certificates, String s, SSLEngine sslEngine) throws CertificateException {
+
+                    }
+
+                    @Override
+                    public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+
+                    }
+
+                    @Override
+                    public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+
+                    }
+
+                    @Override
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+                }
+            };
+            SSLContext context = SSLContext.getInstance("TLS");
+            context.init(null, trustAllCerts, new SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
+            HttpsURLConnection.setDefaultHostnameVerifier(new NoopHostnameVerifier());
+
+            return context;
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            log.warn("SSL context creation failed: {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
 
     static class DelayProtocol extends Protocol {
 
