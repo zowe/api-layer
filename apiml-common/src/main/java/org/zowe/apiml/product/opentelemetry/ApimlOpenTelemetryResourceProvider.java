@@ -73,4 +73,15 @@ public abstract class ApimlOpenTelemetryResourceProvider implements ResourceProv
 
     protected abstract String generateServiceName();
 
+    @Override
+    public int order() {
+        /* To run after
+                io.opentelemetry.instrumentation.resources.JarServiceNameDetector
+            but before
+                io.opentelemetry.sdk.autoconfigure.EnvironmentResourceProvider
+                io.opentelemetry.sdk.extension.incubator.resources.ServiceInstanceIdResourceProvider
+        */
+        return 10000;
+    }
+
 }
