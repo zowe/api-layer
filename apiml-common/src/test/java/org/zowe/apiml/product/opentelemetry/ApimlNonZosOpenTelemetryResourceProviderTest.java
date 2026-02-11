@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,13 +32,13 @@ class ApimlNonZosOpenTelemetryResourceProviderTest {
     @Test
     void testCalculateAttributes() {
         var result = resourceProvider.calculateAttributes();
-        assertTrue(result.isEmpty());
+        assertFalse(result.isEmpty());
     }
 
     @Test
     void testCreateResource() {
         var result = resourceProvider.createResource(mock(ConfigProperties.class));
-        assertTrue(result.getAttributes().isEmpty());
+        assertFalse(result.getAttributes().isEmpty());
     }
 
 }

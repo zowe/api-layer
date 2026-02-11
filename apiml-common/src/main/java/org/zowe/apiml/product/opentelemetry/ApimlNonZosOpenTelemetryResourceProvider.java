@@ -11,6 +11,7 @@
 package org.zowe.apiml.product.opentelemetry;
 
 import io.opentelemetry.api.common.Attributes;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
@@ -21,9 +22,14 @@ import javax.annotation.Nonnull;
 public class ApimlNonZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryResourceProvider {
 
     @Override
-    @Nonnull
-    public Attributes calculateAttributes() {
+    protected @Nonnull Attributes internalCalculateAttributes() {
         return Attributes.empty();
+    }
+
+    @Override
+    protected String generateServiceName() {
+        var systemName = StringUtils.isBlank(apimlId) ? hostname : apimlId;
+        return systemName + ":" + port;
     }
 
 }

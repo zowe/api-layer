@@ -22,7 +22,6 @@ import org.zowe.apiml.product.zos.ZosSystemInformation;
 
 import javax.annotation.Nonnull;
 
-import java.util.Map;
 import java.util.Optional;
 
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_ENVIRON;
@@ -45,18 +44,6 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
     @Value("${otel.resource.attributes.deployment.environment.name:#{null}}")
     private String environmentName;
 
-    @Value("${otel.resource.attributes.service.namespace:#{null}}")
-    private String serviceNamespace;
-
-    @Value("${otel.resource.attributes.service.name:#{null}}")
-    private String serviceName;
-
-    @Value("${apiml.service.apimlId:#{null}}")
-    private String apimlId;
-
-    @Value("${apiml.service.port:10010}")
-    private int port;
-
     @Value("${otel.resource.attributes.zos.sysplex.name:#{null}}")
     private String sysplexName;
 
@@ -66,9 +53,6 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
     @Value("${otel.resource.attributes.zos.smf.id:#{null}}")
     private String smfId;
 
-    @Value("${apiml.service.hostname:localhost}")
-    private String hostname;
-
     @PostConstruct
     void afterPropertiesSet() {
         log.debug("Using ZOS OpenTelemetry resource provider");
@@ -77,14 +61,10 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
     @SuppressWarnings("null")
     @Override
     @Nonnull
-    public Attributes calculateAttributes() {
+    protected Attributes internalCalculateAttributes() {
         var attributesBuilder = Attributes.builder();
 
         var zosAttributes = zosSystemInformation.get();
-
-        if (StringUtils.isBlank(serviceNamespace)) {
-            log.debug("service.namespace is not provided in configuration");
-        }
 
         if (StringUtils.isBlank(environmentName)) {
             var environmentName = zosAttributes.get(ZOS_ENVIRON);
@@ -94,12 +74,6 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
             } else {
                 log.debug("deployment.environment.name not provided in configuration. Could not determine name from system");
             }
-        }
-
-        if (StringUtils.isBlank(serviceName)) {
-            var generatedServiceName = generateServiceName(zosAttributes);
-            attributesBuilder.put("service.name", generatedServiceName);
-            log.debug("service.name not provided in configuration, using generated default {}", generatedServiceName);
         }
 
         if (StringUtils.isBlank(sysplexName)) {
@@ -132,8 +106,6 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
             }
         }
 
-        attributesBuilder.put(ZosOpenTelemetryAttributes.OTEL_ZOS_INSTANCE_ID, generateInstanceId());
-
         Optional.ofNullable(zosAttributes.get(ZOS_VERSION))
             .map(String::valueOf)
             .filter(StringUtils::isNotBlank)
@@ -157,14 +129,11 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
         return attributesBuilder.build();
     }
 
-    private String generateServiceName(Map<String,Object> zosAttributes) {
+    @Override
+    protected String generateServiceName() {
+        var zosAttributes = zosSystemInformation.get();
         var systemName = StringUtils.isBlank(apimlId) ? zosAttributes.get(ZOS_SYSPLEX) : apimlId;
-
         return systemName + ":" + port;
-    }
-
-    private String generateInstanceId() {
-        return String.format("%s:gateway:%d", hostname, port);
     }
 
 }
