@@ -37,12 +37,14 @@ import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.infinispan.exception.InfinispanConfigException;
 import org.zowe.apiml.caching.service.infinispan.storage.InfinispanStorage;
+import org.zowe.apiml.config.ApplicationInfo;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -191,7 +193,7 @@ public class InfinispanConfig implements InitializingBean {
     }
 
     @Bean(destroyMethod = "stop")
-    synchronized LazyCacheManager cacheManager(ResourceLoader resourceLoader) {
+    synchronized LazyCacheManager cacheManager(ResourceLoader resourceLoader, ApplicationInfo applicationInfo) {
         var orderedInitialHosts = getOrderedInitialHosts();
         log.debug("Ordered initial hosts list: {}", orderedInitialHosts);
 
@@ -209,7 +211,12 @@ public class InfinispanConfig implements InitializingBean {
         System.setProperty("infinispan.ssl.trustStore", keyStore);
         System.setProperty("infinispan.ssl.trustStorePassword", keyStorePass);
 
-        var caches = Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN, "zosmfAuthenticationEndpoint", "invalidatedJwtTokens", "validationJwtToken", "zosmfInfo", "zosmfJwtEndpoint", "trustedCertificates", "parseOIDCToken", "validationOIDCToken");
+        List<String> caches;
+        if (applicationInfo.isModulith()) {
+            caches = Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN, "zosmfAuthenticationEndpoint", "invalidatedJwtTokens", "validationJwtToken", "zosmfInfo", "zosmfJwtEndpoint", "trustedCertificates", "parseOIDCToken", "validationOIDCToken");
+        } else {
+            caches = Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN);
+        }
 
         return new LazyCacheManager(getCacheManagerConfig(resourceLoader), getCacheConfig(), caches);
     }
