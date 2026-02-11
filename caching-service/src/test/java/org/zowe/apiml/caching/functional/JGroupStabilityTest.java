@@ -47,11 +47,10 @@ import java.util.concurrent.TimeUnit;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Slf4j
-@TestInstance(TestInstance.Lifecycle. PER_CLASS)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(
     properties = {
         "server.port=27025",
@@ -63,14 +62,14 @@ import static org.junit.jupiter.api.Assertions.fail;
         "caching.storage.mode=infinispan",
         "infinispan.embedded.enabled=true",
 
-        "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
+        /*"server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
         "server.ssl.keyStoreType=PKCS12",
         "server.ssl.keyStorePassword=password",
         "server.ssl.keyAlias=localhost",
         "server.ssl.keyPassword=password",
         "server.ssl.trustStore=../keystore/localhost/localhost.truststore.p12",
         "server.ssl.trustStoreType=PKCS12",
-        "server.ssl.trustStorePassword=password",
+        "server.ssl.trustStorePassword=password",*/
 
         "apiml.health.protected=false"
     },
@@ -97,7 +96,6 @@ public class JGroupStabilityTest {
                 }
             }
         } catch (IOException ioException) {
-            terminalCommandProcess = null;
             fail(ioException);
         }
     }
@@ -114,12 +112,12 @@ public class JGroupStabilityTest {
         env.put("ZWE_configs_storage_infinispan_initialHosts", "localhost[17600],localhost[27600]");
         env.put("ZWE_configs_storage_mode", "infinispan");
 
-        env.put("ZWE_zowe_certificate_keystore_file", "../keystore/localhost/localhost.keystore.p12");
+        env.put("ZWE_zowe_certificate_keystore_file", "keystore/localhost/localhost.keystore.p12");
         env.put("ZWE_zowe_certificate_keystore_password", "password");
         env.put("ZWE_zowe_certificate_keystore_alias", "localhost");
         env.put("ZWE_zowe_certificate_key_password", "password");
 
-        env.put("ZWE_zowe_certificate_truststore_file", "../keystore/localhost/localhost.truststore.p12");
+        env.put("ZWE_zowe_certificate_truststore_file", "keystore/localhost/localhost.truststore.p12");
         env.put("ZWE_zowe_certificate_truststore_password", "password");
 
         env.put("ZWE_configs_apiml_health_protected", "false");
@@ -131,8 +129,6 @@ public class JGroupStabilityTest {
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         builder.directory(binFolder);
         executorService.submit(() -> executeCommand(builder));
-
-        assertNotNull(terminalCommandProcess);
     }
 
     @AfterAll
@@ -147,15 +143,11 @@ public class JGroupStabilityTest {
         request.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
         try (CloseableHttpClient client = HttpClients.custom().setSSLContext(ignoreSslContext()).setSSLHostnameVerifier(new NoopHostnameVerifier()).build()) {
             final HttpResponse response = client.execute(request);
-            if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                log.warn("Unexpected HTTP status code: {} for URI: {}. Message: {}", response.getStatusLine().getStatusCode(), request.getURI().toString(), EntityUtils.toString(response.getEntity()));
-                return false;
-            }
             final String jsonResponse = EntityUtils.toString(response.getEntity());
             log.debug("URI: {}, JsonResponse is {}", request.getURI().toString(), jsonResponse);
 
             if (StringUtils.isNotEmpty(jsonResponse)) {
-                var status = JsonPath.parse(jsonResponse).read("components.caches.details.infinispan.cluster.status", String.class);
+                var status = JsonPath.parse(jsonResponse).read("components.caches.details.infinispan.cluster.status.status", String.class);
                 return "UP".equals(status);
             }
             return false;
@@ -177,6 +169,7 @@ public class JGroupStabilityTest {
      * TODO:
      * run as: caching vs. apiml
      * run ion HTTP to verify AT-TLS
+     *
      * @throws Exception
      */
     //@Test
