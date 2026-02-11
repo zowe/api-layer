@@ -48,8 +48,13 @@ import static org.junit.jupiter.api.Assertions.fail;
         "server.port=27025",
         "apiml.service.port=27025",
         "jgroups.bind.port=27600",
+        "jgroups.bind.address=localhost",
         "jgroups.keyExchange.port=17601",
         "caching.storage.infinispan.initialHosts=localhost[17600],localhost[27600]",
+        "caching.storage.mode=infinispan",
+        "infinispan.embedded.enabled=true",
+
+        "management.endpoints.web.exposure.include=true",
 
         "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
         "server.ssl.keyStoreType=PKCS12",
@@ -99,6 +104,7 @@ public class JGroupStabilityTest {
         env.put("ZWE_configs_storage_infinispan_jgroups_port", "17600");
         env.put("ZWE_configs_storage_infinispan_jgroups_keyExchange_port", "17601");
         env.put("ZWE_configs_storage_infinispan_initialHosts", "localhost[17600],localhost[27600]");
+        env.put("ZWE_configs_storage_mode", "infinispan");
 
         env.put("ZWE_zowe_certificate_keystore_file", "../keystore/localhost/localhost.keystore.p12");
         env.put("ZWE_zowe_certificate_keystore_password", "password");
@@ -110,7 +116,7 @@ public class JGroupStabilityTest {
 
         env.put("ZWE_configs_apiml_health_protected", "false");
 
-        ProcessBuilder builder = new ProcessBuilder("caching-service-package/src/main/resources/bin/start.sh");
+        ProcessBuilder builder = new ProcessBuilder("../caching-service-package/src/main/resources/bin/start.sh");
         builder.environment().putAll(env);
 
         File binFolder = new File("../");
