@@ -110,23 +110,15 @@
 #                       Note: Underscores in the property name (after 'D') are converted to dots
 
 # Source common APIML scripts (sets up common variables and functions)
-if [ -n "${LAUNCH_COMPONENT}" ]; then
-    echo "lnch ${LAUNCH_COMPONENT}/apiml-common-scripts.sh"
-    JAR_FILE="${LAUNCH_COMPONENT}/api-catalog-services-lite.jar"
-    . "scripts/apiml-common-scripts.sh"
-    . "scripts/parse_jvm_args.sh"
-else
-    echo "$(pwd)/bin/apiml-common-scripts.sh"
-    JAR_FILE="$(pwd)/bin/api-catalog-services-lite.jar"
-    . "$(pwd)/bin/apiml-common-scripts.sh"
-    . "$(pwd)/bin/parse_jvm_args.sh"
-fi
-
 # JAR file location
 if [ -n "${LAUNCH_COMPONENT}" ]; then
     JAR_FILE="${LAUNCH_COMPONENT}/apiml-lite.jar"
+    . "scripts/apiml-common-scripts.sh"
+    . "scripts/parse_jvm_args.sh"
 else
     JAR_FILE="$(pwd)/bin/apiml-lite.jar"
+    . "$(pwd)/bin/apiml-common-scripts.sh"
+    . "$(pwd)/bin/parse_jvm_args.sh"
 fi
 echo "jar file: ${JAR_FILE}"
 

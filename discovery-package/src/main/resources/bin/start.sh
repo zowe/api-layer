@@ -43,24 +43,15 @@
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 # - ZWE_configs_apiml_discovery_serviceIdPrefixReplacer - The service ID prefix replacer to be V2 conformant
 
-# Source common APIML scripts (sets up common variables and functions)
-if [ -n "${LAUNCH_COMPONENT}" ]; then
-    echo "lnch ${LAUNCH_COMPONENT}/apiml-common-scripts.sh"
-    JAR_FILE="${LAUNCH_COMPONENT}/api-catalog-services-lite.jar"
-    . "scripts/apiml-common-scripts.sh"
-    . "scripts/parse_jvm_args.sh"
-else
-    echo "$(pwd)/bin/apiml-common-scripts.sh"
-    JAR_FILE="$(pwd)/bin/api-catalog-services-lite.jar"
-    . "$(pwd)/bin/apiml-common-scripts.sh"
-    . "$(pwd)/bin/parse_jvm_args.sh"
-fi
-
 # JAR file location
 if [ -n "${LAUNCH_COMPONENT}" ]; then
     JAR_FILE="${LAUNCH_COMPONENT}/discovery-service-lite.jar"
+    . "scripts/apiml-common-scripts.sh"
+    . "scripts/parse_jvm_args.sh"
 else
     JAR_FILE="$(pwd)/bin/discovery-service-lite.jar"
+    . "$(pwd)/bin/apiml-common-scripts.sh"
+    . "$(pwd)/bin/parse_jvm_args.sh"
 fi
 echo "jar file: ${JAR_FILE}"
 

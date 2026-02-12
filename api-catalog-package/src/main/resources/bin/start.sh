@@ -53,12 +53,10 @@
 
 # JAR file location
 if [ -n "${LAUNCH_COMPONENT}" ]; then
-    echo "lnch ${LAUNCH_COMPONENT}/apiml-common-scripts.sh"
     JAR_FILE="${LAUNCH_COMPONENT}/api-catalog-services-lite.jar"
     . "scripts/apiml-common-scripts.sh"
     . "scripts/parse_jvm_args.sh"
 else
-    echo "$(pwd)/bin/apiml-common-scripts.sh"
     JAR_FILE="$(pwd)/bin/api-catalog-services-lite.jar"
     . "$(pwd)/bin/apiml-common-scripts.sh"
     . "$(pwd)/bin/parse_jvm_args.sh"
