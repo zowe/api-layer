@@ -165,6 +165,7 @@ fi
 
 ZOWE_CONSOLE_LOG_CHARSET=UTF-8
 if [ "$(uname)" = "OS/390" ]; then
+    add_profile "zos"
     QUICK_START="-Xquickstart"
     APIML_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
 

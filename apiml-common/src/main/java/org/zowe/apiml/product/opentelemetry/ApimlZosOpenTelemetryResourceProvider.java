@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.product.zos.ZosSystemInformation;
 
@@ -35,7 +35,7 @@ import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_VERSION;
 
 @Component
 @RequiredArgsConstructor
-@ConditionalOnMissingBean(ApimlNonZosOpenTelemetryResourceProvider.class)
+@Profile("zos")
 @Slf4j
 public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryResourceProvider {
 

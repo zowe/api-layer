@@ -12,12 +12,12 @@ package org.zowe.apiml.product.opentelemetry;
 
 import io.opentelemetry.api.common.Attributes;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 
-@ConditionalOnExpression("#{!T(org.zowe.apiml.product.zos.ZosSystemInformation).isRunningOnZos()}")
+@ConditionalOnMissingBean(ApimlZosOpenTelemetryResourceProvider.class)
 @Component
 public class ApimlNonZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryResourceProvider {
 

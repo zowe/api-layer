@@ -12,7 +12,6 @@ package org.zowe.apiml.acceptance;
 
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
@@ -20,10 +19,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @AcceptanceTest
-@ActiveProfiles("OpenTelemetryTest")
+@ActiveProfiles({ "OpenTelemetryTest" })
 @TestPropertySource(
     properties = {
         "otel.sdk.disabled=false",
@@ -33,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
     }
 )
 @DirtiesContext
-public class OpenTelemetryResourceAttributesNonZosTest {
+class OpenTelemetryResourceAttributesNonZosTest {
 
     @Autowired
     private InMemoryMetricReader metricReader;

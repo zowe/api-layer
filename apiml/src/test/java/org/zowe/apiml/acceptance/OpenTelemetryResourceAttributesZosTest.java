@@ -11,9 +11,7 @@
 package org.zowe.apiml.acceptance;
 
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
@@ -21,10 +19,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @AcceptanceTest
-@ActiveProfiles("OpenTelemetryTest")
+@ActiveProfiles({ "OpenTelemetryTest", "zos" })
 @TestPropertySource(
     properties = {
         "otel.sdk.disabled=false",
@@ -35,13 +36,6 @@ import static org.junit.jupiter.api.Assertions.*;
 )
 @DirtiesContext
 class OpenTelemetryResourceAttributesZosTest {
-
-    static {
-        // Backup th original value so it can be restored in org.zowe.apiml.acceptance.TestConfig2.TestApimlZosOpenTelemetryResourceProvider.calculateAttributes
-        System.setProperty("os.default.name", System.getProperty("os.name"));
-        // Used to enable z/OS resource attribute bean
-        System.setProperty("os.name", "z/OS");
-    }
 
     @Autowired
     private InMemoryMetricReader metricReader;
@@ -57,7 +51,6 @@ class OpenTelemetryResourceAttributesZosTest {
         metrics.forEach(
             metric -> {
                 var attributes = metric.getResource().getAttributes();
-                assertEquals("zos", attributes.get(stringKey("os.type")));
                 assertEquals("STC1111", attributes.get(stringKey("process.zos.jobid")));
                 assertEquals("ZWE1AG", attributes.get(stringKey("process.zos.jobname")));
                 assertEquals("apiml1:" + port, attributes.get(stringKey("service.name")));
@@ -68,10 +61,7 @@ class OpenTelemetryResourceAttributesZosTest {
                 assertEquals("localhost:gateway:" + port, attributes.get(stringKey("service.instance.id")));
             }
         );
+
     }
 
-    @AfterAll
-    static void cleanUp() {
-        System.setProperty("os.name", System.getProperty("os.default.name"));
-    }
 }
