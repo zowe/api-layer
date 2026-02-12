@@ -47,7 +47,7 @@ public class LazyCacheManager extends DefaultCacheManager {
         ConfigurationBuilder cacheConfig,
         Collection<String> cacheNames
     ) {
-        super(false);
+        super(cacheManagerConfig, false);
         cacheInitializer = new CacheInitializer(cacheManagerConfig, cacheConfig, new ArrayList<>(cacheNames));
     }
 
