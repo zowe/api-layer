@@ -210,7 +210,7 @@ public class JGroupStabilityTest {
                     String line;
                     while ((line = bufferedReader.readLine()) != null) {
                         if (line.startsWith("pid=")) {
-                            pid = line.substring("pid=".length());
+                            onPid.accept(line.substring("pid=".length()));
                         }
                         log.info(line);
                     }
@@ -259,7 +259,7 @@ public class JGroupStabilityTest {
             try (CloseableHttpClient client = HttpClients.custom().setSSLContext(ignoreSslContext()).setSSLHostnameVerifier(new NoopHostnameVerifier()).build()) {
                 final HttpResponse response = client.execute(request);
                 final String jsonResponse = EntityUtils.toString(response.getEntity());
-                log.debug("URI: {}, JsonResponse is {}", request.getURI().toString(), jsonResponse);
+                log.trace("URI: {}, JsonResponse is {}", request.getURI().toString(), jsonResponse);
 
                 if (StringUtils.isNotEmpty(jsonResponse)) {
                     var status = JsonPath.parse(jsonResponse).read("components.caches.details.infinispan.cluster.status.status", String.class);
