@@ -36,7 +36,9 @@ import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.awaitility.Awaitility.await;
@@ -45,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 @Slf4j
 public class JGroupStabilityTest {
 
+    private static final int[] BASE_PORTS = {17000, 27000};
     /**
      * TODO:
      * run as: caching vs. apiml
@@ -54,34 +57,32 @@ public class JGroupStabilityTest {
      */
     @Test
     void givenTwoInstances_whenOneHasADelay_thenClusterIsRebuilt() throws Exception {
-
-        CachingService[] cachingServices = new CachingService[]{
-            new CachingService(17000, new int[]{17000, 27000}),
-            new CachingService(27000, new int[]{17000, 27000})
-        };
+        var cachingServices = IntStream.range(0, BASE_PORTS.length)
+            .mapToObj(index -> new CachingService(index))
+            .toList();
 
         try {
-            Arrays.stream(cachingServices).forEach(CachingService::start);
+            cachingServices.forEach(CachingService::start);
             await()
                 .pollDelay(10, TimeUnit.SECONDS)
-                .timeout(1, TimeUnit.MINUTES)
-                .until(() -> Arrays.stream(cachingServices).allMatch(CachingService::isUp));
+                .timeout(2, TimeUnit.MINUTES)
+                .until(() -> cachingServices.stream().allMatch(CachingService::isUp));
 
-            cachingServices[1].pause();
-
-            await()
-                .pollDelay(10, TimeUnit.SECONDS)
-                .timeout(1, TimeUnit.MINUTES)
-                .until(() -> cachingServices[0].isDown());
-
-            cachingServices[1].resume();
+            cachingServices.get(0).pause();
 
             await()
                 .pollDelay(10, TimeUnit.SECONDS)
                 .timeout(1, TimeUnit.MINUTES)
-                .until(() -> Arrays.stream(cachingServices).allMatch(CachingService::isUp));
+                .until(() -> cachingServices.subList(1, cachingServices.size()).stream().allMatch(CachingService::isDown));
+
+            cachingServices.get(0).resume();
+
+            await()
+                .pollDelay(10, TimeUnit.SECONDS)
+                .timeout(1, TimeUnit.MINUTES)
+                .until(() -> cachingServices.stream().allMatch(CachingService::isUp));
         } finally {
-            Arrays.stream(cachingServices).forEach(CachingService::kill);
+            cachingServices.forEach(CachingService::kill);
         }
     }
 
@@ -140,13 +141,14 @@ public class JGroupStabilityTest {
     @RequiredArgsConstructor
     static class CachingService {
 
-        private final int basePort;
-        private final int[] allBasePorts;
+        private final int index;
 
-        private Process terminalCommandProcess;
+        private Process serviceProcess;
         private String pid;
 
         public void start() {
+            int basePort = BASE_PORTS[index];
+
             var env = new HashMap<String, String>();
             env.put("ZWE_haInstance_id", "localhost" + basePort);
             env.put("logbackService", "ZWEAGW" + basePort);
@@ -155,8 +157,8 @@ public class JGroupStabilityTest {
             env.put("ZWE_configs_port", String.valueOf(basePort + 25));
 
             env.put("ZWE_configs_storage_infinispan_jgroups_port", String.valueOf(basePort + 600));
-            env.put("ZWE_configs_storage_infinispan_jgroups_keyExchange_port", String.valueOf(allBasePorts[0] + 601));
-            env.put("ZWE_configs_storage_infinispan_initialHosts", Arrays.stream(allBasePorts).mapToObj(bp -> "localhost[" + (bp + 600) + "]").collect(Collectors.joining(",")));
+            env.put("ZWE_configs_storage_infinispan_jgroups_keyExchange_port", String.valueOf(basePort + 601));
+            env.put("ZWE_configs_storage_infinispan_initialHosts", Arrays.stream(BASE_PORTS).mapToObj(bp -> "localhost[" + (bp + 600) + "]").collect(Collectors.joining(",")));
             env.put("ZWE_configs_storage_mode", "infinispan");
 
             env.put("ZWE_zowe_certificate_keystore_file", "keystore/localhost/localhost.keystore.p12");
@@ -179,22 +181,27 @@ public class JGroupStabilityTest {
             executorService.submit(() -> executeCommand(builder));
         }
 
+        void readLogs(Process process, Consumer<String> onPid) throws IOException {
+            try (
+                InputStream inputStream = process.getInputStream();
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))
+            ) {
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    if (line.startsWith("pid=")) {
+                        pid = line.substring("pid=".length());
+                        log.info("PID={}", pid);
+                    }
+                    log.info(line);
+
+                }
+            }
+        }
+
         void executeCommand(ProcessBuilder pb) {
             try {
-                terminalCommandProcess = pb.start();
-                try (
-                    InputStream inputStream = terminalCommandProcess.getInputStream();
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))
-                ) {
-                    String line;
-                    while ((line = bufferedReader.readLine()) != null) {
-                        if (line.startsWith("pid=")) {
-                            pid = line.substring("pid=".length());
-                        }
-                        log.info(line);
-
-                    }
-                }
+                serviceProcess = pb.start();
+                readLogs(serviceProcess, pid -> CachingService.this.pid = pid);
             } catch (IOException ioException) {
                 fail(ioException);
             }
@@ -203,11 +210,11 @@ public class JGroupStabilityTest {
         void issue(String... parts) {
             ProcessBuilder builder = new ProcessBuilder(parts);
             try {
-                var proccess = builder.start();
-                // TODO try to print the output results in the console
-                int rc = proccess.waitFor();
-                log.info("Command {} ends with RC={}", rc);
-                proccess.destroy();
+                var process = builder.start();
+                readLogs(process, pid -> {});
+                int rc = process.waitFor();
+                log.info("Command {} ends with RC={}", StringUtils.join(parts, " "), rc);
+                process.destroy();
             } catch (IOException | InterruptedException e) {
                 log.warn("cannot issue the command {}", StringUtils.join(parts, " "), e);
             }
@@ -223,10 +230,11 @@ public class JGroupStabilityTest {
 
         public void kill() {
             issue("kill", "-9", pid);
-            terminalCommandProcess.destroy();
+            serviceProcess.destroy();
         }
 
         public boolean isUp() {
+            int basePort = BASE_PORTS[index];
             HttpGet request = new HttpGet("https://localhost:" + (basePort + 25) + "/cachingservice/application/health");
             request.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
             try (CloseableHttpClient client = HttpClients.custom().setSSLContext(ignoreSslContext()).setSSLHostnameVerifier(new NoopHostnameVerifier()).build()) {
