@@ -13,6 +13,7 @@ package org.zowe.apiml.caching.service.infinispan.config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.infinispan.Cache;
+import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.api.CacheContainerAdmin;
 import org.infinispan.commons.configuration.ClassAllowList;
 import org.infinispan.configuration.cache.Configuration;
@@ -309,10 +310,13 @@ public class LazyCacheManager extends DefaultCacheManager {
                     .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
                     .getOrCreateCache(cacheName, cacheConfig.build());
                 return true;
+            } catch (CacheConfigurationException cce) {
+                log.warn("Error during initialization of cache {}", cacheName, cce);
+                underInit.defineConfiguration(cacheName, cacheConfig.build());
             } catch (Exception e) {
                 log.warn("Error during initialization of cache {}", cacheName, e);
-                return false;
             }
+            return false;
         }
 
         public boolean isInitialized() {
