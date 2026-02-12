@@ -48,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class JGroupStabilityTest {
 
     private static final int[] BASE_PORTS = {17000, 27000};
+
     /**
      * TODO:
      * run as: caching vs. apiml
@@ -56,7 +57,7 @@ public class JGroupStabilityTest {
      * @throws Exception
      */
     @Test
-    void givenTwoInstances_whenOneHasADelay_thenClusterIsRebuilt() throws Exception {
+    void givenTwoInstances_whenOneHasADelay_thenClusterIsRebuilt() {
         var cachingServices = IntStream.range(0, BASE_PORTS.length)
             .mapToObj(index -> new CachingService(index))
             .toList();
@@ -151,6 +152,7 @@ public class JGroupStabilityTest {
 
             var env = new HashMap<String, String>();
             env.put("ZWE_haInstance_id", "localhost" + basePort);
+            env.put("APIML_ENABLED", "false");
             env.put("logbackService", "ZWEAGW" + basePort);
             env.put("LAUNCH_COMPONENT", "caching-service/build/libs");
 
