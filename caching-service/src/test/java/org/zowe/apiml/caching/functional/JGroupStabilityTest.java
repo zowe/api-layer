@@ -62,12 +62,10 @@ public class JGroupStabilityTest {
 
         try {
             Arrays.stream(cachingServices).forEach(CachingService::start);
-            Arrays.stream(cachingServices).forEach(cachingService -> {
-                await()
-                    .pollDelay(10, TimeUnit.SECONDS)
-                    .timeout(1, TimeUnit.MINUTES)
-                    .until(cachingService::isUp);
-            });
+            await()
+                .pollDelay(10, TimeUnit.SECONDS)
+                .timeout(1, TimeUnit.MINUTES)
+                .until(() -> Arrays.stream(cachingServices).allMatch(CachingService::isUp));
 
             cachingServices[1].pause();
 
@@ -78,12 +76,10 @@ public class JGroupStabilityTest {
 
             cachingServices[1].resume();
 
-            Arrays.stream(cachingServices).forEach(cachingService -> {
-                await()
-                    .pollDelay(10, TimeUnit.SECONDS)
-                    .timeout(1, TimeUnit.MINUTES)
-                    .until(cachingService::isUp);
-            });
+            await()
+                .pollDelay(10, TimeUnit.SECONDS)
+                .timeout(1, TimeUnit.MINUTES)
+                .until(() -> Arrays.stream(cachingServices).allMatch(CachingService::isUp));
         } finally {
             Arrays.stream(cachingServices).forEach(CachingService::kill);
         }
