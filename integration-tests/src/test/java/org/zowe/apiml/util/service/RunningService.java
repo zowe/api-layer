@@ -25,7 +25,9 @@ import static java.util.stream.Collectors.joining;
 
 @Slf4j
 public class RunningService {
+
     private Process process;
+    private ExecutorService executorService = Executors.newFixedThreadPool(1);
 
     private final String jarFile;
     private final String id;
@@ -96,7 +98,6 @@ public class RunningService {
         envVariables.putAll(env);
         envVariables.put("LAUNCH_COMPONENT", jarFile);
         File binFolder = new File("../");
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
         builder1.directory(binFolder);
         executorService.submit(() -> executeCommand(builder1));
     }
@@ -129,15 +130,21 @@ public class RunningService {
         if (subprocessPid != null) {
             ProcessBuilder pb = new ProcessBuilder("kill", "-9", subprocessPid);
             try {
-                pb.inheritIO().start();
+                pb.inheritIO().start().waitFor();
                 return;
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 log.error(e.getMessage());
             }
         }
         if (process != null) {
             log.info("Stopping new Service with ID {}", id);
+            try {
+                process.waitFor();
+            } catch (InterruptedException e) {
+                log.debug("Service {} was interrupted", id);
+            }
             process.destroy();
         }
+        executorService.shutdown();
     }
 }
