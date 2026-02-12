@@ -153,7 +153,7 @@ public class JGroupStabilityTest {
             var env = new HashMap<String, String>();
             env.put("ZWE_haInstance_id", "localhost" + basePort);
             env.put("APIML_ENABLED", "false");
-            env.put("logbackService", "ZWEAGW" + basePort);
+            env.put("logbackService", "ZWEAGW" + (index + 1));
             env.put("LAUNCH_COMPONENT", "caching-service/build/libs");
 
             env.put("ZWE_configs_port", String.valueOf(basePort + 25));
@@ -172,7 +172,6 @@ public class JGroupStabilityTest {
             env.put("ZWE_zowe_certificate_truststore_password", "password");
 
             env.put("ZWE_configs_apiml_health_protected", "false");
-            env.put("ZWE_configs_debug", "true");
 
             ProcessBuilder builder = new ProcessBuilder("caching-service-package/src/main/resources/bin/start.sh");
             builder.environment().putAll(env);
@@ -192,7 +191,6 @@ public class JGroupStabilityTest {
                 while ((line = bufferedReader.readLine()) != null) {
                     if (line.startsWith("pid=")) {
                         pid = line.substring("pid=".length());
-                        log.info("PID={}", pid);
                     }
                     log.info(line);
 
