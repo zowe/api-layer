@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
@@ -100,6 +101,9 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${apiml.service.hostname:localhost}")
     private String hostname;
 
+    @Value("${caching.storage.infinispan.distributedSyncTimeoutSecs:360}")
+    private int distributedSyncTimeout;
+
     private AtomicReference<ClusteredLock> zoweInvalidatedTokenLock = new AtomicReference<>();
 
     @Override
@@ -148,7 +152,7 @@ public class InfinispanConfig implements InitializingBean {
             .addSoftIndexFileStore()
             .clustering().cacheMode(CacheMode.REPL_SYNC);
         holder.getGlobalConfigurationBuilder().defaultCacheName("default");
-        holder.getGlobalConfigurationBuilder().transport().stack("prod");
+        holder.getGlobalConfigurationBuilder().transport().stack("prod").distributedSyncTimeout(distributedSyncTimeout, TimeUnit.SECONDS);
         return holder;
     }
 
