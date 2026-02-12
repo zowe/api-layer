@@ -21,6 +21,8 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.*;
@@ -48,6 +50,18 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class JGroupStabilityTest {
 
     private static final int[] BASE_PORTS = {17000, 27000};
+
+    private static ExecutorService executorService = Executors.newFixedThreadPool(BASE_PORTS.length + 1);
+
+    @BeforeEach
+    void init() {
+        executorService = Executors.newFixedThreadPool(BASE_PORTS.length + 1);
+    }
+
+    @AfterEach
+    void shutdown() {
+        executorService.shutdownNow();
+    }
 
     /**
      * TODO:
@@ -153,7 +167,7 @@ public class JGroupStabilityTest {
             var env = new HashMap<String, String>();
             env.put("ZWE_haInstance_id", "localhost" + basePort);
             env.put("APIML_ENABLED", "false");
-            env.put("logbackService", "ZWEAGW" + (index + 1));
+            env.put("logbackServiceName", "ZWEAGW" + (index + 1));
             env.put("LAUNCH_COMPONENT", "caching-service/build/libs");
 
             env.put("ZWE_configs_port", String.valueOf(basePort + 25));
@@ -177,34 +191,33 @@ public class JGroupStabilityTest {
             builder.environment().putAll(env);
 
             File binFolder = new File("../");
-            ExecutorService executorService = Executors.newFixedThreadPool(1);
             builder.directory(binFolder);
-            executorService.submit(() -> executeCommand(builder));
-        }
 
-        void readLogs(Process process, Consumer<String> onPid) throws IOException {
-            try (
-                InputStream inputStream = process.getInputStream();
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))
-            ) {
-                String line;
-                while ((line = bufferedReader.readLine()) != null) {
-                    if (line.startsWith("pid=")) {
-                        pid = line.substring("pid=".length());
-                    }
-                    log.info(line);
-
-                }
-            }
-        }
-
-        void executeCommand(ProcessBuilder pb) {
             try {
-                serviceProcess = pb.start();
+                serviceProcess = builder.start();
                 readLogs(serviceProcess, pid -> CachingService.this.pid = pid);
             } catch (IOException ioException) {
                 fail(ioException);
             }
+        }
+
+        void readLogs(Process process, Consumer<String> onPid) {
+            executorService.submit(() -> {
+                try (
+                    InputStream inputStream = process.getInputStream();
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))
+                ) {
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        if (line.startsWith("pid=")) {
+                            pid = line.substring("pid=".length());
+                        }
+                        log.info(line);
+                    }
+                } catch (IOException ioException) {
+                    log.error("Cannot read log", ioException);
+                }
+            });
         }
 
         void issue(String... parts) {
@@ -230,6 +243,12 @@ public class JGroupStabilityTest {
 
         public void kill() {
             issue("kill", "-9", pid);
+            try {
+                var rc = serviceProcess.waitFor();
+                log.info("Process ends with RC={}", rc);
+            } catch (InterruptedException e) {
+                log.warn("Process was interrupted", e);
+            }
             serviceProcess.destroy();
         }
 
