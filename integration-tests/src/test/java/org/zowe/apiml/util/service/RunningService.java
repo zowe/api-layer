@@ -130,6 +130,7 @@ public class RunningService {
         if (subprocessPid != null) {
             ProcessBuilder pb = new ProcessBuilder("kill", "-9", subprocessPid);
             try {
+                log.debug("Kill command was issued");
                 pb.inheritIO().start().waitFor();
                 return;
             } catch (IOException | InterruptedException e) {
@@ -137,14 +138,18 @@ public class RunningService {
             }
         }
         if (process != null) {
-            log.info("Stopping new Service with ID {}", id);
             try {
+                log.debug("Waiting for process to terminate");
                 process.waitFor();
             } catch (InterruptedException e) {
                 log.debug("Service {} was interrupted", id);
             }
+            log.debug("Destroying process wrapper class");
             process.destroy();
         }
+        log.debug("Stopping the executorService");
         executorService.shutdown();
+        log.info("Service with ID {} was stopped", id);
     }
+
 }
