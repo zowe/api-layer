@@ -1,6 +1,5 @@
 #!/bin/sh
 
-cd "$(dirname "$0")" || exit
 docker compose stop
 
 chmod -R 777 otel-*

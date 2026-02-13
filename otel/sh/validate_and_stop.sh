@@ -1,7 +1,5 @@
 #!/bin/sh
 
-cd "$(dirname "$0")" || exit
-
 echo "Waiting for Golden Validator to finish..."
 # This blocks until the golden container exits (success or timeout)
 EXIT_CODE=$(docker wait golden)
