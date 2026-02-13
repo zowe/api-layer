@@ -25,7 +25,6 @@ import javax.annotation.Nonnull;
 import java.util.Optional;
 
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_ENVIRON;
-import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_JOB_ID;
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_JOB_NAME;
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_SMF_ID;
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_SYSNAME;
@@ -110,11 +109,6 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
             .map(String::valueOf)
             .filter(StringUtils::isNotBlank)
             .ifPresent(zosVersion -> attributesBuilder.put(ZosOpenTelemetryAttributes.OTEL_OS_VERSION, zosVersion));
-
-        Optional.ofNullable(zosAttributes.get(ZOS_JOB_ID))
-            .map(String::valueOf)
-            .filter(StringUtils::isNotBlank)
-            .ifPresent(zosJobId -> attributesBuilder.put(ZosOpenTelemetryAttributes.OTEL_ZOS_JOBID, zosJobId));
 
         Optional.ofNullable(zosAttributes.get(ZOS_JOB_NAME))
             .map(String::valueOf)

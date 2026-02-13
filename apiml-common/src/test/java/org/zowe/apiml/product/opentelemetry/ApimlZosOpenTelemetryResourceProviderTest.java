@@ -63,7 +63,6 @@ class ApimlZosOpenTelemetryResourceProviderTest {
 
             assertEquals("SYSA", attributes.get(stringKey("mainframe.lpar.name")));
             assertEquals("SYSA", attributes.get(stringKey("zos.smf.id")));
-            assertEquals("JOB12345", attributes.get(stringKey("process.zos.jobid")));
             assertEquals("JOBN12", attributes.get(stringKey("process.zos.jobname")));
             assertEquals("ZWEUSR", attributes.get(stringKey("process.zos.userid")));
             assertNull(attributes.get(stringKey("service.namespace")));
