@@ -51,7 +51,7 @@ public class JGroupStabilityTest {
 
     private static final int[] BASE_PORTS = {17000, 27000};
 
-    private static ExecutorService executorService = Executors.newFixedThreadPool(BASE_PORTS.length + 1);
+    private static ExecutorService executorService;
 
     @BeforeEach
     void init() {
@@ -163,17 +163,18 @@ public class JGroupStabilityTest {
 
         public void start() {
             int basePort = BASE_PORTS[index];
+            log.info("Starting caching service on port {}", basePort);
 
             var env = new HashMap<String, String>();
-            env.put("ZWE_haInstance_id", "localhost" + basePort);
+            env.put("ZWE_haInstance_id", "localhost" + String.valueOf(basePort).charAt(0));
             env.put("APIML_ENABLED", "false");
-            env.put("logbackServiceName", "ZWEAGW" + (index + 1));
+            env.put("logbackServiceName", "ZWEACS" + (index + 1));
             env.put("LAUNCH_COMPONENT", "caching-service/build/libs");
 
             env.put("ZWE_configs_port", String.valueOf(basePort + 25));
 
             env.put("ZWE_configs_storage_infinispan_jgroups_port", String.valueOf(basePort + 600));
-            env.put("ZWE_configs_storage_infinispan_jgroups_keyExchange_port", String.valueOf(basePort + 601));
+            env.put("ZWE_configs_storage_infinispan_jgroups_keyExchange_port", String.valueOf(BASE_PORTS[0] + 601));
             env.put("ZWE_configs_storage_infinispan_initialHosts", Arrays.stream(BASE_PORTS).mapToObj(bp -> "localhost[" + (bp + 600) + "]").collect(Collectors.joining(",")));
             env.put("ZWE_configs_storage_mode", "infinispan");
 
@@ -210,7 +211,7 @@ public class JGroupStabilityTest {
                     String line;
                     while ((line = bufferedReader.readLine()) != null) {
                         if (line.startsWith("pid=")) {
-                            onPid.accept(line.substring("pid=".length()));
+                            onPid.accept(line.substring("pid=".length()).trim());
                         }
                         log.info(line);
                     }
@@ -224,7 +225,8 @@ public class JGroupStabilityTest {
             ProcessBuilder builder = new ProcessBuilder(parts);
             try {
                 var process = builder.start();
-                readLogs(process, pid -> {});
+                readLogs(process, pid -> {
+                });
                 int rc = process.waitFor();
                 log.info("Command {} ends with RC={}", StringUtils.join(parts, " "), rc);
                 process.destroy();
@@ -248,8 +250,9 @@ public class JGroupStabilityTest {
                 log.info("Process ends with RC={}", rc);
             } catch (InterruptedException e) {
                 log.warn("Process was interrupted", e);
+            } finally {
+                serviceProcess.destroy();
             }
-            serviceProcess.destroy();
         }
 
         public boolean isUp() {
