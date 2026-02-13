@@ -127,6 +127,10 @@ public class RunningService {
     }
 
     public void stop() {
+        if (process == null) {
+            return;
+        }
+
         log.info("Service with ID {} is going to be stopped", id);
         String pid = subprocessPid;
         if (pid == null) {
@@ -138,7 +142,7 @@ public class RunningService {
         try {
             log.debug("Kill command was issued");
             pb.inheritIO().start().waitFor();
-            return;
+            subprocessPid = null;
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage());
         }
@@ -152,7 +156,9 @@ public class RunningService {
             }
             log.debug("Destroying process wrapper class");
             process.destroy();
+            process = null;
         }
+
         log.debug("Stopping the executorService");
         executorService.shutdown();
         log.info("Service with ID {} was stopped", id);
