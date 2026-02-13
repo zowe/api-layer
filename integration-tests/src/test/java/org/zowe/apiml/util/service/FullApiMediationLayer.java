@@ -160,6 +160,7 @@ public class FullApiMediationLayer {
                 zaasEnv.put("ZWE_configs_port", "10023");
                 zaasService.startWithScript("zaas-package/src/main/resources/bin", zaasEnv);
             }
+            System.setProperty("centralGateway.instances", "0");
 
             if (!attlsEnabled) {
                 nodeJsSampleApp = nodeJsBuilder.start();
