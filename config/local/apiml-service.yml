@@ -79,7 +79,7 @@ otel:
             deployment.environment: dev
             service:
                 name: apiml
-                namespace: lparX
+
     traces:
         exporter: none
     metrics:
