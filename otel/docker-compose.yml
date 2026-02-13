@@ -39,7 +39,7 @@ services:
 #        "--write-expected" # generates the expected definition file from received data
     ]
     volumes:
-      - ./otel-golden:/var/data
+      - ./otel-golden:/var/data:Z # :Z allows folder mount on SELinux enabled environments
 
   # 2. OpenTelemetry Collector
   collector:
@@ -49,6 +49,6 @@ services:
       - "4317:4317" # OTLP gRPC vstup
       - "4318:4318" # OTLP HTTP vstup
     volumes:
-      - ./otel-collector:/etc/otel-collector
+      - ./otel-collector:/etc/otel-collector:Z # :Z allows folder mount on SELinux enabled environments
     command:
       - "--config=/etc/otel-collector/config.yaml"
