@@ -127,16 +127,22 @@ public class RunningService {
     }
 
     public void stop() {
-        if (subprocessPid != null) {
-            ProcessBuilder pb = new ProcessBuilder("kill", "-9", subprocessPid);
-            try {
-                log.debug("Kill command was issued");
-                pb.inheritIO().start().waitFor();
-                return;
-            } catch (IOException | InterruptedException e) {
-                log.error(e.getMessage());
-            }
+        log.info("Service with ID {} is going to be stopped", id);
+        String pid = subprocessPid;
+        if (pid == null) {
+            pid = String.valueOf(process.pid());
+            log.debug("Subprocess ID was not found, the main will be used: {}", pid);
         }
+
+        ProcessBuilder pb = new ProcessBuilder("kill", "-9", pid);
+        try {
+            log.debug("Kill command was issued");
+            pb.inheritIO().start().waitFor();
+            return;
+        } catch (IOException | InterruptedException e) {
+            log.error(e.getMessage());
+        }
+
         if (process != null) {
             try {
                 log.debug("Waiting for process to terminate");
