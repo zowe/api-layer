@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 public class ZosSystemInformation {
@@ -43,13 +44,24 @@ public class ZosSystemInformation {
             ZOS_JOB_NAME, zUtil.getCurrentJobname(),
             ZOS_USER_ID, zUtil.getCurrentUser(),
             ZOS_PID, zUtil.getPid(),
-            ZOS_SYSNAME, zUtil.substituteSystemSymbols("&SYSNAME."),
-            ZOS_SYSCLONE, zUtil.substituteSystemSymbols("&SYSCLONE."),
-            ZOS_SYSPLEX, zUtil.substituteSystemSymbols("&SYSPLEX."),
-            ZOS_SMF_ID, zUtil.substituteSystemSymbols("&SMFID."),
-            ZOS_ENVIRON, zUtil.substituteSystemSymbols("&ENVIRON."),
-            ZOS_VERSION, zUtil.substituteSystemSymbols("&OSLEVEL.")
+            ZOS_SYSNAME, getSystemSymbol("&SYSNAME."),
+            ZOS_SYSCLONE, getSystemSymbol("&SYSCLONE."),
+            ZOS_SYSPLEX, getSystemSymbol("&SYSPLEX."),
+            ZOS_SMF_ID, getSystemSymbol("&SMFID."),
+            ZOS_ENVIRON, getSystemSymbol("&ENVIRON."),
+            ZOS_VERSION, getSystemSymbol("&OSLEVEL.")
         );
+    }
+
+    private String getSystemSymbol(String systemSymbol) {
+        if (systemSymbol == null) {
+            return "";
+        }
+        var symbol = zUtil.substituteSystemSymbols(systemSymbol);
+
+        return Optional.ofNullable(symbol)
+            .filter(s -> !systemSymbol.equalsIgnoreCase(symbol))
+            .orElse("");
     }
 
     @PostConstruct
