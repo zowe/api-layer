@@ -6,7 +6,7 @@ resourceMetrics:
                 -   key: service.namespace
                     value: { stringValue: "GITHUB_SERVICE_REGISTRATION_IT" }
                 -   key: service.name
-                    value: { stringValue: "localhost:10010" }
+                    value: { stringValue: "apiml:localhost:10010" }
                 -   key: service.instance.id
                     value: { stringValue: "localhost:gateway:10010" }
 
