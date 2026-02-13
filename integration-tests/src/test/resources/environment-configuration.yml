@@ -105,3 +105,4 @@ instanceEnv:
     ZWE_configs_apiml_security_authorization_provider: endpoint
     # set the value to "authentication" if you want to test the sticky session load balancing
     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: headerRequest
+    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"

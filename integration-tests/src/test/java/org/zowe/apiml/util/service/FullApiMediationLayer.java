@@ -121,6 +121,7 @@ public class FullApiMediationLayer {
         if (attlsEnabled) {
             before.put("-Dspring.profiles.active", "attls");
         }
+        after.put("-Dmanagement.endpoints.web.exposure.include", "*");
         mockZosmfService = new RunningService("ibmzosmf", "mock-services/build/libs/mock-services.jar", before, after);
     }
 
@@ -130,8 +131,8 @@ public class FullApiMediationLayer {
         if (attlsEnabled) {
             before.put("-Dspring.profiles.active", "attls");
         }
-
         after.put("--spring.config.additional-location", "file:./config/local/discoverable-client.yml");
+        after.put("-Dmanagement.endpoints.web.exposure.include", "*");
 
         discoverableClientService = new RunningService("discoverableclient", "discoverable-client/build/libs/discoverable-client.jar", before, after);
     }
