@@ -22,6 +22,7 @@ services:
         "--ignore-resource-attribute-value", "process.runtime.name",
         "--ignore-resource-attribute-value", "os.description",
         "--ignore-resource-attribute-value", "os.type",
+        "--ignore-resource-attribute-value", "os.version",
         "--ignore-resource-attribute-value", "telemetry.sdk.version",
         "--ignore-resource-attribute-value", "telemetry.distro.name",
         "--ignore-resource-attribute-value", "telemetry.distro.version",
