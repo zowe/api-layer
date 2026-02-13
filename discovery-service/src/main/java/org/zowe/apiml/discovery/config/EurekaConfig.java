@@ -113,8 +113,9 @@ public class EurekaConfig {
         serverContext.initialize();
         log.info("Initialized server context");
 
-        int registryCount = apimlInstanceRegistry.syncUp();
-        apimlInstanceRegistry.openForTraffic(applicationInfoManager, registryCount);
+        // Copy registry from neighboring eureka node
+        //int registryCount = apimlInstanceRegistry.syncUp();
+        //apimlInstanceRegistry.openForTraffic(applicationInfoManager, registryCount);
 
         // Register all monitoring statistics.
         EurekaMonitors.registerAllStats();
