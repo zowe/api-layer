@@ -210,7 +210,7 @@ public class FullApiMediationLayer {
         }
     }
 
-    public boolean startServices() {
+    public static boolean startServices() {
         String startServices = System.getProperty("environment.startServices");
         return StringUtils.isNotEmpty(startServices) && Boolean.parseBoolean(startServices);
     }
