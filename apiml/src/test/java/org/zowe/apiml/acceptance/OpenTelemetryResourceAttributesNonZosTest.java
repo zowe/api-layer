@@ -55,7 +55,7 @@ class OpenTelemetryResourceAttributesNonZosTest {
                 assertNotEquals("zos", attributes.get(stringKey("os.type")));
                 assertNull(attributes.get(stringKey("process.zos.jobid")));
                 assertNull(attributes.get(stringKey("process.zos.jobname")));
-                assertEquals("apiml1:" + port, attributes.get(stringKey("service.name")));
+                assertEquals("apiml:apiml1:" + port, attributes.get(stringKey("service.name")));
                 assertNull(attributes.get(stringKey("service.namespace")));
                 assertNotNull(attributes.get(stringKey("service.version")));
                 assertNull(attributes.get(stringKey("zos.smf.id")));

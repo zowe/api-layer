@@ -52,7 +52,7 @@ class OpenTelemetryResourceAttributesZosTest {
             metric -> {
                 var attributes = metric.getResource().getAttributes();
                 assertEquals("ZWE1AG", attributes.get(stringKey("process.zos.jobname")));
-                assertEquals("apiml1:" + port, attributes.get(stringKey("service.name")));
+                assertEquals("apiml:apiml1:" + port, attributes.get(stringKey("service.name")));
                 assertNull(attributes.get(stringKey("service.namespace")));
                 assertNotNull(attributes.get(stringKey("service.version")));
                 assertEquals("030200", attributes.get(stringKey("os.version")));

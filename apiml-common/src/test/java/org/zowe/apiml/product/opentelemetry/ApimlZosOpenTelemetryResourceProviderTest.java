@@ -67,7 +67,7 @@ class ApimlZosOpenTelemetryResourceProviderTest {
             assertEquals("ZWEUSR", attributes.get(stringKey("process.zos.userid")));
             assertNull(attributes.get(stringKey("service.namespace")));
             assertEquals("localhost:gateway:10010", attributes.get(stringKey("service.instance.id")));
-            assertEquals("PLEX1:10010", attributes.get(stringKey("service.name")));
+            assertEquals("apiml:PLEX1:10010", attributes.get(stringKey("service.name")));
         }
 
     }

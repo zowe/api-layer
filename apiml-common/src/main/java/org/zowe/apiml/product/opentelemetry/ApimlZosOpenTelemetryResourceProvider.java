@@ -127,7 +127,7 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
     protected String generateServiceName() {
         var zosAttributes = zosSystemInformation.get();
         var systemName = StringUtils.isBlank(apimlId) ? zosAttributes.get(ZOS_SYSPLEX) : apimlId;
-        return systemName + ":" + port;
+        return "apiml:" + systemName + ":" + port;
     }
 
 }

@@ -29,7 +29,7 @@ public class ApimlNonZosOpenTelemetryResourceProvider extends ApimlOpenTelemetry
     @Override
     protected String generateServiceName() {
         var systemName = StringUtils.isBlank(apimlId) ? hostname : apimlId;
-        return systemName + ":" + port;
+        return "apiml:" + systemName + ":" + port;
     }
 
 }

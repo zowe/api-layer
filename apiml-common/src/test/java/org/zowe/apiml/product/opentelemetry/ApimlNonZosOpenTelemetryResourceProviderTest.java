@@ -15,7 +15,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.mock;
 
@@ -27,6 +29,8 @@ class ApimlNonZosOpenTelemetryResourceProviderTest {
     @BeforeEach
     void setUp() {
         this.resourceProvider = new ApimlNonZosOpenTelemetryResourceProvider();
+        ReflectionTestUtils.setField(resourceProvider, "hostname", "localhost");
+        ReflectionTestUtils.setField(resourceProvider, "port", 10010);
     }
 
     @Test
@@ -39,6 +43,12 @@ class ApimlNonZosOpenTelemetryResourceProviderTest {
     void testCreateResource() {
         var result = resourceProvider.createResource(mock(ConfigProperties.class));
         assertFalse(result.getAttributes().isEmpty());
+    }
+
+    @Test
+    void testServiceName() {
+        var result = resourceProvider.generateServiceName();
+        assertEquals("apiml:localhost:10010", result);
     }
 
 }
