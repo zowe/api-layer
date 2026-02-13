@@ -36,7 +36,7 @@ services:
         "--ignore-metric-values",
         "--ignore-data-points-attributes-order",
         "--ignore-scope-version",
-        "--expected", "/var/data/expected.yaml",
+        "--expected", "/var/data/expected.yml",
 #        "--write-expected" # generates the expected definition file from received data
     ]
     volumes:
@@ -52,4 +52,4 @@ services:
     volumes:
       - ./otel-collector:/etc/otel-collector:Z # :Z allows folder mount on SELinux enabled environments
     command:
-      - "--config=/etc/otel-collector/config.yaml"
+      - "--config=/etc/otel-collector/config.yml"
