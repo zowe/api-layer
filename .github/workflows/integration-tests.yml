@@ -115,6 +115,7 @@ jobs:
                         integration-tests/build/test-results/runUnknownHostnamesTests/binary/**
                         integration-tests/build/test-results/runStartUpCheck/binary/**
             -   uses: ./.github/actions/teardown
+
     CITestsModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
@@ -2177,6 +2178,38 @@ jobs:
                     name: CITestsModulithWithInfinispan-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/teardown
+
+    InfinispanJGroupStabilityTests:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Run Infinispan JGroup Stability Tests
+                run: >
+                    ./gradlew :integration-tests:runInfinispanJGroupStabilityTest --info
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: InfinispanJGroupStabilityTests-${{ env.JOB_ID }}
+                    path: |
                         integration-tests/build/reports/**
                         results/**
 

@@ -673,6 +673,20 @@ task runInfinispanServiceTests(type: Test) {
     }
 }
 
+task runInfinispanJGroupStabilityTest(type: Test) {
+    group "integration tests"
+    description "Run Caching service with infinispan storage for testing JGroup stability"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'InfinispanJGroupStabilityTest'
+        )
+    }
+}
+
 task runModulithInfinispanServiceTests(type: Test) {
     group "integration tests"
     description "Run APIML(modulith) with infinispan storage tests"

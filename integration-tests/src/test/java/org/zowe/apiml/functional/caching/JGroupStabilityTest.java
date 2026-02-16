@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.caching.functional;
+package org.zowe.apiml.functional.caching;
 
 import com.jayway.jsonpath.JsonPath;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +23,10 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.http.MediaType;
 
 import javax.net.ssl.*;
 import java.io.*;
@@ -43,11 +45,11 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Slf4j
+@Tag("InfinispanJGroupStabilityTest")
 public class JGroupStabilityTest {
 
     private static final int[] BASE_PORTS = {17000, 27000};
@@ -262,7 +264,7 @@ public class JGroupStabilityTest {
         public boolean isUp() {
             int basePort = BASE_PORTS[index];
             HttpGet request = new HttpGet("https://localhost:" + (basePort + 25) + "/cachingservice/application/health");
-            request.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON);
+            request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
             try (CloseableHttpClient client = HttpClients.custom().setSSLContext(ignoreSslContext()).setSSLHostnameVerifier(new NoopHostnameVerifier()).build()) {
                 final HttpResponse response = client.execute(request);
                 final String jsonResponse = EntityUtils.toString(response.getEntity());
