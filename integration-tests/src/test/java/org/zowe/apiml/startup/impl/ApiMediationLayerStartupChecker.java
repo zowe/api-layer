@@ -403,7 +403,7 @@ public class ApiMediationLayerStartupChecker {
             awaitFor(this::areAllInstancesOnboarded, 8);
             awaitFor(this::areDiscoveryInSync, 3);
             awaitFor(this::areAllInstancesRegistryUpToDate, 3);
-            awaitFor(this::areAllInstancesAreUp, 2);
+            awaitFor(this::areAllInstancesAreUp, 3);
             awaitFor(this::isAuthUp, 1);
         }
 
