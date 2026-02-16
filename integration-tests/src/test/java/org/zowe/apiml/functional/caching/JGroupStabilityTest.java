@@ -25,7 +25,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.http.MediaType;
 
 import javax.net.ssl.*;
@@ -66,17 +66,16 @@ public class JGroupStabilityTest {
         executorService.shutdownNow();
     }
 
-    /**
-     * TODO:
-     * run as: caching vs. apiml
-     *
-     * @throws Exception
-     */
-    @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void givenTwoInstances_whenOneHasADelay_thenClusterIsRebuilt(boolean isAttls) {
+    @ParameterizedTest(name = "Environment setup -> isModulith: {0}; isAttls: {1}")
+    @CsvSource({
+        "false,false",
+        "false,true",
+        "true,false",
+        "true,true"
+    })
+    void givenTwoInstances_whenOneHasADelay_thenClusterIsRebuilt(boolean isModulith, boolean isAttls) {
         var cachingServices = IntStream.range(0, BASE_PORTS.length)
-            .mapToObj(index -> new CachingService(index, isAttls))
+            .mapToObj(index -> new CachingService(index, isModulith, isAttls))
             .toList();
 
         try {
@@ -160,6 +159,7 @@ public class JGroupStabilityTest {
     static class CachingService {
 
         private final int index;
+        private final boolean isModulith;
         private final boolean isAttls;
 
         private Process serviceProcess;
@@ -171,7 +171,7 @@ public class JGroupStabilityTest {
 
             var env = new HashMap<String, String>();
             env.put("ZWE_haInstance_id", "localhost" + String.valueOf(basePort).charAt(0));
-            env.put("APIML_ENABLED", "false");
+            env.put("APIML_ENABLED", isModulith ? "true" : "false");
             env.put("logbackService", "ZWEACS" + (index + 1));
             env.put("LAUNCH_COMPONENT", "caching-service/build/libs");
 
