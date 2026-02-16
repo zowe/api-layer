@@ -46,7 +46,6 @@ public class FullApiMediationLayer {
 
     private boolean firstCheck = true;
     private final Map<String, String> env;
-    private static final boolean attlsEnabled = "true".equals(System.getProperty("environment.attls"));
 
     @Getter
     private static final FullApiMediationLayer instance = new FullApiMediationLayer();
@@ -67,10 +66,7 @@ public class FullApiMediationLayer {
         prepareMockServices();
         prepareCatalog();
         prepareDiscoverableClient();
-
-        if (!attlsEnabled) {
-            prepareNodeJsSampleApp();
-        }
+        prepareNodeJsSampleApp();
     }
 
     private void prepareNodeJsSampleApp() {
@@ -118,18 +114,13 @@ public class FullApiMediationLayer {
     private void prepareMockServices() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
-        if (attlsEnabled) {
-            before.put("-Dspring.profiles.active", "attls");
-        }
+
         mockZosmfService = new RunningService("ibmzosmf", "mock-services/build/libs/mock-services.jar", before, after);
     }
 
     private void prepareDiscoverableClient() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
-        if (attlsEnabled) {
-            before.put("-Dspring.profiles.active", "attls");
-        }
 
         after.put("--spring.config.additional-location", "file:./config/local/discoverable-client.yml");
 
@@ -161,9 +152,8 @@ public class FullApiMediationLayer {
                 zaasService.startWithScript("zaas-package/src/main/resources/bin", zaasEnv);
             }
 
-            if (!attlsEnabled) {
-                nodeJsSampleApp = nodeJsBuilder.start();
-            }
+            nodeJsSampleApp = nodeJsBuilder.start();
+
             discoverableClientService.start();
             mockZosmfService.start();
             log.info("Services started");
@@ -190,7 +180,7 @@ public class FullApiMediationLayer {
             mockZosmfService.stop();
             discoverableClientService.stop();
 
-            if (!attlsEnabled && startServices()) {
+            if (startServices()) {
                 nodeJsSampleApp.destroy();
             }
 
