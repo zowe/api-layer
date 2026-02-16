@@ -23,7 +23,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import javax.net.ssl.*;
 import java.io.*;
@@ -66,14 +67,14 @@ public class JGroupStabilityTest {
     /**
      * TODO:
      * run as: caching vs. apiml
-     * run ion HTTP to verify AT-TLS (update test as parametrized)
      *
      * @throws Exception
      */
-    @Test
-    void givenTwoInstances_whenOneHasADelay_thenClusterIsRebuilt() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void givenTwoInstances_whenOneHasADelay_thenClusterIsRebuilt(boolean isAttls) {
         var cachingServices = IntStream.range(0, BASE_PORTS.length)
-            .mapToObj(index -> new CachingService(index))
+            .mapToObj(index -> new CachingService(index, isAttls))
             .toList();
 
         try {
@@ -94,7 +95,7 @@ public class JGroupStabilityTest {
 
             await()
                 .pollDelay(10, TimeUnit.SECONDS)
-                .timeout(1, TimeUnit.MINUTES)
+                .timeout(2, TimeUnit.MINUTES)
                 .until(() -> cachingServices.stream().allMatch(CachingService::isUp));
         } finally {
             cachingServices.forEach(CachingService::kill);
@@ -157,6 +158,7 @@ public class JGroupStabilityTest {
     static class CachingService {
 
         private final int index;
+        private final boolean isAttls;
 
         private Process serviceProcess;
         private String pid;
@@ -168,7 +170,7 @@ public class JGroupStabilityTest {
             var env = new HashMap<String, String>();
             env.put("ZWE_haInstance_id", "localhost" + String.valueOf(basePort).charAt(0));
             env.put("APIML_ENABLED", "false");
-            env.put("logbackServiceName", "ZWEACS" + (index + 1));
+            env.put("logbackService", "ZWEACS" + (index + 1));
             env.put("LAUNCH_COMPONENT", "caching-service/build/libs");
 
             env.put("ZWE_configs_port", String.valueOf(basePort + 25));
@@ -187,6 +189,8 @@ public class JGroupStabilityTest {
             env.put("ZWE_zowe_certificate_truststore_password", "password");
 
             env.put("ZWE_configs_apiml_health_protected", "false");
+            env.put("attlsEnabledOnInfinispanTest", isAttls ? "true" : "false");
+            env.put("ZWE_zowe_network_client_tls_attls", isAttls ? "true" : "false");
 
             ProcessBuilder builder = new ProcessBuilder("caching-service-package/src/main/resources/bin/start.sh");
             builder.environment().putAll(env);
@@ -228,10 +232,10 @@ public class JGroupStabilityTest {
                 readLogs(process, pid -> {
                 });
                 int rc = process.waitFor();
-                log.info("Command {} ends with RC={}", StringUtils.join(parts, " "), rc);
+                log.info("Command '{}' ends with RC={}", StringUtils.join(parts, " "), rc);
                 process.destroy();
             } catch (IOException | InterruptedException e) {
-                log.warn("cannot issue the command {}", StringUtils.join(parts, " "), e);
+                log.warn("Cannot issue the command '{}'", StringUtils.join(parts, " "), e);
             }
         }
 
