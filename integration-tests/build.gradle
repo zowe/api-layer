@@ -108,6 +108,16 @@ task runStartUpCheck(type: Test) {
     outputs.upToDateWhen { false }
 }
 
+task runUnknownHostnamesTests(type: Test) {
+    group 'integration tests'
+    description "Run integration tests where hostnames validation is disabled"
+
+    systemProperties System.properties
+    useJUnitPlatform {
+        includeTags 'UnknownHostnamesTest'
+    }
+    outputs.upToDateWhen { false }
+}
 task runLocalIntegrationTests(type: Test) {
     group "Integration tests"
     description "Run integration tests that are not dependent on mainframe"

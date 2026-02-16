@@ -30,6 +30,8 @@ task packageCachingService(type: Zip) {
         from configurations.cachingServiceJar
         from "$resourceDir/bin/start.sh"
         from "$resourceDir/bin/validate.sh"
+        from "../scripts/parse_jvm_args.sh"
+        from "../scripts/apiml-common-scripts.sh"
     }
 }
 

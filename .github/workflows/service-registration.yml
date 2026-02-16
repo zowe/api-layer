@@ -26,6 +26,14 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Install BATS to test the shell scripts
+                run: |
+                    git clone https://github.com/bats-core/bats-core.git
+                    cd bats-core && sudo ./install.sh /usr/local
+
+            -   name: Run shell script tests
+                run: bats scripts/test/start_test.bats
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew clean build --info --scan
