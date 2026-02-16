@@ -24,7 +24,7 @@ server:
     ssl:
         keyAlias: localhost
         keyPassword: password
-        keyStore: /docker/all-services.keystore.p12
+        keyStore: /docker/server-only.p12
         keyStorePassword: password
         trustStore: /docker/all-services.truststore.p12
         trustStorePassword: password

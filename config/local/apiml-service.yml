@@ -18,7 +18,15 @@ server:
         # org.springframework.boot.autoconfigure.web: TRACE
         # reactor.netty: TRACE
         # redisratelimiter: TRACE
-
+    # ssl:
+    #     keyAlias: localhost
+    #     keyPassword: password
+    #     keyStore: keystore/docker/all-services.keystore.p12
+    #     keyStorePassword: password
+    #     keyStoreType: PKCS12
+    #     trustStore: keystore/docker/all-services.truststore.p12
+    #     trustStorePassword: password
+    #     trustStoreType: PKCS12
 apiml:
     internal-discovery:
         port: 10011

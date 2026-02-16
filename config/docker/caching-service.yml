@@ -8,7 +8,7 @@ server:
     address: 0.0.0.0
     ssl:
         keyAlias: localhost
-        keyStore: /docker/all-services.keystore.p12
+        keyStore: /docker/server-only.p12
         trustStore: /docker/all-services.truststore.p12
 spring:
     output:
