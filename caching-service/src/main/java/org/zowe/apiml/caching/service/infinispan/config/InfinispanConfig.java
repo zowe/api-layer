@@ -95,7 +95,7 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${jgroups.tcp.diag.enabled:false}")
     private String tcpDiagEnabled;
 
-    @Value("${attlsEnabledOnInfinispanTest:server.attlsServer.enabled:false}")
+    @Value("${attlsEnabledOnInfinispanTest:${server.attlsServer.enabled:false}}")
     private boolean isServerAttlsEnabled;
 
     @Value("${apiml.service.hostname:localhost}")
