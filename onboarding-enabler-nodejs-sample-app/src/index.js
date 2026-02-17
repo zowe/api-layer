@@ -14,7 +14,7 @@ import * as apiLayerService from "@zowe/apiml-onboarding-enabler-nodejs";
 
 // Command-line arguments:
 const args = {
-    port: 10020,
+    port: 10039,
     serviceId: "hwexpress",
     // On z/OS, you need to use certificates encoded in EBCDIC
     // The APIML stores such certificates in files with `-ebcdic` suffix
@@ -23,6 +23,7 @@ const args = {
 const app = express();
 let httpsServer;
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
+
 /**
  * Registers the service to the APIML Discovery service
  */

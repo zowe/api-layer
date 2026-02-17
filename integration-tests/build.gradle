@@ -108,6 +108,16 @@ task runStartUpCheck(type: Test) {
     outputs.upToDateWhen { false }
 }
 
+task runUnknownHostnamesTests(type: Test) {
+    group 'integration tests'
+    description "Run integration tests where hostnames validation is disabled"
+
+    systemProperties System.properties
+    useJUnitPlatform {
+        includeTags 'UnknownHostnamesTest'
+    }
+    outputs.upToDateWhen { false }
+}
 task runLocalIntegrationTests(type: Test) {
     group "Integration tests"
     description "Run integration tests that are not dependent on mainframe"
@@ -248,6 +258,7 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
             'GatewayCentralRegistry',
             'SafIdTokenTest',
             'ChaoticHATest',
+            'RateLimitTest',
             'GraphQLTest'
         )
     }
@@ -347,7 +358,8 @@ task runAllIntegrationTestsForZoweModulithHaTestingOnZos(type: Test) {
             'ChaoticHATest',
             'GraphQLTest',
             'GraphQLTest',
-            'ZaasTest' // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
+            'ZaasTest', // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
+            'NonModulithTest'
         )
     }
 

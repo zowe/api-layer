@@ -17,10 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.product.gateway.GatewayClient;
@@ -155,12 +153,18 @@ public class CachingServiceClient implements CachingClient {
             ResponseEntity<KeyValue> response = restTemplate.exchange(getGatewayAddress() + CACHING_API_PATH + "/" + key, HttpMethod.GET, new HttpEntity<KeyValue>(null, defaultHeaders), KeyValue.class);
             if (response != null && response.hasBody()) { //NOSONAR tests return null
                 return response.getBody();
-            } else {
-                throw new CachingServiceClientException("Unable to read key: " + key + ", caused by response from caching service is null or has no body");
             }
         } catch (RestClientException e) {
-            throw new CachingServiceClientException("Unable to read key: " + key + ", caused by: " + e.getMessage(), e);
+            if (!(
+                (e instanceof HttpStatusCodeException httpStatusCodeException) &&
+                (httpStatusCodeException.getStatusCode() == HttpStatus.NOT_FOUND)
+            )) {
+                throw new CachingServiceClientException("Unable to read key: " + key + ", caused by: " + e.getMessage(), e);
+            }
         }
+
+        // record not found
+        throw new CachingServiceClientException("Unable to read key: " + key + ", caused by response from caching service is null or has no body");
     }
 
     /**

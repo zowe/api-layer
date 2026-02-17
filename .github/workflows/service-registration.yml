@@ -26,12 +26,26 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Install BATS to test the shell scripts
+                run: |
+                    git clone https://github.com/bats-core/bats-core.git
+                    cd bats-core && sudo ./install.sh /usr/local
+
+            -   name: Run shell script tests
+                run: bats scripts/test/start_test.bats
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew clean build --info --scan
-            -   name: Run startup check
+
+            -   name: Run startup check for microservices
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.startServices=true
+
+            -   name: Run startup check for modulith
+                run: >
+                    ./gradlew runStartUpCheck --info --scan -Denvironment.startServices=true -Denvironment.modulith=true
+
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()

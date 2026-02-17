@@ -14,7 +14,7 @@ gatewayServiceConfiguration:
     authProvider: zosmf
 zaasConfiguration:
     scheme: https
-    host: zaas-service
+    host: zaas-service,zaas-service-2
     port: 10023
 discoveryServiceConfiguration:
     scheme: https
@@ -39,6 +39,9 @@ apiCatalogServiceConfiguration:
     instances: 2
 cachingServiceConfiguration:
     url:
+    scheme: https
+    host: caching-service,caching-service-2,caching-service-3
+    port: 10016
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password

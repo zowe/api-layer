@@ -29,7 +29,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
 import org.apache.catalina.Host;
-import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.zowe.apiml.util.UrlUtils;
@@ -41,7 +40,6 @@ import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatProtocolHandlerCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
-import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
@@ -74,8 +72,6 @@ import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
@@ -379,39 +375,6 @@ public class ModulithConfig implements InitializingBean {
         factory.getTomcatContextCustomizers().addAll(contextCustomizers.orderedStream().toList());
         factory.getTomcatProtocolHandlerCustomizers().addAll(protocolHandlerCustomizers.orderedStream().toList());
         return factory;
-    }
-
-
-    /**
-     * Create a custom Tomcat connector with same customizations as the main
-     * external (GW) connector to handle
-     * "legacy" connections in v3 meant to go to Eureka / Discovery Service
-     *
-     * @param internalDiscoveryPort port that will handle legacy Discovery Service
-     *                              connections
-     * @return
-     */
-    @Bean
-    WebServerFactoryCustomizer<TomcatReactiveWebServerFactory> internalPortCustomizer(
-        @Value("${apiml.internal-discovery.port:10011}") int internalDiscoveryPort, List<TomcatConnectorCustomizer> connectorCustomizers) {
-        return factory -> {
-            var connector = new Connector();
-
-            try {
-                Method method = TomcatReactiveWebServerFactory.class.getDeclaredMethod("customizeConnector",
-                    Connector.class);
-                method.setAccessible(true);
-                method.invoke(factory, connector);
-            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
-
-            connector.setPort(internalDiscoveryPort);
-
-            factory.addAdditionalTomcatConnectors(connector);
-            factory.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
-        };
-
     }
 
     static class ServletWithFilters extends TomcatHttpHandlerAdapter {
