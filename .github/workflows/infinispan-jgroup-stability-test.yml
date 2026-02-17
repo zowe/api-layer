@@ -23,6 +23,10 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew clean build -x test -x npmTest
+
             -   name: Run Infinispan JGroup Stability Tests
                 run: >
                     ./gradlew :integration-tests:runInfinispanJGroupStabilityTest --info
