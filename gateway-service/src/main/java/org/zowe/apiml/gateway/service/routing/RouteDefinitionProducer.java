@@ -20,7 +20,6 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.SimpleEvaluationContext;
 import java.net.URI;
-import java.net.URISyntaxException;
 import org.zowe.apiml.util.UrlUtils;
 import org.springframework.util.StringUtils;
 import org.zowe.apiml.product.routing.RoutedService;
@@ -62,49 +61,17 @@ public abstract class RouteDefinitionProducer {
         if (metadata != null) {
             output = metadata.get(SERVICE_EXTERNAL_URL);
 
-            // If we have an external URL and it's not a load balancer URL, format it
+            // If we have an external URL and it's not a load balancer URL, format it for IPv6
             if (output != null && !output.startsWith("lb://")) {
-                try {
-                    URI uri = new URI(output);
-                    String formattedHost = UrlUtils.formatHostnameForUrl(uri.getHost());
-                    if (formattedHost != null) {
-                        URI newUri = new URI(
-                            uri.getScheme(),
-                            uri.getUserInfo(),
-                            formattedHost,
-                            uri.getPort(),
-                            uri.getPath(),
-                            uri.getQuery(),
-                            uri.getFragment()
-                        );
-                        output = newUri.toString();
-                    }
-                } catch (URISyntaxException e) {
-                    log.error("Error while formatting URI: {}", output, e);
-                }
+                // Use formatUrlWithIPv6Support to handle IPv6 addresses properly BEFORE any URI parsing
+                output = UrlUtils.formatUrlWithIPv6Support(output);
             }
         }
         if (output == null) {
             String evalHost = evalHostname(serviceInstance);
-            // Return load balancer URL as is, format others
+            // Return load balancer URL as is, format others for IPv6
             if (!evalHost.startsWith("lb://")) {
-                try {
-                    URI uri = new URI(evalHost);
-                    String formattedHost = UrlUtils.formatHostnameForUrl(uri.getHost());
-                    if (formattedHost != null) {
-                        evalHost = new URI(
-                            uri.getScheme(),
-                            uri.getUserInfo(),
-                            formattedHost,
-                            uri.getPort(),
-                            uri.getPath(),
-                            uri.getQuery(),
-                            uri.getFragment()
-                        ).toString();
-                    }
-                } catch (URISyntaxException e) {
-                    log.error("Error while formatting URI: {}", evalHost, e);
-                }
+                evalHost = UrlUtils.formatUrlWithIPv6Support(evalHost);
             }
             output = evalHost;
         }
