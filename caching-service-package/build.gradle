@@ -19,7 +19,11 @@ task packageCachingService(type: Zip) {
 
     into('/') {
         from "$buildDir/convert/manifest.yaml"
-        from "../schemas/caching-schema.json"
+    }
+
+    into('schemas/') {
+        from "$resourceDir/schemas/caching-service-config.json"
+        from "$resourceDir/schemas/zowe-schema.json"
     }
 
     into('bin/') {
