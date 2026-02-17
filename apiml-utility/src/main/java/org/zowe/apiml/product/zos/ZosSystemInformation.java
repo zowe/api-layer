@@ -29,7 +29,6 @@ public class ZosSystemInformation {
     public static final String ZOS_SYSPLEX = "zos.sysplex";
     public static final String ZOS_SMF_ID = "zos.smfid";
     public static final String ZOS_ENVIRON = "zos.environ";
-    public static final String ZOS_VERSION = "zos.version";
     public static final String OS_NAME = "os.name";
 
     private ZUtil zUtil;
@@ -48,8 +47,7 @@ public class ZosSystemInformation {
             ZOS_SYSCLONE, getSystemSymbol("&SYSCLONE."),
             ZOS_SYSPLEX, getSystemSymbol("&SYSPLEX."),
             ZOS_SMF_ID, getSystemSymbol("&SMFID."),
-            ZOS_ENVIRON, getSystemSymbol("&ENVIRON."),
-            ZOS_VERSION, getSystemSymbol("&OSLEVEL.")
+            ZOS_ENVIRON, getSystemSymbol("&ENVIRON.")
         );
     }
 

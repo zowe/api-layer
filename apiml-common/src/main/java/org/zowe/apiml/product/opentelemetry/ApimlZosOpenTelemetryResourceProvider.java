@@ -30,7 +30,6 @@ import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_SMF_ID;
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_SYSNAME;
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_SYSPLEX;
 import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_USER_ID;
-import static org.zowe.apiml.product.zos.ZosSystemInformation.ZOS_VERSION;
 
 @Component
 @RequiredArgsConstructor
@@ -105,11 +104,6 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
             }
         }
 
-        Optional.ofNullable(zosAttributes.get(ZOS_VERSION))
-            .map(String::valueOf)
-            .filter(StringUtils::isNotBlank)
-            .ifPresent(zosVersion -> attributesBuilder.put(ZosOpenTelemetryAttributes.OTEL_OS_VERSION, zosVersion));
-
         Optional.ofNullable(zosAttributes.get(ZOS_JOB_NAME))
             .map(String::valueOf)
             .filter(StringUtils::isNotBlank)
@@ -129,5 +123,4 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
         var systemName = StringUtils.isBlank(apimlId) ? zosAttributes.get(ZOS_SYSPLEX) : apimlId;
         return "apiml:" + systemName + ":" + port;
     }
-
 }

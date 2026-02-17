@@ -23,6 +23,8 @@ import javax.annotation.Nonnull;
 @Slf4j
 public abstract class ApimlOpenTelemetryResourceProvider implements ResourceProvider {
 
+    public static final String OS_VERSION = "os.version";
+
     @Value("${otel.resource.attributes.service.namespace:#{null}}")
     private String serviceNamespace;
 
@@ -51,7 +53,13 @@ public abstract class ApimlOpenTelemetryResourceProvider implements ResourceProv
             log.debug("service.name not provided in configuration, using generated default {}", generatedServiceName);
         }
 
-        attributesBuilder.put(ZosOpenTelemetryAttributes.OTEL_ZOS_INSTANCE_ID, generateInstanceId());
+        var instanceId = generateInstanceId();
+        attributesBuilder.put(ZosOpenTelemetryAttributes.OTEL_ZOS_INSTANCE_ID, instanceId);
+        log.debug("using generated service.instance.id {}", instanceId);
+
+        // io.opentelemetry.instrumentation.resources.OsResource resolves the version but uses it only to populate os.description
+        // https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/16211
+        attributesBuilder.put(OS_VERSION, System.getProperty(OS_VERSION));
 
         attributesBuilder.putAll(internalCalculateAttributes());
         return attributesBuilder.build();

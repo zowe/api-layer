@@ -55,7 +55,7 @@ class OpenTelemetryResourceAttributesZosTest {
                 assertEquals("apiml:apiml1:" + port, attributes.get(stringKey("service.name")));
                 assertNull(attributes.get(stringKey("service.namespace")));
                 assertNotNull(attributes.get(stringKey("service.version")));
-                assertEquals("030200", attributes.get(stringKey("os.version")));
+                assertNotNull(attributes.get(stringKey("os.version")));
                 assertEquals("LR10", attributes.get(stringKey("zos.smf.id")));
                 assertEquals("localhost:gateway:" + port, attributes.get(stringKey("service.instance.id")));
             }
