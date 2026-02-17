@@ -265,11 +265,27 @@ public class LazyCacheManager extends DefaultCacheManager {
         private final ConfigurationBuilder cacheConfig;
         private final Collection<String> cacheNames;
 
+        private DefaultCacheManager startDefaultCacheManager() {
+            var defaultCacheManager = new DefaultCacheManager(cacheManagerConfig, false);
+            try {
+                defaultCacheManager.start();
+                return defaultCacheManager;
+            } catch (RuntimeException reStart) {
+                log.warn("Cannot start caching manager", reStart);
+                try {
+                    defaultCacheManager.stop();
+                } catch (RuntimeException reStop) {
+                    log.debug("Cannot stop failing caching manager", reStop);
+                }
+                throw reStart;
+            }
+        }
+
         public DefaultCacheManager getDefaultCacheManager() {
             if (underInit == null) {
                 for (int i = 0; i < 1 + RETRY; i++) {
                     try {
-                        underInit = new DefaultCacheManager(cacheManagerConfig, true);
+                        underInit = startDefaultCacheManager();
                         break;
                     } catch (Exception e) {
                         log.warn("Cannot initialize DefaultCacheManager", e);
