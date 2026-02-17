@@ -13,8 +13,7 @@ env:
 jobs:
     InfinispanJGroupStabilityTest:
         runs-on: ubuntu-latest
-        container: ubuntu:latest
-        timeout-minutes: 16
+        timeout-minutes: 25
 
         steps:
             -   uses: actions/checkout@v4
@@ -38,7 +37,7 @@ jobs:
                 with:
                     name: InfinispanJGroupStabilityTests-${{ env.JOB_ID }}
                     path: |
-                        integration-tests/build/reports/runInfinispanJGroupStabilityTest/**
+                        */build/reports/**
                         results/**
 
             -   uses: ./.github/actions/teardown
