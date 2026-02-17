@@ -104,9 +104,9 @@ public class RunningService {
 
     private void executeCommand(ProcessBuilder pb) {
         try {
-            Process terminalCommandProcess = pb.start();
+            process = pb.start();
 
-            InputStream inputStream = terminalCommandProcess.getInputStream();
+            InputStream inputStream = process.getInputStream();
             BufferedReader br = new BufferedReader(
                 new InputStreamReader(inputStream));
             String line;
@@ -140,8 +140,8 @@ public class RunningService {
 
         ProcessBuilder pb = new ProcessBuilder("kill", "-9", pid);
         try {
-            log.debug("Kill command was issued");
             pb.inheritIO().start().waitFor();
+            log.debug("Kill command was issued");
             subprocessPid = null;
         } catch (IOException | InterruptedException e) {
             log.error(e.getMessage());
