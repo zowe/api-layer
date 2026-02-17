@@ -28,7 +28,10 @@ task packageSampleExtension(type: Zip) {
 
     into('/') {
         from "$buildDir/convert/manifest.yaml"
-        from "../schemas/apiml-sample-extension-schema.json"
+    }
+
+    into('schemas/') {
+        from "$resourceDir/schemas/zowe-schema.json"
     }
 
     into('bin/') {

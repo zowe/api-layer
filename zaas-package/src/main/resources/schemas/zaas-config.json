@@ -1,0 +1,388 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "https://zowe.org/schemas/v2/zaas-config",
+    "title": "zaas configuration",
+    "description": "Configuration properties for ZAAS, as specified within a configuration file such as zowe.yaml",
+    "type": "object",
+    "properties": {
+        "port": {
+            "$ref": "#/$defs/port",
+            "default": 7558
+        },
+        "debug": {
+            "type": "boolean",
+            "description": "Enable debug logs in ZAAS service",
+            "default": false
+        },
+        "sslDebug": {
+            "type": "string",
+            "description": "Configure attributes for SSL config, see java property javax.net.debug."
+        },
+        "heap": {
+            "type": "object",
+            "description": "Configure JVM parameters for heap size",
+            "properties": {
+                "init": {
+                    "type": "integer",
+                    "description": "Initial heap size in MB.",
+                    "default": 32
+                },
+                "max": {
+                    "type": "integer",
+                    "description": "Maximum heap size in MB.",
+                    "default": 512
+                }
+            }
+        },
+        "apiml": {
+            "type": "object",
+            "description": "Zowe API ML specific properties.",
+            "properties": {
+                "connection": {
+                    "type": "object",
+                    "properties": {
+                        "idleConnectionTimeoutSeconds" : {
+                            "type": "integer",
+                            "description": "Specifies a timeout limit for idle client connections, in seconds.",
+                            "default": 5
+                        },
+                        "timeout": {
+                            "type": "integer",
+                            "description": "Specifies a timeout limit for a connection, in milliseconds.",
+                            "default": 60000
+                        },
+                        "timeToLive": {
+                            "type": "integer",
+                            "description": "Specifies a timeout limit how long to keep open connection to be reused, in milliseconds.",
+                            "default": 60000
+                        }
+                    }
+                },
+                "health": {
+                    "type": "object",
+                    "properties": {
+                        "protected": {
+                            "type": "boolean",
+                            "description": "Specifies if the /application/health endpoint is protected or accessible without any credentials.",
+                            "default": true
+                        }
+                    }
+                },
+                "security": {
+                    "type": "object",
+                    "description": "Authentication and authorization options",
+                    "properties": {
+                        "useInternalMapper": {
+                            "type": "boolean",
+                            "description": "Enables direct native calls to z/OS to query distributed identity mappings and client certificate mappings. Use only if APIML is running on z/OS.",
+                            "default": true
+                        },
+                        "auth": {
+                            "type": "object",
+                            "description": "Authentication against API ML.",
+                            "properties": {
+                                "provider": {
+                                    "type": "string",
+                                    "description": "Which provider should be used to verify user credentials.",
+                                    "enum": ["zosmf","saf"],
+                                    "default": "saf"
+                                },
+                                "zosmf": {
+                                    "type": "object",
+                                    "description": "When zosmf is set as authentication provider, this section can be used to provide more details.",
+                                    "properties": {
+                                        "jwtAutoconfiguration": {
+                                            "deprecated": true,
+                                            "type": "string",
+                                            "description": "Type of the token that is returned from zOSMF after login.",
+                                            "enum": ["JWT","jwt","LTPA","ltpa"],
+                                            "default": "jwt"
+                                        },
+                                        "serviceId": {
+                                            "type": "string",
+                                            "description": "Service ID of zOSMF from discovery service. Under this ID is zOSMF registered",
+                                            "default": "ibmzosmf"
+                                        }
+                                    }
+                                },
+                                "uniqueCookie": {
+                                    "type": "boolean",
+                                    "default": false
+                                }
+                            }
+                        },
+                        "authorization": {
+                            "type": "object",
+                            "description": "Service info endpoints on ZAAS service can be protected by SAF resource check. Update this section to enable it.",
+                            "properties": {
+                                "provider": {
+                                    "type": "string",
+                                    "description": "Which provider will be used to validate access authorization.",
+                                    "enum": ["endpoint","native","dummy"],
+                                    "default": "native"
+                                },
+                                "endpoint": {
+                                    "type": "object",
+                                    "description": "Where the access will be validate.",
+                                    "properties": {
+                                        "enabled": {
+                                            "type": "boolean",
+                                            "description": "Is this endpoint enabled?",
+                                            "default": false
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "description": "Url to validate the authorization."
+                                        }
+                                    }
+                                },
+                                "resourceClass": {
+                                    "type": "string",
+                                    "description": "zOS resource to verify access.",
+                                    "default": "ZOWE"
+                                },
+                                "resourceNamePrefix": {
+                                    "type": "string",
+                                    "description": "Prefix of the resource.",
+                                    "default": "APIML."
+                                }
+                            }
+                        },
+                        "x509": {
+                            "type": "object",
+                            "description": "Client certificate authentication support.",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "Enable if client certificate should be considered as a source of authentication.",
+                                    "default": false
+                                },
+                                "certificatesUrl": {
+                                    "type": "string",
+                                    "deprecated": true,
+                                    "format": "uri",
+                                    "pattern": "^(https?):\/\/",
+                                    "description": "URL of the trusted caller to obtain used certificate. Request signed by this certificate are authorized to accept client certificate provided in the header."
+                                },
+                                "certificatesUrls": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "pattern": "https?:\/\/[^\\s,]+",
+                                    "description": "List of URLs of the trusted callers to obtain used certificate. Request signed by this certificate are authorized to accept client certificate provided in the header."
+                                },
+                                "externalMapperUrl": {
+                                    "type": "string",
+                                    "description": "URL of the service where certificate will be mapped to user. ZSS is used if no value is provided."
+                                },
+                                "externalMapperUser": {
+                                    "type": "string",
+                                    "description": "User that has permission to do such mapping. Zowe user is used if no value is provided."
+                                }
+                            },
+                            "allOf": [
+                                {
+                                    "if": {
+                                        "properties": {
+                                            "enabled": {
+                                                "const": true
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "anyOf": [
+                                            { "required": [ "certificatesUrl" ] },
+                                            { "required": [ "certificatesUrls" ] }
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        "oidc": {
+                            "type": "object",
+                            "description": "OIDC configuration.",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "Enable authentication with OIDC token.",
+                                    "default": false
+                                },
+                                "registry": {
+                                    "type": "string",
+                                    "description": "Registry name."
+                                },
+                                "identityMapperUrl": {
+                                    "type": "string",
+                                    "deprecated": true,
+                                    "format": "uri",
+                                    "pattern": "^(https?):\/\/",
+                                    "description": "URL where the Gateway can query the mapping of the distributed user ID to the mainframe user ID. ZSS is used if no value is provided."
+                                },
+                                "identityMapperUser": {
+                                    "type": "string",
+                                    "deprecated": true,
+                                    "description": "User with access to external user identity mapper specified in identityMapperUrl. Zowe user is used if no value is provided."
+                                },
+                                "jwks": {
+                                    "type": "object",
+                                    "description": "JWKS configuration",
+                                    "properties": {
+                                        "uri": {
+                                            "type": "string",
+                                            "description": "JWK set URL for OIDC token validation."
+                                        },
+                                        "refreshInternalHours": {
+                                            "type": "integer",
+                                            "description": "How often are JWKs renewed.",
+                                            "default": 1
+                                        }
+                                    }
+                                },
+                                "userIdField": {
+                                    "type": "string",
+                                    "description": "OIDC token field used for user mapping in SAF.",
+                                    "default": "sub"
+                                },
+                                "userInfo": {
+                                    "type": "object",
+                                    "description": "OIDC user info endpoint configuration.",
+                                    "properties": {
+                                        "uri": {
+                                            "type": "string",
+                                            "description": "OIDC user info endpoint URL."
+                                        }
+                                    }
+                                },
+                                "validationType": {
+                                    "type": "string",
+                                    "description": "How OIDC token is validated.",
+                                    "enum": ["JWK","endpoint"],
+                                    "default": "JWK"
+                                }
+                            }
+                        },
+                        "allowtokenrefresh": {
+                            "type": "boolean",
+                            "description": "Allow JWT to refresh.",
+                            "default": false
+                        },
+                        "jwtInitializerTimeout": {
+                            "type": "integer",
+                            "description": "Timeout for initialization of JWT in minutes.",
+                            "default": 5
+                        },
+                        "personalAccessToken": {
+                            "type": "object",
+                            "description": "Personal Access Tokens configuration.",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "To enable Personal Access Tokens.",
+                                    "default": false
+                                }
+                            }
+                        },
+                        "saf": {
+                            "type": "object",
+                            "description": "SAF IDT provider.",
+                            "properties": {
+                                "provider": {
+                                    "type": "string",
+                                    "description": "Method of communication used by the SAF IDT provider implementation. REST is used if no value is provided.",
+                                    "enum": ["rest"],
+                                    "default": "rest"
+                                },
+                                "urls": {
+                                    "type": "string",
+                                    "description": "URLs of the SAF IDT provider used for the token generation and verification.",
+                                    "properties": {
+                                        "authenticate": {
+                                            "type": "string",
+                                            "description": "URL of the SAF IDT provider used to generate the SAF token on behalf of the specified user."
+                                        },
+                                        "verify": {
+                                            "type": "string",
+                                            "description": "URL of the SAF IDT provider used to validate the SAF token."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "server": {
+            "type": "object",
+            "description": "Configure ZAAS server properties.",
+            "properties": {
+                "ssl": {
+                    "type": "object",
+                    "description": "Network encryption for ZAAS service connections.",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "Should ZAAS use encrypted communication?",
+                            "default": true
+                        }
+                    }
+                }
+
+            }
+        },
+        "spring": {
+            "type": "object",
+            "description": "Application framework parameters",
+            "properties": {
+                "profiles": {
+                    "type": "object",
+                    "description": "Profiles that can hold multiple configuration parameters.",
+                    "properties": {
+                        "active": {
+                            "type": "string",
+                            "description": "List of the active configuration profiles.",
+                            "pattern": "^[a-zA-Z0-9]+(,[a-zA-Z0-9]+)*$"
+                        }
+                    }
+                }
+            }
+        },
+        "logging": {
+            "type": "string",
+            "description": "Logging configuration for Gateway service.",
+            "properties": {
+                "config": {
+                    "type": "string",
+                    "description": "Path to custom logback configuration file.",
+                    "minLength": 1,
+                    "maxLength": 1024
+                }
+            }
+        }
+    },
+    "$defs": {
+        "port": {
+            "type": "integer",
+            "description": "TCP network port",
+            "minimum": 1024,
+            "maximum": 65535
+        },
+        "routes": {
+            "type": "array",
+            "description": "Routing parameters",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "gatewayUrl": {
+                        "type": "string",
+                        "description": "The portion of the ZAAS URL which is replaced by the serviceUrl path."
+                    },
+                    "serviceUrl": {
+                        "type": "string",
+                        "description": "The portion of the service instance URL path which replaces the gatewayUrl part."
+                    }
+                },
+                "required": ["gatewayUrl","serviceUrl"]
+            }
+        }
+    }
+}
