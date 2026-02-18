@@ -203,11 +203,6 @@ public class LazyCacheManager extends DefaultCacheManager {
     }
 
     @Override
-    public ClassAllowList getClassWhiteList() {
-        return getCacheManager().getClassWhiteList();
-    }
-
-    @Override
     public ClassAllowList getClassAllowList() {
         return getCacheManager().getClassAllowList();
     }

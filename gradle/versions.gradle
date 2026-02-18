@@ -39,7 +39,7 @@ dependencyResolutionManagement {
             version('hamcrest', '3.0')
             version('httpClient4', '4.5.14')
             version('httpClient5', '5.6')
-            version('infinispan', '15.2.6.Final')
+            version('infinispan', '16.1.0')
             version('jacksonAnnotations', '2.21')
             version('jacksonCore', '2.21.0')
             version('jacksonDatabind', '2.21.0')
