@@ -36,25 +36,20 @@ public class EurekaHealthIndicatorApiml extends EurekaHealthIndicator {
     }
 
     @Override
-    public String getName() {
-        return "eureka";
-    }
-
-    @Override
     public Health health() {
         Health.Builder builder = Health.unknown();
-        Status status = getStatus(builder);
-        return builder.status(status).withDetail("applications", getApplications()).build();
+        Status status = getStatus();
+        return builder.status(status).withDetail("applications", getServiceInstances()).build();
     }
 
-    private Status getStatus(Health.Builder builder) {
+    private Status getStatus() {
         if (discoveryClient.getServices().isEmpty()) {
             return new Status("UP", "Eureka registry is not available at the moment");
         }
         return new Status("UP", "Eureka is ready to use");
     }
 
-    private Map<String, Object> getApplications() {
+    private Map<String, Object> getServiceInstances() {
         return discoveryClient.getServices().stream()
             .collect(Collectors.toMap(
                 String::toLowerCase,
