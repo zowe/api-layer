@@ -1807,7 +1807,7 @@ jobs:
             -   uses: ./.github/actions/teardown
 
 
-    CITestsHA (caching-chaotic):
+    CITestsHA_caching-chaotic:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
@@ -1935,7 +1935,6 @@ jobs:
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Caching Chaotic HA Tests
-                if: ${{ 'caching-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingServiceTests
                     --info -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false -Denvironment.chaotic=true
@@ -1952,7 +1951,7 @@ jobs:
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
-                    name: CITestsHA-${{ env.JOB_ID }}-${{ matrix.type }}
+                    name: CITestsHA-${{ env.JOB_ID }}-caching-chaotic
                     path: |
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
