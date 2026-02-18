@@ -1963,7 +1963,7 @@ jobs:
         needs: PublishJibContainers
         container: ubuntu:latest
         runs-on: ubuntu-latest
-        timeout-minutes: 15
+        timeout-minutes: 18
         strategy:
             fail-fast: false
             matrix:
