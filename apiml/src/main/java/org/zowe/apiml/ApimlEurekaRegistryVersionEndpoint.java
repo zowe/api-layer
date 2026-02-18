@@ -29,7 +29,7 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 @Slf4j
 public class ApimlEurekaRegistryVersionEndpoint {
 
-    private static final Pattern VERSION_PATTERN = Pattern.compile("^.*_([0-9]+)_.*$");
+    private static final Pattern VERSION_PATTERN = Pattern.compile("UP_([0-9]+)_");
 
     private final PeerAwareInstanceRegistry peerAwareInstanceRegistry;
 
@@ -38,7 +38,7 @@ public class ApimlEurekaRegistryVersionEndpoint {
         long version = -1;
         var hashCode = peerAwareInstanceRegistry.getApplications().getAppsHashCode();
         var matcher = VERSION_PATTERN.matcher(hashCode);
-        if (matcher.matches()) {
+        if (matcher.find()) {
             version = Long.parseLong(matcher.group(1));
             log.debug("New Eureka registry version: {}", version);
         } else {

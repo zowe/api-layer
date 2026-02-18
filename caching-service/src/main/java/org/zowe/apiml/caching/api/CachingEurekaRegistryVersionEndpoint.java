@@ -31,7 +31,7 @@ import static io.netty.handler.codec.http.HttpHeaders.Values.APPLICATION_JSON;
 @Slf4j
 public class CachingEurekaRegistryVersionEndpoint {
 
-    private static final Pattern VERSION_PATTERN = Pattern.compile("^.*_([0-9]+)_.*$");
+    private static final Pattern VERSION_PATTERN = Pattern.compile("UP_([0-9]+)_");
 
     private final ApiMediationClient apiMediationClient;
 
@@ -42,7 +42,7 @@ public class CachingEurekaRegistryVersionEndpoint {
         if (eurekaClient != null) {
             var hashCode = eurekaClient.getApplications().getAppsHashCode();
             var matcher = VERSION_PATTERN.matcher(hashCode);
-            if (matcher.matches()) {
+            if (matcher.find()) {
                 version = Long.parseLong(matcher.group(1));
                 log.debug("New Eureka registry version: {}", version);
             } else {

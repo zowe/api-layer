@@ -34,7 +34,7 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 @Slf4j
 public class EurekaRegistryVersionEndpoint {
 
-    private static final Pattern VERSION_PATTERN = Pattern.compile("^.*_([0-9]+)_.*$");
+    private static final Pattern VERSION_PATTERN = Pattern.compile("UP_([0-9]+)_");
 
     private Long version = -1L;
 
@@ -51,7 +51,7 @@ public class EurekaRegistryVersionEndpoint {
     void onRegistryUpdate(EurekaEvent event) {
         var hashCode = eurekaClient.getApplications().getAppsHashCode();
         var matcher = VERSION_PATTERN.matcher(hashCode);
-        if (matcher.matches()) {
+        if (matcher.find()) {
             version = Long.parseLong(matcher.group(1));
             log.debug("New Eureka registry version: {}", this.version);
         } else {
