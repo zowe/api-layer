@@ -39,6 +39,12 @@ exporters:
 # which requires all data to be described in golden expected definitions file.
 # The metrics are filtered so only one metric is produced for validation.
 processors:
+    # The golden must receive all data for evaluation in a single batch
+    # If there are multiple resources defined for evaluation they must be all send together
+    batch:
+        send_batch_size: 1 # set to number of resources
+        timeout: 150s # must allow to receive data from all resources but be lower than golden tester timeout
+
     # All metrics except jvm.cpu.count are ignored.
     # The metric is expected to be always produced as we run java application.
     filter/keep_specific_metrics:
@@ -86,7 +92,7 @@ service:
     # to console, file and Golden Tester.
     metrics/filtered:
         receivers: [ otlp ]
-        processors: [ filter/keep_specific_metrics, transform/all_in_one ]
+        processors: [ filter/keep_specific_metrics, transform/all_in_one, batch ]
         exporters: [ file/metrics_filtered, otlphttp/golden ]
     # received logs are exported to console and file only
     logs:

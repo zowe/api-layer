@@ -1,0 +1,67 @@
+credentials:
+    # Mainframe credentials are required - see /integration-tests/README.md for instructions
+    user:
+    password:
+    clientUser: TEST004
+gatewayServiceConfiguration:
+    scheme: https
+    host: mvsde66.lvn.broadcom.net,mvsde69.lvn.broadcom.net
+    dvipaHost: de66-apiml1.lvn.broadcom.net
+    port: 10010
+    internalPorts: 10010
+    externalPort: 10010
+    instances: 2
+    servicesEndpoint: gateway/api/v1/services
+    bucketCapacity: 40
+    connectionTimeout: 10
+discoveryServiceConfiguration:
+    scheme: https
+    user:
+    password:
+    host: mvsde66.lvn.broadcom.net
+    additionalHost: mvsde69.lvn.broadcom.net
+    additionalPort: 10011
+    port: 10011
+    instances: 2
+discoverableClientConfiguration:
+    applId: TESTAPPL
+    scheme: https
+    port: 10019
+    host: mvsde66.lvn.broadcom.net,mvsde69.lvn.broadcom.net
+    instances: 2
+apiCatalogServiceConfiguration:
+    scheme: https
+    url:
+    host: mvsde66.lvn.broadcom.net,mvsde69.lvn.broadcom.net
+    port: 10010
+    instances: 2
+cachingServiceConfiguration:
+    url: "https://mvsde66.lvn.broadcom.net:10010"
+tlsConfiguration:
+    keyAlias: localhost
+    keyPassword: password
+    keyStoreType: PKCS12
+    keyStore: ../keystore/localhost/localhost.keystore.p12
+    clientKeystore: ../keystore/client_cert/client-certs.p12
+    clientCN: APIMTST
+    keyStorePassword: password
+    trustStoreType: PKCS12
+    trustStore: ../keystore/localhost/localhost.truststore.p12
+    trustStorePassword: password
+zosmfServiceConfiguration:
+    scheme: https
+    host: de66-apiml1.lvn.broadcom.net
+    port: 449
+    serviceId: ibmzosmf
+    contextRoot: zosmf
+auxiliaryUserList:
+    value:
+oidcConfiguration:
+    providerName: keycloak
+    host: http://10.252.121.190:8080 # keycloak
+    user:
+    password:
+    alternateUser:
+    alternatePassword:
+safIdtConfiguration:
+    enabled: false
