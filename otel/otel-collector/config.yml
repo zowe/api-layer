@@ -43,7 +43,7 @@ processors:
     # If there are multiple resources defined for evaluation they must be all send together
     batch:
         send_batch_size: 1 # set to number of resources
-        timeout: 150s # must allow to receive data from all resources but be lower than golden tester timeout
+        timeout: 90s # must allow to receive data from all resources but be lower than golden tester timeout
 
     # All metrics except jvm.cpu.count are ignored.
     # The metric is expected to be always produced as we run java application.
