@@ -345,7 +345,8 @@ public class ConnectionsConfig {
         }
 
         // Add any user-specific metadata information
-        var fromUrl = UriComponentsBuilder.fromUriString(config.getHomePageUrl()).path("/").toUriString();
+        String formattedHomePageUrl = UrlUtils.formatUrlWithIPv6Support(config.getHomePageUrl());
+        var fromUrl = UriComponentsBuilder.fromUriString(formattedHomePageUrl).path("/").toUriString();
         var toUrl = UriComponentsBuilder.fromUriString(formattedExternalUrl).path("/").toUriString();
         for (Map.Entry<String, String> mapEntry : config.getMetadataMap().entrySet()) {
             String key = mapEntry.getKey();

@@ -114,17 +114,40 @@ public class UrlUtils {
     }
 
     /**
+     * IPv6 address pattern for validation.
+     * Matches standard IPv6 formats including:
+     * - Full form: 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+     * - Compressed form: 2001:db8::1, ::1, ::, 2620:117:10:4300::55:28
+     * - Mixed form: ::ffff:192.168.1.1
+     */
+    private static final java.util.regex.Pattern IPV6_PATTERN = java.util.regex.Pattern.compile(
+        "^(" +
+        "([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|" +                    // 1:2:3:4:5:6:7:8
+        "([0-9a-fA-F]{1,4}:){1,7}:|" +                                  // 1::  through  1:2:3:4:5:6:7::
+        "([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|" +                  // 1::8  through  1:2:3:4:5:6::8
+        "([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|" +          // 1::7:8  through  1:2:3:4:5::7:8
+        "([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|" +          // 1::6:7:8  through  1:2:3:4::6:7:8
+        "([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|" +          // 1::5:6:7:8  through  1:2:3::5:6:7:8
+        "([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|" +          // 1::4:5:6:7:8  through  1:2::4:5:6:7:8
+        "[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|" +               // 1::3:4:5:6:7:8
+        ":((:[0-9a-fA-F]{1,4}){1,7}|:)|" +                              // ::2:3:4:5:6:7:8  or  ::
+        "fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]+|" +                 // fe80::x%eth0 (link-local)
+        "::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|1?[0-9])?[0-9])\\.){3}(25[0-5]|(2[0-4]|1?[0-9])?[0-9])|" +  // ::ffff:d.d.d.d
+        "([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1?[0-9])?[0-9])\\.){3}(25[0-5]|(2[0-4]|1?[0-9])?[0-9])" +  // ::ffff:d.d.d.d variant
+        ")$"
+    );
+
+    /**
      * Determines if a given string is an IPv6 address.
      *
      * @param address The string to check
      * @return true if the address is an IPv6 address, false otherwise
      */
     private boolean isIPv6Address(String address) {
-        try {
-            return InetAddress.getByName(address) instanceof Inet6Address;
-        } catch (UnknownHostException e) {
+        if (address == null || address.isEmpty()) {
             return false;
         }
+        return IPV6_PATTERN.matcher(address).matches();
     }
 
     /**
@@ -275,7 +298,14 @@ public class UrlUtils {
         // Check if hostPort contains an IPv6 address (multiple colons without brackets)
         long colonCount = hostPort.chars().filter(ch -> ch == ':').count();
         if (colonCount > 1) {
-            // Find the port by looking for the last segment that's a valid port number
+            // FIRST: Check if the ENTIRE hostPort is a valid IPv6 address
+            // This must be done BEFORE attempting to extract a port,
+            // because IPv6 addresses contain colons that could be confused with port separators
+            if (isIPv6Address(hostPort)) {
+                return scheme + "://[" + hostPort + "]" + pathAndQuery;
+            }
+
+            // Not a pure IPv6 address - try to find the port by looking for the last segment
             int lastColon = hostPort.lastIndexOf(':');
             if (lastColon > 0) {
                 String possiblePort = hostPort.substring(lastColon + 1);
@@ -286,10 +316,6 @@ public class UrlUtils {
                         return scheme + "://[" + ipv6Address + "]:" + possiblePort + pathAndQuery;
                     }
                 }
-            }
-            // If no valid port found, the entire hostPort might be an IPv6 address
-            if (isIPv6Address(hostPort)) {
-                return scheme + "://[" + hostPort + "]" + pathAndQuery;
             }
         }
 
