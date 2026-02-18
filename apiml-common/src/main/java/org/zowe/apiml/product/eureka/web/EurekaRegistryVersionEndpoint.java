@@ -34,7 +34,7 @@ import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
 @Slf4j
 public class EurekaRegistryVersionEndpoint {
 
-    private static final Pattern VERSION_PATTERN = Pattern.compile("UP_([0-9]+)_");
+    private static final Pattern VERSION_PATTERN = Pattern.compile("UP_(\\d+)_");
 
     private Long version = -1L;
 
@@ -42,9 +42,7 @@ public class EurekaRegistryVersionEndpoint {
 
     @PostConstruct
     void registerListener() {
-        eurekaClient.registerEventListener(event -> {
-            onRegistryUpdate(event);
-        });
+        eurekaClient.registerEventListener(this::onRegistryUpdate);
     }
 
     @EventListener
