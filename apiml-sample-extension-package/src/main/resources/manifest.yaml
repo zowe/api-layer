@@ -21,4 +21,5 @@ build:
 gatewaySharedLibs:
     - bin/apiml-sample-extension.jar
 schemas:
-  configs: "apiml-sample-extension-schema.json"
+  configs:
+    - schemas/zowe-schema.json
