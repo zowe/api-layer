@@ -463,7 +463,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                     return ProcessingResult.TransientError;
                 } else {
                     log.warn("Cannot replicate to another DS instance: {}", e.getMessage());
-                    logNetworkErrorSample(null, "; not re-trying this exception because it does not seem to be a network exception.", e);
+                    logNetworkErrorSample(null, "; re-trying this exception. ", e);
                     return ProcessingResult.TransientError;
                 }
             }

@@ -189,7 +189,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      */
     public void registerStatically(InstanceInfo instanceInfo, boolean isReplication, boolean peerReplicate) {
         // the maximum lease duration time (Eureka bug: overflow of int during conversion to ms)
-        int leaseDuration = 1;
+        int leaseDuration = Integer.MAX_VALUE / 1000;
 
         // temporary register (do not increase count of service to avoid threshold)
         synchronized (lock) {
