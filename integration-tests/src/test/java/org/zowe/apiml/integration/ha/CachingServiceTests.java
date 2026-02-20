@@ -116,6 +116,7 @@ class CachingServiceTests {
         baseUrls = Arrays.stream(cachingServiceConfiguration.getHost().split("[,;]"))
             .map(host -> String.format("%s://%s:%d", cachingServiceConfiguration.getScheme(), host, cachingServiceConfiguration.getPort()))
             .collect(Collectors.toList());
+        baseUrls = baseUrls.subList(0, Integer.getInteger("caching.instances", baseUrls.size()));
         assumeTrue(baseUrls.size() > 1, "This test requires multiple instances of Caching service.");
         credentials = ConfigReader.environmentConfiguration().getCredentials();
 

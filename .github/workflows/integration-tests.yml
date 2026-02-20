@@ -2079,7 +2079,7 @@ jobs:
             -   name: Run Normal HA Tests
                 if: ${{ 'normal' == matrix.type }}
                 run: >
-                    ./gradlew runHATests --info -Denvironment.config=-ha -Denvironment.gwCount=2
+                    ./gradlew runHATests --info -Denvironment.config=-ha -Denvironment.gwCount=2 -Dcaching.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
