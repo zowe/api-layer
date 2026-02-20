@@ -138,10 +138,13 @@ public class InfinispanConfig implements InitializingBean {
         }
     }
 
+    public String getInfinispanConfigFile() {
+        return isServerAttlsEnabled ? "infinispan-attls.xml" : "infinispan.xml";
+    }
+
     private ConfigurationBuilderHolder getCacheManagerConfig(ResourceLoader resourceLoader) {
         ConfigurationBuilderHolder holder;
-        var infinispanConfigFile = isServerAttlsEnabled ? "infinispan-attls.xml" : "infinispan.xml";
-        try (InputStream configurationStream = resourceLoader.getResource("classpath:" + infinispanConfigFile).getInputStream()) {
+        try (InputStream configurationStream = resourceLoader.getResource("classpath:" + getInfinispanConfigFile()).getInputStream()) {
             holder = new ParserRegistry().parse(configurationStream, MediaType.APPLICATION_XML);
         } catch (IOException e) {
             throw new InfinispanConfigException("Can't read configuration file", e);
