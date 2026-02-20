@@ -9,6 +9,10 @@ apiml:
             trust-store-password: password
     service:
         discoveryServiceUrls: https://discovery-service:10011/eureka/
+        ssl:
+            keyAlias: localhost
+            keyPassword: password
+            keyStore: /docker/client-cert.p12
         hostname: caching-service
     banner: console
 
