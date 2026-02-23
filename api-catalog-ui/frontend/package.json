@@ -146,6 +146,11 @@
         "yaml": "2.8.2"
     },
     "overrides": {
+        "openapi-snippet": {
+            "openapi-sampler": {
+                "fast-xml-parser": "5.3.7"
+            }
+        },
         "nth-check": "2.1.1",
         "jsdom": "16.7.0",
         "got": "14.6.6",
