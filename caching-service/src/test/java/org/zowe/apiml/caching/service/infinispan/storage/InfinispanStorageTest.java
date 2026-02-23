@@ -12,23 +12,28 @@ package org.zowe.apiml.caching.service.infinispan.storage;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.CacheSet;
+import org.infinispan.commons.util.IteratorMapper;
 import org.infinispan.lock.api.ClusteredLock;
+import org.infinispan.manager.DefaultCacheManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.cache.StorageException;
+import org.zowe.apiml.caching.model.KeyValue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.caching.service.infinispan.config.InfinispanConfig.CACHE_ZOWE;
+import static org.zowe.apiml.caching.service.infinispan.config.InfinispanConfig.CACHE_ZOWE_INVALIDATED_TOKEN;
 
 class InfinispanStorageTest {
 
@@ -47,7 +52,17 @@ class InfinispanStorageTest {
         cache = mock(Cache.class);
         tokenCache = mock(AdvancedCache.class);
         lock = mock(ClusteredLock.class);
-        storage = new InfinispanStorage(cache, tokenCache, () -> lock);
+        storage = new InfinispanStorage(createCacheManager(cache, tokenCache), () -> lock);
+    }
+
+    private DefaultCacheManager createCacheManager(
+        Map<String, KeyValue> cache,
+        Map<String, Map<String,String>> tokenCache
+    ) {
+        var defaultCacheManager = mock(DefaultCacheManager.class);
+        doReturn(cache).when(defaultCacheManager).getCache(CACHE_ZOWE);
+        doReturn(tokenCache).when(defaultCacheManager).getCache(CACHE_ZOWE_INVALIDATED_TOKEN);
+        return defaultCacheManager;
     }
 
     @Nested
@@ -92,6 +107,7 @@ class InfinispanStorageTest {
 
     @Nested
     class WhenEntryExists {
+
         KeyValue keyValue;
 
         @BeforeEach
@@ -123,16 +139,16 @@ class InfinispanStorageTest {
 
         @Test
         void itemIsDeleted() {
-            ConcurrentMap<String, KeyValue> cache = new ConcurrentHashMap<>();
-            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, () -> lock);
+            Cache<String, KeyValue> cache = createCache();
+            InfinispanStorage storage = new InfinispanStorage(createCacheManager(cache, tokenCache), () -> lock);
             assertNull(storage.create(serviceId1, TO_CREATE));
             assertEquals(TO_CREATE, storage.delete(serviceId1, TO_CREATE.getKey()));
         }
 
         @Test
         void returnAll() {
-            ConcurrentMap<String, KeyValue> cache = new ConcurrentHashMap<>();
-            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, () -> lock);
+            Cache<String, KeyValue> cache = createCache();
+            InfinispanStorage storage = new InfinispanStorage(createCacheManager(cache, tokenCache), () -> lock);
             storage.create(serviceId1, new KeyValue("key", "value"));
             storage.create(serviceId1, new KeyValue("key2", "value2"));
             assertEquals(2, storage.readForService(serviceId1).size());
@@ -140,8 +156,8 @@ class InfinispanStorageTest {
 
         @Test
         void removeAll() {
-            ConcurrentMap<String, KeyValue> cache = new ConcurrentHashMap<>();
-            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, () -> lock);
+            Cache<String, KeyValue> cache = createCache();
+            InfinispanStorage storage = new InfinispanStorage(createCacheManager(cache, tokenCache), () -> lock);
             storage.create(serviceId1, new KeyValue("key", "value"));
             storage.create(serviceId1, new KeyValue("key2", "value2"));
             assertEquals(2, storage.readForService(serviceId1).size());
@@ -153,6 +169,7 @@ class InfinispanStorageTest {
 
     @Nested
     class WhenStoreToken {
+
         KeyValue keyValue;
 
         @BeforeEach
@@ -173,7 +190,7 @@ class InfinispanStorageTest {
         void addToken() {
             HashMap<String, String> hashMap = new HashMap<>();
             hashMap.put("key", "token");
-            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, () -> lock);
+            InfinispanStorage storage = new InfinispanStorage(createCacheManager(cache, tokenCache), () -> lock);
             when(tokenCache.get(anyString())).thenAnswer(invocation -> hashMap);
             assertNull(storage.storeMapItem(serviceId1, "invalidTokens", new KeyValue("newkey", "newvalue")));
             verify(tokenCache, times(1)).put(serviceId1 + "invalidTokens", hashMap);
@@ -183,12 +200,13 @@ class InfinispanStorageTest {
         void updateToken() {
             HashMap<String, String> hashMap = new HashMap();
             hashMap.put("key", "token");
-            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, () -> lock);
+            InfinispanStorage storage = new InfinispanStorage(createCacheManager(cache, tokenCache), () -> lock);
             when(tokenCache.get(serviceId1 + "invalidTokens")).thenReturn(hashMap);
             KeyValue keyValue = new KeyValue("key", "token2");
             assertNull(storage.storeMapItem(serviceId1, "invalidTokens", keyValue));
             verify(tokenCache, times(1)).put(serviceId1 + "invalidTokens", hashMap);
         }
+
     }
 
     @Nested
@@ -203,12 +221,14 @@ class InfinispanStorageTest {
             when(tokenCache.get(serviceId1 + "invalidTokens")).thenReturn(expectedMap);
             assertEquals(2, storage.getAllMapItems(serviceId1, "invalidTokens").size());
         }
+
     }
 
     @Nested
     class WhenRetrieveInvalidTokensAndRules {
 
         InfinispanStorage underTest;
+
         @BeforeEach
         void createStorage() {
             Map<String, String> tokensService1 = new HashMap();
@@ -219,11 +239,11 @@ class InfinispanStorageTest {
             Map<String, String> rulesService1 = new HashMap();
             rulesService1.put("key1", "rule1");
             rulesService1.put("key2", "rule2");
-            ConcurrentMap<String, Map<String, String>> tokenCache = new ConcurrentHashMap<>();
+            Cache<String, Map<String, String>> tokenCache = createCache();
             tokenCache.put(serviceId1 + "invalidTokens", tokensService1);
             tokenCache.put(serviceId1 + "invalidTokenRules", rulesService1);
             tokenCache.put(serviceId2 + "invalidTokens", tokensService2);
-            underTest = new InfinispanStorage(cache, tokenCache, () -> lock);
+            underTest = new InfinispanStorage(createCacheManager(cache, tokenCache), () -> lock);
         }
 
 
@@ -253,12 +273,13 @@ class InfinispanStorageTest {
             Map<String, Map<String, String>> result = underTest.getAllMaps("unknown_service");
 
             assertEquals(0, result.size());
-
         }
+
     }
 
     @Nested
     class WhenEvictNonRelevantTokensAndRules {
+
         InfinispanStorage underTest;
 
         @BeforeEach
@@ -271,12 +292,14 @@ class InfinispanStorageTest {
             rulesService.put("key1", "1595282400000");
             Map<String, String> rulesUsers = new HashMap();
             rulesUsers.put("key1", "1595282400000");
-            ConcurrentMap<String, Map<String, String>> tokenCache = new ConcurrentHashMap<>();
+            Cache<String, KeyValue> cache = createCache();
+            Cache<String, Map<String, String>> tokenCache = createCache();
             tokenCache.put(serviceId1 + "invalidTokens", tokensService);
             tokenCache.put(serviceId1 + "invalidScopes", rulesService);
             tokenCache.put(serviceId1 + "invalidUsers", rulesUsers);
-            underTest = new InfinispanStorage(cache, tokenCache, () -> lock);
+            underTest = new InfinispanStorage(createCacheManager(cache, tokenCache), () -> lock);
         }
+
         @Test
         void thenEvictItems() {
             CompletableFuture<Boolean> cmpl = new CompletableFuture<>();
@@ -291,6 +314,27 @@ class InfinispanStorageTest {
             assertEquals(0, result.get("invalidUsers").size());
         }
 
+    }
+
+    private <K, V> Cache<K, V> createCache() {
+        var data = new HashMap<K, V>();
+        var cache = mock(Cache.class);
+        doAnswer(answer -> data.put(answer.getArgument(0), answer.getArgument(1))).when(cache).put(any(), any());
+        doAnswer(answer -> data.putIfAbsent(answer.getArgument(0), answer.getArgument(1))).when(cache).putIfAbsent(any(), any());
+        doAnswer(answer -> data.get(answer.getArgument(0))).when(cache).get(any());
+        doAnswer(answer -> data.remove(answer.getArgument(0))).when(cache).remove(any());
+        doAnswer(answer -> {
+            new HashMap<>(data).forEach(answer.getArgument(0));
+            return null;
+        }).when(cache).forEach(any());
+        doAnswer(answer -> createCacheSet(data.keySet())).when(cache).keySet();
+        return cache;
+    }
+
+    private <K> CacheSet<K> createCacheSet(Set<K> keys) {
+        var set = mock(CacheSet.class);
+        doReturn(new IteratorMapper(keys.iterator(), Function.identity())).when(set).iterator();
+        return set;
     }
 
 }

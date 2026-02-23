@@ -114,6 +114,7 @@ public class FullApiMediationLayer {
     private void prepareMockServices() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
+        after.put("-Dmanagement.endpoints.web.exposure.include", "*");
 
         mockZosmfService = new RunningService("ibmzosmf", "mock-services/build/libs/mock-services.jar", before, after);
     }
@@ -121,8 +122,8 @@ public class FullApiMediationLayer {
     private void prepareDiscoverableClient() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
-
         after.put("--spring.config.additional-location", "file:./config/local/discoverable-client.yml");
+        after.put("-Dmanagement.endpoints.web.exposure.include", "*");
 
         discoverableClientService = new RunningService("discoverableclient", "discoverable-client/build/libs/discoverable-client.jar", before, after);
     }
@@ -151,6 +152,7 @@ public class FullApiMediationLayer {
                 zaasEnv.put("ZWE_configs_port", "10023");
                 zaasService.startWithScript("zaas-package/src/main/resources/bin", zaasEnv);
             }
+            System.setProperty("centralGateway.instances", "0");
 
             nodeJsSampleApp = nodeJsBuilder.start();
 
@@ -198,7 +200,7 @@ public class FullApiMediationLayer {
         }
     }
 
-    public boolean startServices() {
+    public static boolean startServices() {
         String startServices = System.getProperty("environment.startServices");
         return StringUtils.isNotEmpty(startServices) && Boolean.parseBoolean(startServices);
     }

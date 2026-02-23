@@ -57,6 +57,35 @@ class InfinispanConfigTest {
             assertEquals("pass", ReflectionTestUtils.getField(infinispanConfig, "keyStorePass"));
         }
 
+        @Test
+        void whenTruststoreKeyringUrlIsInvalidAndMissingPassword_thenFixTrustoreKeyringUrlAndSetPassword() {
+            InfinispanConfig infinispanConfig = new InfinispanConfig();
+            ReflectionTestUtils.setField(infinispanConfig, "trustStore", "safkeyringpce:///userId/ringId");
+            infinispanConfig.updateKeyring();
+            assertEquals("safkeyringpce://userId/ringId", ReflectionTestUtils.getField(infinispanConfig, "trustStore"));
+            assertEquals("password", ReflectionTestUtils.getField(infinispanConfig, "trustStorePass"));
+        }
+
+        @Test
+        void whenTruststoreKeyringUrlIsInvalidAndSetPassword_thenFixTruststoreKeyringUrl() {
+            InfinispanConfig infinispanConfig = new InfinispanConfig();
+            ReflectionTestUtils.setField(infinispanConfig, "trustStore", "safkeyring:///userId/ringId");
+            ReflectionTestUtils.setField(infinispanConfig, "trustStorePass", "pswd");
+            infinispanConfig.updateKeyring();
+            assertEquals("safkeyring://userId/ringId", ReflectionTestUtils.getField(infinispanConfig, "trustStore"));
+            assertEquals("pswd", ReflectionTestUtils.getField(infinispanConfig, "trustStorePass"));
+        }
+
+        @Test
+        void whenTruststore_thenDontUpdate() {
+            InfinispanConfig infinispanConfig = new InfinispanConfig();
+            ReflectionTestUtils.setField(infinispanConfig, "trustStore", "/path");
+            ReflectionTestUtils.setField(infinispanConfig, "trustStorePass", "pass");
+            infinispanConfig.updateKeyring();
+            assertEquals("/path", ReflectionTestUtils.getField(infinispanConfig, "trustStore"));
+            assertEquals("pass", ReflectionTestUtils.getField(infinispanConfig, "trustStorePass"));
+        }
+
     }
 
     @Nested
@@ -93,7 +122,6 @@ class InfinispanConfigTest {
         void givenOnlyInstanceIdValues_whenEvaluatingRootFolder_thenUseRelativePath() {
             getEnvMap().put(INSTANCE, "myInstance");
             assertEquals("caching-service" + File.separator + "myInstance", InfinispanConfig.getRootFolder());
-
         }
 
         @Test
@@ -101,7 +129,6 @@ class InfinispanConfigTest {
             getEnvMap().put(INSTANCE, "lpar1");
             getEnvMap().put(WORKSPACE, "/some/path");
             assertEquals(File.separator + "some" + File.separator + "path" + File.separator + "caching-service" + File.separator + "lpar1", InfinispanConfig.getRootFolder());
-
         }
 
         @Test
@@ -109,6 +136,11 @@ class InfinispanConfigTest {
             getEnvMap().put(WORKSPACE, "/another/path");
             assertEquals(File.separator + "another" + File.separator + "path" + File.separator + "caching-service" + File.separator + "localhost", InfinispanConfig.getRootFolder());
 
+        }
+
+        @Test
+        void givenNoAttlsSetup_whenEvaluatingInfinispanConfigFile_thenReturnSslConfig() {
+            assertEquals("infinispan.xml", new InfinispanConfig().getInfinispanConfigFile());
         }
 
     }

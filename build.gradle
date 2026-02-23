@@ -313,6 +313,10 @@ task runCachingServiceTests(dependsOn: ":integration-tests:runCachingServiceTest
     description "Run caching service tests"
     group "Integration tests"
 }
+task runInfinispanJGroupStabilityTest(dependsOn: ":integration-tests:runInfinispanJGroupStabilityTest") {
+    description "Run JGroup stability tests for caching service with infinispan storage option"
+    group "Integration tests"
+}
 task runInfinispanServiceTests(dependsOn: ":integration-tests:runInfinispanServiceTests") {
     description "Run tests for caching service with infinispan storage option"
     group "Integration tests"

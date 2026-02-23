@@ -55,6 +55,7 @@ gitProperties {
 
 dependencies {
     api project(':apiml-tomcat-common')
+    api project(':apiml-common')
     api project(':security-service-client-spring')
 
     implementation libs.spring.boot.starter.security
