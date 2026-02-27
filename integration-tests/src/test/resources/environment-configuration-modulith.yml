@@ -103,3 +103,6 @@ instanceEnv:
     # set the value to "authentication" if you want to test the sticky session load balancing
     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: headerRequest
     MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
+    ZWE_configs_telemetry_enabled: true
+    ZWE_configs_telemetry_service_namespace: GITHUB_SERVICE_REGISTRATION_IT
+    ZWE_configs_telemetry_attributes_deployment_environment_name: TEST
