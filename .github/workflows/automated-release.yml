@@ -17,7 +17,7 @@ on:
                     - major
                 default: 'patch'
             enablers:
-                description: 'Release enablers only.'
+                description: 'Release API ML and enablers.'
                 required: false
                 type: boolean
                 default: false
