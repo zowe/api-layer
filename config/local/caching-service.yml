@@ -14,3 +14,9 @@ caching:
 spring:
     profiles:
         include: dev
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "*"

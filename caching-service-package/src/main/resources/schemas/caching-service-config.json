@@ -1,0 +1,233 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "https://zowe.org/schemas/v2/caching-service-config",
+    "title": "caching-service configuration",
+    "description": "Configuration properties for Caching Service, as specified within a configuration file such as zowe.yaml",
+    "type": "object",
+    "properties": {
+        "port": {
+            "$ref": "#/$defs/port",
+            "default": 7555
+        },
+        "debug": {
+            "type": "boolean",
+            "description": "Enable debug logs in Caching Service",
+            "default": false
+        },
+        "sslDebug": {
+            "type": "string",
+            "description": "Configure attributes for SSL config, see java property javax.net.debug."
+        },
+        "heap": {
+            "type": "object",
+            "description": "Configure JVM parameters for heap size",
+            "properties": {
+                "init": {
+                    "type": "integer",
+                    "description": "Initial heap size in MB.",
+                    "default": 32
+                },
+                "max": {
+                    "type": "integer",
+                    "description": "Maximum heap size in MB.",
+                    "default": 512
+                }
+            }
+        },
+        "apiml": {
+            "type": "object",
+            "description": "Zowe API ML specific properties.",
+            "properties": {
+                "health": {
+                    "type": "object",
+                    "properties": {
+                        "protected": {
+                            "type": "boolean",
+                            "description": "Specifies if the /application/health endpoint is protected or accessible without any credentials.",
+                            "default": true
+                        }
+                    }
+                }
+            }
+        },
+        "storage": {
+            "type": "object",
+            "description": "Storage configuration for Caching service",
+            "properties": {
+                "evictionStrategy": {
+                    "type": "string",
+                    "description": "Strategy for caching entries eviction.",
+                    "enum": [
+                        "reject",
+                        "removeOldest"
+                    ],
+                    "default": "reject"
+                },
+                "mode": {
+                    "type": "string",
+                    "description": "Type of storge in caching service.",
+                    "enum": [
+                        "inMemory",
+                        "VSAM",
+                        "redis",
+                        "infinispan"
+                    ],
+                    "default": "inMemory"
+                },
+                "size": {
+                    "type": "integer",
+                    "description": "The number of records stored before the eviction strategy is initiated",
+                    "default": 10000
+                },
+                "infinispan": {
+                    "type": "object",
+                    "description": "Use Infinispan as the selected storage solution",
+                    "properties": {
+                        "jgroups": {
+                            "type": "object",
+                            "description": "Data synchronization between Caching instances.",
+                            "properties": {
+                                "port": {
+                                    "type": "integer",
+                                    "description": "The port number used by Infinispan to synchronize data among caching-service instances.",
+                                    "default": 7600
+                                },
+                                "host": {
+                                    "type": "string",
+                                    "description": "The hostname used by Infinispan to synchronize data among caching-service instances."
+                                },
+                                "keyExchange": {
+                                    "type": "object",
+                                    "description": "Data encryption key exchange.",
+                                    "properties": {
+                                        "port": {
+                                            "type": "integer",
+                                            "description": "The port number used by Infinispan to exchange encryption key among Caching Service instances.",
+                                            "default": 7601
+                                        }
+                                    }
+                                },
+                                "tcp": {
+                                    "type": "object",
+                                    "description": "TCP stack",
+                                    "properties": {
+                                        "diag": {
+                                            "type": "object",
+                                            "description": "Cluster diagnostics",
+                                            "properties": {
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "description": "Enable diagnostics of infinispan cluster",
+                                                    "default": false
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "persistence": {
+                            "type": "object",
+                            "description": "Where to persistently store caching data.",
+                            "properties": {
+                                "dataLocation": {
+                                    "type": "string",
+                                    "deprecated": true,
+                                    "description": "File location where to store data."
+                                },
+                                "indexLocation": {
+                                    "type": "string",
+                                    "deprecated": true,
+                                    "description": "File location where to store index."
+                                }
+                            }
+                        },
+                        "initialHosts": {
+                            "type": "string",
+                            "description": "Address of the other Caching services. Consists of jgroups port and host in the form of 'host[port]'."
+                        }
+                    }
+                },
+                "vsam": {
+                    "type": "object",
+                    "deprecated": true,
+                    "description": "When storage is selected as VSAM",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The ZFile filename of created VSAM."
+                        },
+                        "keyLength": {
+                            "type": "integer",
+                            "description": "The VsamKey length",
+                            "default": 128
+                        },
+                        "recordLength": {
+                            "type": "integer",
+                            "description": "The record length.",
+                            "default": 4096
+                        },
+                        "encoding": {
+                            "type": "string",
+                            "description": "The character encoding.",
+                            "default": "IBM-1047"
+                        }
+                    }
+                }
+            }
+        },
+        "server": {
+            "type": "object",
+            "description": "Configure Caching service server properties.",
+            "properties": {
+                "ssl": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "To enable SSL/tls layer.",
+                            "default": true
+                        }
+                    }
+                }
+            }
+        },
+        "spring": {
+            "type": "object",
+            "description": "Application framework parameters",
+            "properties": {
+                "profiles": {
+                    "type": "object",
+                    "description": "Profiles that can hold multiple configuration parameters.",
+                    "properties": {
+                        "active": {
+                            "type": "string",
+                            "description": "List of the active configuration profiles.",
+                            "pattern": "^[a-zA-Z0-9]+(,[a-zA-Z0-9]+)*$"
+                        }
+                    }
+                }
+            }
+        },
+        "logging": {
+            "type": "string",
+            "description": "Logging configuration for Caching service.",
+            "properties": {
+                "config": {
+                    "type": "string",
+                    "description": "Path to custom logback configuration file.",
+                    "minLength": 1,
+                    "maxLength": 1024
+                }
+            }
+        }
+    },
+    "$defs": {
+        "port": {
+            "type": "integer",
+            "description": "TCP network port",
+            "minimum": 1024,
+            "maximum": 65535
+        }
+    }
+}

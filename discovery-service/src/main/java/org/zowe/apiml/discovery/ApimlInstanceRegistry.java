@@ -29,8 +29,14 @@ import org.zowe.apiml.discovery.config.EurekaConfig;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.util.EurekaUtils;
 
-import java.lang.invoke.*;
-import java.lang.reflect.*;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.invoke.WrongMethodTypeException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -169,6 +175,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         try {
             replicateToPeersMethodHandle.invokeWithArguments(this, Action.Heartbeat, instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, false);
         } catch (Throwable e) {
+            log.warn("Unexpected error occurred while replicateToPeers: {}", instanceInfo.getInstanceId(), e);
             throw new IllegalStateException(EXCEPTION_MESSAGE, e);
         }
     }

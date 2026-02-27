@@ -94,3 +94,9 @@ otel:
             endpoint: http://localhost:4318
     sdk:
         disabled: true
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "*"
