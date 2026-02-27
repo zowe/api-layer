@@ -101,9 +101,12 @@ if [ "$(uname)" = "OS/390" ]; then
 
     JAVA_VERSION=$(${JAVA_HOME}/bin/javap -J-Xms4m -J-Xmx16m -verbose java.lang.String \
         | grep "major version" \
-        | cut -d " " -f5)
+        | awk '{print $NF}')
 
-    if [ $JAVA_VERSION -ge 65 ]; then # Java 21
+    # Default to 0 if parsing fails
+    JAVA_VERSION=${JAVA_VERSION:-0}
+
+    if [ "$JAVA_VERSION" -ge 65 ]; then # Java 21
         ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
         # Java 21+ changed default encoding to UTF-8 (JEP 400). Set console encoding
         # to EBCDIC for z/OS SYSPRINT to prevent garbled characters in early startup logs
