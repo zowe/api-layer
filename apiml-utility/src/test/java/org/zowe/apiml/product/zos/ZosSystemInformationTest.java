@@ -46,7 +46,6 @@ class ZosSystemInformationTest {
         when(zUtil.substituteSystemSymbols("&SYSPLEX.")).thenReturn("PLEX");
         when(zUtil.substituteSystemSymbols("&SMFID.")).thenReturn("LP32");
         when(zUtil.substituteSystemSymbols("&ENVIRON.")).thenReturn("PROD");
-        when(zUtil.substituteSystemSymbols("&OSLEVEL.")).thenReturn("030200");
 
         var data = zosSystemInformation.get();
         assertFalse(data.isEmpty());
@@ -59,7 +58,6 @@ class ZosSystemInformationTest {
         when(zUtil.getCurrentUser()).thenReturn("USER");
         when(zUtil.getPid()).thenReturn(123456);
         when(zUtil.substituteSystemSymbols("&ENVIRON.")).thenReturn("&ENVIRON.");
-        when(zUtil.substituteSystemSymbols("&OSLEVEL.")).thenReturn(null);
         when(zUtil.substituteSystemSymbols("&SMFID.")).thenReturn("");
         when(zUtil.substituteSystemSymbols("&SYSPLEX.")).thenReturn("&sysplex.");
         when(zUtil.substituteSystemSymbols("&SYSNAME.")).thenReturn(null);
@@ -68,7 +66,6 @@ class ZosSystemInformationTest {
         var data = zosSystemInformation.get();
         assertFalse(data.isEmpty());
         assertEquals("", data.get("zos.environ"));
-        assertEquals("", data.get("zos.version"));
         assertEquals("", data.get("zos.smfid"));
         assertEquals("", data.get("zos.sysplex"));
         assertEquals("", data.get("zos.sysname"));
