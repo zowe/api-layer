@@ -106,3 +106,4 @@ instanceEnv:
     ZWE_configs_telemetry_enabled: true
     ZWE_configs_telemetry_service_namespace: GITHUB_SERVICE_REGISTRATION_IT
     ZWE_configs_telemetry_attributes_deployment_environment_name: TEST
+    OTEL_METRIC_EXPORT_INTERVAL: 30000
