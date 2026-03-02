@@ -57,14 +57,10 @@ jobs:
                   released_version=$(cat gradle.properties | grep "version=" | sed "s/version=//g")
                   sed -i "/REACT_APP_ZOWE_BUILD_INFO=/c\REACT_APP_ZOWE_BUILD_INFO=${released_version}" api-catalog-ui/frontend/.env
                   git add api-catalog-ui/frontend/.env
+                  git commit -m "[skip ci] Update version"
 
                   if [ -n "$RELEASE_ARGS" ]; then
-                    sed -i "/version=/c\version=${released_version}" enabler.properties
-                    git add enabler.properties
-                    git commit -m "[skip ci] Update version"
                     git tag enablers-v${released_version}
-                  else
-                    git commit -m "[skip ci] Update version"
                   fi
 
                   git push
