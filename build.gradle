@@ -337,6 +337,8 @@ task runChaoticHATests(dependsOn: ":integration-tests:runChaoticHATests") {
 clean.dependsOn nodejsClean
 
 publishAllVersions.dependsOn publishZoweServerArtifacts
+
+publishAllSDKVersions.dependsOn publishZoweServerArtifacts
 publishAllSDKVersions.dependsOn publishSDKArtifacts
 
 //-----------Release part start
@@ -403,7 +405,7 @@ release {
     }
 }
 
-if(project.hasProperty('releaseEnablers')) {
+if (project.hasProperty('releaseEnablers')) {
     afterReleaseBuild.dependsOn publishAllSDKVersions
 } else {
     afterReleaseBuild.dependsOn publishAllVersions
