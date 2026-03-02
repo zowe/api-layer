@@ -10,13 +10,9 @@
 
 package org.zowe.apiml.exception;
 
-public class MetadataValidationException extends RuntimeException {
+public class InvalidServiceIdException extends MetadataValidationException {
 
-    public MetadataValidationException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public MetadataValidationException(String message) {
+    public InvalidServiceIdException(String message) {
         super(message);
     }
 

@@ -371,11 +371,11 @@ release {
     preCommitText = '[Gradle Release plugin]'
     preTagCommitMessage = '[skip ci] Before tag commit'
     tagCommitMessage = 'Release:'
-    tagTemplate = project.hasProperty('releaseEnablers') ? 'enablers-v${version}' : 'v${version}'
+    tagTemplate = 'v${version}'
     newVersionCommitMessage = 'Create new version:'
-    versionPropertyFile = project.hasProperty('releaseEnablers') ? 'enabler.properties' : 'gradle.properties'
-    buildTasks = project.hasProperty('releaseEnablers') ? ['buildEnablers'] : ['buildZoweServer']
-    if(project.hasProperty('releaseEnablers')){
+    versionPropertyFile = 'gradle.properties'
+    buildTasks = project.hasProperty('releaseEnablers') ? ['buildZoweServer', 'buildEnablers'] : ['buildZoweServer']
+    if (project.hasProperty('releaseEnablers')) {
         project.setVersion(sdkVersion)
     }
     if (releaseScope == 'minor') {
