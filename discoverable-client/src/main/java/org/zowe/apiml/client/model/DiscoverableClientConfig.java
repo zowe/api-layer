@@ -55,9 +55,9 @@ public class DiscoverableClientConfig {
     @Value("${server.ssl.keyPassword}")
     private String keyPassword;
 
-    @Value("${server.ssl.keyStore}")
+    @Value("${apiml.httpclient.ssl.key-store:${server.ssl.keyStore:#{null}}}")
     private String keyStore;
-
+    
     @Value("${server.ssl.keyStorePassword}")
     private String keyStorePassword;
 
