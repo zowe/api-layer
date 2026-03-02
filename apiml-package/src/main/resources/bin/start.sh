@@ -125,6 +125,7 @@ echo "jar file: ${JAR_FILE}"
 # APIML-lite loader path (includes IRRRacf.jar on z/OS)
 if [ "$(uname)" = "OS/390" ]; then
     APIML_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
+    add_profile "zos"
 else
     APIML_LOADER_PATH=${COMMON_LIB}
 fi
@@ -185,6 +186,33 @@ fi
 if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]; then
     LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
 fi
+
+# Start OpenTelemetry
+if [ "$ZWE_configs_telemetry_enabled" = "true" ]; then
+    DISABLE_OTEL=false
+else
+    DISABLE_OTEL=true
+fi
+
+if [ -n "${ZWE_configs_telemetry_attributes_deployment_environment_name}" ]; then
+    OTEL_ATTRIBUTES="-Dotel.resource.attributes.deployment.environment.name=${ZWE_configs_telemetry_attributes_deployment_environment_name}"
+fi
+if [ -n "${ZWE_configs_telemetry_service_name}" ]; then
+    OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.service.name=${ZWE_configs_telemetry_service_name}"
+fi
+if [ -n "${ZWE_configs_telemetry_service_namespace}" ]; then
+    OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.service.namespace=${ZWE_configs_telemetry_service_namespace}"
+fi
+if [ -n "${ZWE_configs_telemetry_attributes_zos_sysplex_name}" ]; then
+    OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.zos.sysplex.name=${ZWE_configs_telemetry_attributes_zos_sysplex_name}"
+fi
+if [ -n "${ZWE_configs_telemetry_attributes_zos_smf_id}" ]; then
+    OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.zos.smf.id=${ZWE_configs_telemetry_attributes_zos_smf_id}"
+fi
+if [ -n "${ZWE_configs_telemetry_attributes_mainframe_lpar_name}" ]; then
+    OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.mainframe.lpar.name=${ZWE_configs_telemetry_attributes_mainframe_lpar_name}"
+fi
+# End OpenTelemetry
 
 APIML_CODE=AG
 _BPXK_AUTOCVT=OFF
