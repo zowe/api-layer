@@ -10,10 +10,14 @@
 
 package org.zowe.apiml.startup;
 
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.startup.impl.ApiMediationLayerStartupChecker;
+import org.zowe.apiml.util.categories.OpenTelemetryTest;
 import org.zowe.apiml.util.categories.StartupCheck;
+
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -27,6 +31,16 @@ class ApiMediationLayerStartTest {
 
     @Test
     void checkApiMediationLayerStart() {
+        assertTrue(true);
+    }
+
+    @Test
+    @OpenTelemetryTest
+    @SneakyThrows
+    void giveOpenTelemetryTimeToSendMetrics() {
+        //The application has to run for a while to collect and send the telemetry data
+        //so they can be evaluated in the OpenTelemetry Golden Tester
+        Thread.sleep(Duration.ofSeconds(30).toMillis());
         assertTrue(true);
     }
 
