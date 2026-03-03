@@ -139,9 +139,9 @@ fi
 echo "Setting loader path: ${APIML_LOADER_PATH}"
 
 # Debug profile
-if [ "${ZWE_components_gateway_debug:-${ZWE_configs_debug:-false}}" = "true" ]; then
-    if [ -n "${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}" ]; then
-        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}"
+if [ "${ZWE_components_apiml_debug:-${ZWE_configs_debug:-false}}" = "true" ]; then
+    if [ -n "${ZWE_configs_spring_profiles_active:-${ZWE_components_apiml_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}}" ]; then
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_apiml_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}}"
     fi
     add_profile "debug"
 fi
