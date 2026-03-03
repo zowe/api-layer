@@ -346,21 +346,6 @@ apply plugin: 'net.researchgate.release'
 
 ext.releaseScope = project.hasProperty('release.scope') ? project.getProperty('release.scope') : 'patch'
 
-
-
-//1. Define properties for enablers
-def enablerProps = new Properties()
-def enablerPropsFile = new File(rootProject.projectDir, "enabler.properties")
-
-//2. Load the file if it exists
-if (enablerPropsFile.exists()) {
-    enablerPropsFile.withInputStream { stream ->
-        enablerProps.load(stream)
-    }
-}
-
-//3. Get the version, or use the rootProject.version as a fallback
-def sdkVersion = enablerProps.getProperty("version")
 release {
     failOnCommitNeeded = true
     failOnPublishNeeded = true
@@ -371,13 +356,11 @@ release {
     preCommitText = '[Gradle Release plugin]'
     preTagCommitMessage = '[skip ci] Before tag commit'
     tagCommitMessage = 'Release:'
-    tagTemplate = project.hasProperty('releaseEnablers') ? 'enablers-v${version}' : 'v${version}'
+    tagTemplate = 'v${version}'
     newVersionCommitMessage = 'Create new version:'
-    versionPropertyFile = project.hasProperty('releaseEnablers') ? 'enabler.properties' : 'gradle.properties'
-    buildTasks = project.hasProperty('releaseEnablers') ? ['buildEnablers'] : ['buildZoweServer']
-    if(project.hasProperty('releaseEnablers')){
-        project.setVersion(sdkVersion)
-    }
+    versionPropertyFile = 'gradle.properties'
+    buildTasks = project.hasProperty('releaseEnablers') ? ['buildZoweServer', 'buildEnablers'] : ['buildZoweServer']
+
     if (releaseScope == 'minor') {
         versionPatterns = [
             /[.]*\.(\d+)\.(\d+)[.]*/: { Matcher m, Project p -> m.replaceAll(".${(m[0][1] as int) + 1}.0") }
