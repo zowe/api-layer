@@ -1,5 +1,5 @@
 {
-  "license": "../.licence/EPL-2.0-licence-header.txt",
+  "license": "../.licence/EPL-2.0-license-header.txt",
   "licenseFormats": {
     "ts|js": {
       "prepend": "/*",
