@@ -46,6 +46,12 @@ jobs:
 
             - name: Set name
               run: git config user.name "Zowe Robot"
+
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
     release-node-js:
         runs-on: ubuntu-latest
         timeout-minutes: 40
@@ -86,11 +92,6 @@ jobs:
         if: inputs.enablerType == 'python'
 
         steps:
-            - name: Checkout Repository
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-                  token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
 
             - name: Setup Python
               uses: actions/setup-python@v5
