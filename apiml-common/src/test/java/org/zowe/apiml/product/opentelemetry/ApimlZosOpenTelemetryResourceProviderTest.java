@@ -68,6 +68,7 @@ class ApimlZosOpenTelemetryResourceProviderTest {
             assertNull(attributes.get(stringKey("service.namespace")));
             assertEquals("localhost:gateway:10010", attributes.get(stringKey("service.instance.id")));
             assertEquals("apiml:PLEX1:10010", attributes.get(stringKey("service.name")));
+            assertEquals("DEV", attributes.get(stringKey("deployment.environment.name")));
         }
 
     }

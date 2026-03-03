@@ -60,8 +60,8 @@ class OpenTelemetryResourceAttributesNonZosTest {
                 assertNotNull(attributes.get(stringKey("service.version")));
                 assertNull(attributes.get(stringKey("zos.smf.id")));
                 assertEquals("localhost:gateway:" + port, attributes.get(stringKey("service.instance.id")));
+                assertNull(attributes.get(stringKey("deployment.environment.name")));
             }
         );
-
     }
 }
