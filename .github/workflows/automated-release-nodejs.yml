@@ -27,11 +27,9 @@ on:
                 default: node
 
 jobs:
-    release:
+    git-setup:
         runs-on: ubuntu-latest
-        timeout-minutes: 40
-        if: inputs.enablerType == 'node'
-
+        timeout-minutes: 10
         steps:
             - uses: actions/checkout@v4
               with:
@@ -48,7 +46,13 @@ jobs:
 
             - name: Set name
               run: git config user.name "Zowe Robot"
+    release-node-js:
+        runs-on: ubuntu-latest
+        timeout-minutes: 40
+        needs: git-setup
+        if: inputs.enablerType == 'node'
 
+        steps:
             - name: Update version manually
               if: github.event.inputs.version != ''
               run: |
@@ -78,7 +82,7 @@ jobs:
     release-python-enabler:
         runs-on: ubuntu-latest
         timeout-minutes: 40
-        needs: release
+        needs: git-setup
         if: inputs.enablerType == 'python'
 
         steps:
