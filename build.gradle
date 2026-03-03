@@ -161,7 +161,7 @@ configure(subprojects.findAll {it.name != 'platform'}) {
 
 subprojects {
     license {
-        header = rootProject.file('.licence/EPL-2.0-licence-header.txt')
+        header = rootProject.file('.licence/EPL-2.0-license-header.txt')
         exclude '**/*.yml', '**/*.yaml', '**/*.json', '**/static', '**/*.sh', '**/*.txt', '**/*.p12', '**/*.xml', '**/*.jsp', '**/*.html', '**/*.jks', '**/*.properties'
     }
 
