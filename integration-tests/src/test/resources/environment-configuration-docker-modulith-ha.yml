@@ -44,6 +44,7 @@ tlsConfiguration:
     keyPassword: password
     keyStoreType: PKCS12
     keyStore: ../keystore/docker/client-cert.p12
+    serverKeyStore: ../keystore/docker/server-only.p12
     clientKeystore: ../keystore/client_cert/client-certs.p12
     clientCN: APIMTST
     keyStorePassword: password
