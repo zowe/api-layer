@@ -3,7 +3,7 @@ description: Release Python Enabler
 inputs:
   version:
     description: Version to be released
-    required: false
+    required: true
     default: ""
   dry-run:
     description: Dry run python release
@@ -77,4 +77,4 @@ runs:
       with:
         working-dir: onboarding-enabler-python
         dry-run: ${{ inputs.dry-run }}
-        new-version: ${{ steps.update-version.outputs.version }}
+        new-version: ${{ inputs.version }}
