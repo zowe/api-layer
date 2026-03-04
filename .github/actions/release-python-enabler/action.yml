@@ -3,7 +3,7 @@ description: Release Python Enabler
 inputs:
   version:
     description: Version to be released
-    required: true
+    required: false
     default: ""
   dry-run:
     description: Dry run python release
