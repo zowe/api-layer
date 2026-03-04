@@ -651,7 +651,7 @@ public class NewSecurityConfiguration {
             WebSecurityCustomizer webSecurityCustomizer() {
                 return web -> {
                     if (!isHealthEndpointProtected) {
-                        web.ignoring().requestMatchers("/application/health");
+                        web.ignoring().requestMatchers("/application/health", "/application/eurekaversion");
                     }
                     // Endpoints that skip Spring Security completely
                     // There is no CORS filter on these endpoints. If you require CORS processing, use a defined filter chain

@@ -17,15 +17,18 @@ import org.zowe.apiml.util.service.FullApiMediationLayer;
 
 @Slf4j
 public class StartAndCleanApplications implements TestExecutionListener {
+
     private FullApiMediationLayer fullApiMediationLayer;
 
     public StartAndCleanApplications() {
-        fullApiMediationLayer = FullApiMediationLayer.getInstance();
+        if (FullApiMediationLayer.startServices()) {
+            fullApiMediationLayer = FullApiMediationLayer.getInstance();
+        }
     }
 
     @Override
     public void testPlanExecutionStarted(TestPlan testPlan) {
-        if (fullApiMediationLayer.startServices()) {
+        if (FullApiMediationLayer.startServices()) {
             log.info("Starting Full API Mediation Layer");
             fullApiMediationLayer.start();
         }
@@ -33,8 +36,10 @@ public class StartAndCleanApplications implements TestExecutionListener {
 
     @Override
     public void testPlanExecutionFinished(TestPlan testPlan) {
-        log.info("Stopping Full API Mediation Layer");
-        fullApiMediationLayer.stop();
+        if (FullApiMediationLayer.startServices()) {
+            log.info("Stopping Full API Mediation Layer");
+            fullApiMediationLayer.stop();
+        }
     }
 
 }

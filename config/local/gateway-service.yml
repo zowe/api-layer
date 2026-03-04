@@ -40,3 +40,8 @@ spring:
                     httpclient:
                         websocket:
                             max-frame-payload-length: 3145728
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "*"

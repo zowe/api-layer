@@ -13,15 +13,26 @@ package org.zowe.apiml.util.config;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.zowe.apiml.product.constants.CoreService;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class CachingServiceConfiguration implements ServiceConfiguration {
 
-    private String url;
     private String scheme;
     private String host;
     private int port;
+    private String url;
+
+    @Override
+    public String getServiceId() {
+        return CoreService.CACHING.getServiceId();
+    }
+
+    @Override
+    public String getServletContext() {
+        return "/" + getServiceId() + "/";
+    }
 
 }
