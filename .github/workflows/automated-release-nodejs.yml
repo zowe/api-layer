@@ -55,14 +55,14 @@ jobs:
 
             - name: Release NodeJS enabler
               if: ${{ inputs.enablerType == 'node' }}
-              uses: ./github/actions/release-nodejs-enabler
+              uses: ./.github/actions/release-nodejs-enabler
               with:
                 version: ${{ github.event.inputs.version }}
                 npm-token: ${{ secrets.NPM_PUBLIC_TOKEN }}
 
             - name: Release Python enabler
               if: ${{ inputs.enablerType == 'python' }}
-              uses: ./github/actions/release-python-enabler
+              uses: ./.github/actions/release-python-enabler
               with:
                 version: ${{ github.event.inputs.version }}
                 zowe-robot-user: ${{ secrets.ZOWE_ROBOT_USER }}
