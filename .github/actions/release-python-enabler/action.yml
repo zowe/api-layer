@@ -17,7 +17,7 @@ inputs:
     description: Zowe Robot Email
     required: true
     default: ""
-  zowe-robot-password:
+  zowe-robot-token:
     description: Zowe Robot Password
     required: true
     default: ""
@@ -64,7 +64,7 @@ runs:
 
     - name: Install twine globally
       shell: bash
-      run: python3 -m pip install --upgrade twine
+      run: python -m pip install --upgrade twine
 
     - uses: zowe-actions/octorelease@v1
       env:
