@@ -1,0 +1,80 @@
+name: Release Python Enabler
+description: Release Python Enabler
+inputs:
+  version:
+    description: Version to be released
+    required: false
+    default: ""
+  dry-run:
+    description: Dry run python release
+    required: false
+    default: "false"
+  zowe-robot-user:
+    description: Zowe Robot User
+    required: true
+    default: ""
+  zowe-robot-email:
+    description: Zowe Robot Email
+    required: true
+    default: ""
+  zowe-robot-token:
+    description: Zowe Robot Password
+    required: true
+    default: ""
+  github-token:
+    description: Github token
+    required: true
+    default: ""
+  twine-password:
+    description: Twine password
+    required: true
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.14"
+
+    - name: Install Dependencies
+      shell: bash
+      run: |
+            cd onboarding-enabler-python
+            python -m venv venv
+            source venv/bin/activate
+            python -m pip install --upgrade pip setuptools wheel twine build
+            if [ -f Pipfile.lock ]; then
+              pip install pipenv
+              pipenv install --deploy --ignore-pipfile
+            fi
+
+    - name: Build Python Package
+      shell: bash
+      run: |
+            export SETUPTOOLS_SCM_PRETEND_VERSION=${{ inputs.version }}
+            ./gradlew onboarding-enabler-python:buildPython
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@v4
+      with:
+        name: wheels
+        path: onboarding-enabler-python/dist/
+
+    - name: Install twine globally
+      shell: bash
+      run: python -m pip install --upgrade twine
+
+    - uses: zowe-actions/octorelease@v1
+      env:
+        GIT_COMMITTER_NAME: ${{ inputs.zowe-robot-user }}
+        GIT_COMMITTER_EMAIL: ${{ inputs.zowe-robot-email }}
+        GIT_CREDENTIALS: x-access-token:${{ inputs.zowe-robot-token }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ inputs.twine-password }}
+      with:
+        working-dir: onboarding-enabler-python
+        dry-run: ${{ inputs.dry-run }}
+        new-version: ${{ steps.update-version.outputs.version }}
