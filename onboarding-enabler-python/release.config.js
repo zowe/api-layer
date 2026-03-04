@@ -7,10 +7,6 @@ module.exports = {
         {
             name: "zowe-v?-lts",
             level: "patch"
-        },
-        {
-            name: "reboot/fix/python-enabler-release",
-            level: "patch"
         }
     ],
     plugins: [
