@@ -27,7 +27,7 @@ on:
                 default: node
 
 jobs:
-    git-setup:
+    release:
         runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
@@ -52,86 +52,21 @@ jobs:
               with:
                   fetch-depth: 0
                   token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
-    release-node-js:
-        runs-on: ubuntu-latest
-        timeout-minutes: 40
-        needs: git-setup
-        if: inputs.enablerType == 'node'
 
-        steps:
-            - name: Update version manually
-              if: github.event.inputs.version != ''
-              run: |
-                  cd onboarding-enabler-nodejs
-                  sed -i.bak "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" package.json
-              env:
-                  NEW_VERSION: ${{ github.event.inputs.version }}
-
-            - name: Release to NPM automatic
-              shell: bash
-              run: |
-                  cd onboarding-enabler-nodejs
-                  echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
-                  npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }}
-                  npm publish --access public
-                  git add package.json
-                  git add package-lock.json
-                  git commit -m "[skip ci] Update version"
-                  git push --no-verify
-                  cd ..
-              env:
-                  DEFAULT_SCOPE: 'patch'
-                  NPM_TOKEN: ${{ secrets.NPM_PUBLIC_TOKEN }}
-
-            -  uses: ./.github/actions/teardown
-
-    release-python-enabler:
-        runs-on: ubuntu-latest
-        timeout-minutes: 40
-        needs: git-setup
-        if: inputs.enablerType == 'python'
-
-        steps:
-
-            - name: Setup Python
-              uses: actions/setup-python@v5
+            - name: Release NodeJS enabler
+              if: ${{ inputs.enablerType == 'node' }}
+              uses: ./github/actions/release-nodejs-enabler
               with:
-                  python-version: "3.14"
+                version: ${{ github.event.inputs.version }}
+                npm-token: ${{ secrets.NPM_PUBLIC_TOKEN }}
 
-            - name: Install Dependencies
-              run: |
-                  cd onboarding-enabler-python
-                  python -m venv venv
-                  source venv/bin/activate
-                  python -m pip install --upgrade pip setuptools wheel twine build
-                  if [ -f Pipfile.lock ]; then
-                    pip install pipenv
-                    pipenv install --deploy --ignore-pipfile
-                  fi
-
-            - name: Build Python Package
-              run: |
-                  export SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.version }}
-                  ./gradlew onboarding-enabler-python:buildPython
-
-            - name: Upload wheels
-              uses: actions/upload-artifact@v4
+            - name: Release Python enabler
+              if: ${{ inputs.enablerType == 'python' }}
+              uses: ./github/actions/release-python-enabler
               with:
-                  name: wheels
-                  path: onboarding-enabler-python/dist/
-
-            - name: Install twine globally
-              run: python3 -m pip install --upgrade twine
-
-            - uses: zowe-actions/octorelease@v1
-              env:
-                  GIT_COMMITTER_NAME: ${{ secrets.ZOWE_ROBOT_USER }}
-                  GIT_COMMITTER_EMAIL: ${{ secrets.ZOWE_ROBOT_EMAIL }}
-                  GIT_CREDENTIALS: x-access-token:${{ secrets.ZOWE_ROBOT_TOKEN }}
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  TWINE_USERNAME: __token__
-                  TWINE_PASSWORD: ${{ secrets.PYPI_ROBOT_TOKEN }}
-              with:
-                  working-dir: onboarding-enabler-python
-                  dry-run: ${{ inputs.dry-run }}
-                  new-version: ${{ steps.update-version.outputs.version }}
+                version: ${{ github.event.inputs.version }}
+                zowe-robot-user: ${{ secrets.ZOWE_ROBOT_USER }}
+                zowe-robot-email: ${{ secrets.ZOWE_ROBOT_EMAIL }}
+                zowe-robot-token: x-access-token:${{ secrets.ZOWE_ROBOT_TOKEN }}
+                github-token: ${{ secrets.GITHUB_TOKEN }}
+                twine-password: ${{ secrets.PYPI_ROBOT_TOKEN }}
