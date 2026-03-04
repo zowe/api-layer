@@ -77,4 +77,4 @@ runs:
       with:
         working-dir: onboarding-enabler-python
         dry-run: ${{ inputs.dry-run }}
-        new-version: ${{ steps.update-version.outputs.version }}
+        new-version: ${{ inputs.version }}
