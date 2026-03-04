@@ -1,0 +1,45 @@
+name: Release NodeJS Enabler
+description: Release NodeJS Enabler to NPM Registry
+inputs:
+  version:
+    description: Version to be released
+    required: false
+    default: ""
+  scope:
+    description: Automatic increment of the semver (patch, minor, major) unless specific version is provided
+    required: false
+    default: patch
+  npm-token:
+    description: NPM Registry publishing token
+    required: true
+    default: ""
+
+runs:
+  using: composite
+  steps:
+
+    - name: Update version manually
+      if: inputs.version != ''
+      shell: bash
+      run: |
+          cd onboarding-enabler-nodejs
+          sed -i.bak "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" package.json
+      env:
+          NEW_VERSION: ${{ inputs.version }}
+
+    - name: Release to NPM automatic
+      shell: bash
+      run: |
+        cd onboarding-enabler-nodejs
+        echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+        npm version ${{ inputs.scope }}
+        npm publish --access public
+        git add package.json
+        git add package-lock.json
+        git commit -m "[skip ci] Update version"
+        git push --no-verify
+        cd ..
+      env:
+        NPM_TOKEN: ${{ inputs.npm-token }}
+
+    -  uses: ./.github/actions/teardown
