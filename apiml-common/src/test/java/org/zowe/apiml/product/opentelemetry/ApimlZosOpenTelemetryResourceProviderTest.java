@@ -55,7 +55,8 @@ class ApimlZosOpenTelemetryResourceProviderTest {
                 "zos.sysname", "SYSA",
                 "zos.sysclone", "16",
                 "zos.sysplex", "PLEX1",
-                "zos.smfid", "SYSA"
+                "zos.smfid", "SYSA",
+                "zos.environ", "DEV"
             ));
             var attributes = resourceProvider.calculateAttributes();
 
