@@ -102,7 +102,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   ${JVM_SECURITY_PROPERTIES} \
   ${CUSTOM_JVM_OPTS} \
   -Dibm.serversocket.recover=true \
-  -Dfile.encoding=UTF-8 \
+  -Dfile.encoding=COMPAT \
   -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
   -Djava.io.tmpdir=${TMPDIR:-/tmp} \
   -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
