@@ -5,7 +5,7 @@ The [docker-compose.yml](docker-compose.yml) defines 2 containers:
 - OpenTelemetry Collector (oallector)
 - OpenTelemetry Golden Validator (golden)
 
-The collector is the standard OpenTelemetry Collector ([docs](https://opentelemetry.io/docs/collector/), [repo](https://github.com/open-telemetry/opentelemetry-collector-contrib)). The Golden Tester comes from the [same](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/cmd/golden) repository and validates data exported from the collector. Only metrics (in [alpha](https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/component-stability.md#alpha) stability level) are supported as of January 2026.
+The collector is the standard OpenTelemetry Collector ([docs](https://opentelemetry.io/docs/collector/), [repo](https://github.com/open-telemetry/opentelemetry-collector-contrib)). The Golden Tester comes from the [same](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/cmd/golden) repository and validates data exported from the collector. Only metrics (in [alpha](https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/component-stability.md#alpha) stability level) are supported as of January 2026; check for the exact version in the [docker-compose.yml](docker-compose.yml) and updates in the project repository.
 
 ## Integration test flow
 
@@ -38,6 +38,15 @@ There are 2 shell scripts to operate the integration test:
 
 - [sh/start_containers.sh](sh/start_containers.sh) - starts the docker containers
 - [sh/validate_and_stop.sh](sh/start_containers.sh) - to validate the test result, save containers log and exit the containers
+
+### Definition of the expected telemetry data for validation
+The `expected.yml` file for the Golden tester can be either created manually, or generated. To generate the file remove the existing `expected.yml` file, and add the following line to the Golden container startup arguments in the [docker-compose.yml](docker-compose.yml):
+
+```yml
+        "--write-expected" # generates the expected definition file from received data
+```
+
+Then run the integration test as usual. Instead of data validation, the Golden tester will create the `expected.yml` file to match the data received during the test. It is recommended to verify and manually edit the generated file if needed.
 
 ### Golden Tester configuration considerations
 
