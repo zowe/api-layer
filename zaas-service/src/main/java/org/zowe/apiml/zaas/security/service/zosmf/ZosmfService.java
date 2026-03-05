@@ -45,6 +45,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.login.ChangePasswordRequest;
@@ -55,6 +56,10 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.token.JWKResolver;
+
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.discovery.EurekaClient;
+import com.netflix.discovery.shared.Application;
 
 import javax.management.ServiceNotFoundException;
 import java.io.IOException;
@@ -297,6 +302,116 @@ public class ZosmfService extends AbstractZosmfService {
             handleExceptionOnCall(infoURIEndpoint, ex);
             return false;
         }
+    }
+
+    /**
+     * Fetches the full version string of z/OSMF from the {@code /zosmf/info} endpoint.
+     * <p>
+     * Reuses the existing {@link ZosmfInfo} DTO and the same HTTP infrastructure (CSRF header,
+     * {@code restTemplateWithoutKeystore}) as {@link #getZosmfRealm(String)}.
+     *
+     * @return the {@code zosmf_full_version} string (e.g. {@code "2.4"}), or {@code null} if
+     *         z/OSMF is unreachable or did not return a version.
+     */
+    public String getZosmfFullVersion() {
+        final HttpHeaders headers = new HttpHeaders();
+        headers.add(ZOSMF_CSRF_HEADER, "");
+
+        String infoURIEndpoint;
+        try {
+            infoURIEndpoint = getURI(getZosmfServiceId(), ZOSMF_INFO_END_POINT);
+        } catch (ServiceNotAccessibleException e) {
+            log.warn("Cannot fetch z/OSMF version: service '{}' is not registered in Discovery Service",
+                    getZosmfServiceId());
+            return null;
+        }
+
+        try {
+            final ResponseEntity<ZosmfInfo> info = restTemplateWithoutKeystore.exchange(
+                    infoURIEndpoint, HttpMethod.GET, new HttpEntity<>(headers), ZosmfInfo.class);
+            ZosmfInfo body = info.getBody();
+            if (body == null || StringUtils.isBlank(body.getFullVersion())) {
+                log.warn("z/OSMF info endpoint '{}' did not return a full version", infoURIEndpoint);
+                return null;
+            }
+            return body.getFullVersion().trim();
+        } catch (RuntimeException ex) {
+            log.warn("Could not fetch z/OSMF version from '{}': {}", infoURIEndpoint, ex.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Enriches the {@code ibmzosmf} static Eureka registration with the actual z/OSMF version.
+     * <p>
+     * Calls {@link #getZosmfFullVersion()} and, for every {@code ibmzosmf} instance found in
+     * the Eureka registry, invokes the Discovery server's metadata-update REST endpoint
+     * ({@code PUT /eureka/apps/IBMZOSMF/{instanceId}/metadata?{key}={version}})  so that
+     * API Catalog and gateway consumers see the real z/OSMF version instead of the placeholder
+     * configured in the static definition template.
+     * <p>
+     * All errors are non-fatal: if z/OSMF is unreachable or the Discovery server cannot be
+     * contacted, a warning is logged and the placeholder version is preserved.
+     */
+    public void enrichIbmzosmfRegistrationVersion() {
+        String version = getZosmfFullVersion();
+        if (version == null) {
+            log.warn("z/OSMF version unavailable; ibmzosmf static registration will keep its configured version.");
+            return;
+        }
+
+        EurekaClient eurekaClient = applicationContext.getBean(EurekaClient.class);
+        Application ibmzosmfApp = eurekaClient.getApplication("IBMZOSMF");
+        if (ibmzosmfApp == null || ibmzosmfApp.getInstances().isEmpty()) {
+            log.warn("ibmzosmf not found in Eureka registry; cannot enrich static registration version.");
+            return;
+        }
+
+        List<String> serverUrls =
+                eurekaClient.getEurekaClientConfig().getEurekaServerServiceUrls("defaultZone");
+        if (serverUrls == null || serverUrls.isEmpty()) {
+            log.warn("Eureka server URL not configured; cannot update ibmzosmf registration version.");
+            return;
+        }
+
+        // Use the primary RestTemplate (with keystore) for mutual-TLS to the Discovery server.
+        RestTemplate restTemplateWithKeystore = applicationContext.getBean(RestTemplate.class);
+        String eurekaBaseUrl = serverUrls.get(0);
+
+        for (InstanceInfo instance : ibmzosmfApp.getInstances()) {
+            updateInstanceVersionOnServer(instance, version, eurekaBaseUrl, restTemplateWithKeystore);
+        }
+    }
+
+    /**
+     * Issues a {@code PUT} to the Discovery server's Eureka metadata endpoint for every
+     * {@code apiml.apiInfo.*.version} key found in the given instance.
+     */
+    private void updateInstanceVersionOnServer(InstanceInfo instance, String version,
+                                               String eurekaBaseUrl, RestTemplate restTemplate) {
+        final String versionKeySuffix = ".version";
+        final String apiInfoPrefix    = "apiml.apiInfo.";
+        final String normalizedBase   = eurekaBaseUrl.endsWith("/") ? eurekaBaseUrl : eurekaBaseUrl + "/";
+
+        instance.getMetadata().entrySet().stream()
+                .filter(e -> e.getKey().startsWith(apiInfoPrefix) && e.getKey().endsWith(versionKeySuffix))
+                .forEach(e -> {
+                    try {
+                        // pathSegment encodes path-unsafe characters (e.g. ':' in instance IDs).
+                        String url = UriComponentsBuilder
+                                .fromHttpUrl(normalizedBase + "apps")
+                                .pathSegment(instance.getAppName(), instance.getId(), "metadata")
+                                .queryParam(e.getKey(), version)
+                                .build()
+                                .toUriString();
+                        restTemplate.put(url, null);
+                        log.info("Updated ibmzosmf instance '{}' metadata '{}' to z/OSMF version '{}'",
+                                instance.getInstanceId(), e.getKey(), version);
+                    } catch (Exception ex) {
+                        log.warn("Failed to update version metadata for ibmzosmf instance '{}': {}",
+                                instance.getInstanceId(), ex.getMessage());
+                    }
+                });
     }
 
     private String getURI(String serviceId, String path) {

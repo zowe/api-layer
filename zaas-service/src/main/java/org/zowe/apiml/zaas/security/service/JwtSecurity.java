@@ -324,6 +324,14 @@ public class JwtSecurity {
                         }
                         System.exit(1); // TODO remove
                     }
+
+                    // Now that z/OSMF is confirmed accessible, enrich the static ibmzosmf
+                    // Eureka registration with the real version from /zosmf/info.
+                    try {
+                        providers.enrichIbmzosmfRegistrationVersion();
+                    } catch (Exception e) {
+                        log.warn("Could not enrich ibmzosmf static registration version: {}", e.getMessage());
+                    }
                 } else {
                     events.add("z/OSMF instance " + zosmfServiceId + " is not available and online yet.");
                 }

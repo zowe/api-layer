@@ -75,6 +75,14 @@ public class Providers {
     }
 
     /**
+     * Enriches the {@code ibmzosmf} static Eureka registration with the actual z/OSMF version.
+     * Delegates to {@link ZosmfService#enrichIbmzosmfRegistrationVersion()}.
+     */
+    public void enrichIbmzosmfRegistrationVersion() {
+        zosmfService.enrichIbmzosmfRegistrationVersion();
+    }
+
+    /**
      * Verify that the zOSMF is registered in the Discovery service and that we can actually reach it.
      *
      * @return true if the service is registered and properly responds.
