@@ -11,6 +11,7 @@
 package org.zowe.apiml.product.opentelemetry;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.common.AttributesBuilder;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +57,17 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
         log.debug("Using ZOS OpenTelemetry resource provider");
     }
 
+    private void attribute(AttributesBuilder attributesBuilder, @Nonnull String openTelemetryAttribute, String zosAttribute) {
+        var zosAttributes = zosSystemInformation.get();
+        var zosValue = zosAttributes.get(zosAttribute);
+        if (zosValue != null && StringUtils.isNotBlank(zosValue.toString())) {
+            log.debug(openTelemetryAttribute + " not provided in configuration, using z/OS obtained {}", zosValue);
+            attributesBuilder.put(openTelemetryAttribute, zosValue.toString());
+        } else {
+            log.debug(openTelemetryAttribute + " not provided in configuration. Could not determine it from system");
+        }
+    }
+
     @SuppressWarnings("null")
     @Override
     @Nonnull
@@ -65,43 +77,19 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
         var zosAttributes = zosSystemInformation.get();
 
         if (StringUtils.isBlank(environmentName)) {
-            var environmentName = zosAttributes.get(ZOS_ENVIRON);
-            if (environmentName != null && StringUtils.isNotBlank(environmentName.toString())) {
-                log.debug("deployment.environment.name not provided in configuration, using z/OS obtained {}", environmentName);
-                attributesBuilder.put("deployment.environment.name", environmentName.toString());
-            } else {
-                log.debug("deployment.environment.name not provided in configuration. Could not determine name from system");
-            }
+            attribute(attributesBuilder, "deployment.environment.name", ZOS_ENVIRON);
         }
 
         if (StringUtils.isBlank(sysplexName)) {
-            var sysplexName = zosAttributes.get(ZOS_SYSPLEX);
-            if (sysplexName != null && StringUtils.isNotBlank(sysplexName.toString())) {
-                log.debug("zos.sysplex.name not provided in configuration, using system-obtained {}", sysplexName);
-                attributesBuilder.put("zos.sysplex.name", sysplexName.toString());
-            } else {
-                log.debug("zos.sysplex.name not provided in configuration. Could not determine name from system");
-            }
+            attribute(attributesBuilder, "zos.sysplex.name", ZOS_SYSPLEX);
         }
 
         if (StringUtils.isBlank(lparName)) {
-            var lparName = zosAttributes.get(ZOS_SYSNAME);
-            if (lparName != null && StringUtils.isNotBlank(lparName.toString())) {
-                log.debug("mainframe.lpar.name not provided in configuration, using system-obtained {}", lparName);
-                attributesBuilder.put("mainframe.lpar.name", lparName.toString());
-            } else {
-                log.debug("mainframe.lpar.name not provided in configuration. Could not determine name from system");
-            }
+            attribute(attributesBuilder, "mainframe.lpar.name", ZOS_SYSNAME);
         }
 
         if (StringUtils.isBlank(smfId)) {
-            var smfId = zosAttributes.get(ZOS_SMF_ID);
-            if (smfId != null && StringUtils.isNotBlank(smfId.toString())) {
-                log.debug("zos.smf.id not provided in configuration, using system-obtained {}", smfId);
-                attributesBuilder.put("zos.smf.id", smfId.toString());
-            } else {
-                log.debug("zos.smf.id not provided in configuration. Could not determine ID from system");
-            }
+            attribute(attributesBuilder, "zos.smf.id", ZOS_SMF_ID);
         }
 
         Optional.ofNullable(zosAttributes.get(ZOS_JOB_NAME))
@@ -123,4 +111,5 @@ public class ApimlZosOpenTelemetryResourceProvider extends ApimlOpenTelemetryRes
         var systemName = StringUtils.isBlank(apimlId) ? zosAttributes.get(ZOS_SYSPLEX) : apimlId;
         return "apiml:" + systemName + ":" + port;
     }
+
 }
