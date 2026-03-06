@@ -8,16 +8,12 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.eurekaservice.client.impl;
+package org.zowe.apiml.product.zos;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Properties;
 
-/**
- * @deprecated Use new version in apiml-utility
- */
-@Deprecated
 public class ZUtilDummy implements ZUtil {
 
     @Override
@@ -42,12 +38,12 @@ public class ZUtilDummy implements ZUtil {
 
     @Override
     public String getCurrentJobId() {
-        return null;
+        return "STC1111";
     }
 
     @Override
     public String getCurrentJobname() {
-        return null;
+        return "ZWE1AG";
     }
 
     @Override
@@ -72,7 +68,7 @@ public class ZUtilDummy implements ZUtil {
 
     @Override
     public String getCurrentUser() {
-        return null;
+        return "ZWEUSER";
     }
 
     @Override
@@ -112,7 +108,7 @@ public class ZUtilDummy implements ZUtil {
 
     @Override
     public int getPid() {
-        return 0;
+        return 1234567;
     }
 
     @Override
@@ -207,7 +203,15 @@ public class ZUtilDummy implements ZUtil {
 
     @Override
     public String substituteSystemSymbols(String pattern) {
-        return null;
+          return switch (pattern) {
+            case "&SYSNAME." -> "SYSNAME";
+            case "&SYSCLONE." -> "SYSCLONE";
+            case "&SYSPLEX." -> "SYSPLEX";
+            case "&SMFID." -> "LR10";
+            case "&ENVIRON." -> "DEV";
+            case "&OSLEVEL." -> "030200";
+            default -> null;
+        };
     }
 
     @Override
