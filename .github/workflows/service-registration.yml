@@ -67,9 +67,20 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.startServices=true
 
+            -   name: Start OpenTelemetry containers
+                run: |
+                    cd otel
+                    sh/start_containers.sh
+
             -   name: Run startup check for modulith
                 run: >
-                    ./gradlew runStartUpCheck --info --scan -Denvironment.startServices=true -Denvironment.modulith=true -Denvironment.config=-modulith
+                    ./gradlew runStartUpCheckWithOpenTelemetry --info --scan -Denvironment.startServices=true -Denvironment.modulith=true -Denvironment.config=-modulith
+
+            -   name: Validate telemetry data and stop containers
+                if: always()
+                run: |
+                    cd otel
+                    sh/validate_and_stop.sh
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -78,5 +89,6 @@ jobs:
                     name: Register-${{ env.JOB_ID }}
                     path: |
                         */build/reports/**
+                        otel/**
 
             -   uses: ./.github/actions/teardown
