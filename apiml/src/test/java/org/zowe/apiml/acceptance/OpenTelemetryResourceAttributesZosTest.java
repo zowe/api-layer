@@ -84,6 +84,7 @@ class OpenTelemetryResourceAttributesZosTest {
     }
 
     @Nested
+    @AcceptanceTest
     @ActiveProfiles({ "OpenTelemetryTest", "zos" })
     class WhenOnboardedService extends AcceptanceTestWithMockServices {
 
@@ -103,7 +104,7 @@ class OpenTelemetryResourceAttributesZosTest {
         void givenRouted_thenLog() {
 
             given()
-                .get(basePath + "/200")
+                .get(basePath + "/serviceid1/api/v1/200")
             .then()
             .statusCode(200);
 
