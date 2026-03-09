@@ -144,6 +144,7 @@ if [ "${ZWE_components_apiml_debug:-${ZWE_configs_debug:-false}}" = "true" ]; th
         ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_apiml_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}}"
     fi
     add_profile "debug"
+    echo "Profile debug added. Current profiles: $ZWE_configs_spring_profiles_active"
 fi
 
 # Cookie name for unique cookie support
