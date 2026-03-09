@@ -44,6 +44,10 @@ class OpenTelemetryResourceAttributesNonZosTest {
     @LocalServerPort
     private int port;
 
+    private void assertLogBase() {
+
+    }
+
     @Test
     void thenLogCustomAttributes() {
         var metrics = metricReader.collectAllMetrics();
@@ -64,4 +68,5 @@ class OpenTelemetryResourceAttributesNonZosTest {
             }
         );
     }
+
 }
