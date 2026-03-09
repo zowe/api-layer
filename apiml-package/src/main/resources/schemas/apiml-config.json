@@ -1,0 +1,879 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "https://zowe.org/schemas/v2/apiml-config",
+    "title": "apiml configuration",
+    "description": "Configuration properties for APIML, as specified within a configuration file such as zowe.yaml",
+    "type": "object",
+    "properties": {
+        "port": {
+            "$ref": "#/$defs/port",
+            "default": 7554
+        },
+        "debug": {
+            "type": "boolean",
+            "description": "Enable debug logs in API ML service",
+            "default": false
+        },
+        "sslDebug": {
+            "type": "string",
+            "description": "Configure attributes for SSL config, see java property javax.net.debug."
+        },
+        "heap": {
+            "type": "object",
+            "description": "Configure JVM parameters for heap size",
+            "properties": {
+                "init": {
+                    "type": "integer",
+                    "description": "Initial heap size in MB.",
+                    "default": 32
+                },
+                "max": {
+                    "type": "integer",
+                    "description": "Maximum heap size in MB.",
+                    "default": 512
+                }
+            }
+        },
+        "apiml": {
+            "type": "object",
+            "description": "Zowe API ML specific properties",
+            "properties": {
+                "catalog": {
+                    "type": "object",
+                    "description": "API Catalog customization",
+                    "properties": {
+                        "hide": {
+                            "type": "object",
+                            "properties": {
+                                "serviceInfo": {
+                                    "type": "boolean",
+                                    "description": "Hide the instance URL value of all services registered to the API ML in the API Catalog.",
+                                    "default": false
+                                }
+                            }
+                        },
+                        "customStyle": {
+                            "type": "object",
+                            "description": "Customization of the logotype and selected style options",
+                            "properties": {
+                                "logo": {
+                                    "type": "string",
+                                    "pattern": "^.*\\.(svg|png|jpe?g)$",
+                                    "description": "Location of API Catalog logo"
+                                },
+                                "titlesColor": {
+                                    "type": "string",
+                                    "description": "Color of the Catalog title labels"
+                                },
+                                "fontFamily": {
+                                    "type": "string",
+                                    "description": "Font family used for the UI"
+                                },
+                                "headerColor": {
+                                    "type": "string",
+                                    "description": "Header color"
+                                },
+                                "backgroundColor": {
+                                    "type": "string",
+                                    "description": "Background color for dashboard and detail page"
+                                },
+                                "textColor": {
+                                    "type": "string",
+                                    "description": "Color used for the UI paragraph texts (i.e. service description)"
+                                },
+                                "docLink": {
+                                    "type": "string",
+                                    "pattern": "^[^|]+\\|https?:\/\/.+$",
+                                    "description": "Custom link that would be displayed in the top right side of the header"
+                                }
+                            }
+                        }
+                    }
+                },
+                "connection": {
+                    "type": "object",
+                    "properties": {
+                        "idleConnectionTimeoutSeconds" : {
+                            "type": "integer",
+                            "description": "Specifies a timeout limit for idle client connections, in seconds.",
+                            "default": 5
+                        },
+                        "timeout": {
+                            "type": "integer",
+                            "description": "Specifies a timeout limit for a connection, in milliseconds.",
+                            "default": 60000
+                        },
+                        "timeToLive": {
+                            "type": "integer",
+                            "description": "Specifies a timeout limit how long to keep open connection to be reused, in milliseconds.",
+                            "default": 10000
+                        }
+                    }
+                },
+                "discovery": {
+                    "type": "object",
+                    "properties": {
+                        "serviceIdPrefixReplacer": {
+                            "type": "string",
+                            "description": "A comma separated tuple to replace service ID with new one in API ML registry."
+                        }
+                    }
+                },
+                "gateway": {
+                    "type": "object",
+                    "properties": {
+                        "rateLimiterCapacity":{
+                            "type": "integer",
+                            "description": "Defines the total number of requests that can be allowed at one time.",
+                            "default": 20
+                        },
+                        "rateLimiterTokens":{
+                            "type": "integer",
+                            "description": "Defines the number of requests that are added to the service’s allowance at regular intervals.",
+                            "default": 20
+                        },
+                        "rateLimiterRefillDuration":{
+                            "type": "integer",
+                            "description": "Sets the time interval (in minutes) at which new requests (or tokens) are added.",
+                            "default": 1
+                        },
+                        "servicesToLimitRequestRate":{
+                            "type": "array",
+                            "description": "Array of services which the rate limiter will be applied to.",
+                            "items": {
+                                "type": "string",
+                                "description": "The name of the service."
+                            }
+                        },
+                        "servicesToDisableRetry":{
+                            "type": "array",
+                            "description": "Array of services which the retry filter will be disabled for.",
+                            "items": {
+                                "type": "string",
+                                "description": "The name of the service."
+                            }
+                        },
+                        "registry": {
+                            "type": "object",
+                            "description": "Gateway configuration of a service registry endpoint.",
+                            "properties": {
+                                "cachePeriodSec": {
+                                    "type": "integer",
+                                    "description": "Specifies time in seconds to expired of cached data about /registry endpoint.",
+                                    "default": 120
+                                },
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "Specifies whether the /registry endpoint is enabled.",
+                                    "default": false
+                                },
+                                "maxSimultaneousRequests": {
+                                    "type": "integer",
+                                    "description": "Specifies amount of parallel connection to obtain information from other APIML instances about services to construct response of /registry endpoint.",
+                                    "default": 20
+                                },
+                                "metadataKeyAllowList": {
+                                    "type": "string",
+                                    "description": "Specifies what custom metadata are displayed in the /registry endpoint.",
+                                    "pattern": "^[^,]+(,[^,]+)*$"
+                                },
+                                "refreshIntervalMs": {
+                                    "type": "integer",
+                                    "description": "Specifies time period in milliseconds for how often to update data in /registry endpoint.",
+                                    "default": 30000
+                                }
+                            }
+                        }
+                    }
+                },
+                "internal": {
+                    "type": "object",
+                    "description": "Single-service specific configuration",
+                    "properties": {
+                        "discovery": {
+                            "type": "object",
+                            "properties": {
+                                "port": {
+                                    "$ref": "#/$defs/port",
+                                    "default": 7553
+                                }
+                            }
+                        }
+                    }
+                },
+                "health": {
+                    "type": "object",
+                    "properties": {
+                        "protected": {
+                            "type": "boolean",
+                            "description": "Specifies if the /application/health endpoint is protected or accessible without any credentials.",
+                            "default": true
+                        }
+                    }
+                },
+                "security": {
+                    "type": "object",
+                    "description": "Security configuration of the Gateway",
+                    "properties": {
+                        "useInternalMapper": {
+                            "type": "boolean",
+                            "description": "Enables direct native calls to z/OS to query distributed identity mappings and client certificate mappings. Use only if APIML is running on z/OS.",
+                            "default": true
+                        },
+                        "auth": {
+                            "type": "object",
+                            "description": "Detail configuration of authentication schemes.",
+                            "properties": {
+                                "jwt": {
+                                    "type": "object",
+                                    "description": "Detail configuration of zoweJwt scheme.",
+                                    "properties": {
+                                        "customAuthHeader": {
+                                            "type": "string",
+                                            "description": "Additional header to set JWT token in case of zoweJwt scheme."
+                                        }
+                                    }
+                                },
+                                "passticket": {
+                                    "type": "object",
+                                    "description": "Detail configuration of httpBasicPassTicket scheme.",
+                                    "properties": {
+                                        "customAuthHeader": {
+                                            "type": "string",
+                                            "description": "Additional header to set passticket in case of httpBasicPassTicket scheme."
+                                        },
+                                        "customUserHeader": {
+                                            "type": "string",
+                                            "description": "Additional header to set userId in case of httpBasicPassTicket scheme."
+                                        }
+                                    }
+                                },
+                                "provider": {
+                                    "type": "string",
+                                    "description": "Which provider should be used to verify user credentials.",
+                                    "enum": ["zosmf","saf"],
+                                    "default": "saf"
+                                },
+                                "zosmf": {
+                                    "type": "object",
+                                    "description": "When zosmf is set as authentication provider, this section can be used to provide more details.",
+                                    "properties": {
+                                        "jwtAutoconfiguration": {
+                                            "type": "string",
+                                            "description": "Type of the token that is returned from zOSMF after login.",
+                                            "enum": ["JWT","jwt","LTPA","ltpa"],
+                                            "default": "jwt"
+                                        },
+                                        "serviceId": {
+                                            "type": "string",
+                                            "description": "Service ID of zOSMF from discovery service. Under this ID is zOSMF registered",
+                                            "default": "ibmzosmf"
+                                        }
+                                    }
+                                },
+                                "uniqueCookie": {
+                                    "type": "boolean",
+                                    "default": false
+                                }
+                            }
+                        },
+                        "authorization": {
+                            "type": "object",
+                            "description": "Authorization configuration.",
+                            "properties": {
+                                "endpoint": {
+                                    "type": "object",
+                                    "description": "Configuration of SAF resource to check authorization via HTTP call.",
+                                    "properties": {
+                                        "enabled": {
+                                            "type": "boolean",
+                                            "description": "Enable provider based on endpoint. to verify SAF authorization.",
+                                            "default": false
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "format": "uri",
+                                            "pattern": "^(https?):\/\/",
+                                            "description": "URL of endpoint to verify SAF resource. Ie. https://&lt;zss hostname&gt;:&lt;zss port&gt;/saf-auth"
+                                        }
+                                    },
+                                    "allOf": [
+                                        {
+                                            "if": {
+                                                "properties": {
+                                                    "enabled": {
+                                                        "const": true
+                                                    }
+                                                }
+                                            },
+                                            "then": {
+                                                "required": [
+                                                    "url"
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                },
+                                "provider": {
+                                    "type": "string",
+                                    "enum": ["endpoint", "native", "dummy"],
+                                    "default": "native",
+                                    "description": "Specifies security provider to be used by the Gateway."
+                                },
+                                "resourceClass": {
+                                    "type": "string",
+                                    "description": "zOS resource to verify access.",
+                                    "default": "ZOWE"
+                                },
+                                "resourceNamePrefix": {
+                                    "type": "string",
+                                    "description": "Prefix of the resource.",
+                                    "default": "APIML."
+                                }
+                            },
+                            "allOf": [
+                                {
+                                    "if": {
+                                        "properties": {
+                                            "provider": {
+                                                "const": "endpoint"
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "required": [
+                                            "endpoint"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        "x509": {
+                            "type": "object",
+                            "description": "Client certificate configuration.",
+                            "properties": {
+                                "acceptForwardedCert": {
+                                    "type": "boolean",
+                                    "description": "To enable accepting client certificate from request header. It is used in domain APIML to accept forwarded client certificate by the caller.",
+                                    "default": false
+                                },
+                                "certificatesUrl": {
+                                    "type": "string",
+                                    "deprecated": true,
+                                    "format": "uri",
+                                    "pattern": "^(https?):\/\/",
+                                    "description": "URL of the trusted caller to obtain used certificate. Request signed by this certificate are authorized to accept client certificate provided in the header."
+                                },
+                                "certificatesUrls": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "pattern": "https?:\/\/[^\\s,]+",
+                                    "description": "List of URLs of the trusted callers to obtain used certificate. Request signed by this certificate are authorized to accept client certificate provided in the header."
+                                },
+                                "enabled": {
+                                    "type": "boolean",
+                                    "default": false,
+                                    "description": "To enable accepting client certificate in the Gateway."
+                                },
+                                "externalMapperUrl": {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "pattern": "^(https?):\/\/",
+                                    "description": "URL of the service where certificate will be mapped to user. ZSS is used if no value is provided."
+                                },
+                                "externalMapperUser": {
+                                    "type": "string",
+                                    "description": "User that has permission to do such mapping. Zowe user is used if no value is provided."
+                                },
+                                "registry": {
+                                    "type": "object",
+                                    "description": "Security configuration of /registry endpoint.",
+                                    "properties": {
+                                        "allowedUsers": {
+                                            "type": "string",
+                                            "pattern": "^[*]?|([a-zA-Z0-9]+(,[a-zA-Z0-9]+)*)$",
+                                            "description": "Specifies the comma-separated list of users that are permitted to use /registry endpoints. The user is obtained from the common name in the provided client certificate."
+                                        }
+                                    }
+                                }
+                            },
+                            "allOf": [
+                                {
+                                    "if": {
+                                        "properties": {
+                                            "acceptForwardedCert": {
+                                                "const": true
+                                            }
+                                        }
+                                    },
+                                    "then": {
+                                        "anyOf": [
+                                            { "required": [ "certificatesUrl" ] },
+                                            { "required": [ "certificatesUrls" ] }
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        "oidc": {
+                            "type": "object",
+                            "description": "OIDC configuration.",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "Enable authentication with OIDC token.",
+                                    "default": false
+                                },
+                                "registry": {
+                                    "type": "string",
+                                    "description": "Registry name."
+                                },
+                                "identityMapperUrl": {
+                                    "type": "string",
+                                    "deprecated": true,
+                                    "format": "uri",
+                                    "pattern": "^(https?):\/\/",
+                                    "description": "URL where the Gateway can query the mapping of the distributed user ID to the mainframe user ID. ZSS is used if no value is provided."
+                                },
+                                "identityMapperUser": {
+                                    "type": "string",
+                                    "deprecated": true,
+                                    "description": "User with access to external user identity mapper specified in identityMapperUrl. Zowe user is used if no value is provided."
+                                },
+                                "jwks": {
+                                    "type": "object",
+                                    "description": "JWKS configuration",
+                                    "properties": {
+                                        "uri": {
+                                            "type": "string",
+                                            "description": "JWK set URL for OIDC token validation."
+                                        },
+                                        "refreshInternalHours": {
+                                            "type": "integer",
+                                            "description": "How often are JWKs renewed.",
+                                            "default": 1
+                                        }
+                                    }
+                                },
+                                "userIdField": {
+                                    "type": "string",
+                                    "description": "OIDC token field used for user mapping in SAF.",
+                                    "default": "sub"
+                                },
+                                "userInfo": {
+                                    "type": "object",
+                                    "description": "OIDC user info endpoint configuration.",
+                                    "properties": {
+                                        "uri": {
+                                            "type": "string",
+                                            "description": "OIDC user info endpoint URL."
+                                        }
+                                    }
+                                },
+                                "validationType": {
+                                    "type": "string",
+                                    "description": "How OIDC token is validated.",
+                                    "enum": ["JWK","endpoint"],
+                                    "default": "JWK"
+                                }
+                            }
+                        },
+                        "allowtokenrefresh": {
+                            "type": "boolean",
+                            "description": "Allow JWT to refresh.",
+                            "default": false
+                        },
+                        "jwtInitializerTimeout": {
+                            "type": "integer",
+                            "description": "Timeout for initialization of JWT in minutes.",
+                            "default": 5
+                        },
+                        "personalAccessToken": {
+                            "type": "object",
+                            "description": "Personal Access Tokens configuration.",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "To enable Personal Access Tokens.",
+                                    "default": false
+                                }
+                            }
+                        },
+                        "saf": {
+                            "type": "object",
+                            "description": "SAF IDT provider.",
+                            "properties": {
+                                "provider": {
+                                    "type": "string",
+                                    "description": "Method of communication used by the SAF IDT provider implementation. REST is used if no value is provided.",
+                                    "default": "rest"
+                                },
+                                "urls": {
+                                    "type": "string",
+                                    "description": "URLs of the SAF IDT provider used for the token generation and verification.",
+                                    "properties": {
+                                        "authenticate": {
+                                            "type": "string",
+                                            "format": "uri",
+                                            "pattern": "^(https?):\/\/",
+                                            "description": "URL of the SAF IDT provider used to generate the SAF token on behalf of the specified user."
+                                        },
+                                        "verify": {
+                                            "type": "string",
+                                            "format": "uri",
+                                            "pattern": "^(https?):\/\/",
+                                            "description": "URL of the SAF IDT provider used to validate the SAF token."
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "rauditx": {
+                            "type": "object",
+                            "description": "Configuration for issuing SMF records.",
+                            "properties": {
+                                "onOidcUserIsMapped": {
+                                    "type": "boolean",
+                                    "description": "To enable cutting SMF record on mapping distributed user from OIDC token to mainframe one.",
+                                    "default": false
+                                },
+                                "oidcSourceUserPaths": {
+                                    "type": "string",
+                                    "description": "Comma separated JSON paths to find source user in the OIDC token to be cut in the SMF record.",
+                                    "default": "sub"
+                                }
+                            }
+                        }
+                    }
+                },
+                "service": {
+                    "type": "object",
+                    "description": "General configuration of the Gateway.",
+                    "properties": {
+                        "allowEncodedSlashes": {
+                            "type": "boolean",
+                            "description": "When this parameter is set to true, the Gateway allows encoded characters to be part of URL requests redirected through the Gateway.",
+                            "default": true
+                        },
+                        "corsEnabled": {
+                            "type": "boolean",
+                            "description": "Allow CORS on gateway.",
+                            "default": false
+                        },
+                        "corsAllowedMethods": {
+                            "type": "string",
+                            "description": "List of allowed HTTP methods when CORS is enabled.",
+                            "default": "GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS"
+                        }
+                    }
+                },
+                "storage": {
+                    "type": "object",
+                    "description": "Storage configuration for Caching service",
+                    "properties": {
+                        "evictionStrategy": {
+                            "type": "string",
+                            "description": "Strategy for caching entries eviction.",
+                            "enum": [
+                                "reject",
+                                "removeOldest"
+                            ],
+                            "default": "reject"
+                        },
+                        "mode": {
+                            "type": "string",
+                            "description": "Type of storge in caching service.",
+                            "enum": [
+                                "inMemory",
+                                "VSAM",
+                                "redis",
+                                "infinispan"
+                            ],
+                            "default": "infinispan"
+                        },
+                        "size": {
+                            "type": "integer",
+                            "description": "The number of records stored before the eviction strategy is initiated",
+                            "default": 10000
+                        },
+                        "infinispan": {
+                            "type": "object",
+                            "description": "Use Infinispan as the selected storage solution",
+                            "properties": {
+                                "jgroups": {
+                                    "type": "object",
+                                    "description": "Data synchronization between Caching instances.",
+                                    "properties": {
+                                        "port": {
+                                            "type": "integer",
+                                            "description": "The port number used by Infinispan to synchronize data among caching-service instances.",
+                                            "default": 7600
+                                        },
+                                        "host": {
+                                            "type": "string",
+                                            "description": "The hostname used by Infinispan to synchronize data among caching-service instances.",
+                                            "default": "localhost"
+                                        },
+                                        "keyExchange": {
+                                            "type": "object",
+                                            "description": "Data encryption key exchange.",
+                                            "properties": {
+                                                "port": {
+                                                    "type": "integer",
+                                                    "description": "The port number used by Infinispan to exchange encryption key among Caching Service instances.",
+                                                    "default": 7601
+                                                }
+                                            }
+                                        },
+                                        "tcp": {
+                                            "type": "object",
+                                            "description": "TCP stack",
+                                            "properties": {
+                                                "diag": {
+                                                    "type": "object",
+                                                    "description": "Cluster diagnostics",
+                                                    "properties": {
+                                                        "enabled": {
+                                                            "type": "boolean",
+                                                            "description": "Enable diagnostics of infinispan cluster",
+                                                            "default": false
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                "initialHosts": {
+                                    "type": "string",
+                                    "description": "Address of the other Caching services. Consists of jgroups port and host in the form of 'host[port]'.",
+                                    "default": "localhost[7600]"
+                                }
+                            }
+                        },
+                        "vsam": {
+                            "type": "object",
+                            "deprecated": true,
+                            "description": "When storage is selected as VSAM",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "The ZFile filename of created VSAM."
+                                },
+                                "keyLength": {
+                                    "type": "integer",
+                                    "description": "The VsamKey length",
+                                    "default": 128
+                                },
+                                "recordLength": {
+                                    "type": "integer",
+                                    "description": "The record length.",
+                                    "default": 4096
+                                },
+                                "encoding": {
+                                    "type": "string",
+                                    "description": "The character encoding.",
+                                    "default": "IBM-1047"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "server": {
+            "type": "object",
+            "description": "Configure APIML server properties.",
+            "properties": {
+                "maxConnectionsPerRoute": {
+                    "type": "integer",
+                    "description": "How many connections should exist for single route?",
+                    "default": 100
+                },
+                "maxTotalConnections": {
+                    "type": "integer",
+                    "description": "How many connections should exist in total?",
+                    "default": 1000
+                },
+                "webSocket": {
+                    "type": "object",
+                    "description": "Customize websocket server parameters",
+                    "properties": {
+                        "maxIdleTimeout": {
+                            "type": "integer",
+                            "description": "The gateway acts as a server and client. This parameters customizes the default idle timeout for its client role.",
+                            "default": 3600000
+                        },
+                        "connectTimeout": {
+                            "type": "integer",
+                            "description": "The gateway acts as a server and client. This parameters customizes the default connect timeout for its client role.",
+                            "default": 45000
+                        },
+                        "asyncWriteTimeout": {
+                            "type": "integer",
+                            "description": "The gateway acts as a server and client. This parameters customizes the default async write timeout for its client role.",
+                            "default": 60000
+                        },
+                        "requestBufferSize": {
+                            "type": "integer",
+                            "description": "Specifies the buffer size in bytes to load request headers.",
+                            "default": 8192
+                        }
+                    }
+                },
+                "ssl": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "To enable SSL/tls layer.",
+                            "default": true
+                        }
+                    }
+                }
+            }
+        },
+        "spring": {
+            "type": "object",
+            "description": "Application framework parameters",
+            "properties": {
+                "profiles": {
+                    "type": "object",
+                    "description": "Profiles that can hold multiple configuration parameters.",
+                    "properties": {
+                        "active": {
+                            "type": "string",
+                            "description": "List of the active configuration profiles.",
+                            "pattern": "^[a-zA-Z0-9]+(,[a-zA-Z0-9]+)*$"
+                        }
+                    }
+                },
+                "security": {
+                    "type": "object",
+                    "description": "Security configuration.",
+                    "properties": {
+                        "oauth2": {
+                            "type": "object",
+                            "description": "OAuth2 configuration values.",
+                            "properties": {
+                                "client": {
+                                    "type": "object",
+                                    "description": "Configuration of OAuth2 communication.",
+                                    "properties": {
+                                        "registration": {
+                                            "type": "object",
+                                            "description": "Provider specific values.",
+                                            "patternProperties": {
+                                                "^.+$": {
+                                                    "clientId": {
+                                                        "type": "string",
+                                                        "description": "The client identifier."
+                                                    },
+                                                    "clientSecret":{
+                                                        "type": "string",
+                                                        "description": "The client secret."
+                                                    },
+                                                    "redirectUri": {
+                                                        "type": "string",
+                                                        "description": "The client’s registered redirect URI that the Authorization Server redirects the end-user’s user-agent to after the end-user has authenticated and authorized access to the client."
+                                                    },
+                                                    "scope": {
+                                                        "type": "array",
+                                                        "description": "The scope(s) requested by the client during the Authorization Request flow, such as openid, email, or profile.",
+                                                        "items": {
+                                                            "type": "string",
+                                                            "description": "The scope identifier."
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "provider": {
+                                            "type": "object",
+                                            "description": "Provider specific values.",
+                                            "patternProperties": {
+                                                "^.+$": {
+                                                    "authorizationUri": {
+                                                        "type": "string",
+                                                        "format": "uri",
+                                                        "pattern": "^(https?)://",
+                                                        "description": "The Authorization Endpoint URI for the Authorization Server."
+                                                    },
+                                                    "tokenUri": {
+                                                        "type": "string",
+                                                        "format": "uri",
+                                                        "pattern": "^(https?)://",
+                                                        "description": "The Token Endpoint URI for the Authorization Server."
+                                                    },
+                                                    "userInfoUri": {
+                                                        "type": "string",
+                                                        "format": "uri",
+                                                        "pattern": "^(https?)://",
+                                                        "description": "The URL of endpoint to obtain details about user by provided token."
+                                                    },
+                                                    "userNameAttribute": {
+                                                        "type": "string",
+                                                        "description": "The name of the attribute returned in the UserInfo Response that references the Name or Identifier of the end-user."
+                                                    },
+                                                    "jwkSetUri": {
+                                                        "type": "string",
+                                                        "format": "uri",
+                                                        "pattern": "^(https?)://",
+                                                        "description": "The URI used to retrieve the JSON Web Key (JWK) Set from the Authorization Server, which contains the cryptographic key(s) used to verify the JSON Web Signature (JWS) of the ID Token and optionally the UserInfo Response."
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "apimlId": {
+            "type": "string",
+            "pattern": "^[a-z0-9]{1,64}$",
+            "description": "Specifies identifier of the domain APIML for routing purpose in the central APIML."
+        },
+        "logging": {
+            "type": "string",
+            "description": "Logging configuration for APIML single-service.",
+            "properties": {
+                "config": {
+                    "type": "string",
+                    "description": "Path to custom logback configuration file.",
+                    "minLength": 1,
+                    "maxLength": 1024
+                }
+            }
+        }
+    },
+    "$defs": {
+        "port": {
+            "type": "integer",
+            "description": "TCP network port",
+            "minimum": 1024,
+            "maximum": 65535
+        },
+        "routes": {
+            "type": "array",
+            "description": "Routing parameters",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "gatewayUrl": {
+                        "type": "string",
+                        "description": "The portion of the gateway URL which is replaced by the serviceUrl path."
+                    },
+                    "serviceUrl": {
+                        "type": "string",
+                        "description": "The portion of the service instance URL path which replaces the gatewayUrl part."
+                    }
+                },
+                "required": ["gatewayUrl","serviceUrl"]
+            }
+        }
+    }
+}

@@ -42,16 +42,16 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
+import org.springframework.cloud.netflix.eureka.server.EurekaServerConfigBean;
 import org.springframework.context.ApplicationListener;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
 import javax.net.ssl.SSLContext;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static com.netflix.discovery.util.DiscoveryBuildInfo.buildVersion;
 
@@ -91,8 +91,28 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
         return new ApimlPeerEurekaNode(registry, targetHost, peerEurekaNodeUrl, replicationClient, serverConfig, maxPeerRetries);
     }
 
+    private int getPort(int defaultPort) {
+        var propertyResolver = ((EurekaServerConfigBean) this.serverConfig).getPropertyResolver();
+        return Stream.of(
+                "apiml.internal-discovery.port",
+                "apiml.service.port"
+            )
+            .map(propertyResolver::getProperty)
+            .filter(Objects::nonNull)
+            .map(Integer::parseInt)
+            .findFirst()
+            .orElse(defaultPort);
+    }
+
+    @Override
+    public boolean isThisMyUrl(String url) {
+        int urlPort = URI.create(url).getPort();
+        int instancePort = getPort(urlPort);
+        return (urlPort == instancePort) && super.isThisMyUrl(url);
+    }
+
     private Jersey3ReplicationClient createReplicationClient(EurekaServerConfig config,
-                                                                    ServerCodecs serverCodecs, String serviceUrl, Collection<ClientRequestFilter> additionalFilters) {
+                                                             ServerCodecs serverCodecs, String serviceUrl, Collection<ClientRequestFilter> additionalFilters) {
         String name = Jersey3ReplicationClient.class.getSimpleName() + ": " + serviceUrl + "apps/: ";
 
         EurekaJersey3Client jerseyClient;

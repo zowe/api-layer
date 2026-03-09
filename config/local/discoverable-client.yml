@@ -27,3 +27,9 @@ server:
         keyStorePassword: password
         trustStore: keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "*"

@@ -125,6 +125,7 @@ echo "jar file: ${JAR_FILE}"
 # APIML-lite loader path (includes IRRRacf.jar on z/OS)
 if [ "$(uname)" = "OS/390" ]; then
     APIML_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
+    add_profile "zos"
 else
     APIML_LOADER_PATH=${COMMON_LIB}
 fi
@@ -186,6 +187,33 @@ if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]; then
     LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
 fi
 
+# Start OpenTelemetry
+if [ "$ZWE_configs_telemetry_enabled" = "true" ]; then
+    DISABLE_OTEL=false
+else
+    DISABLE_OTEL=true
+fi
+
+if [ -n "${ZWE_configs_telemetry_attributes_deployment_environment_name}" ]; then
+    OTEL_ATTRIBUTES="-Dotel.resource.attributes.deployment.environment.name=${ZWE_configs_telemetry_attributes_deployment_environment_name}"
+fi
+if [ -n "${ZWE_configs_telemetry_service_name}" ]; then
+    OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.service.name=${ZWE_configs_telemetry_service_name}"
+fi
+if [ -n "${ZWE_configs_telemetry_service_namespace}" ]; then
+    OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.service.namespace=${ZWE_configs_telemetry_service_namespace}"
+fi
+if [ -n "${ZWE_configs_telemetry_attributes_zos_sysplex_name}" ]; then
+    OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.zos.sysplex.name=${ZWE_configs_telemetry_attributes_zos_sysplex_name}"
+fi
+if [ -n "${ZWE_configs_telemetry_attributes_zos_smf_id}" ]; then
+    OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.zos.smf.id=${ZWE_configs_telemetry_attributes_zos_smf_id}"
+fi
+if [ -n "${ZWE_configs_telemetry_attributes_mainframe_lpar_name}" ]; then
+    OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.mainframe.lpar.name=${ZWE_configs_telemetry_attributes_mainframe_lpar_name}"
+fi
+# End OpenTelemetry
+
 APIML_CODE=AG
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
@@ -198,6 +226,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
     ${EXTERNAL_URL} \
+    ${OTEL_ATTRIBUTES} \
     ${CUSTOM_JVM_OPTS} \
     -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_haInstance_id:-localhost} \
     -Dapiml.catalog.customStyle.backgroundColor=${ZWE_components_apicatalog_apiml_catalog_customStyle_backgroundColor:-${ZWE_configs_apiml_catalog_customStyle_backgroundColor:-}} \
@@ -225,8 +254,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.gateway.refresh-interval-ms=${ZWE_components_gateway_gateway_registry_refreshIntervalMs:-${ZWE_configs_gateway_registry_refreshIntervalMs:-30000}} \
     -Dapiml.gateway.registry.enabled=${ZWE_components_gateway_apiml_gateway_registry_enabled:-${ZWE_configs_apiml_gateway_registry_enabled:-false}} \
     -Dapiml.gateway.registry.metadata-key-allow-list=${ZWE_components_gateway_gateway_registry_metadataKeyAllowList:-${ZWE_configs_gateway_registry_metadataKeyAllowList:-}} \
-    -Dapiml.gateway.servicesToLimitRequestRate=${ZWE_components_gateway_apiml_gateway_servicesToLimitRequestRate:-${ZWE_configs_apiml_gateway_servicesToLimitRequestRate:-}} \
     -Dapiml.gateway.servicesToDisableRetry=${ZWE_components_gateway_apiml_gateway_servicesToDisableRetry:-${ZWE_configs_apiml_gateway_servicesToDisableRetry:-}} \
+    -Dapiml.gateway.servicesToLimitRequestRate=${ZWE_components_gateway_apiml_gateway_servicesToLimitRequestRate:-${ZWE_configs_apiml_gateway_servicesToLimitRequestRate:-}} \
     -Dapiml.health.protected=${ZWE_components_gateway_apiml_health_protected:-${ZWE_configs_apiml_health_protected:-true}} \
     -Dapiml.httpclient.ssl.enabled-protocols=${client_enabled_protocols} \
     -Dapiml.internal-discovery.port=${ZWE_components_discovery_port:-${ZWE_configs_internal_discovery_port:-7553}} \
@@ -256,6 +285,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.oidc.userInfo.uri=${ZWE_components_gateway_apiml_security_oidc_userInfo_uri:-${ZWE_configs_apiml_security_oidc_userInfo_uri:-}} \
     -Dapiml.security.oidc.validationType=${ZWE_components_gateway_apiml_security_oidc_validationType:-${ZWE_configs_apiml_security_oidc_validationType:-"JWK"}} \
     -Dapiml.security.personalAccessToken.enabled=${ZWE_components_gateway_apiml_security_personalAccessToken_enabled:-${ZWE_configs_apiml_security_personalAccessToken_enabled:-false}} \
+    -Dapiml.security.rauditx.oidcSourceUserPaths=${ZWE_configs_apiml_security_rauditx_oidcSourceUserPaths:-${ZWE_components_gateway_apiml_security_rauditx_oidcSourceUserPaths:-sub}} \
+    -Dapiml.security.rauditx.onOidcUserIsMapped=${ZWE_configs_apiml_security_rauditx_onOidcUserIsMapped:-${ZWE_components_gateway_apiml_security_rauditx_onOidcUserIsMapped:-false}} \
     -Dapiml.security.saf.provider=${ZWE_components_gateway_apiml_security_saf_provider:-${ZWE_configs_apiml_security_saf_provider:-"rest"}} \
     -Dapiml.security.saf.urls.authenticate=${ZWE_components_gateway_apiml_security_saf_urls_authenticate:-${ZWE_configs_apiml_security_saf_urls_authenticate:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf/authenticate"}} \
     -Dapiml.security.saf.urls.verify=${ZWE_components_gateway_apiml_security_saf_urls_verify:-${ZWE_configs_apiml_security_saf_urls_verify:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf/verify"}} \
@@ -268,11 +299,11 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.x509.externalMapperUrl=${ZWE_components_gateway_apiml_security_x509_externalMapperUrl:-${ZWE_configs_apiml_security_x509_externalMapperUrl:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/certificate/x509/map"}} \
     -Dapiml.security.x509.externalMapperUser=${ZWE_components_gateway_apiml_security_x509_externalMapperUser:-${ZWE_configs_apiml_security_x509_externalMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}}} \
     -Dapiml.security.x509.registry.allowedUsers=${ZWE_components_gateway_apiml_security_x509_registry_allowedUsers:-${ZWE_configs_apiml_security_x509_registry_allowedUsers:-}} \
-    -Dapiml.security.zosmf.applid=${ZWE_components_gateway_apiml_security_zosmf_applid:-${ZWE_configs_apiml_security_zosmf_applid:-IZUDFLT}} \
+    -Dapiml.security.zosmf.applid=${ZWE_zosmf_applId:-IZUDFLT} \
     -Dapiml.service.allowEncodedSlashes=${ZWE_components_gateway_apiml_service_allowEncodedSlashes:-${ZWE_configs_apiml_service_allowEncodedSlashes:-true}} \
     -Dapiml.service.apimlId=${ZWE_components_gateway_apimlId:-${ZWE_configs_apimlId:-}} \
-    -Dapiml.service.corsEnabled=${ZWE_components_gateway_apiml_service_corsEnabled:-${ZWE_configs_apiml_service_corsEnabled:-false}} \
     -Dapiml.service.corsAllowedMethods=${ZWE_components_gateway_apiml_service_corsAllowedMethods:-${ZWE_configs_apiml_service_corsAllowedMethods:-GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}} \
+    -Dapiml.service.corsEnabled=${ZWE_components_gateway_apiml_service_corsEnabled:-${ZWE_configs_apiml_service_corsEnabled:-false}} \
     -Dapiml.service.forwardClientCertEnabled=${ZWE_components_gateway_apiml_security_x509_enabled:-${ZWE_configs_apiml_security_x509_enabled:-false}} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_components_gateway_port:-${ZWE_configs_port:-7554}} \
@@ -296,6 +327,12 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Djgroups.tcp.diag.enabled=${ZWE_components_caching_service_storage_infinispan_jgroups_tcp_diag_enabled:-${ZWE_configs_storage_infinispan_jgroups_tcp_diag_enabled:-false}} \
     -Dloader.path=${APIML_LOADER_PATH} \
     -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
+    -Dotel.exporter.otlp.endpoint="${ZWE_configs_telemetry_exporter_endpoint:-http://localhost:4318}" \
+    -Dotel.exporter.otlp.protocol="${ZWE_configs_telemetry_exporter_protocol:-http/protobuf}" \
+    -Dotel.logs.exporter="${ZWE_configs_telemetry_logs_exporter:-otlp}" \
+    -Dotel.metrics.exporter="${ZWE_configs_telemetry_metrics_exporter:-otlp}" \
+    -Dotel.traces.exporter="${ZWE_configs_telemetry_traces_exporter:-otlp}" \
+    -Dotel.sdk.disabled=${DISABLE_OTEL} \
     -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \
     -Dserver.maxConnectionsPerRoute=${ZWE_components_gateway_server_maxConnectionsPerRoute:-${ZWE_configs_server_maxConnectionsPerRoute:-100}} \
     -Dserver.maxTotalConnections=${ZWE_components_gateway_server_maxTotalConnections:-${ZWE_configs_server_maxTotalConnections:-1000}} \
@@ -316,8 +353,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.webSocket.maxIdleTimeout=${ZWE_components_gateway_server_webSocket_maxIdleTimeout:-${ZWE_configs_server_webSocket_maxIdleTimeout:-3600000}} \
     -Dspring.cloud.gateway.server.webflux.httpclient.websocket.max-frame-payload-length=${ZWE_components_gateway_server_webSocket_requestBufferSize:-${ZWE_configs_server_webSocket_requestBufferSize:-8192}} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
-    -Dapiml.security.rauditx.onOidcUserIsMapped=${ZWE_configs_apiml_security_rauditx_onOidcUserIsMapped:-${ZWE_components_gateway_apiml_security_rauditx_onOidcUserIsMapped:-false}} \
-    -Dapiml.security.rauditx.oidcSourceUserPaths=${ZWE_configs_apiml_security_rauditx_oidcSourceUserPaths:-${ZWE_components_gateway_apiml_security_rauditx_oidcSourceUserPaths:-sub}} \
     -jar "${JAR_FILE}" &
 
 pid=$!

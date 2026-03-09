@@ -21,9 +21,26 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DiscoverableClientConfiguration implements ServiceConfiguration {
+
     private String scheme;
     private String applId;
     private String host;
     private int port;
     private int instances;
+
+    @Override
+    public String getServiceId() {
+        return "discoverableclient";
+    }
+
+    @Override
+    public String getServletContext() {
+        return "/" + getServiceId() + "/";
+    }
+
+    @Override
+    public boolean isBasicAuthenticationSupported() {
+        return false;
+    }
+
 }

@@ -39,7 +39,7 @@ dependencyResolutionManagement {
             version('hamcrest', '3.0')
             version('httpClient4', '4.5.14')
             version('httpClient5', '5.6')
-            version('infinispan', '15.2.6.Final')
+            version('infinispan', '16.1.0')
             version('jacksonAnnotations', '2.21')
             version('jacksonCore', '2.21.0')
             version('jacksonDatabind', '2.21.0')
@@ -50,6 +50,7 @@ dependencyResolutionManagement {
             version('jakartaServlet', '6.1.0')
             version('javaxAnnotation', '1.3.2')
             version('openTelemetry-starter', '2.24.0')
+            version('openTelemetry-core', '1.58.0')
 
             // Eureka requires this specific version of Jakarta JAXB bindings
             version('jaxbApi') {
@@ -185,6 +186,7 @@ dependencyResolutionManagement {
             library('infinispan_spring_boot3_starter_embedded', 'org.infinispan', 'infinispan-spring-boot3-starter-embedded').versionRef('infinispan')
             library('infinispan_lock', 'org.infinispan', 'infinispan-clustered-lock').versionRef('infinispan')
             library('infinispan_jboss_marshalling', 'org.infinispan', 'infinispan-jboss-marshalling').versionRef('infinispan')
+            library('infinispan_annotations', 'org.infinispan', 'infinispan-component-annotations').versionRef('infinispan')
             library('jackson_annotations', 'com.fasterxml.jackson.core', 'jackson-annotations').versionRef('jacksonAnnotations')
             library('jackson_core', 'com.fasterxml.jackson.core', 'jackson-core').versionRef('jacksonCore')
             library('jackson_databind', 'com.fasterxml.jackson.core', 'jackson-databind').versionRef('jacksonDatabind')
@@ -252,6 +254,8 @@ dependencyResolutionManagement {
             library('bucket4j_core', 'com.bucket4j', 'bucket4j_jdk17-core').versionRef('bucket4j')
             library('xstren', 'com.thoughtworks.xstream', 'xstream').versionRef('xstream') // to avoid security vulnerability CVE-2024-47072
             library('opentelemetry_spring_boot_starter', 'io.opentelemetry.instrumentation','opentelemetry-spring-boot-starter').versionRef('openTelemetry-starter')
+            library('opentelemetry_sdk_testing', 'io.opentelemetry','opentelemetry-sdk-testing').versionRef('openTelemetry-core')
+            library('opentelemetry_sdk_extension_autoconfigure_spi', 'io.opentelemetry','opentelemetry-sdk-extension-autoconfigure-spi').versionRef('openTelemetry-core')
 
             // Sample apps only
             library('jersey_client4', 'com.sun.jersey.contribs', 'jersey-apache-client4').versionRef('jerseySun')
@@ -289,7 +293,7 @@ dependencyResolutionManagement {
             library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInline')
 
 
-            bundle('infinispan', [ 'infinispan_spring_boot3_starter_embedded', 'infinispan_lock', 'infinispan_jboss_marshalling' ])
+            bundle('infinispan', [ 'infinispan_spring_boot3_starter_embedded', 'infinispan_lock', 'infinispan_jboss_marshalling', 'infinispan_annotations' ])
             bundle('jaxb', ['jaxbApi', 'jaxbImpl'])
             bundle('modulith', ['modulith', 'modulith_core', 'jmolecules'])
         }

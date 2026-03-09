@@ -50,3 +50,9 @@ spring:
     output:
         ansi:
             enabled: always
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "*"

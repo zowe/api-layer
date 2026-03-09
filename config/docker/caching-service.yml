@@ -28,3 +28,9 @@ spring:
             enabled: always
     profiles:
         include: debug
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "*"
