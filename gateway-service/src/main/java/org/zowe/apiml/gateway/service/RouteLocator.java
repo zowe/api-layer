@@ -152,6 +152,12 @@ public class RouteLocator implements RouteDefinitionLocator {
         pageRedirectionFilter.addArg("serviceUrl", routedService.getServiceUrl());
         serviceRelated.add(pageRedirectionFilter);
 
+        FilterDefinition otelRequestBasicFilter = new FilterDefinition();
+        otelRequestBasicFilter.setName("PageRedirectionFilterFactory");
+        otelRequestBasicFilter.addArg("serviceId", serviceInstance.getServiceId());
+        otelRequestBasicFilter.addArg("instanceId", serviceInstance.getInstanceId());
+        serviceRelated.add(otelRequestBasicFilter);
+
         if (servicesToDisableRetry.contains(serviceInstance.getServiceId().toLowerCase())) {
             return join(commonNoRetryFilters, serviceRelated);
         } else {

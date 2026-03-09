@@ -15,6 +15,7 @@ import lombok.EqualsAndHashCode;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
@@ -30,6 +31,11 @@ public class SafIdtFilterFactory extends AbstractTokenFilterFactory<SafIdtFilter
     public SafIdtFilterFactory(ZaasSchemeTransform zaasSchemeTransform, InstanceInfoService instanceInfoService, MessageService messageService) {
         super(SafIdtFilterFactory.Config.class, instanceInfoService, messageService);
         this.zaasSchemeTransform = zaasSchemeTransform;
+    }
+
+    @Override
+    protected AuthenticationScheme getAuthenticationScheme() {
+        return AuthenticationScheme.SAF_IDT;
     }
 
     @Override

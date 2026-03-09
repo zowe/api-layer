@@ -21,9 +21,11 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.product.opentelemetry.RoutingContext;
 import org.zowe.apiml.ticket.TicketResponse;
 import reactor.core.publisher.Mono;
 
@@ -61,9 +63,13 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
 
     @Override
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, AuthorizationResponse<TicketResponse> ticketResponse) {
+        RoutingContext.of(exchange).authMethod(AuthenticationScheme.HTTP_BASIC_PASSTICKET);
+
         ServerHttpRequest request;
         var response = ticketResponse.getBody();
         if (response != null) {
+            RoutingContext.of(exchange).userId(response.getUserId());
+
             request = cleanHeadersOnAuthSuccess(exchange);
 
             String encodedCredentials = Base64.getEncoder().encodeToString((response.getUserId() + ":" + response.getTicket()).getBytes(StandardCharsets.UTF_8));

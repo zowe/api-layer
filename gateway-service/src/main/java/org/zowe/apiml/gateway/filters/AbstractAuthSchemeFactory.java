@@ -24,8 +24,9 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
-import org.zowe.apiml.security.common.util.X509Util;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.product.opentelemetry.RoutingContext;
+import org.zowe.apiml.security.common.util.X509Util;
 import org.zowe.apiml.util.CookieUtil;
 import reactor.core.publisher.Mono;
 
@@ -200,6 +201,8 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
      * @return mutated request
      */
     protected ServerHttpRequest cleanHeadersOnAuthFail(ServerWebExchange exchange, String errorMessage) {
+        RoutingContext.of(exchange).authenticationFailed();
+
         return exchange.getRequest().mutate().headers(headers -> {
             // update original request - to remove all potential headers and cookies with credentials
             Arrays.stream(CERTIFICATE_HEADERS).forEach(headers::remove);
@@ -218,6 +221,8 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
      * @return mutated request
      */
     protected ServerHttpRequest cleanHeadersOnAuthSuccess(ServerWebExchange exchange) {
+        RoutingContext.of(exchange).authenticationSuccess();
+
         return exchange.getRequest().mutate().headers(headers -> {
             // get all current cookies
             List<HttpCookie> cookies = CookieUtil.readCookies(headers).toList();
