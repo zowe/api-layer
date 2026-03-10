@@ -13,6 +13,7 @@ package org.zowe.apiml.security.common.util;
 import com.google.common.annotations.VisibleForTesting;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.resolver.DefaultAddressResolverGroup;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.product.web.HttpConfig;
@@ -94,7 +95,9 @@ public class ConnectionUtil {
                 sslEngine.setSSLParameters(sslParameters);
             });
         }
-        return httpClient.secure(sslContextBuilder.build());
+        return httpClient
+            .resolver(DefaultAddressResolverGroup.INSTANCE)
+            .secure(sslContextBuilder.build());
     }
 
     private boolean isHostnameVerificationEnabled(HttpConfig config) {
