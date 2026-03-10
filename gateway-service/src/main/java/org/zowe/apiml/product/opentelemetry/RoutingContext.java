@@ -13,7 +13,6 @@ package org.zowe.apiml.product.opentelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -44,7 +43,7 @@ public final class RoutingContext {
     }
 
     public static RoutingContext of(ServerWebExchange exchange) {
-        return (RoutingContext) exchange.getAttributes().computeIfAbsent(OTEL_CONTEXT, RouteDefinition::new);
+        return (RoutingContext) exchange.getAttributes().computeIfAbsent(OTEL_CONTEXT, key -> new RoutingContext());
     }
 
     public RoutingContext put(final String key, final String value) {
