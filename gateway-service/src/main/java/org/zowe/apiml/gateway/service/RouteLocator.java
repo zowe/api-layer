@@ -13,7 +13,6 @@ package org.zowe.apiml.gateway.service;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
@@ -50,6 +49,9 @@ public class RouteLocator implements RouteDefinitionLocator {
 
     @Value("${apiml.service.forwardClientCertEnabled:false}")
     private boolean forwardingClientCertEnabled;
+
+    @Value("${otel.sdk.disabled:false}")
+    private boolean otelDissabled;
 
     @Value("${apiml.gateway.servicesToLimitRequestRate:}")
     List<String> servicesToLimitRequestRateProperty;
@@ -152,11 +154,13 @@ public class RouteLocator implements RouteDefinitionLocator {
         pageRedirectionFilter.addArg("serviceUrl", routedService.getServiceUrl());
         serviceRelated.add(pageRedirectionFilter);
 
-        FilterDefinition otelRequestBasicFilter = new FilterDefinition();
-        otelRequestBasicFilter.setName("PageRedirectionFilterFactory");
-        otelRequestBasicFilter.addArg("serviceId", serviceInstance.getServiceId());
-        otelRequestBasicFilter.addArg("instanceId", serviceInstance.getInstanceId());
-        serviceRelated.add(otelRequestBasicFilter);
+        if (!otelDissabled) {
+            FilterDefinition otelRequestBasicFilter = new FilterDefinition();
+            otelRequestBasicFilter.setName("OtelRequestBasicFilterFactory");
+            otelRequestBasicFilter.addArg("serviceId", serviceInstance.getServiceId());
+            otelRequestBasicFilter.addArg("instanceId", serviceInstance.getInstanceId());
+            serviceRelated.add(otelRequestBasicFilter);
+        }
 
         if (servicesToDisableRetry.contains(serviceInstance.getServiceId().toLowerCase())) {
             return join(commonNoRetryFilters, serviceRelated);
