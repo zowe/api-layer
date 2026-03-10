@@ -11,6 +11,7 @@
 package org.zowe.apiml.acceptance;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -85,18 +86,28 @@ class OpenTelemetryResourceAttributesZosTest {
 
     @Nested
     @AcceptanceTest
+    @TestPropertySource(
+        properties = {
+            "otel.sdk.disabled=false",
+            "otel.metrics.exporter=none",
+            "otel.traces.exporter=none"
+        }
+    )
     @ActiveProfiles({ "OpenTelemetryTest", "zos" })
     class WhenOnboardedService extends AcceptanceTestWithMockServices {
 
         @Autowired
         private InMemoryMetricReader metricReader;
 
+        @Autowired
+        private InMemoryLogRecordExporter logRecordExporter;
+
         @BeforeAll
         void startMockServices() {
             var mockService = mockService("serviceid1")
                 .scope(Scope.CLASS)
                 .authenticationScheme(AuthenticationScheme.ZOWE_JWT)
-                .addEndpoint("/200")
+                .addEndpoint("/serviceid1/200")
             .and().start();
         }
 
@@ -109,6 +120,7 @@ class OpenTelemetryResourceAttributesZosTest {
             .statusCode(200);
 
             var metrics = metricReader.collectAllMetrics();
+            var logs = logRecordExporter.getFinishedLogRecordItems();
             assertFalse(metrics.isEmpty(), "No data received");
 
             metrics.stream()
