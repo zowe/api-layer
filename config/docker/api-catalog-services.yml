@@ -22,7 +22,7 @@ server:
         trustStoreType: PKCS12
 
 apiml:
-    httpclient:
+    service:
         ssl:
             key-store: /docker/client-cert.p12
             key-store-password: password
@@ -30,7 +30,6 @@ apiml:
             key-alias: localhost
             trust-store: /docker/all-services.truststore.p12
             trust-store-password: password
-    service:
         hostname: api-catalog-services
         port: 10014
         discoveryServiceUrls: https://discovery-service:10011/eureka/

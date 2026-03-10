@@ -53,37 +53,37 @@ public class HttpConfig implements InitializingBean {
 
     private static final char[] KEYRING_PASSWORD = "password".toCharArray();
 
-    @Value("${apiml.httpclient.ssl.protocol:${server.ssl.protocol:TLSv1.2}}")
+    @Value("${apiml.service.ssl.protocol:${server.ssl.protocol:TLSv1.2}}")
     private String protocol;
 
-    @Value("${apiml.httpclient.ssl.enabled-protocols:TLSv1.2,TLSv1.3}")
+    @Value("${apiml.service.ssl.enabled-protocols:TLSv1.2,TLSv1.3}")
     private String[] supportedProtocols;
 
-    @Value("${apiml.httpclient.ssl.ciphers:${server.ssl.ciphers:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384}}")
+    @Value("${apiml.service.ssl.ciphers:${server.ssl.ciphers:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384}}")
     private String[] ciphers;
 
-    @Value("${apiml.httpclient.ssl.trust-store:${server.ssl.trustStore:#{null}}}")
+    @Value("${apiml.service.ssl.trust-store:${server.ssl.trustStore:#{null}}}")
     private String trustStorePath;
 
-    @Value("${apiml.httpclient.ssl.trust-store-password:${server.ssl.trustStorePassword:#{null}}}")
+    @Value("${apiml.service.ssl.trust-store-password:${server.ssl.trustStorePassword:#{null}}}")
     private char[] trustStorePassword;
 
-    @Value("${apiml.httpclient.ssl.trust-store-type:${server.ssl.trustStoreType:PKCS12}}")
+    @Value("${apiml.service.ssl.trust-store-type:${server.ssl.trustStoreType:PKCS12}}")
     private String trustStoreType;
 
-    @Value("${apiml.httpclient.ssl.key-alias:${server.ssl.keyAlias:#{null}}}")
+    @Value("${apiml.service.ssl.key-alias:${server.ssl.keyAlias:#{null}}}")
     private String keyAlias;
 
-    @Value("${apiml.httpclient.ssl.key-store:${server.ssl.keyStore:#{null}}}")
+    @Value("${apiml.service.ssl.key-store:${server.ssl.keyStore:#{null}}}")
     private String keyStorePath;
 
-    @Value("${apiml.httpclient.ssl.key-store-password:${server.ssl.keyStorePassword:#{null}}}")
+    @Value("${apiml.service.ssl.key-store-password:${server.ssl.keyStorePassword:#{null}}}")
     private char[] keyStorePassword;
 
-    @Value("${apiml.httpclient.ssl.key-password:${server.ssl.keyPassword:#{null}}}")
+    @Value("${apiml.service.ssl.key-password:${server.ssl.keyPassword:#{null}}}")
     private char[] keyPassword;
 
-    @Value("${apiml.httpclient.ssl.key-store-type:${server.ssl.keyStoreType:PKCS12}}")
+    @Value("${apiml.service.ssl.key-store-type:${server.ssl.keyStoreType:PKCS12}}")
     private String keyStoreType;
 
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
@@ -92,7 +92,7 @@ public class HttpConfig implements InitializingBean {
     @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifySslCertificatesOfServices;
 
-    @Value("${apiml.httpclient.ssl.trust-store-required:${server.ssl.trustStoreRequired:false}}")
+    @Value("${apiml.service.ssl.trust-store-required:${server.ssl.trustStoreRequired:false}}")
     private boolean trustStoreRequired;
 
     @Value("${server.maxConnectionsPerRoute:#{10}}")

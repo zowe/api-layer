@@ -126,7 +126,7 @@ apiml:
 
             keyAlias: ${server.ssl.keyAlias}
             keyPassword: ${server.ssl.keyPassword}
-            keyStore: ${server.ssl.keyStore}
+            keyStore: keystore/docker/server-only.p12
             keyStorePassword: ${server.ssl.keyStorePassword}
             trustStore: ${server.ssl.trustStore}
             trustStorePassword: ${server.ssl.trustStorePassword}

@@ -1,14 +1,13 @@
 spring.profiles.include: diag, debug
 apiml:
-  httpclient:
-      ssl:
-          key-store: /docker/client-cert.p12
-          key-store-password: password
-          key-password: password
-          key-alias: localhost
-          trust-store: /docker/all-services.truststore.p12
-          trust-store-password: password
   service:
+    ssl:
+        key-store: /docker/client-cert.p12
+        key-store-password: password
+        key-password: password
+        key-alias: localhost
+        trust-store: /docker/all-services.truststore.p12
+        trust-store-password: password
     hostname: zaas-service
     discoveryServiceUrls: https://discovery-service:10011/eureka/
   security:
