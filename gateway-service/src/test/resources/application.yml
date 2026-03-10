@@ -67,6 +67,10 @@ logging:
         org.springframework.beans: WARN
         reactor.netty: DEBUG
 
+otel:
+    sdk:
+        disabled: true
+
 management:
     endpoint:
       gateway:
