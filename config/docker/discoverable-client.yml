@@ -20,9 +20,6 @@ apiml:
             key-alias: localhost
             trust-store: /docker/all-services.truststore.p12
             trust-store-password: password
-            keyAlias: localhost
-            keyPassword: password
-            keyStore: /docker/client-cert.p12
 
 eureka:
     client:

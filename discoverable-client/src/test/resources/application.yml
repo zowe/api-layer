@@ -31,14 +31,6 @@ spring:
 
 apiml:
     enabled: true
-    httpclient:
-            ssl:
-                key-store: ${server.ssl.keyStore}
-                key-store-password:  ${server.ssl.keyStorePassword}
-                key-password:  ${server.ssl.keyStorePassword}
-                key-alias: ${server.ssl.keyAlias}
-                trust-store: ${server.ssl.trustStore}
-                trust-store-password: ${server.ssl.trustStorePassword}
     service:
         serviceId: discoverableclient
         title: Service Spring Onboarding Enabler sample application API
