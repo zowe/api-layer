@@ -203,7 +203,7 @@ management:
     endpoints:
         migrate-legacy-ids: true
         web:
-            base-path: /application
+            base-path: /cachingservice/application
             exposure:
                 include: health,info,loggers
 ---
