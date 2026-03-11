@@ -11,6 +11,7 @@
 package org.zowe.apiml.acceptance;
 
 import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
+import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,11 @@ public class OpenTelemetryTestConfig {
     @Bean
     InMemoryMetricReader inMemoryMetricReader() {
         return InMemoryMetricReader.create();
+    }
+
+    @Bean
+    InMemoryLogRecordExporter inMemoryLogRecordExporter() {
+        return InMemoryLogRecordExporter.create();
     }
 
     @Bean

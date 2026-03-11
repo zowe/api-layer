@@ -50,8 +50,8 @@ public class RouteLocator implements RouteDefinitionLocator {
     @Value("${apiml.service.forwardClientCertEnabled:false}")
     private boolean forwardingClientCertEnabled;
 
-    @Value("${otel.sdk.disabled:false}")
-    private boolean otelDissabled;
+    @Value("${otel.sdk.disabled:true}")
+    private boolean otelDisabled;
 
     @Value("${apiml.gateway.servicesToLimitRequestRate:}")
     List<String> servicesToLimitRequestRateProperty;
@@ -154,7 +154,7 @@ public class RouteLocator implements RouteDefinitionLocator {
         pageRedirectionFilter.addArg("serviceUrl", routedService.getServiceUrl());
         serviceRelated.add(pageRedirectionFilter);
 
-        if (!otelDissabled) {
+        if (!otelDisabled) {
             FilterDefinition otelRequestBasicFilter = new FilterDefinition();
             otelRequestBasicFilter.setName("OtelRequestBasicFilterFactory");
             otelRequestBasicFilter.addArg("serviceId", serviceInstance.getServiceId());
