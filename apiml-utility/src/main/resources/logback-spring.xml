@@ -67,14 +67,16 @@
             <root level="INFO">
                 <appender-ref ref="STDOUT"/>
                 <appender-ref ref="FILE"/>
-                <appender-ref ref="OpenTelemetry"/>
             </root>
         </then>
         <else>
             <root level="INFO">
                 <appender-ref ref="STDOUT"/>
-                <appender-ref ref="OpenTelemetry"/>
             </root>
         </else>
     </if>
+
+    <logger name="org.zowe.apiml.opentelemetry" level="INFO">
+        <appender-ref ref="OpenTelemetry" />
+    </logger>
 </configuration>

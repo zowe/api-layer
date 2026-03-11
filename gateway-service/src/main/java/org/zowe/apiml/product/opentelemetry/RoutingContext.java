@@ -13,6 +13,7 @@ package org.zowe.apiml.product.opentelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -92,7 +93,8 @@ public final class RoutingContext {
     }
 
     public void issue() {
-
+        var logger = LoggerFactory.getLogger("org.zowe.apiml.opentelemetry");
+        logger.info(attributesBuilder.build().asMap().toString());
     }
 
 }
