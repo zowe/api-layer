@@ -104,10 +104,32 @@ task runStartUpCheck(type: Test) {
     systemProperties System.properties
     useJUnitPlatform {
         includeTags 'StartupCheck'
+        excludeTags 'OpenTelemetryTest'
     }
     outputs.upToDateWhen { false }
 }
 
+task runStartUpCheckWithOpenTelemetry(type: Test) {
+    group 'integration tests'
+    description "Check that the API Mediation Layer is up and running with graceful wait for OpenTelemetry"
+
+    systemProperties System.properties
+    useJUnitPlatform {
+        includeTags 'StartupCheck'
+    }
+    outputs.upToDateWhen { false }
+}
+
+task runUnknownHostnamesTests(type: Test) {
+    group 'integration tests'
+    description "Run integration tests where hostnames validation is disabled"
+
+    systemProperties System.properties
+    useJUnitPlatform {
+        includeTags 'UnknownHostnamesTest'
+    }
+    outputs.upToDateWhen { false }
+}
 task runLocalIntegrationTests(type: Test) {
     group "Integration tests"
     description "Run integration tests that are not dependent on mainframe"
@@ -124,7 +146,8 @@ task runLocalIntegrationTests(type: Test) {
             'HATest',
             'ChaoticHATest',
             'OidcOauth2Test',
-            'MultipleRegistrationsTest'
+            'MultipleRegistrationsTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
     outputs.upToDateWhen { false }
@@ -146,7 +169,8 @@ task runAllIntegrationTestsNormal(type: Test) {
             'ChaoticHATest',
             'NotAttlsTest',
             'OidcOauth2Test',
-            'MultipleRegistrationsTest'
+            'MultipleRegistrationsTest',
+            'InfinispanJGroupStabilityTest'
         )
 
     }
@@ -202,7 +226,8 @@ task runAllIntegrationTestsForZoweNonHaTestingOnZos(type: Test) {
             'SAFProviderTest',
             'GatewayProxyTest',
             'GatewayCentralRegistry',
-            'SafIdTokenTest'
+            'SafIdTokenTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 
@@ -249,7 +274,8 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
             'SafIdTokenTest',
             'ChaoticHATest',
             'RateLimitTest',
-            'GraphQLTest'
+            'GraphQLTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 
@@ -299,7 +325,8 @@ task runAllIntegrationTestsForZoweModulithNonHaTestingOnZos(type: Test) {
             'GatewayCentralRegistry',
             'SafIdTokenTest',
             'ZaasTest', // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
-            'NonModulithTest'
+            'NonModulithTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 
@@ -348,7 +375,10 @@ task runAllIntegrationTestsForZoweModulithHaTestingOnZos(type: Test) {
             'ChaoticHATest',
             'GraphQLTest',
             'GraphQLTest',
-            'ZaasTest' // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
+            'ZaasTest', // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
+            'NonModulithTest',
+            'InfinispanJGroupStabilityTest',
+            'RateLimitTest'
         )
     }
 
@@ -381,7 +411,8 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
             'ChaoticHATest',
             'OidcOauth2Test',
             'MultipleRegistrationsTest',
-            'NotForMainframeTest'
+            'NotForMainframeTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
     outputs.upToDateWhen { false }
@@ -412,7 +443,8 @@ task runCITests(type: Test) {
             'StickySessionLbHaTest',
             'ChaoticHATest',
             'OidcOauth2Test',
-            'MultipleRegistrationsTest'
+            'MultipleRegistrationsTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 }
@@ -449,7 +481,8 @@ task runContainerModulithTests(type: Test) {
             'GatewayCentralRegistry',
             'ZaasTest',
             'ApiCatalogStandaloneTest',
-            'NonModulithTest'
+            'NonModulithTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 }
@@ -483,7 +516,8 @@ task runContainerTests(type: Test) {
             'GatewayProxyTest',
             'GatewayServiceRouting',
             'GatewayCentralRegistry',
-            'ZaasTest'
+            'ZaasTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 }
@@ -534,7 +568,8 @@ task runBaseTests(type: Test) {
             'GatewayProxyTest',
             'GatewayServiceRouting',
             'GatewayCentralRegistry',
-            'MultipleRegistrationsTest'
+            'MultipleRegistrationsTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 }
@@ -610,7 +645,8 @@ task runZosmfAuthTest(type: Test) {
             'zOSMFAuthTest'
         )
         excludeTags(
-            'InfinispanStorageTest'
+            'InfinispanStorageTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 }
@@ -642,7 +678,8 @@ task runCachingServiceTests(type: Test) {
             'CachingServiceTest'
         )
         excludeTags(
-            'InfinispanStorageTest'
+            'InfinispanStorageTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 }
@@ -662,6 +699,20 @@ task runInfinispanServiceTests(type: Test) {
     }
 }
 
+task runInfinispanJGroupStabilityTest(type: Test) {
+    group "integration tests"
+    description "Run Caching service with infinispan storage for testing JGroup stability"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'InfinispanJGroupStabilityTest'
+        )
+    }
+}
+
 task runModulithInfinispanServiceTests(type: Test) {
     group "integration tests"
     description "Run APIML(modulith) with infinispan storage tests"
@@ -676,7 +727,8 @@ task runModulithInfinispanServiceTests(type: Test) {
             'InfinispanStorageTest'
         )
         excludeTags(
-            'NonModulithTest'
+            'NonModulithTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 }

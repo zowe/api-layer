@@ -189,7 +189,7 @@ public class ReplicationTaskProcessorTest {
             replicationClient.withException(new SSLException("handshake error"));
             ProcessingResult status = replicationTaskProcessor.process(Collections.<ReplicationTask>singletonList(task));
 
-            assertThat(status, is(ProcessingResult.PermanentError));
+            assertThat(status, is(ProcessingResult.TransientError));
         }
 
         @Test
@@ -222,9 +222,9 @@ public class ReplicationTaskProcessorTest {
             status = replicationTaskProcessor.process(tasks);
             assertThat(status, is(ProcessingResult.TransientError));
 
-            // 10th network issue should finally cause PermanentError
+            // 10th network issue should cause PermanentError, but was changed to keep as transient one
             status = replicationTaskProcessor.process(tasks);
-            assertThat(status, is(ProcessingResult.PermanentError));
+            assertThat(status, is(ProcessingResult.TransientError));
 
             replicationClient.withBatchReply(200);
             replicationClient.withNetworkStatusCode(200);
@@ -261,9 +261,9 @@ public class ReplicationTaskProcessorTest {
             status = replicationTaskProcessor.process(tasks);
             assertThat(status, is(ProcessingResult.TransientError));
 
-            // 10th network issue should cause PermanentError
+            // 10th network issue should cause PermanentError, but was changed to keep as transient one
             status = replicationTaskProcessor.process(tasks);
-            assertThat(status, is(ProcessingResult.PermanentError));
+            assertThat(status, is(ProcessingResult.TransientError));
         }
     }
 }

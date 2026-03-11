@@ -19,13 +19,19 @@ task packageZaas(type: Zip) {
 
     into('/') {
         from "$buildDir/convert/manifest.yaml"
-        from "../schemas/zaas-schema.json"
+    }
+
+    into('schemas/') {
+        from "$resourceDir/schemas/zaas-config.json"
+        from "$resourceDir/schemas/zowe-schema.json"
     }
 
     into('bin/') {
         from configurations.zaasServiceJar
         from "$resourceDir/bin/start.sh"
         from "$resourceDir/bin/validate.sh"
+        from "../scripts/parse_jvm_args.sh"
+        from "../scripts/apiml-common-scripts.sh"
     }
 }
 

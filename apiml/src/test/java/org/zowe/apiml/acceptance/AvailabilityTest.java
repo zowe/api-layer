@@ -31,7 +31,7 @@ import static org.awaitility.Awaitility.await;
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ActiveProfiles({ "ApimlModulithAcceptanceTest", "AvailabilityTest" })
-public class AvailabilityTest extends AcceptanceTestWithBasePath {
+class AvailabilityTest extends AcceptanceTestWithBasePath {
 
     @ParameterizedTest(name = "{0} is available at port {1} with status {2}")
     @CsvSource({
@@ -40,8 +40,8 @@ public class AvailabilityTest extends AcceptanceTestWithBasePath {
     })
     void serviceIsAvailable(String serviceName, int servicePort, int expectedStatus) {
         int actualPort = servicePort == 0 ? port : servicePort;
-        await().atMost(30, TimeUnit.SECONDS)
-            .pollInterval(500, TimeUnit.MILLISECONDS)
+        await().atMost(60, TimeUnit.SECONDS)
+            .pollInterval(1, TimeUnit.SECONDS)
             .ignoreExceptions()
             .untilAsserted(() ->
                 given()

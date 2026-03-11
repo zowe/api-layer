@@ -1,6 +1,20 @@
+[ req ]
+default_bits            = 2048
+prompt                  = no
+default_md              = sha256
+distinguished_name      = dn
+
 [ v3_req ]
 extendedKeyUsage        = clientAuth, serverAuth
 subjectAltName          = @alt_names
+
+[ dn ]
+CN                      = "CZ"
+ST                      = "Czechia"
+L                       = "Prague"
+O                       = "Broadcom"
+OU                      = "MSD"
+CN                      = "Zowe Component"
 
 [alt_names]
 DNS.1 = localhost
@@ -11,21 +25,25 @@ DNS.5 = api-catalog-services
 DNS.6 = api-catalog-services-2
 DNS.7 = caching-service
 DNS.8 = caching-service-2
-DNS.9 = discovery-service
-DNS.10 = discovery-service-2
-DNS.11 = discoverable-client
-DNS.12 = discoverable-client-1
-DNS.13 = discoverable-client-2
-DNS.14 = discoverable-client-3
-DNS.15 = discoverable-client-4
-DNS.16 = mock-services
-DNS.17 = mock-services-2
-DNS.18 = reverse-proxy
-DNS.19 = gateway-service
-DNS.20 = gateway-service-2
-DNS.21 = central-gateway-service
-DNS.22 = central-gateway-service-2
-DNS.23 = apiml
-DNS.24 = apiml-2
-DNS.25 = nodejs-sample-app
-DNS.26 = python-sample-app
+DNS.9 = caching-service-3
+DNS.10 = discovery-service
+DNS.11 = discovery-service-2
+DNS.12 = discoverable-client
+DNS.13 = discoverable-client-1
+DNS.14 = discoverable-client-2
+DNS.15 = discoverable-client-3
+DNS.16 = discoverable-client-4
+DNS.17 = discoverable-client-unknown
+DNS.18 = mock-services
+DNS.19 = mock-services-2
+DNS.20 = mock-services-unknown
+DNS.21 = reverse-proxy
+DNS.22 = gateway-service
+DNS.23 = gateway-service-2
+DNS.24 = central-gateway-service
+DNS.25 = central-gateway-service-2
+DNS.26 = apiml
+DNS.27 = apiml-2
+DNS.28 = apiml-3
+DNS.29 = nodejs-sample-app
+DNS.30 = python-sample-app

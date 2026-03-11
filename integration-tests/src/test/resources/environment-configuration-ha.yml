@@ -39,6 +39,9 @@ apiCatalogServiceConfiguration:
     instances: 2
 cachingServiceConfiguration:
     url:
+    scheme: https
+    host: caching-service,caching-service-2,caching-service-3
+    port: 10016
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password

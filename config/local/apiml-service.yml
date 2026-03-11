@@ -72,3 +72,31 @@ spring:
                     httpclient:
                         websocket:
                             max-frame-payload-length: 3145728
+
+otel:
+    resource:
+        attributes:
+            deployment.environment: dev
+            service:
+                name: apiml
+
+    traces:
+        exporter: none
+    metrics:
+        exporter: otlp
+    logs:
+        ## Do not use logging-otlp without additional configuration (TBD) because the open telemetry logs from console
+        ## will be captured again ending in an infinite logging loop and resource starvation
+        exporter: otlp
+        include-trace-context: true
+    exporter:
+        otlp:
+            endpoint: http://localhost:4318
+    sdk:
+        disabled: true
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "*"
