@@ -10,14 +10,14 @@
 
 package org.zowe.apiml.gateway.filters;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 import org.zowe.apiml.product.opentelemetry.RoutingContext;
 import reactor.core.publisher.Mono;
 
@@ -46,8 +46,8 @@ public class OtelRequestBasicFilterFactory extends AbstractGatewayFilterFactory<
         };
     }
 
-    @Getter
-    @Setter
+    @Data
+    @Validated
     public static class Config {
 
         private String instanceId;

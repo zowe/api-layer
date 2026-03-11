@@ -28,6 +28,8 @@
         </encoder>
     </appender>
 
+    <appender name="OpenTelemetry" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender"/>
+
     <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
         <key>spring.profiles.active</key>
         <value>debug</value>
@@ -65,11 +67,13 @@
             <root level="INFO">
                 <appender-ref ref="STDOUT"/>
                 <appender-ref ref="FILE"/>
+                <appender-ref ref="OpenTelemetry"/>
             </root>
         </then>
         <else>
             <root level="INFO">
                 <appender-ref ref="STDOUT"/>
+                <appender-ref ref="OpenTelemetry"/>
             </root>
         </else>
     </if>
