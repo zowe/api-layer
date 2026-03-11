@@ -117,6 +117,71 @@
                             }
                         }
                     }
+                },
+                "service": {
+                    "type": "object",
+                    "description": "General configuration of the API Catalog service.",
+                    "properties": {
+                        "ssl": {
+                            "type": "object",
+                            "description": "SSL/TLS configuration for the API ML HTTP client",
+                            "properties": {
+                                "enabled-protocols": {
+                                    "type": "string",
+                                    "description": "List of enabled SSL/TLS protocols.",
+                                    "pattern": "^TLSv\\d+(\\.\\d+)?(,TLSv\\d+(\\.\\d+)?)*$"
+                                },
+                                "protocol": {
+                                    "type": "string",
+                                    "description": "SSL/TLS protocol to use.",
+                                    "default": "TLSv1.2"
+                                },
+                                "ciphers": {
+                                    "type": "string",
+                                    "description": "Comma-separated list of enabled cipher suites."
+                                },
+                                "key-alias": {
+                                    "type": "string",
+                                    "description": "Alias of the key in the keystore."
+                                },
+                                "key-store": {
+                                    "type": "string",
+                                    "description": "Path to the keystore file."
+                                },
+                                "key-store-password": {
+                                    "type": "string",
+                                    "description": "Password for the keystore."
+                                },
+                                "key-store-type": {
+                                    "type": "string",
+                                    "description": "Type of the keystore.",
+                                    "default": "PKCS12"
+                                },
+                                "key-password": {
+                                    "type": "string",
+                                    "description": "Password for the key in the keystore."
+                                },
+                                "trust-store": {
+                                    "type": "string",
+                                    "description": "Path to the truststore file."
+                                },
+                                "trust-store-password": {
+                                    "type": "string",
+                                    "description": "Password for the truststore."
+                                },
+                                "trust-store-type": {
+                                    "type": "string",
+                                    "description": "Type of the truststore.",
+                                    "default": "PKCS12"
+                                },
+                                "trust-store-required": {
+                                    "type": "boolean",
+                                    "description": "Whether a truststore is required.",
+                                    "default": false
+                                }
+                            }
+                        }
+                    }
                 }
             }
         },

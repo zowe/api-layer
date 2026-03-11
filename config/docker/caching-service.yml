@@ -1,6 +1,14 @@
 apiml:
     service:
         discoveryServiceUrls: https://discovery-service:10011/eureka/
+        ssl:
+            key-store: /docker/client-cert.p12
+            key-store-password: password
+            key-password: password
+            key-alias: localhost
+            trust-store: /docker/all-services.truststore.p12
+            trust-store-password: password
+
         hostname: caching-service
     banner: console
 
@@ -8,7 +16,7 @@ server:
     address: 0.0.0.0
     ssl:
         keyAlias: localhost
-        keyStore: /docker/all-services.keystore.p12
+        keyStore: /docker/server-only.p12
         trustStore: /docker/all-services.truststore.p12
 spring:
     output:
