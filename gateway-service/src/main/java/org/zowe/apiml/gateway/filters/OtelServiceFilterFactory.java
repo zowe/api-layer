@@ -14,35 +14,21 @@ import lombok.Data;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 import org.zowe.apiml.product.opentelemetry.RoutingContext;
-import reactor.core.publisher.Mono;
-
-import java.util.Optional;
 
 @Component
 @ConditionalOnProperty(value = "otel.sdk.disabled", havingValue = "false", matchIfMissing = true)
-public class OtelRequestBasicFilterFactory extends AbstractGatewayFilterFactory<OtelRequestBasicFilterFactory.Config> {
+public class OtelServiceFilterFactory extends AbstractGatewayFilterFactory<OtelServiceFilterFactory.Config> {
 
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            var otelContext = RoutingContext.of(exchange)
-                .method(exchange.getRequest().getMethod())
-                .scheme(exchange.getRequest().getURI().getScheme())
-                .path(exchange.getRequest().getURI().getPath())
+            RoutingContext.of(exchange)
                 .serviceId(config.serviceId)
                 .instanceId(config.instanceId);
-            return chain.filter(exchange)
-                .then(Mono.fromRunnable(() -> Optional.ofNullable(exchange.getResponse())
-                    .map(ServerHttpResponse::getStatusCode)
-                    .map(HttpStatusCode::value)
-                    .ifPresent(otelContext::responseCode)
-                ))
-                .then(Mono.fromRunnable(() -> RoutingContext.of(exchange).issue()));
+            return chain.filter(exchange);
         };
     }
 

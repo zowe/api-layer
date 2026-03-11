@@ -156,7 +156,7 @@ public class RouteLocator implements RouteDefinitionLocator {
 
         if (!otelDisabled) {
             FilterDefinition otelRequestBasicFilter = new FilterDefinition();
-            otelRequestBasicFilter.setName("OtelRequestBasicFilterFactory");
+            otelRequestBasicFilter.setName("OtelServiceFilterFactory");
             otelRequestBasicFilter.addArg("serviceId", serviceInstance.getServiceId());
             otelRequestBasicFilter.addArg("instanceId", serviceInstance.getInstanceId());
             serviceRelated.add(otelRequestBasicFilter);
