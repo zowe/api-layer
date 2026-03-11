@@ -4,7 +4,6 @@ spring:
     output:
         ansi:
             enabled: always
-
 # The `apiml` node contains API Mediation Layer specific configuration
 apiml:
     service:
@@ -14,6 +13,13 @@ apiml:
         port: 10012  # Default port for discoverable-client service
           # IP address that is advertised in Eureka. Default is valid only for localhost
         discoveryServiceUrls: https://discovery-service:10011/eureka/
+        ssl:
+            key-store: /docker/client-cert.p12
+            key-store-password: password
+            key-password: password
+            key-alias: localhost
+            trust-store: /docker/all-services.truststore.p12
+            trust-store-password: password
 
 eureka:
     client:
@@ -24,7 +30,7 @@ server:
     ssl:
         keyAlias: localhost
         keyPassword: password
-        keyStore: /docker/all-services.keystore.p12
+        keyStore: /docker/server-only.p12
         keyStorePassword: password
         trustStore: /docker/all-services.truststore.p12
         trustStorePassword: password

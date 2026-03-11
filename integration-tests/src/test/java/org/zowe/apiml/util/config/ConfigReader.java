@@ -74,6 +74,7 @@ public class ConfigReader {
                             .keyPassword(PASSWORD.toCharArray())
                             .keyStoreType("PKCS12")
                             .keyStore("../keystore/localhost/localhost.keystore.p12")
+                            .serverKeyStore("../keystore/localhost/localhost.keystore.p12")
                             .keyStorePassword(PASSWORD.toCharArray())
                             .trustStoreType("PKCS12")
                             .trustStore("../keystore/localhost/localhost.truststore.p12")
@@ -217,6 +218,7 @@ public class ConfigReader {
         tlsConfiguration.setClientKeystore(System.getProperty("tlsConfiguration.clientKeyStore", tlsConfiguration.getClientKeystore()));
         tlsConfiguration.setClientCN(System.getProperty("tlsConfiguration.clientCN", tlsConfiguration.getClientCN()));
         tlsConfiguration.setKeyStore(System.getProperty("tlsConfiguration.keyStore", tlsConfiguration.getKeyStore()));
+        tlsConfiguration.setServerKeyStore(System.getProperty("tlsConfiguration.serverKeyStore", tlsConfiguration.getServerKeyStore()));
         tlsConfiguration.setKeyStoreType(System.getProperty("tlsConfiguration.keyStoreType", tlsConfiguration.getKeyStoreType()));
         tlsConfiguration.setKeyPassword(getSystemPropertyCharArray("tlsConfiguration.keyStorePassword", tlsConfiguration.getKeyStorePassword()));
         tlsConfiguration.setTrustStoreType(System.getProperty("tlsConfiguration.trustStoreType", tlsConfiguration.getTrustStoreType()));
