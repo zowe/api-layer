@@ -36,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class OpenTelemetryResourceAttributesZosTest {
 
+    @SuppressWarnings("null")
     private boolean assertLogBase(Attributes attributes) {
         assertEquals("ZWE1AG", attributes.get(stringKey("process.zos.jobname")));
         assertEquals("apiml:apiml1:" + port, attributes.get(stringKey("service.name")));
@@ -104,7 +105,7 @@ class OpenTelemetryResourceAttributesZosTest {
 
         @BeforeAll
         void startMockServices() {
-            var mockService = mockService("serviceid1")
+            mockService("serviceid1")
                 .scope(Scope.CLASS)
                 .authenticationScheme(AuthenticationScheme.ZOWE_JWT)
                 .addEndpoint("/serviceid1/200")
@@ -115,7 +116,7 @@ class OpenTelemetryResourceAttributesZosTest {
         void givenRouted_thenLog() {
 
             given()
-                .get(basePath + "/serviceid1/api/v1/200")
+                .get(basePath + "/apicatalog/ui/v1/index.html")
             .then()
             .statusCode(200);
 

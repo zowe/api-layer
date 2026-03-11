@@ -23,6 +23,7 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 import reactor.core.publisher.Mono;
@@ -51,6 +52,11 @@ class AbstractTokenFilterFactoryTest {
                 @Override
                 protected Function<RequestCredentials, Mono<AuthorizationResponse<ZaasTokenResponse>>> getAuthorizationResponseTransformer() {
                     return null;
+                }
+
+                @Override
+                protected AuthenticationScheme getAuthenticationScheme() {
+                    return AuthenticationScheme.BYPASS;
                 }
             }.processResponse(exchange, chain, tokenResponse);
 
