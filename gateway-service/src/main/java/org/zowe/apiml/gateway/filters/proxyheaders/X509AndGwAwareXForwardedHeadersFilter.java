@@ -101,7 +101,11 @@ public class X509AndGwAwareXForwardedHeadersFilter extends XForwardedHeadersFilt
             .map(SslInfo::getPeerCertificates)
             .filter(certs -> certs.length > 0)
             .map(certs -> Arrays.stream(certs)
-                .map(SecurityUtils::base64EncodePublicKey)
+                .map(cert -> {
+                    String base64 = SecurityUtils.base64EncodePublicKey(cert);
+                    log.debug("Certificate base64: {}", base64);
+                    return base64;
+                })
                 .allMatch(certificateChainBase64::contains)
             )
             .orElse(false);
@@ -123,6 +127,7 @@ public class X509AndGwAwareXForwardedHeadersFilter extends XForwardedHeadersFilt
                         }
                     }
                 ).build();
+                certificateChainBase64.forEach(s -> log.debug("Certificate chain base64: {}", s));
                 log.debug("Remote address not trusted. Trusted proxies pattern: {}, remote address: {}", trustedProxiesRegex, remoteAddress);
                 return super.filter(removeXForwardHttpHeaders(input), sanitizedExchange);
             }

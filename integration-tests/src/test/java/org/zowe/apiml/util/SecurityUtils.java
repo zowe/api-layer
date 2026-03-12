@@ -328,7 +328,7 @@ public class SecurityUtils {
     }
 
     private static Key getKey() throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException, UnrecoverableKeyException {
-        KeyStore ks = loadKeystore(SecurityUtils.tlsConfiguration.getKeyStore());
+        KeyStore ks = loadKeystore(SecurityUtils.tlsConfiguration.getServerKeyStore());
 
         return ks.getKey(SecurityUtils.tlsConfiguration.getKeyAlias(), SecurityUtils.tlsConfiguration.getKeyStorePassword());
     }

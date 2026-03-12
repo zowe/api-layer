@@ -21,6 +21,7 @@ import org.apache.commons.lang3.Strings;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -258,7 +259,7 @@ public class ApiMediationLayerStartupChecker {
             if (basicAuth) {
                 request.addHeader(HttpHeaders.AUTHORIZATION, CREDENTIALS_HEADER);
             }
-            try (CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).build()) {
+            try (CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).setSSLHostnameVerifier(new NoopHostnameVerifier()).build()) {
                 final HttpResponse response = client.execute(request);
                 if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                     log.warn("Unexpected HTTP status code: {} for URI: {}. Message: {}", response.getStatusLine().getStatusCode(), request.getURI().toString(), EntityUtils.toString(response.getEntity()));
