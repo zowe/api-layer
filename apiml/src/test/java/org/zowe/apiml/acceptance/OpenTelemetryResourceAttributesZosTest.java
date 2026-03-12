@@ -14,6 +14,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -91,7 +92,8 @@ class OpenTelemetryResourceAttributesZosTest {
         properties = {
             "otel.sdk.disabled=false",
             "otel.metrics.exporter=none",
-            "otel.traces.exporter=none"
+            "otel.traces.exporter=none",
+            "otel.logs.exporter=none"
         }
     )
     @ActiveProfiles({ "OpenTelemetryTest", "zos" })
@@ -110,6 +112,14 @@ class OpenTelemetryResourceAttributesZosTest {
                 .authenticationScheme(AuthenticationScheme.ZOWE_JWT)
                 .addEndpoint("/serviceid1/200")
             .and().start();
+        }
+
+        @Autowired
+        private InMemoryLogRecordExporter logExporter;
+
+        @BeforeEach
+        void setUp() {
+            logExporter.reset();
         }
 
         @Test
