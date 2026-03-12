@@ -15,6 +15,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,5 +26,7 @@ public class ZaasTokenResponse {
     private String cookieName;
     private String headerName;
     private String token;
+    private String userId;
+    private List<String> distributedIds;
 
 }

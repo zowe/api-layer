@@ -73,8 +73,10 @@ public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFa
                 .orElse(null));
         }
         if (response.get() != null) {
-            // TODO: missing value, same as distributed user name
-            // RoutingContext.of(exchange).userId(tokenResponse.getBody().getUserId());
+            var otelContext = RoutingContext.of(exchange);
+            var responseBody = tokenResponse.getBody();
+            Optional.ofNullable(responseBody.getUserId()).ifPresent(otelContext::userId);
+            Optional.ofNullable(responseBody.getDistributedIds()).ifPresent(otelContext::distributedIds);
 
             if (!StringUtils.isEmpty(response.get().getCookieName())) {
                 request = cleanHeadersOnAuthSuccess(exchange);

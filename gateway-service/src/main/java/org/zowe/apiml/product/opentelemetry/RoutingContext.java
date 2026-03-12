@@ -18,6 +18,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
+import java.util.List;
+
 @Slf4j
 public final class RoutingContext {
 
@@ -35,6 +37,7 @@ public final class RoutingContext {
     private static final String OTEL_ATTRIBUTE_AUTH_METHOD = "auth.method";
     private static final String OTEL_ATTRIBUTE_AUTH_STATUS = "auth.status";
     private static final String OTEL_ATTRIBUTE_USER_ID = "user.id";
+    private static final String OTEL_ATTRIBUTE_DISTRIBUTED_USER_ID = "user.distributed.id";
 
     private AttributesBuilder attributesBuilder = Attributes.builder();;
 
@@ -90,6 +93,22 @@ public final class RoutingContext {
 
     public RoutingContext userId(String userId) {
         return put(OTEL_ATTRIBUTE_USER_ID, userId);
+    }
+
+    public RoutingContext distributedIds(List<String> distributedIds) {
+        return put(OTEL_ATTRIBUTE_DISTRIBUTED_USER_ID, toString(distributedIds));
+    }
+
+    private static String toString(List<String> values) {
+        if (values != null && !values.isEmpty()) {
+            if (values.size() == 1) {
+                return values.get(0);
+            }
+
+            // TODO: use escaping characters?
+            return String.join(",", values);
+        }
+        return null;
     }
 
     public void issue() {
