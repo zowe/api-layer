@@ -48,17 +48,17 @@ public class OpenTelemetryTestConfig {
     @Bean
     @Primary
     OpenTelemetrySdk openTelemetrySdk(ObjectProvider<SdkTracerProvider> tracerProvider,
-			ObjectProvider<ContextPropagators> propagators, ObjectProvider<SdkLoggerProvider> loggerProvider,
-			ObjectProvider<SdkMeterProvider> meterProvider,
+            ObjectProvider<ContextPropagators> propagators, ObjectProvider<SdkLoggerProvider> loggerProvider,
+            ObjectProvider<SdkMeterProvider> meterProvider,
             LogRecordExporter exporter) {
         OpenTelemetrySdkBuilder builder = OpenTelemetrySdk.builder();
-		tracerProvider.ifAvailable(builder::setTracerProvider);
-		propagators.ifAvailable(builder::setPropagators);
+        tracerProvider.ifAvailable(builder::setTracerProvider);
+        propagators.ifAvailable(builder::setPropagators);
         var lp = SdkLoggerProvider.builder();
         lp.addLogRecordProcessor(SimpleLogRecordProcessor.create(exporter));
         builder.setLoggerProvider(lp.build());
-		meterProvider.ifAvailable(builder::setMeterProvider);
-		return builder.build();
+        meterProvider.ifAvailable(builder::setMeterProvider);
+        return builder.build();
     }
 
     @Bean

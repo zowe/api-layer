@@ -38,7 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class OpenTelemetryResourceAttributesZosTest {
 
     @SuppressWarnings("null")
-    private boolean assertLogBase(Attributes attributes) {
+    private boolean assertAttributesBase(Attributes attributes) {
         assertEquals("ZWE1AG", attributes.get(stringKey("process.zos.jobname")));
         assertEquals("apiml:apiml1:" + port, attributes.get(stringKey("service.name")));
         assertNull(attributes.get(stringKey("service.namespace")));
@@ -79,7 +79,7 @@ class OpenTelemetryResourceAttributesZosTest {
             metrics.forEach(
                 metric -> {
                     var attributes = metric.getResource().getAttributes();
-                    assertTrue(assertLogBase(attributes));
+                    assertTrue(assertAttributesBase(attributes));
                 }
             );
         }
@@ -98,9 +98,6 @@ class OpenTelemetryResourceAttributesZosTest {
     )
     @ActiveProfiles({ "OpenTelemetryTest", "zos" })
     class WhenOnboardedService extends AcceptanceTestWithMockServices {
-
-        @Autowired
-        private InMemoryMetricReader metricReader;
 
         @Autowired
         private InMemoryLogRecordExporter logRecordExporter;
@@ -126,23 +123,33 @@ class OpenTelemetryResourceAttributesZosTest {
         void givenRouted_thenLog() {
 
             given()
-                .get(basePath + "/apicatalog/ui/v1/index.html")
+                .get(basePath + "/serviceid1/api/v1/200")
             .then()
             .statusCode(200);
 
-            var metrics = metricReader.collectAllMetrics();
             var logs = logRecordExporter.getFinishedLogRecordItems();
-            assertFalse(metrics.isEmpty(), "No data received");
+            assertFalse(logs.isEmpty(), "No logs received");
 
-            metrics.stream()
-                .anyMatch(
-                    metric -> {
-                        var attributes = metric.getResource().getAttributes();
-                        System.out.println("");
-                        assertTrue(assertLogBase(attributes));
-                        return true;
-                    }
-                );
+            logs.stream().allMatch(logRecord -> {
+                assertAttributesBase(logRecord.getAttributes());
+                return true;
+            });
+
+            logs.stream().anyMatch(logRecord -> {
+                assertEquals("INFO", logRecord.getSeverityText());
+                assertTrue(logRecord.getResource() != null);
+                return false;
+            });
+
+            // metrics.stream()
+            //     .anyMatch(
+            //         metric -> {
+            //             var attributes = metric.getResource().getAttributes();
+            //             System.out.println("");
+            //             assertTrue(assertLogBase(attributes));
+            //             return true;
+            //         }
+            //     );
 
         }
 
