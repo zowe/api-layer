@@ -93,7 +93,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Non-strict hostname verification in Jetty client for WebSockets (#4073) ([a4768e2](https://github.com/zowe/api-layer/commit/a4768e2)), closes [#4073](https://github.com/zowe/api-layer/issues/4073)
 * Bugfix:  Fix SSO issue in the API Catalog (#4070) ([fb52fa6](https://github.com/zowe/api-layer/commit/fb52fa6)), closes [#4070](https://github.com/zowe/api-layer/issues/4070)
 
-## `APIML 3.2.7 / Zowe 3.2.0 (2025-04-16)`
+## `APIML 3.2.7 / Zowe 3.2.0 (2025-05-09)`
 
 * Feature:  v3 with Java 21 (#4028) ([59ea8ee](https://github.com/zowe/api-layer/commit/59ea8ee)), closes [#4028](https://github.com/zowe/api-layer/issues/4028)
 
