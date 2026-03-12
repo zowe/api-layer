@@ -31,6 +31,7 @@ import org.zowe.apiml.zaas.ZaasTokenResponse;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.zaas.security.service.schema.source.OIDCAuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.PATAuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import reactor.core.publisher.Mono;
@@ -163,7 +164,12 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             var authSourceParsed = authSourceService.parse(authSource.get());
 
             String safIdToken = tokenCreationService.createSafIdTokenWithoutCredentials(authSourceParsed.getUserId(), applicationName);
-            var response = ZaasTokenResponse.builder().headerName(ApimlConstants.SAF_TOKEN_HEADER).token(safIdToken).build();
+            var response = ZaasTokenResponse.builder()
+                .headerName(ApimlConstants.SAF_TOKEN_HEADER)
+                .token(safIdToken)
+                .userId(authSourceParsed.getUserId())
+                .distributedIds(authSourceParsed instanceof OIDCAuthSource oidcAuthSource ? oidcAuthSource.getDistributedId() : null)
+                .build();
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot generate SAF IDT", e);
@@ -205,8 +211,9 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             if (!authSourceService.isValid(authSource.get())) {
                 return createMissingAuthenticationErrorMessage();
             }
+            var authSourceParsed = authSourceService.parse(authSource.get());
             var token = authSourceService.getJWT(authSource.get());
-            var response = ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME).token(token).build();
+            var response = ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME).token(token).userId(authSourceParsed.getUserId()).build();
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot obtain Zowe JWT token", e);
