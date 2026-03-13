@@ -42,8 +42,17 @@ import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
             pattern = ".*Application"
         ),
         @ComponentScan.Filter(
+            type = FilterType.REGEX,
+            pattern = "org.springframework.boot.actuate.autoconfigure.opentelemetry.*"
+        ),
+        @ComponentScan.Filter(
             type = FilterType.ASSIGNABLE_TYPE,
-            classes = {EnableApiDiscoveryConfig.class, EurekaController.class, RegisterToApiLayer.class, GatewayHealthIndicator.class}
+            classes = {
+                EnableApiDiscoveryConfig.class,
+                EurekaController.class,
+                RegisterToApiLayer.class,
+                GatewayHealthIndicator.class
+            }
         ),
         @ComponentScan.Filter(
             type = FilterType.ANNOTATION,

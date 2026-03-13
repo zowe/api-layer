@@ -11,6 +11,7 @@
 package org.zowe.apiml.acceptance;
 
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import org.junit.jupiter.api.BeforeAll;
@@ -100,56 +101,55 @@ class OpenTelemetryResourceAttributesZosTest {
     class WhenOnboardedService extends AcceptanceTestWithMockServices {
 
         @Autowired
-        private InMemoryLogRecordExporter logRecordExporter;
+        private LogRecordExporter logExporter;
 
         @BeforeAll
         void startMockServices() {
-            mockService("serviceid1")
+            mockService("testservice")
                 .scope(Scope.CLASS)
                 .authenticationScheme(AuthenticationScheme.ZOWE_JWT)
-                .addEndpoint("/serviceid1/200")
+                .addEndpoint("/testservice/200")
+                .responseCode(200)
             .and().start();
         }
 
-        @Autowired
-        private InMemoryLogRecordExporter logExporter;
 
         @BeforeEach
         void setUp() {
-            logExporter.reset();
+            assertTrue(logExporter instanceof InMemoryLogRecordExporter);
+            ((InMemoryLogRecordExporter) logExporter).reset();
         }
 
         @Test
         void givenRouted_thenLog() {
-
             given()
-                .get(basePath + "/serviceid1/api/v1/200")
+                .get(basePath + "/testservice/api/v1/200")
             .then()
             .statusCode(200);
 
-            var logs = logRecordExporter.getFinishedLogRecordItems();
-            assertFalse(logs.isEmpty(), "No logs received");
+            logExporter.flush();
+            var logs = ((InMemoryLogRecordExporter) logExporter).getFinishedLogRecordItems();
+            assertFalse(logs.isEmpty(), "No logs received 7");
+            assertEquals(1, logs.size());
 
-            logs.stream().allMatch(logRecord -> {
-                assertAttributesBase(logRecord.getAttributes());
-                return true;
-            });
+            assertTrue(
+                logs.stream()
+                .allMatch(logRecord -> {
+                    assertAttributesBase(logRecord.getResource().getAttributes());
+                    assertTrue(logRecord.getBodyValue().asString() != null);
+                    return true;
+                })
+            );
 
-            logs.stream().anyMatch(logRecord -> {
-                assertEquals("INFO", logRecord.getSeverityText());
-                assertTrue(logRecord.getResource() != null);
-                return false;
-            });
+            assertTrue(
+                logs.stream()
+                .allMatch(logRecord -> {
+                    assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
+                    assertTrue(logRecord.getResource() != null);
+                    return false;
+                })
+            );
 
-            // metrics.stream()
-            //     .anyMatch(
-            //         metric -> {
-            //             var attributes = metric.getResource().getAttributes();
-            //             System.out.println("");
-            //             assertTrue(assertLogBase(attributes));
-            //             return true;
-            //         }
-            //     );
 
         }
 

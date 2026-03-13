@@ -15,6 +15,12 @@
     <appender name="testLogger" class="org.zowe.apiml.util.TestLogger">
     </appender>
 
+    <appender name="OpenTelemetry" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender"/>
+
+    <logger name="org.zowe.apiml.opentelemetry" level="INFO">
+        <appender-ref ref="OpenTelemetry" />
+    </logger>
+
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
