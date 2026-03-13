@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public final class RoutingContext {
 
-    private static final String OTEL_CONTEXT = "otel-context";
+    public static final String OTEL_CONTEXT = "otel-context";
 
     private static final String OK = "OK";
     private static final String FAILED = "FAILED";
@@ -40,7 +40,7 @@ public final class RoutingContext {
     private static final String OTEL_ATTRIBUTE_USER_ID = "user.id";
     private static final String OTEL_ATTRIBUTE_DISTRIBUTED_USER_ID = "user.distributed.id";
 
-    private AttributesBuilder attributesBuilder = Attributes.builder();;
+    private AttributesBuilder attributesBuilder = Attributes.builder();
 
     // this mart is for other codes to mark a specific call of creating. By marking a specific version could be selected
     private AtomicBoolean marked = new AtomicBoolean(false);
