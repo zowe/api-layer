@@ -198,6 +198,14 @@ logging:
         org.apache.catalina: DEBUG
         org.jgroups: TRACE
         org.infinispan: DEBUG
+
+management:
+    endpoints:
+        migrate-legacy-ids: true
+        web:
+            base-path: /cachingservice/application
+            exposure:
+                include: health,info,loggers
 ---
 spring.config.activate.on-profile: dev
 
