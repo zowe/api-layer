@@ -102,7 +102,7 @@ public class OtelRequestFilter implements WebFilter, GlobalFilter, Ordered {
         return null;
     }
 
-    private void setDefaults(ServerWebExchange exchange, RoutingContext otelContext) {
+    void setDefaults(ServerWebExchange exchange, RoutingContext otelContext) {
         // detect port and serviceId by request
         String serviceId;
         int port = exchange.getRequest().getLocalAddress().getPort();
