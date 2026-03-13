@@ -22,6 +22,10 @@ import org.zowe.apiml.product.opentelemetry.RoutingContext;
 @ConditionalOnProperty(value = "otel.sdk.disabled", havingValue = "false", matchIfMissing = true)
 public class OtelServiceFilterFactory extends AbstractGatewayFilterFactory<OtelServiceFilterFactory.Config> {
 
+    public OtelServiceFilterFactory() {
+        super(OtelServiceFilterFactory.Config.class);
+    }
+
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
