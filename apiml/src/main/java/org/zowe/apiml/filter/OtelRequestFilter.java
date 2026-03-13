@@ -25,6 +25,7 @@ import org.zowe.apiml.product.opentelemetry.RoutingContext;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 @Component
 @ConditionalOnProperty(value = "otel.sdk.disabled", havingValue = "false", matchIfMissing = true)
@@ -41,11 +42,6 @@ public class OtelRequestFilter implements WebFilter, GlobalFilter, Ordered {
 
     @Value("${server.attlsServer.enabled:false}")
     private boolean isServerAttlsEnabled;
-
-    @Override
-    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        return null;
-    }
 
     @Override
     public int getOrder() {
@@ -83,19 +79,28 @@ public class OtelRequestFilter implements WebFilter, GlobalFilter, Ordered {
             .instanceId(String.format("%s:%s:%d", hostname, serviceId, port));
     }
 
-    @Override
-    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+    private Mono<Void> filterInternal(ServerWebExchange exchange, Function<ServerWebExchange, Mono<Void>> filter) {
         var otelContext = RoutingContext.of(exchange);
 
         setDefaults(exchange, otelContext);
 
-        return chain.filter(exchange)
+        return filter.apply(exchange)
             .then(Mono.fromRunnable(() -> Optional.ofNullable(exchange.getResponse())
                 .map(ServerHttpResponse::getStatusCode)
                 .map(HttpStatusCode::value)
                 .ifPresent(otelContext::responseCode)
             ))
             .then(Mono.fromRunnable(() -> RoutingContext.of(exchange).issue()));
+    }
+
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        return filterInternal(exchange, chain::filter);
+    }
+
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        return filterInternal(exchange, chain::filter);
     }
 
 }
