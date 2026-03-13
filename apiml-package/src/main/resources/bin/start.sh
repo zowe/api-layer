@@ -173,7 +173,7 @@ else
 fi
 
 # VSAM file name for caching
-if [ -n "${ZWE_configs_storage_vsam_name}" ]; then
+if [ -n "${ZWE_configs_storage_vsam_name:-${ZWE_components_caching_service_storage_vsam_name}}" ]; then
     VSAM_FILE_NAME=//\'${ZWE_configs_storage_vsam_name:-${ZWE_components_caching_service_storage_vsam_name}}\'
 fi
 
