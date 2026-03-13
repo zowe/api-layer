@@ -19,6 +19,7 @@ import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 public final class RoutingContext {
@@ -41,13 +42,18 @@ public final class RoutingContext {
 
     private AttributesBuilder attributesBuilder = Attributes.builder();;
 
+    // this mart is for other codes to mark a specific call of creating. By marking a specific version could be selected
+    private AtomicBoolean marked = new AtomicBoolean(false);
+
     private RoutingContext() {
-        // set defaults
-        authMethod(AuthenticationScheme.BYPASS);
     }
 
     public static RoutingContext of(ServerWebExchange exchange) {
         return (RoutingContext) exchange.getAttributes().computeIfAbsent(OTEL_CONTEXT, key -> new RoutingContext());
+    }
+
+    public boolean mark() {
+        return marked.compareAndSet(false, true);
     }
 
     public RoutingContext put(final String key, final String value) {
