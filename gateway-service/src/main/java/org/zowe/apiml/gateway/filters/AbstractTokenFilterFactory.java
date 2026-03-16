@@ -22,7 +22,7 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.product.opentelemetry.RoutingContext;
+import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import org.zowe.apiml.util.CookieUtil;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 import reactor.core.publisher.Mono;
@@ -55,7 +55,7 @@ public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFa
     @Override
     @SuppressWarnings("squid:S2092")    // the internal API cannot define generic more specifically
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, AuthorizationResponse<ZaasTokenResponse> tokenResponse) {
-        RoutingContext.of(exchange).authMethod(getAuthenticationScheme());
+        OtelRequestContext.of(exchange).authMethod(getAuthenticationScheme());
 
         ServerHttpRequest request = null;
         var response = new AtomicReference<>(tokenResponse.getBody());
@@ -73,7 +73,7 @@ public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFa
                 .orElse(null));
         }
         if (response.get() != null) {
-            var otelContext = RoutingContext.of(exchange);
+            var otelContext = OtelRequestContext.of(exchange);
             var responseBody = tokenResponse.getBody();
             Optional.ofNullable(responseBody.getUserId()).ifPresent(otelContext::userId);
             Optional.ofNullable(responseBody.getDistributedIds()).ifPresent(otelContext::distributedIds);

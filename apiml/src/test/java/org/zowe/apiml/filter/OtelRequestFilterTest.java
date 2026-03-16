@@ -20,14 +20,14 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.WebFilterChain;
-import org.zowe.apiml.product.opentelemetry.RoutingContext;
+import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import reactor.core.publisher.Mono;
 
 import java.net.InetSocketAddress;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
-import static org.zowe.apiml.product.opentelemetry.RoutingContext.OTEL_CONTEXT;
+import static org.zowe.apiml.product.opentelemetry.OtelRequestContext.OTEL_CONTEXT;
 
 class OtelRequestFilterTest {
 
@@ -67,7 +67,7 @@ class OtelRequestFilterTest {
 
         var request = MockServerHttpRequest.get(basePath).localAddress(InetSocketAddress.createUnresolved("localhost", port)).build();
         var exchange = MockServerWebExchange.from(request);
-        var otelContext = RoutingContext.of(exchange);
+        var otelContext = OtelRequestContext.of(exchange);
         filter.setDefaults(exchange, otelContext);
 
         var attributes = ((AttributesBuilder) ReflectionTestUtils.getField(otelContext, "attributesBuilder")).build();
@@ -82,7 +82,7 @@ class OtelRequestFilterTest {
 
         var request = MockServerHttpRequest.get("http://localhost/").localAddress(InetSocketAddress.createUnresolved("localhost", 10010)).build();
         var exchange = MockServerWebExchange.from(request);
-        var otelContext = RoutingContext.of(exchange);
+        var otelContext = OtelRequestContext.of(exchange);
         filter.setDefaults(exchange, otelContext);
 
         var attributes = (AttributesBuilder) ReflectionTestUtils.getField(otelContext, "attributesBuilder");
@@ -95,7 +95,7 @@ class OtelRequestFilterTest {
 
         var request = MockServerHttpRequest.get("http://localhost/").localAddress(InetSocketAddress.createUnresolved("localhost", 10010)).build();
         var exchange = MockServerWebExchange.from(request);
-        var otelContext = RoutingContext.of(exchange);
+        var otelContext = OtelRequestContext.of(exchange);
         filter.setDefaults(exchange, otelContext);
 
         var attributes = (AttributesBuilder) ReflectionTestUtils.getField(otelContext, "attributesBuilder");
@@ -110,7 +110,7 @@ class OtelRequestFilterTest {
         var exchange = MockServerWebExchange.from(request);
         exchange.getResponse().setStatusCode(HttpStatusCode.valueOf(503));
 
-        RoutingContext otelContext = spy(RoutingContext.of(exchange));
+        OtelRequestContext otelContext = spy(OtelRequestContext.of(exchange));
         exchange.getAttributes().put(OTEL_CONTEXT, otelContext);
 
         for (int i = 0; i < 3; i++) {

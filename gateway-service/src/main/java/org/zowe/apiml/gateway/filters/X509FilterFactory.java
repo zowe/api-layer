@@ -20,7 +20,7 @@ import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.core.MessageService;
-import org.zowe.apiml.product.opentelemetry.RoutingContext;
+import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
@@ -50,7 +50,7 @@ public class X509FilterFactory extends AbstractGatewayFilterFactory<X509FilterFa
     @Override
     public GatewayFilter apply(Config config) {
         return ((exchange, chain) -> {
-            RoutingContext.of(exchange).authMethod(AuthenticationScheme.X509);
+            OtelRequestContext.of(exchange).authMethod(AuthenticationScheme.X509);
 
             if (exchange.getRequest().getSslInfo() != null) {
                 X509Certificate[] certificates = exchange.getRequest().getSslInfo().getPeerCertificates();

@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
-import org.zowe.apiml.product.opentelemetry.RoutingContext;
+import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import reactor.core.publisher.Mono;
 
 import java.util.*;
@@ -102,7 +102,7 @@ public class OtelRequestFilter implements WebFilter, GlobalFilter, Ordered {
         return null;
     }
 
-    void setDefaults(ServerWebExchange exchange, RoutingContext otelContext) {
+    void setDefaults(ServerWebExchange exchange, OtelRequestContext otelContext) {
         // detect port and serviceId by request
         String serviceId;
         int port = exchange.getRequest().getLocalAddress().getPort();
@@ -126,7 +126,7 @@ public class OtelRequestFilter implements WebFilter, GlobalFilter, Ordered {
     }
 
     private Mono<Void> filterInternal(ServerWebExchange exchange, Function<ServerWebExchange, Mono<Void>> filter) {
-        var otelContext = RoutingContext.of(exchange);
+        var otelContext = OtelRequestContext.of(exchange);
         if (!otelContext.mark()) {
             // not the first call because of multiple interfaces and different type of endpoint. It is ignored
             return filter.apply(exchange);

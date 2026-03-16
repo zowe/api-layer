@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
-public final class RoutingContext {
+public final class OtelRequestContext {
 
     public static final String OTEL_CONTEXT = "otel-context";
 
@@ -49,63 +49,63 @@ public final class RoutingContext {
     // this mart is for other codes to mark a specific call of creating. By marking a specific version could be selected
     private AtomicBoolean marked = new AtomicBoolean(false);
 
-    private RoutingContext() {
+    private OtelRequestContext() {
     }
 
-    public static RoutingContext of(ServerWebExchange exchange) {
-        return (RoutingContext) exchange.getAttributes().computeIfAbsent(OTEL_CONTEXT, key -> new RoutingContext());
+    public static OtelRequestContext of(ServerWebExchange exchange) {
+        return (OtelRequestContext) exchange.getAttributes().computeIfAbsent(OTEL_CONTEXT, key -> new OtelRequestContext());
     }
 
     public boolean mark() {
         return marked.compareAndSet(false, true);
     }
 
-    public RoutingContext put(final String key, final String value) {
+    public OtelRequestContext put(final String key, final String value) {
         attributesBuilder.put(key, value);
         return this;
     }
 
-    public RoutingContext method(HttpMethod httpMethod) {
+    public OtelRequestContext method(HttpMethod httpMethod) {
         return put(OTEL_ATTRIBUTE_METHOD, String.valueOf(httpMethod));
     }
 
-    public RoutingContext scheme(String scheme) {
+    public OtelRequestContext scheme(String scheme) {
         return put(OTEL_ATTRIBUTE_SCHEME, scheme);
     }
 
-    public RoutingContext path(String path) {
+    public OtelRequestContext path(String path) {
         return put(OTEL_ATTRIBUTE_PATH, path);
     }
 
-    public RoutingContext responseCode(int status) {
+    public OtelRequestContext responseCode(int status) {
         return put(OTEL_ATTRIBUTE_RESPONSE_CODE, String.valueOf(status));
     }
 
-    public RoutingContext serviceId(String serviceId) {
+    public OtelRequestContext serviceId(String serviceId) {
         return put(OTEL_ATTRIBUTE_SERVICE_ID, serviceId);
     }
 
-    public RoutingContext instanceId(String instanceId) {
+    public OtelRequestContext instanceId(String instanceId) {
         return put(OTEL_ATTRIBUTE_INSTANCE_ID, instanceId);
     }
 
-    public RoutingContext authMethod(AuthenticationScheme authenticationScheme) {
+    public OtelRequestContext authMethod(AuthenticationScheme authenticationScheme) {
         return put(OTEL_ATTRIBUTE_AUTH_METHOD, String.valueOf(authenticationScheme));
     }
 
-    public RoutingContext authenticationFailed() {
+    public OtelRequestContext authenticationFailed() {
         return put(OTEL_ATTRIBUTE_AUTH_STATUS, FAILED);
     }
 
-    public RoutingContext authenticationSuccess() {
+    public OtelRequestContext authenticationSuccess() {
         return put(OTEL_ATTRIBUTE_AUTH_STATUS, OK);
     }
 
-    public RoutingContext userId(String userId) {
+    public OtelRequestContext userId(String userId) {
         return put(OTEL_ATTRIBUTE_USER_ID, userId);
     }
 
-    public RoutingContext distributedIds(List<String> distributedIds) {
+    public OtelRequestContext distributedIds(List<String> distributedIds) {
         attributesBuilder.put(OTEL_ATTRIBUTE_DISTRIBUTED_USER_ID, distributedIds.toArray(new String[0]));
         return this;
     }

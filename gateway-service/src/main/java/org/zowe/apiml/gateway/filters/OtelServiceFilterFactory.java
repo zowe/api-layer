@@ -16,7 +16,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
-import org.zowe.apiml.product.opentelemetry.RoutingContext;
+import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 
 @Component
 @ConditionalOnProperty(value = "otel.sdk.disabled", havingValue = "false", matchIfMissing = true)
@@ -29,7 +29,7 @@ public class OtelServiceFilterFactory extends AbstractGatewayFilterFactory<OtelS
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            RoutingContext.of(exchange)
+            OtelRequestContext.of(exchange)
                 .serviceId(config.serviceId)
                 .instanceId(config.instanceId);
             return chain.filter(exchange);
