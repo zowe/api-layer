@@ -83,11 +83,11 @@ public final class OtelRequestContext {
     }
 
     public OtelRequestContext serviceId(String serviceId) {
-        return put(OTEL_ATTRIBUTE_SERVICE_ID, serviceId);
+        return put(OTEL_ATTRIBUTE_SERVICE_ID, StringUtils.lowerCase(serviceId));
     }
 
     public OtelRequestContext instanceId(String instanceId) {
-        return put(OTEL_ATTRIBUTE_INSTANCE_ID, instanceId);
+        return put(OTEL_ATTRIBUTE_INSTANCE_ID, StringUtils.lowerCase(instanceId));
     }
 
     public OtelRequestContext authMethod(AuthenticationScheme authenticationScheme) {
@@ -103,7 +103,7 @@ public final class OtelRequestContext {
     }
 
     public OtelRequestContext userId(String userId) {
-        return put(OTEL_ATTRIBUTE_USER_ID, StringUtils.lowerCase(userId));
+        return put(OTEL_ATTRIBUTE_USER_ID, StringUtils.upperCase(userId));
     }
 
     public OtelRequestContext distributedIds(List<String> distributedIds) {
