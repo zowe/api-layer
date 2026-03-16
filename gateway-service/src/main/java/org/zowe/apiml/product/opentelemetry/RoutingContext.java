@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.product.opentelemetry;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +41,8 @@ public final class RoutingContext {
     private static final String OTEL_ATTRIBUTE_AUTH_STATUS = "auth.status";
     private static final String OTEL_ATTRIBUTE_USER_ID = "user.id";
     private static final String OTEL_ATTRIBUTE_DISTRIBUTED_USER_ID = "user.distributed.id";
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private AttributesBuilder attributesBuilder = Attributes.builder();
 
@@ -117,9 +121,19 @@ public final class RoutingContext {
         return null;
     }
 
+    @Override
+    public String toString() {
+        var attributes = attributesBuilder.build();
+        try {
+            return OBJECT_MAPPER.writeValueAsString(attributes.asMap());
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Cannot serialize attributes", e);
+        }
+    }
+
     public void issue() {
         var logger = LoggerFactory.getLogger("org.zowe.apiml.opentelemetry");
-        logger.info(attributesBuilder.build().asMap().toString());
+        logger.info(toString());
     }
 
 }
