@@ -51,7 +51,7 @@ public class RouteLocator implements RouteDefinitionLocator {
     private boolean forwardingClientCertEnabled;
 
     @Value("${otel.sdk.disabled:true}")
-    private boolean otelDisabled;
+    boolean otelDisabled;
 
     @Value("${apiml.gateway.servicesToLimitRequestRate:}")
     List<String> servicesToLimitRequestRateProperty;

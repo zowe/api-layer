@@ -61,6 +61,7 @@ class RouteLocatorTest {
             Arrays.asList(PRODUCERS),
             Arrays.asList(SCHEME_HANDLER_FILTERS)
         ));
+        routeLocator.otelDisabled = true;
         routeLocator.servicesToLimitRequestRateProperty = Collections.emptyList();
         routeLocator.servicesToDisableRetryProperty = Collections.emptyList();
         routeLocator.afterPropertiesSet();
@@ -233,6 +234,11 @@ class RouteLocatorTest {
                 routeLocator.afterPropertiesSet();
             }
 
+            @BeforeEach
+            void setUp() {
+                routeLocator.otelDisabled = true;
+            }
+
             private ServiceInstance createServiceInstance(Boolean forwardingEnabled, Boolean encodedCharactersEnabled, Boolean rateLimiterEnabled) {
                 Map<String, String> metadata = new HashMap<>();
                 if (forwardingEnabled != null) {
@@ -247,6 +253,7 @@ class RouteLocatorTest {
                 ServiceInstance serviceInstance = mock(ServiceInstance.class);
                 doReturn(metadata).when(serviceInstance).getMetadata();
                 doReturn("dummy").when(serviceInstance).getServiceId();
+                doReturn("dummy:instance:80").when(serviceInstance).getInstanceId();
                 return serviceInstance;
             }
 
@@ -318,7 +325,7 @@ class RouteLocatorTest {
                     ServiceInstance serviceInstance = createServiceInstance(null, Boolean.TRUE, null);
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService);
                     assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
-                    assertEquals(3, filterDefinitions.size());
+                    assertEquals(2, filterDefinitions.size());
                     assertTrue(filterDefinitions.stream().noneMatch(filter -> "ForbidEncodedCharactersFilterFactory".equals(filter.getName())));
                 }
 
@@ -368,6 +375,28 @@ class RouteLocatorTest {
                     assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
                     assertEquals(2, filterDefinitions.size());
                     assertTrue(filterDefinitions.stream().noneMatch(filter -> "InMemoryRateLimiterFilterFactory".equals(filter.getName())));
+                }
+
+            }
+
+            @Nested
+            class OtelEnabled {
+
+                @BeforeEach
+                void setUp() {
+                    routeLocator.otelDisabled = false;
+                }
+
+                @Test
+                void givenEnabledOtel_whenGetPostRoutingFilters_thenOtelServiceFilterFactoryIsCreated() {
+                    ServiceInstance serviceInstance = createServiceInstance(null, null, Boolean.TRUE);
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService);
+                    assertEquals(4, filterDefinitions.size());
+
+                    var filter = filterDefinitions.get(3);
+                    assertEquals("OtelServiceFilterFactory", filter.getName());
+                    assertEquals("dummy", filter.getArgs().get("serviceId"));
+                    assertEquals("dummy:instance:80", filter.getArgs().get("instanceId"));
                 }
 
             }
