@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.filters;
 
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -29,6 +30,7 @@ import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalLong;
@@ -142,13 +144,17 @@ class AbstractTokenFilterFactoryTest {
     class Otel {
 
         MockServerHttpRequest request = MockServerHttpRequest.get("/aPath").build();
+        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+        OtelRequestContext otelRequestContext;
+
+        @BeforeEach
+        void mockOtelContext() {
+            otelRequestContext = spy(OtelRequestContext.of(exchange));
+            exchange.getAttributes().put("otel-context", otelRequestContext);
+        }
 
         @Test
         void givenOtelRequestContext_whenFail_thenCallAuthenticationFailed() {
-            var exchange = MockServerWebExchange.from(request);
-            var otelRequestContext = spy(OtelRequestContext.of(exchange));
-            exchange.getAttributes().put("otel-context", otelRequestContext);
-
             spy(AbstractAuthSchemeFactory.class).cleanHeadersOnAuthFail(exchange, "test");
 
             verify(otelRequestContext, times(1)).authenticationFailed();
@@ -156,13 +162,63 @@ class AbstractTokenFilterFactoryTest {
 
         @Test
         void givenOtelRequestContext_whenSucess_thenCallAuthenticationSuccess() {
-            var exchange = MockServerWebExchange.from(request);
-            var otelRequestContext = spy(OtelRequestContext.of(exchange));
-            exchange.getAttributes().put("otel-context", otelRequestContext);
-
             spy(AbstractAuthSchemeFactory.class).cleanHeadersOnAuthSuccess(exchange);
 
             verify(otelRequestContext, times(1)).authenticationSuccess();
+        }
+
+        @Nested
+        class UserId {
+
+            private static String USER_ID = "myUserId";
+
+            @Test
+            void givenResponseWithoutUserId_whenProcess_thenDoNotSetAny() {
+                AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse> tokenResponse = new AbstractAuthSchemeFactory.AuthorizationResponse<>(
+                    null, ZaasTokenResponse.builder().build()
+                );
+                spy(AbstractAuthSchemeFactory.class).processResponse(exchange, e -> Mono.empty().then(), tokenResponse);
+
+                verify(otelRequestContext, never()).userId(any());
+            }
+
+            @Test
+            void givenResponseWithUserId_whenProcess_thenSetIt() {
+                AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse> tokenResponse = new AbstractAuthSchemeFactory.AuthorizationResponse<>(
+                    null, ZaasTokenResponse.builder().userId(USER_ID).build()
+                );
+                spy(AbstractAuthSchemeFactory.class).processResponse(exchange, e -> Mono.empty().then(), tokenResponse);
+
+                verify(otelRequestContext, never()).userId(USER_ID);
+            }
+
+        }
+
+        @Nested
+        class DistributedUserId {
+
+            private static List<String> DISTRIBUTED_USER_IDS = Arrays.asList("distributedUerId1", "distributedUerId2");
+
+            @Test
+            void givenResponseWithoutUserId_whenProcess_thenDoNotSetAny() {
+                AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse> tokenResponse = new AbstractAuthSchemeFactory.AuthorizationResponse<>(
+                    null, ZaasTokenResponse.builder().build()
+                );
+                spy(AbstractAuthSchemeFactory.class).processResponse(exchange, e -> Mono.empty().then(), tokenResponse);
+
+                verify(otelRequestContext, never()).userId(any());
+            }
+
+            @Test
+            void givenResponseWithUserId_whenProcess_thenSetIt() {
+                AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse> tokenResponse = new AbstractAuthSchemeFactory.AuthorizationResponse<>(
+                    null, ZaasTokenResponse.builder().distributedIds(DISTRIBUTED_USER_IDS).build()
+                );
+                spy(AbstractAuthSchemeFactory.class).processResponse(exchange, e -> Mono.empty().then(), tokenResponse);
+
+                verify(otelRequestContext, never()).distributedIds(DISTRIBUTED_USER_IDS);
+            }
+
         }
 
     }
