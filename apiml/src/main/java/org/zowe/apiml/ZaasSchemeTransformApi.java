@@ -168,7 +168,11 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
                 .headerName(ApimlConstants.SAF_TOKEN_HEADER)
                 .token(safIdToken)
                 .userId(authSourceParsed.getUserId())
-                .distributedIds(authSourceParsed instanceof OIDCAuthSource oidcAuthSource ? oidcAuthSource.getDistributedId() : null)
+                .distributedIds(authSource.filter(OIDCAuthSource.class::isInstance)
+                    .map(OIDCAuthSource.class::cast)
+                    .map(OIDCAuthSource::getDistributedId)
+                    .orElse(null)
+                )
                 .build();
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {

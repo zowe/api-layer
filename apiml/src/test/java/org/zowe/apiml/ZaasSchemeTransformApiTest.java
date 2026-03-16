@@ -24,10 +24,12 @@ import org.zowe.apiml.zaas.ZaasTokenResponse;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.zaas.security.service.schema.source.OIDCAuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import reactor.test.StepVerifier;
 
 import javax.management.ServiceNotFoundException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
@@ -178,7 +180,6 @@ class ZaasSchemeTransformApiTest {
 
             @BeforeEach
             void setup() {
-
                 var parsed = mock(AuthSource.Parsed.class);
                 when(parsed.getUserId()).thenReturn("USER1");
                 when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
@@ -188,7 +189,6 @@ class ZaasSchemeTransformApiTest {
 
             @Test
             void whenValidUser_returnsToken() throws PassTicketException {
-
                 when(tokenCreationService.createSafIdTokenWithoutCredentials("USER1", "app1"))
                     .thenReturn("saf-idt");
 
@@ -199,8 +199,29 @@ class ZaasSchemeTransformApiTest {
             }
 
             @Test
-            void whenSafIdTokenCreationFails_returnsError() {
+            void whenOidc_returnsDistributedId() throws PassTicketException {
+                var parsed = mock(AuthSource.Parsed.class);
+                when(parsed.getUserId()).thenReturn("USER1");
+                var authSource = mock(OIDCAuthSource.class);
+                when(authSource.getDistributedId()).thenReturn(Arrays.asList("USERD1", "USERD2"));
+                when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
+                when(authSourceService.parse(authSource)).thenReturn(parsed);
 
+                when(tokenCreationService.createSafIdTokenWithoutCredentials("USER1", "app1"))
+                    .thenReturn("saf-idt");
+
+                StepVerifier.create(transformApi.safIdt(credentials)).assertNext(result -> {
+                    assertNotNull(result);
+                    assertEquals("saf-idt", result.getBody().getToken());
+                    assertNotNull(result.getBody().getDistributedIds());
+                    assertEquals(2, result.getBody().getDistributedIds().size());
+                    assertEquals("USERD1", result.getBody().getDistributedIds().get(0));
+                    assertEquals("USERD2", result.getBody().getDistributedIds().get(1));
+                }).verifyComplete();
+            }
+
+            @Test
+            void whenSafIdTokenCreationFails_returnsError() {
                 when(tokenCreationService.createSafIdTokenWithoutCredentials("USER1", "app1"))
                     .thenThrow(new RuntimeException("Simulated SAF IDT failure"));
 
@@ -209,6 +230,7 @@ class ZaasSchemeTransformApiTest {
                     assertNull(result.getBody());
                 }).verifyComplete();
             }
+
         }
 
         @Nested
