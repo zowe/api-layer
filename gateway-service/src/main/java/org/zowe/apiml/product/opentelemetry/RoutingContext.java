@@ -106,19 +106,8 @@ public final class RoutingContext {
     }
 
     public RoutingContext distributedIds(List<String> distributedIds) {
-        return put(OTEL_ATTRIBUTE_DISTRIBUTED_USER_ID, toString(distributedIds));
-    }
-
-    private static String toString(List<String> values) {
-        if (values != null && !values.isEmpty()) {
-            if (values.size() == 1) {
-                return values.get(0);
-            }
-
-            // TODO: use escaping characters?
-            return String.join(",", values);
-        }
-        return null;
+        attributesBuilder.put(OTEL_ATTRIBUTE_DISTRIBUTED_USER_ID, distributedIds.toArray(new String[0]));
+        return this;
     }
 
     @Override
