@@ -25,6 +25,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.zaas.security.service.saf.SafIdtProvider;
+import org.zowe.apiml.zaas.security.service.saf.SafRestAuthenticationService;
 
 import javax.annotation.Nonnull;
 
@@ -59,6 +62,11 @@ public class OpenTelemetryTestConfig implements BeanPostProcessor {
         }
 
         return BeanPostProcessor.super.postProcessAfterInitialization(bean, beanName);
+    }
+
+    @Bean
+    SafIdtProvider safIdtProvider(RestTemplate restTemplate) {
+        return new SafRestAuthenticationService(restTemplate);
     }
 
     @Bean

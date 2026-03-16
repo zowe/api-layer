@@ -13,6 +13,7 @@ package org.zowe.apiml.acceptance;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
@@ -30,7 +31,10 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.MockService.Scope;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
@@ -40,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.awaitility.Awaitility.await;
 
 class OpenTelemetryResourceAttributesZosTest {
 
@@ -98,7 +103,8 @@ class OpenTelemetryResourceAttributesZosTest {
             "otel.sdk.disabled=false",
             "otel.metrics.exporter=none",
             "otel.traces.exporter=none",
-            "otel.logs.exporter=none"
+            "otel.logs.exporter=none",
+            "apiml.security.saf.provider=saf"
         }
     )
     @ActiveProfiles({ "OpenTelemetryTest", "zos" })
@@ -125,6 +131,21 @@ class OpenTelemetryResourceAttributesZosTest {
             ((InMemoryLogRecordExporter) logExporter).reset();
         }
 
+        private List<LogRecordData> assertLogsExported() {
+            List<LogRecordData> logs = new ArrayList<>();
+            await("Log export")
+                .atMost(Duration.ofSeconds(5))
+                .until(() -> {
+                    logExporter.flush();
+                    var l = ((InMemoryLogRecordExporter) logExporter).getFinishedLogRecordItems();
+                    if (l.size() > 0) {
+                        logs.addAll(l);
+                    }
+                    return l.size() > 0;
+                });
+            return logs;
+        }
+
         @Test
         void givenRouted_thenLog() {
             given()
@@ -132,10 +153,7 @@ class OpenTelemetryResourceAttributesZosTest {
             .then()
             .statusCode(200);
 
-            logExporter.flush();
-            var logs = ((InMemoryLogRecordExporter) logExporter).getFinishedLogRecordItems();
-            assertFalse(logs.isEmpty(), "No logs received");
-            assertEquals(1, logs.size());
+            var logs = assertLogsExported();
 
             assertTrue(
                 logs.stream()
@@ -175,16 +193,39 @@ class OpenTelemetryResourceAttributesZosTest {
 
         @Test
         void givenLoginEndpoint_thenLog() {
+            given()
+                .auth().preemptive()
+                .basic("wronguser", "wrongpass")
+                .post(basePath + "/gateway/api/v1/auth/login")
+            .then()
+                .statusCode(500);
 
-            // given()
-            //     .post(basePath + "/gateway/api/v1/auth/login");
+            var logs = assertLogsExported();
 
-
+            var logRecord = logs.get(0);
+            assertAttributesBase(logRecord.getResource().getAttributes(), port);
+            @SuppressWarnings("null")
+            var logBody = logRecord.getBodyValue().asString();
+            assertTrue(StringUtils.isNotBlank(logBody));
+            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
+            assertEquals("TESTSERVICE", getAttribute(logBody, "service.id"));
+            assertEquals("GET", getAttribute(logBody, "http.request.method"));
+            assertEquals("FAILED", getAttribute(logBody, "auth.status"));
+            assertEquals("localhost:testservice:" + mockService.getPort(), getAttribute(logBody, "service.instance.id"));
+            assertEquals("200", getAttribute(logBody, "service.response_code"));
+            assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
+            assertEquals("https", getAttribute(logBody, "url.scheme"));
+            assertEquals("zoweJwt", getAttribute(logBody, "auth.method"));
         }
 
         @Test
         void givenCatalogEndpoint_thenLog() {
+            // given()
+            //     .get()
+            // .then()
+            //     .statusCode();
 
+            var logs = assertLogsExported();
         }
 
         @Test

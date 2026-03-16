@@ -40,6 +40,7 @@ There are 2 shell scripts to operate the integration test:
 - [sh/validate_and_stop.sh](sh/start_containers.sh) - to validate the test result, save containers log and exit the containers
 
 ### Definition of the expected telemetry data for validation
+
 The `expected.yml` file for the Golden tester can be either created manually, or generated. To generate the file remove the existing `expected.yml` file, and add the following line to the Golden container startup arguments in the [docker-compose.yml](docker-compose.yml):
 
 ```yml
