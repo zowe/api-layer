@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.acceptance;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,8 +45,17 @@ class OpenTelemetryResourceAttributesNonZosTest {
     @LocalServerPort
     private int port;
 
-    private void assertLogBase() {
-
+    @SuppressWarnings("null")
+    private void assertLogBase(Attributes attributes) {
+        assertNotEquals("zos", attributes.get(stringKey("os.type")));
+        assertNull(attributes.get(stringKey("process.zos.jobid")));
+        assertNull(attributes.get(stringKey("process.zos.jobname")));
+        assertEquals("apiml:apiml1:" + port, attributes.get(stringKey("service.name")));
+        assertNull(attributes.get(stringKey("service.namespace")));
+        assertNotNull(attributes.get(stringKey("service.version")));
+        assertNull(attributes.get(stringKey("zos.smf.id")));
+        assertEquals("localhost:gateway:" + port, attributes.get(stringKey("service.instance.id")));
+        assertNull(attributes.get(stringKey("deployment.environment.name")));
     }
 
     @Test
@@ -56,15 +66,7 @@ class OpenTelemetryResourceAttributesNonZosTest {
         metrics.forEach(
             metric -> {
                 var attributes = metric.getResource().getAttributes();
-                assertNotEquals("zos", attributes.get(stringKey("os.type")));
-                assertNull(attributes.get(stringKey("process.zos.jobid")));
-                assertNull(attributes.get(stringKey("process.zos.jobname")));
-                assertEquals("apiml:apiml1:" + port, attributes.get(stringKey("service.name")));
-                assertNull(attributes.get(stringKey("service.namespace")));
-                assertNotNull(attributes.get(stringKey("service.version")));
-                assertNull(attributes.get(stringKey("zos.smf.id")));
-                assertEquals("localhost:gateway:" + port, attributes.get(stringKey("service.instance.id")));
-                assertNull(attributes.get(stringKey("deployment.environment.name")));
+                assertLogBase(attributes);
             }
         );
     }

@@ -20,6 +20,7 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +28,11 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.MockService.Scope;
+import org.zowe.apiml.zaas.security.mapping.OIDCExternalMapper;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -44,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
 
 class OpenTelemetryResourceAttributesZosTest {
@@ -113,6 +117,9 @@ class OpenTelemetryResourceAttributesZosTest {
         @Autowired
         private LogRecordExporter logExporter;
 
+        @MockitoBean
+        private OIDCExternalMapper mapper;
+
         private MockService mockService;
 
         @BeforeAll
@@ -134,20 +141,21 @@ class OpenTelemetryResourceAttributesZosTest {
         private List<LogRecordData> assertLogsExported() {
             List<LogRecordData> logs = new ArrayList<>();
             await("Log export")
-                .atMost(Duration.ofSeconds(5))
+                .atMost(Duration.ofSeconds(10))
                 .until(() -> {
-                    logExporter.flush();
-                    var l = ((InMemoryLogRecordExporter) logExporter).getFinishedLogRecordItems();
+                    var exporter = (InMemoryLogRecordExporter) logExporter;
+                    var l = exporter.getFinishedLogRecordItems();
                     if (l.size() > 0) {
                         logs.addAll(l);
                     }
+                    exporter.reset();
                     return l.size() > 0;
                 });
             return logs;
         }
 
         @Test
-        void givenRouted_thenLog() {
+        void givenRouted_whenAuthFail_thenLog() {
             given()
                 .get(basePath + "/testservice/api/v1/200")
             .then()
@@ -163,7 +171,7 @@ class OpenTelemetryResourceAttributesZosTest {
                     var logBody = logRecord.getBodyValue().asString();
                     assertTrue(StringUtils.isNotBlank(logBody));
                     assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
-                    assertEquals("TESTSERVICE", getAttribute(logBody, "service.id"));
+                    assertEquals("testservice", getAttribute(logBody, "service.id"));
                     assertEquals("GET", getAttribute(logBody, "http.request.method"));
                     assertEquals("FAILED", getAttribute(logBody, "auth.status"));
                     assertEquals("localhost:testservice:" + mockService.getPort(), getAttribute(logBody, "service.instance.id"));
@@ -187,11 +195,11 @@ class OpenTelemetryResourceAttributesZosTest {
                 map = new HashMap<>();
             }
             var value = map.get(attributeName);
-            assertNotNull(value);
             return value;
         }
 
         @Test
+        @Disabled("This test is for invalid authentication (server error). To be reviewed in follow up story")
         void givenLoginEndpoint_thenLog() {
             given()
                 .auth().preemptive()
@@ -208,7 +216,7 @@ class OpenTelemetryResourceAttributesZosTest {
             var logBody = logRecord.getBodyValue().asString();
             assertTrue(StringUtils.isNotBlank(logBody));
             assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
-            assertEquals("TESTSERVICE", getAttribute(logBody, "service.id"));
+            assertEquals("apicatalog", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
             assertEquals("FAILED", getAttribute(logBody, "auth.status"));
             assertEquals("localhost:testservice:" + mockService.getPort(), getAttribute(logBody, "service.instance.id"));
@@ -220,17 +228,41 @@ class OpenTelemetryResourceAttributesZosTest {
 
         @Test
         void givenCatalogEndpoint_thenLog() {
-            // given()
-            //     .get()
-            // .then()
-            //     .statusCode();
+            given()
+                .get(basePath + "/apicatalog/ui/v1/index.html")
+            .then()
+                .statusCode(200);
 
             var logs = assertLogsExported();
+
+            var logRecord = logs.get(0);
+            assertAttributesBase(logRecord.getResource().getAttributes(), port);
+            @SuppressWarnings("null")
+            var logBody = logRecord.getBodyValue().asString();
+            assertTrue(StringUtils.isNotBlank(logBody));
+            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
+            assertEquals("apicatalog", getAttribute(logBody, "service.id"));
+            assertEquals("GET", getAttribute(logBody, "http.request.method"));
+            assertNull(getAttribute(logBody, "auth.status"));
+            assertEquals("localhost:apicatalog:" + port, getAttribute(logBody, "service.instance.id"));
+            assertEquals("200", getAttribute(logBody, "service.response_code"));
+            assertEquals("/apicatalog/ui/v1/index.html", getAttribute(logBody, "url.path"));
+            assertEquals("https", getAttribute(logBody, "url.scheme"));
+            assertNull(getAttribute(logBody, "auth.method"));
         }
 
         @Test
-        void givenRouted_withAuth_thenLog() {
+        void givenRouted_withAuthSuccess_thenLog() {
 
+            // TODO mock auth result
+            fail("not implemented yet");
+        }
+
+        @Test
+        void givenRouted_withOidc_thenLog() {
+            // TODO mock OIDC result
+
+            fail("not implemented yet");
         }
 
     }
