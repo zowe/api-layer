@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.filters;
 
+import com.google.common.annotations.VisibleForTesting;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -142,6 +143,11 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
         super(configClazz);
         this.instanceInfoService = instanceInfoService;
         this.messageService = messageService;
+    }
+
+    @VisibleForTesting
+    AbstractAuthSchemeFactory() {
+        this(null, null, null);
     }
 
     protected abstract Function<RequestCredentials, Mono<AbstractAuthSchemeFactory.AuthorizationResponse<R>>> getAuthorizationResponseTransformer();

@@ -25,6 +25,7 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 import reactor.core.publisher.Mono;
 
@@ -35,8 +36,7 @@ import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 class AbstractTokenFilterFactoryTest {
 
@@ -134,6 +134,35 @@ class AbstractTokenFilterFactoryTest {
                 assertEquals("cookie=jwt", request.getHeaders().getFirst("cookie"));
             }
 
+        }
+
+    }
+
+    @Nested
+    class Otel {
+
+        MockServerHttpRequest request = MockServerHttpRequest.get("/aPath").build();
+
+        @Test
+        void givenOtelRequestContext_whenFail_thenCallAuthenticationFailed() {
+            var exchange = MockServerWebExchange.from(request);
+            var otelRequestContext = spy(OtelRequestContext.of(exchange));
+            exchange.getAttributes().put("otel-context", otelRequestContext);
+
+            spy(AbstractAuthSchemeFactory.class).cleanHeadersOnAuthFail(exchange, "test");
+
+            verify(otelRequestContext, times(1)).authenticationFailed();
+        }
+
+        @Test
+        void givenOtelRequestContext_whenSucess_thenCallAuthenticationSuccess() {
+            var exchange = MockServerWebExchange.from(request);
+            var otelRequestContext = spy(OtelRequestContext.of(exchange));
+            exchange.getAttributes().put("otel-context", otelRequestContext);
+
+            spy(AbstractAuthSchemeFactory.class).cleanHeadersOnAuthSuccess(exchange);
+
+            verify(otelRequestContext, times(1)).authenticationSuccess();
         }
 
     }
