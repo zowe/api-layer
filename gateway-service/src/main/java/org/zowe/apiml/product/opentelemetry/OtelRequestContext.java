@@ -12,10 +12,12 @@ package org.zowe.apiml.product.opentelemetry;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.server.ServerWebExchange;
@@ -111,19 +113,27 @@ public final class OtelRequestContext {
         return this;
     }
 
+    @VisibleForTesting
+    ObjectMapper getObjectMapper() {
+        return OBJECT_MAPPER;
+    }
+
     @Override
     public String toString() {
         var attributes = attributesBuilder.build();
         try {
-            return OBJECT_MAPPER.writeValueAsString(attributes.asMap());
+            return getObjectMapper().writeValueAsString(attributes.asMap());
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Cannot serialize attributes", e);
         }
     }
 
+    protected Logger getOtelLogger() {
+        return LoggerFactory.getLogger("org.zowe.apiml.opentelemetry");
+    }
+
     public void issue() {
-        var logger = LoggerFactory.getLogger("org.zowe.apiml.opentelemetry");
-        logger.info(toString());
+        getOtelLogger().info(toString());
     }
 
 }
