@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.acceptance;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
@@ -27,6 +29,9 @@ import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.MockService.Scope;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.restassured.RestAssured.given;
@@ -129,7 +134,7 @@ class OpenTelemetryResourceAttributesZosTest {
 
             logExporter.flush();
             var logs = ((InMemoryLogRecordExporter) logExporter).getFinishedLogRecordItems();
-            assertFalse(logs.isEmpty(), "No logs received 7");
+            assertFalse(logs.isEmpty(), "No logs received");
             assertEquals(1, logs.size());
 
             assertTrue(
@@ -156,13 +161,14 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         private Object getAttribute(String logBody, String attributeName) {
-            // TODO replace this logic when format changes
-            var idx0 = logBody.indexOf(attributeName + "=");
-            var end = logBody.indexOf(",", idx0);
-            if (end < 0) {
-                end = logBody.indexOf("}", idx0);
+            var mapper = new ObjectMapper();
+            Map<?, ?> map;
+            try {
+                map = mapper.readValue(logBody, Map.class);
+            } catch (JsonProcessingException e) {
+                map = new HashMap<>();
             }
-            var value = logBody.substring(idx0 + attributeName.length() + 1, end);
+            var value = map.get(attributeName);
             assertNotNull(value);
             return value;
         }
