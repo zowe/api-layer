@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.common.AttributesBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.server.ServerWebExchange;
@@ -102,7 +103,7 @@ public final class OtelRequestContext {
     }
 
     public OtelRequestContext userId(String userId) {
-        return put(OTEL_ATTRIBUTE_USER_ID, userId);
+        return put(OTEL_ATTRIBUTE_USER_ID, StringUtils.lowerCase(userId));
     }
 
     public OtelRequestContext distributedIds(List<String> distributedIds) {
