@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.filters;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -22,10 +23,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.SslInfo;
+import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
+import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -42,8 +47,8 @@ import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
 
 @ExtendWith(MockitoExtension.class)
@@ -225,6 +230,25 @@ class X509FilterFactoryTest {
         public ServerWebExchange build() {
             when(exchange.getRequest()).thenReturn(request);
             return exchange;
+        }
+
+    }
+
+    @Nested
+    class Otel {
+
+        @Test
+        void givenX509FilterFactory_whenProcessResponse_thenSetX509Scheme() {
+            MockServerHttpRequest request = MockServerHttpRequest.get("/aPath").build();
+            MockServerWebExchange exchange = MockServerWebExchange.from(request);
+            OtelRequestContext otelRequestContext = spy(OtelRequestContext.of(exchange));
+            exchange.getAttributes().put("otel-context", otelRequestContext);
+
+            var x509FilterFactory = new X509FilterFactory(messageService);
+            x509FilterFactory.apply(new X509FilterFactory.Config()).filter(exchange, e -> Mono.empty().then());
+
+            verify(otelRequestContext, times(1)).authMethod(AuthenticationScheme.X509);
+            verify(otelRequestContext, never()).userId(any());
         }
 
     }
