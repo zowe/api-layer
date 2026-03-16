@@ -318,7 +318,7 @@ class RouteLocatorTest {
                     ServiceInstance serviceInstance = createServiceInstance(null, Boolean.TRUE, null);
                     List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService);
                     assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
-                    assertEquals(2, filterDefinitions.size());
+                    assertEquals(3, filterDefinitions.size());
                     assertTrue(filterDefinitions.stream().noneMatch(filter -> "ForbidEncodedCharactersFilterFactory".equals(filter.getName())));
                 }
 

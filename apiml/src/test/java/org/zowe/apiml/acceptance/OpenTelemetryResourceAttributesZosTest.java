@@ -14,9 +14,9 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +25,11 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.MockService.Scope;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.port;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class OpenTelemetryResourceAttributesZosTest {
 
     @SuppressWarnings("null")
-    private boolean assertAttributesBase(Attributes attributes) {
+    private boolean assertAttributesBase(Attributes attributes, int port) {
         assertEquals("ZWE1AG", attributes.get(stringKey("process.zos.jobname")));
         assertEquals("apiml:apiml1:" + port, attributes.get(stringKey("service.name")));
         assertNull(attributes.get(stringKey("service.namespace")));
@@ -63,7 +63,6 @@ class OpenTelemetryResourceAttributesZosTest {
         }
     )
     @DirtiesContext
-    @Disabled
     class WhenBasicConfig {
 
         @Autowired
@@ -80,7 +79,7 @@ class OpenTelemetryResourceAttributesZosTest {
             metrics.forEach(
                 metric -> {
                     var attributes = metric.getResource().getAttributes();
-                    assertTrue(assertAttributesBase(attributes));
+                    assertTrue(assertAttributesBase(attributes, port));
                 }
             );
         }
@@ -103,16 +102,17 @@ class OpenTelemetryResourceAttributesZosTest {
         @Autowired
         private LogRecordExporter logExporter;
 
+        private MockService mockService;
+
         @BeforeAll
         void startMockServices() {
-            mockService("testservice")
+            mockService = mockService("testservice")
                 .scope(Scope.CLASS)
                 .authenticationScheme(AuthenticationScheme.ZOWE_JWT)
                 .addEndpoint("/testservice/200")
                 .responseCode(200)
             .and().start();
         }
-
 
         @BeforeEach
         void setUp() {
@@ -135,21 +135,54 @@ class OpenTelemetryResourceAttributesZosTest {
             assertTrue(
                 logs.stream()
                 .allMatch(logRecord -> {
-                    assertAttributesBase(logRecord.getResource().getAttributes());
-                    assertTrue(logRecord.getBodyValue().asString() != null);
+                    assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                    @SuppressWarnings("null")
+                    var logBody = logRecord.getBodyValue().asString();
+                    assertTrue(StringUtils.isNotBlank(logBody));
+                    assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
+                    assertEquals("TESTSERVICE", getAttribute(logBody, "service.id"));
+                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                    assertEquals("FAILED", getAttribute(logBody, "auth.status"));
+                    assertEquals("localhost:testservice:" + mockService.getPort(), getAttribute(logBody, "service.instance.id"));
+                    assertEquals("200", getAttribute(logBody, "service.response_code"));
+                    assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
+                    assertEquals("https", getAttribute(logBody, "url.scheme"));
+                    assertEquals("zoweJwt", getAttribute(logBody, "auth.method"));
+
                     return true;
                 })
             );
 
-            assertTrue(
-                logs.stream()
-                .allMatch(logRecord -> {
-                    assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
-                    assertTrue(logRecord.getResource() != null);
-                    return false;
-                })
-            );
+        }
 
+        private Object getAttribute(String logBody, String attributeName) {
+            // TODO replace this logic when format changes
+            var idx0 = logBody.indexOf(attributeName + "=");
+            var end = logBody.indexOf(",", idx0);
+            if (end < 0) {
+                end = logBody.indexOf("}", idx0);
+            }
+            var value = logBody.substring(idx0 + attributeName.length() + 1, end);
+            assertNotNull(value);
+            return value;
+        }
+
+        @Test
+        void givenLoginEndpoint_thenLog() {
+
+            // given()
+            //     .post(basePath + "/gateway/api/v1/auth/login");
+
+
+        }
+
+        @Test
+        void givenCatalogEndpoint_thenLog() {
+
+        }
+
+        @Test
+        void givenRouted_withAuth_thenLog() {
 
         }
 
