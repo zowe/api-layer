@@ -39,15 +39,13 @@ public class HttpBasicPassticket implements SchemeHandler {
             filterDef.addArg("message", "APPLID is not configured");
             filterDef.addArg("authenticationScheme", AuthenticationScheme.HTTP_BASIC_PASSTICKET.getScheme());
             routeDefinition.getFilters().add(filterDef);
-
-            return;
+        } else {
+            FilterDefinition filterDef = new FilterDefinition();
+            filterDef.setName("PassticketFilterFactory");
+            filterDef.addArg("applicationName", auth.getApplid());
+            filterDef.addArg("serviceId", StringUtils.lowerCase(serviceInstance.getServiceId()));
+            routeDefinition.getFilters().add(filterDef);
         }
-
-        FilterDefinition filterDef = new FilterDefinition();
-        filterDef.setName("PassticketFilterFactory");
-        filterDef.addArg("applicationName", auth.getApplid());
-        filterDef.addArg("serviceId", StringUtils.lowerCase(serviceInstance.getServiceId()));
-        routeDefinition.getFilters().add(filterDef);
     }
 
 }

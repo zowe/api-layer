@@ -144,6 +144,7 @@ class OpenTelemetryResourceAttributesZosTest {
 
         private MockService mockServiceZoweJwt;
         private MockService mockServicePassTicket;
+        private MockService mockServicePassTicketMisconfigured;
 
         @BeforeAll
         void startMockServices() throws Exception {
@@ -162,6 +163,13 @@ class OpenTelemetryResourceAttributesZosTest {
                 .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET)
                 .applid("TSTSVRPT")
                 .addEndpoint("/testservicept/200")
+                .responseCode(200)
+            .and().start();
+
+            mockServicePassTicketMisconfigured = mockService("testservicepterror")
+                .scope(Scope.CLASS)
+                .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET)
+                .addEndpoint("/testservicepterror/200")
                 .responseCode(200)
             .and().start();
         }
@@ -369,6 +377,33 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("localhost:testservicept:" + mockServicePassTicket.getPort(), getAttribute(logBody, "service.instance.id"));
             assertEquals("200", getAttribute(logBody, "service.response_code"));
             assertEquals("/testservicept/api/v1/200", getAttribute(logBody, "url.path"));
+            assertEquals("https", getAttribute(logBody, "url.scheme"));
+            assertEquals("httpBasicPassTicket", getAttribute(logBody, "auth.method"));
+        }
+
+        @Test
+        void givenRouted_withMisconfiguredAuthPassTicket_thenLog() {
+            given()
+                .cookie(AUTH_COOKIE, login())
+                .get(basePath + "/testservicepterror/api/v1/200")
+            .then()
+                .statusCode(200);
+
+            var logs = assertLogsExported(); // This now includes the login request
+            assertEquals(1, logs.size());
+
+            var logRecord = logs.get(0);
+            assertAttributesBase(logRecord.getResource().getAttributes(), port);
+            @SuppressWarnings("null")
+            var logBody = logRecord.getBodyValue().asString();
+            assertTrue(StringUtils.isNotBlank(logBody));
+            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
+            assertEquals("testservicepterror", getAttribute(logBody, "service.id"));
+            assertEquals("GET", getAttribute(logBody, "http.request.method"));
+            assertEquals("FAILED", getAttribute(logBody, "auth.status"));
+            assertEquals(mockServicePassTicketMisconfigured.getInstanceId(), getAttribute(logBody, "service.instance.id"));
+            assertEquals("200", getAttribute(logBody, "service.response_code"));
+            assertEquals("/testservicepterror/api/v1/200", getAttribute(logBody, "url.path"));
             assertEquals("https", getAttribute(logBody, "url.scheme"));
             assertEquals("httpBasicPassTicket", getAttribute(logBody, "auth.method"));
         }

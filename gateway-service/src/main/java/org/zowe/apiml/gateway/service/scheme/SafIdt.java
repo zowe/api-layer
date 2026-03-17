@@ -35,17 +35,16 @@ public class SafIdt implements SchemeHandler {
 
             FilterDefinition filterDef = new FilterDefinition();
             filterDef.setName("RoutingConfigurationErrorFilterFactory");
+            filterDef.addArg("serviceId", StringUtils.lowerCase(serviceInstance.getServiceId()));
             filterDef.addArg("message", "APPLID is not configured");
             filterDef.addArg("authenticationScheme", AuthenticationScheme.SAF_IDT.getScheme());
             routeDefinition.getFilters().add(filterDef);
-
-            return;
+        } else {
+            FilterDefinition filterDef = new FilterDefinition();
+            filterDef.setName("SafIdtFilterFactory");
+            filterDef.addArg("applicationName", auth.getApplid());
+            filterDef.addArg("serviceId", StringUtils.lowerCase(serviceInstance.getServiceId()));
+            routeDefinition.getFilters().add(filterDef);
         }
-
-        FilterDefinition filterDef = new FilterDefinition();
-        filterDef.setName("SafIdtFilterFactory");
-        filterDef.addArg("applicationName", auth.getApplid());
-        filterDef.addArg("serviceId", StringUtils.lowerCase(serviceInstance.getServiceId()));
-        routeDefinition.getFilters().add(filterDef);
     }
 }
