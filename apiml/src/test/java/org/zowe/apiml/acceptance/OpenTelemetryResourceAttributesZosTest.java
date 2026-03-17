@@ -31,6 +31,8 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.MockService.Scope;
+import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.SslContextConfigurer;
 import org.zowe.apiml.zaas.security.mapping.OIDCExternalMapper;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 
@@ -110,6 +112,7 @@ class OpenTelemetryResourceAttributesZosTest {
             "otel.traces.exporter=none",
             "otel.logs.exporter=none",
             "apiml.security.auth.provider=saf",
+            "apiml.security.x509.enabled=true",
             "apiml.security.oidc.validationType=endpoint",
             "apiml.security.oidc.enabled=true",
             "apiml.security.oidc.userInfo.uri=https://oidc.provider.com/user/info",
@@ -134,7 +137,10 @@ class OpenTelemetryResourceAttributesZosTest {
         private MockService mockServicePassTicket;
 
         @BeforeAll
-        void startMockServices() {
+        void startMockServices() throws Exception {
+            SslContextConfigurer configurer = new SslContextConfigurer("password".toCharArray(), "../keystore/client_cert/client-certs.p12", "../keystore/localhost/localhost.keystore.p12");
+            SslContext.prepareSslAuthentication(configurer);
+
             mockServiceZoweJwt = mockService("testservice")
                 .scope(Scope.CLASS)
                 .authenticationScheme(AuthenticationScheme.ZOWE_JWT)
@@ -299,7 +305,7 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         @Test
-        void givenRoutedWitArgs_withAuthSuccess_thenLog() {
+        void givenNoRoute_thenLog() {
             given()
                 .get(basePath + "/nonexistant/api/v1/200")
             .then()
@@ -370,6 +376,8 @@ class OpenTelemetryResourceAttributesZosTest {
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
             assertTrue(StringUtils.isNotBlank(logBody));
+            assertEquals("USER", getAttribute(logBody, "user.id"));
+            assertEquals("oidc.username", getAttribute(logBody, "user.distributed.id"));
             assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
             assertEquals("testservice", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
@@ -382,13 +390,31 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         @Test
-        void givenNoRoute_withFail_thenLog() {
-
-        }
-
-        @Test
         void givenRouted_withX509_thenLog() {
+            given()
+                .config(SslContext.clientCertUser)
+                .get(basePath + "/testservice/api/v1/200")
+            .then()
+                .statusCode(200);
 
+            var logs = assertLogsExported();
+            assertEquals(1, logs.size());
+
+            var logRecord = logs.get(0);
+            assertAttributesBase(logRecord.getResource().getAttributes(), port);
+            @SuppressWarnings("null")
+            var logBody = logRecord.getBodyValue().asString();
+            assertTrue(StringUtils.isNotBlank(logBody));
+            assertEquals("USER", getAttribute(logBody, "user.id"));
+            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
+            assertEquals("testservice", getAttribute(logBody, "service.id"));
+            assertEquals("GET", getAttribute(logBody, "http.request.method"));
+            assertEquals("OK", getAttribute(logBody, "auth.status"));
+            assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
+            assertEquals("200", getAttribute(logBody, "service.response_code"));
+            assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
+            assertEquals("https", getAttribute(logBody, "url.scheme"));
+            assertEquals("zoweJwt", getAttribute(logBody, "auth.method"));
         }
 
         private String login() {
