@@ -36,6 +36,7 @@ import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.MockService.Scope;
 import org.zowe.apiml.zaas.security.mapping.OIDCExternalMapper;
+import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 
 import java.net.URI;
 import java.time.Duration;
@@ -131,6 +132,9 @@ class OpenTelemetryResourceAttributesZosTest {
 
         @MockitoBean
         private OIDCExternalMapper mapper;
+
+        @MockitoBean
+        private OIDCTokenProvider oidcTokenProvider;
 
         private MockService mockServiceZoweJwt;
         private MockService mockServicePassTicket;
