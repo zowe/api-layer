@@ -26,11 +26,13 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.MockService.Scope;
 import org.zowe.apiml.zaas.security.mapping.OIDCExternalMapper;
@@ -44,13 +46,12 @@ import java.util.Map;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.restassured.RestAssured.given;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.awaitility.Awaitility.await;
 
 class OpenTelemetryResourceAttributesZosTest {
 
@@ -113,11 +114,17 @@ class OpenTelemetryResourceAttributesZosTest {
             "otel.metrics.exporter=none",
             "otel.traces.exporter=none",
             "otel.logs.exporter=none",
-            "apiml.security.auth.provider=saf"
+            "apiml.security.auth.provider=saf",
+            "apiml.security.oidc.validationType=endpoint",
+            "apiml.security.oidc.enabled=true",
+            "apiml.security.oidc.userInfo.uri=https://oidc.provider.com/user/info",
+            "apiml.security.filterChainConfiguration=new"
         }
     )
     @ActiveProfiles({ "OpenTelemetryTest", "zos" })
     class WhenOnboardedService extends AcceptanceTestWithMockServices {
+
+        private static final String VALID_OIDC_TOKEN = "ewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiCn0.c29tZVNpZ25lZEhhc2hDb2Rl";
 
         @Autowired
         private LogRecordExporter logExporter;
@@ -289,7 +296,7 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("200", getAttribute(logBody, "service.response_code"));
             assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
             assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertNull(getAttribute(logBody, "auth.method"));
+            assertEquals("zoweJwt", getAttribute(logBody, "auth.method"));
         }
 
         @Test
@@ -321,7 +328,39 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("200", getAttribute(logBody, "service.response_code"));
             assertEquals("/testservicept/api/v1/200", getAttribute(logBody, "url.path"));
             assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertNull(getAttribute(logBody, "auth.method"));
+            assertEquals("httpBasicPassTicket", getAttribute(logBody, "auth.method"));
+        }
+
+        @Test
+        void givenRouted_withOidc_thenLog() {
+            given()
+                .header(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_OIDC_TOKEN)
+                .get()
+            .then()
+                .statusCode(200);
+
+            var logs = assertLogsExported();
+            assertEquals(1, logs.size());
+
+            var logRecord = logs.get(0);
+            assertAttributesBase(logRecord.getResource().getAttributes(), port);
+            @SuppressWarnings("null")
+            var logBody = logRecord.getBodyValue().asString();
+            assertTrue(StringUtils.isNotBlank(logBody));
+            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
+            assertEquals("testservicept", getAttribute(logBody, "service.id"));
+            assertEquals("GET", getAttribute(logBody, "http.request.method"));
+            assertNull(getAttribute(logBody, "auth.status"));
+            assertEquals("localhost:testservicept:" + mockServicePassTicket.getPort(), getAttribute(logBody, "service.instance.id"));
+            assertEquals("200", getAttribute(logBody, "service.response_code"));
+            assertEquals("/testservicept/api/v1/200", getAttribute(logBody, "url.path"));
+            assertEquals("https", getAttribute(logBody, "url.scheme"));
+            assertEquals("httpBasicPassTicket", getAttribute(logBody, "auth.method"));
+        }
+
+        @Test
+        void givenRouted_withX509_thenLog() {
+
         }
 
         private String login() {
@@ -342,15 +381,8 @@ class OpenTelemetryResourceAttributesZosTest {
             .extract()
                 .cookie(AUTH_COOKIE);
 
-            setUp();
+            setUp(); // clean up log emitted from the login
             return token;
-        }
-
-        @Test
-        void givenRouted_withOidc_thenLog() {
-            // TODO mock OIDC result
-
-            fail("not implemented yet");
         }
 
     }
