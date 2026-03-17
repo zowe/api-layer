@@ -14,7 +14,6 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.SignedJWT;
@@ -61,7 +60,6 @@ import org.zowe.apiml.zaas.controllers.AuthController;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
-import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.time.Clock;
 import java.util.Arrays;
@@ -162,7 +160,12 @@ public class AuthenticationService {
             jws.setHeader("typ", "JWT");
             jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
             jws.setDoKeyValidation(false);
-            return jws.getCompactSerialization();
+            String token = jws.getCompactSerialization();
+            if (log.isDebugEnabled()) {
+                String signature = token.substring(token.lastIndexOf('.') + 1);
+                log.debug("JWT created, last 10 chars of signature: ...{}", signature.substring(Math.max(0, signature.length() - 10)));
+            }
+            return token;
         } catch (JoseException e) {
             throw new UncheckedJoseException(e.getMessage(), e);
         }
@@ -306,17 +309,16 @@ public class AuthenticationService {
         try {
             var parsedJwt = JWTParser.parse(jwtToken);
             if (parsedJwt instanceof SignedJWT signedJwt) {
-                var rsaVerifier = new RSASSAVerifier((RSAPublicKey) jwtSecurityInitializer.getJwtPublicKey());
-                var verified = signedJwt.verify(rsaVerifier);
+                var verified = signedJwt.verify(jwtSecurityInitializer.getJwtVerifier());
                 if (verified) {
                     var claims = parsedJwt.getJWTClaimsSet();
                     if (claims.getExpirationTime().toInstant().isBefore(clock.instant())) {
-                        log.debug("OIDC Token is expired");
-                        throw new ExpiredJWTException("OIDC Token is expired");
+                        log.debug("JWT is expired, with expiration time: {}", claims.getExpirationTime().toInstant().toString());
+                        throw new ExpiredJWTException("JWT is expired");
                     }
                     return claims;
                 }
-                throw new BadJWTException("Token signature is invalid for public key");
+                throw new BadJWTException("Token signature is invalid for public key: " + jwtSecurityInitializer.getJwkPublicKey().get().toString());
             } else {
                 throw new BadJWTException("Token is not signed");
             }

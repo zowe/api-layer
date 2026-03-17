@@ -14,6 +14,9 @@ import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaEventListener;
 import com.netflix.discovery.StatusChangeEvent;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.ECDSAVerifier;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -23,11 +26,18 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.zaas.security.login.Providers;
 
+import java.security.KeyPairGenerator;
+import java.security.PublicKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
+
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -188,6 +198,57 @@ class JwtSecurityTest {
             verify(providers, times(3)).isZosmfAvailableAndOnline();
             verify(eurekaClient, times(1)).unregisterEventListener(any());
             assertThat(underTest.getJwtSecret(), is(not(nullValue())));
+        }
+    }
+
+    @Nested
+    class BuildVerifier {
+
+        private JwtSecurity jwtSecurity;
+
+        @BeforeEach
+        void setUp() {
+            jwtSecurity = new JwtSecurity(providers, eurekaClient);
+        }
+
+        @Test
+        void givenRsaPublicKey_thenReturnsRSASSAVerifier() throws Exception {
+            KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
+            gen.initialize(2048);
+            RSAPublicKey rsaPublicKey = (RSAPublicKey) gen.generateKeyPair().getPublic();
+
+            JWSVerifier verifier = jwtSecurity.buildVerifier(rsaPublicKey);
+
+            assertThat(verifier, is(instanceOf(RSASSAVerifier.class)));
+        }
+
+        @Test
+        void givenEcPublicKey_thenReturnsECDSAVerifier() throws Exception {
+            KeyPairGenerator gen = KeyPairGenerator.getInstance("EC");
+            gen.initialize(256);
+            ECPublicKey ecPublicKey = (ECPublicKey) gen.generateKeyPair().getPublic();
+
+            JWSVerifier verifier = jwtSecurity.buildVerifier(ecPublicKey);
+
+            assertThat(verifier, is(instanceOf(ECDSAVerifier.class)));
+        }
+
+        @Test
+        void givenUnsupportedKeyType_thenReturnsNull() throws Exception {
+            KeyPairGenerator gen = KeyPairGenerator.getInstance("DSA");
+            gen.initialize(1024);
+            PublicKey dsaPublicKey = gen.generateKeyPair().getPublic();
+
+            JWSVerifier verifier = jwtSecurity.buildVerifier(dsaPublicKey);
+
+            assertNull(verifier);
+        }
+
+        @Test
+        void givenNullKey_thenReturnsNull() {
+            JWSVerifier verifier = jwtSecurity.buildVerifier(null);
+
+            assertNull(verifier);
         }
     }
 

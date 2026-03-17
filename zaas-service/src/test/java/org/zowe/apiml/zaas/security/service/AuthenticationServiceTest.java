@@ -15,6 +15,8 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+
 import com.nimbusds.jwt.JWTClaimsSet;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -59,6 +61,7 @@ import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.time.Clock;
 import java.time.Instant;
@@ -137,11 +140,13 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @BeforeEach
         void setup() {
             stubJWTSecurityForSign();
+            
         }
 
         @Test
         void thenCreatePersonalAccessToken() {
-            when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
+            // when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
+            when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             String pat = authService.createLongLivedJwtToken(USER, 60, scopes);
             QueryResponse parsedPAT = authService.parseJwtWithSignature(pat);
             assertEquals(QueryResponse.Source.ZOWE_PAT, parsedPAT.getSource());
@@ -149,7 +154,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void thenCreateValidJwtToken() {
-            when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
+            // when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
+            when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
 
             TokenAuthentication token = new TokenAuthentication(jwtToken);
@@ -199,7 +205,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void thenThrowTokenNotValidException() {
-            stubJWTSecurityForSignAndVerify();
+            stubJWTSecurityForSign();
             String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
             String brokenToken = jwtToken + "not";
             TokenAuthentication token = new TokenAuthentication(brokenToken);
@@ -350,7 +356,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void givenLTPAExists_thenReadLtpaTokenFromJwtToken() {
-            stubJWTSecurityForSignAndVerify();
+            stubJWTSecurityForSign();
+            when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
             assertEquals(LTPA, authService.getLtpaTokenWithValidation(jwtToken));
         }
@@ -369,7 +376,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @Test
         void givenExpiredJWT_thenThrowTokenExpireException() {
             var expiredJwtToken = createExpiredJwtToken(privateKey);
-            when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
+            when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             when(clock.instant()).thenReturn(Instant.now());
             assertThrows(
                 TokenExpireException.class,
@@ -578,6 +585,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
             when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
             when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
+            when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             when(clock.instant()).thenReturn(Instant.now());
             String jwtToken01 = authService.createJwtToken("user01", "domain01", "ltpa01");
             String jwtToken02 = authService.createJwtToken("user02", "domain02", "ltpa02");
@@ -588,18 +596,18 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             verify(jwtSecurityInitializer, never()).getJwtPublicKey();
 
             assertTrue(authService.validateJwtToken(jwtToken01).isAuthenticated());
-            verify(jwtSecurityInitializer, times(1)).getJwtPublicKey();
+            verify(jwtSecurityInitializer, times(1)).getJwtVerifier();
             assertTrue(authService.validateJwtToken(jwtToken01).isAuthenticated());
-            verify(jwtSecurityInitializer, times(1)).getJwtPublicKey();
+            verify(jwtSecurityInitializer, times(1)).getJwtVerifier();
 
             assertTrue(authService.validateJwtToken(jwtToken02).isAuthenticated());
-            verify(jwtSecurityInitializer, times(2)).getJwtPublicKey();
+            verify(jwtSecurityInitializer, times(2)).getJwtVerifier();
 
             authService.invalidateJwtToken(jwtToken01, false);
             assertTrue(authService.validateJwtToken(jwtToken02).isAuthenticated());
-            verify(jwtSecurityInitializer, times(2)).getJwtPublicKey();
+            verify(jwtSecurityInitializer, times(2)).getJwtVerifier();
             assertFalse(authService.validateJwtToken(jwtToken01).isAuthenticated());
-            verify(jwtSecurityInitializer, times(3)).getJwtPublicKey();
+            verify(jwtSecurityInitializer, times(3)).getJwtVerifier();
         }
 
     }

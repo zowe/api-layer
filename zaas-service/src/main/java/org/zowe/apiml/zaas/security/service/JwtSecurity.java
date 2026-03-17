@@ -16,6 +16,9 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaEvent;
 import com.netflix.discovery.EurekaEventListener;
 import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.ECDSAVerifier;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -34,6 +37,7 @@ import org.zowe.apiml.zaas.security.login.Providers;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -74,6 +78,9 @@ public class JwtSecurity {
     private JWSAlgorithm signatureAlgorithm;
     private PrivateKey jwtSecret;
     private PublicKey jwtPublicKey;
+    private JWSVerifier jwtVerifier;
+
+    private Optional<JsonWebKey> jwkPublicKey = Optional.empty();
 
     private final Providers providers;
     private final ZosmfListener zosmfListener;
@@ -176,6 +183,8 @@ public class JwtSecurity {
         try {
             jwtSecret = SecurityUtils.loadKey(config);
             jwtPublicKey = SecurityUtils.loadPublicKey(config);
+            jwtVerifier = buildVerifier(jwtPublicKey);
+            jwkPublicKey = getJwkPublicKey();
         } catch (HttpsConfigError er) {
             apimlLog.log("org.zowe.apiml.zaas.jwtInitConfigError", er.getCode(), er.getMessage());
         }
@@ -235,19 +244,43 @@ public class JwtSecurity {
         return jwtPublicKey;
     }
 
+    public JWSVerifier getJwtVerifier() {
+        return jwtVerifier;
+    }
+
+    @VisibleForTesting
+    JWSVerifier buildVerifier(PublicKey publicKey) {
+        try {
+            if (publicKey instanceof RSAPublicKey rsaPublicKey) {
+                return new RSASSAVerifier(rsaPublicKey);
+            } else if (publicKey instanceof ECPublicKey ecPublicKey) {
+                return new ECDSAVerifier(ecPublicKey);
+            } else {
+                log.warn("Unsupported public key type for JWT verification: {}", publicKey == null ? null : publicKey.getClass());
+                return null;
+            }
+        } catch (com.nimbusds.jose.JOSEException e) {
+            log.warn("Failed to create JWT verifier for key type {}: {}", publicKey == null ? null : publicKey.getClass(), e.getMessage());
+            return null;
+        }
+    }
+
     public JsonWebKeySet getPublicKeyInSet() {
         List<JsonWebKey> keys = new ArrayList<>();
 
         var publicKeyOptional = getJwkPublicKey();
         publicKeyOptional.ifPresent(keys::add);
-
         return new JsonWebKeySet(keys);
     }
 
     public Optional<JsonWebKey> getJwkPublicKey() {
+        if (jwkPublicKey.isPresent()) return jwkPublicKey;
         if (jwtPublicKey instanceof RSAPublicKey rsaPublicKey) {
             try {
-                return Optional.of(JsonWebKey.Factory.newJwk(rsaPublicKey));
+                var jwk = JsonWebKey.Factory.newJwk(rsaPublicKey);
+                jwk.setKeyId(jwk.calculateBase64urlEncodedThumbprint("SHA-256"));
+                jwkPublicKey = Optional.of(jwk);
+                return jwkPublicKey;
             } catch (JoseException e) {
                 log.debug("Unable to create JWK {}", e.getMessage(), e);
             }
