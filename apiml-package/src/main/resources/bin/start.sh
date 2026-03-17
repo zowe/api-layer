@@ -173,7 +173,7 @@ else
 fi
 
 # VSAM file name for caching
-if [ -n "${ZWE_configs_storage_vsam_name}" ]; then
+if [ -n "${ZWE_configs_storage_vsam_name:-${ZWE_components_caching_service_storage_vsam_name}}" ]; then
     VSAM_FILE_NAME=//\'${ZWE_configs_storage_vsam_name:-${ZWE_components_caching_service_storage_vsam_name}}\'
 fi
 
@@ -257,7 +257,17 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.gateway.servicesToDisableRetry=${ZWE_components_gateway_apiml_gateway_servicesToDisableRetry:-${ZWE_configs_apiml_gateway_servicesToDisableRetry:-}} \
     -Dapiml.gateway.servicesToLimitRequestRate=${ZWE_components_gateway_apiml_gateway_servicesToLimitRequestRate:-${ZWE_configs_apiml_gateway_servicesToLimitRequestRate:-}} \
     -Dapiml.health.protected=${ZWE_components_gateway_apiml_health_protected:-${ZWE_configs_apiml_health_protected:-true}} \
-    -Dapiml.httpclient.ssl.enabled-protocols=${client_enabled_protocols} \
+    -Dapiml.service.ssl.enabled-protocols=${ZWE_configs_apiml_service_ssl_enabled_protocols:-${client_enabled_protocols}} \
+    -Dapiml.service.ssl.ciphers=${ZWE_configs_apiml_service_ssl_ciphers:-${client_ciphers}} \
+    -Dapiml.service.ssl.key-alias="${ZWE_configs_apiml_service_ssl_key_alias:-${key_alias}}" \
+    -Dapiml.service.ssl.key-password="${ZWE_configs_apiml_service_ssl_key_password:-${key_pass}}" \
+    -Dapiml.service.ssl.key-store="${ZWE_configs_apiml_service_ssl_key_store:-${keystore_location}}" \
+    -Dapiml.service.ssl.key-store-password="${ZWE_configs_apiml_service_ssl_key_store_password:-${keystore_pass}}" \
+    -Dapiml.service.ssl.key-store-type="${ZWE_configs_apiml_service_ssl_key_store_type:-${keystore_type}}" \
+    -Dapiml.service.ssl.protocol=${ZWE_configs_apiml_service_ssl_protocol:-${server_protocol}} \
+    -Dapiml.service.ssl.trust-store="${ZWE_configs_apiml_service_ssl_trust_store:-${truststore_location}}" \
+    -Dapiml.service.ssl.trust-store-password="${ZWE_configs_apiml_service_ssl_trust_store_password:-${truststore_pass}}" \
+    -Dapiml.service.ssl.trust-store-type="${ZWE_configs_apiml_service_ssl_trust_store_type:-${truststore_type}}" \
     -Dapiml.internal-discovery.port=${ZWE_components_discovery_port:-${ZWE_configs_internal_discovery_port:-7553}} \
     -Dapiml.internal-discovery.address=${ZWE_configs_internal_discovery_address:-${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}}} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \

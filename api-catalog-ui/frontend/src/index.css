@@ -8,6 +8,7 @@
 @import "../src/components/Footer/footer.css";
 @import "../src/components/DetailPage/DetailPage.css";
 @import "../src/components/DetailPage/ReactRouterTabs.css";
+@import "swagger-ui-react/swagger-ui.css";
 @import "../src/components/Swagger/Swagger.css";
 @import "../src/components/ServiceTab/ServiceTab.css";
 @import "../src/components/ServiceVersionDiff/ServiceVersionDiff.css";

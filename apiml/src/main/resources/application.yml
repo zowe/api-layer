@@ -346,9 +346,7 @@ logging:
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.ehcache: INFO
-        org.infinispan: DEBUG
         org.jgroups: DEBUG
-        org.springframework: DEBUG
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.springframework.security: TRACE
         org.springframework.security.web: TRACE
@@ -366,7 +364,7 @@ management:
     endpoints:
         web:
             exposure:
-                include: health,info,gateway
+                include: health,info,gateway,loggers
 ---
 spring.config.activate.on-profile: wiretap
 
@@ -407,3 +405,11 @@ apiml:
         scheme: http
         nonSecurePortEnabled: true
         securePortEnabled: false
+
+---
+spring.config.activate.on-profile: dev
+
+logging:
+    level:
+        org.springframework: DEBUG
+        org.infinispan: DEBUG
