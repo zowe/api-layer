@@ -339,7 +339,7 @@ class OpenTelemetryResourceAttributesZosTest {
         void givenRouted_withOidc_thenLog() {
             given()
                 .header(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_OIDC_TOKEN)
-                .get()
+                .get(basePath + "/testservice/api/v1/200")
             .then()
                 .statusCode(200);
 
@@ -352,14 +352,14 @@ class OpenTelemetryResourceAttributesZosTest {
             var logBody = logRecord.getBodyValue().asString();
             assertTrue(StringUtils.isNotBlank(logBody));
             assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
-            assertEquals("testservicept", getAttribute(logBody, "service.id"));
+            assertEquals("testservice", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
             assertNull(getAttribute(logBody, "auth.status"));
-            assertEquals("localhost:testservicept:" + mockServicePassTicket.getPort(), getAttribute(logBody, "service.instance.id"));
+            assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
             assertEquals("200", getAttribute(logBody, "service.response_code"));
-            assertEquals("/testservicept/api/v1/200", getAttribute(logBody, "url.path"));
+            assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
             assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertEquals("httpBasicPassTicket", getAttribute(logBody, "auth.method"));
+            assertEquals("zoweJwt", getAttribute(logBody, "auth.method"));
         }
 
         @Test
