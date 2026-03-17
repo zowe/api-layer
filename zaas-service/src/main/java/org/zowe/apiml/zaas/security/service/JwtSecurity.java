@@ -252,8 +252,10 @@ public class JwtSecurity {
     JWSVerifier buildVerifier(PublicKey publicKey) {
         try {
             if (publicKey instanceof RSAPublicKey rsaPublicKey) {
+                log.debug("Creating RSASSAVerifier for public key");
                 return new RSASSAVerifier(rsaPublicKey);
             } else if (publicKey instanceof ECPublicKey ecPublicKey) {
+                log.debug("Creating ECDSAVerifier for public key");
                 return new ECDSAVerifier(ecPublicKey);
             } else {
                 log.warn("Unsupported public key type for JWT verification: {}", publicKey == null ? null : publicKey.getClass());

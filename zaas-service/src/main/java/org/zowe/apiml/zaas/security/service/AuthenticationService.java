@@ -161,10 +161,7 @@ public class AuthenticationService {
             jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
             jws.setDoKeyValidation(false);
             String token = jws.getCompactSerialization();
-            if (log.isDebugEnabled()) {
-                String signature = token.substring(token.lastIndexOf('.') + 1);
-                log.debug("JWT created, last 10 chars of signature: ...{}", signature.substring(Math.max(0, signature.length() - 10)));
-            }
+            log.debug("JWT created, last 10 chars of signature: ...{}", jwtSignatureSuffix(token));
             return token;
         } catch (JoseException e) {
             throw new UncheckedJoseException(e.getMessage(), e);
@@ -318,6 +315,7 @@ public class AuthenticationService {
                     }
                     return claims;
                 }
+                log.debug("JWT signature verification failed, last 10 chars of signature: ...{}", jwtSignatureSuffix(jwtToken));
                 throw new BadJWTException("Token signature is invalid for public key: " + jwtSecurityInitializer.getJwkPublicKey().get().toString());
             } else {
                 throw new BadJWTException("Token is not signed");
@@ -574,6 +572,11 @@ public class AuthenticationService {
         }
 
         return expiration;
+    }
+
+    private String jwtSignatureSuffix(String jwtToken) {
+        var signature = jwtToken.substring(jwtToken.lastIndexOf('.') + 1);
+        return signature.substring(Math.max(0, signature.length() - 10));
     }
 
 }
