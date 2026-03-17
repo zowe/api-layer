@@ -17,6 +17,7 @@ import io.opentelemetry.sdk.logs.data.LogRecordData;
 import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
+import io.restassured.http.ContentType;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +35,7 @@ import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.MockService.Scope;
 import org.zowe.apiml.zaas.security.mapping.OIDCExternalMapper;
 
+import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,6 +53,9 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
 
 class OpenTelemetryResourceAttributesZosTest {
+
+    private static final String LOGIN_ENDPOINT = "/gateway/api/v1/auth/login";
+    private static final String AUTH_COOKIE = "apimlAuthenticationToken";
 
     @SuppressWarnings("null")
     private boolean assertAttributesBase(Attributes attributes, int port) {
@@ -108,7 +113,7 @@ class OpenTelemetryResourceAttributesZosTest {
             "otel.metrics.exporter=none",
             "otel.traces.exporter=none",
             "otel.logs.exporter=none",
-            "apiml.security.saf.provider=saf"
+            "apiml.security.auth.provider=saf"
         }
     )
     @ActiveProfiles({ "OpenTelemetryTest", "zos" })
@@ -120,14 +125,22 @@ class OpenTelemetryResourceAttributesZosTest {
         @MockitoBean
         private OIDCExternalMapper mapper;
 
-        private MockService mockService;
+        private MockService mockServiceZoweJwt;
+        private MockService mockServicePassTicket;
 
         @BeforeAll
         void startMockServices() {
-            mockService = mockService("testservice")
+            mockServiceZoweJwt = mockService("testservice")
                 .scope(Scope.CLASS)
                 .authenticationScheme(AuthenticationScheme.ZOWE_JWT)
                 .addEndpoint("/testservice/200")
+                .responseCode(200)
+            .and().start();
+
+            mockServicePassTicket = mockService("testservicept")
+                .scope(Scope.CLASS)
+                .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET)
+                .addEndpoint("/testservicept/200")
                 .responseCode(200)
             .and().start();
         }
@@ -174,7 +187,7 @@ class OpenTelemetryResourceAttributesZosTest {
                     assertEquals("testservice", getAttribute(logBody, "service.id"));
                     assertEquals("GET", getAttribute(logBody, "http.request.method"));
                     assertEquals("FAILED", getAttribute(logBody, "auth.status"));
-                    assertEquals("localhost:testservice:" + mockService.getPort(), getAttribute(logBody, "service.instance.id"));
+                    assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
                     assertEquals("200", getAttribute(logBody, "service.response_code"));
                     assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
                     assertEquals("https", getAttribute(logBody, "url.scheme"));
@@ -219,7 +232,7 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("apicatalog", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
             assertEquals("FAILED", getAttribute(logBody, "auth.status"));
-            assertEquals("localhost:testservice:" + mockService.getPort(), getAttribute(logBody, "service.instance.id"));
+            assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
             assertEquals("200", getAttribute(logBody, "service.response_code"));
             assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
             assertEquals("https", getAttribute(logBody, "url.scheme"));
@@ -234,6 +247,7 @@ class OpenTelemetryResourceAttributesZosTest {
                 .statusCode(200);
 
             var logs = assertLogsExported();
+            assertEquals(1, logs.size());
 
             var logRecord = logs.get(0);
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
@@ -253,9 +267,83 @@ class OpenTelemetryResourceAttributesZosTest {
 
         @Test
         void givenRouted_withAuthSuccess_thenLog() {
+            given()
+                .cookie("apimlAuthenticationToken", login())
+                .get(basePath + "/testservice/api/v1/200")
+            .then()
+                .statusCode(200);
 
-            // TODO mock auth result
-            fail("not implemented yet");
+            var logs = assertLogsExported();
+            assertEquals(1, logs.size());
+
+            var logRecord = logs.get(0);
+            assertAttributesBase(logRecord.getResource().getAttributes(), port);
+            @SuppressWarnings("null")
+            var logBody = logRecord.getBodyValue().asString();
+            assertTrue(StringUtils.isNotBlank(logBody));
+            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
+            assertEquals("testservice", getAttribute(logBody, "service.id"));
+            assertEquals("GET", getAttribute(logBody, "http.request.method"));
+            assertEquals("OK", getAttribute(logBody, "auth.status"));
+            assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
+            assertEquals("200", getAttribute(logBody, "service.response_code"));
+            assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
+            assertEquals("https", getAttribute(logBody, "url.scheme"));
+            assertNull(getAttribute(logBody, "auth.method"));
+        }
+
+        @Test
+        void givenRoutedWitArgs_withAuthSuccess_thenLog() {
+
+        }
+
+        @Test
+        void givenRouted_withAuthPassTicketSucess_thenLog() {
+            given()
+                .cookie(AUTH_COOKIE, login())
+                .get(basePath + "/testservicept/api/v1/200")
+            .then()
+                .statusCode(200);
+
+            var logs = assertLogsExported(); // This now includes the login request
+            assertEquals(1, logs.size());
+
+            var logRecord = logs.get(0);
+            assertAttributesBase(logRecord.getResource().getAttributes(), port);
+            @SuppressWarnings("null")
+            var logBody = logRecord.getBodyValue().asString();
+            assertTrue(StringUtils.isNotBlank(logBody));
+            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
+            assertEquals("testservicept", getAttribute(logBody, "service.id"));
+            assertEquals("GET", getAttribute(logBody, "http.request.method"));
+            assertNull(getAttribute(logBody, "auth.status"));
+            assertEquals("localhost:testservicept:" + mockServicePassTicket.getPort(), getAttribute(logBody, "service.instance.id"));
+            assertEquals("200", getAttribute(logBody, "service.response_code"));
+            assertEquals("/testservicept/api/v1/200", getAttribute(logBody, "url.path"));
+            assertEquals("https", getAttribute(logBody, "url.scheme"));
+            assertNull(getAttribute(logBody, "auth.method"));
+        }
+
+        private String login() {
+            var token = given()
+                .contentType(ContentType.JSON)
+                .body("""
+                    {
+                        "username": "USER",
+                        "password": "validPassword"
+                    }
+                """)
+                .log().all()
+            .when()
+                .post(URI.create(basePath + LOGIN_ENDPOINT))
+            .then()
+                .statusCode(204)
+                .cookie(AUTH_COOKIE)
+            .extract()
+                .cookie(AUTH_COOKIE);
+
+            setUp();
+            return token;
         }
 
         @Test
