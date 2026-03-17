@@ -298,7 +298,28 @@ class OpenTelemetryResourceAttributesZosTest {
 
         @Test
         void givenRoutedWitArgs_withAuthSuccess_thenLog() {
+            given()
+                .get(basePath + "/nonexistant/api/v1/200")
+            .then()
+            .statusCode(404);
 
+            var logs = assertLogsExported();
+            assertEquals(1, logs.size());
+
+            var logRecord = logs.get(0);
+            assertAttributesBase(logRecord.getResource().getAttributes(), port);
+            @SuppressWarnings("null")
+            var logBody = logRecord.getBodyValue().asString();
+            assertTrue(StringUtils.isNotBlank(logBody));
+            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
+            assertNull(getAttribute(logBody, "service.id"));
+            assertEquals("GET", getAttribute(logBody, "http.request.method"));
+            assertNull(getAttribute(logBody, "auth.status"));
+            assertNull(getAttribute(logBody, "service.instance.id"));
+            assertEquals("404", getAttribute(logBody, "service.response_code"));
+            assertEquals("/nonexistant/api/v1/200", getAttribute(logBody, "url.path"));
+            assertEquals("https", getAttribute(logBody, "url.scheme"));
+            assertNull(getAttribute(logBody, "auth.method"));
         }
 
         @Test
@@ -353,6 +374,11 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
             assertEquals("https", getAttribute(logBody, "url.scheme"));
             assertEquals("zoweJwt", getAttribute(logBody, "auth.method"));
+        }
+
+        @Test
+        void givenNoRoute_withFail_thenLog() {
+
         }
 
         @Test
