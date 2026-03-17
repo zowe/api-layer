@@ -13,6 +13,8 @@ package org.zowe.apiml.zaas.security.query;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.EurekaClient;
 import com.nimbusds.jose.JWSAlgorithm;
+
+import org.jose4j.jws.AlgorithmIdentifiers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -114,6 +116,7 @@ class SuccessfulQueryHandlerTest {
             eurekaClient, restTemplate, cacheManager, new CacheUtils(), clock
         );
         lenient().when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
+        lenient().when(jwtSecurityInitializer.getJwtAlgorithm()).thenReturn(AlgorithmIdentifiers.RSA_USING_SHA256);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
 
         jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);

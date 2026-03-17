@@ -22,6 +22,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
 import org.apache.commons.lang.time.DateUtils;
+import org.jose4j.jws.AlgorithmIdentifiers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -548,6 +549,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
     void stubJWTSecurityForSign() {
         lenient().when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
+        lenient().when(jwtSecurityInitializer.getJwtAlgorithm()).thenReturn(AlgorithmIdentifiers.RSA_USING_SHA256);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
     }
 
@@ -583,6 +585,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @Test
         void thenUseCache() {
             when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
+            when(jwtSecurityInitializer.getJwtAlgorithm()).thenReturn(AlgorithmIdentifiers.RSA_USING_SHA256);
             when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
             when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
             when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));

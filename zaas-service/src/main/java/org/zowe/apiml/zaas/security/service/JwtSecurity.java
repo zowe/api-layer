@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKeySet;
+import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -242,6 +243,13 @@ public class JwtSecurity {
 
     public PublicKey getJwtPublicKey() {
         return jwtPublicKey;
+    }
+
+    public String getJwtAlgorithm() {
+        if (jwtPublicKey instanceof ECPublicKey) {
+            return AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256;
+        }
+        return AlgorithmIdentifiers.RSA_USING_SHA256;
     }
 
     public JWSVerifier getJwtVerifier() {

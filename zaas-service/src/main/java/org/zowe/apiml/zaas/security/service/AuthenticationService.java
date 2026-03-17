@@ -26,7 +26,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.NumericDate;
@@ -158,7 +157,7 @@ public class AuthenticationService {
             jws.setPayload(newClaims.toJson());
             jws.setKey(jwtSecurityInitializer.getJwtSecret());
             jws.setHeader("typ", "JWT");
-            jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+            jws.setAlgorithmHeaderValue(jwtSecurityInitializer.getJwtAlgorithm());
             jws.setDoKeyValidation(false);
             String token = jws.getCompactSerialization();
             log.debug("JWT created, last 10 chars of signature: ...{}", jwtSignatureSuffix(token));
