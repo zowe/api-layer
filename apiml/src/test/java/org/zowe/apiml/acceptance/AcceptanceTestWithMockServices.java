@@ -71,8 +71,9 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
     protected MockService.MockServiceBuilder mockService(String serviceId) {
         return MockService.builder()
             .statusChangedlistener(mockService -> {
-                applicationRegistry.update(mockService);
-                updateRoutingRules();
+                if (applicationRegistry.update(mockService)) {
+                    updateRoutingRules();
+                }
             })
             .serviceId(serviceId);
     }
