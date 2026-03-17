@@ -141,7 +141,7 @@ class OpenTelemetryResourceAttributesZosTest {
 
         @BeforeAll
         void startMockServices() {
-            mockServiceZoweJwt = mockService("testservice")
+            mockServiceZoweJwt = mockService("testserviceXXXXXXXXXXXX")
                 .scope(Scope.CLASS)
                 .authenticationScheme(AuthenticationScheme.ZOWE_JWT)
                 .addEndpoint("/testservice/200")
@@ -151,6 +151,7 @@ class OpenTelemetryResourceAttributesZosTest {
             mockServicePassTicket = mockService("testservicept")
                 .scope(Scope.CLASS)
                 .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET)
+                .applid("TSTSVRPT")
                 .addEndpoint("/testservicept/200")
                 .responseCode(200)
             .and().start();
