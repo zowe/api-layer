@@ -13,7 +13,7 @@ package org.zowe.apiml.eurekaservice.client.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.BooleanUtils;
 import org.zowe.apiml.auth.Authentication;
-import org.zowe.apiml.auth.AuthenticationSchemes;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.config.CodeSnippet;
 import org.zowe.apiml.exception.MetadataValidationException;
@@ -36,7 +36,6 @@ public class EurekaMetadataParser {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final ApimlLogger apimlLog = ApimlLogger.of(EurekaMetadataParser.class, YamlMessageServiceInstance.getInstance());
-    private final AuthenticationSchemes schemes = new AuthenticationSchemes();
 
     /**
      * Parse eureka metadata and construct ApiInfo with the values found
@@ -251,7 +250,7 @@ public class EurekaMetadataParser {
     public Authentication parseAuthentication(Map<String, String> eurekaMetadata) {
         return Authentication.builder()
             .applid(eurekaMetadata.get(AUTHENTICATION_APPLID))
-            .scheme(schemes.map(eurekaMetadata.get(AUTHENTICATION_SCHEME)))
+            .scheme(AuthenticationScheme.fromString(eurekaMetadata.get(AUTHENTICATION_SCHEME)))
             .headers(eurekaMetadata.get(AUTHENTICATION_HEADERS))
             .supportsSso(BooleanUtils.toBooleanObject(eurekaMetadata.get(AUTHENTICATION_SSO)))
             .build();

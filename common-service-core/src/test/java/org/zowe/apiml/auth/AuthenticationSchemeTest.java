@@ -12,18 +12,20 @@ package org.zowe.apiml.auth;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-class AuthenticationSchemesTest {
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+class AuthenticationSchemeTest {
 
     @Test
-    void testFromScheme() {
-        AuthenticationSchemes underTest = new AuthenticationSchemes();
+    void givenValidValue_whenFromString_thenReturn() {
         for (AuthenticationScheme as : AuthenticationScheme.values()) {
-            AuthenticationScheme as2 = underTest.map(as.getScheme());
-            assertSame(as, as2);
+            assertSame(as, AuthenticationScheme.fromString(as.getScheme()));
         }
-        assertNull(underTest.map("absolute nonsense"));
-        assertEquals("bypass", underTest.map("bypass").toString());
+    }
+
+    @Test
+    void givenNonExistingValue_whenFromString_thenReturnNull() {
+        assertNull(AuthenticationScheme.fromString("absolute nonsense"));
     }
 
 }

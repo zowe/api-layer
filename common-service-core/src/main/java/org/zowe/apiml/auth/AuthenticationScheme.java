@@ -13,6 +13,9 @@ package org.zowe.apiml.auth;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Getter
 public enum AuthenticationScheme {
     @JsonProperty("bypass")
@@ -35,6 +38,13 @@ public enum AuthenticationScheme {
 
     public final String scheme;
 
+    static Map<String, AuthenticationScheme> STRING_TO_ENUM = new HashMap<>();
+    static {
+        for (AuthenticationScheme s : AuthenticationScheme.values()) {
+            STRING_TO_ENUM.put(s.getScheme(), s);
+        }
+    }
+
     AuthenticationScheme(String scheme) {
         this.scheme = scheme;
     }
@@ -42,6 +52,10 @@ public enum AuthenticationScheme {
     @Override
     public String toString() {
         return scheme;
+    }
+
+    public static AuthenticationScheme fromString(String scheme) {
+        return STRING_TO_ENUM.get(scheme);
     }
 
 }
