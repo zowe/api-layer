@@ -15,6 +15,7 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
@@ -26,6 +27,7 @@ import reactor.core.publisher.Mono;
 import java.net.InetSocketAddress;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.product.opentelemetry.OtelRequestContext.OTEL_CONTEXT;
 
@@ -121,6 +123,22 @@ class OtelRequestFilterTest {
         var attributes = ((AttributesBuilder) ReflectionTestUtils.getField(otelContext, "attributesBuilder")).build();
         assertEquals("PATCH", attributes.get(AttributeKey.stringKey("http.request.method")));
         assertEquals("503", attributes.get(AttributeKey.stringKey("service.response_code")));
+        verify(otelContext, times(1)).issue();
+    }
+
+    @Test
+    void givenRequest_whenFailed_thenIssueLog() {
+        var filter = new OtelRequestFilter();
+
+        var request = MockServerHttpRequest.get("http://localhost/").localAddress(InetSocketAddress.createUnresolved("localhost", 10010)).build();
+        var exchange = MockServerWebExchange.from(request);
+        var otelContext = spy(OtelRequestContext.of(exchange));
+        var chain = (GatewayFilterChain) e -> Mono.error(new RuntimeException("Any exception"));
+        exchange.getAttributes().put(OTEL_CONTEXT, otelContext);
+
+        var mono = filter.filter(exchange, chain);
+        assertThrows(RuntimeException.class, mono::block);
+
         verify(otelContext, times(1)).issue();
     }
 

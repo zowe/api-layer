@@ -136,14 +136,14 @@ public class OtelRequestFilter implements WebFilter, GlobalFilter, Ordered {
         setDefaults(exchange, otelContext);
 
         return filter.apply(exchange)
+            // in all cases (success / error) issue the log message
+            .doFinally(signalType -> otelContext.issue())
             // update response codes
             .then(Mono.fromRunnable(() -> Optional.ofNullable(exchange.getResponse())
                 .map(ServerHttpResponse::getStatusCode)
                 .map(HttpStatusCode::value)
                 .ifPresent(otelContext::responseCode)
-            ))
-            // write a log
-            .then(Mono.fromRunnable(() -> otelContext.issue()));
+            ));
     }
 
     @Override
