@@ -45,6 +45,8 @@ import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.restassured.RestAssured.given;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 class OpenTelemetryResourceAttributesZosTest {
 
@@ -351,6 +353,9 @@ class OpenTelemetryResourceAttributesZosTest {
 
         @Test
         void givenRouted_withOidc_thenLog() {
+            when(oidcTokenProvider.isValid(VALID_OIDC_TOKEN)).thenReturn(true);
+            when(mapper.mapToMainframeUserId(any())).thenReturn("USER");
+
             given()
                 .header(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_OIDC_TOKEN)
                 .get(basePath + "/testservice/api/v1/200")
@@ -368,7 +373,7 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
             assertEquals("testservice", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertNull(getAttribute(logBody, "auth.status"));
+            assertEquals("OK", getAttribute(logBody, "auth.status"));
             assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
             assertEquals("200", getAttribute(logBody, "service.response_code"));
             assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
