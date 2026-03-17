@@ -19,11 +19,7 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
@@ -48,11 +44,7 @@ import java.util.Map;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.restassured.RestAssured.given;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class OpenTelemetryResourceAttributesZosTest {
 
@@ -151,6 +143,7 @@ class OpenTelemetryResourceAttributesZosTest {
             mockServicePassTicket = mockService("testservicept")
                 .scope(Scope.CLASS)
                 .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET)
+                .applid("TSTSVRPT")
                 .addEndpoint("/testservicept/200")
                 .responseCode(200)
             .and().start();
@@ -327,7 +320,7 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
             assertEquals("testservicept", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertNull(getAttribute(logBody, "auth.status"));
+            assertEquals("OK", getAttribute(logBody, "auth.status"));
             assertEquals("localhost:testservicept:" + mockServicePassTicket.getPort(), getAttribute(logBody, "service.instance.id"));
             assertEquals("200", getAttribute(logBody, "service.response_code"));
             assertEquals("/testservicept/api/v1/200", getAttribute(logBody, "url.path"));
