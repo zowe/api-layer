@@ -102,6 +102,7 @@ public class AuthenticationService {
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
     private final Clock clock;
+    private boolean isModulithMode;
 
     // to force calling inside methods with aspects - ie. ehCache aspect
     private AuthenticationService meAsProxy;
@@ -109,6 +110,7 @@ public class AuthenticationService {
     @PostConstruct
     public void afterPropertiesSet() {
         meAsProxy = applicationContext.getBean(AuthenticationService.class);
+        isModulithMode = applicationContext.containsBean("modulithConfig");
     }
 
     /**
@@ -195,7 +197,12 @@ public class AuthenticationService {
     @CacheEvict(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken")
     @Cacheable(value = CACHE_INVALIDATED_JWT_TOKENS, key = "#jwtToken", condition = "#jwtToken != null")
     public Boolean invalidateJwtToken(String jwtToken, boolean distribute) {
-        var app = eurekaClient.getApplication(CoreService.ZAAS.getServiceId());
+        Application app = null;
+        if (isModulithMode) {
+            app = eurekaClient.getApplication(CoreService.GATEWAY.getServiceId());
+        } else {
+            app = eurekaClient.getApplication(CoreService.ZAAS.getServiceId());
+        }
         return invalidate(jwtToken, distribute, app);
     }
 
