@@ -402,7 +402,7 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
             assertEquals("testservicebp", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertEquals("OK", getAttribute(logBody, "auth.status"));
+            assertNull(getAttribute(logBody, "auth.status"));
             assertEquals("localhost:testservicebp:" + mockServiceBypass.getPort(), getAttribute(logBody, "service.instance.id"));
             assertEquals("200", getAttribute(logBody, "service.response_code"));
             assertEquals("/testservicebp/api/v1/200", getAttribute(logBody, "url.path"));
