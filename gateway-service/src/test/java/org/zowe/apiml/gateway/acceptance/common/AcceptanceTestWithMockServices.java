@@ -30,6 +30,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.gateway.ApplicationRegistry;
 import org.zowe.apiml.gateway.MockService;
+import org.zowe.apiml.gateway.MockWebSocketService;
 
 import javax.net.ssl.SSLContext;
 import java.net.Socket;
@@ -138,6 +139,11 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
                 updateRoutingRules();
             })
             .serviceId(serviceId);
+    }
+
+    protected MockWebSocketService.MockServiceBuilder mockServiceWs(String serviceId) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @AfterEach

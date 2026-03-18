@@ -41,6 +41,7 @@ dependencies {
     testImplementation libs.nimbus.jose.jwt
     testImplementation libs.reactor.test
     testImplementation libs.rest.assured
+    testImplementation libs.java.websocket
     testImplementation(testFixtures(project(":apiml-common")))
 
     runtimeOnly libs.jjwt.impl

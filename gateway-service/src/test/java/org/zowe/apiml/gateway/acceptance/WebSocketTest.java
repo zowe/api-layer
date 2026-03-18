@@ -14,6 +14,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.gateway.MockService;
@@ -25,7 +27,7 @@ import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 @ActiveProfiles({ "WebSocketTest" })
 @TestPropertySource(
     properties = {
-        // TODO
+        "=1000"
     }
 )
 class WebSocketTest extends AcceptanceTestWithMockServices {
@@ -34,14 +36,21 @@ class WebSocketTest extends AcceptanceTestWithMockServices {
 
     @BeforeAll
     void setUp() {
-        mockServiceWs = mockService("wsservice")
-        .addEndpoint("basePath")
-        .and().start();
+        // mockServiceWs = mockServiceWs("wsservice")
+        // .addEndpoint("basePath")
+        // .assertions(List<Consumer<HttpExchange>>.of())
+        // .and().start();
     }
 
     @Test
     void test() {
 
     }
+
+}
+
+@TestConfiguration
+@Profile("WebSocketTest")
+class WebSocketTestConfiguration {
 
 }

@@ -81,7 +81,7 @@ public class MockService implements AutoCloseable {
 
     private static int idCounter = 1;
     // in case on zombie mode is necessary to have a unique port number, on start replaced with the real one
-    private int port;
+    protected int port;
 
     /**
      * HTTP server to handle requests and the endpoint configuration
@@ -89,7 +89,7 @@ public class MockService implements AutoCloseable {
     @Getter(AccessLevel.NONE)
     private HttpServer server;
     @Getter(AccessLevel.NONE)
-    private List<Endpoint> endpointsConfig;
+    protected List<Endpoint> endpointsConfig;
 
     /**
      * Service identification
@@ -126,7 +126,7 @@ public class MockService implements AutoCloseable {
      * All registered endpoints. It is possible to get any instance by path. If there is just one endpoint in the
      * service, you can use {@link MockService#getEndpoint()}
      */
-    private final Map<String, Endpoint> endpoints = new HashMap<>();
+    protected final Map<String, Endpoint> endpoints = new HashMap<>();
 
     /**
      * Additional metadata added on top of standard one required for the mock service to run
@@ -137,7 +137,7 @@ public class MockService implements AutoCloseable {
      * Status of the service - see possible values {@link MockService.Status}
      */
     @Getter(AccessLevel.NONE)
-    private final AtomicReference<Status> status = new AtomicReference<>(Status.STOPPED);
+    protected final AtomicReference<Status> status = new AtomicReference<>(Status.STOPPED);
 
     /**
      * Collector of assert error on server side. To throw them in a test is necessary to call
@@ -430,7 +430,7 @@ public class MockService implements AutoCloseable {
          * {@link MockService#checkAssertionErrors()}
          */
         @Singular
-        private List<Consumer<HttpExchange>> assertions;
+        protected List<Consumer<HttpExchange>> assertions;
 
         /**
          * Counter of calls. It contains amount of received requests.
