@@ -72,9 +72,9 @@ public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFa
         if (response.get() != null) {
             var otelContext = OtelRequestContext.of(exchange);
             var responseBody = tokenResponse.getBody();
-            Optional.ofNullable(responseBody.getUserId()).ifPresent(otelContext::userId);
-            Optional.ofNullable(responseBody.getDistributedIds()).ifPresent(otelContext::distributedIds);
-            Optional.ofNullable(responseBody.getAuthSourceType()).ifPresent(otelContext::authSourceType);
+            Optional.ofNullable(responseBody).map(ZaasTokenResponse::getUserId).ifPresent(otelContext::userId);
+            Optional.ofNullable(responseBody).map(ZaasTokenResponse::getDistributedIds).ifPresent(otelContext::distributedIds);
+            Optional.ofNullable(responseBody).map(ZaasTokenResponse::getAuthSourceType).ifPresent(otelContext::authSourceType);
 
             if (!StringUtils.isEmpty(response.get().getCookieName())) {
                 request = cleanHeadersOnAuthSuccess(exchange);
