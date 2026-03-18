@@ -7,13 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import loadable from '@react-loadable/revised';
 import { lazy } from 'react';
 
-export const AsyncAppContainer = loadable({
-    loader: () => import('./AppContainer'),
-    loading: () => null,
-});
+export const AsyncAppContainer = lazy(() => import('./AppContainer'));
 
 export const AsyncLoginContainer = lazy(() => import('../Login/LoginContainer'));
 

@@ -92,7 +92,7 @@ export function toggleWizardVisibility(state) {
  * @returns {(function(*): void)|*}
  */
 export function assertAuthorization() {
-    const url = `${process.env.REACT_APP_GATEWAY_URL}/gateway/auth/check`;
+    const url = `${import.meta.env.VITE_GATEWAY_URL}/gateway/auth/check`;
     const body = {
         resourceClass: 'ZOWE',
         resourceName: 'APIML.SERVICES',

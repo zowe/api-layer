@@ -9,6 +9,7 @@
  */
 import { Component } from 'react';
 import { Dialog, DialogContent, DialogContentText, DialogTitle, DialogActions, IconButton } from '@material-ui/core';
+import errorMessages from '../../error-messages.json';
 
 export default class ErrorDialog extends Component {
     // eslint-disable-next-line react/sort-comp
@@ -24,8 +25,6 @@ export default class ErrorDialog extends Component {
             messageText = `(ZWEAD702E) A problem occurred while parsing a static API definition file ${messageText}`;
             return messageText;
         }
-        // eslint-disable-next-line global-require
-        const errorMessages = require('../../error-messages.json');
         if (error?.messageNumber && error?.messageType && error?.messageContent) {
             messageText = `(${error.messageNumber} ${error.messageContent})`;
             const filter = errorMessages.messages.filter(

@@ -8,6 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+const path = require('node:path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env.test') });
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+
 const { TextDecoder, TextEncoder } = require('node:util');
 const { performance } = require("node:perf_hooks");
 const { ReadableStream, TransformStream } = require('node:stream/web');

@@ -11,8 +11,6 @@
 import * as log from 'loglevel';
 import { of, throwError, timer } from 'rxjs';
 import { ofType } from 'redux-observable';
-import process from 'process';
-window.process = process; // Polyfill process for the browser
 import { catchError, debounceTime, exhaustMap, map, mergeMap, retryWhen, takeUntil } from 'rxjs/operators';
 import {
     FETCH_TILES_REQUEST,
@@ -30,9 +28,9 @@ import {
 import { userActions } from '../actions/user-actions';
 import getBaseUrl from '../helpers/urls';
 
-const updatePeriod = Number(process?.env.REACT_APP_STATUS_UPDATE_PERIOD);
-const debounce = Number(process?.env.REACT_APP_STATUS_UPDATE_DEBOUNCE);
-const scalingDuration = process?.env.REACT_APP_STATUS_UPDATE_SCALING_DURATION;
+function getUpdatePeriod() { return Number(import.meta.env.VITE_STATUS_UPDATE_PERIOD); }
+function getDebounce() { return Number(import.meta.env.VITE_STATUS_UPDATE_DEBOUNCE); }
+function getScalingDuration() { return Number(import.meta.env.VITE_STATUS_UPDATE_SCALING_DURATION); }
 
 // terminate the epic if you get any of the following Ajax error codes
 const terminatingStatusCodes = [500, 401, 403];
@@ -41,11 +39,11 @@ const excludedMessageCodes = ['ZWEAM104'];
 
 function checkOrigin() {
     // only allow the gateway url to authenticate the user
-    let allowOrigin = process?.env.REACT_APP_GATEWAY_URL;
+    let allowOrigin = import.meta.env.VITE_GATEWAY_URL;
     if (
-        process?.env.REACT_APP_GATEWAY_URL === null ||
-        process?.env.REACT_APP_GATEWAY_URL === undefined ||
-        process?.env.REACT_APP_GATEWAY_URL === ''
+        import.meta.env.VITE_GATEWAY_URL === null ||
+        import.meta.env.VITE_GATEWAY_URL === undefined ||
+        import.meta.env.VITE_GATEWAY_URL === ''
     ) {
         allowOrigin = window.location.origin;
     }
@@ -61,7 +59,7 @@ function checkOrigin() {
  * @returns the URL to call
  */
 function getUrl(action) {
-    let url = `${getBaseUrl()}${process?.env.REACT_APP_CATALOG_UPDATE}`;
+    let url = `${getBaseUrl()}${import.meta.env.VITE_CATALOG_UPDATE}`;
     if (action.payload !== undefined) {
         url += `/${action.payload}`;
     }
@@ -74,7 +72,7 @@ function getUrl(action) {
  * @returns the URL to call
  */
 function getServiceUrl(action) {
-    let url = `${getBaseUrl()}${process?.env.REACT_APP_CATALOG_UPDATE_SERVICE}`;
+    let url = `${getBaseUrl()}${import.meta.env.VITE_CATALOG_UPDATE_SERVICE}`;
     if (action.payload !== undefined) {
         url += `/${action.payload}`;
     }
@@ -104,7 +102,7 @@ function shouldTerminate(error) {
 
 export const retryMechanism =
     (scheduler) =>
-    ({ maxRetries = Number(process?.env.REACT_APP_STATUS_UPDATE_MAX_RETRIES) } = {}) =>
+    ({ maxRetries = Number(import.meta.env.VITE_STATUS_UPDATE_MAX_RETRIES) } = {}) =>
     (attempts) =>
         attempts.pipe(
             mergeMap((error, i) => {
@@ -120,9 +118,10 @@ export const retryMechanism =
                     const err = new Error(message);
                     return throwError(() => err);
                 }
-                const msg = `Attempt ${retryAttempt}: retrying in ${scalingDuration * retryAttempt}s`;
+                const duration = getScalingDuration();
+                const msg = `Attempt ${retryAttempt}: retrying in ${duration * retryAttempt}s`;
                 log.warn(msg);
-                return timer(scalingDuration * retryAttempt, scheduler);
+                return timer(duration * retryAttempt, scheduler);
             })
         );
 
@@ -131,9 +130,9 @@ const createFetchTilesEpic =
     (action$, _store, { ajax, scheduler }) =>
         action$.pipe(
             ofType(fetchActionType),
-            debounceTime(debounce, scheduler),
+            debounceTime(getDebounce(), scheduler),
             mergeMap((action) =>
-                timer(0, updatePeriod, scheduler).pipe(
+                timer(0, getUpdatePeriod(), scheduler).pipe(
                     exhaustMap(() =>
                         ajax({
                             url: url(action),

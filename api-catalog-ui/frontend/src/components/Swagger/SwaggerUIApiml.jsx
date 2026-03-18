@@ -155,7 +155,7 @@ export default class SwaggerUIApiml extends Component {
             }
             if (selectedVersion && service) {
                 const basePath = `${service.serviceId}/${selectedVersion}`;
-                const url = `${getBaseUrl()}${process?.env.REACT_APP_APIDOC_UPDATE}/${basePath}`;
+                const url = `${getBaseUrl()}${import.meta.env.VITE_APIDOC_UPDATE}/${basePath}`;
                 this.setState({
                     swaggerReady: true,
                     swaggerProps: {

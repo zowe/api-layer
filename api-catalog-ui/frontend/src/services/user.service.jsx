@@ -25,11 +25,11 @@ function handleResponse(response) {
 
 function checkOrigin() {
     // only allow the gateway url to authenticate the user
-    let allowOrigin = process.env.REACT_APP_GATEWAY_URL;
+    let allowOrigin = import.meta.env.VITE_GATEWAY_URL;
     if (
-        process.env.REACT_APP_GATEWAY_URL === null ||
-        process.env.REACT_APP_GATEWAY_URL === undefined ||
-        process.env.REACT_APP_GATEWAY_URL === ''
+        import.meta.env.VITE_GATEWAY_URL === null ||
+        import.meta.env.VITE_GATEWAY_URL === undefined ||
+        import.meta.env.VITE_GATEWAY_URL === ''
     ) {
         allowOrigin = window.location.origin;
     }

@@ -15,7 +15,7 @@ export default class Footer extends Component {
     render() {
         return (
             <footer id="pageFooter">
-                <Container>Version: {process.env.REACT_APP_ZOWE_BUILD_INFO}</Container>
+                <Container>Version: {import.meta.env.VITE_ZOWE_BUILD_INFO}</Container>
             </footer>
         );
     }

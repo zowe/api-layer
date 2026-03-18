@@ -78,16 +78,16 @@ jest.mock('react-router', () => {
 
 jest.mock("../Swagger/SwaggerContainer", () => ({
     __esModule: true,
-    default: jest.fn(() => ({})),
+    default: jest.fn(() => null),
 }));
 
 jest.mock("../ServiceVersionDiff/ServiceVersionDiffContainer", () => ({
     __esModule: true,
-    default: jest.fn(() => ({})),
+    default: jest.fn(() => null),
 }));
 jest.mock("../GraphQL/GraphQLUIApiml", () => ({
     __esModule: true,
-    default: jest.fn(() => ({})),
+    default: jest.fn(() => null),
 }));
 describe('>>> ServiceTab component tests', () => {
     it('should display service tab information', () => {
