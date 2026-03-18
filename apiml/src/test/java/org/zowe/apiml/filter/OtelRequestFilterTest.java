@@ -47,8 +47,10 @@ class OtelRequestFilterTest {
         // there is no ZAAS anymore as a separated component
         "10010,/v3/api-docs/zaas,gateway",
         "10010,/v3/api-docs/x,gateway",
-        "10010,/v3/api-doc,",
-        "10010,/v3,",
+        "10010,/v3/api-docs,gateway",
+        // treat as an unknown service
+        "10010,/v3,v3",
+        "10010,/v3/api-doc,v3",
         "10010,/images,gateway",
         "10010,/images/a/b/x.png,gateway",
         "10010,/apicatalog,apicatalog",
@@ -56,7 +58,9 @@ class OtelRequestFilterTest {
         "10010,/cachingservice,cachingservice",
         "10010,/cachingservice/ui/v1/x,cachingservice",
         // on GW port in not available eureka endpoint
-        "10010,/eureka/apps,",
+        "10010,/eureka/apps,eureka",
+        "10010,/,gateway",
+        "10010,/service1/api/v1,service1",
 
         // discovery port
         "10011,/eureka/apps,discovery",

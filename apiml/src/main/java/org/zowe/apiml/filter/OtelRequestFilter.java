@@ -99,7 +99,7 @@ public class OtelRequestFilter implements WebFilter, GlobalFilter, Ordered {
         }
 
         // cannot determinate any service, it might be set then during the routing
-        return null;
+        return toCheck.get(0);
     }
 
     void setDefaults(ServerWebExchange exchange, OtelRequestContext otelContext) {
