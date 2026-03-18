@@ -54,7 +54,12 @@ public class SchemeController {
 
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(TicketResponse.builder().ticket("").userId(authSourceParsed.getUserId()).applicationName(ticketRequest.getApplicationName()).ticket(ticket).build());
+            .body(TicketResponse.builder()
+                .ticket("")
+                .userId(authSourceParsed.getUserId())
+                .applicationName(ticketRequest.getApplicationName())
+                .ticket(ticket)
+                .build());
     }
 
     @PostMapping(path = "zosmf", produces = MediaType.APPLICATION_JSON_VALUE)
