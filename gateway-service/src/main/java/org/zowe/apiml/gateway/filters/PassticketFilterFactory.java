@@ -70,6 +70,7 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
         if (response != null) {
             var otelContext = OtelRequestContext.of(exchange);
             Optional.ofNullable(response.getUserId()).ifPresent(otelContext::userId);
+            Optional.ofNullable(response.getDistributedIds()).ifPresent(otelContext::distributedIds);
 
             request = cleanHeadersOnAuthSuccess(exchange);
 

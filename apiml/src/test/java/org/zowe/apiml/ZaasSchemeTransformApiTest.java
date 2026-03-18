@@ -25,19 +25,18 @@ import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
 import org.zowe.apiml.zaas.security.service.schema.source.OIDCAuthSource;
+import org.zowe.apiml.zaas.security.service.schema.source.ParsedTokenAuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import reactor.test.StepVerifier;
 
 import javax.management.ServiceNotFoundException;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
+import static org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Origin.ZOWE;
 
 class ZaasSchemeTransformApiTest {
 
@@ -384,6 +383,70 @@ class ZaasSchemeTransformApiTest {
 
         }
 
+
+    }
+
+    @Nested
+    class Oidc {
+
+        private static final String USER_ID = "myUserId";
+        private static final List<String> DISTRIBUTED_IDS = Arrays.asList("userA", "userB");
+
+        private AuthSourceService authSourceService = mock(AuthSourceService.class);
+        private PassTicketService passTicketService = mock(PassTicketService.class);
+        private ZosmfService zosmfService = mock(ZosmfService.class);
+        private TokenCreationService tokenCreationService = mock(TokenCreationService.class);
+        private MessageService messageService = mock(MessageService.class);
+
+        private ZaasSchemeTransformApi transformApi = new ZaasSchemeTransformApi(authSourceService, passTicketService, zosmfService, tokenCreationService, messageService);
+
+        @BeforeEach
+        void setup() {
+            var oidcAuthSource = mock(OIDCAuthSource.class);
+            doReturn(DISTRIBUTED_IDS).when(oidcAuthSource).getDistributedId();
+            doReturn("rawData").when(oidcAuthSource).getRawSource();
+            doReturn(Optional.of(oidcAuthSource)).when(authSourceService).getAuthSourceFromRequest(any());
+            var parsedAuthSource = new ParsedTokenAuthSource(USER_ID, new Date(), new Date(), ZOWE);
+            doReturn(parsedAuthSource).when(authSourceService).parse(oidcAuthSource);
+            doReturn(true).when(authSourceService).isValid(any());
+        }
+
+        @Test
+        void giveOidcToken_whenPassticket_thenReturnUserIds() {
+            var requestCredentials = RequestCredentials.builder().applId("APPLID").build();
+
+            var response = transformApi.passticket(requestCredentials).block();
+            assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
+            assertSame(USER_ID, response.getBody().getUserId());
+        }
+
+        @Test
+        void giveOidcToken_whenSafIdt_thenReturnUserIds() {
+            var requestCredentials = RequestCredentials.builder().applId("APPLID").build();
+
+            var response = transformApi.safIdt(requestCredentials).block();
+            assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
+            assertSame(USER_ID, response.getBody().getUserId());
+        }
+
+        @Test
+        void giveOidcToken_whenZosmf_thenReturnUserIds() throws ServiceNotFoundException {
+            var requestCredentials = RequestCredentials.builder().build();
+            doReturn(ZaasTokenResponse.builder().distributedIds(DISTRIBUTED_IDS).userId(USER_ID).build()).when(zosmfService).exchangeAuthenticationForZosmfToken(any(), any());
+
+            var response = transformApi.zosmf(requestCredentials).block();
+            assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
+            assertSame(USER_ID, response.getBody().getUserId());
+        }
+
+        @Test
+        void giveOidcToken_whenZoweJwt_thenReturnUserIds() {
+            var requestCredentials = RequestCredentials.builder().build();
+
+            var response = transformApi.zoweJwt(requestCredentials).block();
+            assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
+            assertSame(USER_ID, response.getBody().getUserId());
+        }
 
     }
 

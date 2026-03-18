@@ -99,7 +99,7 @@ public class ReactivePassTicketController {
             .map(TokenAuthentication.class::cast)
             .map(tokenAuthentication -> {
                 var ticket = passTicketService.generate(tokenAuthentication.getPrincipal(), request.getApplicationName());
-                var ticketResponse = new TicketResponse(tokenAuthentication.getCredentials(), tokenAuthentication.getPrincipal(), request.getApplicationName(), ticket);
+                var ticketResponse = new TicketResponse(tokenAuthentication.getCredentials(), tokenAuthentication.getPrincipal(), request.getApplicationName(), ticket, null);
                 return ResponseEntity
                     .ok()
                     .contentType(MediaType.APPLICATION_JSON)

@@ -125,7 +125,11 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             var authSourceParsed = authSourceService.parse(authSource.get());
 
             var ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
-            var response = new TicketResponse("", authSourceParsed.getUserId(), applicationName, ticket);
+            var response = new TicketResponse("", authSourceParsed.getUserId(), applicationName, ticket, authSource.filter(OIDCAuthSource.class::isInstance)
+                .map(OIDCAuthSource.class::cast)
+                .map(OIDCAuthSource::getDistributedId)
+                .orElse(null));
+
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (IRRPassTicketGenerationException e) {
             log.debug("Cannot generate ticket", e);
@@ -196,6 +200,12 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             var authSourceParsed = authSourceService.parse(authSource.get());
 
             var response = zosmfService.exchangeAuthenticationForZosmfToken(authSource.get().getRawSource().toString(), authSourceParsed);
+
+            authSource.filter(OIDCAuthSource.class::isInstance)
+                .map(OIDCAuthSource.class::cast)
+                .map(OIDCAuthSource::getDistributedId)
+                .ifPresent(distributedIds -> response.setDistributedIds(distributedIds));
+
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot obtain z/OSMF token", e);
@@ -217,7 +227,16 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
             var token = authSourceService.getJWT(authSource.get());
-            var response = ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME).token(token).userId(authSourceParsed.getUserId()).build();
+            var response = ZaasTokenResponse.builder()
+                .cookieName(COOKIE_AUTH_NAME)
+                .token(token)
+                .userId(authSourceParsed.getUserId())
+                .distributedIds(authSource.filter(OIDCAuthSource.class::isInstance)
+                    .map(OIDCAuthSource.class::cast)
+                    .map(OIDCAuthSource::getDistributedId)
+                    .orElse(null)
+                )
+                .build();
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot obtain Zowe JWT token", e);

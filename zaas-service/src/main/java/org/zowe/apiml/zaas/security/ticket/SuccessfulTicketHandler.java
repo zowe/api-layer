@@ -93,6 +93,6 @@ public class SuccessfulTicketHandler implements AuthenticationSuccessHandler {
 
         String ticket = passTicketService.generate(userId, applicationName);
 
-        return new TicketResponse(tokenAuthentication.getCredentials(), userId, applicationName, ticket);
+        return new TicketResponse(tokenAuthentication.getCredentials(), userId, applicationName, ticket, null);
     }
 }

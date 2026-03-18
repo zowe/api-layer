@@ -54,7 +54,7 @@ public class SchemeController {
 
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(new TicketResponse("", authSourceParsed.getUserId(), ticketRequest.getApplicationName(), ticket));
+            .body(new TicketResponse("", authSourceParsed.getUserId(), ticketRequest.getApplicationName(), ticket, null));
     }
 
     @PostMapping(path = "zosmf", produces = MediaType.APPLICATION_JSON_VALUE)

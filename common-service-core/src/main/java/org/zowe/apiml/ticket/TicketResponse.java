@@ -14,6 +14,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * Represents /ticket JSON response with the ticket information
  */
@@ -25,4 +27,5 @@ public class TicketResponse {
     private String userId;
     private String applicationName;
     private String ticket;
+    private List<String> distributedIds;
 }
