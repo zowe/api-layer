@@ -19,6 +19,7 @@ import org.springframework.mock.web.server.MockServerWebExchange;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -50,7 +51,7 @@ class RoutingConfigurationErrorFilterFactoryTest {
         var otelContext = spy(OtelRequestContext.of(exchange));
         exchange.getAttributes().put(OtelRequestContext.OTEL_CONTEXT, otelContext);
 
-        filter.filter(exchange, e -> Mono.empty()).block();
+        StepVerifier.create(filter.filter(exchange, e -> Mono.empty())).verifyComplete();
 
         verify(otelContext).authenticationFailed();
         verify(otelContext).authMethod(AuthenticationScheme.SAF_IDT);

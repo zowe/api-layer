@@ -23,6 +23,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.net.InetSocketAddress;
 
@@ -123,7 +124,7 @@ class OtelRequestFilterTest {
 
         for (int i = 0; i < 3; i++) {
             // call multiple time the same filter
-            filter.filter(exchange, (WebFilterChain) (exchange2) -> Mono.empty().then()).block();
+            StepVerifier.create(filter.filter(exchange, (WebFilterChain) (exchange2) -> Mono.empty().then())).verifyComplete();
         }
 
         var attributes = ((AttributesBuilder) ReflectionTestUtils.getField(otelContext, "attributesBuilder")).build();

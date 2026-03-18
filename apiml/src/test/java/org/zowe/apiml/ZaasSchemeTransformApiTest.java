@@ -415,18 +415,22 @@ class ZaasSchemeTransformApiTest {
         void giveOidcToken_whenPassticket_thenReturnUserIds() {
             var requestCredentials = RequestCredentials.builder().applId("APPLID").build();
 
-            var response = transformApi.passticket(requestCredentials).block();
-            assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
-            assertSame(USER_ID, response.getBody().getUserId());
+            StepVerifier.create(transformApi.passticket(requestCredentials))
+                .assertNext(response -> {
+                    assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
+                    assertSame(USER_ID, response.getBody().getUserId());
+                }).verifyComplete();
         }
 
         @Test
         void giveOidcToken_whenSafIdt_thenReturnUserIds() {
             var requestCredentials = RequestCredentials.builder().applId("APPLID").build();
 
-            var response = transformApi.safIdt(requestCredentials).block();
-            assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
-            assertSame(USER_ID, response.getBody().getUserId());
+            StepVerifier.create(transformApi.safIdt(requestCredentials))
+                .assertNext(response -> {
+                    assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
+                    assertSame(USER_ID, response.getBody().getUserId());
+                }).verifyComplete();
         }
 
         @Test
@@ -434,18 +438,22 @@ class ZaasSchemeTransformApiTest {
             var requestCredentials = RequestCredentials.builder().build();
             doReturn(ZaasTokenResponse.builder().distributedIds(DISTRIBUTED_IDS).userId(USER_ID).build()).when(zosmfService).exchangeAuthenticationForZosmfToken(any(), any());
 
-            var response = transformApi.zosmf(requestCredentials).block();
-            assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
-            assertSame(USER_ID, response.getBody().getUserId());
+            StepVerifier.create(transformApi.zosmf(requestCredentials))
+                .assertNext(response -> {
+                    assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
+                    assertSame(USER_ID, response.getBody().getUserId());
+                }).verifyComplete();
         }
 
         @Test
         void giveOidcToken_whenZoweJwt_thenReturnUserIds() {
             var requestCredentials = RequestCredentials.builder().build();
 
-            var response = transformApi.zoweJwt(requestCredentials).block();
-            assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
-            assertSame(USER_ID, response.getBody().getUserId());
+            StepVerifier.create(transformApi.zoweJwt(requestCredentials))
+                .assertNext(response -> {
+                    assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
+                    assertSame(USER_ID, response.getBody().getUserId());
+                }).verifyComplete();
         }
 
     }
