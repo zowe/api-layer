@@ -99,7 +99,7 @@ public class OtelRequestFilter implements WebFilter, GlobalFilter, Ordered {
         }
 
         // cannot determinate any service, it might be set then during the routing
-        return toCheck.get(0);
+        return null;
     }
 
     void setDefaults(ServerWebExchange exchange, OtelRequestContext otelContext) {
@@ -108,15 +108,29 @@ public class OtelRequestFilter implements WebFilter, GlobalFilter, Ordered {
         int port = exchange.getRequest().getLocalAddress().getPort();
         if (port == discoveryPort) {
             serviceId = SERVICE_DISCOVERY;
+            otelContext.instanceId(String.format("%s:%s:%d", hostname, SERVICE_DISCOVERY, port));
         } else {
-            serviceId = getServiceIdByBasePath(exchange.getRequest().getPath().elements());
+            var paths = exchange.getRequest().getPath().elements();
+            serviceId = getServiceIdByBasePath(paths);
+            if (serviceId == null) {
+                /**
+                 * serviceId was not detected, set first path. In case of existing service will be replaced
+                 * in the routing, otherwise it is an unknown serviceId
+                 */
+                serviceId = paths.get(1).value();
+            } else {
+                // local serviceId (part of apiml), evaluate instanceId
+                otelContext.instanceId(String.format("%s:%s:%d", hostname, serviceId, port));
+            }
         }
 
-        // set serviceId and instanceId
-        Optional.ofNullable(serviceId).ifPresent(id -> otelContext
-            .serviceId(id)
-            .instanceId(String.format("%s:%s:%d", hostname, id, port))
-        );
+        // set serviceId (there is always a value - real/predicted/unknown)
+        otelContext.serviceId(serviceId);
+
+        if (serviceId == null) {
+            // empty path is detected as gateday
+            otelContext.serviceId(exchange.getRequest().getPath().elements().get(1).value());
+        }
 
         // set base information about the request
         otelContext

@@ -347,7 +347,7 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("nonexistant", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
             assertNull(getAttribute(logBody, "auth.status"));
-            assertEquals("localhost:nonexistant:40985", getAttribute(logBody, "service.instance.id"));
+            assertNull(getAttribute(logBody, "service.instance.id"));
             assertEquals("404", getAttribute(logBody, "service.response_code"));
             assertEquals("/nonexistant/api/v1/200", getAttribute(logBody, "url.path"));
             assertEquals("https", getAttribute(logBody, "url.scheme"));
