@@ -136,6 +136,7 @@ class OpenTelemetryResourceAttributesZosTest {
         private MockService mockServiceZoweJwt;
         private MockService mockServicePassTicket;
         private MockService mockServicePassTicketMisconfigured;
+        private MockService mockServiceBypass;
 
         @BeforeAll
         void startMockServices() throws Exception {
@@ -161,6 +162,13 @@ class OpenTelemetryResourceAttributesZosTest {
                 .scope(Scope.CLASS)
                 .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET)
                 .addEndpoint("/testservicepterror/200")
+                .responseCode(200)
+            .and().start();
+
+            mockServiceBypass = mockService("testservicebp")
+                .scope(Scope.CLASS)
+                .authenticationScheme(AuthenticationScheme.BYPASS)
+                .addEndpoint("/testservicebp/200")
                 .responseCode(200)
             .and().start();
         }
@@ -372,6 +380,35 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("/testservicept/api/v1/200", getAttribute(logBody, "url.path"));
             assertEquals("https", getAttribute(logBody, "url.scheme"));
             assertEquals("httpBasicPassTicket", getAttribute(logBody, "auth.method"));
+        }
+
+        @Test
+        void givenRouted_withBypass_thenLog() {
+            given()
+                .cookie(AUTH_COOKIE, login())
+                .get(basePath + "/testservicebp/api/v1/200")
+            .then()
+                .statusCode(200);
+
+            var logs = assertLogsExported(); // This now includes the login request
+            assertEquals(1, logs.size());
+
+            var logRecord = logs.get(0);
+            assertAttributesBase(logRecord.getResource().getAttributes(), port);
+            @SuppressWarnings("null")
+            var logBody = logRecord.getBodyValue().asString();
+            assertTrue(StringUtils.isNotBlank(logBody));
+            assertNull(getAttribute(logBody, "user.id"));
+            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
+            assertEquals("testservicebp", getAttribute(logBody, "service.id"));
+            assertEquals("GET", getAttribute(logBody, "http.request.method"));
+            assertEquals("OK", getAttribute(logBody, "auth.status"));
+            assertEquals("localhost:testservicebp:" + mockServiceBypass.getPort(), getAttribute(logBody, "service.instance.id"));
+            assertEquals("200", getAttribute(logBody, "service.response_code"));
+            assertEquals("/testservicebp/api/v1/200", getAttribute(logBody, "url.path"));
+            assertEquals("https", getAttribute(logBody, "url.scheme"));
+            assertNull(getAttribute(logBody, "auth.method"));
+            assertEquals("bypass", getAttribute(logBody, "auth.service.auth.method"));
         }
 
         @Test
