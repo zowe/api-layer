@@ -51,6 +51,11 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
     }
 
     @Override
+    protected AuthenticationScheme getAuthenticationScheme() {
+        return AuthenticationScheme.HTTP_BASIC_PASSTICKET;
+    }
+
+    @Override
     protected Function<RequestCredentials, Mono<AuthorizationResponse<TicketResponse>>> getAuthorizationResponseTransformer() {
         return zaasSchemeTransform::passticket;
     }
@@ -71,6 +76,7 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
             var otelContext = OtelRequestContext.of(exchange);
             Optional.ofNullable(response.getUserId()).ifPresent(otelContext::userId);
             Optional.ofNullable(response.getDistributedIds()).ifPresent(otelContext::distributedIds);
+            Optional.ofNullable(response.getAuthSourceType()).ifPresent(otelContext::authSourceType);
 
             request = cleanHeadersOnAuthSuccess(exchange);
 

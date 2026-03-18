@@ -27,7 +27,7 @@ class OtelServiceFilterFactoryTest {
     private static final String INSTANCE_ID = "myService:instanceId:1";
 
     @Test
-    void givenConfiguredFilter_whenApply_thenSetServiceAndInstanceId() {
+    void givenConfiguredFilter_whenApply_thenSetBypassServiceIdAndInstanceId() {
         MockServerHttpRequest request = MockServerHttpRequest.get("/aPath").build();
         MockServerWebExchange exchange = MockServerWebExchange.from(request);
 
@@ -38,6 +38,7 @@ class OtelServiceFilterFactoryTest {
         new OtelServiceFilterFactory().apply(config).filter(exchange, e -> Mono.empty().then());
 
         var attributes = ((AttributesBuilder) ReflectionTestUtils.getField(OtelRequestContext.of(exchange), "attributesBuilder")).build();
+        assertEquals("bypass", attributes.get(AttributeKey.stringKey("auth.service.auth.method")));
         assertEquals(SERVICE_ID.toLowerCase(), attributes.get(AttributeKey.stringKey("service.id")));
         assertEquals(INSTANCE_ID.toLowerCase(), attributes.get(AttributeKey.stringKey("service.instance.id")));
     }

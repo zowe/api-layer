@@ -32,6 +32,11 @@ public class RoutingConfigurationErrorFilterFactory extends AbstractAuthSchemeFa
     }
 
     @Override
+    protected AuthenticationScheme getAuthenticationScheme() {
+        return null;
+    }
+
+    @Override
     protected Function<RequestCredentials, Mono<AuthorizationResponse<Object>>> getAuthorizationResponseTransformer() {
         throw new IllegalStateException("not implemented");
     }
@@ -46,10 +51,10 @@ public class RoutingConfigurationErrorFilterFactory extends AbstractAuthSchemeFa
         var authenticationScheme = AuthenticationScheme.fromString(config.getAuthenticationScheme());
 
         return ((exchange, chain) -> {
-            OtelRequestContext.of(exchange)
-                .authMethod(authenticationScheme);
+            OtelRequestContext.of(exchange).authMethod(authenticationScheme);
 
             super.cleanHeadersOnAuthFail(exchange, config.getMessage());
+
             return chain.filter(exchange);
         });
     }

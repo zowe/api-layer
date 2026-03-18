@@ -16,6 +16,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 
 @Component
@@ -30,6 +31,7 @@ public class OtelServiceFilterFactory extends AbstractGatewayFilterFactory<OtelS
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
             OtelRequestContext.of(exchange)
+                .authMethod(AuthenticationScheme.BYPASS)
                 .serviceId(config.serviceId)
                 .instanceId(config.instanceId);
             return chain.filter(exchange);

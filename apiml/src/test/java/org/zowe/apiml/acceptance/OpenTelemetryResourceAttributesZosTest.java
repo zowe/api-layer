@@ -224,7 +224,8 @@ class OpenTelemetryResourceAttributesZosTest {
                     assertEquals("200", getAttribute(logBody, "service.response_code"));
                     assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
                     assertEquals("https", getAttribute(logBody, "url.scheme"));
-                    assertEquals("zoweJwt", getAttribute(logBody, "auth.method"));
+                    assertNull(getAttribute(logBody, "auth.method"));
+                    assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
 
                     return true;
                 })
@@ -324,7 +325,8 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("200", getAttribute(logBody, "service.response_code"));
             assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
             assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertEquals("zoweJwt", getAttribute(logBody, "auth.method"));
+            assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
+            assertEquals("JWT", getAttribute(logBody, "auth.method"));
         }
 
         @Test
@@ -379,7 +381,8 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("200", getAttribute(logBody, "service.response_code"));
             assertEquals("/testservicept/api/v1/200", getAttribute(logBody, "url.path"));
             assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertEquals("httpBasicPassTicket", getAttribute(logBody, "auth.method"));
+            assertEquals("httpBasicPassTicket", getAttribute(logBody, "auth.service.auth.method"));
+            assertEquals("JWT", getAttribute(logBody, "auth.method"));
         }
 
         @Test
@@ -436,7 +439,8 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("200", getAttribute(logBody, "service.response_code"));
             assertEquals("/testservicepterror/api/v1/200", getAttribute(logBody, "url.path"));
             assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertEquals("httpBasicPassTicket", getAttribute(logBody, "auth.method"));
+            assertEquals("httpBasicPassTicket", getAttribute(logBody, "auth.service.auth.method"));
+            assertNull(getAttribute(logBody, "auth.method"));
         }
 
         @Test
@@ -468,7 +472,8 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("200", getAttribute(logBody, "service.response_code"));
             assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
             assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertEquals("zoweJwt", getAttribute(logBody, "auth.method"));
+            assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
+            assertEquals("OIDC", getAttribute(logBody, "auth.method"));
         }
 
         @Test
@@ -496,7 +501,8 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("200", getAttribute(logBody, "service.response_code"));
             assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
             assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertEquals("zoweJwt", getAttribute(logBody, "auth.method"));
+            assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
+            assertEquals("CLIENT_CERT", getAttribute(logBody, "auth.method"));
         }
 
         private String login() {

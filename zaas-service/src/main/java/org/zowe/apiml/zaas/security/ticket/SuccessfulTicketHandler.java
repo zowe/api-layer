@@ -10,24 +10,24 @@
 
 package org.zowe.apiml.zaas.security.ticket;
 
-import lombok.extern.slf4j.Slf4j;
-import org.zowe.apiml.passticket.*;
-import org.zowe.apiml.ticket.TicketRequest;
-import org.zowe.apiml.ticket.TicketResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.message.api.ApiMessageView;
-import org.zowe.apiml.message.core.MessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.message.api.ApiMessageView;
+import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.passticket.*;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.ticket.TicketRequest;
+import org.zowe.apiml.ticket.TicketResponse;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
@@ -93,6 +93,11 @@ public class SuccessfulTicketHandler implements AuthenticationSuccessHandler {
 
         String ticket = passTicketService.generate(userId, applicationName);
 
-        return new TicketResponse(tokenAuthentication.getCredentials(), userId, applicationName, ticket, null);
+        return TicketResponse.builder()
+            .token(tokenAuthentication.getCredentials())
+            .userId(userId)
+            .applicationName(applicationName)
+            .ticket(ticket)
+            .build();
     }
 }

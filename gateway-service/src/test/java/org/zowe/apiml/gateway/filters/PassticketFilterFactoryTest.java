@@ -19,11 +19,13 @@ import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import org.zowe.apiml.ticket.TicketResponse;
 import reactor.core.publisher.Mono;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class PassticketFilterFactoryTest {
 
     private static final String USER_ID = "userId";
+    private static final String AUTH_SOURCE_TYPE = "oidc";
 
     MockServerHttpRequest request = MockServerHttpRequest.get("/aPath").build();
     MockServerWebExchange exchange = MockServerWebExchange.from(request);
@@ -50,11 +52,27 @@ public class PassticketFilterFactoryTest {
     void givenUserInRequest_whenProcessResponse_thenSetIt() {
         var passticketFilterFactory = new PassticketFilterFactory(null, null, null);
         passticketFilterFactory.processResponse(exchange, e -> Mono.empty().then(),
-            new AbstractAuthSchemeFactory.AuthorizationResponse(null, new TicketResponse("token", USER_ID, "appName", "ticket", null))
+            new AbstractAuthSchemeFactory.AuthorizationResponse(null, TicketResponse.builder().userId(USER_ID).build())
         );
 
         verify(otelRequestContext, times(1)).authMethod(AuthenticationScheme.HTTP_BASIC_PASSTICKET);
         verify(otelRequestContext, times(1)).userId(USER_ID);
+    }
+
+    @Test
+    void givenAuthSourceTypeInRequest_whenProcessResponse_thenSetIt() {
+        var passticketFilterFactory = new PassticketFilterFactory(null, null, null);
+        passticketFilterFactory.processResponse(exchange, e -> Mono.empty().then(),
+            new AbstractAuthSchemeFactory.AuthorizationResponse(null, TicketResponse.builder().authSourceType(AUTH_SOURCE_TYPE).build())
+        );
+
+        verify(otelRequestContext, times(1)).authMethod(AuthenticationScheme.HTTP_BASIC_PASSTICKET);
+        verify(otelRequestContext, times(1)).authSourceType(AUTH_SOURCE_TYPE);
+    }
+
+    @Test
+    void givenFilter_whenGetAuthenticationScheme_thenReturnPassticketScheme() {
+        assertEquals(AuthenticationScheme.HTTP_BASIC_PASSTICKET, new PassticketFilterFactory(null, null, null).getAuthenticationScheme());
     }
 
 }

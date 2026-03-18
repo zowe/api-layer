@@ -125,10 +125,17 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             var authSourceParsed = authSourceService.parse(authSource.get());
 
             var ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
-            var response = new TicketResponse("", authSourceParsed.getUserId(), applicationName, ticket, authSource.filter(OIDCAuthSource.class::isInstance)
-                .map(OIDCAuthSource.class::cast)
-                .map(OIDCAuthSource::getDistributedId)
-                .orElse(null));
+            var response = TicketResponse.builder()
+                .token("")
+                .userId(authSourceParsed.getUserId())
+                .applicationName(applicationName)
+                .ticket(ticket)
+                .distributedIds(authSource.filter(OIDCAuthSource.class::isInstance)
+                    .map(OIDCAuthSource.class::cast)
+                    .map(OIDCAuthSource::getDistributedId)
+                    .orElse(null))
+                .authSourceType(authSource.map(AuthSource::getType).map(Enum::name).orElse(null))
+                .build();
 
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (IRRPassTicketGenerationException e) {
@@ -177,6 +184,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
                     .map(OIDCAuthSource::getDistributedId)
                     .orElse(null)
                 )
+                .authSourceType(authSource.map(AuthSource::getType).map(Enum::name).orElse(null))
                 .build();
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
@@ -204,7 +212,8 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             authSource.filter(OIDCAuthSource.class::isInstance)
                 .map(OIDCAuthSource.class::cast)
                 .map(OIDCAuthSource::getDistributedId)
-                .ifPresent(distributedIds -> response.setDistributedIds(distributedIds));
+                .ifPresent(response::setDistributedIds);
+            authSource.map(AuthSource::getType).map(Enum::name).ifPresent(response::setAuthSourceType);
 
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
@@ -236,6 +245,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
                     .map(OIDCAuthSource::getDistributedId)
                     .orElse(null)
                 )
+                .authSourceType(authSource.map(AuthSource::getType).map(Enum::name).orElse(null))
                 .build();
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {

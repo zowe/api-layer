@@ -40,7 +40,8 @@ public final class OtelRequestContext {
     private static final String OTEL_ATTRIBUTE_RESPONSE_CODE = "service.response_code";
     private static final String OTEL_ATTRIBUTE_SERVICE_ID = "service.id";
     private static final String OTEL_ATTRIBUTE_INSTANCE_ID = "service.instance.id";
-    private static final String OTEL_ATTRIBUTE_AUTH_METHOD = "auth.method";
+    private static final String OTEL_ATTRIBUTE_AUTH_METHOD = "auth.service.auth.method";
+    private static final String OTEL_ATTRIBUTE_AUTH_SOURCE_TYPE = "auth.method";
     private static final String OTEL_ATTRIBUTE_AUTH_STATUS = "auth.status";
     private static final String OTEL_ATTRIBUTE_USER_ID = "user.id";
     private static final String OTEL_ATTRIBUTE_DISTRIBUTED_USER_ID = "user.distributed.id";
@@ -111,6 +112,10 @@ public final class OtelRequestContext {
     public OtelRequestContext distributedIds(List<String> distributedIds) {
         attributesBuilder.put(OTEL_ATTRIBUTE_DISTRIBUTED_USER_ID, distributedIds.toArray(new String[0]));
         return this;
+    }
+
+    public OtelRequestContext authSourceType(String authSourceType) {
+        return put(OTEL_ATTRIBUTE_AUTH_SOURCE_TYPE, authSourceType);
     }
 
     @VisibleForTesting

@@ -101,13 +101,13 @@ class OtelRequestContextTest {
     @Test
     void givenOtelContext_whenSetByPassAuthMethod_thenTransformToString() {
         OtelRequestContext.of(exchange).authMethod(AuthenticationScheme.BYPASS);
-        assertEquals("bypass", getValue("auth.method"));
+        assertEquals("bypass", getValue("auth.service.auth.method"));
     }
 
     @Test
     void givenOtelContext_whenSetZoweJwtAuthMethod_thenTransformToString() {
         OtelRequestContext.of(exchange).authMethod(AuthenticationScheme.ZOWE_JWT);
-        assertEquals("zoweJwt", getValue("auth.method"));
+        assertEquals("zoweJwt", getValue("auth.service.auth.method"));
     }
 
     @Test
@@ -126,6 +126,12 @@ class OtelRequestContextTest {
     void givenOtelContext_whenSetUserId_thenStoreUpperCase() {
         OtelRequestContext.of(exchange).userId("userId");
         assertEquals("USERID", getValue("user.id"));
+    }
+
+    @Test
+    void givenOtelContext_whenSetAuthSourceType_thenStoreIt() {
+        OtelRequestContext.of(exchange).authSourceType("JWT");
+        assertEquals("JWT", getValue("auth.method"));
     }
 
     @Test

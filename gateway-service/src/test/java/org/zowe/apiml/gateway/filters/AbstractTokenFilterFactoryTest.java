@@ -221,6 +221,33 @@ class AbstractTokenFilterFactoryTest {
 
         }
 
+        @Nested
+        class AuthSourceType {
+
+            private static String AUTH_SOURCE_TYPE = "CLIENT_CERT";
+
+            @Test
+            void givenResponseWithoutAuthSourceType_whenProcess_thenDoNotSetAny() {
+                AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse> tokenResponse = new AbstractAuthSchemeFactory.AuthorizationResponse<>(
+                    null, ZaasTokenResponse.builder().build()
+                );
+                spy(AbstractAuthSchemeFactory.class).processResponse(exchange, e -> Mono.empty().then(), tokenResponse);
+
+                verify(otelRequestContext, never()).authSourceType(any());
+            }
+
+            @Test
+            void givenResponseWithAuthSourceType_whenProcess_thenSetIt() {
+                AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse> tokenResponse = new AbstractAuthSchemeFactory.AuthorizationResponse<>(
+                    null, ZaasTokenResponse.builder().authSourceType(AUTH_SOURCE_TYPE).build()
+                );
+                spy(AbstractAuthSchemeFactory.class).processResponse(exchange, e -> Mono.empty().then(), tokenResponse);
+
+                verify(otelRequestContext, never()).authSourceType(AUTH_SOURCE_TYPE);
+            }
+
+        }
+
     }
 
     @RequiredArgsConstructor

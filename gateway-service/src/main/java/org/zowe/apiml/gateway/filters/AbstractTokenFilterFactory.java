@@ -18,7 +18,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.server.ServerWebExchange;
-import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
@@ -50,8 +49,6 @@ public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFa
         }
     }
 
-    protected abstract AuthenticationScheme getAuthenticationScheme();
-
     @Override
     @SuppressWarnings("squid:S2092")    // the internal API cannot define generic more specifically
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, AuthorizationResponse<ZaasTokenResponse> tokenResponse) {
@@ -77,6 +74,7 @@ public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFa
             var responseBody = tokenResponse.getBody();
             Optional.ofNullable(responseBody.getUserId()).ifPresent(otelContext::userId);
             Optional.ofNullable(responseBody.getDistributedIds()).ifPresent(otelContext::distributedIds);
+            Optional.ofNullable(responseBody.getAuthSourceType()).ifPresent(otelContext::authSourceType);
 
             if (!StringUtils.isEmpty(response.get().getCookieName())) {
                 request = cleanHeadersOnAuthSuccess(exchange);
