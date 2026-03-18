@@ -35,41 +35,42 @@ class OtelRequestFilterTest {
 
     @ParameterizedTest(name = "When basePath is `{1}` on port {0} then mark it as `{2}` service")
     @CsvSource({
-        "10010,/,gateway",
-        "10010,/application,gateway",
-        "10010,/application/health,gateway",
-        "10010,/gateway,gateway",
-        "10010,/gateway/api/v1/auth/login,gateway",
-        "10010,/v3/api-docs,gateway",
-        "10010,/v3/api-docs/gateway,gateway",
-        "10010,/v3/api-docs/apicatalog,apicatalog",
-        "10010,/v3/api-docs/caching,cachingservice",
+        "10010,/,gateway,localhost:gateway:10010",
+        "10010,/application,gateway,localhost:gateway:10010",
+        "10010,/application/health,gateway,localhost:gateway:10010",
+        "10010,/gateway,gateway,localhost:gateway:10010",
+        "10010,/gateway/api/v1/auth/login,gateway,localhost:gateway:10010",
+        "10010,/v3/api-docs,gateway,localhost:gateway:10010",
+        "10010,/v3/api-docs/gateway,gateway,localhost:gateway:10010",
+        "10010,/v3/api-docs/apicatalog,apicatalog,localhost:apicatalog:10010",
+        "10010,/v3/api-docs/caching,cachingservice,localhost:cachingservice:10010",
         // there is no ZAAS anymore as a separated component
-        "10010,/v3/api-docs/zaas,gateway",
-        "10010,/v3/api-docs/x,gateway",
-        "10010,/v3/api-docs,gateway",
+        "10010,/v3/api-docs/zaas,gateway,localhost:gateway:10010",
+        "10010,/v3/api-docs/x,gateway,localhost:gateway:10010",
+        "10010,/v3/api-docs,gateway,localhost:gateway:10010",
         // treat as an unknown service
-        "10010,/v3,v3",
-        "10010,/v3/api-doc,v3",
-        "10010,/images,gateway",
-        "10010,/images/a/b/x.png,gateway",
-        "10010,/apicatalog,apicatalog",
-        "10010,/apicatalog/ui/v1/x,apicatalog",
-        "10010,/cachingservice,cachingservice",
-        "10010,/cachingservice/ui/v1/x,cachingservice",
+        "10010,/v3,v3,",
+        "10010,/v3/api-doc,v3,",
+        "10010,/images,gateway,localhost:gateway:10010",
+        "10010,/images/a/b/x.png,gateway,localhost:gateway:10010",
+        "10010,/apicatalog,apicatalog,localhost:apicatalog:10010",
+        "10010,/apicatalog/ui/v1/x,apicatalog,localhost:apicatalog:10010",
+        "10010,/cachingservice,cachingservice,localhost:cachingservice:10010",
+        "10010,/cachingservice/ui/v1/x,cachingservice,localhost:cachingservice:10010",
         // on GW port in not available eureka endpoint
-        "10010,/eureka/apps,eureka",
-        "10010,/,gateway",
-        "10010,/service1/api/v1,service1",
+        "10010,/eureka/apps,eureka,",
+        "10010,/,gateway,localhost:gateway:10010",
+        "10010,/service1/api/v1,service1,",
 
         // discovery port
-        "10011,/eureka/apps,discovery",
-        "10011,/,discovery",
-        "10011,/x/y/z,discovery"
+        "10011,/eureka/apps,discovery,localhost:discovery:10011",
+        "10011,/,discovery,localhost:discovery:10011",
+        "10011,/x/y/z,discovery,localhost:discovery:10011"
     })
-    void givenBasePath_whenAnalyzeRequest_thenDetectServiceId(int port, String basePath, String serviceId) {
+    void givenBasePath_whenAnalyzeRequest_thenDetectServiceId(int port, String basePath, String serviceId, String instanceId) {
         var filter = new OtelRequestFilter();
         ReflectionTestUtils.setField(filter, "discoveryPort", 10011);
+        ReflectionTestUtils.setField(filter, "hostname", "localhost");
 
         var request = MockServerHttpRequest.get(basePath).localAddress(InetSocketAddress.createUnresolved("localhost", port)).build();
         var exchange = MockServerWebExchange.from(request);
@@ -78,6 +79,7 @@ class OtelRequestFilterTest {
 
         var attributes = ((AttributesBuilder) ReflectionTestUtils.getField(otelContext, "attributesBuilder")).build();
         assertEquals(serviceId, attributes.get(AttributeKey.stringKey("service.id")));
+        assertEquals(instanceId, attributes.get(AttributeKey.stringKey("service.instance.id")));
         assertEquals(basePath, attributes.get(AttributeKey.stringKey("url.path")));
     }
 
