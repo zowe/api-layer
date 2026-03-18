@@ -15,7 +15,7 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SafIdtFilterFactoryTest {
+class SafIdtFilterFactoryTest {
 
     @Test
     void givenSafIdtFilterFactory_whenGetAuthenticationScheme_thenReturnSafIdt() {

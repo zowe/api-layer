@@ -15,7 +15,7 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ZosmfFilterFactoryTest {
+class ZosmfFilterFactoryTest {
 
     @Test
     void givenZosmfFilterFactory_whenGetAuthenticationScheme_thenReturnZosmf() {

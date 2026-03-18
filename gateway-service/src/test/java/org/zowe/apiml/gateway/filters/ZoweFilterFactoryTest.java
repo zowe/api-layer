@@ -15,7 +15,7 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ZoweFilterFactoryTest {
+class ZoweFilterFactoryTest {
 
     @Test
     void givenZoweFilterFactory_whenGetAuthenticationScheme_thenReturnZoweJwt() {
