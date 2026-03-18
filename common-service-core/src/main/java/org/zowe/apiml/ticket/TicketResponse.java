@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.ticket;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,9 +24,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TicketResponse {
+
     private String token;
     private String userId;
     private String applicationName;
     private String ticket;
+    @JsonIgnore // to avoid a breaking change, this value is needed only in Otel via API call, not rest
     private List<String> distributedIds;
+
 }
