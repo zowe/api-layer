@@ -218,7 +218,7 @@ class NettyRoutingFilterApimlTest {
         void someZaasServiceIsUnavailable() throws JsonProcessingException {
             mockService("zaas").scope(MockService.Scope.TEST).start().zombie();
             mockService("zaas").scope(MockService.Scope.TEST)
-                .addEndpoint("/zaas/scheme/ticket").bodyJson(new TicketResponse(null, USER, APPLID, PASSTICKET))
+                .addEndpoint("/zaas/scheme/ticket").bodyJson(new TicketResponse(null, USER, APPLID, PASSTICKET, null))
                 .and().start();
             given().when().get(basePath + "/service/api/v1/test")
                 .then().statusCode(Matchers.is(SC_OK));

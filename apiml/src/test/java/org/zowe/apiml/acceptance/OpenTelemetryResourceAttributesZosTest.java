@@ -344,6 +344,7 @@ class OpenTelemetryResourceAttributesZosTest {
             var logBody = logRecord.getBodyValue().asString();
             assertTrue(StringUtils.isNotBlank(logBody));
             assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
+            assertNull(getAttribute(logBody, "user.id"));
             assertNull(getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
             assertNull(getAttribute(logBody, "auth.status"));
@@ -370,6 +371,7 @@ class OpenTelemetryResourceAttributesZosTest {
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
             assertTrue(StringUtils.isNotBlank(logBody));
+            assertEquals("USER", getAttribute(logBody, "user.id"));
             assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
             assertEquals("testservicept", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
@@ -397,6 +399,7 @@ class OpenTelemetryResourceAttributesZosTest {
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
             assertTrue(StringUtils.isNotBlank(logBody));
+            assertNull(getAttribute(logBody, "user.id"));
             assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
             assertEquals("testservicepterror", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));

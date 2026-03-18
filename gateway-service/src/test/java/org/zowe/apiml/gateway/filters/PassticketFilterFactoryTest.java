@@ -50,7 +50,7 @@ public class PassticketFilterFactoryTest {
     void givenUserInRequest_whenProcessResponse_thenSetIt() {
         var passticketFilterFactory = new PassticketFilterFactory(null, null, null);
         passticketFilterFactory.processResponse(exchange, e -> Mono.empty().then(),
-            new AbstractAuthSchemeFactory.AuthorizationResponse(null, new TicketResponse("token", USER_ID, "appName", "ticket"))
+            new AbstractAuthSchemeFactory.AuthorizationResponse(null, new TicketResponse("token", USER_ID, "appName", "ticket", null))
         );
 
         verify(otelRequestContext, times(1)).authMethod(AuthenticationScheme.HTTP_BASIC_PASSTICKET);
