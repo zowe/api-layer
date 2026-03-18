@@ -1,5 +1,9 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
+# Override root-level index.* ignore rule for Vite entry points
+!index.html
+!src/index.jsx
+
 # dependencies
 /node_modules
 
