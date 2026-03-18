@@ -431,7 +431,7 @@ class OpenTelemetryResourceAttributesZosTest {
             var logBody = logRecord.getBodyValue().asString();
             assertTrue(StringUtils.isNotBlank(logBody));
             assertEquals("USER", getAttribute(logBody, "user.id"));
-            assertEquals("oidc.username", getAttribute(logBody, "user.distributed.id"));
+            assertEquals(List.of("oidc.username"), getAttribute(logBody, "user.distributed.id"));
             assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
             assertEquals("testservice", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
