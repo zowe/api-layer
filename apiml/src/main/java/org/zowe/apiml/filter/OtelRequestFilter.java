@@ -130,11 +130,6 @@ public class OtelRequestFilter implements WebFilter, GlobalFilter, Ordered {
         // set serviceId (there is always a value - real/predicted/unknown)
         otelContext.serviceId(serviceId);
 
-        if (serviceId == null) {
-            // empty path is detected as gateday
-            otelContext.serviceId(exchange.getRequest().getPath().elements().get(1).value());
-        }
-
         // set base information about the request
         otelContext
             .method(exchange.getRequest().getMethod())
