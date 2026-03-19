@@ -167,6 +167,7 @@ class OtelRequestContextTest {
     @Test
     void givenOtelContext_whenIssue_thenCallOtelLogger() {
         var logger = mock(Logger.class);
+        doReturn(true).when(logger).isInfoEnabled();
         exchange = MockServerWebExchange.from(request);
 
         var otelRequestContext = spy(OtelRequestContext.of(exchange));
@@ -175,6 +176,20 @@ class OtelRequestContextTest {
         otelRequestContext.userId("myUserName").issue();
 
         verify(logger, times(1)).info("{\"user.id\":\"MYUSERNAME\"}");
+    }
+
+    @Test
+    void givenDisabledLogger_whenIssue_thenCallOtelLogger() {
+        var logger = mock(Logger.class);
+        doReturn(false).when(logger).isInfoEnabled();
+        exchange = MockServerWebExchange.from(request);
+
+        var otelRequestContext = spy(OtelRequestContext.of(exchange));
+        doReturn(logger).when(otelRequestContext).getOtelLogger();
+
+        otelRequestContext.userId("myUserName").issue();
+
+        verify(logger, never()).info(any());
     }
 
 }
