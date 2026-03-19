@@ -170,7 +170,7 @@ class AbstractTokenFilterFactoryTest {
         @Nested
         class UserId {
 
-            private static String USER_ID = "myUserId";
+            private static final String USER_ID = "myUserId";
 
             @Test
             void givenResponseWithoutUserId_whenProcess_thenDoNotSetAny() {
@@ -197,7 +197,7 @@ class AbstractTokenFilterFactoryTest {
         @Nested
         class DistributedUserId {
 
-            private static List<String> DISTRIBUTED_USER_IDS = Arrays.asList("distributedUerId1", "distributedUerId2");
+            private static final List<String> DISTRIBUTED_USER_IDS = Arrays.asList("distributedUerId1", "distributedUerId2");
 
             @Test
             void givenResponseWithoutUserId_whenProcess_thenDoNotSetAny() {
@@ -224,7 +224,7 @@ class AbstractTokenFilterFactoryTest {
         @Nested
         class AuthSourceType {
 
-            private static String AUTH_SOURCE_TYPE = "CLIENT_CERT";
+            private static final String AUTH_SOURCE_TYPE = "CLIENT_CERT";
 
             @Test
             void givenResponseWithoutAuthSourceType_whenProcess_thenDoNotSetAny() {

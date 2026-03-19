@@ -124,7 +124,7 @@ class OtelRequestFilterTest {
 
         for (int i = 0; i < 3; i++) {
             // call multiple time the same filter
-            StepVerifier.create(filter.filter(exchange, (WebFilterChain) (exchange2) -> Mono.empty().then())).verifyComplete();
+            StepVerifier.create(filter.filter(exchange, (WebFilterChain) exchange2 -> Mono.empty())).verifyComplete();
         }
 
         var attributes = ((AttributesBuilder) ReflectionTestUtils.getField(otelContext, "attributesBuilder")).build();

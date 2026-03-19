@@ -39,7 +39,6 @@ import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -128,7 +127,7 @@ class OpenTelemetryResourceAttributesZosTest {
         private LogRecordExporter logExporter;
 
         @MockitoBean
-        private OIDCExternalMapper mapper;
+        private OIDCExternalMapper oidcExternalMapper;
 
         @MockitoBean
         private OIDCTokenProvider oidcTokenProvider;
@@ -234,15 +233,13 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         private Object getAttribute(String logBody, String attributeName) {
-            var mapper = new ObjectMapper();
-            Map<?, ?> map;
+            var objectMapper = new ObjectMapper();
             try {
-                map = mapper.readValue(logBody, Map.class);
+                return objectMapper.readValue(logBody, Map.class).get(attributeName);
             } catch (JsonProcessingException e) {
-                map = new HashMap<>();
+                fail("Invalid JSON", e);
+                return null;
             }
-            var value = map.get(attributeName);
-            return value;
         }
 
         @Test
@@ -446,7 +443,7 @@ class OpenTelemetryResourceAttributesZosTest {
         @Test
         void givenRouted_withOidc_thenLog() {
             when(oidcTokenProvider.isValid(VALID_OIDC_TOKEN)).thenReturn(true);
-            when(mapper.mapToMainframeUserId(any())).thenReturn("USER");
+            when(oidcExternalMapper.mapToMainframeUserId(any())).thenReturn("USER");
 
             given()
                 .header(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_OIDC_TOKEN)

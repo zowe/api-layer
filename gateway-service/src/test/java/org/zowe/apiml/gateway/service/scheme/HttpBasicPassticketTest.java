@@ -49,8 +49,6 @@ class HttpBasicPassticketTest {
         RouteDefinition routeDefinition = new RouteDefinition();
         Authentication authentication = new Authentication();
         authentication.setApplid("applid");
-        ServiceInstance serviceInstance = mock(ServiceInstance.class);
-        doReturn("service").when(serviceInstance).getServiceId();
 
         new HttpBasicPassticket().apply(serviceInstance, routeDefinition, authentication);
 

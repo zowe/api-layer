@@ -201,10 +201,10 @@ class ZaasSchemeTransformApiTest {
             void whenOidc_returnsDistributedId() throws PassTicketException {
                 var parsed = mock(AuthSource.Parsed.class);
                 when(parsed.getUserId()).thenReturn("USER1");
-                var authSource = mock(OIDCAuthSource.class);
-                when(authSource.getDistributedId()).thenReturn(Arrays.asList("USERD1", "USERD2"));
-                when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
-                when(authSourceService.parse(authSource)).thenReturn(parsed);
+                var oidcAuthSource = mock(OIDCAuthSource.class);
+                when(oidcAuthSource.getDistributedId()).thenReturn(Arrays.asList("USERD1", "USERD2"));
+                when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(oidcAuthSource));
+                when(authSourceService.parse(oidcAuthSource)).thenReturn(parsed);
 
                 when(tokenCreationService.createSafIdTokenWithoutCredentials("USER1", "app1"))
                     .thenReturn("saf-idt");

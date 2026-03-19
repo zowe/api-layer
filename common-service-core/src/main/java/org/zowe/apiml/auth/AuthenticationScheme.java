@@ -38,7 +38,7 @@ public enum AuthenticationScheme {
 
     public final String scheme;
 
-    static Map<String, AuthenticationScheme> STRING_TO_ENUM = new HashMap<>();
+    static final Map<String, AuthenticationScheme> STRING_TO_ENUM = new HashMap<>();
     static {
         for (AuthenticationScheme s : AuthenticationScheme.values()) {
             STRING_TO_ENUM.put(s.getScheme(), s);

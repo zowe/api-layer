@@ -138,7 +138,10 @@ public final class OtelRequestContext {
     }
 
     public void issue() {
-        getOtelLogger().info(toString());
+        var logger = getOtelLogger();
+        if (logger.isInfoEnabled()) {
+            logger.info(toString());
+        }
     }
 
 }

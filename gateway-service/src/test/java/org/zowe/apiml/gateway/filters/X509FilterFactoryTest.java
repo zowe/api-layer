@@ -239,13 +239,13 @@ class X509FilterFactoryTest {
 
         @Test
         void givenX509FilterFactory_whenProcessResponse_thenSetX509Scheme() {
-            MockServerHttpRequest request = MockServerHttpRequest.get("/aPath").build();
-            MockServerWebExchange exchange = MockServerWebExchange.from(request);
-            OtelRequestContext otelRequestContext = spy(OtelRequestContext.of(exchange));
-            exchange.getAttributes().put("otel-context", otelRequestContext);
+            var x509Request = MockServerHttpRequest.get("/aPath").build();
+            var x509Exchange = MockServerWebExchange.from(x509Request);
+            OtelRequestContext otelRequestContext = spy(OtelRequestContext.of(x509Exchange));
+            x509Exchange.getAttributes().put("otel-context", otelRequestContext);
 
             var x509FilterFactory = new X509FilterFactory(messageService);
-            x509FilterFactory.apply(new X509FilterFactory.Config()).filter(exchange, e -> Mono.empty().then());
+            x509FilterFactory.apply(new X509FilterFactory.Config()).filter(x509Exchange, e -> Mono.empty());
 
             verify(otelRequestContext, times(1)).authMethod(AuthenticationScheme.X509);
             verify(otelRequestContext, never()).userId(any());
