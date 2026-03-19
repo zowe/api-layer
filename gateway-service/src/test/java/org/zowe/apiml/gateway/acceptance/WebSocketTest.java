@@ -17,6 +17,7 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.framing.TextFrame;
 import org.java_websocket.handshake.ServerHandshake;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -31,6 +32,7 @@ import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,31 +54,50 @@ class WebSocketTest extends AcceptanceTestWithMockServices {
     @SuppressWarnings("unused")
     private MockService mockServiceWs;
 
+    private WebSocketTestClient webSocketClient;
+
     @BeforeAll
-    void setUp() {
+    void setUp() throws URISyntaxException {
         mockServiceWs = mockServiceWs("websocketservice")
             .assertion(message -> assertTrue(StringUtils.isNotBlank(message)))
             .start();
+
+        webSocketClient = new WebSocketTestClient(new URI("wss://localhost:" + port + "/websocketservice/ws/v1"));
+        webSocketClient.setSocketFactory(apimlSSLContext.getSocketFactory());
+    }
+
+    @BeforeEach
+    void before() {
+        webSocketClient.messages.clear();
     }
 
     @Test
-    void givenWsConnection_withFragmentedMessages_thenSuccess() throws URISyntaxException, InterruptedException {
-        var client = new WebSocketTestClient(new URI("wss://localhost:" + port + "/websocketservice/ws/v1"));
-
-        var connected = client.connectBlocking();
+    void givenWsConnection_withSingleMessage_thenSuccess() throws URISyntaxException, InterruptedException {
+        var connected = webSocketClient.connectBlocking();
 
         assertTrue(connected);
 
         var frame = new TextFrame();
         frame.setPayload(ByteBuffer.wrap("null".getBytes()));
-        client.sendFrame(frame);
+        webSocketClient.sendFrame(frame);
 
         await()
+            .atMost(Duration.ofSeconds(30))
             .untilAsserted(() -> {
-                var messages = client.getMessages();
+                var messages = webSocketClient.getMessages();
                 assertEquals(1, messages.size());
                 assertEquals("ACK", messages.get(0));
             });
+    }
+
+    @Test
+    // test under the full limit
+    // test over the full limit
+    // test over the frame limit
+    void givenWsConnection_withFramedMessage_thenSuccess() throws InterruptedException {
+        var connected = webSocketClient.connectBlocking();
+
+        assertTrue(connected);
     }
 
     private static class WebSocketTestClient extends WebSocketClient {

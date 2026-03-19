@@ -23,7 +23,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent;
@@ -34,6 +33,7 @@ import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.MockWebSocketService;
 
 import javax.net.ssl.SSLContext;
+
 import java.net.Socket;
 import java.security.cert.X509Certificate;
 import java.util.Map;
@@ -79,6 +79,8 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
     @Autowired
     protected ApplicationRegistry applicationRegistry;
 
+    protected SSLContext apimlSSLContext;
+
     @BeforeEach
     void resetCounters() {
         applicationRegistry.getMockServices().forEach(MockService::resetCounter);
@@ -95,7 +97,7 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
         TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
         X509HostnameVerifier hostnameVerifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
 
-        SSLContext apimlSSLContext = SSLContextBuilder.create()
+        apimlSSLContext = SSLContextBuilder.create()
             .loadKeyMaterial(ResourceUtils.getFile(apimlKeyStorePath), apimlKeyStorePassword, apimlKeyPassword)
             .loadTrustMaterial(null, trustStrategy).build();
         apimlCert = RestAssuredConfig.newConfig()
@@ -142,6 +144,23 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
             .serviceId(serviceId);
     }
 
+    /**
+     * Create web socket mock service. It will be automatically registered and removed. It is not necessary to handle
+     * its lifecycle.
+     *
+     * Example:
+     *
+     * MockService myService;
+     *
+     * @BeforeAll
+     * void createMyService() {
+     *     myService = mockServiceWs("myservice").scope(MockService.Scope.CLASS)
+     *          .start();
+     * }
+     *
+     * @param serviceId serviceId of the new service
+     * @return builder to define a new MockService
+     */
     protected MockWebSocketService.MockWsServiceBuilder mockServiceWs(String serviceId) {
         return MockWebSocketService.wsBuilder()
             .statusChangedListener(mockService -> {
