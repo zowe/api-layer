@@ -199,6 +199,12 @@ class OpenTelemetryResourceAttributesZosTest {
             return logs;
         }
 
+        private LogRecordData assertOneLogRecordExported() {
+            var logs = assertLogsExported();
+            assertEquals(1, logs.size());
+            return logs.get(0);
+        }
+
         @Test
         void givenRouted_whenAuthFail_thenLog() {
             given()
@@ -252,9 +258,7 @@ class OpenTelemetryResourceAttributesZosTest {
             .then()
                 .statusCode(500);
 
-            var logs = assertLogsExported();
-
-            var logRecord = logs.get(0);
+            var logRecord = assertOneLogRecordExported();
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
@@ -277,10 +281,7 @@ class OpenTelemetryResourceAttributesZosTest {
             .then()
                 .statusCode(200);
 
-            var logs = assertLogsExported();
-            assertEquals(1, logs.size());
-
-            var logRecord = logs.get(0);
+            var logRecord = assertOneLogRecordExported();
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
@@ -305,10 +306,7 @@ class OpenTelemetryResourceAttributesZosTest {
             .then()
                 .statusCode(200);
 
-            var logs = assertLogsExported();
-            assertEquals(1, logs.size());
-
-            var logRecord = logs.get(0);
+            var logRecord = assertOneLogRecordExported();
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
@@ -333,10 +331,7 @@ class OpenTelemetryResourceAttributesZosTest {
             .then()
             .statusCode(404);
 
-            var logs = assertLogsExported();
-            assertEquals(1, logs.size());
-
-            var logRecord = logs.get(0);
+            var logRecord = assertOneLogRecordExported();
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
@@ -361,10 +356,7 @@ class OpenTelemetryResourceAttributesZosTest {
             .then()
                 .statusCode(200);
 
-            var logs = assertLogsExported(); // This now includes the login request
-            assertEquals(1, logs.size());
-
-            var logRecord = logs.get(0);
+            var logRecord = assertOneLogRecordExported();
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
@@ -390,10 +382,7 @@ class OpenTelemetryResourceAttributesZosTest {
             .then()
                 .statusCode(200);
 
-            var logs = assertLogsExported(); // This now includes the login request
-            assertEquals(1, logs.size());
-
-            var logRecord = logs.get(0);
+            var logRecord = assertOneLogRecordExported();
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
@@ -419,10 +408,7 @@ class OpenTelemetryResourceAttributesZosTest {
             .then()
                 .statusCode(200);
 
-            var logs = assertLogsExported(); // This now includes the login request
-            assertEquals(1, logs.size());
-
-            var logRecord = logs.get(0);
+            var logRecord = assertOneLogRecordExported();
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
@@ -451,10 +437,7 @@ class OpenTelemetryResourceAttributesZosTest {
             .then()
                 .statusCode(200);
 
-            var logs = assertLogsExported();
-            assertEquals(1, logs.size());
-
-            var logRecord = logs.get(0);
+            var logRecord = assertOneLogRecordExported();
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
@@ -481,10 +464,7 @@ class OpenTelemetryResourceAttributesZosTest {
             .then()
                 .statusCode(200);
 
-            var logs = assertLogsExported();
-            assertEquals(1, logs.size());
-
-            var logRecord = logs.get(0);
+            var logRecord = assertOneLogRecordExported();
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
