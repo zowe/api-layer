@@ -10,44 +10,39 @@
 
 package org.zowe.apiml.gateway;
 
-import com.sun.net.httpserver.HttpServer;
-import groovy.transform.builder.Builder;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.Singular;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
-import org.zowe.apiml.auth.AuthenticationScheme;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 @Slf4j
-@Builder(builderClassName = "MockWsServiceBuilder", buildMethodName = "internalBuild")
+@Builder(builderClassName = "MockWsServiceBuilder", buildMethodName = "internalWsBuild", builderMethodName = "wsBuilder")
 @Getter
 public class MockWebSocketService extends MockService {
 
     private WebSocketServer webSocketServer;
-
-    MockWebSocketService(int port, HttpServer server, List<Endpoint> endpointsConfig, String serviceId,
-            String vipAddress, String hostname, String gatewayUrl, String serviceUrl,
-            AuthenticationScheme authenticationScheme, String applid, Scope scope,
-            List<Consumer<MockService>> statusChangedlisteners,
-            Map<? extends String, ? extends String> additionalMetadata) {
-        super(port, server, endpointsConfig, serviceId, vipAddress, hostname, gatewayUrl, serviceUrl, authenticationScheme,
-                applid, scope, statusChangedlisteners, additionalMetadata);
-    }
+    @Singular
+    private List<Consumer<String>> assertions;
 
     @Override
     public void start() throws IOException {
         if (!status.get().isUp()) {
             this.init();
             webSocketServer.start();
+            webSocketServer.setWebSocketFactory(null);
             port = webSocketServer.getPort();
+            setStatus(Status.STARTED);
         }
-        super.start();
     }
 
     private void init() {
@@ -64,73 +59,107 @@ public class MockWebSocketService extends MockService {
     }
 
     @Override
-    public void close() {
-        // TODO Auto-generated method stub
-        super.close();
+    public void stop() {
+        try {
+            if (status.get().isUp()) {
+                webSocketServer.stop();
+            }
+            setStatus(Status.STOPPED);
+        } catch (InterruptedException e) {
+            log.error("Failure stopping web socket server", e);
+            setStatus(Status.ERROR);
+        }
     }
 
     @Override
-    public void stop() {
-        try {
-            webSocketServer.stop();
-        } catch (InterruptedException e) {
-            log.error("Failure stopping web socket server", e);
+    public void zombie() {
+        if (status.get().isUp()) {
+            try {
+                webSocketServer.stop();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                setStatus(Status.ERROR);
+            }
         }
+
+        setStatus(Status.ZOMBIE);
     }
 
     public static class MockWsServiceBuilder {
 
-        public MockWebSocketService build() {
-            internalBuild();
-            // var mockService = internalBuild();
+        private List<Consumer<MockService>> statusChangedlisteners = new ArrayList<>();
+        private String serviceId;
 
-            // return mockService;
-            return null;
+        public MockWebSocketService build() {
+            var mockWebSocketService = internalWsBuild();
+            mockWebSocketService.port = idCounter++;
+            mockWebSocketService.statusChangedlisteners = this.statusChangedlisteners;
+            mockWebSocketService.serviceId = this.serviceId;
+            return mockWebSocketService;
         }
 
         public MockWebSocketService start() {
             var mockService = build();
             try {
                 mockService.start();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            } catch (RuntimeException | IOException e) {
+                int i = atCounter.getAndIncrement();
+                log.info("Not able to start mock server. Number of retries: {}", i);
+                if (i < 4) {
+                    start();
+                }
             }
             return mockService;
         }
 
+        public MockWsServiceBuilder statusChangedListener(Consumer<MockService> statusChangedListener) {
+            this.statusChangedlisteners.add(statusChangedListener);
+            return this;
+        }
+
+        public MockWsServiceBuilder serviceId(String serviceId) {
+            this.serviceId = serviceId;
+            return this;
+        }
+
+        AtomicInteger atCounter = new AtomicInteger(0);
+
     }
 
-    private static class WebSocketServerImpl extends WebSocketServer {
+    private class WebSocketServerImpl extends WebSocketServer {
 
         @Override
         public void onOpen(WebSocket conn, ClientHandshake handshake) {
-            // TODO Auto-generated method stub
-            throw new UnsupportedOperationException("Unimplemented method 'onOpen'");
+            log.info("Opened WebSocket connection");
         }
 
         @Override
         public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-            // TODO Auto-generated method stub
-            throw new UnsupportedOperationException("Unimplemented method 'onClose'");
+            log.info("Closed WebSocket connection");
         }
 
         @Override
         public void onMessage(WebSocket conn, String message) {
-            // TODO Auto-generated method stub
-            throw new UnsupportedOperationException("Unimplemented method 'onMessage'");
+            if (assertions != null) {
+                assertions.forEach(assertion -> {
+                    try {
+                        assertion.accept(message);
+                    } catch (AssertionError ae) {
+                        setAssertionError(ae);
+                    }
+                });
+            }
         }
 
         @Override
         public void onError(WebSocket conn, Exception ex) {
-            // TODO Auto-generated method stub
-            throw new UnsupportedOperationException("Unimplemented method 'onError'");
+            log.info("Error in WebSocket connection", ex);
         }
 
         @Override
         public void onStart() {
-            // TODO Auto-generated method stub
-            throw new UnsupportedOperationException("Unimplemented method 'onStart'");
+            log.info("Start WebSocket connection");
         }
 
     }

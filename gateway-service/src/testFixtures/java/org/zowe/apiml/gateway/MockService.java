@@ -19,6 +19,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Singular;
@@ -77,9 +78,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Builder(builderClassName = "MockServiceBuilder", buildMethodName = "internalBuild")
 @Getter
 @Slf4j
+@AllArgsConstructor
 public class MockService implements AutoCloseable {
 
-    private static int idCounter = 1;
+    protected static int idCounter = 1;
     // in case on zombie mode is necessary to have a unique port number, on start replaced with the real one
     protected int port;
 
@@ -94,7 +96,7 @@ public class MockService implements AutoCloseable {
     /**
      * Service identification
      */
-    private String serviceId;
+    protected String serviceId;
     private String vipAddress;
     @Builder.Default
     private String hostname = "localhost";
@@ -120,7 +122,7 @@ public class MockService implements AutoCloseable {
 
     @Singular
     @Getter(AccessLevel.NONE)
-    private List<Consumer<MockService>> statusChangedlisteners;
+    protected List<Consumer<MockService>> statusChangedlisteners;
 
     /**
      * All registered endpoints. It is possible to get any instance by path. If there is just one endpoint in the
@@ -144,6 +146,10 @@ public class MockService implements AutoCloseable {
      * method (see {@link MockService#checkAssertionErrors()})
      */
     private static AssertionError assertionError;
+
+    MockService() {
+
+    }
 
     private void init() throws IOException {
         server = HttpServer.create(new InetSocketAddress(0), 0);
@@ -176,7 +182,7 @@ public class MockService implements AutoCloseable {
         }
     }
 
-    private static void setAssertionError(AssertionError assertionError) {
+    static void setAssertionError(AssertionError assertionError) {
         if (MockService.assertionError == null) {
             // in case of the first error, just store the exception
             MockService.assertionError = assertionError;
@@ -203,7 +209,7 @@ public class MockService implements AutoCloseable {
         }
     }
 
-    private void setStatus(Status status) {
+    void setStatus(Status status) {
         if (this.status.get() != status) {
             this.status.set(status);
             fireStatusChanged();
@@ -547,7 +553,8 @@ public class MockService implements AutoCloseable {
             // service was stopped, and it should be removed from the memory
             CANCELLING,
             // service is registered but it is also down
-            ZOMBIE
+            ZOMBIE,
+            ERROR
 
         ;
 
