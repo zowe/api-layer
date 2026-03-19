@@ -1,8 +1,8 @@
-## Onboarding Python enabler for Zowe API Mediation Layer
+# Onboarding Python enabler for Zowe API Mediation Layer
 
 This is the onboarding Python enabler for [Zowe API Mediation Layer](https://github.com/zowe/api-layer) (part of [Zowe](https://zowe.org)) that allows to register a Python based service to the API Mediation Layer Discovery Service. It uses [py-eureka-client](https://pypi.org/project/py-eureka-client/).
 
-### Installation
+## Installation
 
 Install the package using pip:
 
@@ -10,7 +10,7 @@ Install the package using pip:
     pip install zowe-apiml-onboarding-enabler-python
 ```
 
-### How to use
+## How to use
 
 1. Import the Enabler in Your Python Service. Add the following code block to register your service with Eureka:
 

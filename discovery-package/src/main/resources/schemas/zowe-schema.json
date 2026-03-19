@@ -1,0 +1,23 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "https://zowe.org/schemas/v2/discovery",
+    "allOf": [
+        { "$ref": "/schemas/v2/server-base" },
+        { "type": "object",
+            "properties": {
+                "components": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "properties": {
+                        "discovery": {
+                            "allOf": [
+                                { "$ref": "/schemas/v2/server-base#zoweComponent" },
+                                { "$ref": "/schemas/v2/discovery-config" }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

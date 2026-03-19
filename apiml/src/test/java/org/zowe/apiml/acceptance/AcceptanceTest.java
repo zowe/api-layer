@@ -22,6 +22,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.result.view.freemarker.FreeMarkerConfigurer;
 import org.zowe.apiml.ApimlApplication;
 import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
+import org.zowe.apiml.product.config.ServerAddressPropertiesUpdater;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -50,7 +51,9 @@ import java.lang.annotation.Target;
 @SpringBootTest(classes = {
         ApimlApplication.class,
         FreeMarkerConfigurer.class,
-        TestConfig.class
+        TestConfig.class,
+        OpenTelemetryTestConfig.class,
+        ServerAddressPropertiesUpdater.class
     },
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
     properties = {

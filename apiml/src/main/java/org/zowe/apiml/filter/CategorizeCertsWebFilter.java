@@ -21,6 +21,7 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.common.util.CertificateLoggingUtils;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 import reactor.core.publisher.Mono;
 
@@ -55,11 +56,11 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
 
     @Setter
     private Predicate<X509Certificate> certificateForClientAuth = cert ->
-        !getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(cert));
+        !getPublicKeyCertificatesBase64().contains(CertificateLoggingUtils.base64EncodePublicKey(cert));
 
     @Setter
     private Predicate<X509Certificate> apimlCertificate = cert ->
-        getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(cert));
+        getPublicKeyCertificatesBase64().contains(CertificateLoggingUtils.base64EncodePublicKey(cert));
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -97,6 +98,9 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                     new X509Certificate[]{clientCertFromHeader.get()},
                     certificateForClientAuth
                 );
+
+                logIgnoredCertificates(new X509Certificate[]{clientCertFromHeader.get()}, clientAuthCerts);
+
                 exchange.getAttributes().put(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, clientAuthCerts);
                 log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, Arrays.toString(clientAuthCerts));
 
@@ -108,6 +112,9 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
 
             } else {
                 X509Certificate[] clientAuthCerts = selectCerts(certsFromTls, certificateForClientAuth);
+
+                logIgnoredCertificates(certsFromTls, clientAuthCerts);
+
                 exchange.getAttributes().put(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, clientAuthCerts);
                 log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, Arrays.toString(clientAuthCerts));
 
@@ -125,6 +132,22 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
             log.debug("No TLS peer certificates found in the request.");
         }
         return exchange.mutate().request(requestBuilder.build()).build();
+    }
+
+    /**
+     * Logs information about certificates that were ignored during authentication.
+     * Delegates to {@link CertificateLoggingUtils} for the actual logging implementation.
+     *
+     * @param originalCerts The original array of certificates before filtering
+     * @param filteredCerts The array of certificates after filtering for authentication
+     */
+    private void logIgnoredCertificates(X509Certificate[] originalCerts, X509Certificate[] filteredCerts) {
+        CertificateLoggingUtils.logIgnoredCertificates(
+            originalCerts,
+            filteredCerts,
+            publicKeyCertificatesBase64,
+            log
+        );
     }
 
     /**
@@ -168,15 +191,6 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
             .build();
     }
 
-    /**
-     * Encodes the public key of an X.509 certificate to a Base64 string.
-     *
-     * @param cert The X.509 certificate.
-     * @return The Base64 encoded string of the public key.
-     */
-    public static String base64EncodePublicKey(X509Certificate cert) {
-        return Base64.getEncoder().encodeToString(cert.getPublicKey().getEncoded());
-    }
 
     /**
      * Defines the order of this filter. It should run relatively early

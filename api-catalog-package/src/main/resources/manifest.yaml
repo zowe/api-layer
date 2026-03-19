@@ -9,7 +9,9 @@ title: API Catalog
 description: API Catalog service to display service details and API documentation for discovered API services.
 license: EPL-2.0
 schemas:
-    configs: catalog-schema.json
+  configs:
+    - schemas/zowe-schema.json
+    - schemas/api-catalog-config.json
 repository:
   type: git
   url: https://github.com/zowe/api-layer.git

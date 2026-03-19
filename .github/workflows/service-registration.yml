@@ -26,12 +26,18 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Install BATS to test the shell scripts
+                run: |
+                    git clone https://github.com/bats-core/bats-core.git
+                    cd bats-core && sudo ./install.sh /usr/local
+
+            -   name: Run shell script tests
+                run: bats scripts/test/start_test.bats
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew clean build --info --scan
-            -   name: Run startup check
-                run: >
-                    ./gradlew runStartUpCheck --info --scan -Denvironment.startServices=true
+
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
@@ -39,5 +45,50 @@ jobs:
                     name: BuildAndTest-${{ env.JOB_ID }}
                     path: |
                         */build/reports/**
+
+            -   uses: ./.github/actions/teardown
+
+    Register:
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew clean build -x test -x npmTest -x npmInstall -x npmBuild --info --scan
+
+            -   name: Run startup check for microservices
+                run: >
+                    ./gradlew runStartUpCheck --info --scan -Denvironment.startServices=true
+
+            -   name: Start OpenTelemetry containers
+                run: |
+                    cd otel
+                    sh/start_containers.sh
+
+            -   name: Run startup check for modulith
+                run: >
+                    ./gradlew runStartUpCheckWithOpenTelemetry --info --scan -Denvironment.startServices=true -Denvironment.modulith=true -Denvironment.config=-modulith
+
+            -   name: Validate telemetry data and stop containers
+                if: always()
+                run: |
+                    cd otel
+                    sh/validate_and_stop.sh
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: Register-${{ env.JOB_ID }}
+                    path: |
+                        */build/reports/**
+                        otel/**
 
             -   uses: ./.github/actions/teardown

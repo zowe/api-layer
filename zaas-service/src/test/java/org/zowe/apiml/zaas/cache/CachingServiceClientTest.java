@@ -16,17 +16,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -107,10 +106,35 @@ class CachingServiceClientTest {
         }
 
         @Test
-        void readWithExceptonFromRestTemplateThrowsDefined() {
+        void readWithExceptionFromRestTemplateThrowsDefined() {
             doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
             assertThrows(CachingServiceClientException.class, () -> underTest.read(keyToRead));
         }
+
+        @Test
+        void ioException() {
+            RestClientException ioException = new RestClientException("io");
+            doThrow(ioException).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(CachingServiceClient.KeyValue.class));
+            CachingServiceClientException e = assertThrows(CachingServiceClientException.class, () -> underTest.read(keyToRead));
+            assertSame(e.getCause(), ioException);
+        }
+
+        @Test
+        void notFound() {
+            doThrow(HttpClientErrorException.create("record not found", HttpStatus.NOT_FOUND, "notFound", new HttpHeaders(), new byte[0], StandardCharsets.UTF_8))
+                .when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(CachingServiceClient.KeyValue.class));
+            CachingServiceClientException e = assertThrows(CachingServiceClientException.class, () -> underTest.read(keyToRead));
+            assertNull(e.getCause());
+        }
+
+        @Test
+        void noAvailable() {
+            Exception responseException = HttpClientErrorException.create("service not available", HttpStatus.SERVICE_UNAVAILABLE, "503", new HttpHeaders(), new byte[0], StandardCharsets.UTF_8);
+            doThrow(responseException).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(CachingServiceClient.KeyValue.class));
+            CachingServiceClientException e = assertThrows(CachingServiceClientException.class, () -> underTest.read(keyToRead));
+            assertSame(e.getCause(), responseException);
+        }
+
     }
 
     @Nested

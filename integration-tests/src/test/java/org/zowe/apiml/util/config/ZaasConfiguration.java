@@ -13,6 +13,7 @@ package org.zowe.apiml.util.config;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.zowe.apiml.product.constants.CoreService;
 
 @Data
 @AllArgsConstructor
@@ -22,4 +23,10 @@ public class ZaasConfiguration implements ServiceConfiguration {
     private String host;
     private int port;
     private int instances;
+
+    @Override
+    public String getServiceId() {
+        return CoreService.ZAAS.getServiceId();
+    }
+
 }

@@ -21,6 +21,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -222,6 +223,14 @@ class AuthExceptionHandlerTest {
         Message message = messageService.createMessage(ErrorType.SERVICE_UNAVAILABLE.getErrorMessageKey(), httpServletRequest.getRequestURI());
 
         verify(function).accept(message.mapToView(), HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    @Test
+    void testAccessDeniedException() throws ServletException {
+        authExceptionHandler.handleException(httpServletRequest.getRequestURI(),
+            function, addHeader, new AccessDeniedException("method"));
+
+        verify(function).accept(any(), eq(HttpStatus.FORBIDDEN));
     }
 
     @TestConfiguration

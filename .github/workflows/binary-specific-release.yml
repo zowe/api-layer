@@ -52,7 +52,7 @@ jobs:
                   git push --no-verify
                   cd ..
               env:
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  NPM_TOKEN: ${{ secrets.NPM_PUBLIC_TOKEN }}
 
             - name: Release with Gradle automatic
               shell: bash

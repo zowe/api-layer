@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.base64EncodePublicKey;
+import static org.zowe.apiml.security.common.util.CertificateLoggingUtils.base64EncodePublicKey;
 
 /**
  * Service to verify if given certificate chain can be trusted.

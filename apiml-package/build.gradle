@@ -20,13 +20,19 @@ task packageApiml(type: Zip) {
     into('/') {
         from "$resourceDir/zosmf-static-definition.yaml.template"
         from "$buildDir/convert/manifest.yaml"
-        from "../schemas/apiml-schema.json"
+    }
+
+    into('schemas/') {
+        from "$resourceDir/schemas/apiml-config.json"
+        from "$resourceDir/schemas/zowe-schema.json"
     }
 
     into('bin/') {
         from configurations.apimlServiceJar
         from "$resourceDir/bin/start.sh"
         from "$resourceDir/bin/validate.sh"
+        from "../scripts/parse_jvm_args.sh"
+        from "../scripts/apiml-common-scripts.sh"
     }
 }
 

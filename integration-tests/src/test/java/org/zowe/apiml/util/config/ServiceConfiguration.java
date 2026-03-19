@@ -13,7 +13,23 @@ package org.zowe.apiml.util.config;
 public interface ServiceConfiguration {
 
     String getScheme();
+
     String getHost();
+
     int getPort();
+
+    String getServiceId();
+
+    default boolean isStaticallyRegistred() {
+        return false;
+    }
+
+    default String getServletContext() {
+        return "/";
+    }
+
+    default boolean isBasicAuthenticationSupported() {
+        return true;
+    }
 
 }

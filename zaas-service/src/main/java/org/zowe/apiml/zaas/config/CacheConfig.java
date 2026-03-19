@@ -28,6 +28,7 @@ import org.ehcache.impl.copy.SerializingCopier;
 import org.ehcache.jsr107.EhcacheCachingProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
@@ -97,9 +98,23 @@ public class CacheConfig {
 
     @Primary
     @Bean("cacheManager")
+    @ConditionalOnBean(name = "modulithConfig")
     @ConditionalOnProperty(value = "apiml.caching.enabled", havingValue = "true", matchIfMissing = true)
     @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "inMemory", matchIfMissing = true)
-    public CacheManager cacheManager() {
+    public CacheManager cacheManagerModulith() {
+        return createCacheManager();
+    }
+
+    // fix for Redis IT (see setting CACHING_STORAGE_MODE='redis' for all service). This property is not related to microservices at all
+    @Primary
+    @Bean("cacheManager")
+    @ConditionalOnMissingBean(name = "modulithConfig")
+    @ConditionalOnProperty(value = "apiml.caching.enabled", havingValue = "true", matchIfMissing = true)
+    public CacheManager cacheManagerZaas() {
+        return createCacheManager();
+    }
+
+    public CacheManager createCacheManager() {
         var caches = new HashMap<String, CacheConfiguration<?, ?>>();
 
         var invalidatedJwtTokensConf = CacheConfigurationBuilder.newCacheConfigurationBuilder(

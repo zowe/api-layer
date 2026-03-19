@@ -24,6 +24,7 @@ public class TlsConfiguration {
     private char[] keyPassword;
     private String keyStoreType;
     private String keyStore;
+    private String serverKeyStore;
     private String clientKeystore;
     private String clientCN;
     private char[] keyStorePassword;

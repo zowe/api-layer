@@ -33,7 +33,7 @@ class RealJwtTokenEndpointTest {
 
     @Test
     void infoTest() throws Exception {
-        mvc.perform(get("/zosmf/info")).andExpect(status().isOk());
+        mvc.perform(get("/zosmf/info")).andExpect(status().isUnauthorized());
     }
 
     @Test

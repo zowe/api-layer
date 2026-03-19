@@ -72,6 +72,26 @@ class HttpConfigTest {
             assertNull(ReflectionTestUtils.getField(httpConfig, "trustStorePassword"));
         }
 
+        @Test
+        void whenServerPropertiesHaveKeyring_thenFormatServerPropertiesIndependently() {
+            ServerProperties properties = new ServerProperties();
+            Ssl ssl = new Ssl();
+            ssl.setKeyStore("safkeyring:///userId/ringId1");
+            ssl.setTrustStore("safkeyring:////userId/ringId2");
+            properties.setSsl(ssl);
+            when(context.getBean(ServerProperties.class)).thenReturn(properties);
+
+            ReflectionTestUtils.setField(httpConfig, "keyStorePath", "/client/keystore.p12");
+            ReflectionTestUtils.setField(httpConfig, "trustStorePath", "/client/truststore.p12");
+
+            httpConfig.updateStorePaths();
+
+            assertEquals("/client/keystore.p12", ReflectionTestUtils.getField(httpConfig, "keyStorePath"));
+            assertEquals("/client/truststore.p12", ReflectionTestUtils.getField(httpConfig, "trustStorePath"));
+            assertEquals("safkeyring://userId/ringId1", properties.getSsl().getKeyStore());
+            assertEquals("safkeyring://userId/ringId2", properties.getSsl().getTrustStore());
+        }
+
     }
 
 }

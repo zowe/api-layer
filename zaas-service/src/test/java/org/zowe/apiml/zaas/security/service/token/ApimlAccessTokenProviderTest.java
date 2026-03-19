@@ -13,13 +13,13 @@ package org.zowe.apiml.zaas.security.service.token;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.jsonwebtoken.Jwts;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.zowe.apiml.models.AccessTokenContainer;
@@ -28,6 +28,7 @@ import org.zowe.apiml.zaas.cache.CachingServiceClient;
 import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.*;
@@ -176,14 +177,16 @@ class ApimlAccessTokenProviderTest {
 
     @Test
     void givenTokenWithUserIdMatchingRule_returnInvalidated() {
-        String userId = accessTokenProvider.getHash("user");
-
         when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
-        Map<String, String> invalidUsers = new HashMap<>();
-        invalidUsers.put(userId, String.valueOf(System.currentTimeMillis()));
         Map<String, Map<String, String>> cacheMap = new HashMap<>();
-        cacheMap.put(ApimlAccessTokenProvider.INVALID_USERS_KEY, invalidUsers);
         when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
+        doAnswer(answer -> {
+            var mapkey = (String) answer.getArgument(0);
+            var keyValue = (CachingServiceClient.KeyValue) answer.getArgument(1);
+            cacheMap.computeIfAbsent(mapkey, key -> new HashMap<>()).put(keyValue.getKey(), keyValue.getValue());
+            return null;
+        }).when(cachingServiceClient).appendList(any(), any());
+        accessTokenProvider.invalidateAllTokensForUser("User", System.currentTimeMillis());
         assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
     }
 
@@ -262,6 +265,28 @@ class ApimlAccessTokenProviderTest {
             .setIssuer(QueryResponse.Source.ZOWE_PAT.value)
             .setId(UUID.randomUUID().toString())
             .addClaims(claims).compact();
+    }
+
+    @Nested
+    class SaltInitialization {
+
+        @Test
+        void givenUnexpectedError_whenReadSalt_thenThrowIt() {
+            Exception unexpectedError = new CachingServiceClientException("unexpected error", new IOException("e.g. timeout"));
+            doThrow(unexpectedError).when(cachingServiceClient).read("salt");
+            Exception thrownException = assertThrows(CachingServiceClientException.class, accessTokenProvider::initializeSalt);
+            assertSame(unexpectedError, thrownException);
+        }
+
+        @Test
+        void givenNoSaltInCache_whenInitializing_thenCreateNewOne() {
+            Exception noRecordException = new CachingServiceClientException("no record");
+            doThrow(noRecordException).when(cachingServiceClient).read("salt");
+            String salt = accessTokenProvider.initializeSalt();
+            assertTrue(StringUtils.isNotBlank(salt));
+            verify(cachingServiceClient, times(1)).create(any());
+        }
+
     }
 
 }

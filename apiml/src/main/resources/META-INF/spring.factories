@@ -1,0 +1,8 @@
+org.springframework.boot.env.EnvironmentPostProcessor=org.zowe.apiml.product.config.ServerAddressPropertiesUpdater
+
+org.zowe.apiml.product.config.ServerAddressPropertiesUpdater.connector.0.main = true
+org.zowe.apiml.product.config.ServerAddressPropertiesUpdater.connector.0.addressKey = server.address
+org.zowe.apiml.product.config.ServerAddressPropertiesUpdater.connector.0.portKey = server.port
+org.zowe.apiml.product.config.ServerAddressPropertiesUpdater.connector.1.main = false
+org.zowe.apiml.product.config.ServerAddressPropertiesUpdater.connector.1.addressKey = apiml.internal-discovery.address
+org.zowe.apiml.product.config.ServerAddressPropertiesUpdater.connector.1.portKey = apiml.internal-discovery.port

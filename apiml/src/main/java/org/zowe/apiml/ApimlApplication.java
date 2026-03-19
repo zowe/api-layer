@@ -25,6 +25,7 @@ import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
     scanBasePackages = {
         "org.zowe.apiml.filter",
         "org.zowe.apiml.gateway",
+        "org.zowe.apiml.product.eureka.web",
         "org.zowe.apiml.product.web",
         "org.zowe.apiml.product.gateway",
         "org.zowe.apiml.product.version",
@@ -53,6 +54,11 @@ import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
 public class ApimlApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ApimlApplication.class, args);
+        try {
+            SpringApplication.run(ApimlApplication.class, args);
+        } catch (Throwable t) {
+            t.printStackTrace(); // NOSONAR
+            System.exit(2);
+        }
     }
 }

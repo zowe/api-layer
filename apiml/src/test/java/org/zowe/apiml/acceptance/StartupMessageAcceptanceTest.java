@@ -15,6 +15,8 @@ import com.netflix.eureka.EurekaServerConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,6 +24,7 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -45,11 +48,10 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class StartupMessageAcceptanceTest {
+class StartupMessageAcceptanceTest {
 
-    @AcceptanceTest
-    @ExtendWith({MockitoExtension.class, OutputCaptureExtension.class})
     abstract static class BaseStartupTest extends AcceptanceTestWithMockServices {
+
         @Mock
         private InstanceInfo instanceInfo;
 
@@ -77,14 +79,25 @@ public class StartupMessageAcceptanceTest {
     }
 
     @Nested
+    @AcceptanceTest
+    @TestInstance(Lifecycle.PER_CLASS)
+    @DirtiesContext
+    @ExtendWith({MockitoExtension.class, OutputCaptureExtension.class})
+    @ActiveProfiles({"default"})
     class GivenDefaultProfile extends BaseStartupTest {
+
         @Test
         void whenFullyStartedUp_thenEmitMessage(CapturedOutput output) {
             verifyStartupMessage(output);
         }
+
     }
 
     @Nested
+    @AcceptanceTest
+    @TestInstance(Lifecycle.PER_CLASS)
+    @DirtiesContext
+    @ExtendWith({MockitoExtension.class, OutputCaptureExtension.class})
     @ActiveProfiles({"attlsClient", "attlsServer"})
     class GivenAttlsProfile extends BaseStartupTest {
 
@@ -131,5 +144,7 @@ public class StartupMessageAcceptanceTest {
 
             verifyStartupMessage(output);
         }
+
     }
+
 }

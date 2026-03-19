@@ -1,0 +1,54 @@
+services:
+  # 1. OpenTelemetry Golden Tester
+  golden:
+    image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/golden:v0.147.0
+    container_name: golden
+    ports:
+        - "5318:4318" #For validation in pipeline
+    command: [
+        "--otlp-http-endpoint", "0.0.0.0:4318",
+        "--otlp-endpoint", "0.0.0.0:4317",
+        "--ignore-timestamp",
+        "--ignore-start-timestamp",
+        "--timeout", "3m",
+        "--ignore-resource-attribute-value", "host.name",
+        "--ignore-resource-attribute-value", "host.arch",
+        "--ignore-resource-attribute-value", "process.pid",
+        "--ignore-resource-attribute-value", "process.command_line",
+        "--ignore-resource-attribute-value", "process.command_args",
+        "--ignore-resource-attribute-value", "process.executable.path",
+        "--ignore-resource-attribute-value", "process.runtime.description",
+        "--ignore-resource-attribute-value", "process.runtime.version",
+        "--ignore-resource-attribute-value", "process.runtime.name",
+        "--ignore-resource-attribute-value", "os.description",
+        "--ignore-resource-attribute-value", "os.type",
+        "--ignore-resource-attribute-value", "os.version",
+        "--ignore-resource-attribute-value", "telemetry.sdk.version",
+        "--ignore-resource-attribute-value", "telemetry.distro.name",
+        "--ignore-resource-attribute-value", "telemetry.distro.version",
+        "--ignore-resource-attribute-value", "telemetry.sdk.language",
+        "--ignore-resource-attribute-value", "telemetry.sdk.name",
+        "--ignore-resource-attribute-value", "service.version",
+        "--ignore-resource-metrics-order",
+        "--ignore-scope-metrics-order",
+        "--ignore-metrics-order",
+        "--ignore-metrics-data-points-order",
+        "--ignore-metric-values",
+        "--ignore-data-points-attributes-order",
+        "--ignore-scope-version",
+        "--expected", "/var/data/expected.yml"
+    ]
+    volumes:
+      - ./otel-golden:/var/data:Z # :Z allows folder mount on SELinux enabled environments
+
+  # 2. OpenTelemetry Collector
+  collector:
+    image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:latest
+    container_name: collector
+    ports:
+      - "4317:4317" # OTLP gRPC vstup
+      - "4318:4318" # OTLP HTTP vstup
+    volumes:
+      - ./otel-collector:/etc/otel-collector:Z # :Z allows folder mount on SELinux enabled environments
+    command:
+      - "--config=/etc/otel-collector/config.yml"

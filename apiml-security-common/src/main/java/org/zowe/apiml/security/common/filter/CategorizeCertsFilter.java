@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.common.util.CertificateLoggingUtils;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 
 import java.io.ByteArrayInputStream;
@@ -58,6 +59,22 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
     private final CertificateValidator certificateValidator;
 
     /**
+     * Logs information about certificates that were ignored during authentication.
+     * Delegates to {@link CertificateLoggingUtils} for the actual logging implementation.
+     *
+     * @param originalCerts The original array of certificates before filtering
+     * @param filteredCerts The array of certificates after filtering for authentication
+     */
+    private void logIgnoredCertificates(X509Certificate[] originalCerts, X509Certificate[] filteredCerts) {
+        CertificateLoggingUtils.logIgnoredCertificates(
+            originalCerts,
+            filteredCerts,
+            publicKeyCertificatesBase64,
+            log
+        );
+    }
+
+    /**
      * Get certificates from request (if exists), separate them (to use only APIML certificate to request sign and
      * other for authentication) and store again into request.
      * If authentication via certificate in header is enabled, get client certificate from the Client-Cert header
@@ -78,7 +95,12 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
                     // add the client certificate to the certs array
                     String subjectDN = ((X509Certificate) clientCert.get()).getSubjectX500Principal().getName();
                     log.debug("Found client certificate in header, adding it to the request. Subject DN: {}", subjectDN);
-                    httpServletRequest.setAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(new X509Certificate[]{(X509Certificate) clientCert.get()}, certificateForClientAuth));
+
+                    X509Certificate[] headerCerts = new X509Certificate[]{(X509Certificate) clientCert.get()};
+                    X509Certificate[] clientAuthCerts = selectCerts(headerCerts, certificateForClientAuth);
+                    logIgnoredCertificates(headerCerts, clientAuthCerts);
+
+                    httpServletRequest.setAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, clientAuthCerts);
                     return;
                 } else if (isClientCertificateIgnored(httpServletRequest)) {
                     log.debug("Client certificate is ignored.");
@@ -88,7 +110,10 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
                 }
             }
 
-            httpServletRequest.setAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, selectCerts(certs, certificateForClientAuth));
+            X509Certificate[] clientAuthCerts = selectCerts(certs, certificateForClientAuth);
+            logIgnoredCertificates(certs, clientAuthCerts);
+
+            httpServletRequest.setAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, clientAuthCerts);
             httpServletRequest.setAttribute(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, selectCerts(certs, apimlCertificate));
 
             log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, httpServletRequest.getAttribute(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE));
@@ -173,13 +198,9 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
             .toArray(X509Certificate[]::new);
     }
 
-    public static String base64EncodePublicKey(X509Certificate cert) {
-        return Base64.getEncoder().encodeToString(cert.getPublicKey().getEncoded());
-    }
-
     @Setter
-    Predicate<X509Certificate> certificateForClientAuth = crt -> !getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(crt));
+    Predicate<X509Certificate> certificateForClientAuth = crt -> !getPublicKeyCertificatesBase64().contains(CertificateLoggingUtils.base64EncodePublicKey(crt));
     @Setter
-    Predicate<X509Certificate> apimlCertificate = crt -> getPublicKeyCertificatesBase64().contains(base64EncodePublicKey(crt));
+    Predicate<X509Certificate> apimlCertificate = crt -> getPublicKeyCertificatesBase64().contains(CertificateLoggingUtils.base64EncodePublicKey(crt));
 
 }

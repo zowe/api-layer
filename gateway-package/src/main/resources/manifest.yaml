@@ -9,7 +9,9 @@ title: Gateway
 description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
 license: EPL-2.0
 schemas:
-    configs: gateway-schema.json
+  configs:
+    - schemas/zowe-schema.json
+    - schemas/gateway-config.json
 repository:
   type: git
   url: https://github.com/zowe/api-layer.git

@@ -96,34 +96,36 @@ public class JwtTokenService {
 
 
     public static RSAPrivateKey readPemPrivateKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
-        String key = "-----BEGIN PRIVATE KEY-----\n" +
-            "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCOkSanuY2fHxuL\n" +
-            "+cXaWosSQ3VzFSfWotq9TYQDLvReZf2tlLHWGUDWTxK3VqkPrvygj45vfwxpv69O\n" +
-            "ueT2e8mCzp7rua2ybTQ4/WakYfNBJjZYPADk4Yu/70V4MjodOEAfVwTPXjylEG2I\n" +
-            "31WRUz47NXb6+ofmFc7a+dKd5SeciUxVnX4nsblYg8ksPGh1dYWqd7yXnpJghFbP\n" +
-            "ratMrQfB7SCEAyuyJPPR5UqB9Wvvqs/SEhhkzALdvVvF+GPBQ65DGMR5gyHaMQv7\n" +
-            "k2/YhwR87NdgQ4L8isP+stribid8Gz4kmLDiE6Ae+PN03P0TNXQP4dJasicdcR3+\n" +
-            "BaMOfiwXAgMBAAECggEAMU1xGL/KgiS32gheq8x0G7TIgSvnwwo+qwiLhq5OQ/bx\n" +
-            "a33ooinJilN+HXkSriHNq5j5oQVGvatUbN1MmRDl9x6NRufHcdTiInM/c8mL3hPg\n" +
-            "51KY3I5DTfTpCVAVWNWDF1N4jl4AivTLbHIPnVo0QzWSF+lb5e3Uw1VxyLjeofs0\n" +
-            "RFNQacxhAE8TK1kAx5HXpmbB20MuX+rkvKXKoQ/ppaj4gWifdl1pKz7xPL6okcYz\n" +
-            "goXIShdtAL4IDOvyE7A8jhjBH9Bf3Vftn1umzUxvTUrAZgSI7FYGIUEKBcw+3ygG\n" +
-            "bLy5j8tSsWJTeLykVEc+ZwjZee6VCUMFNn+9my4QQQKBgQDVNYJYDazUiTg8Sqh7\n" +
-            "941etnimZOjYFfbcBww2qid6Rw6MxvAGo5fOnBqqbgvttFDw6mKkPzvEbjx0fySS\n" +
-            "S+ZfMB1Nqd5xhSxgm2Jrsr1wT/9HsPbOi316E4EDePyy9bpt9NSI5vwcteHU8Wpt\n" +
-            "mkaQzjXm+/+OXoyDru9p6veqewKBgQCrLh38qEmg++8RsDEzPXKwNm6AiH+U2H/f\n" +
-            "XRHJI0LVb9DFrsjbJp+VtJIBzzyobT7h+B3vw/lY0eAMHJUeACMFiXq0bsGy+nnt\n" +
-            "h6p8UgdtB1BDrijXrG7DYCJxUG6Z5aJDhu53LbsLFVthE6qedlzUdNNnC9Vl9o5p\n" +
-            "xDt/OliQFQKBgQDIOn9ViEo2M0Pfw1FlUn+uYfj+cygEvuPdkLTUpYl7mT290Zpa\n" +
-            "8cnAW/Pi+IQ1UTDuf3/xtfzAJbKayUikJ6mK3Vm3tP7VZ3bcpzCP6gVkc4xPXI78\n" +
-            "PB2zxptTkozm2ESjvNjYVOyRXfJfE/WaRtdcaHxQl3pRztNxW5k1xFeg/wKBgFu9\n" +
-            "bH7C5irrujVdmxCeBwAfO9uQy+dGnElmBKkqR6BBu76mLKkeqvo9et6TZSvS2Jec\n" +
-            "NNcRzWlnmU6EZvpcEmjeRC+9B/xWts+xHJJiF+67s62CAguMMxRsSik2dP/vjKXq\n" +
-            "A5VFoe+Ps5h0RMWGI7wNHFsmgWiS2cIfU8+cwmf9AoGAR3vutUBt0+pMqPlAREPQ\n" +
-            "BHUjZXhYrxHoD2kvxFkDVlMvPP9GVy6lgjEt1S28oRNjiES2AZWoSoqEbe0ZHg7t\n" +
-            "OfsydqmJqfwJaLoAkRzxdqJ66KH2m/BEOBapxMr8B79hfcjpMf2O+T76+6hMFF6j\n" +
-            "RIpBLV1t4pDsd7fvwxpR3vA=\n" +
-            "-----END PRIVATE KEY-----\n";
+        String key = """
+            -----BEGIN PRIVATE KEY-----
+            MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDIeZZvb+SHW2Yv
+            PkW/FhiKDCLCpWb0fIfCzIzl+CvLwbQs8L9rtbALJcvdFcm7so4l0rkl75b+tVnM
+            z3Kv4EQQIHT5Dd6GVwAKphu38UAJunZUhDfJcd+6nTxNxCWCaPPESLvzevKpdk7v
+            KQTJ6pcvJMqPcRtLV8U4Rt9JxbmzqQ+a3r+weY7LfNPhylsmydHa+aW7A3cNe7WY
+            /dy4UyHuh5V3oT8+4CMbXl8JAHzMI2tlItVb4zJ4oUKTFwr670S22opXGE0F64/k
+            SrJ0VqS1Sd/ytbTxtpJECaMtW6r4S/GVHJNb2ciDk9b2/O3y3URpQqknGHAFy/lD
+            p3ZJdb1LAgMBAAECggEAUm07n0IAUm8QCqiuAK1TFZ97w1BCjo+NOljkLcHmL/bK
+            4Bd0fRLM+ShnM9W7hkMaEw8bNS/Xg46JB57b5ths47yUm7pKHi4zRC2cA/tbeySB
+            dqqOTXNWq+HuY4MccQw5/iBxtuB8WZTdS5Qv9d1Qn/+ekW/N6yKBYmwxbqGvguBq
+            kEqDoovihVZ5TMpXjKOTVkeIyQT6nfKZaJFxp4h8x189VoK3wTeSDGh+A0xd84WB
+            gjRn+qRgggbDEZs2onVR6a93vdHMRGqmeA6f80aSahdwpgzNhyzwmLSkhanVpufA
+            y8hR7wtANxPBam9G9wGwi2GgBGqkFgB3LazdU4wSYQKBgQD+Zirb1CC0Ay15bdUg
+            daudoL4Og02Z+9ElEgRt64Zgy6RiG8Vaw0cAULkFjfi4g5ImfSW5N4i19HqQzgZq
+            /GpkqSclrzI4zRO2sIK3JtxoVaWVjjNiWUg4+ZaLlc0Lr+hpCa0hp51PB0Pkmfau
+            Zto5xlOhmKmMqJhx+NvtWHCHmQKBgQDJvIyigZ8+OM4kBa4Cqu6We5tYbuQ12gn0
+            nP0FmfOvOD6Ry8YsAMhIxlPZs3qFS9waq3iwwfGvZZ+gCdOmCiXnpPROUUcY2zKb
+            jnGCGLAWZ0M1J4VsfnPJBRWTpXs/anaTPyLHKE1HSCyGNUSO342LOY2A1tIRguTa
+            cGXGdnNqgwKBgBIhuAZI/Te3TkNsV5djq6KldUZVh29lKkfpG9W1xrMZcJLphcxt
+            RJ86IaXKs6J7BiymGM01rxHA5gdyF7UCXpbkE301GnA/9Zq8w+RH6cep6w5Yv0LQ
+            ODyPVXKHb8DYfckWvnc6mhSq4OTnMFTH0d/ySb2nwtXaolrlMM+e0Q5pAoGARMhV
+            xv6dFfD2UA/jsaMoMAS7BZ7hjn7mEBIKrwM7s81ggANTcSNfJnkAk+R+7L3dsPYv
+            80xdJClpEH7pO96P5/g1GBLcQ9xQ1/rsNqhGOY1Bu/japBBFWA+0uJ+ecxPQlAnd
+            yLu0BY7VJ3k4A+Ky9vpLhdc4zqGrd9ME0HMIjRMCgYEA3gXjXhM7//RrAsNWmdtH
+            5gtXysgE3T4+teqE11R9aRFayXf8UIItR1ZQfxEC05CRbsSThv/C9q6aEUjQanmk
+            y2X8v3Ghh1+mk2tLXPhuL5T81bzSJ1Ad3RhK9jOpC0n/1l+IiTjOFp5455eRYlmi
+            wHvnCGrhCcOCm09SP+LeRkQ=
+            -----END PRIVATE KEY-----
+            """;
 
         String privateKeyPEM = key
             .replace("-----BEGIN PRIVATE KEY-----", "")
@@ -138,26 +140,28 @@ public class JwtTokenService {
     }
 
     public static RSAPublicKey readPemPublicKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
-        String key = "-----BEGIN PUBLIC KEY-----\n" + //NOSONAR
-            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjpEmp7mNnx8bi/nF2lqL\n" +
-            "EkN1cxUn1qLavU2EAy70XmX9rZSx1hlA1k8St1apD678oI+Ob38Mab+vTrnk9nvJ\n" +
-            "gs6e67mtsm00OP1mpGHzQSY2WDwA5OGLv+9FeDI6HThAH1cEz148pRBtiN9VkVM+\n" +
-            "OzV2+vqH5hXO2vnSneUnnIlMVZ1+J7G5WIPJLDxodXWFqne8l56SYIRWz62rTK0H\n" +
-            "we0ghAMrsiTz0eVKgfVr76rP0hIYZMwC3b1bxfhjwUOuQxjEeYMh2jEL+5Nv2IcE\n" +
-            "fOzXYEOC/IrD/rLa4m4nfBs+JJiw4hOgHvjzdNz9EzV0D+HSWrInHXEd/gWjDn4s\n" +
-            "FwIDAQAB\n" +
-            "-----END PUBLIC KEY-----"; //NOSONAR
+        String key = """
+            -----BEGIN PUBLIC KEY-----
+            MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyHmWb2/kh1tmLz5FvxYY
+            igwiwqVm9HyHwsyM5fgry8G0LPC/a7WwCyXL3RXJu7KOJdK5Je+W/rVZzM9yr+BE
+            ECB0+Q3ehlcACqYbt/FACbp2VIQ3yXHfup08TcQlgmjzxEi783ryqXZO7ykEyeqX
+            LyTKj3EbS1fFOEbfScW5s6kPmt6/sHmOy3zT4cpbJsnR2vmluwN3DXu1mP3cuFMh
+            7oeVd6E/PuAjG15fCQB8zCNrZSLVW+MyeKFCkxcK+u9EttqKVxhNBeuP5EqydFak
+            tUnf8rW08baSRAmjLVuq+EvxlRyTW9nIg5PW9vzt8t1EaUKpJxhwBcv5Q6d2SXW9
+            SwIDAQAB
+            -----END PUBLIC KEY-----"""; //NOSONAR
 
         return getRsaPublicKey(key);
     }
 
     public static RSAPublicKey readAnotherPemPublicKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
-        String key = "-----BEGIN PUBLIC KEY-----\n" + //NOSONAR
-            "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDCFENGw33yGihy92pDjZQhl0C3\n" +
-            "6rPJj+CvfSC8+q28hxA161QFNUd13wuCTUcq0Qd2qsBe/2hFyc2DCJJg0h1L78+6\n" +
-            "Z4UMR7EOcpfdUE9Hf3m/hs+FUR45uBJeDK1HSFHD8bHKD6kv8FPGfJTotc+2xjJw\n" +
-            "oYi+1hqp1fIekaxsyQIDAQAB\n" +
-            "-----END PUBLIC KEY-----"; //NOSONAR
+        String key = """
+            -----BEGIN PUBLIC KEY-----
+            MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDCFENGw33yGihy92pDjZQhl0C3
+            6rPJj+CvfSC8+q28hxA161QFNUd13wuCTUcq0Qd2qsBe/2hFyc2DCJJg0h1L78+6
+            Z4UMR7EOcpfdUE9Hf3m/hs+FUR45uBJeDK1HSFHD8bHKD6kv8FPGfJTotc+2xjJw
+            oYi+1hqp1fIekaxsyQIDAQAB
+            -----END PUBLIC KEY-----"""; //NOSONAR
 
         return getRsaPublicKey(key);
     }
