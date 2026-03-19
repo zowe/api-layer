@@ -19,8 +19,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.MockService;
-import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
+import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import org.zowe.apiml.ticket.TicketResponse;
 
 import java.io.IOException;
@@ -44,11 +44,12 @@ public class PassticketTest extends AcceptanceTestWithMockServices {
 
     @Test
     void whenRequestingPassticketForAllowedAPPLID_thenTranslate() throws IOException {
-        TicketResponse response = new TicketResponse();
-        response.setToken(JWT);
-        response.setUserId(USER_ID);
-        response.setApplicationName("IZUDFLT");
-        response.setTicket(PASSTICKET);
+        TicketResponse response = TicketResponse.builder()
+            .token(JWT)
+            .userId(USER_ID)
+            .applicationName("IZUDFLT")
+            .ticket(PASSTICKET)
+            .build();
 
         mockService("zaas").scope(MockService.Scope.TEST)
             .addEndpoint("/zaas/scheme/ticket")

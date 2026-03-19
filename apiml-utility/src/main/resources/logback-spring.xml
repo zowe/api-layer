@@ -28,6 +28,8 @@
         </encoder>
     </appender>
 
+    <appender name="OpenTelemetry" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender"/>
+
     <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
         <key>spring.profiles.active</key>
         <value>debug</value>
@@ -73,4 +75,8 @@
             </root>
         </else>
     </if>
+
+    <logger name="org.zowe.apiml.opentelemetry" level="INFO">
+        <appender-ref ref="OpenTelemetry" />
+    </logger>
 </configuration>
