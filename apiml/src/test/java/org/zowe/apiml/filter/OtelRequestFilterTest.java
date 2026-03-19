@@ -143,8 +143,9 @@ class OtelRequestFilterTest {
         var chain = (GatewayFilterChain) e -> Mono.error(new RuntimeException("Any exception"));
         exchange.getAttributes().put(OTEL_CONTEXT, otelContext);
 
-        var mono = filter.filter(exchange, chain);
-        assertThrows(RuntimeException.class, mono::block);
+        StepVerifier.create(filter.filter(exchange, chain))
+            .expectError(RuntimeException.class)
+            .verify();
 
         verify(otelContext, times(1)).issue();
     }

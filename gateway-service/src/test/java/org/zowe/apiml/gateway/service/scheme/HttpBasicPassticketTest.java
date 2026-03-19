@@ -10,12 +10,14 @@
 
 package org.zowe.apiml.gateway.service.scheme;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
@@ -23,19 +25,20 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ExtendWith(MockitoExtension.class)
 class HttpBasicPassticketTest {
 
     private static final String SERVICE_ID = "myservice";
     private static final String APPLID = "APPLID";
+
+    @Mock(strictness = LENIENT)
     private ServiceInstance serviceInstance;
 
-    @BeforeAll
+    @BeforeEach
     void setup() {
-        serviceInstance = mock(ServiceInstance.class);
         doReturn(SERVICE_ID).when(serviceInstance).getServiceId();
     }
 

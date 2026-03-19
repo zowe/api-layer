@@ -12,6 +12,9 @@ package org.zowe.apiml.gateway.filters;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -22,6 +25,7 @@ import reactor.core.publisher.Mono;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class PassticketFilterFactoryTest {
 
     private static final String USER_ID = "userId";
@@ -29,11 +33,11 @@ class PassticketFilterFactoryTest {
 
     MockServerHttpRequest request = MockServerHttpRequest.get("/aPath").build();
     MockServerWebExchange exchange = MockServerWebExchange.from(request);
-    OtelRequestContext otelRequestContext;
+    @Spy
+    OtelRequestContext otelRequestContext = OtelRequestContext.of(exchange);
 
     @BeforeEach
     void setup() {
-        otelRequestContext = spy(OtelRequestContext.of(exchange));
         exchange.getAttributes().put("otel-context", otelRequestContext);
     }
 
