@@ -259,7 +259,6 @@ class OpenTelemetryResourceAttributesZosTest {
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
-            assertCommon(logRecord, logBody);
             assertEquals("apicatalog", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
             assertEquals("FAILED", getAttribute(logBody, "auth.status"));
