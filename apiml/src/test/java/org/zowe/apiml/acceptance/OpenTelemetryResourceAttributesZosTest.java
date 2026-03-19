@@ -202,7 +202,14 @@ class OpenTelemetryResourceAttributesZosTest {
         private LogRecordData assertOneLogRecordExported() {
             var logs = assertLogsExported();
             assertEquals(1, logs.size());
-            return logs.get(0);
+
+            var logRecord = logs.get(0);
+            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
+
+            var logBody = logRecord.getBodyValue().asString();
+            assertTrue(StringUtils.isNotBlank(logBody));
+
+            return logRecord;
         }
 
         @Test
@@ -212,30 +219,20 @@ class OpenTelemetryResourceAttributesZosTest {
             .then()
             .statusCode(200);
 
-            var logs = assertLogsExported();
+            var logRecord = assertOneLogRecordExported();
 
-            assertTrue(
-                logs.stream()
-                .allMatch(logRecord -> {
-                    assertAttributesBase(logRecord.getResource().getAttributes(), port);
-                    @SuppressWarnings("null")
-                    var logBody = logRecord.getBodyValue().asString();
-                    assertTrue(StringUtils.isNotBlank(logBody));
-                    assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
-                    assertEquals("testservice", getAttribute(logBody, "service.id"));
-                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
-                    assertEquals("FAILED", getAttribute(logBody, "auth.status"));
-                    assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
-                    assertEquals("200", getAttribute(logBody, "service.response_code"));
-                    assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
-                    assertEquals("https", getAttribute(logBody, "url.scheme"));
-                    assertNull(getAttribute(logBody, "auth.method"));
-                    assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
-
-                    return true;
-                })
-            );
-
+            assertAttributesBase(logRecord.getResource().getAttributes(), port);
+            @SuppressWarnings("null")
+            var logBody = logRecord.getBodyValue().asString();
+            assertEquals("testservice", getAttribute(logBody, "service.id"));
+            assertEquals("GET", getAttribute(logBody, "http.request.method"));
+            assertEquals("FAILED", getAttribute(logBody, "auth.status"));
+            assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
+            assertEquals("200", getAttribute(logBody, "service.response_code"));
+            assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
+            assertEquals("https", getAttribute(logBody, "url.scheme"));
+            assertNull(getAttribute(logBody, "auth.method"));
+            assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
         }
 
         private Object getAttribute(String logBody, String attributeName) {
@@ -262,8 +259,7 @@ class OpenTelemetryResourceAttributesZosTest {
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
-            assertTrue(StringUtils.isNotBlank(logBody));
-            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
+            assertCommon(logRecord, logBody);
             assertEquals("apicatalog", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
             assertEquals("FAILED", getAttribute(logBody, "auth.status"));
@@ -285,9 +281,7 @@ class OpenTelemetryResourceAttributesZosTest {
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
-            assertTrue(StringUtils.isNotBlank(logBody));
             assertNull(getAttribute(logBody, "user.id"));
-            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
             assertEquals("apicatalog", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
             assertNull(getAttribute(logBody, "auth.status"));
@@ -310,9 +304,7 @@ class OpenTelemetryResourceAttributesZosTest {
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
-            assertTrue(StringUtils.isNotBlank(logBody));
             assertEquals("USER", getAttribute(logBody, "user.id"));
-            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
             assertEquals("testservice", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
             assertEquals("OK", getAttribute(logBody, "auth.status"));
@@ -335,8 +327,6 @@ class OpenTelemetryResourceAttributesZosTest {
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
-            assertTrue(StringUtils.isNotBlank(logBody));
-            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
             assertNull(getAttribute(logBody, "user.id"));
             assertEquals("nonexistant", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
@@ -360,9 +350,7 @@ class OpenTelemetryResourceAttributesZosTest {
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
-            assertTrue(StringUtils.isNotBlank(logBody));
             assertEquals("USER", getAttribute(logBody, "user.id"));
-            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
             assertEquals("testservicept", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
             assertEquals("OK", getAttribute(logBody, "auth.status"));
@@ -386,9 +374,7 @@ class OpenTelemetryResourceAttributesZosTest {
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
-            assertTrue(StringUtils.isNotBlank(logBody));
             assertNull(getAttribute(logBody, "user.id"));
-            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
             assertEquals("testservicebp", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
             assertNull(getAttribute(logBody, "auth.status"));
@@ -412,9 +398,7 @@ class OpenTelemetryResourceAttributesZosTest {
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
-            assertTrue(StringUtils.isNotBlank(logBody));
             assertNull(getAttribute(logBody, "user.id"));
-            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
             assertEquals("testservicepterror", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
             assertEquals("FAILED", getAttribute(logBody, "auth.status"));
@@ -441,10 +425,8 @@ class OpenTelemetryResourceAttributesZosTest {
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
-            assertTrue(StringUtils.isNotBlank(logBody));
             assertEquals("USER", getAttribute(logBody, "user.id"));
             assertEquals(List.of("oidc.username"), getAttribute(logBody, "user.distributed.id"));
-            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
             assertEquals("testservice", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
             assertEquals("OK", getAttribute(logBody, "auth.status"));
@@ -468,9 +450,7 @@ class OpenTelemetryResourceAttributesZosTest {
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
-            assertTrue(StringUtils.isNotBlank(logBody));
             assertEquals("USER", getAttribute(logBody, "user.id"));
-            assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());
             assertEquals("testservice", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
             assertEquals("OK", getAttribute(logBody, "auth.status"));
