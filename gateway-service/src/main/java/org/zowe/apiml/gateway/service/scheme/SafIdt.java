@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.service.scheme;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
+@Slf4j
 @Component
 public class SafIdt implements SchemeHandler {
 
@@ -28,10 +30,21 @@ public class SafIdt implements SchemeHandler {
 
     @Override
     public void apply(ServiceInstance serviceInstance, RouteDefinition routeDefinition, Authentication auth) {
-        FilterDefinition filterDef = new FilterDefinition();
-        filterDef.setName("SafIdtFilterFactory");
-        filterDef.addArg("applicationName", auth.getApplid());
-        filterDef.addArg("serviceId", StringUtils.lowerCase(serviceInstance.getServiceId()));
-        routeDefinition.getFilters().add(filterDef);
+        if (StringUtils.isEmpty(auth.getApplid())) {
+            log.debug("Service {} does not have configured APPLID (safIdt scheme). The authorization scheme will be ignored", serviceInstance.getServiceId());
+
+            FilterDefinition filterDef = new FilterDefinition();
+            filterDef.setName("RoutingConfigurationErrorFilterFactory");
+            filterDef.addArg("serviceId", StringUtils.lowerCase(serviceInstance.getServiceId()));
+            filterDef.addArg("message", "APPLID is not configured");
+            filterDef.addArg("authenticationScheme", AuthenticationScheme.SAF_IDT.getScheme());
+            routeDefinition.getFilters().add(filterDef);
+        } else {
+            FilterDefinition filterDef = new FilterDefinition();
+            filterDef.setName("SafIdtFilterFactory");
+            filterDef.addArg("applicationName", auth.getApplid());
+            filterDef.addArg("serviceId", StringUtils.lowerCase(serviceInstance.getServiceId()));
+            routeDefinition.getFilters().add(filterDef);
+        }
     }
 }

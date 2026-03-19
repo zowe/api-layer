@@ -31,6 +31,7 @@ import org.zowe.apiml.zaas.ZaasTokenResponse;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.zaas.security.service.schema.source.OIDCAuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.PATAuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import reactor.core.publisher.Mono;
@@ -124,7 +125,18 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             var authSourceParsed = authSourceService.parse(authSource.get());
 
             var ticket = passTicketService.generate(authSourceParsed.getUserId(), applicationName);
-            var response = new TicketResponse("", authSourceParsed.getUserId(), applicationName, ticket);
+            var response = TicketResponse.builder()
+                .token("")
+                .userId(authSourceParsed.getUserId())
+                .applicationName(applicationName)
+                .ticket(ticket)
+                .distributedIds(authSource.filter(OIDCAuthSource.class::isInstance)
+                    .map(OIDCAuthSource.class::cast)
+                    .map(OIDCAuthSource::getDistributedId)
+                    .orElse(null))
+                .authSourceType(authSource.map(AuthSource::getType).map(Enum::name).orElse(null))
+                .build();
+
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (IRRPassTicketGenerationException e) {
             log.debug("Cannot generate ticket", e);
@@ -163,7 +175,17 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             var authSourceParsed = authSourceService.parse(authSource.get());
 
             String safIdToken = tokenCreationService.createSafIdTokenWithoutCredentials(authSourceParsed.getUserId(), applicationName);
-            var response = ZaasTokenResponse.builder().headerName(ApimlConstants.SAF_TOKEN_HEADER).token(safIdToken).build();
+            var response = ZaasTokenResponse.builder()
+                .headerName(ApimlConstants.SAF_TOKEN_HEADER)
+                .token(safIdToken)
+                .userId(authSourceParsed.getUserId())
+                .distributedIds(authSource.filter(OIDCAuthSource.class::isInstance)
+                    .map(OIDCAuthSource.class::cast)
+                    .map(OIDCAuthSource::getDistributedId)
+                    .orElse(null)
+                )
+                .authSourceType(authSource.map(AuthSource::getType).map(Enum::name).orElse(null))
+                .build();
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot generate SAF IDT", e);
@@ -186,6 +208,13 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             var authSourceParsed = authSourceService.parse(authSource.get());
 
             var response = zosmfService.exchangeAuthenticationForZosmfToken(authSource.get().getRawSource().toString(), authSourceParsed);
+
+            authSource.filter(OIDCAuthSource.class::isInstance)
+                .map(OIDCAuthSource.class::cast)
+                .map(OIDCAuthSource::getDistributedId)
+                .ifPresent(response::setDistributedIds);
+            authSource.map(AuthSource::getType).map(Enum::name).ifPresent(response::setAuthSourceType);
+
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot obtain z/OSMF token", e);
@@ -205,8 +234,19 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             if (!authSourceService.isValid(authSource.get())) {
                 return createMissingAuthenticationErrorMessage();
             }
+            var authSourceParsed = authSourceService.parse(authSource.get());
             var token = authSourceService.getJWT(authSource.get());
-            var response = ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME).token(token).build();
+            var response = ZaasTokenResponse.builder()
+                .cookieName(COOKIE_AUTH_NAME)
+                .token(token)
+                .userId(authSourceParsed.getUserId())
+                .distributedIds(authSource.filter(OIDCAuthSource.class::isInstance)
+                    .map(OIDCAuthSource.class::cast)
+                    .map(OIDCAuthSource::getDistributedId)
+                    .orElse(null)
+                )
+                .authSourceType(authSource.map(AuthSource::getType).map(Enum::name).orElse(null))
+                .build();
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot obtain Zowe JWT token", e);
