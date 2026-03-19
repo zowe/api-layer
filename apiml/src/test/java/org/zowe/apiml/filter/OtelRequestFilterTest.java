@@ -28,7 +28,6 @@ import reactor.test.StepVerifier;
 import java.net.InetSocketAddress;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.product.opentelemetry.OtelRequestContext.OTEL_CONTEXT;
 
