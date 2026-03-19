@@ -100,6 +100,7 @@ dependencies {
     testImplementation libs.java.websocket
 
     testImplementation(testFixtures(project(":apiml-common")))
+
     testFixturesImplementation libs.spring.boot.starter.test
     testFixturesImplementation libs.commons.io
     testFixturesImplementation libs.http.client5
@@ -108,6 +109,8 @@ dependencies {
     testFixturesImplementation libs.spring.cloud.starter.eureka.client
     testFixturesImplementation libs.guava
     testFixturesImplementation libs.jaxbApi
+    testFixturesImplementation libs.java.websocket
+
     testFixturesAnnotationProcessor libs.lombok
 
     compileOnly libs.lombok

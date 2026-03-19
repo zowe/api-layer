@@ -99,13 +99,13 @@ public class MockService implements AutoCloseable {
     protected String serviceId;
     private String vipAddress;
     @Builder.Default
-    private String hostname = "localhost";
+    protected String hostname = "localhost";
 
     /**
      * Routing configuration
      */
-    private String gatewayUrl;
-    private String serviceUrl;
+    protected String gatewayUrl;
+    protected String serviceUrl;
 
     /**
      * Authentication configuration
@@ -133,7 +133,7 @@ public class MockService implements AutoCloseable {
     /**
      * Additional metadata added on top of standard one required for the mock service to run
      */
-    private Map<? extends String, ? extends String> additionalMetadata;
+    protected Map<? extends String, ? extends String> additionalMetadata;
 
     /**
      * Status of the service - see possible values {@link MockService.Status}
@@ -297,7 +297,7 @@ public class MockService implements AutoCloseable {
         status.set(Status.CANCELLING);
     }
 
-    private Map<String, String> getMetadata() {
+    Map<String, String> getMetadata() {
         Map<String, String> metadata = new HashMap<>();
         metadata.put("apiml.routes.api-v1.gatewayUrl", "api/v1");
         metadata.put("apiml.routes.api-v1.serviceUrl", "/" + serviceId);

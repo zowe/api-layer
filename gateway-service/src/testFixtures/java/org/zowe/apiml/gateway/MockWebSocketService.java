@@ -20,6 +20,7 @@ import org.java_websocket.server.WebSocketServer;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -39,7 +40,6 @@ public class MockWebSocketService extends MockService {
         if (!status.get().isUp()) {
             this.init();
             webSocketServer.start();
-            webSocketServer.setWebSocketFactory(null);
             port = webSocketServer.getPort();
             setStatus(Status.STARTED);
         }
@@ -47,10 +47,9 @@ public class MockWebSocketService extends MockService {
 
     private void init() {
         webSocketServer = new WebSocketServerImpl();
-        endpoints.clear();
-        endpointsConfig.forEach(endpoint -> {
 
-        });
+        if (getGatewayUrl() == null) gatewayUrl = "ws/v1";
+        if (getServiceUrl() == null) serviceUrl = "/" + serviceId;
     }
 
     @Override
@@ -86,6 +85,14 @@ public class MockWebSocketService extends MockService {
         setStatus(Status.ZOMBIE);
     }
 
+    @Override
+    Map<String, String> getMetadata() {
+        var metadata = super.getMetadata();
+        metadata.put("apiml.routes.ws-v1.gatewayUrl", "ws/v1");
+        metadata.put("apiml.routes.ws-v1.serviceUrl", "/" + serviceId + "/ws");
+        return metadata;
+    }
+
     public static class MockWsServiceBuilder {
 
         private List<Consumer<MockService>> statusChangedlisteners = new ArrayList<>();
@@ -93,9 +100,11 @@ public class MockWebSocketService extends MockService {
 
         public MockWebSocketService build() {
             var mockWebSocketService = internalWsBuild();
+            mockWebSocketService.hostname = "localhost";
             mockWebSocketService.port = idCounter++;
             mockWebSocketService.statusChangedlisteners = this.statusChangedlisteners;
             mockWebSocketService.serviceId = this.serviceId;
+            mockWebSocketService.additionalMetadata = new HashMap<>();
             return mockWebSocketService;
         }
 
@@ -150,6 +159,7 @@ public class MockWebSocketService extends MockService {
                     }
                 });
             }
+            conn.send("ACK");
         }
 
         @Override
