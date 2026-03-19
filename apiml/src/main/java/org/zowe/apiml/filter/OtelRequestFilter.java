@@ -43,13 +43,16 @@ public class OtelRequestFilter implements WebFilter, GlobalFilter, Ordered {
     static {
         // homepage
         BASE_PATH_TO_SERVICE_ID.put("", SERVICE_GATEWAY);
-        // determinate based on port
-        //BASE_PATH_TO_SERVICE_ID.put("eureka", SERVICE_DISCOVERY);
-        BASE_PATH_TO_SERVICE_ID.put("apicatalog", SERVICE_API_CATALOG);
-        BASE_PATH_TO_SERVICE_ID.put("gateway", SERVICE_GATEWAY);
+
+        // original split to services using base path
+        BASE_PATH_TO_SERVICE_ID.put(SERVICE_API_CATALOG, SERVICE_API_CATALOG);
+        BASE_PATH_TO_SERVICE_ID.put(SERVICE_GATEWAY, SERVICE_GATEWAY);
+        BASE_PATH_TO_SERVICE_ID.put(SERVICE_CACHING, SERVICE_CACHING);
+
+        // general endpoints (icons on homepage, actuator)
         BASE_PATH_TO_SERVICE_ID.put("application", SERVICE_GATEWAY);
         BASE_PATH_TO_SERVICE_ID.put("images", SERVICE_GATEWAY);
-        BASE_PATH_TO_SERVICE_ID.put("cachingservice", SERVICE_CACHING);
+
         // swagger https://localhost:10010/v3/api-docs/<serviceId>
         BASE_PATH_TO_SERVICE_ID.put("v3/api-docs", SERVICE_GATEWAY);
         BASE_PATH_TO_SERVICE_ID.put("v3/api-docs/gateway", SERVICE_GATEWAY);
