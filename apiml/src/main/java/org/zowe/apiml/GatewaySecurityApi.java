@@ -11,6 +11,8 @@
 package org.zowe.apiml;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Primary;
@@ -34,6 +36,7 @@ import static org.zowe.apiml.security.common.error.ErrorType.TOKEN_NOT_VALID;
 @Service
 @Primary
 @RequiredArgsConstructor
+@Slf4j
 public class GatewaySecurityApi implements GatewaySecurity {
 
     private final CompoundAuthProvider compoundAuthProvider;
@@ -58,6 +61,7 @@ public class GatewaySecurityApi implements GatewaySecurity {
 
     @Override
     public QueryResponse query(String token) {
+        log.debug("Validating JWT: ...{}", StringUtils.right(token, 15));
         var authentication = authenticationService.validateJwtToken(token);
         if (authentication.isAuthenticated()) {
             return authenticationService.parseJwtToken(token);

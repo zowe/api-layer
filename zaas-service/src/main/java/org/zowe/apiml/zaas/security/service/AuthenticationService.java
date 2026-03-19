@@ -162,7 +162,7 @@ public class AuthenticationService {
             jws.setAlgorithmHeaderValue(jwtSecurityInitializer.getJwtAlgorithm());
             jws.setDoKeyValidation(false);
             String token = jws.getCompactSerialization();
-            log.debug("JWT created, last 10 chars of signature: ...{}", jwtSignatureSuffix(token));
+            log.debug("JWT created, last 10 chars of signature: ...{}", StringUtils.right(token, 15));
             return token;
         } catch (JoseException e) {
             throw new UncheckedJoseException(e.getMessage(), e);
@@ -321,7 +321,7 @@ public class AuthenticationService {
                     }
                     return claims;
                 }
-                log.debug("JWT signature verification failed, last 10 chars of signature: ...{}", jwtSignatureSuffix(jwtToken));
+                log.debug("JWT signature verification failed, last 10 chars of signature: ...{}", StringUtils.right(jwtToken, 15));
                 throw new BadJWTException("Token signature is invalid for public key: " + jwtSecurityInitializer.getJwkPublicKey().get().toString());
             } else {
                 throw new BadJWTException("Token is not signed");
@@ -425,6 +425,7 @@ public class AuthenticationService {
             throw new TokenNotValidException("Null token.");
         }
         parseJwtToken(token.getCredentials()); // throws on expired token, this needs to happen before cache, which is in the next line
+        log.debug("Validating JWT: ...{}", StringUtils.right(token.getCredentials(), 15));
         return meAsProxy.validateJwtToken(token.getCredentials());
     }
 
@@ -578,11 +579,6 @@ public class AuthenticationService {
         }
 
         return expiration;
-    }
-
-    private String jwtSignatureSuffix(String jwtToken) {
-        var signature = jwtToken.substring(jwtToken.lastIndexOf('.') + 1);
-        return signature.substring(Math.max(0, signature.length() - 10));
     }
 
 }

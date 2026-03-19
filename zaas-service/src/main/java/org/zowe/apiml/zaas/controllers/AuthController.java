@@ -26,6 +26,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.jose4j.jwk.JsonWebKey;
@@ -129,6 +131,7 @@ public class AuthController {
 
         final String jwtToken = uri.substring(index + endpoint.length());
         try {
+            log.debug("Invalidating JWT: ...{}", StringUtils.right(jwtToken, 15));
             final boolean invalidated = authenticationService.invalidateJwtToken(jwtToken, false);
             response.setStatus(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE);
         } catch (TokenNotValidException e) {

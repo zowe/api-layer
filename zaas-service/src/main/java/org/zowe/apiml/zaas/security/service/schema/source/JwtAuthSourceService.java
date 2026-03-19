@@ -11,6 +11,9 @@
 package org.zowe.apiml.zaas.security.service.schema.source;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -32,6 +35,7 @@ import java.util.function.Function;
 @Service
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @EnableAspectJAutoProxy(proxyTargetClass = true)
+@Slf4j
 @RequiredArgsConstructor
 public class JwtAuthSourceService extends TokenAuthSourceService {
     @InjectApimlLogger
@@ -70,7 +74,7 @@ public class JwtAuthSourceService extends TokenAuthSourceService {
     public boolean isValid(AuthSource authSource) {
         if (authSource instanceof JwtAuthSource) {
             String jwtToken = ((JwtAuthSource) authSource).getRawSource();
-            logger.log(MessageType.DEBUG, "Validating JWT token.");
+            log.debug("Validating JWT: ...{}", StringUtils.right(jwtToken, 15));
             return jwtToken != null && authenticationService.validateJwtToken(jwtToken).isAuthenticated();
         }
         return false;

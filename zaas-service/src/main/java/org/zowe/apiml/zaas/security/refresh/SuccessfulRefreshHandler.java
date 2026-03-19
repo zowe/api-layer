@@ -14,6 +14,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -33,6 +36,7 @@ import java.io.IOException;
  * It invalidates the previous token and issues a fresh one
  */
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class SuccessfulRefreshHandler implements AuthenticationSuccessHandler {
 
@@ -44,7 +48,7 @@ public class SuccessfulRefreshHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         if (authentication instanceof TokenAuthentication) {
             TokenAuthentication tokenAuth = (TokenAuthentication) authentication;
-
+            log.debug("Invalidating JWT: ...{}", StringUtils.right(tokenAuth.getCredentials(), 15));
             authenticationService.invalidateJwtToken(tokenAuth.getCredentials(), true);
             String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(tokenAuth.getPrincipal());
             setCookie(jwtToken, response);

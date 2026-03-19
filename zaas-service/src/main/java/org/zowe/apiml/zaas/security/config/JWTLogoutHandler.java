@@ -15,6 +15,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -53,6 +55,7 @@ public class JWTLogoutHandler implements LogoutHandler {
             failure.onAuthenticationFailure(request, response, new TokenNotValidException("The token you are trying to logout is not valid"));
         } else {
             try {
+                log.debug("Invalidating JWT: ...{}", StringUtils.right(token, 15));
                 authenticationService.invalidateJwtToken(token, true);
             } catch (TokenNotValidException e) {
                 // TokenNotValidException thrown in cases where the format is not valid

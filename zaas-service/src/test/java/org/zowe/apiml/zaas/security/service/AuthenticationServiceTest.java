@@ -146,7 +146,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void thenCreatePersonalAccessToken() {
-            // when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
             when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             String pat = authService.createLongLivedJwtToken(USER, 60, scopes);
             QueryResponse parsedPAT = authService.parseJwtWithSignature(pat);
@@ -155,7 +154,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void thenCreateValidJwtToken() {
-            // when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
             when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
 
