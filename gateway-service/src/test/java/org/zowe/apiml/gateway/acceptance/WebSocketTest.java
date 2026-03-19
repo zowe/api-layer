@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.acceptance;
 
+import org.java_websocket.client.WebSocketClient;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -27,12 +28,14 @@ import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 @ActiveProfiles({ "WebSocketTest" })
 @TestPropertySource(
     properties = {
-        "=1000"
+        "spring.cloud.gateway.server.webflux.httpclient.websocket.max-frame-payload-length=1000"
     }
 )
 class WebSocketTest extends AcceptanceTestWithMockServices {
 
     private MockService mockServiceWs;
+
+    private WebSocketClient webSocketClient;
 
     @BeforeAll
     void setUp() {
@@ -43,7 +46,8 @@ class WebSocketTest extends AcceptanceTestWithMockServices {
     }
 
     @Test
-    void test() {
+    void givenWsConnection_withFragmentedMessages_thenSuccess() {
+
 
     }
 

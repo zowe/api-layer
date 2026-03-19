@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 @Slf4j
-@Builder(builderClassName = "MockServiceBuilder", buildMethodName = "internalBuild")
+@Builder(builderClassName = "MockWsServiceBuilder", buildMethodName = "internalBuild")
 @Getter
 public class MockWebSocketService extends MockService {
 
@@ -78,7 +78,7 @@ public class MockWebSocketService extends MockService {
         }
     }
 
-    public static class MockServiceBuilder {
+    public static class MockWsServiceBuilder {
 
         public MockWebSocketService build() {
             internalBuild();

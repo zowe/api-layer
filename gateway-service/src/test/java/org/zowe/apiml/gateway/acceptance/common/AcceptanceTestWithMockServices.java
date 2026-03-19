@@ -142,8 +142,12 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
     }
 
     protected MockWebSocketService.MockServiceBuilder mockServiceWs(String serviceId) {
-        // TODO Auto-generated method stub
-        return null;
+        return MockWebSocketService.builder()
+            .statusChangedlistener(mockService -> {
+                applicationRegistry.update(mockService);
+                updateRoutingRules();
+            })
+            .serviceId(serviceId);
     }
 
     @AfterEach
