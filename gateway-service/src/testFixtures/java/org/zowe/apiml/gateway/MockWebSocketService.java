@@ -19,6 +19,7 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +34,7 @@ public class MockWebSocketService extends MockService {
 
     private WebSocketServer webSocketServer;
     @Singular
-    private List<Consumer<String>> assertions;
+    private List<Consumer<Object>> assertions;
 
     @Override
     public void start() throws IOException {
@@ -159,7 +160,21 @@ public class MockWebSocketService extends MockService {
                     }
                 });
             }
-            conn.send("ACK");
+            conn.send("ACK:" + message);
+        }
+
+        @Override
+        public void onMessage(WebSocket conn, ByteBuffer message) {
+            if (assertions != null) {
+                assertions.forEach(assertion -> {
+                    try {
+                        assertion.accept(message);
+                    } catch (AssertionError ae) {
+                        setAssertionError(ae);
+                    }
+                });
+            }
+            conn.send("ACK:" + message.remaining());
         }
 
         @Override

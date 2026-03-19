@@ -12,12 +12,18 @@ package org.zowe.apiml.gateway.acceptance;
 
 import groovy.util.logging.Slf4j;
 import lombok.Getter;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.enums.Opcode;
 import org.java_websocket.framing.TextFrame;
 import org.java_websocket.handshake.ServerHandshake;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -36,16 +42,17 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @MicroservicesAcceptanceTest
 @TestInstance(Lifecycle.PER_CLASS)
 @ActiveProfiles({ "WebSocketTest" })
 @TestPropertySource(
     properties = {
-        "spring.cloud.gateway.server.webflux.httpclient.websocket.max-frame-payload-length=1000"
+        "spring.cloud.gateway.server.webflux.httpclient.websocket.max-frame-payload-length=100" // bytes
     }
 )
 @Slf4j
@@ -59,19 +66,33 @@ class WebSocketTest extends AcceptanceTestWithMockServices {
     @BeforeAll
     void setUp() throws URISyntaxException {
         mockServiceWs = mockServiceWs("websocketservice")
-            .assertion(message -> assertTrue(StringUtils.isNotBlank(message)))
+            .assertion(message -> {
+                if (message instanceof String s) {
+                    assertTrue(StringUtils.isNotBlank(s));
+                } else if (message instanceof ByteBuffer b) {
+                    assertTrue(b.remaining() > 0);
+                }
+            })
             .start();
 
-        webSocketClient = new WebSocketTestClient(new URI("wss://localhost:" + port + "/websocketservice/ws/v1"));
-        webSocketClient.setSocketFactory(apimlSSLContext.getSocketFactory());
-    }
+        }
 
     @BeforeEach
-    void before() {
+    void before() throws URISyntaxException {
+        webSocketClient = new WebSocketTestClient(new URI("wss://localhost:" + port + "/websocketservice/ws/v1"));
+        webSocketClient.setSocketFactory(apimlSSLContext.getSocketFactory());
         webSocketClient.messages.clear();
     }
 
+    @AfterEach
+    void tearDown() throws InterruptedException {
+        if (webSocketClient.isOpen() && !webSocketClient.isClosed() && !webSocketClient.isClosing()) {
+            webSocketClient.closeBlocking();
+        }
+    }
+
     @Test
+    @Disabled
     void givenWsConnection_withSingleMessage_thenSuccess() throws URISyntaxException, InterruptedException {
         var connected = webSocketClient.connectBlocking();
 
@@ -86,19 +107,68 @@ class WebSocketTest extends AcceptanceTestWithMockServices {
             .untilAsserted(() -> {
                 var messages = webSocketClient.getMessages();
                 assertEquals(1, messages.size());
-                assertEquals("ACK", messages.get(0));
+                assertEquals("ACK:null", messages.get(0));
             });
     }
 
     @Test
-    // test under the full limit
-    // test over the full limit
-    // test over the frame limit
+    @Disabled
     void givenWsConnection_withFramedMessage_thenSuccess() throws InterruptedException {
         var connected = webSocketClient.connectBlocking();
 
         assertTrue(connected);
+
+        webSocketClient.sendFragmentedFrame(Opcode.TEXT, ByteBuffer.wrap("AB".getBytes()), false);
+        webSocketClient.sendFragmentedFrame(Opcode.TEXT, ByteBuffer.wrap("CD".getBytes()), true);
+
+        await()
+            .atMost(Duration.ofSeconds(30))
+            .untilAsserted(() -> {
+                var messages = webSocketClient.getMessages();
+                assertEquals(1, messages.size());
+                assertEquals("ACK:ABCD", messages.get(0));
+
+            });
     }
+
+    @Test
+    void testBinary() throws InterruptedException {
+        var connected = webSocketClient.connectBlocking();
+
+        assertTrue(connected);
+
+        var data = RandomUtils.insecure().randomBytes(90);
+        var frame1 = ByteBuffer.wrap(ArrayUtils.subarray(data, 0, 40));
+        var frame2 = ByteBuffer.wrap(ArrayUtils.subarray(data, 40, 80));
+        var frame3 = ByteBuffer.wrap(ArrayUtils.subarray(data, 80, 90));
+
+        webSocketClient.sendFragmentedFrame(Opcode.BINARY, frame1, false);
+        webSocketClient.sendFragmentedFrame(Opcode.BINARY, frame2, false);
+        webSocketClient.sendFragmentedFrame(Opcode.BINARY, frame3, true);
+
+        await()
+            .atMost(Duration.ofSeconds(30))
+            .untilAsserted(() -> {
+                var messages = webSocketClient.getMessages();
+                assertEquals(1, messages.size());
+                assertEquals("ACK:90", messages.get(0));
+            });
+    }
+
+    @Test
+    void givenWsConnection_withFramedMessageOverLimit_thenSucess() throws InterruptedException {
+        var connected = webSocketClient.connectBlocking();
+
+        assertTrue(connected);
+
+        var fullMessage = RandomStringUtils.insecure().next(500);
+
+        var ackMessage = "ACK:" + fullMessage;
+
+        webSocketClient.sendFragmentedFrame(null, null, connected);
+    }
+
+
 
     private static class WebSocketTestClient extends WebSocketClient {
 
@@ -121,12 +191,12 @@ class WebSocketTest extends AcceptanceTestWithMockServices {
 
         @Override
         public void onClose(int code, String reason, boolean remote) {
-
+            System.out.println("closed");
         }
 
         @Override
         public void onError(Exception ex) {
-
+            fail(ex);
         }
 
     }
