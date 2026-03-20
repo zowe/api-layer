@@ -240,14 +240,17 @@ if [ "${keystore_type}" = "JCERACFKS" ]; then
     keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
     client_keystore_location=$(echo "${client_keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
     truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    client_truststore_location=$(echo "${client_truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
 elif [ "${keystore_type}" = "JCECCARACFKS" ]; then
     keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
     client_keystore_location=$(echo "${client_keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
     truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    client_truststore_location=$(echo "${client_truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
 elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
     keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
     client_keystore_location=$(echo "${client_keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
     truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    client_truststore_location=$(echo "${client_truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
 fi
 
 ################################################################################
