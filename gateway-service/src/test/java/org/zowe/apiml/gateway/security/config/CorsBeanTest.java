@@ -26,7 +26,9 @@ import org.zowe.apiml.util.CorsUtils;
 
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -38,6 +40,43 @@ class CorsBeanTest {
 
     @Mock
     private Environment environment;
+
+    @Nested
+    class GivenIgnoredHeadersConfiguration {
+
+        private static final String IGNORED_HEADERS = "Access-Control-Request-Method,Access-Control-Request-Headers,Origin";
+
+        @Test
+        void whenCorsEnabled_thenIgnoredHeadersDoNotContainResponseHeaders() {
+            Set<String> ignoredHeaders = Set.of(IGNORED_HEADERS.split(","));
+
+            List<String> corsResponseHeaders = Arrays.asList(
+                "Access-Control-Allow-Origin",
+                "Access-Control-Allow-Methods",
+                "Access-Control-Allow-Headers",
+                "Access-Control-Allow-Credentials"
+            );
+
+            for (String responseHeader : corsResponseHeaders) {
+                assertTrue(
+                    !ignoredHeaders.contains(responseHeader),
+                    "CORS response header '" + responseHeader + "' must not be in ignoredHeadersWhenCorsEnabled. " +
+                    "Zuul strips ignored headers from both requests and responses, so including response headers " +
+                    "causes the browser to never receive CORS headers."
+                );
+            }
+        }
+
+        @Test
+        void whenCorsEnabled_thenIgnoredHeadersContainOnlyRequestHeaders() {
+            Set<String> ignoredHeaders = Set.of(IGNORED_HEADERS.split(","));
+
+            assertTrue(ignoredHeaders.contains("Origin"), "Origin request header should be stripped before forwarding");
+            assertTrue(ignoredHeaders.contains("Access-Control-Request-Method"), "Access-Control-Request-Method should be stripped");
+            assertTrue(ignoredHeaders.contains("Access-Control-Request-Headers"), "Access-Control-Request-Headers should be stripped");
+            assertEquals(3, ignoredHeaders.size(), "Only request-side CORS headers should be in the ignored list");
+        }
+    }
 
     @Nested
     class GivenATTLSIsEnabled {
