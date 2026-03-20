@@ -64,7 +64,7 @@ public class ByBasePath extends RouteDefinitionProducer {
     protected void setFilters(RouteDefinition routeDefinition, ServiceInstance serviceInstance, RoutedService routedService) {
         var rewriteWithSlash = new FilterDefinition();
         rewriteWithSlash.setName("RewritePath");
-        rewriteWithSlash.addArg("regexp", constructUrl(serviceInstance.getServiceId(), routedService.getGatewayUrl(), "/(?<remaining>.*)"));
+        rewriteWithSlash.addArg("regexp", constructUrl(serviceInstance.getServiceId(), routedService.getGatewayUrl(), "(?<remaining>.*)"));
         rewriteWithSlash.addArg("replacement", constructUrl(routedService.getServiceUrl(), "${remaining}"));
         routeDefinition.getFilters().add(rewriteWithSlash);
 
