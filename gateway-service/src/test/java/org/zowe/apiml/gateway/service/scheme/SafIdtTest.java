@@ -10,55 +10,32 @@
 
 package org.zowe.apiml.gateway.service.scheme;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
-@ExtendWith(MockitoExtension.class)
-class HttpBasicPassticketTest {
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class SafIdtTest {
 
     private static final String SERVICE_ID = "myservice";
     private static final String APPLID = "APPLID";
-
-    @Mock(strictness = LENIENT)
     private ServiceInstance serviceInstance;
 
-    @BeforeEach
+    @BeforeAll
     void setup() {
+        serviceInstance = mock(ServiceInstance.class);
         doReturn(SERVICE_ID).when(serviceInstance).getServiceId();
-    }
-
-    @Test
-    void givenHttpBasicPassticketInstance_whenGetAuthenticationScheme_thenReturnProperType() {
-        assertEquals(AuthenticationScheme.HTTP_BASIC_PASSTICKET, new HttpBasicPassticket().getAuthenticationScheme());
-    }
-
-    @Test
-    void givenRouteDefinition_whenApply_thenFulfillFilterFactorArgs() {
-        RouteDefinition routeDefinition = new RouteDefinition();
-        Authentication authentication = new Authentication();
-        authentication.setApplid("applid");
-
-        new HttpBasicPassticket().apply(serviceInstance, routeDefinition, authentication);
-
-        assertEquals(1, routeDefinition.getFilters().size());
-        FilterDefinition filterDefinition = routeDefinition.getFilters().get(0);
-        assertEquals("applid", filterDefinition.getArgs().get("applicationName"));
-        assertEquals("PassticketFilterFactory", filterDefinition.getName());
     }
 
     @ParameterizedTest
@@ -67,7 +44,7 @@ class HttpBasicPassticketTest {
     void givenNoApplid_whenApply_thenReturnFailoverFilter(String applid) {
         var routeDefinition = new RouteDefinition();
 
-        new HttpBasicPassticket().apply(serviceInstance, routeDefinition, Authentication.builder().scheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET).applid(applid).build());
+        new SafIdt().apply(serviceInstance, routeDefinition, Authentication.builder().scheme(AuthenticationScheme.SAF_IDT).applid(applid).build());
 
         assertEquals(1, routeDefinition.getFilters().size());
         var filter = routeDefinition.getFilters().get(0);
@@ -75,18 +52,18 @@ class HttpBasicPassticketTest {
         assertEquals(3, filter.getArgs().size());
         assertEquals(SERVICE_ID, filter.getArgs().get("serviceId"));
         assertEquals("APPLID is not configured", filter.getArgs().get("message"));
-        assertEquals("httpBasicPassTicket", filter.getArgs().get("authenticationScheme"));
+        assertEquals("safIdt", filter.getArgs().get("authenticationScheme"));
     }
 
     @Test
     void givenValidConfiguration_whenApply_thenReturnAuthFilter() {
         var routeDefinition = new RouteDefinition();
 
-        new HttpBasicPassticket().apply(serviceInstance, routeDefinition, Authentication.builder().scheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET).applid(APPLID).build());
+        new SafIdt().apply(serviceInstance, routeDefinition, Authentication.builder().scheme(AuthenticationScheme.SAF_IDT).applid(APPLID).build());
 
         assertEquals(1, routeDefinition.getFilters().size());
         var filter = routeDefinition.getFilters().get(0);
-        assertEquals("PassticketFilterFactory", filter.getName());
+        assertEquals("SafIdtFilterFactory", filter.getName());
         assertEquals(2, filter.getArgs().size());
         assertEquals(APPLID, filter.getArgs().get("applicationName"));
         assertEquals(SERVICE_ID, filter.getArgs().get("serviceId"));

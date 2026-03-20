@@ -11,6 +11,8 @@
 package org.zowe.apiml;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.actuate.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.ReactiveOAuth2ClientAutoConfiguration;
 import org.springframework.cloud.netflix.eureka.server.EurekaController;
@@ -21,7 +23,12 @@ import org.zowe.apiml.enable.config.EnableApiDiscoveryConfig;
 import org.zowe.apiml.enable.register.RegisterToApiLayer;
 import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
 
-@SpringBootApplication(exclude = {ReactiveOAuth2ClientAutoConfiguration.class},
+@SpringBootApplication(
+    exclude = {
+        ReactiveOAuth2ClientAutoConfiguration.class,
+        OpenTelemetryAutoConfiguration.class,
+        OpenTelemetryLoggingAutoConfiguration.class
+    },
     scanBasePackages = {
         "org.zowe.apiml.filter",
         "org.zowe.apiml.gateway",
@@ -43,7 +50,12 @@ import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
         ),
         @ComponentScan.Filter(
             type = FilterType.ASSIGNABLE_TYPE,
-            classes = {EnableApiDiscoveryConfig.class, EurekaController.class, RegisterToApiLayer.class, GatewayHealthIndicator.class}
+            classes = {
+                EnableApiDiscoveryConfig.class,
+                EurekaController.class,
+                RegisterToApiLayer.class,
+                GatewayHealthIndicator.class
+            }
         ),
         @ComponentScan.Filter(
             type = FilterType.ANNOTATION,

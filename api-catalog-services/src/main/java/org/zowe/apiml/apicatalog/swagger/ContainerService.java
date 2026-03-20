@@ -25,7 +25,7 @@ import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
 import org.zowe.apiml.apicatalog.model.CustomStyleConfig;
 import org.zowe.apiml.auth.Authentication;
-import org.zowe.apiml.auth.AuthenticationSchemes;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -53,7 +53,6 @@ public class ContainerService {
 
     private static final String DEFAULT_APIINFO_KEY = "default";
 
-    private final AuthenticationSchemes schemes = new AuthenticationSchemes();
     private final EurekaMetadataParser metadataParser = new EurekaMetadataParser();
 
     private final DiscoveryClient discoveryClient;
@@ -93,7 +92,7 @@ public class ContainerService {
     private boolean isSso(ServiceInstance serviceInstance) {
         Map<String, String> eurekaMetadata = serviceInstance.getMetadata();
         return Authentication.builder()
-            .scheme(schemes.map(eurekaMetadata.get(AUTHENTICATION_SCHEME)))
+            .scheme(AuthenticationScheme.fromString(eurekaMetadata.get(AUTHENTICATION_SCHEME)))
             .supportsSso(BooleanUtils.toBooleanObject(eurekaMetadata.get(AUTHENTICATION_SSO)))
             .build()
             .supportsSso();
