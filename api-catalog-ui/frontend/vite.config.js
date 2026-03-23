@@ -46,6 +46,11 @@ export default defineConfig(({ mode }) => {
                     secure: false,
                     changeOrigin: true,
                 },
+                '/gateway': {
+                    target: gatewayUrl,
+                    secure: false,
+                    changeOrigin: true,
+                },
             },
         },
         optimizeDeps: {
