@@ -109,6 +109,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     ${JVM_SECURITY_PROPERTIES} \
     ${EXTERNAL_URL} \
     ${CUSTOM_JVM_OPTS} \
+    -Dfile.encoding=UTF-8 \
     -Dibm.serversocket.recover=true \
     -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \

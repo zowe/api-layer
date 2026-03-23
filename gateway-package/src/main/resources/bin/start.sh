@@ -210,6 +210,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
+    -Dfile.encoding=UTF-8 \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
     -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \

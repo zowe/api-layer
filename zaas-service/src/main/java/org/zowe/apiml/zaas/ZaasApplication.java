@@ -44,8 +44,8 @@ public class ZaasApplication {
         app.addInitializers(new LatencyUtilsConfigInitializer());
         app.addListeners(new ExtensionsLoader(new ExtensionConfigReader(defaultEnv())));
         app.setLogStartupInfo(false);
-        new BuildInfo().logBuildInfo();
         app.run(args);
+        new BuildInfo().logBuildInfo();
     }
 
 }
