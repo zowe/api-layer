@@ -17,9 +17,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), '');
-    const defaultTarget = mode === 'development' ? 'http://localhost:8000' : 'https://localhost:10010';
-    const gatewayUrl = env.VITE_GATEWAY_URL || defaultTarget;
-
+    const gatewayUrl = env.VITE_GATEWAY_URL || 'https://localhost:10010';
+    console.log('gatewayUrl', gatewayUrl);
     return {
         root: __dirname,
         plugins: [
