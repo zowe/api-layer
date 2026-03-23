@@ -649,7 +649,7 @@ public class NewSecurityConfiguration {
             http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
             http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
         }
-        return http
+        return FixedHeadersConfigurer.fix(http
             .cors(withDefaults()).csrf(csrf -> csrf.disable())    // NOSONAR we are using SAMESITE cookie to mitigate CSRF
             .headers(headers -> headers
                 .httpStrictTransportSecurity(HeadersConfigurer.HstsConfig::disable)
@@ -658,9 +658,7 @@ public class NewSecurityConfiguration {
             .exceptionHandling(handling -> handling
                 .authenticationEntryPoint(handlerInitializer.getBasicAuthUnauthorizedHandler()))
             .sessionManagement(management -> management
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .exceptionHandling(handling -> handling
-                .authenticationEntryPoint(handlerInitializer.getBasicAuthUnauthorizedHandler()));
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)));
     }
 
     private UserDetailsService x509UserDetailsService() {
