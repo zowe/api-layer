@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Joiner;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.InstanceInfo.PortType;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -97,7 +98,7 @@ public class MockService implements AutoCloseable {
      * Service identification
      */
     protected String serviceId;
-    private String vipAddress;
+    protected String vipAddress;
     @Builder.Default
     protected String hostname = "localhost";
 
@@ -319,16 +320,17 @@ public class MockService implements AutoCloseable {
      *
      * @return instanceInfo with all related data
      */
-    public InstanceInfo getInstanceInfo() {
+    public InstanceInfo.Builder getInstanceInfo() {
         return InstanceInfo.Builder.newBuilder()
             .setInstanceId(getInstanceId())
             .setHostName(hostname)
             .setPort(port)
+            .enablePort(PortType.SECURE, false)
+            .enablePort(PortType.UNSECURE, true)
             .setAppName(serviceId)
             .setVIPAddress(vipAddress != null ? vipAddress : serviceId)
             .setStatus(InstanceInfo.InstanceStatus.UP)
-            .setMetadata(getMetadata())
-            .build();
+            .setMetadata(getMetadata());
     }
 
     /**
@@ -337,7 +339,7 @@ public class MockService implements AutoCloseable {
      * @return EurekaServiceInstance with all related data
      */
     public EurekaServiceInstance getEurekaServiceInstance() {
-        InstanceInfo instanceInfo = getInstanceInfo();
+        InstanceInfo instanceInfo = getInstanceInfo().build();
         return instanceInfo == null ? null : new EurekaServiceInstance(instanceInfo);
     }
 

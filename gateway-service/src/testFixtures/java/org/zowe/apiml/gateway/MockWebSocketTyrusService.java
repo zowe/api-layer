@@ -83,24 +83,20 @@ public class MockWebSocketTyrusService extends MockWebSocketService {
 
     @Override
     Map<String, String> getMetadata() {
-        // TODO Auto-generated method stub
         return super.getMetadata();
     }
 
     @Override
-    public InstanceInfo getInstanceInfo() {
+    public InstanceInfo.Builder getInstanceInfo() {
         return InstanceInfo.Builder.newBuilder()
             .setInstanceId(getInstanceId())
             .setHostName(hostname)
             .setPort(port)
-            // .enablePort(PortType.SECURE, true)
             .enablePort(PortType.UNSECURE, true)
-            // .setSecurePort(port)
             .setAppName(serviceId)
             .setVIPAddress(vipAddress != null ? vipAddress : serviceId)
             .setStatus(InstanceInfo.InstanceStatus.UP)
-            .setMetadata(getMetadata())
-            .build();
+            .setMetadata(getMetadata());
     }
 
     public static class MockWsTyrusServiceBuilder {

@@ -82,6 +82,8 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
 
     protected SSLContext apimlSSLContext;
 
+    protected SSLContext apimlNonStrictSSLContext;
+
     @BeforeEach
     void resetCounters() {
         applicationRegistry.getMockServices().forEach(MockService::resetCounter);
@@ -101,6 +103,11 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
         apimlSSLContext = SSLContextBuilder.create()
             .loadKeyMaterial(ResourceUtils.getFile(apimlKeyStorePath), apimlKeyStorePassword, apimlKeyPassword)
             .loadTrustMaterial(null, trustStrategy).build();
+
+        apimlNonStrictSSLContext = SSLContextBuilder.create()
+            .loadKeyMaterial(ResourceUtils.getFile("../keystore/localhost/nonlocalhost.keystore.p12"), apimlKeyStorePassword, apimlKeyPassword)
+            .loadTrustMaterial(null, trustStrategy).build();
+
         apimlCert = RestAssuredConfig.newConfig()
             .sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(apimlSSLContext, hostnameVerifier)));
 
