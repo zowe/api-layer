@@ -104,7 +104,7 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${caching.storage.infinispan.distributedSyncTimeoutSecs:360}")
     private int distributedSyncTimeout;
 
-    @Value("${caching.storage.infinispan.segmented:false}")
+    @Value("${caching.storage.infinispan.segmented:true}")
     private boolean segmented;
 
     private AtomicReference<ClusteredLock> zoweInvalidatedTokenLock = new AtomicReference<>();
