@@ -40,7 +40,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.util.ReflectionTestUtils;
+
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
@@ -131,7 +131,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         scopes = new HashSet<>();
         scopes.add("Service1");
         scopes.add("Service2");
-        ReflectionTestUtils.setField(authService, "meAsProxy", authService);
         lenient().when(clock.instant()).thenReturn(Instant.now());
     }
 

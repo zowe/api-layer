@@ -32,14 +32,9 @@ import org.jose4j.jwt.NumericDate;
 import org.jose4j.lang.JoseException;
 import org.jose4j.lang.UncheckedJoseException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
@@ -81,8 +76,6 @@ import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
-@EnableAspectJAutoProxy(proxyTargetClass = true)
 @ConditionalOnMissingBean(name = "modulithConfig")
 public class AuthenticationService {
 
@@ -103,14 +96,14 @@ public class AuthenticationService {
     private final CacheUtils cacheUtils;
     private final Clock clock;
     private boolean isModulithMode;
-
-    // to force calling inside methods with aspects - ie. ehCache aspect
-    private AuthenticationService meAsProxy;
+    private Cache validationJwtTokenCache;
+    private Cache invalidatedJwtTokensCache;
 
     @PostConstruct
     public void afterPropertiesSet() {
-        meAsProxy = applicationContext.getBean(AuthenticationService.class);
         isModulithMode = applicationContext.containsBean("modulithConfig");
+        validationJwtTokenCache = cacheManager.getCache(CACHE_VALIDATION_JWT_TOKEN);
+        invalidatedJwtTokensCache = cacheManager.getCache(CACHE_INVALIDATED_JWT_TOKENS);
     }
 
     /**
@@ -162,7 +155,7 @@ public class AuthenticationService {
             jws.setAlgorithmHeaderValue(jwtSecurityInitializer.getJwtAlgorithm());
             jws.setDoKeyValidation(false);
             String token = jws.getCompactSerialization();
-            log.debug("JWT created, last 10 chars of signature: ...{}", StringUtils.right(token, 15));
+            log.debug("JWT created, last chars of signature: ...{}", StringUtils.right(token, 15));
             return token;
         } catch (JoseException e) {
             throw new UncheckedJoseException(e.getMessage(), e);
@@ -181,9 +174,6 @@ public class AuthenticationService {
     }
 
     /**
-     * TODO consider the following scenarios during the fix:
-     *      * Cache hit on CACHE_INVALIDATED_JWT_TOKENS with return true -> method is not executed -> CacheEvict on CACHE_VALIDATION_JWT_TOKEN does not happen
-     *      * Cache miss on CACHE_INVALIDATED_JWT_TOKENS -> method is executed and return is false -> CacheEvict on CACHE_VALIDATION_JWT_TOKEN happens nevertheless
      * Method will invalidate jwtToken. It could be called from two reasons:
      * - on logout phase (distribute = true)
      * - from another ZAAS instance to notify about change (distribute = false)
@@ -194,32 +184,38 @@ public class AuthenticationService {
      * @param distribute distribute invalidation to another instances?
      * @return state of invalidate (true - token was invalidated)
      */
-    @CacheEvict(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken")
-    @Cacheable(value = CACHE_INVALIDATED_JWT_TOKENS, key = "#jwtToken", condition = "#jwtToken != null")
     public Boolean invalidateJwtToken(String jwtToken, boolean distribute) {
-        Application app = null;
-        if (isModulithMode) {
-            app = eurekaClient.getApplication(CoreService.GATEWAY.getServiceId());
-        } else {
-            app = eurekaClient.getApplication(CoreService.ZAAS.getServiceId());
+        if (jwtToken != null && isInvalidated(jwtToken)) {
+            return Boolean.TRUE;
         }
-        return invalidate(jwtToken, distribute, app);
+
+        Application app = isModulithMode
+            ? eurekaClient.getApplication(CoreService.GATEWAY.getServiceId())
+            : eurekaClient.getApplication(CoreService.ZAAS.getServiceId());
+
+        return doInvalidateAndUpdateCaches(jwtToken, distribute, app);
     }
 
-    private Boolean invalidate(String jwtToken, boolean distribute, Application app) {
-        /*
-         * until ehCache is not distributed, send to other instances invalidation request
-         */
+    private Boolean doInvalidateAndUpdateCaches(String jwtToken, boolean distribute, Application app) {
+        Boolean result = doInvalidate(jwtToken, distribute, app);
+
+        if (Boolean.TRUE.equals(result) && jwtToken != null) {
+            evictValidationCache(jwtToken);
+            putInvalidatedCache(jwtToken);
+        }
+
+        return result;
+    }
+
+    private Boolean doInvalidate(String jwtToken, boolean distribute, Application app) {
         boolean isInvalidatedOnAnotherInstance = false;
         if (distribute) {
             isInvalidatedOnAnotherInstance = invalidateTokenOnAnotherInstance(jwtToken, app);
             if (!isInvalidatedOnAnotherInstance) {
                 return Boolean.FALSE;
             }
-
         }
 
-        // invalidate token in z/OSMF
         final QueryResponse queryResponse = parseJwtToken(jwtToken);
         try {
             switch (queryResponse.getSource()) {
@@ -242,6 +238,24 @@ public class AuthenticationService {
         return Boolean.TRUE;
     }
 
+    private void putValidationCache(String jwtToken, TokenAuthentication tokenAuthentication) {
+        if (jwtToken != null && validationJwtTokenCache != null) {
+            validationJwtTokenCache.put(jwtToken, tokenAuthentication);
+        }
+    }
+
+    private void evictValidationCache(String jwtToken) {
+        if (validationJwtTokenCache != null) {
+            validationJwtTokenCache.evict(jwtToken);
+        }
+    }
+
+    private void putInvalidatedCache(String jwtToken) {
+        if (invalidatedJwtTokensCache != null) {
+            invalidatedJwtTokensCache.put(jwtToken, Boolean.TRUE);
+        }
+    }
+
     /**
      * Method will invalidate jwtToken. It could be called from two reasons:
      * - on logout phase (distribute = true)
@@ -251,13 +265,12 @@ public class AuthenticationService {
      * @param distribute distribute invalidation to another instances?
      * @return state of invalidate (true - token was invalidated)
      */
-    @CacheEvict(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken")
-    @Cacheable(value = CACHE_INVALIDATED_JWT_TOKENS, key = "#jwtToken", condition = "#jwtToken != null")
     public Boolean invalidateJwtTokenGateway(String jwtToken, boolean distribute, Application app) {
-        /*
-         * until ehCache is not distributed, send to other instances invalidation request
-         */
-        return invalidate(jwtToken, distribute, app);
+        if (jwtToken != null && isInvalidated(jwtToken)) {
+            return Boolean.TRUE;
+        }
+
+        return doInvalidateAndUpdateCaches(jwtToken, distribute, app);
     }
 
     /**
@@ -303,9 +316,14 @@ public class AuthenticationService {
      * @param jwtToken token to check
      * @return true - token is invalidated, otherwise token is still valid
      */
-    @Cacheable(value = CACHE_INVALIDATED_JWT_TOKENS, unless = "true", key = "#jwtToken", condition = "#jwtToken != null")
-    public Boolean isInvalidated(String jwtToken) {
-        return Boolean.FALSE;
+    public boolean isInvalidated(String jwtToken) {
+        if (invalidatedJwtTokensCache == null) {
+            return false;
+        }
+        Cache.ValueWrapper wrapper = invalidatedJwtTokensCache.get(jwtToken);
+        boolean result = wrapper != null && Boolean.TRUE.equals(wrapper.get());
+        log.debug("Token invalidation check for ...{}: {}", StringUtils.right(jwtToken, 15), result);
+        return result;
     }
 
     private JWTClaimsSet validateAndParseLocalJwtToken(String jwtToken) {
@@ -321,7 +339,7 @@ public class AuthenticationService {
                     }
                     return claims;
                 }
-                log.debug("JWT signature verification failed, last 10 chars of signature: ...{}", StringUtils.right(jwtToken, 15));
+                log.debug("JWT signature verification failed, last chars of signature: ...{}", StringUtils.right(jwtToken, 15));
                 throw new BadJWTException("Token signature is invalid for public key: " + jwtSecurityInitializer.getJwkPublicKey().get().toString());
             } else {
                 throw new BadJWTException("Token is not signed");
@@ -348,8 +366,14 @@ public class AuthenticationService {
      * @param jwtToken token to verification
      * @return true if token is still valid, otherwise false
      */
-    @Cacheable(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken", condition = "#jwtToken != null")
     public TokenAuthentication validateJwtToken(String jwtToken) {
+        if (jwtToken != null && validationJwtTokenCache != null) {
+            Cache.ValueWrapper cached = validationJwtTokenCache.get(jwtToken);
+            if (cached != null) {
+                return (TokenAuthentication) cached.get();
+            }
+        }
+
         QueryResponse queryResponse = parseJwtToken(jwtToken);
         boolean isValid = switch (queryResponse.getSource()) {
             case ZOWE -> {
@@ -359,10 +383,11 @@ public class AuthenticationService {
             case ZOSMF -> zosmfService.validate(jwtToken);
             default -> throw new TokenNotValidException("Unknown token type.");
         };
+        boolean notInvalidated = !isInvalidated(jwtToken);
         TokenAuthentication tokenAuthentication = new TokenAuthentication(queryResponse.getUserId(), jwtToken, TokenAuthentication.Type.JWT);
-        // without a proxy cache aspect is not working, thus it is necessary get bean from application context
-        final boolean authenticated = !meAsProxy.isInvalidated(jwtToken);
-        tokenAuthentication.setAuthenticated(authenticated && isValid);
+        tokenAuthentication.setAuthenticated(notInvalidated && isValid);
+
+        putValidationCache(jwtToken, tokenAuthentication);
 
         return tokenAuthentication;
     }
@@ -375,12 +400,13 @@ public class AuthenticationService {
      * @param jwtToken token of user
      * @return authenticated {@link TokenAuthentication} using information about invalidating of token
      */
-    @CachePut(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken", condition = "#jwtToken != null")
     public TokenAuthentication createTokenAuthentication(String user, String jwtToken) {
+        boolean notInvalidated = !isInvalidated(jwtToken);
         final TokenAuthentication out = new TokenAuthentication(user, jwtToken, TokenAuthentication.Type.JWT);
-        // without a proxy cache aspect is not working, thus it is necessary get bean from application context
-        final boolean authenticated = !meAsProxy.isInvalidated(jwtToken);
-        out.setAuthenticated(authenticated);
+        out.setAuthenticated(notInvalidated);
+
+        putValidationCache(jwtToken, out);
+
         return out;
     }
 
@@ -424,9 +450,11 @@ public class AuthenticationService {
         if (token == null) {
             throw new TokenNotValidException("Null token.");
         }
-        parseJwtToken(token.getCredentials()); // throws on expired token, this needs to happen before cache, which is in the next line
+        parseJwtToken(token.getCredentials()); // throws on expired token, this needs to happen before cache
         log.debug("Validating JWT: ...{}", StringUtils.right(token.getCredentials(), 15));
-        return meAsProxy.validateJwtToken(token.getCredentials());
+        var tokenAuth = validateJwtToken(token.getCredentials());
+        log.debug("JWT validation result: {}", tokenAuth.isAuthenticated());
+        return tokenAuth;
     }
 
     /**
