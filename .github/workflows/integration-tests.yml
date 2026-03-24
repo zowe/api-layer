@@ -297,7 +297,6 @@ jobs:
                     JGROUPS_BIND_PORT: 7600
                     JGROUPS_BIND_ADDRESS: apiml
                     JGROUPS_KEYEXCHANGE_PORT: 7601
-                    ZWE_haInstance_id: jednotka 
             apiml-2:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -319,7 +318,6 @@ jobs:
                     JGROUPS_BIND_PORT: 7600
                     JGROUPS_BIND_ADDRESS: apiml-2
                     JGROUPS_KEYEXCHANGE_PORT: 7601
-                    ZWE_haInstance_id: dvojka
             apiml-3:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -2258,6 +2256,7 @@ jobs:
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "apiml"
+                    ZWE_haInstance_id: dvojka
             apiml-2:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -2273,6 +2272,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: "apiml-2"
                     APIML_SERVICE_HOSTNAME: "apiml-2"
                     logbackService: ZWEAGW2
+                    ZWE_haInstance_id: trojka
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
