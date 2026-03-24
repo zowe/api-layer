@@ -112,6 +112,8 @@ dependencies {
     testFixturesImplementation libs.guava
     testFixturesImplementation libs.jaxbApi
     testFixturesImplementation libs.java.websocket
+    testFixturesImplementation libs.tyrus.server
+    testFixturesImplementation libs.tyrus.grizzly.server
 
     testFixturesAnnotationProcessor libs.lombok
 

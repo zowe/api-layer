@@ -31,6 +31,7 @@ import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.gateway.ApplicationRegistry;
 import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.MockWebSocketService;
+import org.zowe.apiml.gateway.MockWebSocketTyrusService;
 
 import javax.net.ssl.SSLContext;
 
@@ -163,6 +164,15 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
      */
     protected MockWebSocketService.MockWsServiceBuilder mockServiceWs(String serviceId) {
         return MockWebSocketService.wsBuilder()
+            .statusChangedListener(mockService -> {
+                applicationRegistry.update(mockService);
+                updateRoutingRules();
+            })
+            .serviceId(serviceId);
+    }
+
+    protected MockWebSocketTyrusService.MockWsTyrusServiceBuilder mockServiceWsTyrus(String serviceId) {
+        return MockWebSocketTyrusService.wsTyrusBuilder()
             .statusChangedListener(mockService -> {
                 applicationRegistry.update(mockService);
                 updateRoutingRules();
