@@ -370,6 +370,7 @@ public class AuthenticationService {
      * @return true if token is still valid, otherwise false
      */
     public TokenAuthentication validateJwtToken(String jwtToken) {
+        log.debug("Validating JWT: ...{}", StringUtils.right(jwtToken, 15));
         if (jwtToken != null && validationJwtTokenCache != null) {
             Cache.ValueWrapper cached = validationJwtTokenCache.get(jwtToken);
             if (cached != null) {
@@ -391,7 +392,7 @@ public class AuthenticationService {
         tokenAuthentication.setAuthenticated(notInvalidated && isValid);
 
         putValidationCache(jwtToken, tokenAuthentication);
-
+        log.debug("JWT validation result: {}", tokenAuthentication.isAuthenticated());
         return tokenAuthentication;
     }
 
@@ -454,9 +455,9 @@ public class AuthenticationService {
             throw new TokenNotValidException("Null token.");
         }
         parseJwtToken(token.getCredentials()); // throws on expired token, this needs to happen before cache
-        log.debug("Validating JWT: ...{}", StringUtils.right(token.getCredentials(), 15));
+        
         var tokenAuth = validateJwtToken(token.getCredentials());
-        log.debug("JWT validation result: {}", tokenAuth.isAuthenticated());
+        
         return tokenAuth;
     }
 
