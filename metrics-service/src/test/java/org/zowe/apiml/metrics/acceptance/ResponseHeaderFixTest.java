@@ -92,7 +92,7 @@ public class ResponseHeaderFixTest {
 
         @GetMapping(value = "/test/{method}/{headerName}")
         public void getApiDoc(@PathVariable("method") int method, @PathVariable("headerName") String headerName, HttpServletResponse response) {
-            switch(method) {
+            switch (method) {
                 case 0:
                     response.addHeader(headerName, String.valueOf(TEST_CONTENT_LENGTH));
                     break;
