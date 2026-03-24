@@ -167,7 +167,7 @@ public class InfinispanConfig implements InitializingBean {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder
             .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
-            .persistence().addSoftIndexFileStore().clustering()
+            .persistence().addSoftIndexFileStore().segmented(segmented).clustering()
             .clustering().cacheMode(CacheMode.REPL_SYNC);
         return builder;
     }
