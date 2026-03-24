@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.commons.attls.AttlsContext;
+import org.zowe.commons.attls.AttlsContextImpl;
 import org.zowe.commons.attls.ContextIsNotInitializedException;
 import org.zowe.commons.attls.InboundAttls;
 
@@ -75,7 +76,7 @@ class ApimlTomcatCustomizerTest {
             }
 
             attlsContext = answer.getArgument(0);
-            attlsContext = spy(new AttlsContext(
+            attlsContext = spy(new AttlsContextImpl(
                 (int) ReflectionTestUtils.getField(attlsContext, "id"),
                 (boolean) ReflectionTestUtils.getField(attlsContext, "alwaysLoadCertificate")
             ) {
