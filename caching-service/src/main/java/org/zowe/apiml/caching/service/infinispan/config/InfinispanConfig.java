@@ -104,6 +104,9 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${caching.storage.infinispan.distributedSyncTimeoutSecs:360}")
     private int distributedSyncTimeout;
 
+    @Value("${caching.storage.infinispan.segmented:false}")
+    private boolean segmented;
+
     private AtomicReference<ClusteredLock> zoweInvalidatedTokenLock = new AtomicReference<>();
 
     @Override
@@ -153,6 +156,7 @@ public class InfinispanConfig implements InitializingBean {
         holder.newConfigurationBuilder("default")
             .persistence()
             .addSoftIndexFileStore()
+            .segmented(segmented)
             .clustering().cacheMode(CacheMode.REPL_SYNC);
         holder.getGlobalConfigurationBuilder().defaultCacheName("default");
         holder.getGlobalConfigurationBuilder().transport().stack("prod").distributedSyncTimeout(distributedSyncTimeout, TimeUnit.SECONDS);
@@ -180,9 +184,9 @@ public class InfinispanConfig implements InitializingBean {
         System.setProperty("infinispan.ssl.keyStore", keyStore);
         System.setProperty("infinispan.ssl.keyStorePassword", keyStorePass);
 
-        System.setProperty("infinispan.ssl.trustStoreType", keyStoreType);
-        System.setProperty("infinispan.ssl.trustStore", keyStore);
-        System.setProperty("infinispan.ssl.trustStorePassword", keyStorePass);
+        System.setProperty("infinispan.ssl.trustStoreType", trustStoreType);
+        System.setProperty("infinispan.ssl.trustStore", trustStore);
+        System.setProperty("infinispan.ssl.trustStorePassword", trustStorePass);
 
         List<String> caches;
         if (applicationInfo.isModulith()) {
