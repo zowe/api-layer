@@ -13,8 +13,8 @@ import getBaseUrl from './urls';
 describe('>>> Urls Tests', () => {
     it('should return the Gateway URL if used', () => {
         const environment = {
-            REACT_APP_GATEWAY_URL: '',
-            REACT_APP_CATALOG_HOME: '',
+            VITE_GATEWAY_URL: '',
+            VITE_CATALOG_HOME: '',
         };
 
         const location = {
@@ -28,8 +28,8 @@ describe('>>> Urls Tests', () => {
 
     it("should return the information stored in env if the URL isn't the gateway one", () => {
         const environment = {
-            REACT_APP_GATEWAY_URL: 'https://localhost:10010',
-            REACT_APP_CATALOG_HOME: '/apicatalog/api/v1',
+            VITE_GATEWAY_URL: 'https://localhost:10010',
+            VITE_CATALOG_HOME: '/apicatalog/api/v1',
         };
 
         const location = {
@@ -43,8 +43,8 @@ describe('>>> Urls Tests', () => {
 
     it("should return the information stored in env if the URL isn't the gateway one and ENV contain only Catalog home", () => {
         const environment = {
-            REACT_APP_GATEWAY_URL: '',
-            REACT_APP_CATALOG_HOME: '/apicatalog/api/v1',
+            VITE_GATEWAY_URL: '',
+            VITE_CATALOG_HOME: '/apicatalog/api/v1',
         };
 
         const location = {
@@ -58,8 +58,8 @@ describe('>>> Urls Tests', () => {
 
     it('should return the current default URL if none above, access via standalone Catalog', () => {
         const environment = {
-            REACT_APP_GATEWAY_URL: '',
-            REACT_APP_CATALOG_HOME: '',
+            VITE_GATEWAY_URL: '',
+            VITE_CATALOG_HOME: '',
         };
 
         const location = {

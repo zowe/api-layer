@@ -101,7 +101,7 @@ const authenticationFailure = (error) =>{
     return (dispatch) => {
         dispatch(failure(error));
         if (error.xhr.getResponseHeader('WWW-Authenticate')) {
-            window.location.href = process.env.REACT_APP_CATALOG_HOMEPAGE;
+            window.location.href = import.meta.env.VITE_CATALOG_HOMEPAGE;
         }
     };
 }

@@ -73,7 +73,7 @@ describe('>>> App component tests', () => {
     });
 
     it('should call render when portal enabled', () => {
-        process.env.REACT_APP_API_PORTAL = true;
+        import.meta.env.VITE_API_PORTAL = true;
         const history = { push: jest.fn() };
         const success = { push: jest.fn() };
         const authentication = { user: 'user' };

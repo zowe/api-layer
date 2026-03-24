@@ -53,7 +53,7 @@ jest.mock('react-router', () => {
 
 jest.mock("../ServiceTab/ServiceTabContainer", () => ({
     __esModule: true,
-   default: jest.fn(() => ({})),
+    default: jest.fn(() => null),
 }));
 
 jest.mock('react-router', () => ({
