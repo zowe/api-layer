@@ -11,8 +11,7 @@
 package org.zowe.apiml.apicatalog.standalone;
 
 
-import javax.annotation.PostConstruct;
-
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,9 +19,10 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.zowe.apiml.security.FixedHeadersConfigurer;
 import org.zowe.apiml.product.constants.CoreService;
 
-import lombok.extern.slf4j.Slf4j;
+import javax.annotation.PostConstruct;
 
 @Configuration
 @ConditionalOnProperty(value = "apiml.catalog.standalone.enabled", havingValue = "true")
@@ -37,15 +37,15 @@ public class StandaloneSecurityConfig {
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain permitAll(HttpSecurity http) throws Exception {
-        return http
-            .csrf().disable()   // NOSONAR
-            .headers().httpStrictTransportSecurity().disable()
-            .frameOptions().disable().and()
+        return FixedHeadersConfigurer.fix(http
+                .csrf().disable()   // NOSONAR
+                .headers().httpStrictTransportSecurity().disable()
+                .frameOptions().disable().and()
 
-            .authorizeRequests()
-            .anyRequest().permitAll()
-            .and()
-            .build();
+                .authorizeRequests()
+                .anyRequest().permitAll()
+                .and()
+            ).build();
     }
 
 }

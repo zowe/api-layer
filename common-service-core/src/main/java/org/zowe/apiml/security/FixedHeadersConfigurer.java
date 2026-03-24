@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.security.config;
+package org.zowe.apiml.security;
 
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
@@ -29,7 +29,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 @RequiredArgsConstructor
-class FixedHeadersConfigurer<H extends HttpSecurityBuilder<H>> extends HeadersConfigurer<H> {
+public class FixedHeadersConfigurer<H extends HttpSecurityBuilder<H>> extends HeadersConfigurer<H> {
 
     @Delegate(excludes = Configure.class)
     protected final HeadersConfigurer<H> original;

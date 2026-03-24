@@ -8,10 +8,13 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.acceptance;
+package org.zowe.apiml.caching.acceptance;
 
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Profile;
@@ -19,7 +22,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.gateway.GatewayApplication;
+import org.zowe.apiml.caching.CachingService;
+import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.SslContextConfigurer;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -30,12 +35,13 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 
 @SpringBootTest(
     classes = {
-        GatewayApplication.class,
+        CachingService.class,
         ResponseHeaderFixTest.TestController.class
     },
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @ActiveProfiles("ResponseHeaderFixTest")
+@TestInstance(TestInstance.Lifecycle. PER_CLASS)
 public class ResponseHeaderFixTest {
 
     private static final int TEST_CONTENT_LENGTH = 101;
@@ -43,6 +49,19 @@ public class ResponseHeaderFixTest {
 
     @LocalServerPort
     protected int port;
+
+    @Value("${server.ssl.keyPassword}")
+    private char[] password;
+    @Value("${server.ssl.keyStore}")
+    private String client_cert_keystore;
+    @Value("${server.ssl.keyStore}")
+    private String keystore;
+
+    @BeforeAll
+    void setup() throws Exception {
+        SslContextConfigurer configurer = new SslContextConfigurer(password, client_cert_keystore, keystore);
+        SslContext.prepareSslAuthentication(configurer);
+    }
 
     @ParameterizedTest(name = "Test handling setting context-type using {1}")
     @CsvSource({
@@ -53,13 +72,13 @@ public class ResponseHeaderFixTest {
     })
     void givenRequest_whenSetContentLength_thenIsPropagated(int method, String description) {
         given()
-            .relaxedHTTPSValidation()
+            .config(SslContext.clientCertApiml)
         .when()
             .get(String.format("https://localhost:%d/test/%d/%s", port, method, CONTENT_LENGTH))
         .then()
             .statusCode(SC_OK)
             .header(CONTENT_LENGTH, String.valueOf(TEST_CONTENT_LENGTH))
-            .header("Strict-Transport-Security", is(notNullValue()))
+            .header("X-Frame-Options", is(notNullValue()))
             .header("X-XSS-Protection", is(notNullValue()));
     }
 
@@ -72,13 +91,13 @@ public class ResponseHeaderFixTest {
     })
     void givenRequest_whenDontSetContentLength_thenIsMissing(int method, String description) {
         given()
-            .relaxedHTTPSValidation()
+            .config(SslContext.clientCertApiml)
         .when()
             .get(String.format("https://localhost:%d/test/%d/%s", port, method, "otherHeaderName"))
         .then()
             .statusCode(SC_OK)
             .header(CONTENT_LENGTH,"0")
-            .header("Strict-Transport-Security", is(notNullValue()))
+            .header("X-Frame-Options", is(notNullValue()))
             .header("X-XSS-Protection", is(notNullValue()));
     }
 
@@ -110,3 +129,4 @@ public class ResponseHeaderFixTest {
     }
 
 }
+

@@ -23,6 +23,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.filter.SecureConnectionFilter;
+import org.zowe.apiml.security.FixedHeadersConfigurer;
 
 import java.util.Collections;
 
@@ -75,7 +76,7 @@ public class SpringSecurityConfig {
             http.authorizeRequests(requests -> requests.anyRequest().permitAll());
         }
 
-        return http.build();
+        return FixedHeadersConfigurer.fix(http).build();
     }
 
     private UserDetailsService x509UserDetailsService() {

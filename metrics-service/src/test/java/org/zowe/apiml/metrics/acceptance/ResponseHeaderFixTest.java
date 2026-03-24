@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.acceptance;
+package org.zowe.apiml.metrics.acceptance;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -19,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.gateway.GatewayApplication;
+import org.zowe.apiml.metrics.MetricsServiceApplication;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -30,10 +30,14 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 
 @SpringBootTest(
     classes = {
-        GatewayApplication.class,
+        MetricsServiceApplication.class,
         ResponseHeaderFixTest.TestController.class
     },
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {
+        "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
+        "server.ssl.trustStore=../keystore/localhost/localhost.truststore.p12"
+    }
 )
 @ActiveProfiles("ResponseHeaderFixTest")
 public class ResponseHeaderFixTest {
@@ -55,11 +59,11 @@ public class ResponseHeaderFixTest {
         given()
             .relaxedHTTPSValidation()
         .when()
-            .get(String.format("https://localhost:%d/test/%d/%s", port, method, CONTENT_LENGTH))
+            .get(String.format("https://localhost:%d/metrics-service/test/%d/%s", port, method, CONTENT_LENGTH))
         .then()
             .statusCode(SC_OK)
             .header(CONTENT_LENGTH, String.valueOf(TEST_CONTENT_LENGTH))
-            .header("Strict-Transport-Security", is(notNullValue()))
+            .header("Cache-Control", is(notNullValue()))
             .header("X-XSS-Protection", is(notNullValue()));
     }
 
@@ -74,11 +78,11 @@ public class ResponseHeaderFixTest {
         given()
             .relaxedHTTPSValidation()
         .when()
-            .get(String.format("https://localhost:%d/test/%d/%s", port, method, "otherHeaderName"))
+            .get(String.format("https://localhost:%d/metrics-service/test/%d/%s", port, method, "otherHeaderName"))
         .then()
             .statusCode(SC_OK)
             .header(CONTENT_LENGTH,"0")
-            .header("Strict-Transport-Security", is(notNullValue()))
+            .header("Cache-Control", is(notNullValue()))
             .header("X-XSS-Protection", is(notNullValue()));
     }
 
@@ -110,3 +114,4 @@ public class ResponseHeaderFixTest {
     }
 
 }
+

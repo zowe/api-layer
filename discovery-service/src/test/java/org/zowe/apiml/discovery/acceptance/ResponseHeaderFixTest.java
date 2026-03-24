@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.acceptance;
+package org.zowe.apiml.discovery.acceptance;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -19,7 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.gateway.GatewayApplication;
+import org.zowe.apiml.discovery.DiscoveryServiceApplication;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -30,7 +30,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 
 @SpringBootTest(
     classes = {
-        GatewayApplication.class,
+        DiscoveryServiceApplication.class,
         ResponseHeaderFixTest.TestController.class
     },
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -54,12 +54,14 @@ public class ResponseHeaderFixTest {
     void givenRequest_whenSetContentLength_thenIsPropagated(int method, String description) {
         given()
             .relaxedHTTPSValidation()
+            .auth().preemptive().basic("eureka", "password")
         .when()
-            .get(String.format("https://localhost:%d/test/%d/%s", port, method, CONTENT_LENGTH))
+            .get(String.format("http://localhost:%d/test/%d/%s", port, method, CONTENT_LENGTH))
         .then()
             .statusCode(SC_OK)
             .header(CONTENT_LENGTH, String.valueOf(TEST_CONTENT_LENGTH))
-            .header("Strict-Transport-Security", is(notNullValue()))
+            .header("X-Frame-Options", is(notNullValue()))
+            .header("Cache-Control", is(notNullValue()))
             .header("X-XSS-Protection", is(notNullValue()));
     }
 
@@ -73,12 +75,14 @@ public class ResponseHeaderFixTest {
     void givenRequest_whenDontSetContentLength_thenIsMissing(int method, String description) {
         given()
             .relaxedHTTPSValidation()
+            .auth().preemptive().basic("eureka", "password")
         .when()
-            .get(String.format("https://localhost:%d/test/%d/%s", port, method, "otherHeaderName"))
+            .get(String.format("http://localhost:%d/test/%d/%s", port, method, "otherHeaderName"))
         .then()
             .statusCode(SC_OK)
             .header(CONTENT_LENGTH,"0")
-            .header("Strict-Transport-Security", is(notNullValue()))
+            .header("X-Frame-Options", is(notNullValue()))
+            .header("Cache-Control", is(notNullValue()))
             .header("X-XSS-Protection", is(notNullValue()));
     }
 
@@ -110,3 +114,4 @@ public class ResponseHeaderFixTest {
     }
 
 }
+
