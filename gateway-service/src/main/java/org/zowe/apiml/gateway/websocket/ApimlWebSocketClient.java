@@ -31,8 +31,8 @@ public class ApimlWebSocketClient extends TomcatWebSocketClient {
     @Override
     protected ClientEndpointConfig createEndpointConfig(Configurator configurator, List<String> subProtocols) {
         return ClientEndpointConfig.Builder.create()
-				.configurator(configurator)
-				.preferredSubprotocols(subProtocols)
+                .configurator(configurator)
+                .preferredSubprotocols(subProtocols)
                 .sslContext(sslContext)
                 .build();
     }
