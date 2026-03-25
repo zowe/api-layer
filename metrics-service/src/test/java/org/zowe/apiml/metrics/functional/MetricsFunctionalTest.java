@@ -10,17 +10,18 @@
 
 package org.zowe.apiml.metrics.functional;
 
+import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.test.annotation.DirtiesContext;
 import org.zowe.apiml.metrics.MetricsServiceApplication;
-
-import io.restassured.RestAssured;
 
 @SpringBootTest(classes = MetricsServiceApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
         "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
         "server.ssl.trustStore=../keystore/localhost/localhost.truststore.p12" })
+@DirtiesContext
 public abstract class MetricsFunctionalTest {
     @LocalServerPort
     protected int port;
