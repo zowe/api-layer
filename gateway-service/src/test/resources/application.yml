@@ -23,10 +23,8 @@ server:
     ssl:
         clientAuth: want
         keyAlias: localhost
-        # keyAlias: server
         keyPassword: password
         keyStore: ../keystore/localhost/localhost.keystore.p12
-        # keyStore: /Users/pc891986/Projects/zowe-rest-api-service-sdk/samples/rest-api-kotlin-spring/config/ca32/keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
         trustStore: ../keystore/localhost/localhost.truststore.p12
