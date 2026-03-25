@@ -11,7 +11,6 @@
 package org.zowe.apiml;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +35,6 @@ import static org.zowe.apiml.security.common.error.ErrorType.TOKEN_NOT_VALID;
 @Service
 @Primary
 @RequiredArgsConstructor
-@Slf4j
 public class GatewaySecurityApi implements GatewaySecurity {
 
     private final CompoundAuthProvider compoundAuthProvider;
