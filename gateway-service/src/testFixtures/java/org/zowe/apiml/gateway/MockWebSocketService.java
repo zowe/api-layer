@@ -10,16 +10,26 @@
 
 package org.zowe.apiml.gateway;
 
+import com.netflix.appinfo.InstanceInfo.PortType;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Singular;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.SSLParametersWebSocketServerFactory;
 import org.java_websocket.server.WebSocketServer;
 
+import javax.net.ssl.SSLContext;
+
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,27 +37,39 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import static org.awaitility.Awaitility.await;
+
 @Slf4j
 @Builder(builderClassName = "MockWsServiceBuilder", buildMethodName = "internalWsBuild", builderMethodName = "wsBuilder")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PACKAGE)
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class MockWebSocketService extends MockService {
 
     private WebSocketServer webSocketServer;
     @Singular
     private List<Consumer<Object>> assertions;
+    private SSLContext sslContext;
 
     @Override
     public void start() throws IOException {
         if (!status.get().isUp()) {
             this.init();
             webSocketServer.start();
-            port = webSocketServer.getPort();
+            await()
+                .atMost(Duration.ofSeconds(30))
+                .until(() -> webSocketServer.getPort() != 0);
+
+            this.port = webSocketServer.getPort();
             setStatus(Status.STARTED);
         }
     }
 
     private void init() {
-        webSocketServer = new WebSocketServerImpl();
+        webSocketServer = new WebSocketServerImpl(new InetSocketAddress(getPort() > 1024 ? getPort() : 0));
+        if (sslContext != null) {
+            webSocketServer.setWebSocketFactory(new SSLParametersWebSocketServerFactory(sslContext, sslContext.getDefaultSSLParameters()));
+        }
 
         if (getGatewayUrl() == null) gatewayUrl = "ws/v1";
         if (getServiceUrl() == null) serviceUrl = "/" + serviceId;
@@ -77,13 +99,22 @@ public class MockWebSocketService extends MockService {
             try {
                 webSocketServer.stop();
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
                 setStatus(Status.ERROR);
             }
         }
 
         setStatus(Status.ZOMBIE);
+    }
+
+    @Override
+    public com.netflix.appinfo.InstanceInfo.Builder getInstanceInfo() {
+        var builder = super.getInstanceInfo();
+        if (sslContext != null) {
+            builder.setSecurePort(port);
+            builder.enablePort(PortType.SECURE, true);
+            builder.enablePort(PortType.UNSECURE, false);
+        }
+        return builder;
     }
 
     @Override
@@ -98,14 +129,18 @@ public class MockWebSocketService extends MockService {
 
         private List<Consumer<MockService>> statusChangedlisteners = new ArrayList<>();
         private String serviceId;
+        private String hostname;
+        private int port;
+        private SSLContext sslContext;
 
         public MockWebSocketService build() {
             var mockWebSocketService = internalWsBuild();
-            mockWebSocketService.hostname = "localhost";
-            mockWebSocketService.port = idCounter++;
+            mockWebSocketService.hostname = StringUtils.isBlank(hostname) ? "localhost" : hostname;
             mockWebSocketService.statusChangedlisteners = this.statusChangedlisteners;
             mockWebSocketService.serviceId = this.serviceId;
+            mockWebSocketService.port = port;
             mockWebSocketService.additionalMetadata = new HashMap<>();
+            mockWebSocketService.sslContext = sslContext;
             return mockWebSocketService;
         }
 
@@ -133,11 +168,30 @@ public class MockWebSocketService extends MockService {
             return this;
         }
 
+        public MockWsServiceBuilder hostname(String hostname) {
+            this.hostname = hostname;
+            return this;
+        }
+
+        public MockWsServiceBuilder port(int port) {
+            this.port = port;
+            return this;
+        }
+
+        public MockWsServiceBuilder sslContext(SSLContext sslContext) {
+            this.sslContext = sslContext;
+            return this;
+        }
+
         AtomicInteger atCounter = new AtomicInteger(0);
 
     }
 
     private class WebSocketServerImpl extends WebSocketServer {
+
+        WebSocketServerImpl(InetSocketAddress address) {
+            super(address);
+        }
 
         @Override
         public void onOpen(WebSocket conn, ClientHandshake handshake) {
@@ -174,7 +228,7 @@ public class MockWebSocketService extends MockService {
                     }
                 });
             }
-            conn.send("ACK:" + message.remaining());
+            conn.send(message);
         }
 
         @Override

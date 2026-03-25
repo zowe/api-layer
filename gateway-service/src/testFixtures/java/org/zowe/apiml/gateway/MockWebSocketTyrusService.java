@@ -27,12 +27,15 @@ import org.glassfish.tyrus.server.Server;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+
+import static org.awaitility.Awaitility.await;
 
 @Slf4j
 @Builder(builderClassName = "MockWsTyrusServiceBuilder", buildMethodName = "internalWsTyrusBuild", builderMethodName = "wsTyrusBuilder")
@@ -49,7 +52,10 @@ public class MockWebSocketTyrusService extends MockWebSocketService {
             this.init();
             try {
                 this.tyrusServer.start();
-                port = tyrusServer.getPort();
+                await()
+                    .atMost(Duration.ofSeconds(30))
+                    .until(() -> tyrusServer.getPort() != 0);
+                this.port = tyrusServer.getPort();
             } catch (DeploymentException e) {
                 throw new IOException(e);
             }
@@ -58,7 +64,7 @@ public class MockWebSocketTyrusService extends MockWebSocketService {
     }
 
     private void init() {
-        this.tyrusServer = new Server(hostname, port, "/", null, BinaryEchoServer.class);
+        this.tyrusServer = new Server(StringUtils.isBlank(hostname) ? "localhost" : hostname, port > 1024 ? port : 0, "/", null, BinaryEchoServer.class);
 
         if (getGatewayUrl() == null) gatewayUrl = "ws/v1";
         if (getServiceUrl() == null) serviceUrl = "/" + serviceId;
@@ -83,7 +89,10 @@ public class MockWebSocketTyrusService extends MockWebSocketService {
 
     @Override
     Map<String, String> getMetadata() {
-        return super.getMetadata();
+        var metadata = super.getMetadata();
+        metadata.put("apiml.routes.ws-v1.gatewayUrl", "ws/v1");
+        metadata.put("apiml.routes.ws-v1.serviceUrl", "/");
+        return metadata;
     }
 
     @Override
