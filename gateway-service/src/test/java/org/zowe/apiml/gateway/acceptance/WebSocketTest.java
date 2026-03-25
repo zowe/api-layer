@@ -46,6 +46,7 @@ import java.util.function.BiConsumer;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -101,6 +102,9 @@ class WebSocketTest {
         @Test
         void whenConnectingToWrongCert_thenSucceed() throws URISyntaxException, InterruptedException {
             var connected = webSocketClient.connectBlocking();
+            webSocketClient.setOnClose((status, reason) -> {
+                assertFalse(reason != null && reason.contains("No name matching localhost found"));
+            });
 
             assertTrue(connected);
 
@@ -135,6 +139,8 @@ class WebSocketTest {
         private WebSocketTestClient webSocketClientTyrus;
         private WebSocketTestClient webSocketClientStrict;
 
+        private MockService serviceStrictness;
+
         @BeforeAll
         void setUp() throws URISyntaxException {
             var service1 = mockServiceWs("websocketservice")
@@ -150,7 +156,7 @@ class WebSocketTest {
             var service2 = mockServiceWsTyrus("tyrusws") // To test response with frames
                 .start();
 
-            var service3 = mockServiceWs("websocketservicessl")
+            serviceStrictness = mockServiceWs("websocketservicessl")
                 .sslContext(apimlNonStrictSSLContext) // To verify the non strict hostname restriction works
                 .assertion(message -> {
                     if (message instanceof String s) {
@@ -163,7 +169,7 @@ class WebSocketTest {
 
             assertEquals(MockService.Status.STARTED, service1.getStatus());
             assertEquals(MockService.Status.STARTED, service2.getStatus());
-            assertEquals(MockService.Status.STARTED, service3.getStatus());
+            assertEquals(MockService.Status.STARTED, serviceStrictness.getStatus());
         }
 
         @BeforeEach
@@ -220,7 +226,8 @@ class WebSocketTest {
             webSocketClientStrict.setOnClose((status, reason) -> {
                 assertEquals(1011, status);
                 assertNotNull(reason);
-                assertTrue(reason.contains("No name matching localhost found"));
+                // assertTrue(reason.contains("No name matching localhost found"), "reason was: " + reason); On Netty client
+                assertTrue(reason.contains("HTTP request to initiate the WebSocket connection to [wss://localhost:" + serviceStrictness.getPort() + "/websocketservicessl/ws] failed")); // On Tomcat client
                 reasonValid.set(true);
             });
 
