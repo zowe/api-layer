@@ -11,6 +11,7 @@
 package org.zowe.apiml;
 
 import lombok.RequiredArgsConstructor;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.annotation.Primary;
@@ -26,14 +27,16 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
-
+import lombok.extern.slf4j.Slf4j;
 import java.util.Optional;
 
 import static org.zowe.apiml.security.common.error.ErrorType.TOKEN_NOT_VALID;
 
+
 @Service
 @Primary
 @RequiredArgsConstructor
+@Slf4j
 public class GatewaySecurityApi implements GatewaySecurity {
 
     private final CompoundAuthProvider compoundAuthProvider;
@@ -58,8 +61,10 @@ public class GatewaySecurityApi implements GatewaySecurity {
 
     @Override
     public QueryResponse query(String token) {
+        log.debug("Querying JWT.");
         var authentication = authenticationService.validateJwtToken(token);
         if (authentication.isAuthenticated()) {
+            log.debug("JWT is valid. Parsing JWT.");
             return authenticationService.parseJwtToken(token);
         }
         throw new TokenNotValidException(TOKEN_NOT_VALID.getDefaultMessage());

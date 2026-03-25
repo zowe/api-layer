@@ -17,11 +17,16 @@ import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.gateway.service.TokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
+
 import reactor.core.publisher.Mono;
+
 import org.springframework.context.annotation.Primary;
+import lombok.extern.slf4j.Slf4j;
+
 
 @Component
 @Primary
+@Slf4j
 public class LocalTokenProvider extends TokenProvider {
     private final AuthenticationService authenticationService;
 
@@ -33,7 +38,9 @@ public class LocalTokenProvider extends TokenProvider {
     @Override
     public Mono<QueryResponse> validateToken(String token) {
         return Mono.fromCallable(() -> {
+            log.debug("Validating JWT.");
             authenticationService.validateJwtToken(token);
+            log.debug("Parsing JWT.");
             return authenticationService.parseJwtToken(token);
         }).onErrorResume(e ->
             Mono.error(new AuthenticationCredentialsNotFoundException("Token validation failed", e))
