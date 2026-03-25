@@ -104,8 +104,8 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${caching.storage.infinispan.distributedSyncTimeoutSecs:360}")
     private int distributedSyncTimeout;
 
-    @Value("${caching.storage.infinispan.segmented:true}")
-    private boolean segmented;
+    @Value("${caching.storage.infinispan.numSegments:256}")
+    private int numSegments;
 
     private AtomicReference<ClusteredLock> zoweInvalidatedTokenLock = new AtomicReference<>();
 
@@ -156,8 +156,9 @@ public class InfinispanConfig implements InitializingBean {
         holder.newConfigurationBuilder("default")
             .persistence()
             .addSoftIndexFileStore()
-            .segmented(segmented)
-            .clustering().cacheMode(CacheMode.REPL_SYNC).hash().numSegments(16);
+            .clustering()
+            .cacheMode(CacheMode.REPL_SYNC)
+            .hash().numSegments(numSegments);
         holder.getGlobalConfigurationBuilder().defaultCacheName("default");
         holder.getGlobalConfigurationBuilder().transport().stack("prod").distributedSyncTimeout(distributedSyncTimeout, TimeUnit.SECONDS);
         return holder;
@@ -167,8 +168,11 @@ public class InfinispanConfig implements InitializingBean {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder
             .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
-            .persistence().addSoftIndexFileStore().segmented(segmented).clustering()
-            .clustering().cacheMode(CacheMode.REPL_SYNC).hash().numSegments(16);
+            .persistence()
+            .addSoftIndexFileStore()
+            .clustering()
+            .cacheMode(CacheMode.REPL_SYNC)
+            .hash().numSegments(numSegments);
         return builder;
     }
 
