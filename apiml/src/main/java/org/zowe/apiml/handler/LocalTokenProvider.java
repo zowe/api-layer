@@ -38,7 +38,6 @@ public class LocalTokenProvider extends TokenProvider {
     @Override
     public Mono<QueryResponse> validateToken(String token) {
         return Mono.fromCallable(() -> {
-            log.debug("Validating JWT: ...{}", StringUtils.right(token, 15));
             authenticationService.validateJwtToken(token);
             return authenticationService.parseJwtToken(token);
         }).onErrorResume(e ->

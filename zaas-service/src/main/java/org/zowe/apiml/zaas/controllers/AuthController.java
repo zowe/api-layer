@@ -131,7 +131,6 @@ public class AuthController {
 
         final String jwtToken = uri.substring(index + endpoint.length());
         try {
-            log.debug("Invalidating JWT: ...{}", StringUtils.right(jwtToken, 15));
             final boolean invalidated = authenticationService.invalidateJwtToken(jwtToken, false);
             response.setStatus(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE);
         } catch (TokenNotValidException e) {

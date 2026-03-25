@@ -188,6 +188,7 @@ public class AuthenticationService {
      * @return state of invalidate (true - token was invalidated)
      */
     public Boolean invalidateJwtToken(String jwtToken, boolean distribute) {
+        log.debug("Invalidating JWT: ...{}", StringUtils.right(jwtToken, 15));
         if (jwtToken != null && isInvalidated(jwtToken)) {
             return Boolean.TRUE;
         }
@@ -374,6 +375,7 @@ public class AuthenticationService {
         if (jwtToken != null && validationJwtTokenCache != null) {
             Cache.ValueWrapper cached = validationJwtTokenCache.get(jwtToken);
             if (cached != null) {
+                log.debug("JWT found in the cache.");
                 return (TokenAuthentication) cached.get();
             }
         }

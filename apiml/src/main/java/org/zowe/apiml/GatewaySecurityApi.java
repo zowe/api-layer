@@ -61,7 +61,6 @@ public class GatewaySecurityApi implements GatewaySecurity {
 
     @Override
     public QueryResponse query(String token) {
-        log.debug("Validating JWT: ...{}", StringUtils.right(token, 15));
         var authentication = authenticationService.validateJwtToken(token);
         if (authentication.isAuthenticated()) {
             return authenticationService.parseJwtToken(token);

@@ -48,7 +48,6 @@ public class SuccessfulRefreshHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         if (authentication instanceof TokenAuthentication) {
             TokenAuthentication tokenAuth = (TokenAuthentication) authentication;
-            log.debug("Invalidating JWT: ...{}", StringUtils.right(tokenAuth.getCredentials(), 15));
             authenticationService.invalidateJwtToken(tokenAuth.getCredentials(), true);
             String jwtToken = tokenCreationService.createJwtTokenWithoutCredentials(tokenAuth.getPrincipal());
             setCookie(jwtToken, response);

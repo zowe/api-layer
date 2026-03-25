@@ -55,7 +55,6 @@ public class JWTLogoutHandler implements LogoutHandler {
             failure.onAuthenticationFailure(request, response, new TokenNotValidException("The token you are trying to logout is not valid"));
         } else {
             try {
-                log.debug("Invalidating JWT: ...{}", StringUtils.right(token, 15));
                 authenticationService.invalidateJwtToken(token, true);
             } catch (TokenNotValidException e) {
                 // TokenNotValidException thrown in cases where the format is not valid

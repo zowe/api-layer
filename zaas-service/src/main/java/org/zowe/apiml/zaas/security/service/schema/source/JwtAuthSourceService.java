@@ -74,7 +74,6 @@ public class JwtAuthSourceService extends TokenAuthSourceService {
     public boolean isValid(AuthSource authSource) {
         if (authSource instanceof JwtAuthSource) {
             String jwtToken = ((JwtAuthSource) authSource).getRawSource();
-            log.debug("Validating JWT: ...{}", StringUtils.right(jwtToken, 15));
             return jwtToken != null && authenticationService.validateJwtToken(jwtToken).isAuthenticated();
         }
         return false;
