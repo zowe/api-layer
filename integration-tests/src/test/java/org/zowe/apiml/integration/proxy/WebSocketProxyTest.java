@@ -14,7 +14,6 @@ import io.restassured.RestAssured;
 import jakarta.websocket.ContainerProvider;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.java_websocket.client.WebSocketClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -230,12 +229,6 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
                         assertTrue(response.toString().contains("x-test-2"), "WebSocket response: " + response + ". Does not contain x-test-2");
                         session.close();
-                    }
-
-                    @Test
-                    void whenPayloadFramesTooLarge() {
-                        var client = WebSocketClient.class;
-
                     }
 
                 }
