@@ -28,6 +28,13 @@ server:
     #     trustStorePassword: password
     #     trustStoreType: PKCS12
 apiml:
+    catalog:
+        eureka:
+            instance:
+                metadata-map:
+                    apiml:
+                        corsEnabled: true
+                        corsAllowedOrigins: http://localhost:5173
     internal-discovery:
         port: 10011
     health:

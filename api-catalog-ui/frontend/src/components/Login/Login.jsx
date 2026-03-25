@@ -28,6 +28,7 @@ import {
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import WarningIcon from '@material-ui/icons/Warning';
+import errorMessages from '../../error-messages.json';
 import Spinner from '../Spinner/Spinner';
 import './Login.css';
 import Footer from '../Footer/Footer';
@@ -80,8 +81,6 @@ function Login(props) {
         let invalidNewPassword;
         let isSuspended;
         let invalidCredentials;
-        // eslint-disable-next-line global-require
-        const errorMessages = require('../../error-messages.json');
         if (error?.messageNumber && error?.messageType && error?.messageContent) {
             messageText = `(${error.messageNumber}) ${error.messageContent}`;
             const filter = errorMessages.messages.filter(

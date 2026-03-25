@@ -36,7 +36,7 @@ export function getDiff(serviceId, oldVersion, newVersion) {
     return (dispatch) => {
         dispatch(request(serviceId, oldVersion, newVersion));
 
-        return fetch(`${getBaseUrl()}${process.env.REACT_APP_APIDOC_UPDATE}/${serviceId}/${oldVersion}/${newVersion}`)
+        return fetch(`${getBaseUrl()}${import.meta.env.VITE_APIDOC_UPDATE}/${serviceId}/${oldVersion}/${newVersion}`)
             .then((response) => response.text())
             .then((text) => dispatch(receive(text)))
             .catch((e) => {
