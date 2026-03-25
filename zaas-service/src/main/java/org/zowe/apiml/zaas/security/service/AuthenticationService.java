@@ -471,6 +471,7 @@ public class AuthenticationService {
      * @return the query response
      */
     public QueryResponse parseJwtToken(String jwtToken) {
+        log.debug("Parsing JWT: ...{}", StringUtils.right(jwtToken, 15));
         var claims = getJwtClaims(jwtToken);
         return parseQueryResponse(claims);
     }
