@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.gateway.sse;
 
+import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -20,12 +22,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -46,13 +52,11 @@ import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import static org.springframework.http.MediaType.TEXT_PLAIN;
 import static org.zowe.apiml.security.SecurityUtils.loadKeyStore;
 
 @Slf4j
@@ -104,7 +108,12 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
 
     @GetMapping({"/sse/**","/*/sse/**"})
     public SseEmitter getEmitter(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        SseEmitter emitter = new SseEmitter(-1L);
+        SseEmitter emitter = new SseEmitter(-1L) {
+            @Override
+            public void send(Object object, MediaType mediaType) throws IOException {
+                send(new SseEventBuilderFixedImpl().data(object, mediaType));
+            }
+        };
 
         String uri = request.getRequestURI();
         List<String> uriParts = getUriParts(uri);
@@ -169,20 +178,13 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
 
         String data = event.data();
         if (hasEnter(data)) {
-            if (data.endsWith("\n\n")) {
-                data = data.substring(0, data.length() - 2);
-            }
-
             data = data.replaceAll("\r\n", "\ndata:");
             data = data.replaceAll("\n", "\ndata:");
         }
 
         String comment = event.comment();
         if (hasEnter(comment)) {
-            if (comment.endsWith("\n")) {
-                comment = comment.substring(0, comment.length() - 1);
-            }
-            comment = comment.replaceAll("\n", "\n:") + '\n';
+            comment = comment.replaceAll("\n", "\n:");
         }
 
         return ServerSentEvent.<String>builder()
@@ -262,4 +264,122 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
     public void addRoutedServices(String serviceId, RoutedServices routedServices) {
         routedServicesMap.put(serviceId, routedServices);
     }
+
+    private static class SseEventBuilderFixedImpl implements SseEmitter.SseEventBuilder {
+
+        private final Set<ResponseBodyEmitter.DataWithMediaType> dataToSend = new LinkedHashSet<>(4);
+
+        private final StringBuilder sb = new StringBuilder();
+
+
+        private boolean hasName;
+
+        @Override
+        public SseEventBuilderFixedImpl id(String id) {
+            checkEvent(id);
+            append("id:").append(id).append('\n');
+            return this;
+        }
+
+        @Override
+        public SseEventBuilderFixedImpl name(String name) {
+            checkEvent(name);
+            this.hasName = true;
+            append("event:").append(name).append('\n');
+            return this;
+        }
+
+        @Override
+        public SseEventBuilderFixedImpl reconnectTime(long reconnectTimeMillis) {
+            append("retry:").append(String.valueOf(reconnectTimeMillis)).append('\n');
+            return this;
+        }
+
+        @Override
+        public SseEventBuilderFixedImpl comment(String comment) {
+            append(':').append(StringUtils.replace(comment, "\n", "\n:")).append('\n');
+            return this;
+        }
+
+        @Override
+        public SseEventBuilderFixedImpl data(Object object) {
+            return data(object, null);
+        }
+
+        @Override
+        public SseEventBuilderFixedImpl data(Object object, @Nullable MediaType mediaType) {
+            if (object instanceof ModelAndView && !this.hasName && ((ModelAndView) object).getViewName() != null) {
+                name(((ModelAndView) object).getViewName());
+            }
+            append("data:");
+            saveAppendedText(TEXT_PLAIN);
+            if (object instanceof String) {
+                writeStringData((String) object, mediaType);
+            }
+            else {
+                this.dataToSend.add(new ResponseBodyEmitter.DataWithMediaType(object, mediaType));
+            }
+
+            append('\n');
+            return this;
+        }
+
+        private static void checkEvent(String content) {
+            Assert.isTrue(content.indexOf('\n') == -1 && content.indexOf('\r') == -1,
+                "illegal character '\\n' or '\\r' in event content");
+        }
+
+        private void writeStringData(String input, @Nullable MediaType mediaType) {
+            if (input.indexOf('\n') == -1 && input.indexOf('\r') == -1) {
+                this.dataToSend.add(new ResponseBodyEmitter.DataWithMediaType(input, mediaType));
+            }
+            else {
+                int length = input.length();
+                for (int i = 0; i < length; i++) {
+                    char c = input.charAt(i);
+                    if (c == '\r') {
+                        if (i + 1 < length && input.charAt(i + 1) == '\n') {
+                            i++;
+                        }
+                        this.sb.append("\ndata:");
+                    }
+                    else if (c == '\n') {
+                        this.sb.append("\ndata:");
+                    }
+                    else {
+                        this.sb.append(c);
+                    }
+                }
+                saveAppendedText(mediaType);
+            }
+        }
+
+        SseEventBuilderFixedImpl append(String text) {
+            this.sb.append(text);
+            return this;
+        }
+
+        SseEventBuilderFixedImpl append(char ch) {
+            this.sb.append(ch);
+            return this;
+        }
+
+        @Override
+        public Set<ResponseBodyEmitter.DataWithMediaType> build() {
+            if (!org.springframework.util.StringUtils.hasLength(this.sb) && this.dataToSend.isEmpty()) {
+                return Collections.emptySet();
+            }
+            append('\n');
+            saveAppendedText(TEXT_PLAIN);
+            return this.dataToSend;
+        }
+
+        private void saveAppendedText(@Nullable MediaType mediaType) {
+            if (org.springframework.util.StringUtils.hasLength(this.sb)) {
+                this.dataToSend.add(new ResponseBodyEmitter.DataWithMediaType(this.sb.toString(), mediaType));
+                this.sb.setLength(0);
+            }
+        }
+    }
+
 }
