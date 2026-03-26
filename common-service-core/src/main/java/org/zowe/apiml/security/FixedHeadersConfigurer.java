@@ -46,11 +46,11 @@ public class FixedHeadersConfigurer<H extends HttpSecurityBuilder<H>> extends He
 
     @Override
     public void configure(H http) {
-        HeaderWriterFilter headersFilter = createHeaderWriterFilter();
+        HeaderWriterFilter headersFilter = createHeaderWriterFilterFixed();
         http.addFilter(headersFilter);
     }
 
-    private HeaderWriterFilter createHeaderWriterFilter() {
+    private HeaderWriterFilter createHeaderWriterFilterFixed() {
         List<HeaderWriter> writers;
         try {
             Method getHeaderWriters = HeadersConfigurer.class.getDeclaredMethod("getHeaderWriters");
@@ -135,20 +135,20 @@ public class FixedHeadersConfigurer<H extends HttpSecurityBuilder<H>> extends He
         protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
             if (this.shouldWriteHeadersEagerly) {
-                doHeadersBefore(request, response, filterChain);
+                doHeadersBeforeCopy(request, response, filterChain);
             }
             else {
-                doHeadersAfter(request, response, filterChain);
+                doHeadersAfterFixed(request, response, filterChain);
             }
         }
 
-        private void doHeadersBefore(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+        private void doHeadersBeforeCopy(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws IOException, ServletException {
-            writeHeaders(request, response);
+            writeHeadersCopy(request, response);
             filterChain.doFilter(request, response);
         }
 
-        private void doHeadersAfter(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+        private void doHeadersAfterFixed(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws IOException, ServletException {
             FixedHeaderWriterResponse headerWriterResponse = new FixedHeaderWriterResponse(request, response);
             FixedHeaderWriterRequest headerWriterRequest = new FixedHeaderWriterRequest(request, headerWriterResponse);
@@ -160,7 +160,7 @@ public class FixedHeadersConfigurer<H extends HttpSecurityBuilder<H>> extends He
             }
         }
 
-        void writeHeaders(HttpServletRequest request, HttpServletResponse response) {
+        void writeHeadersCopy(HttpServletRequest request, HttpServletResponse response) {
             for (HeaderWriter writer : this.headerWriters) {
                 writer.writeHeaders(request, response);
             }
@@ -185,7 +185,7 @@ public class FixedHeadersConfigurer<H extends HttpSecurityBuilder<H>> extends He
                 if (isDisableOnResponseCommitted()) {
                     return;
                 }
-                FixedHeaderWriterFilter.this.writeHeaders(this.request, getHttpResponse());
+                FixedHeaderWriterFilter.this.writeHeadersCopy(this.request, getHttpResponse());
             }
 
             private HttpServletResponse getHttpResponse() {
