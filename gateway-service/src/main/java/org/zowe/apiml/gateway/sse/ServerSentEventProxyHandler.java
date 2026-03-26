@@ -15,6 +15,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -141,11 +142,63 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
         return emitter;
     }
 
+    boolean hasEnter(String in) {
+        return StringUtils.containsAny(in, '\n', '\r');
+    }
+
+    boolean hasEnter(ServerSentEvent<String> event) {
+        return
+            hasEnter(event.data()) ||
+            hasEnter(event.event()) ||
+            hasEnter(event.comment()) ||
+            hasEnter(event.id());
+    }
+
+    ServerSentEvent<String> sanitize(ServerSentEvent<String> event) {
+        if (!hasEnter(event)) {
+            return event;
+        }
+
+        if (hasEnter(event.event())) {
+            throw new IllegalArgumentException("Illegal character in event content");
+        }
+
+        if (hasEnter(event.id())) {
+            throw new IllegalArgumentException("Illegal character in event content");
+        }
+
+        String data = event.data();
+        if (hasEnter(data)) {
+            if (data.endsWith("\n\n")) {
+                data = data.substring(0, data.length() - 2);
+            }
+
+            data = data.replaceAll("\r\n", "\ndata:");
+            data = data.replaceAll("\n", "\ndata:");
+        }
+
+        String comment = event.comment();
+        if (hasEnter(comment)) {
+            if (comment.endsWith("\n")) {
+                comment = comment.substring(0, comment.length() - 1);
+            }
+            comment = comment.replaceAll("\n", "\n:") + '\n';
+        }
+
+        return ServerSentEvent.<String>builder()
+            .comment(comment)
+            .event(event.event())
+            .id(event.id())
+            .data(data)
+            .retry(event.retry())
+            .build();
+    }
+
     // package protected for unit testing
     Consumer<ServerSentEvent<String>> consumer(SseEmitter emitter) {
         return content -> {
             try {
-                emitter.send(content.data());
+                emitter.send(sanitize(content).data());
             } catch (IOException error) {
                 emitter.completeWithError(error);
             }
