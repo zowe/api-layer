@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static org.awaitility.Awaitility.await;
@@ -149,12 +148,9 @@ public class MockWebSocketService extends MockService {
             var mockService = build();
             try {
                 mockService.start();
-            } catch (RuntimeException | IOException e) {
-                int i = atCounter.getAndIncrement();
-                log.info("Not able to start mock server. Number of retries: {}", i);
-                if (i < 4) {
-                    start();
-                }
+            } catch (IOException e) {
+                log.error("Failed starting web socket server {}", e.getMessage(), e);
+                throw new RuntimeException(e);
             }
             return mockService;
         }
@@ -188,8 +184,6 @@ public class MockWebSocketService extends MockService {
             this.scope = scope;
             return this;
         }
-
-        AtomicInteger atCounter = new AtomicInteger(0);
 
     }
 
