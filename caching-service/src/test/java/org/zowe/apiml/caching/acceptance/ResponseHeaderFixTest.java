@@ -44,7 +44,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 @ActiveProfiles("ResponseHeaderFixTest")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @DirtiesContext
-public class ResponseHeaderFixTest {
+class ResponseHeaderFixTest {
 
     private static final int TEST_CONTENT_LENGTH = 101;
     private static final String CONTENT_LENGTH = "Content-Length";
@@ -55,13 +55,13 @@ public class ResponseHeaderFixTest {
     @Value("${server.ssl.keyPassword}")
     private char[] password;
     @Value("${server.ssl.keyStore}")
-    private String client_cert_keystore;
+    private String clientCertKeystore;
     @Value("${server.ssl.keyStore}")
     private String keystore;
 
     @BeforeAll
     void setup() throws Exception {
-        SslContextConfigurer configurer = new SslContextConfigurer(password, client_cert_keystore, keystore);
+        SslContextConfigurer configurer = new SslContextConfigurer(password, clientCertKeystore, keystore);
         SslContext.prepareSslAuthentication(configurer);
     }
 

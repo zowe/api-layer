@@ -34,12 +34,12 @@ public class FixedHeadersConfigurer<H extends HttpSecurityBuilder<H>> extends He
     @Delegate(excludes = Configure.class)
     protected final HeadersConfigurer<H> original;
 
-    public static HttpSecurity fix(HttpSecurity httpSecurity) throws Exception {
+    public static <T extends HttpSecurityBuilder<T>> HttpSecurity fix(HttpSecurity httpSecurity) throws Exception {
         // remove the invalid configured
-        HeadersConfigurer originalConfigurer = httpSecurity.removeConfigurer(HeadersConfigurer.class);
+        HeadersConfigurer<T> originalConfigurer = httpSecurity.removeConfigurer(HeadersConfigurer.class);
 
         // add back the fixed version
-        httpSecurity.apply(new FixedHeadersConfigurer(originalConfigurer));
+        httpSecurity.<FixedHeadersConfigurer>apply(new FixedHeadersConfigurer<>(originalConfigurer));
 
         return httpSecurity;
     }
@@ -76,9 +76,9 @@ public class FixedHeadersConfigurer<H extends HttpSecurityBuilder<H>> extends He
 
     }
 
-    static abstract class FixedOnCommittedResponseWrapper extends OnCommittedResponseWrapper {
+    abstract static class FixedOnCommittedResponseWrapper extends OnCommittedResponseWrapper {
 
-        public FixedOnCommittedResponseWrapper(HttpServletResponse response) {
+        FixedOnCommittedResponseWrapper(HttpServletResponse response) {
             super(response);
         }
 

@@ -38,7 +38,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 )
 @ActiveProfiles("ResponseHeaderFixTest")
 @DirtiesContext
-public class ResponseHeaderFixTest {
+class ResponseHeaderFixTest {
 
     private static final int TEST_CONTENT_LENGTH = 101;
     private static final String CONTENT_LENGTH = "Content-Length";
