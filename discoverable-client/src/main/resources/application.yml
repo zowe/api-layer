@@ -139,6 +139,8 @@ apiml:
         readTimeout: 10
 
 server:
+    tyrus:
+        port: 58025
     error:
         include-message: always
 

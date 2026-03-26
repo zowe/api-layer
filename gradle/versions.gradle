@@ -170,6 +170,8 @@ dependencyResolutionManagement {
             version('jacoco', '0.8.11')
             version('gradle', '8.4')
             version('assertjCore', '3.26.3')
+            version('javaWebSocket', '1.6.0') // for testing
+            version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
             library('spring_boot_configuration_processor', 'org.springframework.boot', 'spring-boot-configuration-processor').versionRef('springBoot')
@@ -375,6 +377,9 @@ dependencyResolutionManagement {
             library('woodstox_stax2', 'org.codehaus.woodstox', 'stax2-api').versionRef('woodstoxStax2')
             library('xstream', 'com.thoughtworks.xstream', 'xstream').versionRef('xstream')
             library('assertj_core','org.assertj', 'assertj-core').versionRef('assertjCore')
+            library('java_websocket', 'org.java-websocket', 'Java-WebSocket').versionRef('javaWebSocket')
+            library('tyrus_server', 'org.glassfish.tyrus', 'tyrus-server').versionRef('glassfishTyrus')
+            library('tyrus_grizzly_server', 'org.glassfish.tyrus', 'tyrus-container-grizzly-server').versionRef('glassfishTyrus')
 
             // Sample apps only
             library('jersey_container_servlet_core', 'org.glassfish.jersey.containers', 'jersey-container-servlet-core').versionRef('jersey')

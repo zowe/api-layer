@@ -11,8 +11,15 @@
 package org.zowe.apiml.integration.proxy;
 
 import io.restassured.RestAssured;
+import lombok.Getter;
+import lombok.Setter;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.enums.Opcode;
+import org.java_websocket.handshake.ServerHandshake;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -29,24 +36,33 @@ import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.categories.WebsocketTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_HEADER;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_UPPERCASE;
+import static org.awaitility.Awaitility.await;
 
 @TestsNotMeantForZowe
 @WebsocketTest
@@ -71,7 +87,6 @@ class WebSocketProxyTest implements TestWithStartedInstances {
         String invalidPlainCred = "user:invalidPass";
         String invalidBase64cred = Base64.getEncoder().encodeToString(invalidPlainCred.getBytes());
         INVALID_AUTH_HEADERS.add("Authorization", "Basic " + invalidBase64cred);
-
     }
 
     @AfterAll
@@ -83,6 +98,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
     private TextWebSocketHandler appendResponseHandler(StringBuilder target, int countToNotify) {
         final AtomicInteger counter = new AtomicInteger(countToNotify);
         return new TextWebSocketHandler() {
+
             @Override
             public void handleTextMessage(WebSocketSession session, TextMessage message) {
                 synchronized (target) {
@@ -101,6 +117,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                         target.notify();
                     }
                 }
+
             }
 
         };
@@ -133,8 +150,10 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
         @Nested
         class Authentication {
+
             @Nested
             class WhenValid {
+
                 @Nested
                 class ReturnSuccess {
 
@@ -178,10 +197,42 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                         session.close();
                     }
 
+                    @Test
+                    void whenSendingFrames_andReceivingFrames() {
+                        WebSocketTestClient webSocketClientTyrus = new WebSocketTestClient(new URI("wss://localhost:" + port + "/tyrusws/ws/v1/echo"));
+                        //TODO obtain from SslContext (update Ssl context to expose) webSocketClientTyrus.setSocketFactory();
+                        //webSocketClientTyrus.setSocketFactory(SslContext.tlsWithoutCert.getSSLConfig().getSSLSocketFactory());
+                        webSocketClientTyrus.messages.clear();
+                        boolean connected = webSocketClientTyrus.connectBlocking();
+                        assertTrue(connected);
+
+                        byte[] data = RandomUtils.insecure().randomBytes(21_504);
+                        ByteBuffer frame1 = ByteBuffer.wrap(ArrayUtils.subarray(data, 0, 8192));
+                        ByteBuffer frame2 = ByteBuffer.wrap(ArrayUtils.subarray(data, 8192, 16384));
+                        ByteBuffer frame3 = ByteBuffer.wrap(ArrayUtils.subarray(data, 16384, 21504));
+
+                        webSocketClientTyrus.sendFragmentedFrame(Opcode.BINARY, frame1, false);
+                        webSocketClientTyrus.sendFragmentedFrame(Opcode.BINARY, frame2, false);
+                        webSocketClientTyrus.sendFragmentedFrame(Opcode.BINARY, frame3, true);
+
+                        await()
+                            .atMost(Duration.ofSeconds(40))
+                            .untilAsserted(() -> {
+                                ByteBuffer response = webSocketClientTyrus.getBuffer();
+                                assertNotNull(response);
+                                assertTrue(response.remaining() > 0);
+                                assertTrue(response.capacity() == 21_504, "capacity was " + response.capacity());
+                            });
+                        // send frames, total under max but over default (8KB)
+                        int size = 21_504;
+
+                    }
+
                 }
 
                 @Nested
                 class ReturnError {
+
                     @Test
                     void whenPathIsNotCorrect() throws Exception {
                         String path = "/discoverableclient/ws/v1/bad";
@@ -252,6 +303,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
             @Nested
             class WhenInvalid {
+
                 @Test
                 void returnError() throws Exception {
                     final StringBuilder response = new StringBuilder();
@@ -266,13 +318,16 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                     assertEquals("CloseStatus[code=1003, reason=Invalid login credentials]", response.toString());
                     session.close();
                 }
+
             }
+
         }
 
     }
 
     @Nested
     class WhenClosingSession {
+
         @Test
         void getCorrectResponse() throws Exception {
             final StringBuilder response = new StringBuilder();
@@ -285,6 +340,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
             assertEquals("BYECloseStatus[code=1000, reason=null]", response.toString());
         }
+
     }
 
     @Nested
@@ -302,6 +358,50 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                 .then().body("content",is("Hello, Web service!"))
                 .and()
                 .statusCode(SC_OK);
+        }
+
+    }
+
+    private static class WebSocketTestClient extends WebSocketClient {
+
+        @Getter
+        private List<String> messages = new ArrayList<>();
+
+        @Getter
+        private ByteBuffer buffer;
+
+        @Setter
+        private BiConsumer<Integer, String> onClose;
+
+        public WebSocketTestClient(URI serverUri) {
+            super(serverUri);
+        }
+
+        @Override
+        public void onOpen(ServerHandshake handshakedata) {
+            messages.clear();
+        }
+
+        @Override
+        public void onMessage(String message) {
+            messages.add(message);
+        }
+
+        @Override
+        public void onMessage(ByteBuffer bytes) {
+            buffer = bytes;
+        }
+
+        @Override
+        public void onClose(int code, String reason, boolean remote) {
+            if (onClose != null) {
+                onClose.accept(code, reason);
+            }
+        }
+
+        @Override
+        public void onError(Exception ex) {
+            fail(ex);
         }
 
     }

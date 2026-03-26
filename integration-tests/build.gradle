@@ -50,6 +50,9 @@ dependencies {
     testImplementation libs.javax.servlet.api
     testImplementation libs.assertj.core
     testImplementation libs.nimbusJoseJwt
+
+    testImplementation libs.java.websocket
+
     runtimeOnly libs.jjwt.impl
     runtimeOnly libs.jjwt.jackson
 
