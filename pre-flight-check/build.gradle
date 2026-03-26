@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    implementation libs.picocli
+    annotationProcessor libs.picocli.codegen
+
+    testImplementation libs.mockito.core
+    testImplementation libs.hamcrest
+}
+
+compileJava {
+    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'org.zowe.apiml.PreFlightCheck'
+        )
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
