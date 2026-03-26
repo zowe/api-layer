@@ -10,8 +10,6 @@
 
 package org.zowe.apiml.gateway.sse;
 
-import org.springframework.lang.Nullable;
-import org.springframework.util.Assert;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -25,9 +23,10 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.MimeType;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.servlet.ModelAndView;
@@ -111,7 +110,7 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
         SseEmitter emitter = new SseEmitter(-1L) {
             @Override
             public void send(Object object, MediaType mediaType) throws IOException {
-                send(new SseEventBuilderFixedImpl().data(object, mediaType));
+                super.send(new SseEventBuilderFixedImpl().data(object, mediaType));
             }
         };
 
@@ -168,17 +167,12 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
             return event;
         }
 
-        if (hasEnter(event.event())) {
-            throw new IllegalArgumentException("Illegal character in event content");
-        }
-
-        if (hasEnter(event.id())) {
-            throw new IllegalArgumentException("Illegal character in event content");
-        }
+        Assert.isTrue(!hasEnter(event.event()), "Illegal character in event content");
+        Assert.isTrue(!hasEnter(event.id()), "Illegal character in event content");
 
         String data = event.data();
         if (hasEnter(data)) {
-            data = data.replaceAll("\r\n", "\ndata:");
+            data = data.replaceAll("\r\n", "\n");
             data = data.replaceAll("\n", "\ndata:");
         }
 
@@ -265,7 +259,7 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
         routedServicesMap.put(serviceId, routedServices);
     }
 
-    private static class SseEventBuilderFixedImpl implements SseEmitter.SseEventBuilder {
+    static class SseEventBuilderFixedImpl implements SseEmitter.SseEventBuilder {
 
         private final Set<ResponseBodyEmitter.DataWithMediaType> dataToSend = new LinkedHashSet<>(4);
 

@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.sse;
 
+import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -18,18 +19,27 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
+import reactor.core.publisher.Flux;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,15 +49,17 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -281,4 +293,140 @@ class ServerSentEventProxyHandlerTest {
             Arguments.of("/serviceid/sse/v1/", "/")
         );
     }
+
+    @Nested
+    class Emitter {
+
+        @Nested
+        class Consumer {
+
+            @Mock
+            private SseEmitter emitter;
+
+            @Test
+            void givenValidData_whenConsumer_thenEmitData() throws IOException {
+                ServerSentEvent<String> event = ServerSentEvent.<String>builder()
+                    .event("event")
+                    .data("data")
+                    .comment("comment")
+                    .id("id")
+                    .build();
+
+                new ServerSentEventProxyHandler(null, null)
+                    .consumer(emitter).accept(event);
+
+                verify(emitter).send("data");
+                verify(emitter, never()).completeWithError(any());
+            }
+
+            @Test
+            void givenEmptyEvent_whenConsumer_thenEmitData() throws IOException {
+                ServerSentEvent<String> event = ServerSentEvent.<String>builder().build();
+
+                new ServerSentEventProxyHandler(null, null)
+                    .consumer(emitter).accept(event);
+
+                verify(emitter).send(isNull(Object.class));
+            }
+
+            @Test
+            void givenInvalidId_whenConsumer_thenThrowException() {
+                ServerSentEvent<String> event = ServerSentEvent.<String>builder()
+                    .id("invalid\nid")
+                    .build();
+
+                java.util.function.Consumer<ServerSentEvent<String>> consumer = new ServerSentEventProxyHandler(null, null)
+                    .consumer(emitter);
+
+                assertThrows(IllegalArgumentException.class, () -> consumer.accept(event));
+            }
+
+            @Test
+            void givenInvalidEvent_whenConsumer_thenThrowException() {
+                ServerSentEvent<String> event = ServerSentEvent.<String>builder()
+                    .event("invalid\revent")
+                    .build();
+
+                java.util.function.Consumer<ServerSentEvent<String>> consumer = new ServerSentEventProxyHandler(null, null)
+                    .consumer(emitter);
+
+                assertThrows(IllegalArgumentException.class, () -> consumer.accept(event));
+            }
+
+            @Test
+            void givenInvalidData_whenConsumer_thenSanitizeAndEmit() throws IOException {
+                ServerSentEvent<String> event = ServerSentEvent.<String>builder()
+                    .data("invalid\r\ndata\nto\rbe\n\nsanitized")
+                    .build();
+
+                new ServerSentEventProxyHandler(null, null)
+                    .consumer(emitter).accept(event);
+
+                verify(emitter).send("invalid\ndata:data\ndata:to\rbe\ndata:\ndata:sanitized");
+            }
+
+        }
+
+        @Nested
+        class BuilderImpl {
+
+            @Captor
+            private ArgumentCaptor<ServerSentEventProxyHandler.SseEventBuilderFixedImpl> builderCaptor;
+
+            @Mock
+            private DiscoveryClient discoveryClient;
+
+            private ServerSentEventProxyHandler serverSentEventProxyHandler;
+
+            @BeforeEach
+            void init() {
+                doReturn(Collections.singletonList(new EurekaServiceInstance(mock(InstanceInfo.class))))
+                    .when(discoveryClient).getInstances(any());
+
+                RoutedServices routedServices = mock(RoutedServices.class);
+                doReturn(mock(RoutedService.class)).when(routedServices).findServiceByGatewayUrl("sse/v1");
+
+                serverSentEventProxyHandler = spy(new ServerSentEventProxyHandler(discoveryClient, null));
+                serverSentEventProxyHandler.addRoutedServices("service", routedServices);
+
+                doReturn(Flux.empty()).when(serverSentEventProxyHandler).getSseStream(any());
+            }
+
+            @Test
+            void givenJson_whenGetEmitter_thenDataAreEmitted() throws IOException {
+                SseEmitter emitter = spy(serverSentEventProxyHandler.getEmitter(new MockHttpServletRequest("GET", "sse/service/api/v1/path"), new MockHttpServletResponse()));
+                doNothing().when(emitter).send(any(SseEmitter.SseEventBuilder.class));
+                ReflectionTestUtils.setField(emitter, "complete", false);
+                Object json = new Object();
+
+                emitter.send(json, MediaType.APPLICATION_JSON);
+                verify(emitter).send(builderCaptor.capture());
+
+                Set<ResponseBodyEmitter.DataWithMediaType> data = builderCaptor.getValue().build();
+                assertEquals(3, data.size());
+                ResponseBodyEmitter.DataWithMediaType second = new ArrayList<>(data).get(1);
+                assertSame(json, second.getData());
+                assertEquals(MediaType.APPLICATION_JSON, second.getMediaType());
+            }
+
+            @Test
+            void givenPlainText_whenGetEmitter_thenDataAreSanitized() throws IOException {
+                SseEmitter emitter = spy(serverSentEventProxyHandler.getEmitter(new MockHttpServletRequest("GET", "sse/service/api/v1/path"), new MockHttpServletResponse()));
+                doNothing().when(emitter).send(any(SseEmitter.SseEventBuilder.class));
+                ReflectionTestUtils.setField(emitter, "complete", false);
+
+                emitter.send("corrupted\ndata\r\non\rinput", MediaType.TEXT_PLAIN);
+                verify(emitter).send(builderCaptor.capture());
+
+                Set<ResponseBodyEmitter.DataWithMediaType> data = builderCaptor.getValue().build();
+                assertEquals(3, data.size());
+                ResponseBodyEmitter.DataWithMediaType second = new ArrayList<>(data).get(1);
+                assertEquals("corrupted\ndata:data\ndata:on\ndata:input", second.getData());
+                assertEquals(MediaType.TEXT_PLAIN, second.getMediaType());
+            }
+
+        }
+
+    }
+
 }
