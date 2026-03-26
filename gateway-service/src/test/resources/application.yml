@@ -60,17 +60,15 @@ spring:
 logging:
     level:
         ROOT: DEBUG
+        # org.apache.coyote: TRACE
+        org.apache.tomcat.websocket: DEBUG
         org.springframework: DEBUG
-        org.springframework.web: TRACE
-        org.springframework.security: DEBUG
         org.springframework.beans: WARN
-        org.apache.tomcat.websocket: TRACE
-        reactor.netty: TRACE
-        org.springframework.http.server.reactive: TRACE
-        org.springframework.web.reactive: TRACE
-        org.springframework.cloud.gateway: TRACE
-        org.apache.coyote: TRACE
-
+        org.springframework.cloud.gateway: DEBUG
+        org.springframework.http.server.reactive: DEBUG
+        org.springframework.security: DEBUG
+        org.springframework.web: DEBUG
+        org.springframework.web.reactive: DEBUG
 otel:
     sdk:
         disabled: true
