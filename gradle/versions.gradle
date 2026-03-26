@@ -287,10 +287,12 @@ dependencyResolutionManagement {
             version('logback', '1.5.26')
             version('mockitoCore', '5.21.0')
             version('mockitoInline', '5.2.0')
+            version('mockServer','5.15.0')
 
             library('logback_classic', 'ch.qos.logback', 'logback-classic').versionRef('logback')
             library('mockito_core', 'org.mockito', 'mockito-core').versionRef('mockitoCore')
             library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInline')
+            library('mock_server','org.mock-server','mockserver-netty').versionRef('mockServer')
 
 
             bundle('infinispan', [ 'infinispan_spring_boot3_starter_embedded', 'infinispan_lock', 'infinispan_jboss_marshalling', 'infinispan_annotations' ])
