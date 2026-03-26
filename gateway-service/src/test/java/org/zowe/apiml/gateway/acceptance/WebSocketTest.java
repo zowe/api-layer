@@ -32,6 +32,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.gateway.MockService;
+import org.zowe.apiml.gateway.MockService.Scope;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 
@@ -151,13 +152,16 @@ class WebSocketTest {
                         assertTrue(b.remaining() > 0);
                     }
                 })
+                .scope(Scope.CLASS)
                 .start();
 
             var service2 = mockServiceWsTyrus("tyrusws") // To test response with frames
+                .scope(Scope.CLASS)
                 .start();
 
             serviceStrictness = mockServiceWs("websocketservicessl")
                 .sslContext(apimlNonStrictSSLContext) // To verify the non strict hostname restriction works
+                .scope(Scope.CLASS)
                 .assertion(message -> {
                     if (message instanceof String s) {
                         assertTrue(StringUtils.isNotBlank(s));

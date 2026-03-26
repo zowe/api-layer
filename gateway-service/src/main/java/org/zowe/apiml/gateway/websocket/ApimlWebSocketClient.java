@@ -21,7 +21,7 @@ import java.util.List;
 
 public class ApimlWebSocketClient extends TomcatWebSocketClient {
 
-    private SSLContext sslContext;
+    private final SSLContext sslContext;
 
     public ApimlWebSocketClient(SSLContext sslContext, WsWebSocketContainer webSocketContainer) {
         super(webSocketContainer);

@@ -29,9 +29,17 @@ public class HostnameIgnoringSSLContextBuilder extends org.apache.hc.core5.ssl.S
     protected void initSSLContext(SSLContext sslContext, Collection<KeyManager> keyManagers,
             Collection<TrustManager> trustManagers, SecureRandom secureRandom) throws KeyManagementException {
 
-        var tm = trustManagers.iterator().next();
         Collection<TrustManager> laxTrustManager = new ArrayList<>();
-        laxTrustManager.add(new HostnameIgnoringTrustManager((X509TrustManager) tm));
+        if (trustManagers != null) {
+            trustManagers.forEach(tm -> {
+                if (tm instanceof X509TrustManager x509tm) {
+                    laxTrustManager.add(new HostnameIgnoringTrustManager(x509tm));
+                } else {
+                    laxTrustManager.add(tm);
+                }
+            });
+        }
+
         super.initSSLContext(sslContext, keyManagers, laxTrustManager, secureRandom);
     }
 

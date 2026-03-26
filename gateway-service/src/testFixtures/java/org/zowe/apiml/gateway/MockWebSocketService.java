@@ -86,11 +86,10 @@ public class MockWebSocketService extends MockService {
             if (status.get().isUp()) {
                 webSocketServer.stop();
             }
-            setStatus(Status.STOPPED);
         } catch (InterruptedException e) {
             log.error("Failure stopping web socket server", e);
-            setStatus(Status.ERROR);
         }
+        setStatus(Status.STOPPED);
     }
 
     @Override
@@ -99,7 +98,7 @@ public class MockWebSocketService extends MockService {
             try {
                 webSocketServer.stop();
             } catch (InterruptedException e) {
-                setStatus(Status.ERROR);
+                log.error("Failed to stop web socket server {}", e.getMessage());
             }
         }
 
@@ -132,6 +131,7 @@ public class MockWebSocketService extends MockService {
         private String hostname;
         private int port;
         private SSLContext sslContext;
+        private Scope scope;
 
         public MockWebSocketService build() {
             var mockWebSocketService = internalWsBuild();
@@ -141,6 +141,7 @@ public class MockWebSocketService extends MockService {
             mockWebSocketService.port = port;
             mockWebSocketService.additionalMetadata = new HashMap<>();
             mockWebSocketService.sslContext = sslContext;
+            mockWebSocketService.scope = scope;
             return mockWebSocketService;
         }
 
@@ -180,6 +181,11 @@ public class MockWebSocketService extends MockService {
 
         public MockWsServiceBuilder sslContext(SSLContext sslContext) {
             this.sslContext = sslContext;
+            return this;
+        }
+
+        public MockWsServiceBuilder scope(Scope scope) {
+            this.scope = scope;
             return this;
         }
 

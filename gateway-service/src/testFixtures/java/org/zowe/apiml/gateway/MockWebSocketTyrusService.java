@@ -114,6 +114,7 @@ public class MockWebSocketTyrusService extends MockWebSocketService {
         private String serviceId;
         private String hostname;
         private int port;
+        private Scope scope;
 
         public MockWebSocketTyrusService build() {
             var mockWebSocketService = internalWsTyrusBuild();
@@ -121,6 +122,7 @@ public class MockWebSocketTyrusService extends MockWebSocketService {
             mockWebSocketService.hostname = StringUtils.isBlank(hostname) ? "localhost" : hostname;
             mockWebSocketService.serviceId = this.serviceId;
             mockWebSocketService.port = port;
+            mockWebSocketService.scope = scope;
             mockWebSocketService.additionalMetadata = new HashMap<>();
             return mockWebSocketService;
         }
@@ -156,6 +158,11 @@ public class MockWebSocketTyrusService extends MockWebSocketService {
 
         public MockWsTyrusServiceBuilder port(int port) {
             this.port = port;
+            return this;
+        }
+
+        public MockWsTyrusServiceBuilder scope(Scope scope) {
+            this.scope = scope;
             return this;
         }
 

@@ -23,6 +23,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Singular;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -79,7 +80,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Builder(builderClassName = "MockServiceBuilder", buildMethodName = "internalBuild")
 @Getter
 @Slf4j
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
+@NoArgsConstructor(access = AccessLevel.PACKAGE)
 public class MockService implements AutoCloseable {
 
     protected static int idCounter = 1;
@@ -119,7 +121,7 @@ public class MockService implements AutoCloseable {
      * {@link AcceptanceTestWithMockServices} use it to releasing an instance.
      */
     @Builder.Default
-    private Scope scope = Scope.TEST;
+    protected Scope scope = Scope.TEST;
 
     @Singular
     @Getter(AccessLevel.NONE)
@@ -147,10 +149,6 @@ public class MockService implements AutoCloseable {
      * method (see {@link MockService#checkAssertionErrors()})
      */
     private static AssertionError assertionError;
-
-    MockService() {
-
-    }
 
     private void init() throws IOException {
         server = HttpServer.create(new InetSocketAddress(0), 0);
@@ -555,8 +553,7 @@ public class MockService implements AutoCloseable {
             // service was stopped, and it should be removed from the memory
             CANCELLING,
             // service is registered but it is also down
-            ZOMBIE,
-            ERROR
+            ZOMBIE
 
         ;
 

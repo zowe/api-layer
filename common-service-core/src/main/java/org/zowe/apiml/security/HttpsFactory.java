@@ -196,7 +196,7 @@ public class HttpsFactory {
         SSLContextBuilder sslContextBuilder = SSLContexts.custom();
         try {
             if (config.isNonStrictVerifySslCertificatesOfServices()) {
-                sslContextBuilder = org.zowe.apiml.security.HostnameIgnoringSSLContextBuilder.create();
+                sslContextBuilder = HostnameIgnoringSSLContextBuilder.create();
             }
             loadKeyMaterial(sslContextBuilder);
             loadTrustMaterial(sslContextBuilder);
