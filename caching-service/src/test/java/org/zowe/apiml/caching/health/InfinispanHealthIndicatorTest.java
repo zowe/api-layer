@@ -39,14 +39,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
-class CachesHealthIndicatorTest {
+class InfinispanHealthIndicatorTest {
 
     @Nested
     class BeforeSpringStartup {
 
         @Test
         void givenApplication_whenStarting_thenReturnUnknownStatus() {
-            var cachesHealthIndicator = new CachesHealthIndicator();
+            var cachesHealthIndicator = new InfinispanHealthIndicator();
             var builder = mock(Health.Builder.class);
             cachesHealthIndicator.doHealthCheck(builder);
             verify(builder).unknown();
@@ -59,7 +59,7 @@ class CachesHealthIndicatorTest {
 
         @Test
         void givenUnsupportedCacheManager_whenBuildHealth_thenNoDetailsAdded() {
-            var cachesHealthIndicator = new CachesHealthIndicator();
+            var cachesHealthIndicator = new InfinispanHealthIndicator();
             ((AtomicReference<CacheManager>) ReflectionTestUtils.getField(cachesHealthIndicator, "cacheManager"))
                 .set(mock(CacheManager.class));
             var builder = mock(Health.Builder.class);
@@ -112,7 +112,7 @@ class CachesHealthIndicatorTest {
             doReturn(cache).when(nativeCacheManager).getCache(CACHE_1);
             doReturn(cacheStatus).when(cache).getStatus();
 
-            var cachesHealthIndicator = new CachesHealthIndicator();
+            var cachesHealthIndicator = new InfinispanHealthIndicator();
             ((AtomicReference<CacheManager>) ReflectionTestUtils.getField(cachesHealthIndicator, "cacheManager"))
                 .set(cacheManager);
             ReflectionTestUtils.setField(cachesHealthIndicator, "initialHosts", "");

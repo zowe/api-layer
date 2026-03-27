@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "infinispan")
-public class CachesHealthIndicator extends AbstractHealthIndicator {
+public class InfinispanHealthIndicator extends AbstractHealthIndicator {
 
     @Value("${caching.storage.infinispan.initialHosts:}")
     private String initialHosts;
