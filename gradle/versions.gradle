@@ -102,13 +102,13 @@ dependencyResolutionManagement {
             version('mockServer','5.15.0')
             version('netflixCommonsUtil', '0.3.0')
             version('netflixServo', '0.13.2')
-            version('netty', '4.1.128.Final')
-            version('nettyReactor', '1.1.31')
+            version('netty', '4.1.132.Final')
+            version('nettyReactor', '1.2.16')
             version('nimbusJoseJwt', '10.5')
             version('openApiDiff', '2.0.1')
             version('ow2asm', '9.7.1')
             version('picocli', '4.7.7')
-            version('protostream', '4.4.5.Final')
+            version('protostream', '4.6.5.Final')
 
             // version 2.4 has a breaking change, ie. missing DefaultClientConfigImpl
             version('ribbon', '2.3.0')
@@ -118,7 +118,7 @@ dependencyResolutionManagement {
                 prefer '3.4.37'
             }
             version('restAssured', '5.5.7')
-            version('rhino', '1.7.15')
+            version('rhino', '1.7.15.1')
             // force version in build.gradle file, version 2.x is not compatible
             version('slf4j', '1.7.36')
             version('snakeyaml', '2.5')
