@@ -46,9 +46,9 @@ class InfinispanHealthIndicatorTest {
 
         @Test
         void givenApplication_whenStarting_thenReturnUnknownStatus() {
-            var cachesHealthIndicator = new InfinispanHealthIndicator();
+            var infinispanHealthIndicator = new InfinispanHealthIndicator();
             var builder = mock(Health.Builder.class);
-            cachesHealthIndicator.doHealthCheck(builder);
+            infinispanHealthIndicator.doHealthCheck(builder);
             verify(builder).unknown();
         }
 
@@ -59,11 +59,11 @@ class InfinispanHealthIndicatorTest {
 
         @Test
         void givenUnsupportedCacheManager_whenBuildHealth_thenNoDetailsAdded() {
-            var cachesHealthIndicator = new InfinispanHealthIndicator();
-            ((AtomicReference<CacheManager>) ReflectionTestUtils.getField(cachesHealthIndicator, "cacheManager"))
+            var infinispanHealthIndicator = new InfinispanHealthIndicator();
+            ((AtomicReference<CacheManager>) ReflectionTestUtils.getField(infinispanHealthIndicator, "cacheManager"))
                 .set(mock(CacheManager.class));
             var builder = mock(Health.Builder.class);
-            cachesHealthIndicator.doHealthCheck(builder);
+            infinispanHealthIndicator.doHealthCheck(builder);
             verify(builder, never()).withDetail(any(), any());
         }
 
