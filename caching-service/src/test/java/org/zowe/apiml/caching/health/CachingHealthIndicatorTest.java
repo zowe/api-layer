@@ -92,34 +92,34 @@ class CachingHealthIndicatorTest {
     @Nested
     class WithCacheIndicator {
 
-        private CachesHealthIndicator cachesHealthIndicator = mock(CachesHealthIndicator.class);
+        private InfinispanHealthIndicator infinispanHealthIndicator = mock(InfinispanHealthIndicator.class);
 
         @Test
         void givenNoGateway_whenBuildHealthIndicator_thenItIsDown() {
             initEureka(false, false);
-            var cachingHealthIndicator = new CachingHealthIndicator(apiMediationClient, Optional.of(cachesHealthIndicator));
+            var cachingHealthIndicator = new CachingHealthIndicator(apiMediationClient, Optional.of(infinispanHealthIndicator));
             cachingHealthIndicator.onApplicationEvent(mock(ApplicationReadyEvent.class));
             cachingHealthIndicator.doHealthCheck(builder);
-            verify(cachesHealthIndicator).doHealthCheck(builder);
+            verify(infinispanHealthIndicator).doHealthCheck(builder);
             verify(builder).down();
         }
 
         @Test
         void givenNoStartUpEvent_whenBuildHealthIndicator_thenItIsDown() {
             initEureka(true, true);
-            var cachingHealthIndicator = new CachingHealthIndicator(apiMediationClient, Optional.of(cachesHealthIndicator));
+            var cachingHealthIndicator = new CachingHealthIndicator(apiMediationClient, Optional.of(infinispanHealthIndicator));
             cachingHealthIndicator.doHealthCheck(builder);
-            verify(cachesHealthIndicator).doHealthCheck(builder);
+            verify(infinispanHealthIndicator).doHealthCheck(builder);
             verify(builder).down();
         }
 
         @Test
         void givenEverythingReady_whenBuildHealthIndicator_thenItIsUp() {
             initEureka(true, true);
-            var cachingHealthIndicator = new CachingHealthIndicator(apiMediationClient, Optional.of(cachesHealthIndicator));
+            var cachingHealthIndicator = new CachingHealthIndicator(apiMediationClient, Optional.of(infinispanHealthIndicator));
             cachingHealthIndicator.onApplicationEvent(mock(ApplicationReadyEvent.class));
             cachingHealthIndicator.doHealthCheck(builder);
-            verify(cachesHealthIndicator).doHealthCheck(builder);
+            verify(infinispanHealthIndicator).doHealthCheck(builder);
             verify(builder, never()).down();
         }
 
