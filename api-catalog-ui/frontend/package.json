@@ -132,7 +132,7 @@
         "yaml": "1.10.3"
     },
     "overrides": {
-        "brace-expansion": "2.0.2",
+        "brace-expansion": "2.0.3",
         "nth-check": "2.1.1",
         "jsdom": "16.6.0",
         "form-data": "3.0.4",
