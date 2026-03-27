@@ -17,6 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockserver.integration.ClientAndServer;
+import org.mockserver.model.HttpRequest;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.config.DefaultZaasClientConfiguration;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
@@ -24,6 +26,8 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
@@ -33,6 +37,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
 import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.*;
 import static org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes.IO_CONFIGURATION_ISSUE;
 
@@ -288,4 +294,75 @@ class ZaasClientTest {
 
     }
 
+    @Nested
+    class CookieManagement {
+
+        private ClientAndServer mockServer;
+
+        private final HttpRequest queryRequest = request()
+            .withMethod("GET")
+            .withPath("/gateway/api/v1/auth/query");
+
+        @BeforeEach
+        void setup() {
+            this.mockServer = ClientAndServer.startClientAndServer();
+
+            mockServer.when(
+                request()
+                    .withMethod("POST")
+                    .withPath("/gateway/api/v1/auth/login")
+            ).respond(
+                response()
+                    .withStatusCode(204)
+                    .withCookie("apimlAuthenticationToken", "tokenFromLogin")
+            );
+
+            mockServer.when(
+                queryRequest
+            ).respond(
+                response()
+                    .withStatusCode(200)
+                    .withBody("{}"));
+
+        }
+
+        @Test
+        void givenHttps_thenCookieManagementDisabled() throws IOException, ZaasConfigurationException, ZaasClientException {
+            ConfigProperties props = ZaasHttpsClientProviderTests.getConfigProperties();
+            props.setApimlPort(Integer.toString(mockServer.getLocalPort()));
+
+            List<String> queryRequestCookieHeader = issueLoginAndQueryRequest(props);
+
+            assertThat(queryRequestCookieHeader.size(), is(1));
+            assertThat(queryRequestCookieHeader.get(0), is("apimlAuthenticationToken=tokenForValidation"));
+        }
+
+        @Test
+        void givenHttp_thenCookieManagementDisabled() throws IOException, ZaasConfigurationException, ZaasClientException {
+            ConfigProperties props = ZaasHttpsClientProviderTests.getConfigProperties();
+            props.setApimlPort(Integer.toString(mockServer.getLocalPort()));
+            props.setHttpOnly(true);
+
+            List<String> queryRequestCookieHeader = issueLoginAndQueryRequest(props);
+
+            assertThat(queryRequestCookieHeader.size(), is(1));
+            assertThat(queryRequestCookieHeader.get(0), is("apimlAuthenticationToken=tokenForValidation"));
+        }
+
+        private List<String> issueLoginAndQueryRequest(ConfigProperties props) throws ZaasConfigurationException, ZaasClientException {
+            ZaasClient client = new ZaasClientImpl(props);
+            String token = client.login("user", "pass".toCharArray());
+            assertThat(token, is("tokenFromLogin"));
+
+            client.query("tokenForValidation");
+
+            HttpRequest[] requests = mockServer.retrieveRecordedRequests(
+                request()
+                    .withMethod("GET")
+                    .withPath("/gateway/api/v1/auth/query")
+            );
+
+            return requests[0].getHeader("Cookie");
+        }
+    }
 }
