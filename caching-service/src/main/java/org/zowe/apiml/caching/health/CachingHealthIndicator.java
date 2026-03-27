@@ -47,7 +47,7 @@ public class CachingHealthIndicator extends AbstractHealthIndicator implements A
             .orElse(false);
         builder.withDetail(CoreService.GATEWAY.getServiceId(), gatewayUp ? Status.UP : Status.DOWN);
 
-        infinispanHealthIndicator.ifPresent(infinispanHealthIndicator -> infinispanHealthIndicator.doHealthCheck(builder));
+        infinispanHealthIndicator.ifPresent(healthIndicator -> healthIndicator.doHealthCheck(builder));
         boolean isCachingUp = this.serviceUp.get();
         if (!(isCachingUp && gatewayUp)) {
             builder.down();
