@@ -271,7 +271,7 @@ public class JGroupStabilityTest {
                 log.trace("URI: {}, JsonResponse is {}", request.getURI().toString(), jsonResponse);
 
                 if (StringUtils.isNotEmpty(jsonResponse)) {
-                    var status = JsonPath.parse(jsonResponse).read("status", String.class);
+                    var status = JsonPath.parse(jsonResponse).read("components.caching.details.infinispan.cluster.status", String.class);
                     return "UP".equals(status);
                 }
                 return false;
