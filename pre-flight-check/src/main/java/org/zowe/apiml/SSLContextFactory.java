@@ -12,11 +12,15 @@ package org.zowe.apiml;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
+@SuppressWarnings("squid:S106")
 public class SSLContextFactory {
 
     private final Stores stores;
@@ -47,6 +51,36 @@ public class SSLContextFactory {
 
         factory.sslContext = SSLContext.getInstance("TLSv1.2");
         factory.sslContext.init(keyFactory.getKeyManagers(), trustFactory.getTrustManagers(), new SecureRandom());
+        return factory;
+    }
+
+    public static SSLContextFactory initTrustAllSSLContext() throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException, CertificateException, IOException, UnrecoverableKeyException {
+        SSLContextFactory factory = new SSLContextFactory(null);
+
+        TrustManager[] trustAllCerts = new TrustManager[]{
+            new X509TrustManager() {
+                public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[0];
+                }
+
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                    // trust all
+                }
+
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                    // trust all
+                }
+            }
+        };
+
+        KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
+        emptyKeystore.load(null, null);
+        KeyManagerFactory keyFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        keyFactory.init(emptyKeystore, null);
+
+        factory.sslContext = SSLContext.getInstance("TLSv1.2");
+        factory.sslContext.init(keyFactory.getKeyManagers(), trustAllCerts, new SecureRandom());
+        System.out.println("WARNING: SSL certificate verification is DISABLED. All certificates will be trusted.");
         return factory;
     }
 }

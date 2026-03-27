@@ -10,6 +10,7 @@
 
 package org.zowe.apiml;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
@@ -25,15 +26,18 @@ public class HttpClientWrapper {
 
     private final SSLContext sslContext;
     private final boolean useHttps;
+    private final HostnameVerifier hostnameVerifier;
 
-    public HttpClientWrapper(SSLContext sslContext) {
+    public HttpClientWrapper(SSLContext sslContext, HostnameVerifier hostnameVerifier) {
         this.sslContext = sslContext;
         this.useHttps = true;
+        this.hostnameVerifier = hostnameVerifier;
     }
 
     public HttpClientWrapper() {
         this.sslContext = null;
         this.useHttps = false;
+        this.hostnameVerifier = null;
     }
 
     public int executeCall(URL url, Map<String, String> headers) throws IOException {
@@ -41,6 +45,9 @@ public class HttpClientWrapper {
         if (useHttps) {
             HttpsURLConnection httpsCon = (HttpsURLConnection) url.openConnection();
             httpsCon.setSSLSocketFactory(sslContext.getSocketFactory());
+            if (hostnameVerifier != null) {
+                httpsCon.setHostnameVerifier(hostnameVerifier);
+            }
             con = httpsCon;
         } else {
             con = (HttpURLConnection) url.openConnection();

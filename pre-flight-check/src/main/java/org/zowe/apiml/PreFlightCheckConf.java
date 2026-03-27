@@ -51,6 +51,9 @@ public class PreFlightCheckConf implements PreFlightCheckConfig {
     @Option(names = {"--truststore-type"}, description = "Type of truststore (default: ${DEFAULT-VALUE})")
     private String trustStoreType = "PKCS12";
 
+    @Option(names = {"--verify-certificates"}, description = "Certificate verification mode: STRICT, NONSTRICT, or DISABLED (default: ${DEFAULT-VALUE})")
+    private String verifyCertificates = "STRICT";
+
     @Option(names = {"-h", "--help"}, usageHelp = true, description = "Display a help message")
     private boolean helpRequested = false;
 
@@ -97,6 +100,11 @@ public class PreFlightCheckConf implements PreFlightCheckConfig {
     @Override
     public String getTrustStoreType() {
         return trustStoreType;
+    }
+
+    @Override
+    public String getVerifyCertificates() {
+        return verifyCertificates;
     }
 
     @Override

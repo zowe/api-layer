@@ -63,8 +63,25 @@ class PreFlightCheckTest {
         }
 
         @Test
-        void httpsWithoutTruststoreIsRejected() {
+        void invalidVerifyCertificatesIsRejected() {
+            String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "443", "--scheme", "https",
+                "--truststore", "some/path.p12", "--truststore-password", "pass",
+                "--verify-certificates", "INVALID"};
+            assertEquals(4, PreFlightCheck.mainWithExitCode(args));
+            assertTrue(errStream.toString().contains("--verify-certificates must be STRICT, NONSTRICT, or DISABLED"));
+        }
+
+        @Test
+        void httpsStrictWithoutTruststoreIsRejected() {
             String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "443", "--scheme", "https"};
+            assertEquals(4, PreFlightCheck.mainWithExitCode(args));
+            assertTrue(errStream.toString().contains("--truststore is required"));
+        }
+
+        @Test
+        void httpsNonstrictWithoutTruststoreIsRejected() {
+            String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "443", "--scheme", "https",
+                "--verify-certificates", "NONSTRICT"};
             assertEquals(4, PreFlightCheck.mainWithExitCode(args));
             assertTrue(errStream.toString().contains("--truststore is required"));
         }
@@ -75,6 +92,17 @@ class PreFlightCheckTest {
                 "--truststore", "some/path.p12"};
             assertEquals(4, PreFlightCheck.mainWithExitCode(args));
             assertTrue(errStream.toString().contains("--truststore-password is required"));
+        }
+
+        @Test
+        void httpsDisabledDoesNotRequireTruststore() {
+            // DISABLED mode skips certificate verification entirely — no truststore needed
+            // Will fail to connect to a non-existent server, but should pass validation
+            String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "19999", "--scheme", "https",
+                "--verify-certificates", "DISABLED"};
+            int exitCode = PreFlightCheck.mainWithExitCode(args);
+            assertEquals(4, exitCode);
+            assertFalse(errStream.toString().contains("--truststore is required"));
         }
 
         @Test

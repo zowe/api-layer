@@ -30,5 +30,7 @@ public interface PreFlightCheckConfig {
 
     String getTrustStoreType();
 
+    String getVerifyCertificates();
+
     boolean isHelpRequested();
 }
