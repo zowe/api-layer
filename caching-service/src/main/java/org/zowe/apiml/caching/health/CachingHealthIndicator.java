@@ -24,7 +24,7 @@ import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.zowe.apiml.product.constants.CoreService;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Caching service health information (/cachingservice/application/health)
@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @ConditionalOnMissingBean(name = "modulithConfig")
 public class CachingHealthIndicator extends AbstractHealthIndicator implements ApplicationListener<ApplicationReadyEvent> {
 
-    private final AtomicReference<Boolean> serviceUp = new AtomicReference<>(false);
+    private final AtomicBoolean serviceUp = new AtomicBoolean();
 
     private final ApiMediationClient apiMediationClient;
     private final Optional<CachesHealthIndicator> cachesHealthIndicator;
