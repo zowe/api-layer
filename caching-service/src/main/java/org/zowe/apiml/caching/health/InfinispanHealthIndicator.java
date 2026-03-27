@@ -69,7 +69,7 @@ public class InfinispanHealthIndicator extends AbstractHealthIndicator {
             var initialHostsArray = StringUtils.split(initialHosts, ",");
             boolean allMembers = initialHostsArray.length <= nativeCacheManager.getMembers().size();
             var cluster = Map.of(
-                "status", allMembers ? Status.UP : Status.DOWN,
+                "status", allMembers ? Status.UP.getCode() : Status.DOWN.getCode(),
                 "address", nativeCacheManager.getAddress().toString(),
                 "initialHosts", initialHostsArray,
                 "members", nativeCacheManager.getMembers().stream().map(Address::toString).toList()
