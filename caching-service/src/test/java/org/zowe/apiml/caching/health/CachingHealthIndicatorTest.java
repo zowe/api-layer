@@ -15,6 +15,9 @@ import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -26,10 +29,14 @@ import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class CachingHealthIndicatorTest {
 
-    private ApiMediationClient apiMediationClient = mock(ApiMediationClient.class);
-    private Health.Builder builder = mock(Health.Builder.class);
+    @Mock
+    private ApiMediationClient apiMediationClient;
+
+    @Mock
+    private Health.Builder builder;
 
     void initEureka(boolean hasGw, boolean hasGwInstance) {
         var eurekaClient = mock(EurekaClient.class);
@@ -92,7 +99,8 @@ class CachingHealthIndicatorTest {
     @Nested
     class WithCacheIndicator {
 
-        private InfinispanHealthIndicator infinispanHealthIndicator = mock(InfinispanHealthIndicator.class);
+        @Mock
+        private InfinispanHealthIndicator infinispanHealthIndicator;
 
         @Test
         void givenNoGateway_whenBuildHealthIndicator_thenItIsDown() {
