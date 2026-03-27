@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 @Component
 @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "infinispan")
-public class CachesHealthIndicator extends AbstractHealthIndicator {
+public class InfinispanHealthIndicator extends AbstractHealthIndicator {
 
     @Value("${caching.storage.infinispan.initialHosts:}")
     private String initialHosts;

@@ -34,7 +34,7 @@ public class CachingHealthIndicator extends AbstractHealthIndicator implements A
     private final AtomicBoolean serviceUp = new AtomicBoolean();
 
     private final ApiMediationClient apiMediationClient;
-    private final Optional<CachesHealthIndicator> cachesHealthIndicator;
+    private final Optional<InfinispanHealthIndicator> cachesHealthIndicator;
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {
