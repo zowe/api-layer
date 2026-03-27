@@ -112,12 +112,12 @@ class InfinispanHealthIndicatorTest {
             doReturn(cache).when(nativeCacheManager).getCache(CACHE_1);
             doReturn(cacheStatus).when(cache).getStatus();
 
-            var cachesHealthIndicator = new InfinispanHealthIndicator();
-            ((AtomicReference<CacheManager>) ReflectionTestUtils.getField(cachesHealthIndicator, "cacheManager"))
+            var infinispanHealthIndicator = new InfinispanHealthIndicator();
+            ((AtomicReference<CacheManager>) ReflectionTestUtils.getField(infinispanHealthIndicator, "cacheManager"))
                 .set(cacheManager);
-            ReflectionTestUtils.setField(cachesHealthIndicator, "initialHosts", "");
+            ReflectionTestUtils.setField(infinispanHealthIndicator, "initialHosts", "");
             var builder = mock(Health.Builder.class);
-            cachesHealthIndicator.doHealthCheck(builder);
+            infinispanHealthIndicator.doHealthCheck(builder);
 
             verify(builder).withDetail(eq(INFINISPAN), mapCaptor.capture());
             var mapDetails = mapCaptor.getValue();
