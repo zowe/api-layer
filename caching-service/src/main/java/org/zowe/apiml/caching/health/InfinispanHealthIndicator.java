@@ -51,7 +51,7 @@ public class InfinispanHealthIndicator extends AbstractHealthIndicator {
         Map<String, Object> infinispan = new HashMap<>();
 
         ComponentStatus status = cm.getStatus();
-        infinispan.put("status", status.name());
+        infinispan.put("status", status);
 
         health &= status.allowInvocations();
         Map<String, Object> caches = new HashMap<>();
