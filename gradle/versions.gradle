@@ -99,6 +99,7 @@ dependencyResolutionManagement {
                 strictly '[4.11.0, 5.0.0['
                 prefer '4.11.0'
             }
+            version('mockServer','5.15.0')
             version('netflixCommonsUtil', '0.3.0')
             version('netflixServo', '0.13.2')
             version('netty', '4.1.128.Final')
@@ -307,6 +308,7 @@ dependencyResolutionManagement {
             library('mockito_core', 'org.mockito', 'mockito-core').versionRef('mockitoCore')
             library('mockito_jupiter', 'org.mockito', 'mockito-junit-jupiter').versionRef('mockitoCore')
             library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInline')
+            library('mock_server','org.mock-server','mockserver-netty').versionRef('mockServer')
             library('netflix_commons_util', 'com.netflix.netflix-commons', 'netflix-commons-util').versionRef('netflixCommonsUtil')
             library('netflix_servo', 'com.netflix.servo', 'servo-core').versionRef('netflixServo')
             library('netty', 'io.netty', 'netty-all').versionRef('netty')
