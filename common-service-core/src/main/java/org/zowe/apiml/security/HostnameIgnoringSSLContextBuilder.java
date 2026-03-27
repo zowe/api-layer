@@ -10,6 +10,9 @@
 
 package org.zowe.apiml.security;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -23,6 +26,7 @@ import java.util.Collection;
 /**
  * Builder meant to be used only for non-strict configuration
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HostnameIgnoringSSLContextBuilder extends org.apache.hc.core5.ssl.SSLContextBuilder {
 
     @Override
