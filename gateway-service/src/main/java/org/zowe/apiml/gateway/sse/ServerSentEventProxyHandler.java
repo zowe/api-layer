@@ -16,6 +16,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -63,6 +64,8 @@ import static org.zowe.apiml.security.SecurityUtils.loadKeyStore;
 @RequiredArgsConstructor
 @Component("ServerSentEventProxyHandler")
 public class ServerSentEventProxyHandler implements RoutedServicesUser {
+
+    private static final String N_DATA = "\ndata:";
 
     @Value("${server.ssl.trustStore:#{null}}")
     private String trustStore;
@@ -162,6 +165,7 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
             hasEnter(event.id());
     }
 
+    @SuppressWarnings("squid:S4449")
     ServerSentEvent<String> sanitize(ServerSentEvent<String> event) {
         if (!hasEnter(event)) {
             return event;
@@ -172,13 +176,13 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
 
         String data = event.data();
         if (hasEnter(data)) {
-            data = data.replaceAll("\r\n", "\n");
-            data = data.replaceAll("\n", "\ndata:");
+            data = data.replace("\r\n", "\n");
+            data = data.replace("\n", N_DATA);
         }
 
         String comment = event.comment();
         if (hasEnter(comment)) {
-            comment = comment.replaceAll("\n", "\n:");
+            comment = comment.replace("\n", "\n:");
         }
 
         return ServerSentEvent.<String>builder()
@@ -291,7 +295,7 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
 
         @Override
         public SseEventBuilderFixedImpl comment(String comment) {
-            append(':').append(StringUtils.replace(comment, "\n", "\n:")).append('\n');
+            append(':').append(Strings.CS.replace(comment, "\n", "\n:")).append('\n');
             return this;
         }
 
@@ -335,10 +339,10 @@ public class ServerSentEventProxyHandler implements RoutedServicesUser {
                         if (i + 1 < length && input.charAt(i + 1) == '\n') {
                             i++;
                         }
-                        this.sb.append("\ndata:");
+                        this.sb.append(N_DATA);
                     }
                     else if (c == '\n') {
-                        this.sb.append("\ndata:");
+                        this.sb.append(N_DATA);
                     }
                     else {
                         this.sb.append(c);
