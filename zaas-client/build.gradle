@@ -18,4 +18,5 @@ dependencies {
     testImplementation libs.junitJupiter
     testImplementation libs.jjwt.full
     testImplementation libs.logback.classic
+    testImplementation libs.mock.server
 }
