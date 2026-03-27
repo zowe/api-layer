@@ -20,6 +20,8 @@ eureka:
         initialInstanceInfoReplicationIntervalSeconds: 1
         registryFetchIntervalSeconds: 1
 server:
+    tyrus:
+        port: 10013
     ssl:
         keyAlias: localhost
         keyPassword: password

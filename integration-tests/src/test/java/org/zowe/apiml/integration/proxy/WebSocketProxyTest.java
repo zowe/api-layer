@@ -36,7 +36,6 @@ import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
 import org.zowe.apiml.util.categories.WebsocketTest;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
@@ -55,14 +54,15 @@ import java.util.function.BiConsumer;
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.tomcat.websocket.Constants.SSL_CONTEXT_PROPERTY;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_HEADER;
+import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_TYRUS_ECHO;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_UPPERCASE;
-import static org.awaitility.Awaitility.await;
 
 @TestsNotMeantForZowe
 @WebsocketTest
@@ -198,8 +198,8 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                     }
 
                     @Test
-                    void whenSendingFrames_andReceivingFrames() {
-                        WebSocketTestClient webSocketClientTyrus = new WebSocketTestClient(new URI("wss://localhost:" + port + "/tyrusws/ws/v1/echo"));
+                    void whenSendingFrames_andReceivingFrames() throws InterruptedException, URISyntaxException {
+                        WebSocketTestClient webSocketClientTyrus = new WebSocketTestClient(new URI(discoverableClientGatewayUrl(DISCOVERABLE_WS_TYRUS_ECHO)));
                         //TODO obtain from SslContext (update Ssl context to expose) webSocketClientTyrus.setSocketFactory();
                         //webSocketClientTyrus.setSocketFactory(SslContext.tlsWithoutCert.getSSLConfig().getSSLSocketFactory());
                         webSocketClientTyrus.messages.clear();
@@ -223,8 +223,6 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                                 assertTrue(response.remaining() > 0);
                                 assertTrue(response.capacity() == 21_504, "capacity was " + response.capacity());
                             });
-                        // send frames, total under max but over default (8KB)
-                        int size = 21_504;
 
                     }
 

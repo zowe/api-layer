@@ -26,6 +26,8 @@ apply from: "../gradle/jib.gradle"
 def javaAgentPort = 6304
 def debugPort = 5124
 def componentName = "api-catalog-services"
+def applicationPort = '10014'
+
 if (project.hasProperty('zowe.jib.image.suffix')) { // Prefix for the component name (for the standalone catalog container)
     componentName += '-' + project.getProperty('zowe.jib.image.suffix')
 }
@@ -36,7 +38,7 @@ if (project.hasProperty('zowe.jib.image.debugPort')) {
     debugPort = project.getProperty('zowe.jib.image.debugPort')
 }
 
-setJib(componentName, javaAgentPort, debugPort)
+setJib(componentName, javaAgentPort, debugPort, applicationPort)
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file

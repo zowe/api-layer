@@ -14,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
@@ -43,7 +42,6 @@ public class WebSocketClientFactory {
 
     private final ConcurrentMap<String, JettyWebSocketClient> clientsMap = new ConcurrentHashMap<>();
 
-    @Autowired
     public WebSocketClientFactory(
             SslContextFactory.Client jettyClientSslContextFactory,
             @Value("${server.webSocket.maxIdleTimeout:3600000}") int maxIdleWebSocketTimeout,
@@ -73,6 +71,7 @@ public class WebSocketClientFactory {
         wsClient.setConnectTimeout(connectTimeout);
         wsClient.setStopTimeout(stopTimeout);
         wsClient.setAsyncWriteTimeout(asyncWriteTimeout);
+
         JettyWebSocketClient client = new JettyWebSocketClient(wsClient);
         client.start();
         return client;

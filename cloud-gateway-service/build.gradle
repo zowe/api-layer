@@ -24,8 +24,9 @@ apply from: "../gradle/jib.gradle"
 def javaAgentPort = 6310
 def debugPort = 5130
 def componentName = "cloud-gateway-service"
+def applicationPort = '10018'
 
-setJib(componentName, javaAgentPort, debugPort)
+setJib(componentName, javaAgentPort, debugPort, applicationPort)
 jib.container.mainClass = 'org.zowe.apiml.cloudgatewayservice.CloudGatewayServiceApplication'
 
 ext['netty.version'] = libs.versions.netty.get()

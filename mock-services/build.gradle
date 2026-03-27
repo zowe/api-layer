@@ -24,8 +24,9 @@ apply from: "../gradle/jib.gradle"
 def javaAgentPort = 6303
 def debugPort = 5123
 def componentName = "mock-services"
+def applicationPort = '10013'
 
-setJib(componentName, javaAgentPort, debugPort)
+setJib(componentName, javaAgentPort, debugPort, applicationPort)
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file

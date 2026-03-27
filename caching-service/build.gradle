@@ -24,8 +24,9 @@ apply from: "../gradle/jib.gradle"
 def javaAgentPort = 6306
 def debugPort = 5126
 def componentName = "caching-service"
+def applicationPort = '10016'
 
-setJib(componentName, javaAgentPort, debugPort)
+setJib(componentName, javaAgentPort, debugPort, applicationPort)
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file

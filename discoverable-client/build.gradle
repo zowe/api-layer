@@ -29,8 +29,9 @@ apply from: "../gradle/jib.gradle"
 def javaAgentPort = 6302
 def debugPort = 5122
 def componentName = "discoverable-client"
+def applicationPorts = "10012-10013"
 
-setJib(componentName, javaAgentPort, debugPort)
+setJib(componentName, javaAgentPort, debugPort, applicationPorts)
 
 springBoot {
     // This statement tells the Gradle Spring Boot plugin to generate a file

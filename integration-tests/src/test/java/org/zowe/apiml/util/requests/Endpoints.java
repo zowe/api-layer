@@ -61,6 +61,7 @@ public class Endpoints {
     public final static String DISCOVERABLE_GET_FILE = "/discoverableclient/api/v1/get-file";
     public final static String DISCOVERABLE_MULTIPART = "/discoverableclient/api/v1/multipart";
     public final static String DISCOVERABLE_SSE_EVENTS = "/discoverableclient/sse/v1/events";
+    public final static String DISCOVERABLE_WS_TYRUS_ECHO = "/discoverableclient/ws/v1/echo";
     public final static String X509_ENDPOINT = "/discoverableclient/api/v1/x509";
     public final static String MEDIATION_CLIENT = "/discoverableclient/api/v1/apiMediationClient";
 

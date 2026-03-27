@@ -24,20 +24,23 @@ import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+/**
+ * WebSocket server based on Tyrus that echoes the message in binary mode split in frames
+ */
 @Component
 public class TyrusServer implements InitializingBean {
 
-    @Value("")
+    @Value("${server.tyrus.port}")
     private int port;
 
-    @Value("")
+    @Value("${server.hostname:${apiml.service.hostname}}")
     private String hostname;
 
     private Server server;
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        this.server = new Server(StringUtils.isBlank(hostname) ? "localhost" : hostname, port > 1024 ? port : 0, "/", null, BinaryEchoServer.class);
+        this.server = new Server(StringUtils.isBlank(hostname) ? "localhost" : hostname, port > 1024 ? port : 0, "/discoverableclient", null, BinaryEchoServer.class);
         this.server.start();
     }
 
