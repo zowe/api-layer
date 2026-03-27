@@ -34,7 +34,7 @@ public class CachingHealthIndicator extends AbstractHealthIndicator implements A
     private final AtomicBoolean serviceUp = new AtomicBoolean();
 
     private final ApiMediationClient apiMediationClient;
-    private final Optional<InfinispanHealthIndicator> cachesHealthIndicator;
+    private final Optional<InfinispanHealthIndicator> infinispanHealthIndicator;
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {
@@ -43,12 +43,13 @@ public class CachingHealthIndicator extends AbstractHealthIndicator implements A
         boolean gatewayUp = Optional.ofNullable(apiMediationClient.getEurekaClient())
             .map(eurekaClient -> eurekaClient.getApplication(CoreService.GATEWAY.getServiceId()))
             .map(Application::getInstances)
-            .map(i -> !i.isEmpty())
+            .map(instanceList -> !instanceList.isEmpty())
             .orElse(false);
         builder.withDetail(CoreService.GATEWAY.getServiceId(), gatewayUp ? Status.UP : Status.DOWN);
 
-        cachesHealthIndicator.ifPresent(i -> i.doHealthCheck(builder));
-        if ((!(boolean) serviceUp.get()) || !gatewayUp) {
+        infinispanHealthIndicator.ifPresent(infinispanHealthIndicator -> infinispanHealthIndicator.doHealthCheck(builder));
+        boolean isCachingUp = this.serviceUp.get();
+        if (!(isCachingUp && gatewayUp)) {
             builder.down();
         }
     }
