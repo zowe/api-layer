@@ -572,7 +572,40 @@ public class WebSecurityConfig {
     }
 
     /**
-     * Secures the API Catalog's protected endpoints in the modulith.
+     * Secures the API Catalog's apidoc and static-api refresh endpoints in the modulith.
+     * These endpoints additionally support x509 client certificate authentication.
+     */
+    @Bean
+    SecurityWebFilterChain apiCatalogCertEndpoints(ServerHttpSecurity http,
+                                                   AuthConfigurationProperties authConfigurationProperties,
+                                                   AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+        http
+            .securityMatcher(pathMatchers(
+                "/apicatalog/api/v1/apidoc/**",
+                "/apicatalog/api/v1/static-api/refresh"
+            ))
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable);
+
+        if (verifySslCertificatesOfServices) {
+            http.x509(x509 -> x509
+                .principalExtractor(X509Util.x509PrincipalExtractor())
+                .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
+            );
+        }
+
+        addOidcFilterIfEnabled(http, authConfigurationProperties);
+
+        http
+            .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION);
+
+        return http.build();
+    }
+
+    /**
+     * Secures the API Catalog's remaining protected endpoints in the modulith.
      * Supports authentication via JWT token, basic credentials, and OIDC token (when enabled).
      * The OIDC filter runs before TokenAuthFilter; on successful OIDC auth it strips the token
      * from the request so TokenAuthFilter does not reject the non-APIML JWT.
@@ -587,8 +620,7 @@ public class WebSecurityConfig {
                 "/apicatalog/api/v1/containers",
                 "/apicatalog/api/v1/containers/**",
                 "/apicatalog/api/v1/application/**",
-                "/apicatalog/api/v1/services/**",
-                "/apicatalog/api/v1/apidoc/**"
+                "/apicatalog/api/v1/services/**"
             ))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
