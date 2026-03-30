@@ -24,7 +24,7 @@ import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.zowe.apiml.product.constants.CoreService;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Caching service health information (/cachingservice/application/health)
@@ -34,10 +34,10 @@ import java.util.concurrent.atomic.AtomicReference;
 @ConditionalOnMissingBean(name = "modulithConfig")
 public class CachingHealthIndicator extends AbstractHealthIndicator implements ApplicationListener<ApplicationReadyEvent> {
 
-    private final AtomicReference<Boolean> serviceUp = new AtomicReference<>(false);
+    private final AtomicBoolean serviceUp = new AtomicBoolean();
 
     private final ApiMediationClient apiMediationClient;
-    private final Optional<CachesHealthIndicator> cachesHealthIndicator;
+    private final Optional<InfinispanHealthIndicator> infinispanHealthIndicator;
 
     @Override
     protected void doHealthCheck(Health.Builder builder) {
@@ -46,12 +46,13 @@ public class CachingHealthIndicator extends AbstractHealthIndicator implements A
         boolean gatewayUp = Optional.ofNullable(apiMediationClient.getEurekaClient())
             .map(eurekaClient -> eurekaClient.getApplication(CoreService.GATEWAY.getServiceId()))
             .map(Application::getInstances)
-            .map(i -> !i.isEmpty())
+            .map(instanceList -> !instanceList.isEmpty())
             .orElse(false);
         builder.withDetail(CoreService.GATEWAY.getServiceId(), gatewayUp ? Status.UP : Status.DOWN);
 
-        cachesHealthIndicator.ifPresent(i -> i.doHealthCheck(builder));
-        if ((!(boolean) serviceUp.get()) || !gatewayUp) {
+        infinispanHealthIndicator.ifPresent(indicator -> indicator.doHealthCheck(builder));
+        boolean isCachingUp = this.serviceUp.get();
+        if (!(isCachingUp && gatewayUp)) {
             builder.down();
         }
     }
