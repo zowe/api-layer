@@ -50,6 +50,7 @@ import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_WS_UPPERCASE;
 
 @WebsocketTest
 class WebSocketProxyTest implements TestWithStartedInstances {
+
     private final GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
     private static final URI DC_WS_REST_ENDPOINT = HttpRequestUtils.getUriFromGateway("/discoverableclient/api/v1/ws");
 
@@ -251,7 +252,9 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                     assertEquals("CloseStatus[code=1003, reason=Invalid login credentials]", response.toString());
                     session.close();
                 }
+
             }
+
         }
 
     }
@@ -271,6 +274,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
             assertEquals("BYECloseStatus[code=1000, reason=null]", response.toString());
         }
+
     }
 
     @Nested
