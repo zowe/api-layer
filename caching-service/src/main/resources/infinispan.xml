@@ -1,9 +1,15 @@
-<infinispan>
+<infinispan
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:13.0 https://infinispan.org/schemas/infinispan-config-13.0.xsd
+                        urn:infinispan:server:13.0 https://infinispan.org/schemas/infinispan-server-13.0.xsd
+                        urn:org:jgroups http://www.jgroups.org/schema/jgroups-4.2.xsd"
+    xmlns="urn:infinispan:config:13.0">
+
     <jgroups>
         <stack name="prod">
             <!-- jgroups.tcp.address is deprecated and will be removed, see ISPN-11867 -->
             <TCP bind_addr="${jgroups.bind.address,jgroups.tcp.address:SITE_LOCAL}"
-                 bind_port="${jgroups.bind.port,jgroups.tcp.port:7800}"
+                 bind_port="${jgroups.bind.port,jgroups.tcp.port:7098}"
 
                  enable_diagnostics="${jgroups.tcp.diag.enabled:false}"
                  thread_naming_pattern="pl"
@@ -22,26 +28,6 @@
                     initial_hosts="${jgroups.tcpping.initial_hosts}"
                     port_range="0"
             />
-            <VERIFY_SUSPECT timeout="1000"/>
-            <SSL_KEY_EXCHANGE keystore_name="${server.ssl.keyStore}"
-                              keystore_type="${server.ssl.keyStoreType}"
-                              keystore_password="${server.ssl.keyStorePassword}"
-                              secret_key_algorithm="RSA"
-                              port="${jgroups.keyExchange.port}"
-            />
-            <!-- Configures ASYM_ENCRYPT -->
-            <!-- The use_external_key_exchange = "true" attribute configures nodes to use the `SSL_KEY_EXCHANGE` protocol for certificate authentication. -->
-            <ASYM_ENCRYPT asym_keylength="2048"
-                          asym_algorithm="RSA"
-                          change_key_on_coord_leave="false"
-                          change_key_on_leave="false"
-                          use_external_key_exchange="true"
-                          sym_keylength="128"
-                          sym_algorithm="AES/CBC/PKCS5Padding"
-                          sym_iv_length="16"
-            />
-            <pbcast.NAKACK2/>
-
             <MERGE3 min_interval="10000"
                     max_interval="30000"
             />
@@ -51,7 +37,32 @@
                     interval="2000"
                     timeout_check_interval="1000"
             />
+            <VERIFY_SUSPECT timeout="1000"/>
+            <!-- replacement of SSL_KEY_EXCHANGE -->
+            <org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange
+                keystore_name="${infinispan.ssl.keyStore}"
+                keystore_type="${infinispan.ssl.keyStoreType}"
+                keystore_password="${infinispan.ssl.keyStorePassword}"
+                secret_key_algorithm="AES"
+                socket_timeout="${jgroups.keyExchange.socketTimeout:5000}"
+                port_range="0"
+                port="${jgroups.keyExchange.port}"
+            />
+            <!-- Configures ASYM_ENCRYPT -->
+            <!-- The use_external_key_exchange = "true" attribute configures nodes to use the `org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange` protocol for certificate authentication. -->
+            <ASYM_ENCRYPT asym_keylength="2048"
+                          asym_algorithm="RSA"
+                          change_key_on_coord_leave="false"
+                          change_key_on_leave="false"
+                          use_external_key_exchange="true"
+                          sym_keylength="128"
+                          sym_algorithm="AES/CBC/PKCS5Padding"
+                          sym_iv_length="16"
+                          stack.combine="INSERT_AFTER"
+                          stack.position="org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange"
+            />
 
+            <pbcast.NAKACK2/>
 
             <UNICAST3 xmit_interval="100"
                       xmit_table_num_rows="50"
@@ -63,7 +74,8 @@
                            max_bytes="1M"
             />
             <pbcast.GMS print_local_addr="true"
-                        join_timeout="${jgroups.join_timeout:2000}"
+                        join_timeout="${jgroups.join_timeout:15000}"
+                        max_join_attempts="0"
             />
             <UFC max_credits="4m"
                  min_threshold="0.40"
@@ -87,7 +99,6 @@
                 <class>java.util.Arrays$ArrayList</class>
             </allow-list>
         </serialization>
-
 
     </cache-container>
 </infinispan>

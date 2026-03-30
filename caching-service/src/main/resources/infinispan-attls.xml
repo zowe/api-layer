@@ -1,9 +1,14 @@
-<infinispan>
+<infinispan
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:13.0 https://infinispan.org/schemas/infinispan-config-13.0.xsd
+                        urn:infinispan:server:13.0 https://infinispan.org/schemas/infinispan-server-13.0.xsd
+                        urn:org:jgroups http://www.jgroups.org/schema/jgroups-4.2.xsd"
+    xmlns="urn:infinispan:config:13.0">
     <jgroups>
         <stack name="prod">
             <!-- jgroups.tcp.address is deprecated and will be removed, see ISPN-11867 -->
             <TCP bind_addr="${jgroups.bind.address,jgroups.tcp.address:SITE_LOCAL}"
-                 bind_port="${jgroups.bind.port,jgroups.tcp.port:7800}"
+                 bind_port="${jgroups.bind.port,jgroups.tcp.port:7098}"
 
                  enable_diagnostics="false"
                  thread_naming_pattern="pl"
@@ -22,9 +27,6 @@
                     initial_hosts="${jgroups.tcpping.initial_hosts}"
                     port_range="0"
             />
-            <VERIFY_SUSPECT timeout="1000"/>
-            <pbcast.NAKACK2/>
-
             <MERGE3 min_interval="10000"
                     max_interval="30000"
             />
@@ -34,7 +36,8 @@
                     interval="2000"
                     timeout_check_interval="1000"
             />
-
+            <VERIFY_SUSPECT timeout="1000"/>
+            <pbcast.NAKACK2/>
 
             <UNICAST3 xmit_interval="100"
                       xmit_table_num_rows="50"
@@ -46,7 +49,8 @@
                            max_bytes="1M"
             />
             <pbcast.GMS print_local_addr="true"
-                        join_timeout="${jgroups.join_timeout:2000}"
+                        join_timeout="${jgroups.join_timeout:15000}"
+                        max_join_attempts="0"
             />
             <UFC max_credits="4m"
                  min_threshold="0.40"
