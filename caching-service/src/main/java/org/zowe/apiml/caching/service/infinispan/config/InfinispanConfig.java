@@ -150,7 +150,7 @@ public class InfinispanConfig implements InitializingBean {
         holder.getGlobalConfigurationBuilder().globalState().persistentLocation(getRootFolder()).enable();
         holder.newConfigurationBuilder("default").persistence()
             .addSoftIndexFileStore()
-            .clustering().cacheMode(CacheMode.DIST_SYNC);
+            .clustering().cacheMode(CacheMode.REPL_SYNC);
 
         DefaultCacheManager cacheManager = new DefaultCacheManager(holder, true);
 
@@ -158,7 +158,7 @@ public class InfinispanConfig implements InitializingBean {
         builder
             .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
             .persistence().addSoftIndexFileStore().clustering()
-            .clustering().cacheMode(CacheMode.DIST_SYNC);
+            .clustering().cacheMode(CacheMode.REPL_SYNC);
 
         List<String> caches = Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN);
         caches.forEach(cacheName -> cacheManager.administration()
