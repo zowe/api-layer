@@ -20,6 +20,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ProviderManager;
@@ -29,6 +30,7 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.security.web.server.authentication.logout.HttpStatusReturningServerLogoutSuccessHandler;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
@@ -36,6 +38,7 @@ import org.springframework.security.web.server.util.matcher.NegatedServerWebExch
 import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher.MatchResult;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.filter.BasicLoginFilter;
 import org.zowe.apiml.filter.CachedBodyFilter;
 import org.zowe.apiml.filter.CategorizeCertsWebFilter;
@@ -574,11 +577,13 @@ public class WebSecurityConfig {
     /**
      * Secures the API Catalog's apidoc and static-api refresh endpoints in the modulith.
      * These endpoints additionally support x509 client certificate authentication.
+     * Unauthenticated requests receive a WWW-Authenticate: Basic header.
      */
     @Bean
     SecurityWebFilterChain apiCatalogCertEndpoints(ServerHttpSecurity http,
                                                    AuthConfigurationProperties authConfigurationProperties,
-                                                   AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+                                                   AuthExceptionHandlerReactive authExceptionHandlerReactive,
+                                                   ServerAuthenticationEntryPoint serverAuthenticationEntryPoint) {
         http
             .securityMatcher(pathMatchers(
                 "/apicatalog/api/v1/apidoc/**",
@@ -586,7 +591,10 @@ public class WebSecurityConfig {
             ))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
-            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable);
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .exceptionHandling(eh -> eh.authenticationEntryPoint(
+                catalogEntryPoint(serverAuthenticationEntryPoint)
+            ));
 
         if (verifySslCertificatesOfServices) {
             http.x509(x509 -> x509
@@ -613,7 +621,8 @@ public class WebSecurityConfig {
     @Bean
     SecurityWebFilterChain apiCatalogAuthenticatedEndpoints(ServerHttpSecurity http,
                                                             AuthConfigurationProperties authConfigurationProperties,
-                                                            AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+                                                            AuthExceptionHandlerReactive authExceptionHandlerReactive,
+                                                            ServerAuthenticationEntryPoint serverAuthenticationEntryPoint) {
         http
             .securityMatcher(pathMatchers(
                 "/apicatalog/api/v1/static-api/**",
@@ -624,7 +633,10 @@ public class WebSecurityConfig {
             ))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
-            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable);
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .exceptionHandling(eh -> eh.authenticationEntryPoint(
+                catalogEntryPoint(serverAuthenticationEntryPoint)
+            ));
 
         addOidcFilterIfEnabled(http, authConfigurationProperties);
 
@@ -633,6 +645,13 @@ public class WebSecurityConfig {
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION);
 
         return http.build();
+    }
+
+    private ServerAuthenticationEntryPoint catalogEntryPoint(ServerAuthenticationEntryPoint delegate) {
+        return (exchange, exception) -> {
+            exchange.getResponse().getHeaders().set(HttpHeaders.WWW_AUTHENTICATE, ApimlConstants.BASIC_AUTHENTICATION_PREFIX);
+            return delegate.commence(exchange, exception);
+        };
     }
 
     /**
