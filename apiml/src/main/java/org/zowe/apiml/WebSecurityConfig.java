@@ -11,7 +11,10 @@
 package org.zowe.apiml;
 
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +40,7 @@ import org.zowe.apiml.filter.BasicLoginFilter;
 import org.zowe.apiml.filter.CachedBodyFilter;
 import org.zowe.apiml.filter.CategorizeCertsWebFilter;
 import org.zowe.apiml.filter.LogoutHandler;
+import org.zowe.apiml.filter.OIDCAuthFilter;
 import org.zowe.apiml.filter.QueryWebFilter;
 import org.zowe.apiml.filter.X509AuthFilter;
 import org.zowe.apiml.gateway.filters.security.AuthExceptionHandlerReactive;
@@ -45,13 +49,16 @@ import org.zowe.apiml.handler.FailedAuthenticationWebHandler;
 import org.zowe.apiml.handler.LocalTokenProvider;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.util.X509Util;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 import org.zowe.apiml.util.HttpUtils;
 import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import org.zowe.apiml.zaas.security.login.x509.X509AuthenticationProvider;
+import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.query.TokenAuthenticationProvider;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -86,6 +93,15 @@ public class WebSecurityConfig {
     private final FailedAuthenticationWebHandler failedAuthenticationWebHandler;
     private final TokenAuthenticationProvider tokenAuthenticationProvider;
     private final HttpUtils httpUtils;
+
+    @Setter(onMethod_ = {@Autowired(required = false)})
+    private OIDCProvider oidcProvider;
+
+    @Setter(onMethod_ = {@Autowired(required = false), @Qualifier("oidcMapper")})
+    private AuthenticationMapper oidcMapper;
+
+    @Value("${apiml.security.oidc.userIdField:sub}")
+    private String oidcUserIdFieldPath;
 
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
@@ -208,6 +224,27 @@ public class WebSecurityConfig {
 
     private ServerHttpSecurity x509SecurityConfig(ServerHttpSecurity http) {
         return x509SecurityConfig(http, true);
+    }
+
+    private boolean isOidcEnabled() {
+        return oidcProvider != null && oidcMapper != null;
+    }
+
+    private OIDCAuthFilter createOidcAuthFilter(AuthConfigurationProperties authConfigurationProperties) {
+        List<String> fieldPath = Arrays.asList(oidcUserIdFieldPath.trim().split("\\."));
+        return new OIDCAuthFilter(oidcProvider, oidcMapper, authConfigurationProperties, fieldPath);
+    }
+
+    /**
+     * Adds the OIDC filter before AUTHENTICATION so it runs before TokenAuthFilter.
+     * On successful OIDC validation the filter strips the token from the request,
+     * preventing TokenAuthFilter from re-validating and rejecting it.
+     */
+    private ServerHttpSecurity addOidcFilterIfEnabled(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
+        if (isOidcEnabled()) {
+            http.addFilterBefore(createOidcAuthFilter(authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION);
+        }
+        return http;
     }
 
     /**
@@ -337,7 +374,8 @@ public class WebSecurityConfig {
      * @return
      */
     @Bean
-    SecurityWebFilterChain loginAndLogoutSecurityWebFilterChain(ServerHttpSecurity http, LogoutHandler logoutHandler) {
+    SecurityWebFilterChain loginAndLogoutSecurityWebFilterChain(ServerHttpSecurity http, LogoutHandler logoutHandler,
+                                                                AuthConfigurationProperties authConfigurationProperties) {
         var man = new ProviderManager(x509AuthenticationProvider);
         var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
         http.csrf(ServerHttpSecurity.CsrfSpec::disable)
@@ -356,7 +394,11 @@ public class WebSecurityConfig {
                 .logoutSuccessHandler(new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new CachedBodyFilter(), SecurityWebFiltersOrder.FIRST)
-            .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
+            .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST);
+
+        addOidcFilterIfEnabled(http, authConfigurationProperties);
+
+        http
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION);
 
@@ -527,6 +569,38 @@ public class WebSecurityConfig {
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
+    }
+
+    /**
+     * Secures the API Catalog's protected endpoints in the modulith.
+     * Supports authentication via JWT token, basic credentials, and OIDC token (when enabled).
+     * The OIDC filter runs before TokenAuthFilter; on successful OIDC auth it strips the token
+     * from the request so TokenAuthFilter does not reject the non-APIML JWT.
+     */
+    @Bean
+    SecurityWebFilterChain apiCatalogAuthenticatedEndpoints(ServerHttpSecurity http,
+                                                            AuthConfigurationProperties authConfigurationProperties,
+                                                            AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+        http
+            .securityMatcher(pathMatchers(
+                "/apicatalog/api/v1/static-api/**",
+                "/apicatalog/api/v1/containers",
+                "/apicatalog/api/v1/containers/**",
+                "/apicatalog/api/v1/application/**",
+                "/apicatalog/api/v1/services/**",
+                "/apicatalog/api/v1/apidoc/**"
+            ))
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable);
+
+        addOidcFilterIfEnabled(http, authConfigurationProperties);
+
+        http
+            .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION);
+
+        return http.build();
     }
 
     /**

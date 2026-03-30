@@ -142,6 +142,7 @@ public class SecurityConfiguration {
      */
     @Bean
     @Order(3)
+    @ConditionalOnMissingBean(name = "modulithConfig")
     SecurityWebFilterChain basicAuthOrTokenOrCertApiDocFilterChain(
         ServerHttpSecurity http,
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
@@ -165,6 +166,7 @@ public class SecurityConfiguration {
 
     @Bean
     @Order(4)
+    @ConditionalOnMissingBean(name = "modulithConfig")
     SecurityWebFilterChain healthEndpointSecurityWebFilterChain(
         ServerHttpSecurity http,
         @Value("${apiml.health.protected:true}") boolean isHealthEndpointProtected,
@@ -189,6 +191,7 @@ public class SecurityConfiguration {
 
     @Bean
     @Order(5)
+    @ConditionalOnMissingBean(name = "modulithConfig")
     SecurityWebFilterChain basicAuthOrTokenAllEndpointsFilterChain(
         ServerHttpSecurity http,
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
