@@ -143,7 +143,7 @@ class WebSocketTest {
         private MockService serviceStrictness;
 
         @BeforeAll
-        void setUp() throws URISyntaxException {
+        void setUp() {
             var service1 = mockServiceWs("websocketservice")
                 .assertion(message -> {
                     if (message instanceof String s) {
@@ -205,7 +205,7 @@ class WebSocketTest {
         }
 
         @Test
-        void givenWsConnection_withSingleMessage_thenSuccess() throws URISyntaxException, InterruptedException {
+        void givenWsConnection_withSingleMessage_thenSuccess() throws InterruptedException {
             var connected = webSocketClient.connectBlocking();
 
             assertTrue(connected);

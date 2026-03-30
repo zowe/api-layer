@@ -39,8 +39,7 @@ public class WebSocketConfig {
             webSocketContainer.setDefaultMaxBinaryMessageBufferSize(maxFramePayloadLength);
             webSocketContainer.setDefaultMaxTextMessageBufferSize(maxFramePayloadLength);
         }
-        var client = new ApimlWebSocketClient(config.secureSslContext(), webSocketContainer); // using netty client (async) with Tomcat backend (sync) can lead to conditions where frames are written before it's ready to accept
-        return client;
+        return new ApimlWebSocketClient(config.secureSslContext(), webSocketContainer); // using netty client (async) with Tomcat backend (sync) can lead to conditions where frames are written before it's ready to accept;
     }
 
 
