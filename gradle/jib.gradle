@@ -12,6 +12,6 @@ def setJib(componentName, javaAgentPort, debugPort, applicationPorts) {
     jib.extraDirectories.paths = ['../config', '../keystore', '../scripts']
 }
 
-ext.setJib =  { componentName, javaAgentPort, debugPort ->
-    setJib(componentName, javaAgentPort, debugPort)
+ext.setJib =  { componentName, javaAgentPort, debugPort, applicationPorts ->
+    setJib(componentName, javaAgentPort, debugPort, applicationPorts)
 }

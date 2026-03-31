@@ -172,7 +172,7 @@ dependencyResolutionManagement {
             version('gradle', '8.4')
             version('assertjCore', '3.26.3')
             version('javaWebSocket', '1.6.0') // for testing
-            version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
+            version('glassfishTyrus', '1.22') // for testing (WebSocket Java reference implementation)
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
             library('spring_boot_configuration_processor', 'org.springframework.boot', 'spring-boot-configuration-processor').versionRef('springBoot')

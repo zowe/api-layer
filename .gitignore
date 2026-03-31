@@ -121,6 +121,8 @@ onboarding-enabler-nodejs/coverage/
 onboarding-enabler-nodejs/lib/
 file/
 
+tools/
+
 zowe-cli-id-federation-plugin/*.jcl
 
 data/*
