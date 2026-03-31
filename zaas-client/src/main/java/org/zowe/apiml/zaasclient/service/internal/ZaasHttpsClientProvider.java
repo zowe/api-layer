@@ -11,11 +11,9 @@
 package org.zowe.apiml.zaasclient.service.internal;
 
 import lombok.AllArgsConstructor;
-import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -53,8 +51,6 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
 
     private final HostnameVerifier hostnameVerifier;
 
-    private final CookieStore cookieStore = new BasicCookieStore();
-
     private CloseableHttpClient httpsClient;
 
     public ZaasHttpsClientProvider(ConfigProperties configProperties) throws ZaasConfigurationException {
@@ -81,10 +77,6 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
             return matcher.group(1) + "://" + matcher.group(2) + "/" + matcher.group(3);
         }
         return input;
-    }
-
-    public void clearCookieStore() {
-        this.cookieStore.clear();
     }
 
     @Override
@@ -189,7 +181,8 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
             .setDefaultRequestConfig(this.requestConfig)
             .setMaxConnTotal(3 * 3)
             .setMaxConnPerRoute(3)
-            .setDefaultCookieStore(cookieStore);
+            .disableCookieManagement()
+            .disableAuthCaching();
     }
 
     private RequestConfig buildCustomRequestConfig() {

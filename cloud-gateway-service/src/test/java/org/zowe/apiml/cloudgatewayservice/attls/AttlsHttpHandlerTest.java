@@ -29,6 +29,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.template.MessageTemplate;
 import org.zowe.commons.attls.AttlsContext;
+import org.zowe.commons.attls.AttlsContextImpl;
 import org.zowe.commons.attls.ContextIsNotInitializedException;
 import org.zowe.commons.attls.InboundAttls;
 import org.zowe.commons.attls.IoctlCallException;
@@ -177,7 +178,7 @@ class AttlsHttpHandlerTest {
         }
 
         AttlsContext createAttlsContext(StatConn statConn) {
-            return new AttlsContext(0, false) {
+            return new AttlsContextImpl(0, false) {
                 @Override
                 public StatConn getStatConn() {
                     return statConn;
