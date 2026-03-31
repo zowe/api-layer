@@ -409,23 +409,31 @@ public class WebSecurityConfig {
     }
 
     /**
-     * This security filter chain secures the /query endpoint
+     * This security filter chain secures the /query endpoint.
+     * Supports OIDC token authentication (when enabled) in addition to APIML JWT.
+     * The OIDC filter runs before QueryWebFilter; on successful OIDC auth it strips the token
+     * from the request so QueryWebFilter does not attempt to re-validate the non-APIML JWT.
      *
      * @param http
+     * @param authConfigurationProperties
      * @return
      */
     @Bean
-    SecurityWebFilterChain queryFilter(ServerHttpSecurity http) {
+    SecurityWebFilterChain queryFilter(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
         var man = new ProviderManager(tokenAuthenticationProvider);
         var reactiveTokenAuthProvider = new ReactiveAuthenticationManagerAdapter(man);
 
-        return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+        http.csrf(ServerHttpSecurity.CsrfSpec::disable)
             .securityMatcher(new AndServerWebExchangeMatcher(
                 pathMatchers("gateway/api/v1/auth/query")
             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
-            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-            .addFilterAfter(new QueryWebFilter(failedAuthenticationWebHandler, HttpMethod.GET, false, reactiveTokenAuthProvider, httpUtils), SecurityWebFiltersOrder.FIRST)
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable);
+
+        addOidcFilterIfEnabled(http, authConfigurationProperties);
+
+        return http
+            .addFilterAfter(new QueryWebFilter(failedAuthenticationWebHandler, HttpMethod.GET, false, reactiveTokenAuthProvider, httpUtils), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
     }
 
