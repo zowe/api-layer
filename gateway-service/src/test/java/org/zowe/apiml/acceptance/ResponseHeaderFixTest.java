@@ -40,6 +40,11 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 @DirtiesContext
 class ResponseHeaderFixTest {
 
+    private static final int ADD_HEADER = 0;
+    private static final int SET_HEADER = 1;
+    private static final int SET_INT_HEADER = 2;
+    private static final int ADD_INT_HEADER = 3;
+
     private static final int TEST_CONTENT_LENGTH = 101;
     private static final String CONTENT_LENGTH = "Content-Length";
 
@@ -48,10 +53,10 @@ class ResponseHeaderFixTest {
 
     @ParameterizedTest(name = "Test handling setting context-type using {1}")
     @CsvSource({
-        "0,addHeader<String String>",
-        "1,setHeader<String String>",
-        "2,setIntHeader<String int>",
-        "3,addIntHeader<String int>"
+        ADD_HEADER + ",addHeader<String String>",
+        SET_HEADER + ",setHeader<String String>",
+        SET_INT_HEADER + ",setIntHeader<String int>",
+        ADD_INT_HEADER + ",addIntHeader<String int>"
     })
     void givenRequest_whenSetContentLength_thenIsPropagated(int method, String description) {
         given()
@@ -67,10 +72,10 @@ class ResponseHeaderFixTest {
 
     @ParameterizedTest(name = "Test handling headers without content-type using {1}")
     @CsvSource({
-        "0,addHeader<String String>",
-        "1,setHeader<String String>",
-        "2,setIntHeader<String int>",
-        "3,addIntHeader<String int>"
+        ADD_HEADER + ",addHeader<String String>",
+        SET_HEADER + ",setHeader<String String>",
+        SET_INT_HEADER + ",setIntHeader<String int>",
+        ADD_INT_HEADER + ",addIntHeader<String int>"
     })
     void givenRequest_whenDontSetContentLength_thenIsMissing(int method, String description) {
         given()
@@ -91,16 +96,16 @@ class ResponseHeaderFixTest {
         @GetMapping(value = "/test/{method}/{headerName}")
         public void getApiDoc(@PathVariable("method") int method, @PathVariable("headerName") String headerName, HttpServletResponse response) {
             switch (method) {
-                case 0:
+                case ADD_HEADER:
                     response.addHeader(headerName, String.valueOf(TEST_CONTENT_LENGTH));
                     break;
-                case 1:
+                case SET_HEADER:
                     response.setHeader(headerName, String.valueOf(TEST_CONTENT_LENGTH));
                     break;
-                case 2:
+                case SET_INT_HEADER:
                     response.setIntHeader(headerName, TEST_CONTENT_LENGTH);
                     break;
-                case 3:
+                case ADD_INT_HEADER:
                     response.addIntHeader(headerName, TEST_CONTENT_LENGTH);
                     break;
                 default:

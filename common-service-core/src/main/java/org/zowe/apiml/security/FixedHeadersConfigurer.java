@@ -53,6 +53,7 @@ public class FixedHeadersConfigurer<H extends HttpSecurityBuilder<H>> extends He
     private HeaderWriterFilter createHeaderWriterFilterFixed() {
         List<HeaderWriter> writers;
         try {
+            // to do not duplicate code, rather call the original private method
             Method getHeaderWriters = HeadersConfigurer.class.getDeclaredMethod("getHeaderWriters");
             getHeaderWriters.setAccessible(true);
             writers = (List<HeaderWriter>) getHeaderWriters.invoke(original);
