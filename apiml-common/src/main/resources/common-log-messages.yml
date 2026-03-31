@@ -62,16 +62,22 @@ messages:
       number: ZWEAO404
       type: ERROR
       text: "The service can not find the requested resource."
+      reason: "The requested endpoint or resource does not exist on the target service."
+      action: "Verify the endpoint path is correct and that the service exposes the requested resource."
 
     - key: org.zowe.apiml.common.methodNotAllowed
       number: ZWEAO405
       type: ERROR
       text: "The request method has been disabled and cannot be used for the requested resource."
+      reason: "The HTTP method used in the request is not supported for this endpoint."
+      action: "Check the API documentation to determine which HTTP methods are supported for this endpoint."
 
     - key: org.zowe.apiml.common.unsupportedMediaType
       number: ZWEAO415
       type: ERROR
       text: "The media format of the requested data is not supported by the service, so the service has rejected the request."
+      reason: "The Content-Type header in the request specifies a media type that the endpoint does not accept."
+      action: "Set the Content-Type header to a media type supported by the endpoint, typically application/json."
 
     # TLS,Certificate messages
     # 500-599
