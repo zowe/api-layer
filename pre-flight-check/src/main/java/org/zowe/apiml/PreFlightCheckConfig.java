@@ -10,6 +10,11 @@
 
 package org.zowe.apiml;
 
+/**
+ * Configuration contract for the pre-flight check tool.
+ * Exposes all user-supplied settings such as z/OSMF host, port, scheme,
+ * keystore/truststore paths, and certificate verification mode.
+ */
 public interface PreFlightCheckConfig {
 
     String getZosmfHost();

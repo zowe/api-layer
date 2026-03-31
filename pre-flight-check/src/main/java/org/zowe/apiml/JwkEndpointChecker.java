@@ -17,6 +17,10 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Checks z/OSMF JWK endpoint availability at {@code /jwt/ibm/api/zOSMFBuilder/jwk}.
+ * Interprets the HTTP response code to determine if the endpoint is functional
+ */
 @SuppressWarnings("squid:S106")
 public class JwkEndpointChecker {
 

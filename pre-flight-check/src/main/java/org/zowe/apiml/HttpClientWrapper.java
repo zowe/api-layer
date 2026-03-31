@@ -18,6 +18,11 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
 
+/**
+ * HTTP/HTTPS client wrapping {@link java.net.HttpURLConnection}.
+ * Supports custom {@link SSLContext} and {@link HostnameVerifier} for
+ * STRICT, NONSTRICT, and DISABLED certificate verification modes.
+ */
 @SuppressWarnings("squid:S106")
 public class HttpClientWrapper {
 

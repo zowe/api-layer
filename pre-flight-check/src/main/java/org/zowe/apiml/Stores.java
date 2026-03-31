@@ -23,6 +23,10 @@ import java.security.cert.CertificateException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Loads Java {@link java.security.KeyStore} instances from the filesystem
+ * or z/OS SAF keyrings. Supports PKCS12, JKS, and {@code safkeyring://} URIs.
+ */
 @SuppressWarnings("squid:S106")
 public class Stores {
 
@@ -37,12 +41,24 @@ public class Stores {
         init();
     }
 
+    /**
+     * Checks whether the given path is a SAF keyring URI.
+     *
+     * @param input store path to check
+     * @return {@code true} if the path matches the keyring pattern
+     */
     public static boolean isKeyring(String input) {
         if (input == null) return false;
         Matcher matcher = KEYRING_PATTERN.matcher(input);
         return matcher.matches();
     }
 
+    /**
+     * Normalizes a keyring URI to the canonical {@code safkeyring://userId/keyRing} format.
+     *
+     * @param input raw keyring URI
+     * @return normalized URI, or the original input if not a keyring
+     */
     public static String formatKeyringUrl(String input) {
         if (input == null) return null;
         Matcher matcher = KEYRING_PATTERN.matcher(input);

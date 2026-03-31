@@ -20,6 +20,13 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
+/**
+ * Builds a TLSv1.2 {@link SSLContext} in two modes:
+ * <ul>
+ *   <li>{@link #initSSLContext(Stores)} — normal mode using real truststore/keystore</li>
+ *   <li>{@link #initTrustAllSSLContext()} — trust-all mode for DISABLED verification</li>
+ * </ul>
+ */
 @SuppressWarnings("squid:S106")
 public class SSLContextFactory {
 
@@ -34,6 +41,12 @@ public class SSLContextFactory {
         return sslContext;
     }
 
+    /**
+     * Creates an SSLContext using the provided keystore and truststore.
+     *
+     * @param stores loaded keystore/truststore pair
+     * @return factory holding the initialized SSLContext
+     */
     public static SSLContextFactory initSSLContext(Stores stores) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException, CertificateException, IOException {
         SSLContextFactory factory = new SSLContextFactory(stores);
 
@@ -54,6 +67,11 @@ public class SSLContextFactory {
         return factory;
     }
 
+    /**
+     * Creates an SSLContext that trusts all certificates. Use only when verification is DISABLED.
+     *
+     * @return factory holding the trust-all SSLContext
+     */
     public static SSLContextFactory initTrustAllSSLContext() throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException, CertificateException, IOException, UnrecoverableKeyException {
         SSLContextFactory factory = new SSLContextFactory(null);
 

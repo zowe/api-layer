@@ -13,6 +13,11 @@ package org.zowe.apiml;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
 
+/**
+ * CLI argument parser backed by picocli.
+ * Maps command-line flags (e.g. {@code --zosmf-host}, {@code --verify-certificates})
+ * to configuration properties exposed via {@link PreFlightCheckConfig}.
+ */
 @CommandLine.Command(
     name = "pre-flight-check",
     version = {

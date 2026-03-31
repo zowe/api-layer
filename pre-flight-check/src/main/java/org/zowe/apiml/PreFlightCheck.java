@@ -14,6 +14,13 @@ import picocli.CommandLine;
 
 import javax.net.ssl.HostnameVerifier;
 
+/**
+ * Entry point and orchestrator for the pre-flight check tool.
+ * Parses CLI arguments, validates configuration, builds the appropriate
+ * SSL context and HTTP client, then delegates to {@link JwkEndpointChecker}.
+ *
+ * <p>Exit codes: 0 = success, 4 = failure/error, 8 = help displayed.</p>
+ */
 @SuppressWarnings("squid:S106")
 public class PreFlightCheck {
 
