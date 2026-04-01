@@ -66,26 +66,21 @@ public class QueryWebFilter implements WebFilter {
                 new WebFilterExchange(exchange, chain), ex);
         }
 
+        Mono<Void> authFlow = attemptAuthentication(exchange)
+            .flatMap(authResult -> chain.filter(exchange)
+                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authResult)))
+            .onErrorResume(AuthenticationException.class, failed ->
+                this.failureHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), failed));
+
         if (protectedByCertificate) {
-            return attemptAuthentication(exchange)
-                .flatMap(authResult -> chain.filter(exchange)
-                    .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authResult)))
-                .onErrorResume(AuthenticationException.class, failed ->
-                    this.failureHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), failed));
+            return authFlow;
         }
 
         return ReactiveSecurityContextHolder.getContext()
             .map(SecurityContext::getAuthentication)
-            .filter(auth -> auth != null && auth.isAuthenticated())
-            .flatMap(auth -> chain.filter(exchange)
-                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth)))
-            .switchIfEmpty(
-                attemptAuthentication(exchange)
-                    .flatMap(authResult -> chain.filter(exchange)
-                        .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authResult)))
-                    .onErrorResume(AuthenticationException.class, failed ->
-                        this.failureHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), failed))
-            );
+            .filter(Authentication::isAuthenticated)
+            .flatMap(auth -> chain.filter(exchange))
+            .switchIfEmpty(authFlow);
     }
 
     private Mono<Authentication> attemptAuthentication(ServerWebExchange exchange) {
