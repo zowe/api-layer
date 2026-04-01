@@ -611,8 +611,6 @@ public class WebSecurityConfig {
             );
         }
 
-        addOidcFilterIfEnabled(http, authConfigurationProperties);
-
         http
             .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION);
