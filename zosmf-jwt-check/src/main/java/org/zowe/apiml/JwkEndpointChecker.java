@@ -13,6 +13,7 @@ package org.zowe.apiml;
 import javax.net.ssl.SSLHandshakeException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,9 +29,9 @@ public class JwkEndpointChecker {
     private static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
 
     private final HttpClientWrapper httpClient;
-    private final PreFlightCheckConfig conf;
+    private final ZosmfJwtCheckConfig conf;
 
-    public JwkEndpointChecker(HttpClientWrapper httpClient, PreFlightCheckConfig conf) {
+    public JwkEndpointChecker(HttpClientWrapper httpClient, ZosmfJwtCheckConfig conf) {
         this.httpClient = httpClient;
         this.conf = conf;
     }
@@ -59,10 +60,15 @@ public class JwkEndpointChecker {
             return false;
         } catch (SocketTimeoutException e) {
             System.err.println("FAILURE: Connection timed out to " + conf.getZosmfHost() + ":" + conf.getZosmfPort() + ".");
-            System.err.println("Details: " + e.getMessage());
+            System.err.println("This is commonly caused by an incorrect host/port or a firewall blocking the connection.");
+            System.err.println("Verify the z/OSMF host and port are correct and that no firewall is blocking access.");
+            return false;
+        } catch (UnknownHostException e) {
+            System.err.println("FAILURE: Error when calling " + urlString + " verify hostname and port.");
+            System.err.println("The host '" + conf.getZosmfHost() + "' could not be resolved.");
             return false;
         } catch (Exception e) {
-            System.err.println("FAILURE: Unexpected error when calling " + urlString + ".");
+            System.err.println("FAILURE: Error when calling " + urlString + " verify hostname and port.");
             System.err.println("Details: " + e.getMessage());
             return false;
         }
@@ -81,7 +87,7 @@ public class JwkEndpointChecker {
 
         if (responseCode == 404) {
             System.err.println("FAILURE: z/OSMF JWK endpoint not found. HTTP 404");
-            System.err.println("Try configuring the jwtAutoConfiguration to LTPA");
+            System.err.println("JWT support not found, may not be configured. LTPA may be used as an alternative");
             return false;
         }
 

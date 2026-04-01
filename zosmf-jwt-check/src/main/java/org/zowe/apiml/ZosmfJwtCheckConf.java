@@ -16,18 +16,18 @@ import picocli.CommandLine.Option;
 /**
  * CLI argument parser backed by picocli.
  * Maps command-line flags (e.g. {@code --zosmf-host}, {@code --verify-certificates})
- * to configuration properties exposed via {@link PreFlightCheckConfig}.
+ * to configuration properties exposed via {@link ZosmfJwtCheckConfig}.
  */
 @CommandLine.Command(
-    name = "pre-flight-check",
+    name = "zosmf-jwt-check",
     version = {
-        "Pre-Flight Check 1.0",
+        "z/OSMF JWT Check 1.0",
         "JVM: ${java.version} (${java.vendor} ${java.vm.name} ${java.vm.version})",
         "OS: ${os.name} ${os.version} ${os.arch}"
     },
-    description = "Performs a pre-flight connectivity check against the z/OSMF JWK endpoint."
+    description = "Checks connectivity to the z/OSMF JWK endpoint."
 )
-public class PreFlightCheckConf implements PreFlightCheckConfig {
+public class ZosmfJwtCheckConf implements ZosmfJwtCheckConfig {
 
     @Option(names = {"--zosmf-host"}, required = true, description = "Hostname or IP of the z/OSMF server")
     private String zosmfHost;

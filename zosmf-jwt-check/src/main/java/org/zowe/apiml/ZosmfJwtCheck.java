@@ -15,14 +15,14 @@ import picocli.CommandLine;
 import javax.net.ssl.HostnameVerifier;
 
 /**
- * Entry point and orchestrator for the pre-flight check tool.
+ * Entry point and orchestrator for the z/OSMF JWT check tool.
  * Parses CLI arguments, validates configuration, builds the appropriate
  * SSL context and HTTP client, then delegates to {@link JwkEndpointChecker}.
  *
  * <p>Exit codes: 0 = success, 4 = failure/error, 8 = help displayed.</p>
  */
 @SuppressWarnings("squid:S106")
-public class PreFlightCheck {
+public class ZosmfJwtCheck {
 
     static final String VERIFY_STRICT = "STRICT";
     static final String VERIFY_NONSTRICT = "NONSTRICT";
@@ -30,13 +30,13 @@ public class PreFlightCheck {
 
     public static int mainWithExitCode(String[] args) {
         try {
-            PreFlightCheckConf conf = new PreFlightCheckConf();
+            ZosmfJwtCheckConf conf = new ZosmfJwtCheckConf();
             CommandLine cmd = new CommandLine(conf);
             cmd.parseArgs(args);
 
             if (conf.isHelpRequested()) {
                 cmd.printVersionHelp(System.out);
-                CommandLine.usage(new PreFlightCheckConf(), System.out);
+                CommandLine.usage(new ZosmfJwtCheckConf(), System.out);
                 return 8;
             }
 
@@ -76,7 +76,7 @@ public class PreFlightCheck {
         }
     }
 
-    static void validateConfig(PreFlightCheckConf conf) {
+    static void validateConfig(ZosmfJwtCheckConf conf) {
         String scheme = conf.getScheme();
         if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
             throw new IllegalArgumentException("--scheme must be 'http' or 'https', got: " + scheme);

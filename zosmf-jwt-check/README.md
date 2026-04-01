@@ -1,10 +1,9 @@
-# Pre-Flight Check Tool
+# z/OSMF JWT Check Tool
 
-A Java utility that verifies connectivity to the z/OSMF JWK endpoint **before/after** starting the Zowe API Mediation Layer. This tool helps diagnose configuration issues early such as incorrect hostnames, unreachable ports, missing certificates, or misconfigured z/OSMF by performing a lightweight HTTP(S) call to the z/OSMF JWK endpoint at `/jwt/ibm/api/zOSMFBuilder/jwk`.
+A Java utility that verifies connectivity to the z/OSMF JWK endpoint. This tool helps diagnose configuration issues early such as incorrect hostnames, unreachable ports, missing certificates, or misconfigured z/OSMF by performing a lightweight HTTP(S) call to the z/OSMF JWK endpoint at `/jwt/ibm/api/zOSMFBuilder/jwk`.
 
 ## Table of Contents
 
-- [Overview](#overview)
 - [Prerequisites](#prerequisites)
 - [Building](#building)
 - [Usage](#usage)
@@ -22,19 +21,6 @@ A Java utility that verifies connectivity to the z/OSMF JWK endpoint **before/af
 - [Troubleshooting](#troubleshooting)
 
 ---
-
-## Overview
-
-When Zowe API ML starts, it attempts to reach z/OSMF to obtain public keys for JWT token validation. If z/OSMF is unreachable or misconfigured, the startup fails with errors that can be difficult to diagnose. This pre-flight check tool isolates that connectivity test into a simple, standalone JAR that can be run before Zowe startup.
-
-**What it checks:**
-
-- TCP connectivity to the z/OSMF host and port
-- SSL/TLS handshake (when using HTTPS)
-- Certificate trust chain validation (STRICT/NONSTRICT modes)
-- Hostname verification (STRICT mode)
-- HTTP response from the JWK endpoint (`/jwt/ibm/api/zOSMFBuilder/jwk`)
-
 ## Prerequisites
 
 - **Java 17 or higher** (Java 17, 21, or any later version)
@@ -46,33 +32,33 @@ When Zowe API ML starts, it attempts to reach z/OSMF to obtain public keys for J
 From the root of the `api-layer` repository:
 
 ```bash
-./gradlew :pre-flight-check:build
+./gradlew :zosmf-jwt-check:build
 ```
 
 On Windows:
 
 ```powershell
-.\gradlew :pre-flight-check:build
+.\gradlew :zosmf-jwt-check:build
 ```
 
 The fat JAR (with all dependencies bundled) will be generated at:
 
 ```
-pre-flight-check/build/libs/pre-flight-check-<version>.jar
+zosmf-jwt-check/build/libs/zosmf-jwt-check-<version>.jar
 ```
 
-For example: `pre-flight-check/build/libs/pre-flight-check-3.5.12-SNAPSHOT.jar`
+For example: `zosmf-jwt-check/build/libs/zosmf-jwt-check-3.5.12-SNAPSHOT.jar`
 
 ## Usage
 
 ```bash
-java -jar pre-flight-check-<version>.jar --zosmf-host <hostname> --zosmf-port <port> [options]
+java -jar zosmf-jwt-check-<version>.jar --zosmf-host <hostname> --zosmf-port <port> [options]
 ```
 
-**Minimal example (DISABLED mode — quickest way to test):**
+**Minimal example (DISABLED mode,  quickest way to test):**
 
 ```bash
-java -jar pre-flight-check-<version>.jar \
+java -jar zosmf-jwt-check-<version>.jar \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 11443 \
   --verify-certificates DISABLED
@@ -81,7 +67,7 @@ java -jar pre-flight-check-<version>.jar \
 **Full example (STRICT mode with truststore):**
 
 ```bash
-java -jar pre-flight-check-<version>.jar \
+java -jar zosmf-jwt-check-<version>.jar \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 11443 \
   --truststore /path/to/truststore.p12 \
@@ -91,7 +77,7 @@ java -jar pre-flight-check-<version>.jar \
 **Display help:**
 
 ```bash
-java -jar pre-flight-check-<version>.jar --help
+java -jar zosmf-jwt-check-<version>.jar --help
 ```
 
 ## CLI Flags Reference
@@ -206,7 +192,7 @@ Below are step-by-step commands for testing all modes. Replace `<version>` with 
 The fastest way to verify basic TCP + HTTP connectivity:
 
 ```bash
-java -jar pre-flight-check/build/libs/pre-flight-check-<version>.jar \
+java -jar zosmf-jwt-check/build/libs/zosmf-jwt-check-<version>.jar \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 11443 \
   --verify-certificates DISABLED
@@ -225,7 +211,7 @@ SUCCESS: z/OSMF JWK endpoint exists (returned 401 Unauthorized — expected with
 Requires a truststore containing the z/OSMF server's CA certificate (see [Creating a Truststore](#creating-a-truststore)):
 
 ```bash
-java -jar pre-flight-check/build/libs/pre-flight-check-<version>.jar \
+java -jar zosmf-jwt-check/build/libs/zosmf-jwt-check-<version>.jar \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 11443 \
   --truststore /path/to/zosmf-truststore.p12 \
@@ -252,7 +238,7 @@ Details: PKIX path building failed: ...unable to find valid certification path t
 Useful when connecting via IP address but the certificate has a DNS name:
 
 ```bash
-java -jar pre-flight-check/build/libs/pre-flight-check-<version>.jar \
+java -jar zosmf-jwt-check/build/libs/zosmf-jwt-check-<version>.jar \
   --zosmf-host 10.0.0.50 \
   --zosmf-port 11443 \
   --truststore /path/to/zosmf-truststore.p12 \
@@ -273,7 +259,7 @@ SUCCESS: z/OSMF JWK endpoint exists (returned 401 Unauthorized — expected with
 For z/OSMF instances running on plain HTTP (uncommon):
 
 ```bash
-java -jar pre-flight-check/build/libs/pre-flight-check-<version>.jar \
+java -jar zosmf-jwt-check/build/libs/zosmf-jwt-check-<version>.jar \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 80 \
   --scheme http
@@ -285,15 +271,15 @@ java -jar pre-flight-check/build/libs/pre-flight-check-<version>.jar \
 
 ```bash
 # No arguments at all
-java -jar pre-flight-check-<version>.jar
+java -jar zosmf-jwt-check-<version>.jar
 # Output: Missing required options: '--zosmf-host=<zosmfHost>', '--zosmf-port=<zosmfPort>'
 
 # Missing truststore in STRICT mode
-java -jar pre-flight-check-<version>.jar --zosmf-host myhost --zosmf-port 443
+java -jar zosmf-jwt-check-<version>.jar --zosmf-host myhost --zosmf-port 443
 # Output: ERROR: --truststore is required when --scheme=https and verification is not DISABLED.
 
 # Missing truststore password
-java -jar pre-flight-check-<version>.jar --zosmf-host myhost --zosmf-port 443 --truststore my.p12
+java -jar zosmf-jwt-check-<version>.jar --zosmf-host myhost --zosmf-port 443 --truststore my.p12
 # Output: ERROR: --truststore-password is required when --scheme=https and verification is not DISABLED.
 ```
 
@@ -301,18 +287,18 @@ java -jar pre-flight-check-<version>.jar --zosmf-host myhost --zosmf-port 443 --
 
 ```bash
 # Invalid scheme
-java -jar pre-flight-check-<version>.jar --zosmf-host myhost --zosmf-port 443 --scheme ftp
+java -jar zosmf-jwt-check-<version>.jar --zosmf-host myhost --zosmf-port 443 --scheme ftp
 # Output: ERROR: --scheme must be 'http' or 'https', got: ftp
 
 # Invalid verify mode
-java -jar pre-flight-check-<version>.jar --zosmf-host myhost --zosmf-port 443 --verify-certificates INVALID
+java -jar zosmf-jwt-check-<version>.jar --zosmf-host myhost --zosmf-port 443 --verify-certificates INVALID
 # Output: ERROR: --verify-certificates must be STRICT, NONSTRICT, or DISABLED, got: INVALID
 ```
 
 **Unreachable host:**
 
 ```bash
-java -jar pre-flight-check-<version>.jar --zosmf-host nonexistent.host --zosmf-port 443 --verify-certificates DISABLED
+java -jar zosmf-jwt-check-<version>.jar --zosmf-host nonexistent.host --zosmf-port 443 --verify-certificates DISABLED
 # Output: FAILURE: Cannot connect to nonexistent.host:443.
 ```
 
@@ -322,7 +308,7 @@ On z/OS, if you are using SAF keyrings instead of file-based keystores/truststor
 
 ```bash
 java -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-  -jar pre-flight-check-<version>.jar \
+  -jar zosmf-jwt-check-<version>.jar \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 11443 \
   --truststore safkeyring://IZUSVR/ZoweKeyring \

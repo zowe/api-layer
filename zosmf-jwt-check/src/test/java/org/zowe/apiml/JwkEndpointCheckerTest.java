@@ -36,7 +36,7 @@ class JwkEndpointCheckerTest {
     private final PrintStream originalErr = System.err;
 
     private HttpClientWrapper mockClient;
-    private PreFlightCheckConfig mockConf;
+    private ZosmfJwtCheckConfig mockConf;
 
     @BeforeEach
     void setUp() {
@@ -44,7 +44,7 @@ class JwkEndpointCheckerTest {
         System.setErr(new PrintStream(errStream));
 
         mockClient = mock(HttpClientWrapper.class);
-        mockConf = mock(PreFlightCheckConfig.class);
+        mockConf = mock(ZosmfJwtCheckConfig.class);
         when(mockConf.getScheme()).thenReturn("https");
         when(mockConf.getZosmfHost()).thenReturn("zosmf.example.com");
         when(mockConf.getZosmfPort()).thenReturn(443);
@@ -142,7 +142,7 @@ class JwkEndpointCheckerTest {
             when(mockClient.executeCall(any(), anyMap())).thenThrow(new IOException("unexpected"));
             JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
             assertFalse(checker.check());
-            assertTrue(errStream.toString().contains("Unexpected error"));
+            assertTrue(errStream.toString().contains("verify hostname and port"));
         }
     }
 }

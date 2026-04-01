@@ -34,9 +34,9 @@ public class Stores {
 
     private KeyStore keyStore;
     private KeyStore trustStore;
-    private final PreFlightCheckConfig conf;
+    private final ZosmfJwtCheckConfig conf;
 
-    public Stores(PreFlightCheckConfig conf) {
+    public Stores(ZosmfJwtCheckConfig conf) {
         this.conf = conf;
         init();
     }
@@ -130,7 +130,7 @@ public class Stores {
         return trustStore;
     }
 
-    public PreFlightCheckConfig getConf() {
+    public ZosmfJwtCheckConfig getConf() {
         return conf;
     }
 

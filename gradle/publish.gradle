@@ -11,7 +11,7 @@ ext.javaLibraries = [
     'apiml-security-common',
     'apiml-tomcat-common',
     'certificate-analyser',
-    'pre-flight-check',
+    'zosmf-jwt-check',
     'common-service-core',
     'security-service-client-spring',
     'apiml-sample-extension',

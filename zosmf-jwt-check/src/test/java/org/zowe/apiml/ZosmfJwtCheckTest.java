@@ -20,7 +20,7 @@ import java.io.PrintStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class PreFlightCheckTest {
+class ZosmfJwtCheckTest {
 
     private final ByteArrayOutputStream outStream = new ByteArrayOutputStream();
     private final ByteArrayOutputStream errStream = new ByteArrayOutputStream();
@@ -42,14 +42,14 @@ class PreFlightCheckTest {
     @Test
     void helpFlagReturnsExitCode8() {
         String[] args = {"--help"};
-        assertEquals(8, PreFlightCheck.mainWithExitCode(args));
-        assertTrue(outStream.toString().contains("Pre-Flight Check"));
+        assertEquals(8, ZosmfJwtCheck.mainWithExitCode(args));
+        assertTrue(outStream.toString().contains("z/OSMF JWT Check"));
     }
 
     @Test
     void missingRequiredArgsReturnsExitCode4() {
         String[] args = {};
-        assertEquals(4, PreFlightCheck.mainWithExitCode(args));
+        assertEquals(4, ZosmfJwtCheck.mainWithExitCode(args));
     }
 
     @Nested
@@ -58,7 +58,7 @@ class PreFlightCheckTest {
         @Test
         void invalidSchemeIsRejected() {
             String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "443", "--scheme", "ftp"};
-            assertEquals(4, PreFlightCheck.mainWithExitCode(args));
+            assertEquals(4, ZosmfJwtCheck.mainWithExitCode(args));
             assertTrue(errStream.toString().contains("--scheme must be 'http' or 'https'"));
         }
 
@@ -67,14 +67,14 @@ class PreFlightCheckTest {
             String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "443", "--scheme", "https",
                 "--truststore", "some/path.p12", "--truststore-password", "pass",
                 "--verify-certificates", "INVALID"};
-            assertEquals(4, PreFlightCheck.mainWithExitCode(args));
+            assertEquals(4, ZosmfJwtCheck.mainWithExitCode(args));
             assertTrue(errStream.toString().contains("--verify-certificates must be STRICT, NONSTRICT, or DISABLED"));
         }
 
         @Test
         void httpsStrictWithoutTruststoreIsRejected() {
             String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "443", "--scheme", "https"};
-            assertEquals(4, PreFlightCheck.mainWithExitCode(args));
+            assertEquals(4, ZosmfJwtCheck.mainWithExitCode(args));
             assertTrue(errStream.toString().contains("--truststore is required"));
         }
 
@@ -82,7 +82,7 @@ class PreFlightCheckTest {
         void httpsNonstrictWithoutTruststoreIsRejected() {
             String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "443", "--scheme", "https",
                 "--verify-certificates", "NONSTRICT"};
-            assertEquals(4, PreFlightCheck.mainWithExitCode(args));
+            assertEquals(4, ZosmfJwtCheck.mainWithExitCode(args));
             assertTrue(errStream.toString().contains("--truststore is required"));
         }
 
@@ -90,7 +90,7 @@ class PreFlightCheckTest {
         void httpsWithoutTruststorePasswordIsRejected() {
             String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "443", "--scheme", "https",
                 "--truststore", "some/path.p12"};
-            assertEquals(4, PreFlightCheck.mainWithExitCode(args));
+            assertEquals(4, ZosmfJwtCheck.mainWithExitCode(args));
             assertTrue(errStream.toString().contains("--truststore-password is required"));
         }
 
@@ -100,7 +100,7 @@ class PreFlightCheckTest {
             // Will fail to connect to a non-existent server, but should pass validation
             String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "19999", "--scheme", "https",
                 "--verify-certificates", "DISABLED"};
-            int exitCode = PreFlightCheck.mainWithExitCode(args);
+            int exitCode = ZosmfJwtCheck.mainWithExitCode(args);
             assertEquals(4, exitCode);
             assertFalse(errStream.toString().contains("--truststore is required"));
         }
@@ -109,7 +109,7 @@ class PreFlightCheckTest {
         void httpDoesNotRequireTruststore() {
             // This will fail to connect but should not fail validation
             String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "19999", "--scheme", "http"};
-            int exitCode = PreFlightCheck.mainWithExitCode(args);
+            int exitCode = ZosmfJwtCheck.mainWithExitCode(args);
             // Should be 4 (connection failure) not a validation error
             assertEquals(4, exitCode);
             assertFalse(errStream.toString().contains("--truststore is required"));
