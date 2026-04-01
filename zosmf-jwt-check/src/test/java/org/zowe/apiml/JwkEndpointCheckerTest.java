@@ -48,6 +48,7 @@ class JwkEndpointCheckerTest {
         when(mockConf.getScheme()).thenReturn("https");
         when(mockConf.getZosmfHost()).thenReturn("zosmf.example.com");
         when(mockConf.getZosmfPort()).thenReturn(443);
+        when(mockConf.isVerbose()).thenReturn(false);
     }
 
     @AfterEach
@@ -61,7 +62,7 @@ class JwkEndpointCheckerTest {
 
         @Test
         void response200IsSuccess() throws IOException {
-            when(mockClient.executeCall(any(), anyMap())).thenReturn(200);
+            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(200, ""));
             JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
             assertTrue(checker.check());
             assertTrue(outStream.toString().contains("SUCCESS"));
@@ -70,7 +71,7 @@ class JwkEndpointCheckerTest {
 
         @Test
         void response401IsSuccess() throws IOException {
-            when(mockClient.executeCall(any(), anyMap())).thenReturn(401);
+            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(401, ""));
             JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
             assertTrue(checker.check());
             assertTrue(outStream.toString().contains("SUCCESS"));
@@ -83,7 +84,7 @@ class JwkEndpointCheckerTest {
 
         @Test
         void response404IsFailure() throws IOException {
-            when(mockClient.executeCall(any(), anyMap())).thenReturn(404);
+            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(404, ""));
             JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
             assertFalse(checker.check());
             assertTrue(errStream.toString().contains("FAILURE"));
@@ -92,7 +93,7 @@ class JwkEndpointCheckerTest {
 
         @Test
         void response500IsFailure() throws IOException {
-            when(mockClient.executeCall(any(), anyMap())).thenReturn(500);
+            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(500, ""));
             JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
             assertFalse(checker.check());
             assertTrue(errStream.toString().contains("FAILURE"));
@@ -101,7 +102,7 @@ class JwkEndpointCheckerTest {
 
         @Test
         void response403IsFailure() throws IOException {
-            when(mockClient.executeCall(any(), anyMap())).thenReturn(403);
+            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(403, ""));
             JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
             assertFalse(checker.check());
             assertTrue(errStream.toString().contains("FAILURE"));

@@ -59,6 +59,9 @@ public class ZosmfJwtCheckConf implements ZosmfJwtCheckConfig {
     @Option(names = {"--verify-certificates"}, description = "Certificate verification mode: STRICT, NONSTRICT, or DISABLED (default: ${DEFAULT-VALUE})")
     private String verifyCertificates = "STRICT";
 
+    @Option(names = {"-v", "--verbose"}, description = "Print the response body from the endpoint")
+    private boolean verbose = false;
+
     @Option(names = {"-h", "--help"}, usageHelp = true, description = "Display a help message")
     private boolean helpRequested = false;
 
@@ -110,6 +113,11 @@ public class ZosmfJwtCheckConf implements ZosmfJwtCheckConfig {
     @Override
     public String getVerifyCertificates() {
         return verifyCertificates;
+    }
+
+    @Override
+    public boolean isVerbose() {
+        return verbose;
     }
 
     @Override

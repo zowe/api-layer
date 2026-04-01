@@ -46,8 +46,11 @@ public class JwkEndpointChecker {
             URL url = new URL(urlString);
             System.out.println("Checking z/OSMF JWK endpoint: " + urlString);
 
-            int responseCode = httpClient.executeCall(url, headers);
-            return evaluateResponseCode(responseCode, urlString);
+            HttpClientWrapper.Response response = httpClient.executeCall(url, headers);
+            if (conf.isVerbose() && response.getBody() != null) {
+                System.out.println("Response body:\n" + response.getBody());
+            }
+            return evaluateResponseCode(response.getStatusCode(), urlString);
         } catch (SSLHandshakeException e) {
             System.err.println("FAILURE: SSL handshake failed when connecting to " + urlString + ".");
             System.err.println("Verify that the truststore contains the z/OSMF server certificate.");
@@ -81,7 +84,7 @@ public class JwkEndpointChecker {
         }
 
         if (responseCode == 401) {
-            System.out.println("SUCCESS: z/OSMF JWK endpoint exists (returned 401 Unauthorized — expected without credentials). HTTP 401");
+            System.out.println("SUCCESS: z/OSMF JWK endpoint exists (returned 401 Unauthorized, expected without credentials). HTTP 401");
             return true;
         }
 

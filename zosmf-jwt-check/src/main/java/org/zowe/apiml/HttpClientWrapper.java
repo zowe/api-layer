@@ -13,10 +13,15 @@ package org.zowe.apiml;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * HTTP/HTTPS client wrapping {@link java.net.HttpURLConnection}.
@@ -28,6 +33,19 @@ public class HttpClientWrapper {
 
     private static final int CONNECT_TIMEOUT = 5000;
     private static final int READ_TIMEOUT = 5000;
+
+    public static class Response {
+        private final int statusCode;
+        private final String body;
+
+        public Response(int statusCode, String body) {
+            this.statusCode = statusCode;
+            this.body = body;
+        }
+
+        public int getStatusCode() { return statusCode; }
+        public String getBody() { return body; }
+    }
 
     private final SSLContext sslContext;
     private final boolean useHttps;
@@ -45,7 +63,7 @@ public class HttpClientWrapper {
         this.hostnameVerifier = null;
     }
 
-    public int executeCall(URL url, Map<String, String> headers) throws IOException {
+    public Response executeCall(URL url, Map<String, String> headers) throws IOException {
         HttpURLConnection con;
         if (useHttps) {
             HttpsURLConnection httpsCon = (HttpsURLConnection) url.openConnection();
@@ -69,9 +87,22 @@ public class HttpClientWrapper {
         }
 
         try {
-            return con.getResponseCode();
+            int responseCode = con.getResponseCode();
+            String body = readBody(con);
+            return new Response(responseCode, body);
         } finally {
             con.disconnect();
+        }
+    }
+
+    private String readBody(HttpURLConnection con) {
+        try {
+            InputStream is = con.getErrorStream() != null ? con.getErrorStream() : con.getInputStream();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+                return reader.lines().collect(Collectors.joining("\n"));
+            }
+        } catch (Exception e) {
+            return null;
         }
     }
 }

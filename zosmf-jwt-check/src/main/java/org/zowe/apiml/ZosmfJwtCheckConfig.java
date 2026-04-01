@@ -37,5 +37,7 @@ public interface ZosmfJwtCheckConfig {
 
     String getVerifyCertificates();
 
+    boolean isVerbose();
+
     boolean isHelpRequested();
 }
