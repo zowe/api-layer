@@ -118,6 +118,9 @@ public class WebSecurityConfig {
     @Value("${apiml.internal-discovery.port:10011}")
     private int internalDiscoveryPort;
 
+    @Value("${apiml.security.oidc.enabled:false}")
+    private boolean isOidcEnabled;
+
     private static final List<String> UNAUTHENTICATED_PATTERNS = List.of(
         "/application/",
         "/application/version",
@@ -229,10 +232,6 @@ public class WebSecurityConfig {
         return x509SecurityConfig(http, true);
     }
 
-    private boolean isOidcEnabled() {
-        return oidcProvider != null && oidcMapper != null;
-    }
-
     private OIDCAuthFilter createOidcAuthFilter(AuthConfigurationProperties authConfigurationProperties) {
         List<String> fieldPath = Arrays.asList(oidcUserIdFieldPath.trim().split("\\."));
         return new OIDCAuthFilter(oidcProvider, oidcMapper, authConfigurationProperties, fieldPath);
@@ -244,7 +243,7 @@ public class WebSecurityConfig {
      * preventing TokenAuthFilter from re-validating and rejecting it.
      */
     private ServerHttpSecurity addOidcFilterIfEnabled(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
-        if (isOidcEnabled()) {
+        if (isOidcEnabled) {
             http.addFilterBefore(createOidcAuthFilter(authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION);
         }
         return http;

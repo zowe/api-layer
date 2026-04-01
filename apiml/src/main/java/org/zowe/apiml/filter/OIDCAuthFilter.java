@@ -67,8 +67,6 @@ public class OIDCAuthFilter implements WebFilter {
             return chain.filter(exchange);
         }
 
-        String token = tokenOpt.get();
-
         return ReactiveSecurityContextHolder.getContext()
             .map(ctx -> ctx.getAuthentication() != null && ctx.getAuthentication().isAuthenticated())
             .defaultIfEmpty(false)
@@ -76,6 +74,7 @@ public class OIDCAuthFilter implements WebFilter {
                 if (alreadyAuthenticated) {
                     return chain.filter(exchange);
                 }
+                var token = tokenOpt.get();
                 return attemptOidcAuthentication(exchange, chain, token);
             });
     }
@@ -100,7 +99,7 @@ public class OIDCAuthFilter implements WebFilter {
 
     private Optional<TokenAuthentication> authenticate(String token) {
         if (!oidcProvider.isValid(token)) {
-            log.debug("OIDC token is not valid");
+            log.debug("Token is not OIDC or it is invalid");
             return Optional.empty();
         }
 
