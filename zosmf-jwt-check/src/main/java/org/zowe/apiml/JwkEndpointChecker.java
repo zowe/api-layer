@@ -17,6 +17,8 @@ import java.net.UnknownHostException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Checks z/OSMF JWK endpoint availability at {@code /jwt/ibm/api/zOSMFBuilder/jwk}.
@@ -27,6 +29,7 @@ public class JwkEndpointChecker {
 
     static final String JWK_ENDPOINT_PATH = "/jwt/ibm/api/zOSMFBuilder/jwk";
     private static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
+    private static final Pattern N_VALUE_PATTERN = Pattern.compile("\"n\"\\s*:\\s*\"([^\"]*)\"");
 
     private final HttpClientWrapper httpClient;
     private final ZosmfJwtCheckConfig conf;
@@ -50,7 +53,7 @@ public class JwkEndpointChecker {
             if (conf.isVerbose() && response.getBody() != null) {
                 System.out.println("Response body:\n" + response.getBody());
             }
-            return evaluateResponseCode(response.getStatusCode(), urlString);
+            return evaluateResponseCode(response.getStatusCode(), response.getBody(), urlString);
         } catch (SSLHandshakeException e) {
             System.err.println("FAILURE: SSL handshake failed when connecting to " + urlString + ".");
             System.err.println("Verify that the truststore contains the z/OSMF server certificate.");
@@ -77,8 +80,11 @@ public class JwkEndpointChecker {
         }
     }
 
-    private boolean evaluateResponseCode(int responseCode, String urlString) {
+    boolean evaluateResponseCode(int responseCode, String body, String urlString) {
         if (responseCode >= 200 && responseCode < 300) {
+            if (!validateJwkBody(body)) {
+                return false;
+            }
             System.out.println("SUCCESS: z/OSMF JWK endpoint is reachable and responding. HTTP " + responseCode);
             return true;
         }
@@ -109,5 +115,32 @@ public class JwkEndpointChecker {
         System.err.println("FAILURE: z/OSMF JWK endpoint returned unexpected response code. HTTP " + responseCode);
         System.err.println("URL: " + urlString);
         return false;
+    }
+
+    boolean validateJwkBody(String body) {
+        if (body == null || body.isEmpty()) {
+            System.err.println("WARNING: z/OSMF JWK endpoint returned an empty response body.");
+            System.err.println("Response body: " + (body == null ? "<null>" : "<empty>"));
+            return false;
+        }
+
+        Matcher matcher = N_VALUE_PATTERN.matcher(body);
+        if (!matcher.find()) {
+            System.err.println("WARNING: JWK response does not contain an RSA modulus (\"n\" key).");
+            System.err.println("The z/OSMF JWK endpoint may not be properly configured.");
+            System.err.println("Response body: " + body);
+            return false;
+        }
+
+        String nValue = matcher.group(1);
+        if (nValue == null || nValue.trim().isEmpty()) {
+            System.err.println("FAILURE: JWK response contains an empty RSA modulus (\"n\" key is empty).");
+            System.err.println("The z/OSMF server returned a key that cannot be used for JWT verification.");
+            System.err.println("Check z/OSMF JWT configuration and ensure the signing key is properly generated.");
+            System.err.println("Response body: " + body);
+            return false;
+        }
+
+        return true;
     }
 }

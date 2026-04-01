@@ -62,7 +62,7 @@ class JwkEndpointCheckerTest {
 
         @Test
         void response200IsSuccess() throws IOException {
-            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(200, ""));
+            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(200, "{\"keys\":[{\"kty\":\"RSA\",\"e\":\"AQAB\",\"n\":\"validModulusValue\"}]}"));
             JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
             assertTrue(checker.check());
             assertTrue(outStream.toString().contains("SUCCESS"));
@@ -76,6 +76,14 @@ class JwkEndpointCheckerTest {
             assertTrue(checker.check());
             assertTrue(outStream.toString().contains("SUCCESS"));
             assertTrue(outStream.toString().contains("401"));
+        }
+
+        @Test
+        void response200WithEmptyModulusIsFailure() throws IOException {
+            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(200, "{\"keys\":[{\"kty\":\"RSA\",\"e\":\"AQAB\",\"n\":\"\"}]}"));
+            JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
+            assertFalse(checker.check());
+            assertTrue(errStream.toString().contains("empty RSA modulus"));
         }
     }
 
