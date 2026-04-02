@@ -23,6 +23,7 @@ import static io.restassured.RestAssured.given;
 
 @Tag("UnknownHostnamesTest")
 public class CertificateValidationDisabledTest {
+
     @Test
     void givenRequestToServiceWithInvalidHostname_thenRequestIsSuccessful() {
         RestAssured.useRelaxedHTTPSValidation();
@@ -34,4 +35,5 @@ public class CertificateValidationDisabledTest {
             .log().ifValidationFails()
             .statusCode(200);
     }
+
 }

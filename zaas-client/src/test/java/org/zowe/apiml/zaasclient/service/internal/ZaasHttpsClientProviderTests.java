@@ -42,7 +42,7 @@ class ZaasHttpsClientProviderTests {
         this.zaasHttpsClientProvider = new ZaasHttpsClientProvider(getConfigProperties());
     }
 
-    private ConfigProperties getConfigProperties() throws IOException {
+    static ConfigProperties getConfigProperties() throws IOException {
         String absoluteFilePath = new File(CONFIG_FILE_PATH).getAbsolutePath();
         ConfigProperties properties = new ConfigProperties();
         Properties configProp = new Properties();
