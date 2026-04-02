@@ -20,6 +20,7 @@ import io.opentelemetry.exporter.internal.marshal.Marshaler;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpHttpSender;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -31,6 +32,7 @@ import java.util.Collection;
  * Provides an http sender with API ML's SSL configuration (truststore)
  */
 @NoArgsConstructor
+@Slf4j
 public class ApimlSenderProvider implements GrpcSenderProvider, HttpSenderProvider {
 
     @Override
@@ -60,7 +62,12 @@ public class ApimlSenderProvider implements GrpcSenderProvider, HttpSenderProvid
 
     private SSLContext getSslContextFromSpring() {
         var httpsFactory = ApimlOpenTelemetryConfiguration.httpsConfig();
-        return httpsFactory.getSslContext();
+        if (httpsFactory != null) {
+            return httpsFactory.getSslContext();
+        } else {
+            log.warn("Could not get SSL configuration for OpenTelemetry exporter HTTP Client. API ML assumes unsecured connection to the configured collector");
+            return null;
+        }
     }
 
     private X509TrustManager getX509TrustManager(Collection<TrustManager> trustManagers) {
