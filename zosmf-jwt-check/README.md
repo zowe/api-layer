@@ -70,7 +70,7 @@ java -jar zosmf-jwt-check-<version>.jar \
 java -jar zosmf-jwt-check-<version>.jar \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 11443 \
-  --truststore /path/to/truststore.p12 \
+  --truststore-file /path/to/truststore.p12 \
   --truststore-password changeit
 ```
 
@@ -98,7 +98,7 @@ These flags are required when `--scheme=https` (the default) and `--verify-certi
 
 | Flag | Description | Error when missing |
 |------|-------------|-------------------|
-| `--truststore` | Path to the truststore file containing the z/OSMF CA certificate | `ERROR: --truststore is required when --scheme=https and verification is not DISABLED.` |
+| `--truststore-file` | Path to the truststore file containing the z/OSMF CA certificate | `ERROR: --truststore-file is required when --scheme=https and verification is not DISABLED.` |
 | `--truststore-password` | Password for the truststore. If specified without a value, you will be prompted interactively. | `ERROR: --truststore-password is required when --scheme=https and verification is not DISABLED.` |
 
 ### Optional Flags
@@ -108,7 +108,7 @@ These flags are required when `--scheme=https` (the default) and `--verify-certi
 | `--scheme` | `https` | Protocol to use: `http` or `https` |
 | `--verify-certificates` | `STRICT` | Certificate verification mode: `STRICT`, `NONSTRICT`, or `DISABLED` |
 | `--truststore-type` | `PKCS12` | Format of the truststore file (e.g., `PKCS12`, `JKS`, `JCERACFKS`) |
-| `--keystore` | *(none)* | Path to keystore file (only needed for mutual TLS / client certificate authentication) |
+| `--keystore-file` | *(none)* | Path to keystore file (only needed for mutual TLS / client certificate authentication) |
 | `--keystore-password` | *(none)* | Password for the keystore. If specified without a value, you will be prompted interactively. |
 | `--keystore-type` | `PKCS12` | Format of the keystore file |
 | `-h`, `--help` | | Display usage help and exit |
@@ -214,7 +214,7 @@ Requires a truststore containing the z/OSMF server's CA certificate (see [Creati
 java -jar zosmf-jwt-check/build/libs/zosmf-jwt-check-<version>.jar \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 11443 \
-  --truststore /path/to/zosmf-truststore.p12 \
+  --truststore-file /path/to/zosmf-truststore.p12 \
   --truststore-password password
 ```
 
@@ -241,7 +241,7 @@ Useful when connecting via IP address but the certificate has a DNS name:
 java -jar zosmf-jwt-check/build/libs/zosmf-jwt-check-<version>.jar \
   --zosmf-host 10.0.0.50 \
   --zosmf-port 11443 \
-  --truststore /path/to/zosmf-truststore.p12 \
+  --truststore-file /path/to/zosmf-truststore.p12 \
   --truststore-password password \
   --verify-certificates NONSTRICT
 ```
@@ -276,10 +276,10 @@ java -jar zosmf-jwt-check-<version>.jar
 
 # Missing truststore in STRICT mode
 java -jar zosmf-jwt-check-<version>.jar --zosmf-host myhost --zosmf-port 443
-# Output: ERROR: --truststore is required when --scheme=https and verification is not DISABLED.
+# Output: ERROR: --truststore-file is required when --scheme=https and verification is not DISABLED.
 
 # Missing truststore password
-java -jar zosmf-jwt-check-<version>.jar --zosmf-host myhost --zosmf-port 443 --truststore my.p12
+java -jar zosmf-jwt-check-<version>.jar --zosmf-host myhost --zosmf-port 443 --truststore-file my.p12
 # Output: ERROR: --truststore-password is required when --scheme=https and verification is not DISABLED.
 ```
 
@@ -311,7 +311,7 @@ java -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
   -jar zosmf-jwt-check-<version>.jar \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 11443 \
-  --truststore safkeyring://IZUSVR/ZoweKeyring \
+  --truststore-file safkeyring://IZUSVR/ZoweKeyring \
   --truststore-password password \
   --truststore-type JCERACFKS
 ```

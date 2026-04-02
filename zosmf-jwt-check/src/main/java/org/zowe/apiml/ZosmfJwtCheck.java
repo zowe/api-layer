@@ -89,7 +89,7 @@ public class ZosmfJwtCheck {
 
         if ("https".equalsIgnoreCase(scheme) && !VERIFY_DISABLED.equals(verifyMode)) {
             if (conf.getTrustStore() == null) {
-                throw new IllegalArgumentException("--truststore is required when --scheme=https and verification is not DISABLED. " +
+                throw new IllegalArgumentException("--truststore-file is required when --scheme=https and verification is not DISABLED. " +
                     "Provide the path to the truststore containing the z/OSMF server certificate.");
             }
             if (conf.getTrustStorePassword() == null) {

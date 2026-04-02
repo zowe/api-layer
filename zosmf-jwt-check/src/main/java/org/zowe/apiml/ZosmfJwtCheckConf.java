@@ -38,7 +38,7 @@ public class ZosmfJwtCheckConf implements ZosmfJwtCheckConfig {
     @Option(names = {"--scheme"}, description = "http or https (default: ${DEFAULT-VALUE})")
     private String scheme = "https";
 
-    @Option(names = {"--keystore"}, description = "Path to the keystore file (for HTTPS mutual TLS)")
+    @Option(names = {"--keystore-file"}, description = "Path to the keystore file (for HTTPS mutual TLS)")
     private String keyStore;
 
     @Option(names = {"--keystore-password"}, arity = "0..1", interactive = true, description = "Password for the keystore")
@@ -47,7 +47,7 @@ public class ZosmfJwtCheckConf implements ZosmfJwtCheckConfig {
     @Option(names = {"--keystore-type"}, description = "Type of keystore (default: ${DEFAULT-VALUE})")
     private String keyStoreType = "PKCS12";
 
-    @Option(names = {"--truststore"}, description = "Path to the truststore file (for HTTPS)")
+    @Option(names = {"--truststore-file"}, description = "Path to the truststore file (for HTTPS)")
     private String trustStore;
 
     @Option(names = {"--truststore-password"}, arity = "0..1", interactive = true, description = "Password for the truststore")

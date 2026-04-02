@@ -65,7 +65,7 @@ class ZosmfJwtCheckTest {
         @Test
         void invalidVerifyCertificatesIsRejected() {
             String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "443", "--scheme", "https",
-                "--truststore", "some/path.p12", "--truststore-password", "pass",
+                "--truststore-file", "some/path.p12", "--truststore-password", "pass",
                 "--verify-certificates", "INVALID"};
             assertEquals(4, ZosmfJwtCheck.mainWithExitCode(args));
             assertTrue(errStream.toString().contains("--verify-certificates must be STRICT, NONSTRICT, or DISABLED"));
@@ -75,7 +75,7 @@ class ZosmfJwtCheckTest {
         void httpsStrictWithoutTruststoreIsRejected() {
             String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "443", "--scheme", "https"};
             assertEquals(4, ZosmfJwtCheck.mainWithExitCode(args));
-            assertTrue(errStream.toString().contains("--truststore is required"));
+            assertTrue(errStream.toString().contains("--truststore-file is required"));
         }
 
         @Test
@@ -83,13 +83,13 @@ class ZosmfJwtCheckTest {
             String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "443", "--scheme", "https",
                 "--verify-certificates", "NONSTRICT"};
             assertEquals(4, ZosmfJwtCheck.mainWithExitCode(args));
-            assertTrue(errStream.toString().contains("--truststore is required"));
+            assertTrue(errStream.toString().contains("--truststore-file is required"));
         }
 
         @Test
         void httpsWithoutTruststorePasswordIsRejected() {
             String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "443", "--scheme", "https",
-                "--truststore", "some/path.p12"};
+                "--truststore-file", "some/path.p12"};
             assertEquals(4, ZosmfJwtCheck.mainWithExitCode(args));
             assertTrue(errStream.toString().contains("--truststore-password is required"));
         }
@@ -102,7 +102,7 @@ class ZosmfJwtCheckTest {
                 "--verify-certificates", "DISABLED"};
             int exitCode = ZosmfJwtCheck.mainWithExitCode(args);
             assertEquals(4, exitCode);
-            assertFalse(errStream.toString().contains("--truststore is required"));
+            assertFalse(errStream.toString().contains("--truststore-file is required"));
         }
 
         @Test
@@ -112,7 +112,7 @@ class ZosmfJwtCheckTest {
             int exitCode = ZosmfJwtCheck.mainWithExitCode(args);
             // Should be 4 (connection failure) not a validation error
             assertEquals(4, exitCode);
-            assertFalse(errStream.toString().contains("--truststore is required"));
+            assertFalse(errStream.toString().contains("--truststore-file is required"));
         }
     }
 }
