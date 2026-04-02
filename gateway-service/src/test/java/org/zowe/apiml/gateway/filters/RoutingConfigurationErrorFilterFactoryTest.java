@@ -10,10 +10,11 @@
 
 package org.zowe.apiml.gateway.filters;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
+import org.springframework.http.HttpStatus;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -33,10 +34,11 @@ class RoutingConfigurationErrorFilterFactoryTest {
     private GatewayFilter filter;
 
     private MockServerHttpRequest request = MockServerHttpRequest.get("https://localhost/some/url").build();
-    private MockServerWebExchange exchange = MockServerWebExchange.from(request);
+    private MockServerWebExchange exchange;
 
-    @BeforeAll
+    @BeforeEach
     void init() {
+        exchange = MockServerWebExchange.from(request);
         var config = new RoutingConfigurationErrorFilterFactory.Config();
         config.setMessage(MESSAGE);
         config.setAuthenticationScheme("safIdt");
@@ -47,13 +49,31 @@ class RoutingConfigurationErrorFilterFactoryTest {
     }
 
     @Test
-    void givenConfig_whenApply_thenSetAuthInformation() {
+    void givenConfig_whenApply_thenSetAuthInformationWithoutErrorType() {
         var otelContext = spy(OtelRequestContext.of(exchange));
         exchange.getAttributes().put(OtelRequestContext.OTEL_CONTEXT, otelContext);
 
         StepVerifier.create(filter.filter(exchange, e -> Mono.empty())).verifyComplete();
 
         verify(otelContext).authenticationFailed();
+        verify(otelContext).authErrorMessage(MESSAGE);
+
+        verify(otelContext).authMethod(AuthenticationScheme.SAF_IDT);
+        verify(underTest).cleanHeadersOnAuthFail(exchange, MESSAGE);
+    }
+
+    @Test
+    void givenConfig_whenApply_thenSetFailedAuthInformationWithErrorType() {
+        var otelContext = spy(OtelRequestContext.of(exchange));
+        exchange.getAttributes().put(OtelRequestContext.OTEL_CONTEXT, otelContext);
+        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+
+        StepVerifier.create(filter.filter(exchange, e -> Mono.empty())).verifyComplete();
+
+        verify(otelContext).authenticationFailed();
+        verify(otelContext).authErrorMessage(MESSAGE);
+        verify(otelContext).authErrorType(HttpStatus.UNAUTHORIZED.getReasonPhrase());
+
         verify(otelContext).authMethod(AuthenticationScheme.SAF_IDT);
         verify(underTest).cleanHeadersOnAuthFail(exchange, MESSAGE);
     }

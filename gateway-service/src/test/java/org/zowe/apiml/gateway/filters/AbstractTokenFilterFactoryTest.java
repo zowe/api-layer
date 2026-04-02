@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -73,7 +74,7 @@ class AbstractTokenFilterFactoryTest {
 
             @Test
             void givenHeaderResponse_whenHandling_thenUpdateTheRequest() {
-                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
+                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null, ZaasTokenResponse.builder()
                     .headerName("headerName")
                     .token("headerValue")
                     .build()
@@ -83,13 +84,13 @@ class AbstractTokenFilterFactoryTest {
 
             @Test
             void givenCookieResponse_whenHandling_thenUpdateTheRequest() {
-                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
+                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null, ZaasTokenResponse.builder()
                     .cookieName("cookieName")
                     .token("cookieValue")
                     .build()
                 ));
                 assertEquals("cookieName=cookieValue", request.getHeaders().getFirst("cookie"));
-                assertEquals("Bearer cookieValue" , request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION));
+                assertEquals("Bearer cookieValue", request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION));
             }
 
         }
@@ -126,7 +127,7 @@ class AbstractTokenFilterFactoryTest {
 
             @Test
             void givenCookieAndHeaderInResponse_whenHandling_thenSetBoth() {
-                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
+                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null, ZaasTokenResponse.builder()
                     .cookieName("cookie")
                     .headerName("header")
                     .token("jwt")
@@ -144,20 +145,24 @@ class AbstractTokenFilterFactoryTest {
     class Otel {
 
         MockServerHttpRequest request = MockServerHttpRequest.get("/aPath").build();
-        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+        MockServerWebExchange exchange;
         OtelRequestContext otelRequestContext;
 
         @BeforeEach
         void mockOtelContext() {
+            exchange = MockServerWebExchange.from(request);
             otelRequestContext = spy(OtelRequestContext.of(exchange));
             exchange.getAttributes().put("otel-context", otelRequestContext);
         }
 
         @Test
         void givenOtelRequestContext_whenFail_thenCallAuthenticationFailed() {
+            exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
             spy(AbstractAuthSchemeFactory.class).cleanHeadersOnAuthFail(exchange, "test");
 
             verify(otelRequestContext, times(1)).authenticationFailed();
+            verify(otelRequestContext, times(1)).authErrorMessage("test");
+            verify(otelRequestContext, times(1)).authErrorType(HttpStatus.FORBIDDEN.getReasonPhrase());
         }
 
         @Test
