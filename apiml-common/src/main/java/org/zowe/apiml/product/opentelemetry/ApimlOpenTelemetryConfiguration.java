@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.product.opentelemetry;
 
-import io.opentelemetry.instrumentation.spring.autoconfigure.OpenTelemetryAutoConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,7 @@ import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsFactory;
 
 @Configuration
-@Import(value = OpenTelemetryAutoConfiguration.class)
+@Import(value = OpenTelemetryImportSelector.class)
 @DependsOn("httpConfig")
 @Slf4j
 public class ApimlOpenTelemetryConfiguration implements InitializingBean, BeanPostProcessor {
