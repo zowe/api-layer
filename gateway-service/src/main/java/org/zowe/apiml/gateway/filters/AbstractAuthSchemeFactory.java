@@ -61,37 +61,41 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
  * Example:
  * class MyScheme extends AbstractAuthSchemeFactory<MyScheme.Config, MyResponse, MyData> {
  *
- * @param <T> Class of config class. It should extend {@link AbstractAuthSchemeFactory.AbstractConfig}
- * @param <R> Class of expended response from the ZAAS
- * @Override public GatewayFilter apply(Config config) {
- * try {
- * return createGatewayFilter(config);
- * } catch (Exception e) {
- * return ((exchange, chain) -> {
- * ServerHttpRequest request = updateHeadersForError(exchange, e.getMessage());
- * return chain.filter(exchange.mutate().request(request).build());
- * });
- * }
- * }
- * @Override protected RequestCredentials.RequestCredentialsBuilder createRequestCredentials(ServerWebExchange exchange, Config config) {
- * return super.createRequestCredentials(exchange, config)
- * .applId(config.getApplicationName());
- * }
- * @Override protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, MyResponse response) {
- * ServerHttpRequest request;
- * if (response.getToken() != null) {
- * request = exchange.getRequest().mutate().headers(headers ->
- * headers.add("mySchemeHeader", response.getToken())
- * ).build();
- * } else {
- * request = updateHeadersForError(exchange, "Invalid or missing authentication");
- * }
- * exchange = exchange.mutate().request(request).build();
- * return chain.filter(exchange);
- * }
- * @EqualsAndHashCode(callSuper = true)
- * public static class Config extends AbstractAuthSchemeFactory.AbstractConfig {
- * }
+ *   @param <T> Class of config class. It should extend {@link AbstractAuthSchemeFactory.AbstractConfig}
+ *   @param <R> Class of expended response from the ZAAS
+ *   @Override public GatewayFilter apply(Config config) {
+ *     try {
+ *       return createGatewayFilter(config);
+ *     } catch (Exception e) {
+ *       return ((exchange, chain) -> {
+ *         ServerHttpRequest request = updateHeadersForError(exchange, e.getMessage());
+ *         return chain.filter(exchange.mutate().request(request).build());
+ *       });
+ *     }
+ *   }
+ *
+ *   @Override
+ *   protected RequestCredentials.RequestCredentialsBuilder createRequestCredentials(ServerWebExchange exchange, Config config) {
+ *       return super.createRequestCredentials(exchange, config)
+ *           .applId(config.getApplicationName());
+ *   }
+ *
+ *   @Override protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, MyResponse response) {
+ *     ServerHttpRequest request;
+ *     if (response.getToken() != null) {
+ *       request = exchange.getRequest().mutate().headers(headers ->
+ *         headers.add("mySchemeHeader", response.getToken())
+ *       ).build();
+ *     } else {
+ *       request = updateHeadersForError(exchange, "Invalid or missing authentication");
+ *     }
+ *     exchange = exchange.mutate().request(request).build();
+ *     return chain.filter(exchange);
+ *   }
+ *
+ *   @EqualsAndHashCode(callSuper = true)
+ *   public static class Config extends AbstractAuthSchemeFactory.AbstractConfig {
+ *   }
  * }
  * @Data class MyResponse {
  * private String token;
