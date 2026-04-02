@@ -16,6 +16,7 @@ import {
     FETCH_TILES_SUCCESS,
     FETCH_TILES_RETRY,
     FETCH_NEW_SERVICE_REQUEST, FETCH_NEW_SERVICE_SUCCESS,
+    FETCH_SERVICE_FAILED,
 } from '../constants/catalog-tile-constants';
 
 describe('>>> Tile reducer tests', () => {
@@ -203,6 +204,23 @@ describe('>>> Tile reducer tests', () => {
                 }
             )
         ).toEqual(expectedState);
+    });
+
+    it('should handle FETCH_SERVICE_FAILED preserving service state', () => {
+        const initialState = {
+            id: 'ibmzosmf',
+            service: { ssoAllInstances: true, serviceId: 'ibmzosmf' },
+            error: null,
+        };
+
+        const result = tilesReducer(initialState, {
+            type: FETCH_SERVICE_FAILED,
+            payload: 'fetch error',
+        });
+
+        expect(result.id).toBe('');
+        expect(result.error).toBe('fetch error');
+        expect(result.service.ssoAllInstances).toBe(true);
     });
 
     it('should handle DEFAULT', () => {

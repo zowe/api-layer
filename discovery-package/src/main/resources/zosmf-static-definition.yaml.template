@@ -26,6 +26,10 @@ services:
           apiml:
               enableUrlEncodedCharacters: true
               headersToIgnore: Origin
+              # Explicit override: TransformService.retrieveApiBasePath() computes /ibmzosmf/api/{api-version}
+              # from the route definition. This hardcoded value overrides it to the correct static base path.
+              # Intentionally not an env variable — the z/OSMF context path is fixed by IBM's implementation.
+              apiBasePath: /ibmzosmf/
               service:
                 scheme: ${ZOSMF_SCHEME}
                 nonSecurePortEnabled: ${ZOSMF_NON_SECURE_PORT_ENABLED:-false}

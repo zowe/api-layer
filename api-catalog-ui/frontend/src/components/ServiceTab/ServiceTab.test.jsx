@@ -138,6 +138,29 @@ describe('>>> ServiceTab component tests', () => {
     });
 
 
+    it('should display zosmf base path and sso for z/OSMF service', () => {
+        const zosmfService = {
+            serviceId: 'ibmzosmf',
+            title: 'IBM z/OSMF',
+            description: 'IBM z/OS Management Facility REST API service.',
+            status: 'UP',
+            baseUrl: 'https://zosmf.host:443/',
+            homePageUrl: 'https://zosmf.host:443/',
+            basePath: '/ibmzosmf/',
+            apiDoc: null,
+            apiVersions: ['default'],
+            defaultApiVersion: ['default'],
+            ssoAllInstances: true,
+            apis: { default: { gatewayUrl: '' } },
+            instances: ['zosmf.host:ibmzosmf:443'],
+        };
+
+        renderWithProviders(<ServiceTab service={zosmfService} />);
+
+        expect(screen.getByTestId('base-path')).toHaveTextContent('/ibmzosmf/');
+        expect(screen.getByTestId('sso')).toHaveTextContent('supported');
+    });
+
     it('should call handleDialogOpen on button click', async () => {
         renderWithProviders(
             <ServiceTab

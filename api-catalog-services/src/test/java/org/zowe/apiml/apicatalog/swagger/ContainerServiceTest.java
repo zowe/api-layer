@@ -212,6 +212,66 @@ class ContainerServiceTest {
         }
 
         @Nested
+        class GivenZosmfService {
+
+            private static final String ZOSMF_SERVICE_ID = "ibmzosmf";
+
+            private ServiceInstance createZosmfInstance(Map.Entry<String, String>... extraMetadata) {
+                return ServicesBuilder.createInstance(
+                    ZOSMF_SERVICE_ID, ZOSMF_SERVICE_ID,
+                    Pair.of("apiml.routes.api-v1.gatewayUrl", "api/v1"),
+                    Pair.of("apiml.routes.api-v1.serviceUrl", "/"),
+                    Pair.of(AUTHENTICATION_SCHEME, "zosmf")
+                );
+            }
+
+            @Test
+            void givenApiBasePathOverride_whenCreateDto_thenReturnOverriddenBasePath() {
+                ServiceInstance instance = ServicesBuilder.createInstance(
+                    ZOSMF_SERVICE_ID, ZOSMF_SERVICE_ID,
+                    Pair.of("apiml.routes.api-v1.gatewayUrl", "api/v1"),
+                    Pair.of("apiml.routes.api-v1.serviceUrl", "/"),
+                    Pair.of(AUTHENTICATION_SCHEME, "zosmf"),
+                    Pair.of("apiml.apiBasePath", "/ibmzosmf/")
+                );
+                doReturn(Collections.singletonList(instance)).when(discoveryClient).getInstances(ZOSMF_SERVICE_ID);
+
+                APIService apiService = containerService.createAPIServiceFromInstance(instance);
+
+                assertEquals("/ibmzosmf/", apiService.getBasePath());
+            }
+
+            @Test
+            void givenNoApiBasePathOverride_whenCreateDto_thenReturnRouteBasedBasePath() {
+                ServiceInstance instance = createZosmfInstance();
+                doReturn(Collections.singletonList(instance)).when(discoveryClient).getInstances(ZOSMF_SERVICE_ID);
+
+                APIService apiService = containerService.createAPIServiceFromInstance(instance);
+
+                assertEquals("/ibmzosmf/api/{api-version}", apiService.getBasePath());
+            }
+
+            @Test
+            void givenZosmfScheme_whenCheckSso_thenReturnSupported() {
+                ServiceInstance instance = ServicesBuilder.createInstance(
+                    ZOSMF_SERVICE_ID, ZOSMF_SERVICE_ID,
+                    Pair.of(AUTHENTICATION_SCHEME, "zosmf")
+                );
+                doReturn(Collections.singletonList(instance)).when(discoveryClient).getInstances(ZOSMF_SERVICE_ID);
+                doReturn(Collections.singletonList(ZOSMF_SERVICE_ID)).when(discoveryClient).getServices();
+
+                APIContainer apiContainer = containerService.getContainerById(ZOSMF_SERVICE_ID);
+
+                assertTrue(apiContainer.isSso());
+                for (APIService apiService : apiContainer.getServices()) {
+                    assertTrue(apiService.isSso());
+                    assertTrue(apiService.isSsoAllInstances());
+                }
+            }
+
+        }
+
+        @Nested
         class GivenHideServiceInfo {
 
             @Test
