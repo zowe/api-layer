@@ -21,6 +21,7 @@ dependencies {
     compileOnly libs.jakarta.validation
 
     testImplementation libs.spring.boot.starter.test
+    testImplementation libs.io.grpc
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

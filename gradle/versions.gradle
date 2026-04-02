@@ -118,6 +118,7 @@ dependencyResolutionManagement {
             version('xstream', '1.4.21')
             version('javaWebSocket', '1.6.0') // for testing
             version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
+            version('ioGrpc', '1.80.0')
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
 
@@ -264,6 +265,7 @@ dependencyResolutionManagement {
             library('java_websocket', 'org.java-websocket', 'Java-WebSocket').versionRef('javaWebSocket')
             library('tyrus_server', 'org.glassfish.tyrus', 'tyrus-server').versionRef('glassfishTyrus')
             library('tyrus_grizzly_server', 'org.glassfish.tyrus', 'tyrus-container-grizzly-server').versionRef('glassfishTyrus')
+            library('io_grpc', 'io.grpc', 'grpc-stub').versionRef('ioGrpc')
 
             // Sample apps only
             library('jersey_client4', 'com.sun.jersey.contribs', 'jersey-apache-client4').versionRef('jerseySun')
