@@ -69,7 +69,7 @@ class OpenTelemetryResourceAttributesZosTest {
 
     @Nested
     @AcceptanceTest
-    @ActiveProfiles({ "OpenTelemetryTest", "zos" })
+    @ActiveProfiles({"OpenTelemetryTest", "zos"})
     @TestPropertySource(
         properties = {
             "otel.sdk.disabled=false",
@@ -118,7 +118,7 @@ class OpenTelemetryResourceAttributesZosTest {
             "apiml.security.filterChainConfiguration=new"
         }
     )
-    @ActiveProfiles({ "OpenTelemetryTest", "zos" })
+    @ActiveProfiles({"OpenTelemetryTest", "zos"})
     class WhenOnboardedService extends AcceptanceTestWithMockServices {
 
         private static final String VALID_OIDC_TOKEN = "ewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiCn0.c29tZVNpZ25lZEhhc2hDb2Rl";
@@ -217,7 +217,7 @@ class OpenTelemetryResourceAttributesZosTest {
             given()
                 .get(basePath + "/testservice/api/v1/200")
             .then()
-            .statusCode(200);
+                .statusCode(200);
 
             var logRecord = assertOneLogRecordExported();
 
@@ -226,7 +226,7 @@ class OpenTelemetryResourceAttributesZosTest {
             var logBody = logRecord.getBodyValue().asString();
             assertEquals("testservice", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertEquals("FAILED", getAttribute(logBody, "auth.status"));
+            assertEquals("ERROR", getAttribute(logBody, "auth.status"));
             assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
             assertEquals("200", getAttribute(logBody, "service.response_code"));
             assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
@@ -246,27 +246,28 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         @Test
-        @Disabled("This test is for invalid authentication (server error). To be reviewed in follow up story")
         void givenLoginEndpoint_thenLog() {
             given()
                 .auth().preemptive()
                 .basic("wronguser", "wrongpass")
                 .post(basePath + "/gateway/api/v1/auth/login")
             .then()
-                .statusCode(500);
+                .statusCode(401);
 
             var logRecord = assertOneLogRecordExported();
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
-            assertEquals("apicatalog", getAttribute(logBody, "service.id"));
-            assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertEquals("FAILED", getAttribute(logBody, "auth.status"));
-            assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
-            assertEquals("200", getAttribute(logBody, "service.response_code"));
-            assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
+            assertEquals("gateway", getAttribute(logBody, "service.id"));
+            assertEquals("POST", getAttribute(logBody, "http.request.method"));
+            assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+            assertEquals("EACCES: Permission is denied; the specified password is incorrect", getAttribute(logBody, "auth.error.message"));
+            assertEquals("Unauthorized", getAttribute(logBody, "auth.error.type"));
+            assertEquals("localhost:gateway:" + port, getAttribute(logBody, "service.instance.id"));
+            assertEquals("401", getAttribute(logBody, "service.response_code"));
+            assertEquals("/gateway/api/v1/auth/login", getAttribute(logBody, "url.path"));
             assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertEquals("zoweJwt", getAttribute(logBody, "auth.method"));
+            assertEquals("basicAuth", getAttribute(logBody, "auth.service.auth.method"));
         }
 
         @Test
@@ -320,7 +321,7 @@ class OpenTelemetryResourceAttributesZosTest {
             given()
                 .get(basePath + "/nonexistant/api/v1/200")
             .then()
-            .statusCode(404);
+                .statusCode(404);
 
             var logRecord = assertOneLogRecordExported();
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
@@ -400,7 +401,7 @@ class OpenTelemetryResourceAttributesZosTest {
             assertNull(getAttribute(logBody, "user.id"));
             assertEquals("testservicepterror", getAttribute(logBody, "service.id"));
             assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertEquals("FAILED", getAttribute(logBody, "auth.status"));
+            assertEquals("ERROR", getAttribute(logBody, "auth.status"));
             assertEquals(mockServicePassTicketMisconfigured.getInstanceId(), getAttribute(logBody, "service.instance.id"));
             assertEquals("200", getAttribute(logBody, "service.response_code"));
             assertEquals("/testservicepterror/api/v1/200", getAttribute(logBody, "url.path"));
@@ -465,11 +466,11 @@ class OpenTelemetryResourceAttributesZosTest {
             var token = given()
                 .contentType(ContentType.JSON)
                 .body("""
-                    {
-                        "username": "USER",
-                        "password": "validPassword"
-                    }
-                """)
+                        {
+                            "username": "USER",
+                            "password": "validPassword"
+                        }
+                    """)
                 .log().all()
             .when()
                 .post(URI.create(basePath + LOGIN_ENDPOINT))

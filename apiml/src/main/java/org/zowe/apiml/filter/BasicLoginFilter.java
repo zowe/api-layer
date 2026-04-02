@@ -25,6 +25,7 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.handler.FailedAuthenticationWebHandler;
+import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
@@ -50,7 +51,7 @@ import java.util.Optional;
  * </ol>
  *
  * <p>This filter is intended to be used on /login endpoints.</p>
- *
+ * <p>
  * Caution: Filter will read the body and make it available as a request attribute
  *
  * @see LoginRequest
@@ -72,6 +73,8 @@ public class BasicLoginFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         var hasBody = Optional.ofNullable(exchange.getAttribute(CachedBodyFilter.CACHED_BODY_ATTR)).isPresent();
+        var otelContext = OtelRequestContext.of(exchange);
+        otelContext.authMethod(OtelRequestContext.BASIC_AUTH_TYPE);
         exchange.getAttributes().put(X509AuthFilter.SKIP_X509_AUTH_ATTR, hasBody);
         return extractBasicAuth(exchange)
             .map(this::useCredentials)
