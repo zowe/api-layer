@@ -195,7 +195,7 @@ public class HttpsFactory {
 
     private synchronized SSLContext createSecureSslContext() {
         log.debug("Protocol: {}", config.getProtocol());
-        var sslContextBuilder = org.zowe.apiml.security.SSLContextBuilder.create();
+        var sslContextBuilder = org.zowe.apiml.security.ApimlSSLContextBuilder.create();
         try {
             if (config.isNonStrictVerifySslCertificatesOfServices()) {
                 sslContextBuilder = HostnameIgnoringSSLContextBuilder.create();

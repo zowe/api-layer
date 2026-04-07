@@ -27,7 +27,7 @@ import java.util.Collection;
  * Builder meant to be used only for non-strict configuration
  */
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
-public class HostnameIgnoringSSLContextBuilder extends SSLContextBuilder {
+public class HostnameIgnoringSSLContextBuilder extends ApimlSSLContextBuilder {
 
     @Override
     protected void initSSLContext(SSLContext sslContext, Collection<KeyManager> keyManagers,

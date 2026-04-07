@@ -23,7 +23,7 @@ import java.security.SecureRandom;
 import java.util.Collection;
 
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
-public class SSLContextBuilder extends org.apache.hc.core5.ssl.SSLContextBuilder {
+public class ApimlSSLContextBuilder extends org.apache.hc.core5.ssl.SSLContextBuilder {
 
     @Getter(AccessLevel.PACKAGE)
     private Collection<TrustManager> trustManagers;
@@ -35,8 +35,8 @@ public class SSLContextBuilder extends org.apache.hc.core5.ssl.SSLContextBuilder
         this.trustManagers = trustManagers;
     }
 
-    public static SSLContextBuilder create() {
-        return new SSLContextBuilder();
+    public static ApimlSSLContextBuilder create() {
+        return new ApimlSSLContextBuilder();
     }
 
 }
