@@ -1,6 +1,6 @@
 logging:
     level:
-        ROOT: INFO
+        ROOT: DEBUG
 
 apiml:
     service:

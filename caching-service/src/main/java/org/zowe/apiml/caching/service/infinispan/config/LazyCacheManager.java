@@ -45,11 +45,10 @@ public class LazyCacheManager extends DefaultCacheManager {
 
     public LazyCacheManager(
         ConfigurationBuilderHolder cacheManagerConfig,
-        ConfigurationBuilder cacheConfig,
-        Collection<String> cacheNames
+        Map<String, ConfigurationBuilder> caches
     ) {
         super(cacheManagerConfig, false);
-        cacheInitializer = new CacheInitializer(cacheManagerConfig, cacheConfig, new ArrayList<>(cacheNames));
+        cacheInitializer = new CacheInitializer(cacheManagerConfig, caches);
     }
 
     private DefaultCacheManager getCacheManager() {
@@ -257,8 +256,7 @@ public class LazyCacheManager extends DefaultCacheManager {
         private DefaultCacheManager underInit;
 
         private final ConfigurationBuilderHolder cacheManagerConfig;
-        private final ConfigurationBuilder cacheConfig;
-        private final Collection<String> cacheNames;
+        private final Map<String, ConfigurationBuilder> caches;
 
         private DefaultCacheManager startDefaultCacheManager() {
             var defaultCacheManager = new DefaultCacheManager(cacheManagerConfig, false);
@@ -298,7 +296,7 @@ public class LazyCacheManager extends DefaultCacheManager {
                 }
             }
 
-            if (cacheNames.isEmpty()) {
+            if (caches.isEmpty()) {
                 cacheManager.set(underInit);
             }
 
@@ -306,24 +304,31 @@ public class LazyCacheManager extends DefaultCacheManager {
         }
 
         private boolean createCaches() {
-            for (Iterator<String> i = cacheNames.iterator(); i.hasNext();) {
+            for (Iterator<String> i = caches.keySet().iterator(); i.hasNext();) {
                 String cacheName = i.next();
                 if (createCache(cacheName)) {
                     i.remove();
                 }
             }
-            return cacheNames.isEmpty();
+            return caches.isEmpty();
         }
 
         private boolean createCache(String cacheName) {
+            var cacheConfig = caches.get(cacheName).build();
+            log.debug("Initializing cache {} with config {}", cacheName, cacheConfig);
             try {
                 underInit.administration()
                     .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
-                    .getOrCreateCache(cacheName, cacheConfig.build());
+                    .getOrCreateCache(cacheName, cacheConfig);
                 return true;
             } catch (CacheConfigurationException cce) {
                 log.warn("Error during initialization of cache {}", cacheName, cce);
-                underInit.defineConfiguration(cacheName, cacheConfig.build());
+                try {
+                    underInit.defineConfiguration(cacheName, cacheConfig);
+                } catch (Exception e) {
+                    //Todo improve message
+                    log.warn("Configuration for cache {} already exists", cacheName, e);
+                }
             } catch (Exception e) {
                 log.warn("Error during initialization of cache {}", cacheName, e);
             }
@@ -331,7 +336,7 @@ public class LazyCacheManager extends DefaultCacheManager {
         }
 
         public boolean isInitialized() {
-            return underInit != null && cacheNames.isEmpty();
+            return underInit != null && caches.isEmpty();
         }
 
     }

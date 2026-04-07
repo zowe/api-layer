@@ -76,6 +76,7 @@ dependencies {
     implementation libs.jose4j.jwt // Signing, with support for JCA with ICSF
 
     testImplementation(testFixtures(project(":apiml-common")))
+    testImplementation(testFixtures(project(":apiml-security-common")))
     testImplementation(testFixtures(project(":gateway-service")))
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.spring.mock.mvc
@@ -85,6 +86,7 @@ dependencies {
     testImplementation libs.rest.assured.web.test.client
     testImplementation libs.opentelemetry.sdk.testing
     testImplementation libs.opentelemetry.sdk.extension.autoconfigure.spi
+    testImplementation libs.bundles.infinispan
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

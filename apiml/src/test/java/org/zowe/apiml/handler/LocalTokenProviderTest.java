@@ -17,6 +17,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -27,6 +28,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class LocalTokenProviderTest {
+
+    public static final String USERNAME = "user123";
+    public static final String VALID_TOKEN = JWTTestUtils.createDummyAPIMLToken(USERNAME);
 
     private AuthenticationService authenticationService;
     private LocalTokenProvider tokenProvider;
@@ -41,18 +45,17 @@ class LocalTokenProviderTest {
 
     @Test
     void validateToken_validToken_returnsPrincipal() {
-        String token = "valid-token";
         TokenAuthentication mockAuth = mock(TokenAuthentication.class);
 
-        when(authenticationService.validateJwtToken(token)).thenReturn(mockAuth);
-        when(authenticationService.parseJwtToken(token)).thenReturn(new QueryResponse(null, "user123", null, null, null, null, null));
+        when(authenticationService.validateJwtToken(VALID_TOKEN)).thenReturn(mockAuth);
+        when(authenticationService.parseJwtToken(VALID_TOKEN)).thenReturn(new TokenAuthentication(VALID_TOKEN));
 
-        Mono<QueryResponse> result = tokenProvider.validateToken(token);
+        Mono<QueryResponse> result = tokenProvider.validateToken(VALID_TOKEN);
 
         StepVerifier.create(result)
             .assertNext(response -> {
                 assertNotNull(response);
-                assertEquals("user123", response.getUserId());
+                assertEquals(USERNAME, response.getUserId());
             })
             .verifyComplete();
     }

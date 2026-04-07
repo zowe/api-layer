@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.zowe.apiml.passticket.PassTicketException;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.zaas.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.zaas.security.service.saf.SafIdtException;
@@ -65,8 +66,8 @@ class TokenCreationServiceTest {
     private SafIdtProvider safIdtProvider;
 
     private final String VALID_USER_ID = "validUserId";
-    private final String VALID_ZOSMF_TOKEN = "validZosmfToken";
-    private final String VALID_APIML_TOKEN = "validApimlToken";
+    private final String VALID_ZOSMF_TOKEN = JWTTestUtils.createDummyZOSMFToken(VALID_USER_ID);
+    private final String VALID_APIML_TOKEN = JWTTestUtils.createDummyAPIMLToken(VALID_USER_ID);
     private final String PASSTICKET = "passTicket";
     private final String VALID_ZOSMF_APPLID = "IZUDFLT";
     private final String VALID_SAFIDT = "validSAFIdentityToken";

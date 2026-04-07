@@ -1,4 +1,4 @@
-spring.profiles.active: diag
+spring.profiles.active: diag,debug
 logging:
     level:
         org.springframework.web.socket.client.standard.AnnotatedEndpointConnectionManager: DEBUG

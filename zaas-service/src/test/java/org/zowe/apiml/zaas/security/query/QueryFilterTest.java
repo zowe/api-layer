@@ -18,6 +18,7 @@ import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.mockito.Mock;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -110,7 +111,7 @@ class QueryFilterTest {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET.name());
         httpServletResponse = new MockHttpServletResponse();
-        TokenAuthentication authentication = new TokenAuthentication("token");
+        TokenAuthentication authentication = new TokenAuthentication(JWTTestUtils.createDummyAPIMLToken("user"));
         authentication.setAuthenticated(true);
         SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
 

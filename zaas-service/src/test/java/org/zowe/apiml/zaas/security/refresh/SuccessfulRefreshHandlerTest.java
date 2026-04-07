@@ -17,6 +17,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -42,6 +43,8 @@ class SuccessfulRefreshHandlerTest {
     HttpServletRequest request;
     HttpServletResponse response;
 
+    private static final String TOKEN = JWTTestUtils.createDummyAPIMLToken("user");
+
     @BeforeEach
     void setUp() {
         request = new MockHttpServletRequest();
@@ -55,16 +58,16 @@ class SuccessfulRefreshHandlerTest {
         void unknownTypeOfAuthenticationDoesntDoAnything() throws ServletException, IOException {
             Authentication auth = new TestingAuthenticationToken("Principal", "credentials");
             underTest.onAuthenticationSuccess(request, response, auth);
-            verify(authenticationService, never()).invalidateJwtToken("TOKEN", true);
+            verify(authenticationService, never()).invalidateJwtToken(TOKEN, true);
             assertThat(response.getStatus(), is(HttpStatus.NO_CONTENT.value()));
             assertThat(response.getHeader(HttpHeaders.SET_COOKIE), is(emptyOrNullString()));
         }
 
         @Test
         void tokenTypeOfAuthenticationIssuesToken() throws ServletException, IOException {
-            Authentication auth = new TokenAuthentication("USER", "TOKEN");
+            Authentication auth = new TokenAuthentication("USER", TOKEN);
             underTest.onAuthenticationSuccess(request, response, auth);
-            verify(authenticationService, atLeastOnce()).invalidateJwtToken("TOKEN", true);
+            verify(authenticationService, atLeastOnce()).invalidateJwtToken(TOKEN, true);
             assertThat(response.getStatus(), is(HttpStatus.NO_CONTENT.value()));
             assertThat(response.getHeader(HttpHeaders.SET_COOKIE),
                 is("apimlAuthenticationToken=NEWTOKEN; Path=/; Secure; HttpOnly; SameSite=Strict"));

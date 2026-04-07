@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.zaas.security.login.LoginProvider;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.security.common.error.ZosAuthenticationException;
@@ -54,7 +55,7 @@ class ZosAuthenticationProviderTests {
 
     @Test
     void validAuthenticationOnOnValidCredentials() {
-        String validJwtToken = "validJwtToken";
+        String validJwtToken = JWTTestUtils.createDummyAPIMLToken(VALID_USERID);
         when(mockService.createJwtToken(anyString(), anyString(), any())).thenReturn(validJwtToken);
         when(mockService.createTokenAuthentication(VALID_USERID, validJwtToken))
             .thenReturn(new TokenAuthentication(VALID_USERID, validJwtToken));

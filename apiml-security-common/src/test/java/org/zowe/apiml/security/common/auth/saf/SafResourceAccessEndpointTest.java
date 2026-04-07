@@ -25,6 +25,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -41,7 +42,7 @@ class SafResourceAccessEndpointTest {
     private static final String UNSUPPORTED_CLASS = "testClass";
     private static final String RESOURCE = "resourceTest";
     private static final String LEVEL = "READ";
-    private static final Authentication authentication = new TokenAuthentication(USER_ID, "token");
+    private static final Authentication authentication = new TokenAuthentication(USER_ID, JWTTestUtils.createDummyAPIMLToken(USER_ID));
 
     @Mock
     private RestTemplate restTemplate;

@@ -118,7 +118,8 @@ public class CacheConfig {
         var caches = new HashMap<String, CacheConfiguration<?, ?>>();
 
         var invalidatedJwtTokensConf = CacheConfigurationBuilder.newCacheConfigurationBuilder(
-                String.class, Boolean.class, ResourcePoolsBuilder.newResourcePoolsBuilder().disk(10, MemoryUnit.MB).heap(1, MemoryUnit.MB)
+                String.class, Boolean.class, ResourcePoolsBuilder.newResourcePoolsBuilder()
+                    .disk(10, MemoryUnit.MB).heap(1, MemoryUnit.MB)
             ).withService(new OffHeapDiskStoreConfiguration("pool1", 1, 1))
             .withKeyCopier(IdentityCopier.identityCopier())
             .withValueCopier(IdentityCopier.identityCopier())
@@ -132,8 +133,8 @@ public class CacheConfig {
             )
             .withKeyCopier(IdentityCopier.identityCopier())
             .withValueCopier(SerializingCopier.asCopierClass())
-            .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(10))).build();
-        caches.put("validationJwtToken", validationJwtTokenConf);
+            .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(1))).build();
+        caches.put("validatedJwtTokens", validationJwtTokenConf);
 
         var zosmfInfoConf = CacheConfigurationBuilder.newCacheConfigurationBuilder(
                 String.class, String.class, ResourcePoolsBuilder.newResourcePoolsBuilder().heap(10, EntryUnit.ENTRIES)
@@ -193,7 +194,6 @@ public class CacheConfig {
 
         return new JCacheCacheManager(cacheManager);
     }
-
 
     @ConditionalOnProperty(value = "apiml.caching.enabled", havingValue = "false")
     @Bean("cacheManager")

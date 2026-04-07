@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.lock.EmbeddedClusteredLockManagerFactory;
@@ -41,8 +42,8 @@ import org.zowe.apiml.config.ApplicationInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
+import java.time.Duration;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -61,6 +62,8 @@ public class InfinispanConfig implements InitializingBean {
     private static final String LOCK_ZOWE_INVALIDATED = "zoweInvalidatedTokenLock";
     public static final String CACHE_ZOWE = "zoweCache";
     public static final String CACHE_ZOWE_INVALIDATED_TOKEN = "zoweInvalidatedTokenCache";
+    private static final long SMALL_CACHE_SIZE = 10;
+    private static final long BIG_CACHE_SIZE = 1000;
 
     @Value("${caching.storage.infinispan.initialHosts}")
     private String initialHosts;
@@ -164,7 +167,7 @@ public class InfinispanConfig implements InitializingBean {
         return holder;
     }
 
-    private ConfigurationBuilder getCacheConfig() {
+    private ConfigurationBuilder getDistributedCacheConfig() {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder
             .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
@@ -173,6 +176,19 @@ public class InfinispanConfig implements InitializingBean {
             .clustering()
             .cacheMode(CacheMode.REPL_SYNC)
             .hash().numSegments(numSegments);
+        return builder;
+    }
+
+    private ConfigurationBuilder getSimpleCacheConfig(long maxCount, Duration lifeSpan) {
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder
+            .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
+            .memory()
+            .storage(StorageType.OFF_HEAP)
+            .maxCount(maxCount)
+            .simpleCache(true)
+            .expiration()
+            .lifespan(lifeSpan.toSeconds(), TimeUnit.SECONDS);
         return builder;
     }
 
@@ -192,14 +208,36 @@ public class InfinispanConfig implements InitializingBean {
         System.setProperty("infinispan.ssl.trustStore", trustStore);
         System.setProperty("infinispan.ssl.trustStorePassword", trustStorePass);
 
-        List<String> caches;
+        Map<String, ConfigurationBuilder> caches;
         if (applicationInfo.isModulith()) {
-            caches = Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN, "zosmfAuthenticationEndpoint", "invalidatedJwtTokens", "validationJwtToken", "zosmfInfo", "zosmfJwtEndpoint", "trustedCertificates", "parseOIDCToken", "validationOIDCToken");
+            caches = new HashMap<>();
+
+            //Security distributed caches
+            //TODO resolve size and lifespan
+            caches.put(CACHE_ZOWE, getDistributedCacheConfig());
+            caches.put(CACHE_ZOWE_INVALIDATED_TOKEN, getDistributedCacheConfig());
+            caches.put("invalidatedJwtTokens", getDistributedCacheConfig());
+
+            caches.put("validatedJwtTokens", getSimpleCacheConfig(BIG_CACHE_SIZE, Duration.ofMinutes(1)));
+
+            //Small local caches
+            caches.put("zosmfAuthenticationEndpoint", getSimpleCacheConfig(SMALL_CACHE_SIZE, Duration.ofHours(1)));
+            caches.put("zosmfInfo", getSimpleCacheConfig(SMALL_CACHE_SIZE, Duration.ofHours(1)));
+            caches.put("zosmfJwtEndpoint", getSimpleCacheConfig(SMALL_CACHE_SIZE, Duration.ofHours(1)));
+
+            //Big local caches
+            caches.put("trustedCertificates", getSimpleCacheConfig(BIG_CACHE_SIZE, Duration.ofHours(1)));
+            caches.put("parseOIDCToken", getSimpleCacheConfig(BIG_CACHE_SIZE, Duration.ofSeconds(20)));
+            caches.put("validationOIDCToken", getSimpleCacheConfig(BIG_CACHE_SIZE, Duration.ofSeconds(20)));
+
         } else {
-            caches = Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN);
+            caches = new HashMap<>();
+            //TODO resolve size and lifespan
+            var defaultCacheconfig = getDistributedCacheConfig();
+            Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN).forEach( c -> caches.put(c,defaultCacheconfig));
         }
 
-        return new LazyCacheManager(getCacheManagerConfig(resourceLoader), getCacheConfig(), caches);
+        return new LazyCacheManager(getCacheManagerConfig(resourceLoader), caches);
     }
 
     private ClusteredLock lock(CacheContainer cacheManager) {

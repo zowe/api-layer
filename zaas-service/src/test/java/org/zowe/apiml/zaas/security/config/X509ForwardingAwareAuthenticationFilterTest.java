@@ -80,8 +80,9 @@ class X509ForwardingAwareAuthenticationFilterTest {
         httpServletRequest.setServletPath("/api/v1/zaas/auth/login");
 
         httpServletResponse = new MockHttpServletResponse();
+        var tokenAuthenticationMock = mock(TokenAuthentication.class);
         when(authenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate)))
-            .thenReturn(new TokenAuthentication("user", "jwt"));
+            .thenReturn(tokenAuthenticationMock);
         x509ForwardingAwareAuthenticationFilter.doFilter(httpServletRequest, httpServletResponse, filterChain);
 
         verify(authenticationProvider).authenticate(new X509AuthenticationToken(x509Certificate));
