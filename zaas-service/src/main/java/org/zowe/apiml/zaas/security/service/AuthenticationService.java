@@ -68,6 +68,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.zowe.apiml.security.common.util.JwtUtils.getJwtClaims;
+import static org.zowe.apiml.security.common.util.JwtUtils.getJwtClaimsIgnoreExpiration;
 import static org.zowe.apiml.security.common.util.JwtUtils.handleJwtParserException;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.LTPA;
@@ -375,26 +376,35 @@ public class AuthenticationService {
         if (jwtToken != null && validationJwtTokenCache != null) {
             Cache.ValueWrapper cached = validationJwtTokenCache.get(jwtToken);
             if (cached != null) {
-                log.debug("JWT found in the cache.");
-                return (TokenAuthentication) cached.get();
+                var tokenAuthentication = (TokenAuthentication) cached.get();
+                log.debug("JWT found in the cache. Is authenticated: {}", tokenAuthentication.isAuthenticated());
+                return tokenAuthentication;
             }
         }
 
-        QueryResponse queryResponse = parseJwtToken(jwtToken);
-        boolean isValid = switch (queryResponse.getSource()) {
-            case ZOWE -> {
-                validateAndParseLocalJwtToken(jwtToken);
-                yield true;
+        try {
+            QueryResponse queryResponse = parseJwtToken(jwtToken);
+            switch (queryResponse.getSource()) {
+                case ZOWE -> validateAndParseLocalJwtToken(jwtToken);
+                case ZOSMF -> zosmfService.validate(jwtToken);
+                default -> throw new TokenNotValidException("Unknown token type.");
             }
-            case ZOSMF -> zosmfService.validate(jwtToken);
-            default -> throw new TokenNotValidException("Unknown token type.");
-        };
-        boolean notInvalidated = !isInvalidated(jwtToken);
+            boolean notInvalidated = !isInvalidated(jwtToken);
+            return processJWTvalidationResult(queryResponse, jwtToken, notInvalidated);
+        } catch (TokenNotValidException | TokenExpireException ex) {
+            log.debug("JWT token is not valid", ex);
+            processJWTvalidationResult(parseJwtTokenIgnoreExpiration(jwtToken), jwtToken, false);
+            throw ex;
+        }
+    }
+
+    private TokenAuthentication processJWTvalidationResult(QueryResponse queryResponse, String jwtToken, Boolean tokenValid) {
         TokenAuthentication tokenAuthentication = new TokenAuthentication(queryResponse.getUserId(), jwtToken, TokenAuthentication.Type.JWT);
-        tokenAuthentication.setAuthenticated(notInvalidated && isValid);
+        tokenAuthentication.setAuthenticated(tokenValid);
 
         putValidationCache(jwtToken, tokenAuthentication);
         log.debug("JWT validation result: {}", tokenAuthentication.isAuthenticated());
+
         return tokenAuthentication;
     }
 
@@ -456,10 +466,9 @@ public class AuthenticationService {
         if (token == null) {
             throw new TokenNotValidException("Null token.");
         }
-        parseJwtToken(token.getCredentials()); // throws on expired token, this needs to happen before cache
-        
+
         var tokenAuth = validateJwtToken(token.getCredentials());
-        
+
         return tokenAuth;
     }
 
@@ -472,9 +481,21 @@ public class AuthenticationService {
      */
     public QueryResponse parseJwtToken(String jwtToken) {
         log.debug("Parsing JWT: ...{}", StringUtils.right(jwtToken, 15));
-        var claims = getJwtClaims(jwtToken);
-        return parseQueryResponse(claims);
+        return parseQueryResponse(getJwtClaims(jwtToken));
     }
+
+    /**
+     * Parses the JWT token and return a {@link QueryResponse} object containing the domain, user id, type (Zowe / z/OSMF),
+     * date of creation and date of expiration. Does not validate expiration.
+     *
+     * @param jwtToken the JWT token
+     * @return the query response
+     */
+    public QueryResponse parseJwtTokenIgnoreExpiration(String jwtToken) {
+        log.debug("Parsing JWT: ...{}", StringUtils.right(jwtToken, 15));
+        return parseQueryResponse(getJwtClaimsIgnoreExpiration(jwtToken));
+    }
+
 
     public QueryResponse parseQueryResponse(JWTClaimsSet claims) {
         Object scopesObject = claims.getClaim(SCOPES);
@@ -595,7 +616,6 @@ public class AuthenticationService {
 
         return Optional.empty();
     }
-
 
     /**
      * Calculate the expiration time

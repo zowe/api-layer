@@ -45,6 +45,21 @@ public class JwtUtils {
      * @throws TokenNotValidException in case of invalid input, or TokenExpireException if JWT is expired
      */
     public JWTClaimsSet getJwtClaims(String jwt) {
+        return getJwtClaimsInternal(jwt, true);
+    }
+
+    /**
+     * This method reads the claims without validating the token signature. It should be used only if the validity was checked in the calling code. Ignores token expiration.
+     *
+     * @param jwt token to be parsed
+     * @return parsed claims
+     * @throws TokenNotValidException in case of invalid input
+     */
+    public JWTClaimsSet getJwtClaimsIgnoreExpiration(String jwt) {
+        return getJwtClaimsInternal(jwt, false);
+    }
+
+    private JWTClaimsSet getJwtClaimsInternal(String jwt, boolean validateExpiration) {
         /*
          * Removes signature, because we don't have key to verify z/OS tokens, and we just need to read claim.
          * Verification is done by SAF itself. JWT library doesn't parse signed key without verification.
@@ -54,9 +69,10 @@ public class JwtUtils {
             var token = JWTParser.parse(jwtWithoutSignature);
             var claims = token.getJWTClaimsSet();
 
-            if (claims.getExpirationTime().toInstant().isBefore(Instant.now())) {
+            if (validateExpiration && claims.getExpirationTime().toInstant().isBefore(Instant.now())) {
                 throw new ExpiredJWTException("JWT token is expired");
             }
+
             return token.getJWTClaimsSet();
         } catch (RuntimeException | ParseException | BadJWTException exception) {
             throw handleJwtParserException(exception);

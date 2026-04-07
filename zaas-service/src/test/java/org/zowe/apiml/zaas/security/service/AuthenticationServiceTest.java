@@ -32,6 +32,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpHeaders;
@@ -48,6 +49,7 @@ import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenExpireException;
@@ -108,8 +110,11 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     @Mock
     private CacheManager cacheManager;
     @Mock
+    private Cache validationJwtTokenCache;
+    @Mock
+    private Cache invalidatedJwtTokensCache;
+    @Mock
     private Clock clock;
-
 
     static {
         KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
@@ -124,10 +129,15 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         authConfigurationProperties = new AuthConfigurationProperties();
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
+        when(cacheManager.getCache("validationJwtToken")).thenReturn(validationJwtTokenCache);
+        when(cacheManager.getCache("invalidatedJwtTokens")).thenReturn(invalidatedJwtTokensCache);
+
         authService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer,
             zosmfService, eurekaClient, restTemplate, cacheManager, cacheUtils, clock
         );
+        authService.afterPropertiesSet();
+
         scopes = new HashSet<>();
         scopes.add("Service1");
         scopes.add("Service2");
@@ -140,7 +150,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @BeforeEach
         void setup() {
             stubJWTSecurityForSign();
-            
+
         }
 
         @Test
@@ -159,6 +169,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             TokenAuthentication token = new TokenAuthentication(jwtToken);
             TokenAuthentication jwtValidation = authService.validateJwtToken(token);
 
+            verify(validationJwtTokenCache, times(1)).put(jwtToken, jwtValidation);
             assertEquals(USER, jwtValidation.getPrincipal());
             assertEquals(jwtValidation.getCredentials(), jwtToken);
             assertTrue(jwtValidation.isAuthenticated());
@@ -206,11 +217,14 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             stubJWTSecurityForSign();
             String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
             String brokenToken = jwtToken + "not";
-            TokenAuthentication token = new TokenAuthentication(brokenToken);
+            TokenAuthentication tokenAuthentication = new TokenAuthentication(brokenToken);
             assertThrows(
                 TokenNotValidException.class,
-                () -> authService.validateJwtToken(token)
+                () -> authService.validateJwtToken(tokenAuthentication)
             );
+            var invalidTokenAuthentication = new TokenAuthentication(USER, brokenToken, TokenAuthentication.Type.JWT);
+            invalidTokenAuthentication.setAuthenticated(false);
+            verify(validationJwtTokenCache, times(1)).put(brokenToken ,invalidTokenAuthentication);
         }
 
         @Test
@@ -219,15 +233,19 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
                 TokenNotValidException.class,
                 () -> authService.validateJwtToken((TokenAuthentication) null)
             );
+            verify(validationJwtTokenCache, never()).put(any(),any());
         }
 
         @Test
         void givenExpiredToken_thenThrowsTokenExpireException() {
             TokenAuthentication token = new TokenAuthentication(createExpiredJwtToken(privateKey));
+            var invalidTokenAuthentication = new TokenAuthentication(null, token.getCredentials(), TokenAuthentication.Type.JWT);
+            invalidTokenAuthentication.setAuthenticated(false);
             assertThrows(
                 TokenExpireException.class,
-                () -> authService.validateJwtToken(token)
+                () -> authService.validateJwtToken(token.getCredentials())
             );
+            verify(validationJwtTokenCache, times(1)).put(token.getCredentials(),invalidTokenAuthentication);
         }
 
         @Test
@@ -248,8 +266,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
                 TokenNotValidException.class,
                 () -> authService.validateJwtToken((String) null)
             );
+            verify(validationJwtTokenCache, never()).put(any(),any());
         }
-
     }
 
     @Nested
@@ -439,6 +457,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             assertEquals("Invalid Credentials", exception.getMessage());
             verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.JWT, token);
+            verify(validationJwtTokenCache, never()).evict(any());
+            verify(invalidatedJwtTokensCache, never()).put(any(), any());
         }
 
         @Test
@@ -473,6 +493,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             assertTrue(authService.invalidateJwtToken(token, false));
             verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.JWT, token);
+            verify(validationJwtTokenCache, times(1)).evict(token);
+            verify(invalidatedJwtTokensCache, times(1)).put(token, Boolean.TRUE);
         }
 
         @Test
@@ -483,8 +505,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             assertTrue(authService.invalidateJwtToken(token, false));
             verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.LTPA, LTPA_TOKEN);
+            verify(validationJwtTokenCache, times(1)).evict(token);
+            verify(invalidatedJwtTokensCache, times(1)).put(token, Boolean.TRUE);
         }
-
 
         @Test
         void thenValidateZosmfJwtToken() {
@@ -499,11 +522,26 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             assertEquals(zosmfJwt, tokenAuthentication.getCredentials());
             assertEquals(userId, tokenAuthentication.getPrincipal());
             verify(zosmfService, times(1)).validate(zosmfJwt);
+            verify(validationJwtTokenCache, times(1)).put(zosmfJwt, tokenAuthentication);
         }
-
     }
 
     @Nested
+    class GivenZosmfTokenValidationFails {
+        @Test
+        void whenValidationFails_thenDoNotCacheResult() {
+            stubJWTSecurityForSign();
+            authConfigurationProperties.getTokenProperties().setIssuer(ZOSMF);
+            String token = authService.createJwtToken("user", DOMAIN, null);
+
+            when(zosmfService.validate(token)).thenThrow(new ServiceNotAccessibleException("All validation strategies failed"));
+
+            assertThrows(ServiceNotAccessibleException.class, () -> authService.validateJwtToken(token));
+            verify(validationJwtTokenCache, never()).put(any(), any());
+        }
+    }
+
+        @Nested
     class GivenTokenOriginTest {
 
         private static final String TOKEN = "some_token";
@@ -537,11 +575,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
                 assertThrows(TokenNotValidException.class, () -> authService.getTokenOrigin(TOKEN));
             }
         }
-    }
-
-    void stubJWTSecurityForSignAndVerify() {
-        stubJWTSecurityForSign();
-        when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
     }
 
     void stubJWTSecurityForSign() {
@@ -627,7 +660,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         assertTokenAuthentication.accept(tokenAuthentication);
     }
 
-
     @Nested
     class GivenDistributedInvalidationTest {
 
@@ -698,7 +730,5 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             assertFalse(authService.invalidateJwtToken(token, true));
 
         }
-
     }
-
 }
