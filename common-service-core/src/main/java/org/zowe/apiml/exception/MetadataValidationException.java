@@ -11,6 +11,7 @@
 package org.zowe.apiml.exception;
 
 public class MetadataValidationException extends RuntimeException {
+
     public MetadataValidationException(String message, Throwable cause) {
         super(message, cause);
     }
@@ -18,4 +19,5 @@ public class MetadataValidationException extends RuntimeException {
     public MetadataValidationException(String message) {
         super(message);
     }
+
 }

@@ -11,6 +11,7 @@
 package org.zowe.apiml.security.common.util;
 
 import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.resolver.DefaultAddressResolverGroup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -127,9 +128,12 @@ class ConnectionUtilTest {
         void whenHostnameVerificationEnabled_thenEnableEndpointIdentificationAlgorithm() throws UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
             when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(true);
             when(httpConfig.isNonStrictVerifySslCertificatesOfServices()).thenReturn(false);
-            HttpClient baseHttpClient = HttpClient.create();
-            HttpClient result = ConnectionUtil.getHttpClient(httpConfig, baseHttpClient, false);
-            
+            var baseHttpClient = HttpClient.create();
+            var result = ConnectionUtil.getHttpClient(httpConfig, baseHttpClient, false);
+
+            var resolver = result.configuration().resolver();
+
+            assertEquals(DefaultAddressResolverGroup.INSTANCE, resolver);
             assertEquals("HTTPS", ReflectionTestUtils.getField(result.configuration().sslProvider().getSslContext(), "endpointIdentificationAlgorithm"));
         }
 
@@ -141,8 +145,8 @@ class ConnectionUtilTest {
             when(httpConfig.getKeyStorePath()).thenReturn("../keystore/localhost/localhost.keystore.p12");
             when(httpConfig.getKeyStorePassword()).thenReturn("password".toCharArray()); //NOSONAR
 
-            HttpClient baseHttpClient = HttpClient.create();
-            HttpClient result = ConnectionUtil.getHttpClient(httpConfig, baseHttpClient, true);
+            var baseHttpClient = HttpClient.create();
+            var result = ConnectionUtil.getHttpClient(httpConfig, baseHttpClient, true);
 
             assertEquals("HTTPS", ReflectionTestUtils.getField(result.configuration().sslProvider().getSslContext(), "endpointIdentificationAlgorithm"));
         }
@@ -152,8 +156,8 @@ class ConnectionUtilTest {
             when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(true);
             when(httpConfig.isNonStrictVerifySslCertificatesOfServices()).thenReturn(true);
 
-            HttpClient baseHttpClient = HttpClient.create();
-            HttpClient result = ConnectionUtil.getHttpClient(httpConfig, baseHttpClient, false);
+            var baseHttpClient = HttpClient.create();
+            var result = ConnectionUtil.getHttpClient(httpConfig, baseHttpClient, false);
 
             assertNull(ReflectionTestUtils.getField(result.configuration().sslProvider().getSslContext(), "endpointIdentificationAlgorithm"));
         }
@@ -163,8 +167,8 @@ class ConnectionUtilTest {
             when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(false);
             when(httpConfig.isNonStrictVerifySslCertificatesOfServices()).thenReturn(false);
 
-            HttpClient baseHttpClient = HttpClient.create();
-            HttpClient result = ConnectionUtil.getHttpClient(httpConfig, baseHttpClient, false);
+            var baseHttpClient = HttpClient.create();
+            var result = ConnectionUtil.getHttpClient(httpConfig, baseHttpClient, false);
 
             assertNull(ReflectionTestUtils.getField(result.configuration().sslProvider().getSslContext(), "endpointIdentificationAlgorithm"));
         }

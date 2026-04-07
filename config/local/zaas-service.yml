@@ -58,6 +58,12 @@ server:
         trustStorePassword: password
         trustStoreType: PKCS12
 
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "*"
+
 ---
 spring.config.activate.on-profile: attls
 

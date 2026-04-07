@@ -1,6 +1,6 @@
 {
   "name": "@zowe/apiml-onboarding-enabler-nodejs",
-  "version": "3.2.5",
+  "version": "3.2.6",
   "description": "NodeJS enabler for Zowe API Mediation Layer",
   "type": "module",
   "main": "src/index.js",
@@ -16,7 +16,7 @@
     "url": "git+https://github.com/zowe/api-layer.git"
   },
   "author": "",
-  "license": "EPL-2.0",
+  "license": "(EPL-2.0 OR Apache-2.0)",
   "homepage": ".",
   "dependencies": {
     "async": "3.2.6",

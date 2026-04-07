@@ -13,28 +13,22 @@ package org.zowe.apiml.eurekaservice.client.impl;
 import lombok.AccessLevel;
 import lombok.Setter;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
+import org.zowe.apiml.product.zos.ZUtilDummy;
 import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.zowe.apiml.product.zos.ZosSystemInformation.*;
+
 public class DefaultCustomMetadataHelper {
 
-    private static final String ZOS_JOB_ID = "zos.jobid";
-    private static final String ZOS_JOB_NAME = "zos.jobname";
-    private static final String ZOS_USER_ID = "zos.userid";
-    private static final String ZOS_PID = "zos.pid";
-    private static final String ZOS_SYSNAME = "zos.sysname";
-    private static final String ZOS_SYSCLONE = "zos.sysclone";
-    private static final String ZOS_SYSPLEX = "zos.sysplex";
-    private static final String OS_NAME = "os.name";
-
     @Setter(AccessLevel.PROTECTED)
-    private ZUtil zUtil;
+    private org.zowe.apiml.product.zos.ZUtil zUtil;
 
     public DefaultCustomMetadataHelper() {
         if (isRunningOnZos()) {
-            zUtil = ClassOrDefaultProxyUtils.createProxy(ZUtil.class, "com.ibm.jzos.ZUtil", ZUtilDummy::new);
+            zUtil = ClassOrDefaultProxyUtils.createProxy(org.zowe.apiml.product.zos.ZUtil.class, "com.ibm.jzos.ZUtil", org.zowe.apiml.product.zos.ZUtilDummy::new);
         } else {
             zUtil = new ZUtilDummy();
         }
@@ -75,6 +69,7 @@ public class DefaultCustomMetadataHelper {
         for (Map.Entry<String, Object> entry : defaultMetadata.entrySet()) {
             customMetadata.putIfAbsent(entry.getKey(), entry.getValue());
         }
+
     }
 
 }

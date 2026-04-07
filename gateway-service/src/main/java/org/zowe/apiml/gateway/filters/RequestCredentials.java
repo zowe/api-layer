@@ -30,7 +30,7 @@ public class RequestCredentials {
 
     private final String requestURI;
 
-    static class RequestCredentialsBuilder {
+    public static class RequestCredentialsBuilder {
 
         RequestCredentialsBuilder addCookie(String key, String value) {
             if (this.cookies == null) {

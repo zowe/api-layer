@@ -13,8 +13,10 @@ package org.zowe.apiml.caching.service.infinispan.storage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.infinispan.lock.api.ClusteredLock;
+import org.infinispan.manager.DefaultCacheManager;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.model.KeyValue;
@@ -31,27 +33,28 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static org.zowe.apiml.caching.service.infinispan.config.InfinispanConfig.CACHE_ZOWE;
+import static org.zowe.apiml.caching.service.infinispan.config.InfinispanConfig.CACHE_ZOWE_INVALIDATED_TOKEN;
+
 @Slf4j
+@RequiredArgsConstructor
 public class InfinispanStorage implements Storage {
 
-
-    private final ConcurrentMap<String, KeyValue> cache;
-    private final ConcurrentMap<String, Map<String, String>> tokenCache;
-    private final Supplier<ClusteredLock> lockSupplier;
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public InfinispanStorage(
-        ConcurrentMap<String, KeyValue> cache,
-        ConcurrentMap<String, Map<String, String>> tokenCache,
-        Supplier<ClusteredLock> lockSupplier
-    ) {
-        this.cache = cache;
-        this.tokenCache = tokenCache;
-        this.lockSupplier = lockSupplier;
-    }
+    private final DefaultCacheManager defaultCacheManager;
+    private final Supplier<ClusteredLock> lockSupplier;
 
     static {
         objectMapper.registerModule(new JavaTimeModule());
+    }
+
+    private ConcurrentMap<String, KeyValue> getCache() {
+        return defaultCacheManager.getCache(CACHE_ZOWE);
+    }
+
+    private ConcurrentMap<String, Map<String, String>> getTokenCache() {
+        return defaultCacheManager.getCache(CACHE_ZOWE_INVALIDATED_TOKEN);
     }
 
     @Override
@@ -59,7 +62,7 @@ public class InfinispanStorage implements Storage {
         toCreate.setServiceId(serviceId);
         log.info("Writing record: {}|{}|{}", serviceId, toCreate.getKey(), toCreate.getValue());
 
-        KeyValue serviceCache = cache.putIfAbsent(serviceId + toCreate.getKey(), toCreate);
+        KeyValue serviceCache = getCache().putIfAbsent(serviceId + toCreate.getKey(), toCreate);
 
         if (serviceCache != null) {
             throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey());
@@ -75,12 +78,12 @@ public class InfinispanStorage implements Storage {
                 try {
                     String cacheKey = serviceId + mapKey;
                     log.info("Storing the item into token cache: {} -> {}|{}", cacheKey, toCreate.getKey(), toCreate.getValue());
-                    Map<String, String> tokenCacheItem = tokenCache.get(cacheKey);
+                    Map<String, String> tokenCacheItem = getTokenCache().get(cacheKey);
                     if (tokenCacheItem == null) {
                         tokenCacheItem = new HashMap<>();
                     }
                     tokenCacheItem.put(toCreate.getKey(), toCreate.getValue());
-                    tokenCache.put(cacheKey, tokenCacheItem);
+                    getTokenCache().put(cacheKey, tokenCacheItem);
                 } finally {
                     lock.unlock();
                 }
@@ -93,7 +96,7 @@ public class InfinispanStorage implements Storage {
     @Override
     public Map<String, String> getAllMapItems(String serviceId, String mapKey) {
         log.info("Reading all records from token cache for service {} under the {} key.", serviceId, mapKey);
-        return tokenCache.get(serviceId + mapKey);
+        return getTokenCache().get(serviceId + mapKey);
     }
 
     @Override
@@ -106,11 +109,11 @@ public class InfinispanStorage implements Storage {
          * It is difficult to support and also slower (see exchanging lambdas between nodes).
          */
         Map<String, Map<String, String>> result = new HashMap<>();
-        for (String key : tokenCache.keySet()) {
+        for (String key : getTokenCache().keySet()) {
             if (!key.startsWith(serviceId)) continue;
 
             String newKey = key.substring(serviceId.length());
-            result.put(newKey, tokenCache.get(key));
+            result.put(newKey, getTokenCache().get(key));
         }
 
         return result;
@@ -119,7 +122,7 @@ public class InfinispanStorage implements Storage {
     @Override
     public KeyValue read(String serviceId, String key) {
         log.info("Reading record for service {} under key {}", serviceId, key);
-        KeyValue serviceCache = cache.get(serviceId + key);
+        KeyValue serviceCache = getCache().get(serviceId + key);
         if (serviceCache != null) {
             return serviceCache;
         } else {
@@ -131,7 +134,7 @@ public class InfinispanStorage implements Storage {
     public KeyValue update(String serviceId, KeyValue toUpdate) {
         toUpdate.setServiceId(serviceId);
         log.info("Updating record for service {} under key {}", serviceId, toUpdate);
-        KeyValue serviceCache = cache.put(serviceId + toUpdate.getKey(), toUpdate);
+        KeyValue serviceCache = getCache().put(serviceId + toUpdate.getKey(), toUpdate);
         if (serviceCache == null) {
             throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toUpdate.getKey(), serviceId);
         }
@@ -142,7 +145,7 @@ public class InfinispanStorage implements Storage {
     @Override
     public KeyValue delete(String serviceId, String toDelete) {
         log.info("Removing record for service {} under key {}", serviceId, toDelete);
-        KeyValue entry = cache.remove(serviceId + toDelete);
+        KeyValue entry = getCache().remove(serviceId + toDelete);
         if (entry != null) {
             return entry;
         } else {
@@ -154,7 +157,7 @@ public class InfinispanStorage implements Storage {
     public Map<String, KeyValue> readForService(String serviceId) {
         log.info("Reading all records for service {} ", serviceId);
         Map<String, KeyValue> result = new HashMap<>();
-        cache.forEach((key, value) -> {
+        getCache().forEach((key, value) -> {
             if (serviceId.equals(value.getServiceId())) {
                 result.put(value.getKey(), value);
             }
@@ -165,9 +168,9 @@ public class InfinispanStorage implements Storage {
     @Override
     public void deleteForService(String serviceId) {
         log.info("Removing all records for service {} ", serviceId);
-        cache.forEach((key, value) -> {
+        getCache().forEach((key, value) -> {
             if (value.getServiceId().equals(serviceId)) {
-                cache.remove(key);
+                getCache().remove(key);
             }
         });
     }
@@ -188,7 +191,7 @@ public class InfinispanStorage implements Storage {
     }
 
     private void removeToken(String serviceId, String mapKey) {
-        Map<String, String> map = tokenCache.get(serviceId + mapKey);
+        Map<String, String> map = getTokenCache().get(serviceId + mapKey);
         if (map != null && !map.isEmpty()) {
             Map<String,String> result = map.entrySet().stream().filter(entry -> {
                 try {
@@ -199,7 +202,7 @@ public class InfinispanStorage implements Storage {
                     return true;
                 }
             }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            tokenCache.put(serviceId + mapKey, result);
+            getTokenCache().put(serviceId + mapKey, result);
         }
     }
 
@@ -210,14 +213,14 @@ public class InfinispanStorage implements Storage {
             if (Boolean.TRUE.equals(r)) {
                 try {
                     long timestamp = System.currentTimeMillis();
-                    Map<String, String> map = tokenCache.get(serviceId + mapKey);
+                    Map<String, String> map = getTokenCache().get(serviceId + mapKey);
                     if (map != null && !map.isEmpty()) {
                         Map<String,String> result = map.entrySet().stream().filter(entry -> {
                             long delta = timestamp - Long.parseLong(entry.getValue());
                             long deltaToDays = TimeUnit.MILLISECONDS.toDays(delta);
                             return deltaToDays <= 90;
                         }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                        tokenCache.put(serviceId + mapKey, result);
+                        getTokenCache().put(serviceId + mapKey, result);
                     }
                 } finally {
                     lock.unlock();

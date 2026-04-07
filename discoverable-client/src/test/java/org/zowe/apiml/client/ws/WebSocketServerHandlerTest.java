@@ -49,4 +49,5 @@ class WebSocketServerHandlerTest {
         assertEquals("BYE", messageCaptor.getValue().getPayload().toString());
         verify(session, times(1)).close();
     }
+
 }

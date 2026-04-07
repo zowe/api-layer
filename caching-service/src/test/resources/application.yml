@@ -97,6 +97,19 @@ server:
         trustStore: ../keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
 
+management:
+    endpoints:
+        migrate-legacy-ids: true
+        web:
+            base-path: /cachingservice/application
+            exposure:
+                include: "*"
+    health:
+        defaults:
+            enabled: false
+    endpoint:
+        health:
+            showDetails: always
 logging:
     level:
         ROOT: DEBUG

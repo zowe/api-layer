@@ -1,6 +1,13 @@
 spring.profiles.include: diag
 apiml:
     service:
+        ssl:
+            key-store: /docker/client-cert.p12
+            key-store-password: password
+            key-password: password
+            key-alias: localhost
+            trust-store: /docker/all-services.truststore.p12
+            trust-store-password: password
         hostname: discovery-service
     discovery:
         staticApiDefinitionsDirectories: /api-defs;/docker/api-defs
@@ -39,7 +46,7 @@ server:
     ssl:
         keyAlias: localhost
         keyPassword: password
-        keyStore: /docker/all-services.keystore.p12
+        keyStore: /docker/server-only.p12
         keyStorePassword: password
         trustStore: /docker/all-services.truststore.p12
         trustStorePassword: password

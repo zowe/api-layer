@@ -13,6 +13,7 @@ package org.zowe.apiml.sample;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.eurekaservice.client.impl.ApiMediationClientImpl;
 import org.zowe.apiml.eurekaservice.client.util.ApiMediationServiceConfigReader;
+import org.zowe.apiml.exception.InvalidServiceIdException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
 import java.util.Objects;
@@ -36,9 +37,12 @@ public class PlainJavaEnablerApp {
             log.severe("Service configuration failed. Check log for previous errors: " + sde.getMessage());
             sde.printStackTrace();
             throw new IllegalStateException("Configuration problem");
+        } catch (InvalidServiceIdException mve) {
+            log.warning(mve.getMessage());
         }
         log.info("Configuration loaded, sleeping the main thread. Verify registration correctness in Discovery service");
 
         Thread.currentThread().join();
     }
+
 }

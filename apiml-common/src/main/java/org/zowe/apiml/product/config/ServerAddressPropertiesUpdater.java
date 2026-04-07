@@ -147,7 +147,7 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
      * @return processor to create new customizer beans or an empty processor if there are no additional address.
      */
     @Bean
-    public BeanDefinitionRegistryPostProcessor registerAdditionalTomcatConnectors() {
+    public static BeanDefinitionRegistryPostProcessor registerAdditionalTomcatConnectors() {
         if (ADDITIONAL_NETWORKS.isEmpty()) {
             return registry -> {};
         }

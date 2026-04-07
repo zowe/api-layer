@@ -25,7 +25,9 @@ import static java.util.stream.Collectors.joining;
 
 @Slf4j
 public class RunningService {
+
     private Process process;
+    private ExecutorService executorService = Executors.newFixedThreadPool(1);
 
     private final String jarFile;
     private final String id;
@@ -67,14 +69,18 @@ public class RunningService {
             "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
             "--add-opens=java.base/java.io=ALL-UNNAMED"
         ));
-        parametersBefore
-            .forEach((key1, value1) -> shellCommand.add(key1 + '=' + value1));
+        if (parametersBefore != null) {
+            parametersBefore
+                .forEach((key1, value1) -> shellCommand.add(key1 + '=' + value1));
+        }
 
         shellCommand.add("-jar");
         shellCommand.add(jarFile);
 
-        parametersAfter
-            .forEach((key, value) -> shellCommand.add(key + '=' + value));
+        if (parametersAfter != null) {
+            parametersAfter
+                .forEach((key, value) -> shellCommand.add(key + '=' + value));
+        }
 
         try {
             ProcessBuilder builder1 = new ProcessBuilder(shellCommand);
@@ -92,16 +98,15 @@ public class RunningService {
         envVariables.putAll(env);
         envVariables.put("LAUNCH_COMPONENT", jarFile);
         File binFolder = new File("../");
-        ExecutorService executorService = Executors.newFixedThreadPool(1);
         builder1.directory(binFolder);
         executorService.submit(() -> executeCommand(builder1));
     }
 
     private void executeCommand(ProcessBuilder pb) {
         try {
-            Process terminalCommandProcess = pb.start();
+            process = pb.start();
 
-            InputStream inputStream = terminalCommandProcess.getInputStream();
+            InputStream inputStream = process.getInputStream();
             BufferedReader br = new BufferedReader(
                 new InputStreamReader(inputStream));
             String line;
@@ -122,18 +127,41 @@ public class RunningService {
     }
 
     public void stop() {
-        if (subprocessPid != null) {
-            ProcessBuilder pb = new ProcessBuilder("kill", "-9", subprocessPid);
-            try {
-                pb.inheritIO().start();
-                return;
-            } catch (IOException e) {
-                log.error(e.getMessage());
-            }
+        if (process == null) {
+            return;
         }
+
+        log.info("Service with ID {} is going to be stopped", id);
+        String pid = subprocessPid;
+        if (pid == null) {
+            pid = String.valueOf(process.pid());
+            log.debug("Subprocess ID was not found, the main will be used: {}", pid);
+        }
+
+        ProcessBuilder pb = new ProcessBuilder("kill", "-9", pid);
+        try {
+            pb.inheritIO().start().waitFor();
+            log.debug("Kill command was issued");
+            subprocessPid = null;
+        } catch (IOException | InterruptedException e) {
+            log.error(e.getMessage());
+        }
+
         if (process != null) {
-            log.info("Stopping new Service with ID {}", id);
+            try {
+                log.debug("Waiting for process to terminate");
+                process.waitFor();
+            } catch (InterruptedException e) {
+                log.debug("Service {} was interrupted", id);
+            }
+            log.debug("Destroying process wrapper class");
             process.destroy();
+            process = null;
         }
+
+        log.debug("Stopping the executorService");
+        executorService.shutdown();
+        log.info("Service with ID {} was stopped", id);
     }
+
 }

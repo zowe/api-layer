@@ -49,7 +49,12 @@ zss:
             "[zoweson@zowe.com]": USER
             "[auth0|690dc03fcb09ab253ab55dfe]": USER
 
-
+management:
+    endpoints:
+        web:
+            base-path: /application
+            exposure:
+                include: "*"
 
 ---
 spring.config.activate.on-profile: attlsServer

@@ -10,6 +10,7 @@
     },
     "scripts": {
         "api-layer-modulith": "concurrently --names \"DC,ZO,AL\" -c yellow,white,blue npm:discoverable-client npm:mock-services npm:apiml-service",
+        "supporting-apis": "concurrently --names \"DC,ZO\" -c yellow,white npm:discoverable-client npm:mock-services",
         "api-layer": "concurrently --names \"AZ,AD,AC,DC,ZO,CS,AG\" -c cyan,yellow,white,blue,green,orange,red npm:zaas-service npm:discovery-service npm:api-catalog-service npm:discoverable-client npm:mock-services npm:caching-service npm:gateway-service",
         "api-layer-ci": "concurrently --names \"AZ,AD,AC,DC,ZO,CS,NS,AG\" -c cyan,yellow,white,blue,green,red,orange,brown npm:zaas-service-thin npm:discovery-service-thin npm:api-catalog-service-thin npm:discoverable-client npm:mock-services npm:caching-service npm:onboarding-enabler-nodejs-sample-app npm:gateway-service",
         "api-layer-core": "concurrently --names \"AZ,AD,AC,AG\" -c cyan,yellow,white npm:zaas-service npm:discovery-service npm:api-catalog-service npm:gateway-service",

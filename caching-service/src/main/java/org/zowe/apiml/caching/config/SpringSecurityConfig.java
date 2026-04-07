@@ -47,6 +47,7 @@ public class SpringSecurityConfig {
 
         var antMatchersToIgnore = new ArrayList<String>();
         antMatchersToIgnore.add("/cachingservice/application/info");
+        antMatchersToIgnore.add("/cachingservice/application/eurekaversion");
         antMatchersToIgnore.add("/cachingservice/v3/api-docs");
         if (!isHealthEndpointProtected) {
             antMatchersToIgnore.add("/cachingservice/application/health");

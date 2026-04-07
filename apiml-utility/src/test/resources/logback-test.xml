@@ -1,4 +1,5 @@
 <configuration>
+
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <charset>${CONSOLE_LOG_CHARSET:-${logging.charset.console:-${file.encoding:-UTF-8}}}</charset>
@@ -6,9 +7,16 @@
         </encoder>
     </appender>
 
+    <appender name="OpenTelemetry" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender"/>
+
     <logger name="com.jayway.jsonpath.internal.path.CompiledPath" level="OFF"/>
+
+    <logger name="org.zowe.apiml.opentelemetry" level="INFO">
+        <appender-ref ref="OpenTelemetry" />
+    </logger>
 
     <root level="info">
         <appender-ref ref="STDOUT"/>
     </root>
+
 </configuration>

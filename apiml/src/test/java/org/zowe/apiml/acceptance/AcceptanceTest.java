@@ -52,6 +52,7 @@ import java.lang.annotation.Target;
         ApimlApplication.class,
         FreeMarkerConfigurer.class,
         TestConfig.class,
+        OpenTelemetryTestConfig.class,
         ServerAddressPropertiesUpdater.class
     },
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,

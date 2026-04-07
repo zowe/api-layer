@@ -109,7 +109,7 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         entry(WebClientResponseException.BadRequest.class,
             (ex, ctx) -> handleBadRequest(ctx.requestUri, ctx.function, ex, "org.zowe.apiml.security.login.invalidInput")),
         entry(AccessDeniedException.class,
-            (ex, ctx) ->  handleForbidden(ctx.function, ex)
+            (ex, ctx) ->  handleForbidden(ctx.requestUri, ctx.function, ex)
         ),
         entry(GatewayNotAvailableException.class,
             (ex, ctx) -> handleGatewayNotAvailable(ctx.function, ex, ctx.requestUri)
@@ -270,9 +270,9 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
         writeErrorResponse("org.zowe.apiml.common.internalRequestError", HttpStatus.INTERNAL_SERVER_ERROR, function, uri, ExceptionUtils.getMessage(ex), ExceptionUtils.getRootCauseMessage(ex));
     }
 
-    private void handleForbidden(BiConsumer<ApiMessageView, HttpStatus> function, AccessDeniedException ex) {
+    private void handleForbidden(String uri, BiConsumer<ApiMessageView, HttpStatus> function, AccessDeniedException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.FORBIDDEN.value(), ex.getMessage());
-        writeErrorResponse("org.zowe.apiml.security.forbidden", HttpStatus.FORBIDDEN, function);
+        writeErrorResponse("org.zowe.apiml.security.forbidden", HttpStatus.FORBIDDEN, function, uri);
     }
 
     private void handleGatewayNotAvailable(BiConsumer<ApiMessageView, HttpStatus> function, GatewayNotAvailableException ex, String uri) {

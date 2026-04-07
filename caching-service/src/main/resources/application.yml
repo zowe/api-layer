@@ -33,7 +33,6 @@ logging:
         org.zowe.apiml.caching: WARN
         org.springdoc: WARN
         org.springframework: WARN
-        org.springframework.boot: OFF
         org.infinispan: ERROR
         org.jgroups: ERROR
         com.netflix: WARN
@@ -199,6 +198,14 @@ logging:
         org.apache.catalina: DEBUG
         org.jgroups: TRACE
         org.infinispan: DEBUG
+
+management:
+    endpoints:
+        migrate-legacy-ids: true
+        web:
+            base-path: /cachingservice/application
+            exposure:
+                include: health,info,loggers
 ---
 spring.config.activate.on-profile: dev
 

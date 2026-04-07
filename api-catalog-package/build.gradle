@@ -20,7 +20,6 @@ task packageApiCatalog(type: Zip) {
     into('/') {
         from "$buildDir/convert/manifest.yaml"
         from "$resourceDir/pluginDefinition.json"
-        from "../schemas/catalog-schema.json"
     }
 
     into('plugin/') {
@@ -31,11 +30,18 @@ task packageApiCatalog(type: Zip) {
         from "$resourceDir/plugin/web/assets/api-catalog.png"
     }
 
+    into('schemas/') {
+        from "$resourceDir/schemas/api-catalog-config.json"
+        from "$resourceDir/schemas/zowe-schema.json"
+    }
+
     into('bin/') {
         from configurations.catalogServiceJar
         from "$resourceDir/bin/start.sh"
         from "$resourceDir/bin/configure.sh"
         from "$resourceDir/bin/validate.sh"
+        from "../scripts/parse_jvm_args.sh"
+        from "../scripts/apiml-common-scripts.sh"
     }
 }
 

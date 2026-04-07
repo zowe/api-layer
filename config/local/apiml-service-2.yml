@@ -79,3 +79,8 @@ jgroups:
         port: 7601
         address: localhost
 
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "*"

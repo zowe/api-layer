@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
+import org.zowe.apiml.exception.InvalidServiceIdException;
 import org.zowe.apiml.exception.MetadataValidationException;
 
 import java.util.Optional;
@@ -69,7 +70,7 @@ public class EurekaUtils {
                 "Invalid serviceId [%s]: must comply with RFC 952/1123 (only lowercase letters, digits, hyphens, max 63 chars). The service will not be registered in future releases.",
                 serviceId
             );
-            throw new MetadataValidationException(message);
+            throw new InvalidServiceIdException(message);
         }
     }
 

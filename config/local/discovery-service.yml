@@ -14,6 +14,12 @@ apiml:
 
 spring.output.ansi.enabled: always
 
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "*"
+
 ---
 spring.config.activate.on-profile: https
 

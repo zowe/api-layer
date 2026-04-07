@@ -51,7 +51,7 @@
         "/zaas/api/v1/auth/query": {
             "get": {
                 "tags": ["Security"],
-                "summary": "Validate the authentication token.",
+                "summary": "Validate the authentication token and retrieve the associated user information.",
                 "description": "Use the `/query` API to validate the token and retrieve the information associated with the token.\n\n **HTTP Headers:**\n\nThe query request requires the token in one of the following formats:\n  * Cookie named `apimlAuthenticationToken`.\n  * Bearer authentication \n*Header example:* Authorization: Bearer *token*\n\n**Request payload:**\n\nThe request body is empty.\n\n**Response Payload:**\n\nThe response is a JSON object, which contains information associated with the token.\n",
                 "operationId": "validateUsingGET",
                 "security": [

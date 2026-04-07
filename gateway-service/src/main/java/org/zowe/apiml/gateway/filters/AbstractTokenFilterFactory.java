@@ -21,6 +21,7 @@ import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import org.zowe.apiml.util.CookieUtil;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 import reactor.core.publisher.Mono;
@@ -51,6 +52,8 @@ public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFa
     @Override
     @SuppressWarnings("squid:S2092")    // the internal API cannot define generic more specifically
     protected Mono<Void> processResponse(ServerWebExchange exchange, GatewayFilterChain chain, AuthorizationResponse<ZaasTokenResponse> tokenResponse) {
+        OtelRequestContext.of(exchange).authMethod(getAuthenticationScheme());
+
         ServerHttpRequest request = null;
         var response = new AtomicReference<>(tokenResponse.getBody());
         var failureHeader = Optional.of(tokenResponse)
@@ -67,6 +70,12 @@ public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFa
                 .orElse(null));
         }
         if (response.get() != null) {
+            var otelContext = OtelRequestContext.of(exchange);
+            var responseBody = tokenResponse.getBody();
+            Optional.ofNullable(responseBody).map(ZaasTokenResponse::getUserId).ifPresent(otelContext::userId);
+            Optional.ofNullable(responseBody).map(ZaasTokenResponse::getDistributedIds).ifPresent(otelContext::distributedIds);
+            Optional.ofNullable(responseBody).map(ZaasTokenResponse::getAuthSourceType).ifPresent(otelContext::authSourceType);
+
             if (!StringUtils.isEmpty(response.get().getCookieName())) {
                 request = cleanHeadersOnAuthSuccess(exchange);
                 request = request.mutate().headers(headers -> {

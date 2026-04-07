@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
 import org.apache.catalina.Host;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.InitializingBean;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -99,7 +99,7 @@ import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
     name = "ClientCert",
     description = "Client certificate X509"
 )
-public class ModulithConfig implements InitializingBean {
+public class ModulithConfig {
 
     private final ApplicationContext applicationContext;
     private final Map<String, InstanceInfo> instances = new HashMap<>();
@@ -121,7 +121,10 @@ public class ModulithConfig implements InitializingBean {
     private String ipAddress;
 
     @Value("${apiml.service.port:10010}")
-    private int port;
+    private int gatewayPort;
+
+    @Value("${apiml.internal-discovery.port:10011}")
+    private int discoveryPort;
 
     @Value("${server.attlsServer.enabled:false}")
     private boolean isServerAttlsEnabled;
@@ -136,7 +139,13 @@ public class ModulithConfig implements InitializingBean {
             .authServiceId(CoreService.GATEWAY.getServiceId()).build();
     }
 
+    private int getPort(String serviceId) {
+        return Strings.CI.equals(serviceId, CoreService.DISCOVERY.getServiceId()) ? discoveryPort : gatewayPort;
+    }
+
     private InstanceInfo getInstanceInfo(String serviceId) {
+        int port = getPort(serviceId);
+
         var leaseInfo = LeaseInfo.Builder.newBuilder()
             .setDurationInSecs(90)
             .setRegistrationTimestamp(System.currentTimeMillis())
@@ -196,11 +205,6 @@ public class ModulithConfig implements InitializingBean {
             .orElse(null);
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        createLocalInstances();
-    }
-
     void createLocalInstances() {
         instances.put(CoreService.GATEWAY.getServiceId(), getInstanceInfo(CoreService.GATEWAY.getServiceId()));
         instances.put(CoreService.DISCOVERY.getServiceId(), getInstanceInfo(CoreService.DISCOVERY.getServiceId()));
@@ -214,6 +218,8 @@ public class ModulithConfig implements InitializingBean {
 
     @EventListener(ApplicationReadyEvent.class)
     public void onApplicationStart() {
+        createLocalInstances();
+
         log.info("Initialize timer for static services peer-replicated heartbeats");
         eventPublisher.publishEvent(new ApiCatalogServiceAvailableEvent(new Object()));
 
