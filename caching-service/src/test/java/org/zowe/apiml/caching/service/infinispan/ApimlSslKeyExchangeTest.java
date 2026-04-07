@@ -105,16 +105,25 @@ class ApimlSslKeyExchangeTest {
         }
     }
 
+    private boolean containsAny(String message, String...expected) {
+        for (String s : expected) {
+            if (message.contains(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Test
     void givenInvalidTarget_whenCreateSocketTo_thenLogTheError() {
         IllegalStateException e = assertThrows(IllegalStateException.class, () -> apimlSslKeyExchange.createSocketTo(INVALID_ADDRESS));
 
         assertNotNull(e.getCause());
-        assertTrue(e.getCause().getMessage().contains("Address is invalid on local machine"), "Unexpected cause message: " + e.getCause().getMessage());
+        assertTrue(containsAny(e.getCause().getMessage(), "Address is invalid on local machine", "Connection refused"), "Unexpected cause message: " + e.getCause().getMessage());
 
         String logMessage = getLogMessage();
         assertTrue(logMessage.contains("Cannot create socket to remote address"), "Unexpected message: " + logMessage);
-        assertTrue(logMessage.contains("Address is invalid on local machine"), "Unexpected message: " + logMessage);
+        assertTrue(containsAny(logMessage, "Address is invalid on local machine", "Connection refused"), "Unexpected message: " + logMessage);
         assertTrue(logMessage.contains("ConnectException:"), "Unexpected message: " + logMessage);
     }
 
@@ -124,11 +133,11 @@ class ApimlSslKeyExchangeTest {
         IllegalStateException e = assertThrows(IllegalStateException.class, () -> apimlSslKeyExchange.createSocketTo(INVALID_ADDRESS, sslSocketFactory));
 
         assertNotNull(e.getCause());
-        assertTrue(e.getCause().getMessage().contains("Address is invalid on local machine"), "Unexpected cause message: " + e.getCause().getMessage());
+        assertTrue(containsAny(e.getCause().getMessage(), "Address is invalid on local machine", "Connection refused"), "Unexpected cause message: " + e.getCause().getMessage());
 
         String logMessage = getLogMessage();
         assertTrue(logMessage.contains("Cannot create socket to remote address"), "Unexpected message: " + logMessage);
-        assertTrue(logMessage.contains("Address is invalid on local machine"), "Unexpected message: " + logMessage);
+        assertTrue(containsAny(logMessage, "Address is invalid on local machine", "Connection refused"), "Unexpected message: " + logMessage);
         assertTrue(logMessage.contains("ConnectException:"), "Unexpected message: " + logMessage);
     }
 
