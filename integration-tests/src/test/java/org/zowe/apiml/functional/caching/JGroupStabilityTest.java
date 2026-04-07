@@ -266,7 +266,7 @@ public class JGroupStabilityTest {
             try (CloseableHttpClient client = HttpClients.custom().setSSLContext(ignoreSslContext()).setSSLHostnameVerifier(new NoopHostnameVerifier()).build()) {
                 final HttpResponse response = client.execute(request);
                 final String jsonResponse = EntityUtils.toString(response.getEntity());
-                log.trace("URI: {}, JsonResponse is {}", request.getURI().toString(), jsonResponse);
+                log.debug("URI: {}, JsonResponse is {}", request.getURI().toString(), jsonResponse);
 
                 if (StringUtils.isNotEmpty(jsonResponse)) {
                     String status = JsonPath.parse(jsonResponse).read("components.caching.details.infinispan.cluster.status", String.class);

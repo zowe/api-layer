@@ -65,7 +65,7 @@ public class InfinispanHealthIndicator extends AbstractHealthIndicator {
         String[] initialHostsArray = StringUtils.split(initialHosts, ",");
         boolean allMembers = initialHostsArray.length <= cm.getMembers().size();
         Map<String, Object> cluster = new HashMap<>();
-        cluster.put("status", allMembers ? Status.UP : Status.DOWN);
+        cluster.put("status", allMembers ? Status.UP.getCode() : Status.DOWN.getCode());
         cluster.put("address", cm.getAddress().toString());
         cluster.put("initialHosts", initialHostsArray);
         cluster.put("members", cm.getMembers().stream().map(Address::toString).collect(Collectors.toList()));
