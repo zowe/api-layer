@@ -338,7 +338,8 @@ class ServerSentEventProxyHandlerTest {
                 java.util.function.Consumer<ServerSentEvent<String>> consumer = new ServerSentEventProxyHandler(null, null)
                     .consumer(emitter);
 
-                assertThrows(IllegalArgumentException.class, () -> consumer.accept(event));
+                IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> consumer.accept(event));
+                assertEquals("Illegal character in event content", e.getMessage());
             }
 
             @Test
@@ -350,7 +351,8 @@ class ServerSentEventProxyHandlerTest {
                 java.util.function.Consumer<ServerSentEvent<String>> consumer = new ServerSentEventProxyHandler(null, null)
                     .consumer(emitter);
 
-                assertThrows(IllegalArgumentException.class, () -> consumer.accept(event));
+                IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> consumer.accept(event));
+                assertEquals("Illegal character in event content", e.getMessage());
             }
 
             @Test
