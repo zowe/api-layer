@@ -42,7 +42,6 @@ import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
