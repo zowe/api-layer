@@ -79,7 +79,7 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${jgroups.bind.address}")
     private String address;
 
-    @Value("${jgroups.keyExchange.socketTimeout:1000}")
+    @Value("${jgroups.keyExchange.socketTimeout:5000}")
     private String keyExchangeSocketTimeout;
 
     @Value("${jgroups.keyExchange.port:7118}")

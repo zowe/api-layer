@@ -284,6 +284,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
   -Djgroups.bind.port=${ZWE_configs_storage_infinispan_jgroups_port:-7098} \
   -Djgroups.keyExchange.port=${ZWE_configs_storage_infinispan_jgroups_keyExchange_port:-7118} \
   -Djgroups.tcp.diag.enabled=${ZWE_configs_storage_infinispan_jgroups_tcp_diag_enabled:-false} \
+  -Djgroups.keyExchange.socketTimeout=${ZWE_configs_storage_infinispan_jgroups_keyExchange_socketTimeout:-5000} \
   -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-localhost[7098]} \
   -Dserver.address=0.0.0.0 \
   -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \

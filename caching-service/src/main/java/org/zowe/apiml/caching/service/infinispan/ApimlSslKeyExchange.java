@@ -55,14 +55,14 @@ public class ApimlSslKeyExchange extends SSL_KEY_EXCHANGE {
         return stack.stream().map(Throwable::toString).collect(Collectors.joining(": "));
     }
 
-    void print(String message, List<Throwable> exceptionList) {
+    void printError(String message, List<Throwable> exceptionList) {
         log.error("{}: {}", message, exceptionList.stream().map(this::toString).collect(Collectors.joining(", ")));
     }
 
-    void print(String message) {
+    void printError(String message) {
         List<Throwable> exceptionList = EXCEPTIONS.get();
         if (exceptionList != null) {
-            print(message, exceptionList);
+            printError(message, exceptionList);
             EXCEPTIONS.remove();
         }
     }
@@ -87,7 +87,7 @@ public class ApimlSslKeyExchange extends SSL_KEY_EXCHANGE {
             decorate(e);
             throw e;
         } finally {
-            print("Cannot create server socket");
+            printError("Cannot create server socket");
         }
     }
 
@@ -99,7 +99,7 @@ public class ApimlSslKeyExchange extends SSL_KEY_EXCHANGE {
             decorate(e);
             throw e;
         } finally {
-            print("Cannot create socket to remote address");
+            printError("Cannot create socket to remote address");
         }
     }
 
@@ -111,7 +111,7 @@ public class ApimlSslKeyExchange extends SSL_KEY_EXCHANGE {
             decorate(re);
             throw re;
         } finally {
-            print("Cannot create socket to remote address");
+            printError("Cannot create socket to remote address");
         }
     }
 
