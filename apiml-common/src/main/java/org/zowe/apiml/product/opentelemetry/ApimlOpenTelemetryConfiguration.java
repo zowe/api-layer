@@ -50,7 +50,7 @@ public class ApimlOpenTelemetryConfiguration implements InitializingBean, BeanPo
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        ApimlOpenTelemetryConfiguration.httpConfig2 = httpConfig;
+        ApimlOpenTelemetryConfiguration.httpConfig2 = httpConfig; // NOSONAR
     }
 
 }
