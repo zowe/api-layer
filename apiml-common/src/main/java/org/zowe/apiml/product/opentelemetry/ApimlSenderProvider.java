@@ -75,7 +75,8 @@ public class ApimlSenderProvider implements GrpcSenderProvider, HttpSenderProvid
             return null;
         }
 
-        return trustManagers.stream().filter(X509TrustManager.class::isInstance)
+        return trustManagers.stream()
+            .filter(X509TrustManager.class::isInstance)
             .map(X509TrustManager.class::cast)
             .findFirst()
             .orElse(null);
