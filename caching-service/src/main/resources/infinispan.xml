@@ -4,7 +4,6 @@
                         urn:infinispan:server:13.0 https://infinispan.org/schemas/infinispan-server-13.0.xsd
                         urn:org:jgroups http://www.jgroups.org/schema/jgroups-4.2.xsd"
     xmlns="urn:infinispan:config:13.0">
-
     <jgroups>
         <stack name="prod">
             <!-- jgroups.tcp.address is deprecated and will be removed, see ISPN-11867 -->
