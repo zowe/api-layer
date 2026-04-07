@@ -54,9 +54,9 @@
     "@types/node": "20.19.30",
     "@typescript-eslint/eslint-plugin": "8.54.0",
     "@typescript-eslint/parser": "8.54.0",
-    "@zowe/cli": "8.29.10",
-    "@zowe/cli-test-utils": "8.29.10",
-    "@zowe/imperative": "8.29.10",
+    "@zowe/cli": "8.29.12",
+    "@zowe/cli-test-utils": "8.29.11",
+    "@zowe/imperative": "8.29.11",
     "copyfiles": "2.4.1",
     "env-cmd": "10.1.0",
     "eslint": "9.39.2",
@@ -79,10 +79,10 @@
     "typescript": "5.9.3"
   },
   "overrides": {
-    "@babel/traverse": "7.28.6"
+    "@babel/traverse": "7.29.0"
   },
   "peerDependencies": {
-    "@zowe/imperative": "8.29.10"
+    "@zowe/imperative": "8.29.11"
   },
     "engines": {
         "npm": "=10.9.4",
