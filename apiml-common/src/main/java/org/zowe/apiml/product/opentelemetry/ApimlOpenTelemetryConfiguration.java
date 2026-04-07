@@ -10,9 +10,9 @@
 
 package org.zowe.apiml.product.opentelemetry;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -29,6 +29,7 @@ import org.zowe.apiml.security.HttpsFactory;
 @Import(value = OpenTelemetryImportSelector.class)
 @DependsOn("httpConfig")
 @Slf4j
+@RequiredArgsConstructor
 public class ApimlOpenTelemetryConfiguration implements InitializingBean, BeanPostProcessor {
 
     static {
@@ -36,21 +37,20 @@ public class ApimlOpenTelemetryConfiguration implements InitializingBean, BeanPo
         System.setProperty("io.opentelemetry.exporter.internal.grcp.GrcpSenderProvider", "org.zowe.apiml.product.opentelemetry.ApimlSenderProvider");
     }
 
-    @Autowired
-    private HttpConfig httpConfig;
+    private final HttpConfig httpConfig;
 
-    private static HttpConfig httpConfig2;
+    private static HttpConfig initializedHttpConfig;
 
     static HttpsFactory httpsConfig() {
-        if (httpConfig2 == null) {
+        if (initializedHttpConfig == null) {
             return null;
         }
-        return httpConfig2.httpsFactory();
+        return initializedHttpConfig.httpsFactory();
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        ApimlOpenTelemetryConfiguration.httpConfig2 = httpConfig; // NOSONAR
+        ApimlOpenTelemetryConfiguration.initializedHttpConfig = httpConfig; // NOSONAR
     }
 
 }

@@ -65,7 +65,7 @@ public class ApimlSenderProvider implements GrpcSenderProvider, HttpSenderProvid
         if (httpsFactory != null) {
             return httpsFactory.getSslContext();
         } else {
-            log.warn("Could not get SSL configuration for OpenTelemetry exporter HTTP Client. API ML assumes unsecured connection to the configured collector");
+            log.warn("Could not get SSL configuration for OpenTelemetry exporter HTTP Client. API ML will continue with an unsecured connection to the configured collector");
             return null;
         }
     }

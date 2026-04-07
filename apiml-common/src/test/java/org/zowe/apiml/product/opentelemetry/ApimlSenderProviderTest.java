@@ -60,13 +60,13 @@ class ApimlSenderProviderTest {
     @BeforeEach
     void setUp() {
         apimlSenderProvider = new ApimlSenderProvider();
-        oldValue = (HttpConfig) ReflectionTestUtils.getField(ApimlOpenTelemetryConfiguration.class, "httpConfig2");
-        ReflectionTestUtils.setField(ApimlOpenTelemetryConfiguration.class, "httpConfig2", httpConfig);
+        oldValue = (HttpConfig) ReflectionTestUtils.getField(ApimlOpenTelemetryConfiguration.class, "initializedHttpConfig");
+        ReflectionTestUtils.setField(ApimlOpenTelemetryConfiguration.class, "initializedHttpConfig", httpConfig);
     }
 
     @AfterEach
     void tearDown() {
-        ReflectionTestUtils.setField(ApimlOpenTelemetryConfiguration.class, "httpConfig2", oldValue);
+        ReflectionTestUtils.setField(ApimlOpenTelemetryConfiguration.class, "initializedHttpConfig", oldValue);
     }
 
     @Nested
