@@ -94,7 +94,7 @@ class ApimlSslKeyExchangeTest {
 
             IllegalStateException e = assertThrows(IllegalStateException.class, apimlSslKeyExchange::createServerSocket);
             assertNotNull(e.getCause());
-            assertTrue(e.getCause().getMessage().contains("Address already in use"));
+            assertTrue(e.getCause().getMessage().contains("Address already in use"), "Unexpected cause message: " + e.getCause().getMessage());
 
             String logMessage = getLogMessage();
             assertTrue(logMessage.contains("Cannot create server socket: "), "Unexpected message: " + logMessage);
@@ -110,7 +110,7 @@ class ApimlSslKeyExchangeTest {
         IllegalStateException e = assertThrows(IllegalStateException.class, () -> apimlSslKeyExchange.createSocketTo(INVALID_ADDRESS));
 
         assertNotNull(e.getCause());
-        assertTrue(e.getCause().getMessage().contains("Address is invalid on local machine"));
+        assertTrue(e.getCause().getMessage().contains("Address is invalid on local machine"), "Unexpected cause message: " + e.getCause().getMessage());
 
         String logMessage = getLogMessage();
         assertTrue(logMessage.contains("Cannot create socket to remote address"), "Unexpected message: " + logMessage);
@@ -124,7 +124,7 @@ class ApimlSslKeyExchangeTest {
         IllegalStateException e = assertThrows(IllegalStateException.class, () -> apimlSslKeyExchange.createSocketTo(INVALID_ADDRESS, sslSocketFactory));
 
         assertNotNull(e.getCause());
-        assertTrue(e.getCause().getMessage().contains("Address is invalid on local machine"));
+        assertTrue(e.getCause().getMessage().contains("Address is invalid on local machine"), "Unexpected cause message: " + e.getCause().getMessage());
 
         String logMessage = getLogMessage();
         assertTrue(logMessage.contains("Cannot create socket to remote address"), "Unexpected message: " + logMessage);
