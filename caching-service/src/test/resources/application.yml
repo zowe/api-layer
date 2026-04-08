@@ -115,6 +115,10 @@ logging:
         ROOT: DEBUG
         org.springframework: DEBUG
 
+otel:
+    sdk:
+        disabled: true
+
 ---
 spring.config.activate.on-profile: attlsServer
 
