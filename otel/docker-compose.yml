@@ -40,7 +40,6 @@ services:
     ]
     volumes:
       - ./otel-golden:/var/data:Z # :Z allows folder mount on SELinux enabled environments
-      - ../config/keystore/:/keystore
 
   # 2. OpenTelemetry Collector
   collector:
@@ -51,5 +50,6 @@ services:
       - "4318:4318" # OTLP HTTP vstup
     volumes:
       - ./otel-collector:/etc/otel-collector:Z # :Z allows folder mount on SELinux enabled environments
+      - ../config/keystore/:/keystore
     command:
       - "--config=/etc/otel-collector/config.yml"
