@@ -50,6 +50,6 @@ services:
       - "4318:4318" # OTLP HTTP vstup
     volumes:
       - ./otel-collector:/etc/otel-collector:Z # :Z allows folder mount on SELinux enabled environments
-      - ../config/keystore/:/keystore:Z
+      - ../keystore/:/keystore:Z
     command:
       - "--config=/etc/otel-collector/config.yml"
