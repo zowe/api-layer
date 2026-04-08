@@ -194,7 +194,7 @@ public class JGroupStabilityTest {
             env.put("attlsEnabledOnInfinispanTest", isAttls ? "true" : "false");
             env.put("ZWE_zowe_network_client_tls_attls", isAttls ? "true" : "false");
 
-            ProcessBuilder builder = new ProcessBuilder("caching-service-package/src/main/resources/bin/start.sh");
+            ProcessBuilder builder = new ProcessBuilder((isModulith ? "apiml" : "caching-service") + "-package/src/main/resources/bin/start.sh");
             builder.environment().putAll(env);
 
             File binFolder = new File("../");
