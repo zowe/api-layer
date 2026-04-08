@@ -167,7 +167,9 @@ public class JGroupStabilityTest {
 
         public void start() {
             int basePort = BASE_PORTS[index];
-            log.info("Starting caching service on port {}", basePort);
+            String service = isModulith ? "apiml" : "caching-service";
+
+            log.info("Starting {} on port {}", service, basePort);
 
             var env = new HashMap<String, String>();
             env.put("ZWE_haInstance_id", "localhost" + String.valueOf(basePort).charAt(0));
@@ -194,7 +196,11 @@ public class JGroupStabilityTest {
             env.put("attlsEnabledOnInfinispanTest", isAttls ? "true" : "false");
             env.put("ZWE_zowe_network_client_tls_attls", isAttls ? "true" : "false");
 
-            ProcessBuilder builder = new ProcessBuilder((isModulith ? "apiml" : "caching-service") + "-package/src/main/resources/bin/start.sh");
+            if (isAttls) {
+                env.put("ZWE_configs_internal_discovery_port", String.valueOf(basePort + 1));
+            }
+
+            ProcessBuilder builder = new ProcessBuilder(service + "-package/src/main/resources/bin/start.sh");
             builder.environment().putAll(env);
 
             File binFolder = new File("../");
