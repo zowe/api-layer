@@ -214,21 +214,34 @@ public class JGroupStabilityTest {
             }
         }
 
+        void readLogs(InputStream inputStream, Consumer<String> onPid, Consumer<String> logConsumer) throws IOException {
+            try (
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))
+            ) {
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    if (line.startsWith("pid=")) {
+                        onPid.accept(line.substring("pid=".length()).trim());
+                    }
+                    logConsumer.accept(line);
+                }
+            } catch (IOException ioException) {
+                log.error("Cannot read log", ioException);
+            }
+        }
+
         void readLogs(Process process, Consumer<String> onPid) {
             executorService.submit(() -> {
-                try (
-                    InputStream inputStream = process.getInputStream();
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))
-                ) {
-                    String line;
-                    while ((line = bufferedReader.readLine()) != null) {
-                        if (line.startsWith("pid=")) {
-                            onPid.accept(line.substring("pid=".length()).trim());
-                        }
-                        log.info(line);
-                    }
+                try (InputStream inputStream = process.getInputStream()) {
+                    readLogs(inputStream, onPid, log::info);
                 } catch (IOException ioException) {
                     log.error("Cannot read log", ioException);
+                }
+
+                try (InputStream inputStream = process.getErrorStream()) {
+                    readLogs(inputStream, pid -> {}, log::info);
+                } catch (IOException ioException) {
+                    log.error("Cannot read error log", ioException);
                 }
             });
         }
