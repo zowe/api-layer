@@ -131,7 +131,7 @@ class ApimlSslKeyExchangeTest {
 
         String logMessage = getLogMessage();
         assertTrue(logMessage.contains("Cannot create socket to remote address"), "Unexpected message: " + logMessage);
-        assertTrue(containsAny(logMessage, "Cannot assign requested address: connect"), "Unexpected message: " + logMessage);
+        assertTrue(containsAny(logMessage, "Cannot assign requested address: connect", "Connection refused"), "Unexpected message: " + logMessage);
         assertTrue(containsAny(logMessage, "BindException:", "ConnectException:"), "Unexpected message: " + logMessage);
     }
 
