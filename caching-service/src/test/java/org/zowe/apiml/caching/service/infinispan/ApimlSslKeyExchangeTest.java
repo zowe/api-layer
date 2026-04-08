@@ -28,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLSocketFactory;
+import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.util.List;
 
@@ -51,7 +52,7 @@ class ApimlSslKeyExchangeTest {
     private Logger logger;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         logger = (Logger) LoggerFactory.getLogger(ApimlSslKeyExchange.class);
         logger.getLoggerContext().resetTurboFilterList();
         logger.addAppender(mockedAppender);
@@ -60,7 +61,7 @@ class ApimlSslKeyExchangeTest {
         apimlSslKeyExchange = createApimlSslKeyExchange();
     }
 
-    private ApimlSslKeyExchange createApimlSslKeyExchange() {
+    private ApimlSslKeyExchange createApimlSslKeyExchange() throws Exception {
         ApimlSslKeyExchange apimlSslKeyExchange = new ApimlSslKeyExchange() {
             @Override
             public Object down(Event evt) {
@@ -72,8 +73,13 @@ class ApimlSslKeyExchangeTest {
         apimlSslKeyExchange.setKeystoreName("../keystore/localhost/localhost.keystore.p12");
         apimlSslKeyExchange.setKeystorePassword("password");
         apimlSslKeyExchange.setKeystoreType("PKCS12");
+        apimlSslKeyExchange.setTruststoreName("../keystore/localhost/localhost.truststore.p12");
+        apimlSslKeyExchange.setTruststorePassword("password");
+        apimlSslKeyExchange.setTruststoreType("PKCS12");
 
         apimlSslKeyExchange.setDownProtocol(apimlSslKeyExchange);
+
+        apimlSslKeyExchange.init();
 
         return apimlSslKeyExchange;
     }
@@ -119,26 +125,28 @@ class ApimlSslKeyExchangeTest {
         IllegalStateException e = assertThrows(IllegalStateException.class, () -> apimlSslKeyExchange.createSocketTo(INVALID_ADDRESS));
 
         assertNotNull(e.getCause());
-        assertTrue(containsAny(e.getCause().getMessage(), "Address is invalid on local machine", "Connection refused"), "Unexpected cause message: " + e.getCause().getMessage());
+        assertInstanceOf(BindException.class, e.getCause());
+        assertTrue(containsAny(e.getCause().getMessage(), "Cannot assign requested address: connect"), "Unexpected cause message: " + e.getCause().getMessage());
 
         String logMessage = getLogMessage();
         assertTrue(logMessage.contains("Cannot create socket to remote address"), "Unexpected message: " + logMessage);
-        assertTrue(containsAny(logMessage, "Address is invalid on local machine", "Connection refused"), "Unexpected message: " + logMessage);
-        assertTrue(logMessage.contains("ConnectException:"), "Unexpected message: " + logMessage);
+        assertTrue(containsAny(logMessage, "Cannot assign requested address: connect"), "Unexpected message: " + logMessage);
+        assertTrue(logMessage.contains("BindException:"), "Unexpected message: " + logMessage);
     }
 
     @Test
     void givenInvalidTargetWithSslFactory_whenCreateSocketTo_thenLogTheError() throws Exception {
-        SSLSocketFactory sslSocketFactory = apimlSslKeyExchange.getContext().getSocketFactory();
+        SSLSocketFactory sslSocketFactory = apimlSslKeyExchange.getClientSSLContext().getSocketFactory();
         IllegalStateException e = assertThrows(IllegalStateException.class, () -> apimlSslKeyExchange.createSocketTo(INVALID_ADDRESS, sslSocketFactory));
 
         assertNotNull(e.getCause());
-        assertTrue(containsAny(e.getCause().getMessage(), "Address is invalid on local machine", "Connection refused"), "Unexpected cause message: " + e.getCause().getMessage());
+        assertInstanceOf(BindException.class, e.getCause());
+        assertTrue(containsAny(e.getCause().getMessage(), "Cannot assign requested address: connect"), "Unexpected cause message: " + e.getCause().getMessage());
 
         String logMessage = getLogMessage();
         assertTrue(logMessage.contains("Cannot create socket to remote address"), "Unexpected message: " + logMessage);
-        assertTrue(containsAny(logMessage, "Address is invalid on local machine", "Connection refused"), "Unexpected message: " + logMessage);
-        assertTrue(logMessage.contains("ConnectException:"), "Unexpected message: " + logMessage);
+        assertTrue(containsAny(logMessage, "Cannot assign requested address: connect"), "Unexpected message: " + logMessage);
+        assertTrue(logMessage.contains("BindException:"), "Unexpected message: " + logMessage);
     }
 
 }

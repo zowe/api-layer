@@ -115,30 +115,37 @@ public class ApimlSslKeyExchange extends SSL_KEY_EXCHANGE {
         }
     }
 
+    private SSLContext update(SSLContext context) {
+        return new SSLContextWrapper(
+            new SSLContextSpiWrapper(
+                null,
+                new SSLSocketFactoryWrapper(context.getSocketFactory()),
+                new SSLServerSocketFactoryWrapper(context.getServerSocketFactory())
+            ),
+            context
+        );
+    }
+
     @Override
-    protected SSLContext getContext() throws Exception {
-        if (this.client_ssl_ctx != null) {
-            return super.getContext();
-        }
-
+    public void init() throws Exception {
         synchronized (ApimlSslKeyExchange.class) {
-            boolean update = (this.client_ssl_ctx == null);
-            SSLContext context = super.getContext();
-
+            boolean update = (client_ssl_ctx == null || server_ssl_ctx == null);
+            super.init();
             if (update) {
-                client_ssl_ctx = new SSLContextWrapper(
-                    new SSLContextSpiWrapper(
-                        null,
-                        new SSLSocketFactoryWrapper(context.getSocketFactory()),
-                        new SSLServerSocketFactoryWrapper(context.getServerSocketFactory())
-                    ),
-                    context
-                );
-                context = client_ssl_ctx;
+                super.client_ssl_ctx = update(super.client_ssl_ctx);
+                super.server_ssl_ctx = update(super.server_ssl_ctx);
             }
-
-            return context;
         }
+    }
+
+    @Override
+    public SSL_KEY_EXCHANGE setClientSSLContext(SSLContext client_ssl_ctx) {
+        return super.setClientSSLContext(update(client_ssl_ctx));
+    }
+
+    @Override
+    public SSL_KEY_EXCHANGE setServerSSLContext(SSLContext server_ssl_ctx) {
+        return super.setServerSSLContext(update(server_ssl_ctx));
     }
 
     @RequiredArgsConstructor
