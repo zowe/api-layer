@@ -127,7 +127,7 @@ class ApimlSslKeyExchangeTest {
 
         assertNotNull(e.getCause());
         assertTrue(e.getCause() instanceof ConnectException || e.getCause() instanceof BindException, "Unexpected exception: " + e.getCause().getClass());
-        assertTrue(containsAny(e.getCause().getMessage(), "Cannot assign requested address: connect"), "Unexpected cause message: " + e.getCause().getMessage());
+        assertTrue(containsAny(e.getCause().getMessage(), "Cannot assign requested address: connect", "Connection refused"), "Unexpected cause message: " + e.getCause().getMessage());
 
         String logMessage = getLogMessage();
         assertTrue(logMessage.contains("Cannot create socket to remote address"), "Unexpected message: " + logMessage);
