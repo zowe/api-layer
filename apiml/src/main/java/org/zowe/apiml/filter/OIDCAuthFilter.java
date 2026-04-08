@@ -13,9 +13,12 @@ package org.zowe.apiml.filter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
@@ -24,15 +27,13 @@ import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.util.JwtUtils;
-import org.zowe.apiml.util.CookieUtil;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.service.schema.source.OIDCAuthSource;
 import reactor.core.publisher.Mono;
 
-import java.net.HttpCookie;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A reactive WebFilter that performs OIDC token authentication.
@@ -62,18 +63,20 @@ public class OIDCAuthFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        var tokenOpt = resolveToken(exchange.getRequest());
-        if (tokenOpt.isEmpty()) {
-            return chain.filter(exchange);
-        }
-
         return ReactiveSecurityContextHolder.getContext()
-            .map(ctx -> ctx.getAuthentication() != null && ctx.getAuthentication().isAuthenticated())
+            .map(SecurityContext::getAuthentication)
+            .map(Authentication::isAuthenticated)
             .defaultIfEmpty(false)
             .flatMap(alreadyAuthenticated -> {
                 if (alreadyAuthenticated) {
                     return chain.filter(exchange);
                 }
+
+                var tokenOpt = resolveToken(exchange.getRequest());
+                if (tokenOpt.isEmpty()) {
+                    return chain.filter(exchange);
+                }
+
                 var token = tokenOpt.get();
                 return attemptOidcAuthentication(exchange, chain, token);
             });
@@ -131,21 +134,9 @@ public class OIDCAuthFilter implements WebFilter {
     private ServerWebExchange stripToken(ServerWebExchange exchange) {
         String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
         ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
-            .headers(headers -> {
-                headers.remove(HttpHeaders.AUTHORIZATION);
-                List<String> cookies = headers.get(HttpHeaders.COOKIE);
-                if (cookies != null) {
-                    List<String> filtered = cookies.stream()
-                        .map(cookieHeader -> CookieUtil.removeCookie(cookieHeader, cookieName))
-                        .filter(s -> !s.isEmpty())
-                        .collect(Collectors.toList());
-                    headers.remove(HttpHeaders.COOKIE);
-                    if (!filtered.isEmpty()) {
-                        filtered.forEach(c -> headers.add(HttpHeaders.COOKIE, c));
-                    }
-                }
-            })
+            .headers(headers -> headers.remove(HttpHeaders.AUTHORIZATION))
             .build();
+        mutatedRequest.getCookies().remove(cookieName);
         return exchange.mutate().request(mutatedRequest).build();
     }
 
@@ -156,9 +147,9 @@ public class OIDCAuthFilter implements WebFilter {
         }
 
         String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
-        return CookieUtil.readCookies(request.getHeaders())
-            .filter(httpCookie -> cookieName.equals(httpCookie.getName()))
-            .findFirst()
+        return Optional.ofNullable(request.getCookies().get(cookieName))
+            .map(List::stream)
+            .flatMap(Stream::findFirst)
             .map(HttpCookie::getValue);
     }
 
