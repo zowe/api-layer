@@ -2,6 +2,35 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `3.5.0 (2026-05-18)`
+
+* Feature:  OpenTelemetry routing signal (#4509) ([bff02c5](https://github.com/zowe/api-layer/commit/bff02c5)), closes [#4509](https://github.com/zowe/api-layer/issues/4509)
+* Feature:  allow users to configure client and server SSL separately (#4507) ([606d2b3](https://github.com/zowe/api-layer/commit/606d2b3)), closes [#4507](https://github.com/zowe/api-layer/issues/4507)
+* Feature:  OpenTelemetry standard attributes (#4456) ([5ee02e6](https://github.com/zowe/api-layer/commit/5ee02e6)), closes [#4456](https://github.com/zowe/api-layer/issues/4456)
+* Feature:  add apache license to nodejs and python enablers (#4500) ([9040130](https://github.com/zowe/api-layer/commit/9040130)), closes [#4500](https://github.com/zowe/api-layer/issues/4500)
+* Feature:  read jvm parameters from zowe.yaml (#4485) ([dd51ee1](https://github.com/zowe/api-layer/commit/dd51ee1)), closes [#4485](https://github.com/zowe/api-layer/issues/4485)
+* Feature:  Support binding on multiple network interfaces (#4457) ([581217a](https://github.com/zowe/api-layer/commit/581217a)), closes [#4457](https://github.com/zowe/api-layer/issues/4457)
+
+
+* Bugfix:  allow to specify number of infinispan index files, use truststore as truststore (#4521) ([d4b3c87](https://github.com/zowe/api-layer/commit/d4b3c87)), closes [#4521](https://github.com/zowe/api-layer/issues/4521)
+* Bugfix:  correctly propagate the apiml.debug property in start.sh (#4540) ([fd34334](https://github.com/zowe/api-layer/commit/fd34334)), closes [#4540](https://github.com/zowe/api-layer/issues/4540)
+* Bugfix:  improve debugging of JWTs (#4516) ([3703e08](https://github.com/zowe/api-layer/commit/3703e08)), closes [#4516](https://github.com/zowe/api-layer/issues/4516)
+* Bugfix:  WebSocket (#4519) ([e2371c9](https://github.com/zowe/api-layer/commit/e2371c9)), closes [#4519](https://github.com/zowe/api-layer/issues/4519)
+* Bugfix:  Accept VSAM details stored in apiml and caching-service namespaces (#4514) ([816dab9](https://github.com/zowe/api-layer/commit/816dab9)), closes [#4514](https://github.com/zowe/api-layer/issues/4514)
+* Bugfix:  Add the correct styling for Open API 3.1 (#4513) ([a97322d](https://github.com/zowe/api-layer/commit/a97322d)), closes [#4513](https://github.com/zowe/api-layer/issues/4513)
+* Bugfix:  add default JDK dns resolver (#4496) ([4d87cc3](https://github.com/zowe/api-layer/commit/4d87cc3)), closes [#4496](https://github.com/zowe/api-layer/issues/4496)
+* Bugfix:  enablers automatic release (#4499) ([2ce428b](https://github.com/zowe/api-layer/commit/2ce428b)), closes [#4499](https://github.com/zowe/api-layer/issues/4499)
+* Bugfix:  enablers release process (#4497) ([63e3272](https://github.com/zowe/api-layer/commit/63e3272)), closes [#4497](https://github.com/zowe/api-layer/issues/4497)
+* Bugfix:  update path in github actions (#4494) ([700eb35](https://github.com/zowe/api-layer/commit/700eb35)), closes [#4494](https://github.com/zowe/api-layer/issues/4494)
+* Bugfix:  schema validation in APIML components (#4438) ([6cde33d](https://github.com/zowe/api-layer/commit/6cde33d)), closes [#4438](https://github.com/zowe/api-layer/issues/4438)
+* Bugfix:  add referer header (#4479) ([bb2872b](https://github.com/zowe/api-layer/commit/bb2872b)), closes [#4479](https://github.com/zowe/api-layer/issues/4479)
+* Bugfix:  Log ignored certificates during client authentication (#4415) ([8e74e5f](https://github.com/zowe/api-layer/commit/8e74e5f)), closes [#4415](https://github.com/zowe/api-layer/issues/4415)
+* Bugfix:  Set JVM console encoding to IBM-1047 for Java 21 (#4482) ([0a636a4](https://github.com/zowe/api-layer/commit/0a636a4)), closes [#4482](https://github.com/zowe/api-layer/issues/4482)
+* Bugfix:  Fix infinispan configuration, exception handling, and the whole cache operation (v3) (#4450) ([c2133d8](https://github.com/zowe/api-layer/commit/c2133d8)), closes [#4450](https://github.com/zowe/api-layer/issues/4450)
+* Bugfix:  expect 401 on info endpoint (#4460) ([cc98e7c](https://github.com/zowe/api-layer/commit/cc98e7c)), closes [#4460](https://github.com/zowe/api-layer/issues/4460)
+* Bugfix:  disable hostname validation (#4452) ([4f546b6](https://github.com/zowe/api-layer/commit/4f546b6)), closes [#4452](https://github.com/zowe/api-layer/issues/4452)
+* Bugfix:  Fix error message during  the shutdown of the Discovery service (#4390) ([4955206](https://github.com/zowe/api-layer/commit/4955206)), closes [#4390](https://github.com/zowe/api-layer/issues/4390)
+
 ## `3.4.1 (2026-01-29)`
 
 * Feature:  Support binding on multiple network interfaces (#4457) ([581217a](https://github.com/zowe/api-layer/commit/581217a)), closes [#4457](https://github.com/zowe/api-layer/issues/4457)
