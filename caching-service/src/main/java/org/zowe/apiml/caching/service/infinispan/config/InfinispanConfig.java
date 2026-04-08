@@ -89,6 +89,9 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${jgroups.bind.address}")
     private String address;
 
+    @Value("${jgroups.keyExchange.socketTimeout:5000}")
+    private String keyExchangeSocketTimeout;
+
     @Value("${jgroups.keyExchange.port:7601}")
     private String keyExchangePort;
 
@@ -181,6 +184,7 @@ public class InfinispanConfig implements InitializingBean {
         System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
         System.setProperty("jgroups.bind.port", port);
         System.setProperty("jgroups.bind.address", address);
+        System.setProperty("jgroups.keyExchange.socketTimeout", keyExchangeSocketTimeout);
         System.setProperty("jgroups.keyExchange.port", keyExchangePort);
         System.setProperty("jgroups.tcp.diag.enabled", String.valueOf(Boolean.parseBoolean(tcpDiagEnabled)));
 
