@@ -44,6 +44,10 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ApimlSenderProviderTest {
 
+    private static final String INITIALIZED_HTTP_CONFIG = "initializedHttpConfig";
+    private static final String ENDPOINT = "/endpoint";
+    private static final String HTTPS_LOCALHOST_4018_ENDPOINT = "https://localhost:4018/endpoint";
+
     private ApimlSenderProvider apimlSenderProvider;
 
     @Mock
@@ -60,13 +64,13 @@ class ApimlSenderProviderTest {
     @BeforeEach
     void setUp() {
         apimlSenderProvider = new ApimlSenderProvider();
-        oldValue = (HttpConfig) ReflectionTestUtils.getField(ApimlOpenTelemetryConfiguration.class, "initializedHttpConfig");
-        ReflectionTestUtils.setField(ApimlOpenTelemetryConfiguration.class, "initializedHttpConfig", httpConfig);
+        oldValue = (HttpConfig) ReflectionTestUtils.getField(ApimlOpenTelemetryConfiguration.class, INITIALIZED_HTTP_CONFIG);
+        ReflectionTestUtils.setField(ApimlOpenTelemetryConfiguration.class, INITIALIZED_HTTP_CONFIG, httpConfig);
     }
 
     @AfterEach
     void tearDown() {
-        ReflectionTestUtils.setField(ApimlOpenTelemetryConfiguration.class, "initializedHttpConfig", oldValue);
+        ReflectionTestUtils.setField(ApimlOpenTelemetryConfiguration.class, INITIALIZED_HTTP_CONFIG, oldValue);
     }
 
     @Nested
@@ -101,8 +105,8 @@ class ApimlSenderProviderTest {
 
         @Test
         void testCreate_Grpc() {
-            when(senderGrcpConfig.getEndpoint()).thenReturn(URI.create("localhost:4018/endpoint"));
-            when(senderGrcpConfig.getEndpointPath()).thenReturn("/endpoint");
+            when(senderGrcpConfig.getEndpoint()).thenReturn(URI.create(HTTPS_LOCALHOST_4018_ENDPOINT));
+            when(senderGrcpConfig.getEndpointPath()).thenReturn(ENDPOINT);
 
             try (var mockedConstruction = mockConstruction(OkHttpGrpcSender.class, (mock, context) -> {
                 var args = context.arguments();
@@ -141,8 +145,8 @@ class ApimlSenderProviderTest {
 
         @Test
         void testCreate_Grcp() {
-            when(senderGrcpConfig.getEndpoint()).thenReturn(URI.create("https://localhost:4018/endpoint"));
-            when(senderGrcpConfig.getEndpointPath()).thenReturn("/endpoint");
+            when(senderGrcpConfig.getEndpoint()).thenReturn(URI.create(HTTPS_LOCALHOST_4018_ENDPOINT));
+            when(senderGrcpConfig.getEndpointPath()).thenReturn(ENDPOINT);
 
             try (var mockedConstruction = mockConstruction(OkHttpGrpcSender.class, (mock, context) -> {
                 var args = context.arguments();
