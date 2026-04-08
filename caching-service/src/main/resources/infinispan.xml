@@ -37,14 +37,18 @@
                     timeout_check_interval="1000"
             />
             <VERIFY_SUSPECT timeout="1000"/>
-            <SSL_KEY_EXCHANGE keystore_name="${server.ssl.keyStore}"
-                              keystore_type="${server.ssl.keyStoreType}"
-                              keystore_password="${server.ssl.keyStorePassword}"
-                              secret_key_algorithm="RSA"
-                              port="${jgroups.keyExchange.port}"
+            <!-- replacement of SSL_KEY_EXCHANGE -->
+            <org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange
+                keystore_name="${infinispan.ssl.keyStore}"
+                keystore_type="${infinispan.ssl.keyStoreType}"
+                keystore_password="${infinispan.ssl.keyStorePassword}"
+                secret_key_algorithm="AES"
+                socket_timeout="${jgroups.keyExchange.socketTimeout:5000}"
+                port_range="0"
+                port="${jgroups.keyExchange.port}"
             />
             <!-- Configures ASYM_ENCRYPT -->
-            <!-- The use_external_key_exchange = "true" attribute configures nodes to use the `SSL_KEY_EXCHANGE` protocol for certificate authentication. -->
+            <!-- The use_external_key_exchange = "true" attribute configures nodes to use the `org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange` protocol for certificate authentication. -->
             <ASYM_ENCRYPT asym_keylength="2048"
                           asym_algorithm="RSA"
                           change_key_on_coord_leave="false"
@@ -54,7 +58,7 @@
                           sym_algorithm="AES/CBC/PKCS5Padding"
                           sym_iv_length="16"
                           stack.combine="INSERT_AFTER"
-                          stack.position="SSL_KEY_EXCHANGE"
+                          stack.position="org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange"
             />
 
             <pbcast.NAKACK2/>
