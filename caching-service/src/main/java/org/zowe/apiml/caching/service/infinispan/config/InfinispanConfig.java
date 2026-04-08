@@ -42,7 +42,6 @@ import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
@@ -55,9 +54,6 @@ import static org.zowe.apiml.security.SecurityUtils.isKeyring;
 public class InfinispanConfig implements InitializingBean {
 
     private static final String KEYRING_PASSWORD = "password";
-    private static final String SERVER_SSL_KEY_STORE_TYPE = "server.ssl.keyStoreType";
-    private static final String SERVER_SSL_KEY_STORE = "server.ssl.keyStore";
-    private static final String SERVER_SSL_KEY_STORE_PASSWORD = "server.ssl.keyStorePassword";
 
     private static final String ZWE_HAINSTANCE_ID = "ZWE_haInstance_id";
     private static final String LOCK_ZOWE_INVALIDATED = "zoweInvalidatedTokenLock";
@@ -81,6 +77,9 @@ public class InfinispanConfig implements InitializingBean {
 
     @Value("${jgroups.bind.address}")
     private String address;
+
+    @Value("${jgroups.keyExchange.socketTimeout:5000}")
+    private String keyExchangeSocketTimeout;
 
     @Value("${jgroups.keyExchange.port:7118}")
     private String keyExchangePort;
@@ -126,18 +125,12 @@ public class InfinispanConfig implements InitializingBean {
         System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
         System.setProperty("jgroups.bind.port", port);
         System.setProperty("jgroups.bind.address", address);
+        System.setProperty("jgroups.keyExchange.socketTimeout", keyExchangeSocketTimeout);
         System.setProperty("jgroups.keyExchange.port", keyExchangePort);
         System.setProperty("jgroups.tcp.diag.enabled", String.valueOf(Boolean.parseBoolean(tcpDiagEnabled)));
-
-        Optional<String> oldKeyStoreType = Optional.ofNullable(System.getProperty("SERVER_SSL_KEY_STORE_TYPE"));
-        Optional<String> oldKeyStore = Optional.ofNullable(System.getProperty("SERVER_SSL_KEY_STORE"));
-        Optional<String> oldKeyStorePassword = Optional.ofNullable(System.getProperty("SERVER_SSL_KEY_STORE_PASSWORD"));
-
-        if (!isServerAttlsEnabled) {
-            System.setProperty(SERVER_SSL_KEY_STORE_TYPE, keyStoreType);
-            System.setProperty(SERVER_SSL_KEY_STORE, keyStore);
-            System.setProperty(SERVER_SSL_KEY_STORE_PASSWORD, keyStorePass);
-        }
+        System.setProperty("infinispan.ssl.keyStoreType", keyStoreType);
+        System.setProperty("infinispan.ssl.keyStore", keyStore);
+        System.setProperty("infinispan.ssl.keyStorePassword", keyStorePass);
 
         ConfigurationBuilderHolder holder;
         String infinispanConfigFile = isServerAttlsEnabled ? "infinispan-attls.xml" : "infinispan.xml";
@@ -164,10 +157,6 @@ public class InfinispanConfig implements InitializingBean {
         caches.forEach(cacheName -> cacheManager.administration()
             .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
             .getOrCreateCache(cacheName, builder.build()));
-
-        oldKeyStoreType.ifPresent(keystoreType -> System.setProperty(SERVER_SSL_KEY_STORE_TYPE, keystoreType));
-        oldKeyStore.ifPresent(keystore -> System.setProperty(SERVER_SSL_KEY_STORE, keystore));
-        oldKeyStorePassword.ifPresent(keystorePassword -> System.setProperty(SERVER_SSL_KEY_STORE_PASSWORD, keystorePassword));
 
         return cacheManager;
     }
