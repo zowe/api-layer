@@ -153,6 +153,7 @@ class ApimlSenderProviderTest {
                 var client = apimlSenderProvider.createSender(senderGrcpConfig);
                 assertNotNull(client);
             }
+
         }
 
     }

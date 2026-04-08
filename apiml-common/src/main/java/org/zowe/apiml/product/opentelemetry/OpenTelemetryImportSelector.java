@@ -17,6 +17,10 @@ import org.springframework.core.type.AnnotationMetadata;
 
 import java.util.ArrayList;
 
+/**
+ * This class allows to import the OpenTelemetryAutoConfiguration class if the otel.sdk.disabled property is not set to true.
+ * The effect is the same as using the AutoConfiguration directly but allows control over the order of the beans creation.
+ */
 public class OpenTelemetryImportSelector implements ImportSelector, EnvironmentAware {
 
     private Environment environment;

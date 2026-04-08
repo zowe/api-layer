@@ -22,8 +22,8 @@ import org.zowe.apiml.security.HttpsFactory;
 
 /**
  * The goal of this configuration class is to rely on the default OpenTelemetry configuration from
- * OpenTelemetry's Spring Boot starter but making sure httpConfig bean is created before
- * OpenTelemetry's configuration creates the HTTP clients for the exporter.
+ * OpenTelemetry's Spring Boot starter which in turn uses Java SPI for loading implementations
+ * but making sure httpConfig bean is created before OpenTelemetry's configuration creates the HTTP clients for the exporter.
  */
 @Configuration
 @Import(value = OpenTelemetryImportSelector.class)
