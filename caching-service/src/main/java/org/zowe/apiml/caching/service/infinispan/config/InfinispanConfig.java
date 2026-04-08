@@ -101,9 +101,6 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${attlsEnabledOnInfinispanTest:${server.attlsServer.enabled:false}}")
     private boolean isServerAttlsEnabled;
 
-    @Value("${apiml.service.hostname:localhost}")
-    private String hostname;
-
     @Value("${caching.storage.infinispan.distributedSyncTimeoutSecs:360}")
     private int distributedSyncTimeout;
 
