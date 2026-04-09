@@ -121,18 +121,24 @@ class ApimlSslKeyExchangeTest {
         return false;
     }
 
+    private String[] acceptedInvalidAddressMessages = {
+        /* Windows */"Cannot assign requested address: connect",
+        /* Linux (Github Actions */ "Connection refused",
+        /* MacOS (Local) */ "Can't assign requested address"
+    };
+
     @Test
     void givenInvalidTarget_whenCreateSocketTo_thenLogTheError() {
         IllegalStateException e = assertThrows(IllegalStateException.class, () -> apimlSslKeyExchange.createSocketTo(INVALID_ADDRESS));
 
         assertNotNull(e.getCause());
         assertTrue(e.getCause() instanceof ConnectException || e.getCause() instanceof BindException, "Unexpected exception: " + e.getCause().getClass());
-        assertTrue(containsAny(e.getCause().getMessage(), "Cannot assign requested address: connect", "Connection refused"), "Unexpected cause message: " + e.getCause().getMessage());
+        assertTrue(containsAny(e.getCause().getMessage(), acceptedInvalidAddressMessages), "Unexpected cause message: " + e.getCause().getMessage());
 
         String logMessage = getLogMessage();
         assertTrue(logMessage.contains("Cannot create socket to remote address"), "Unexpected message: " + logMessage);
-        assertTrue(containsAny(logMessage, "Cannot assign requested address: connect", "Connection refused"), "Unexpected message: " + logMessage);
-        assertTrue(containsAny(logMessage, "BindException:", "ConnectException:"), "Unexpected message: " + logMessage);
+        assertTrue(containsAny(logMessage, acceptedInvalidAddressMessages), "Unexpected message: " + logMessage);
+        assertTrue(containsAny(logMessage, "BindException:","ConnectException:", "java.net.NoRouteToHostException"), "Unexpected message: " + logMessage);
     }
 
     @Test
@@ -142,12 +148,12 @@ class ApimlSslKeyExchangeTest {
 
         assertNotNull(e.getCause());
         assertTrue(e.getCause() instanceof ConnectException || e.getCause() instanceof BindException, "Unexpected exception: " + e.getCause().getClass());
-        assertTrue(containsAny(e.getCause().getMessage(), "Cannot assign requested address: connect", "Connection refused"), "Unexpected cause message: " + e.getCause().getMessage());
+        assertTrue(containsAny(e.getCause().getMessage(), acceptedInvalidAddressMessages), "Unexpected message: " + e.getCause().getMessage());
 
         String logMessage = getLogMessage();
         assertTrue(logMessage.contains("Cannot create socket to remote address"), "Unexpected message: " + logMessage);
-        assertTrue(containsAny(logMessage, "Cannot assign requested address: connect", "Connection refused"), "Unexpected message: " + logMessage);
-        assertTrue(containsAny(logMessage, "BindException:", "ConnectException:"), "Unexpected message: " + logMessage);
+        assertTrue(containsAny(logMessage, acceptedInvalidAddressMessages), "Unexpected message: " + logMessage);
+        assertTrue(containsAny(logMessage, "BindException:", "ConnectException:", "java.net.NoRouteToHostException"), "Unexpected message: " + logMessage);
     }
 
 }
