@@ -13,15 +13,14 @@ package org.zowe.apiml.filter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
+import org.zowe.apiml.gateway.filters.security.AbstractTokenAuthFilter;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
@@ -34,7 +33,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 import java.util.stream.Collectors;
 
 /**
@@ -54,14 +52,17 @@ import java.util.stream.Collectors;
  */
 @RequiredArgsConstructor
 @Slf4j
-public class OIDCAuthFilter implements WebFilter {
-
-    private static final String BEARER_PREFIX = "Bearer ";
+public class OIDCAuthFilter extends AbstractTokenAuthFilter {
 
     private final OIDCProvider oidcProvider;
     private final AuthenticationMapper oidcMapper;
     private final AuthConfigurationProperties authConfigurationProperties;
     private final List<String> userIdFieldPath;
+
+    @Override
+    protected AuthConfigurationProperties getAuthConfigurationProperties() {
+        return authConfigurationProperties;
+    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -154,17 +155,5 @@ public class OIDCAuthFilter implements WebFilter {
         return exchange.mutate().request(mutatedRequest).build();
     }
 
-    private Optional<String> resolveToken(ServerHttpRequest request) {
-        String bearerToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (bearerToken != null && bearerToken.startsWith(BEARER_PREFIX)) {
-            return Optional.of(bearerToken.substring(BEARER_PREFIX.length()));
-        }
-
-        String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
-        return Optional.ofNullable(request.getCookies().get(cookieName))
-            .map(List::stream)
-            .flatMap(Stream::findFirst)
-            .map(HttpCookie::getValue);
-    }
 
 }
