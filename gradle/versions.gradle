@@ -118,6 +118,7 @@ dependencyResolutionManagement {
             version('xstream', '1.4.21')
             version('javaWebSocket', '1.6.0') // for testing
             version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
+            version('ioGrpc', '1.80.0')
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
 
@@ -256,11 +257,15 @@ dependencyResolutionManagement {
             library('bucket4j_core', 'com.bucket4j', 'bucket4j_jdk17-core').versionRef('bucket4j')
             library('xstren', 'com.thoughtworks.xstream', 'xstream').versionRef('xstream') // to avoid security vulnerability CVE-2024-47072
             library('opentelemetry_spring_boot_starter', 'io.opentelemetry.instrumentation','opentelemetry-spring-boot-starter').versionRef('openTelemetry-starter')
+            library('opentelemetry_spring_boot_autoconfigure', 'io.opentelemetry.instrumentation','opentelemetry-spring-boot-autoconfigure').versionRef('openTelemetry-starter')
             library('opentelemetry_sdk_testing', 'io.opentelemetry','opentelemetry-sdk-testing').versionRef('openTelemetry-core')
             library('opentelemetry_sdk_extension_autoconfigure_spi', 'io.opentelemetry','opentelemetry-sdk-extension-autoconfigure-spi').versionRef('openTelemetry-core')
+            library('opentelemetry_exporter_common', 'io.opentelemetry', 'opentelemetry-exporter-common').versionRef('openTelemetry-core')
+            library('opentelemetry_exporter_sender_okhttp', 'io.opentelemetry', 'opentelemetry-exporter-sender-okhttp').versionRef('openTelemetry-core')
             library('java_websocket', 'org.java-websocket', 'Java-WebSocket').versionRef('javaWebSocket')
             library('tyrus_server', 'org.glassfish.tyrus', 'tyrus-server').versionRef('glassfishTyrus')
             library('tyrus_grizzly_server', 'org.glassfish.tyrus', 'tyrus-container-grizzly-server').versionRef('glassfishTyrus')
+            library('io_grpc', 'io.grpc', 'grpc-stub').versionRef('ioGrpc')
 
             // Sample apps only
             library('jersey_client4', 'com.sun.jersey.contribs', 'jersey-apache-client4').versionRef('jerseySun')
