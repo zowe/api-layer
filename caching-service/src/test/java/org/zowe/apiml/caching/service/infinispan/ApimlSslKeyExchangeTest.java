@@ -40,6 +40,12 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class ApimlSslKeyExchangeTest {
 
+    private static final String[] acceptedInvalidAddressMessages = {
+        /* Windows */"Cannot assign requested address: connect",
+        /* Linux (Github Actions */ "Connection refused",
+        /* MacOS */ "Can't assign requested address"
+    };
+
     private static final IpAddress INVALID_ADDRESS = new IpAddress();
 
     @Mock
@@ -55,7 +61,7 @@ class ApimlSslKeyExchangeTest {
     @BeforeEach
     void setUp() throws Exception {
         logger = (Logger) LoggerFactory.getLogger(ApimlSslKeyExchange.class);
-        logger.getLoggerContext().resetTurboFilterList();
+        logger.getLoggerContext().resetTurboFilterList(); // Turbo filters remove duplicities
         logger.addAppender(mockedAppender);
         logger.setLevel(Level.ERROR);
 
@@ -120,12 +126,6 @@ class ApimlSslKeyExchangeTest {
         }
         return false;
     }
-
-    private String[] acceptedInvalidAddressMessages = {
-        /* Windows */"Cannot assign requested address: connect",
-        /* Linux (Github Actions */ "Connection refused",
-        /* MacOS (Local) */ "Can't assign requested address"
-    };
 
     @Test
     void givenInvalidTarget_whenCreateSocketTo_thenLogTheError() {
