@@ -11,44 +11,32 @@
 package org.zowe.apiml.security;
 
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
 import java.security.KeyManagementException;
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.Collection;
 
-/**
- * Builder meant to be used only for non-strict configuration
- */
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
-public class HostnameIgnoringSSLContextBuilder extends ApimlSSLContextBuilder {
+public class ApimlSSLContextBuilder extends org.apache.hc.core5.ssl.SSLContextBuilder {
+
+    @Getter(AccessLevel.PACKAGE)
+    private Collection<TrustManager> trustManagers;
 
     @Override
     protected void initSSLContext(SSLContext sslContext, Collection<KeyManager> keyManagers,
             Collection<TrustManager> trustManagers, SecureRandom secureRandom) throws KeyManagementException {
-
-        Collection<TrustManager> laxTrustManager = new ArrayList<>();
-        if (trustManagers != null) {
-            trustManagers.forEach(tm -> {
-                if (tm instanceof X509TrustManager x509tm) {
-                    laxTrustManager.add(new HostnameIgnoringTrustManager(x509tm));
-                } else {
-                    laxTrustManager.add(tm);
-                }
-            });
-        }
-
-        super.initSSLContext(sslContext, keyManagers, laxTrustManager, secureRandom);
+        super.initSSLContext(sslContext, keyManagers, trustManagers, secureRandom);
+        this.trustManagers = trustManagers;
     }
 
-    public static HostnameIgnoringSSLContextBuilder create() {
-        return new HostnameIgnoringSSLContextBuilder();
+    public static ApimlSSLContextBuilder create() {
+        return new ApimlSSLContextBuilder();
     }
 
 }

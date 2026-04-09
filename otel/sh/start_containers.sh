@@ -21,7 +21,7 @@ fi
 
 echo ""
 echo "Checking OpenTelemetry Collector..."
-curl -s -v -w "\n" /dev/null http://localhost:4318/v1/metrics -H "Content-Type: application/json" -d "{}" \
+curl -k -s -v -w "\n" /dev/null https://localhost:4318/v1/metrics -H "Content-Type: application/json" -d "{}" \
     --fail \
     --retry-all-errors \
     --retry-delay 10 \
