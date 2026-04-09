@@ -419,18 +419,16 @@ public class WebSecurityConfig {
         var man = new ProviderManager(tokenAuthenticationProvider);
         var reactiveTokenAuthProvider = new ReactiveAuthenticationManagerAdapter(man);
 
-        http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+        addOidcFilterIfEnabled(http, authConfigurationProperties);
+        return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
             .securityMatcher(new AndServerWebExchangeMatcher(
                 pathMatchers("gateway/api/v1/auth/query")
             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
-            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable);
-
-        addOidcFilterIfEnabled(http, authConfigurationProperties);
-
-        return http
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new QueryWebFilter(failedAuthenticationWebHandler, HttpMethod.GET, false, reactiveTokenAuthProvider, httpUtils), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
+
     }
 
     /**
