@@ -142,7 +142,7 @@ class ApimlSslKeyExchangeTest {
     }
 
     @Test
-    void givenInvalidTargetWithSslFactory_whenCreateSocketTo_thenLogTheError() throws Exception {
+    void givenInvalidTargetWithSslFactory_whenCreateSocketTo_thenLogTheError() {
         SSLSocketFactory sslSocketFactory = apimlSslKeyExchange.getClientSSLContext().getSocketFactory();
         IllegalStateException e = assertThrows(IllegalStateException.class, () -> apimlSslKeyExchange.createSocketTo(INVALID_ADDRESS, sslSocketFactory));
 
