@@ -397,8 +397,8 @@ public class WebSecurityConfig {
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new CachedBodyFilter(), SecurityWebFiltersOrder.FIRST)
             .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
-.addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
-.addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION);
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION);
         addOidcFilterIfEnabled(http, authConfigurationProperties);
 
         return http.build();

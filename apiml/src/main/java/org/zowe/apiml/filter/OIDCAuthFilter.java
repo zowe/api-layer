@@ -29,11 +29,13 @@ import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.util.JwtUtils;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.service.schema.source.OIDCAuthSource;
+import org.zowe.apiml.util.CookieUtil;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 /**
  * A reactive WebFilter that performs OIDC token authentication.
@@ -134,9 +136,21 @@ public class OIDCAuthFilter implements WebFilter {
     private ServerWebExchange stripToken(ServerWebExchange exchange) {
         String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
         ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
-            .headers(headers -> headers.remove(HttpHeaders.AUTHORIZATION))
+            .headers(headers -> {
+                headers.remove(HttpHeaders.AUTHORIZATION);
+                List<String> cookies = headers.get(HttpHeaders.COOKIE);
+                if (cookies != null) {
+                    List<String> filtered = cookies.stream()
+                        .map(cookieHeader -> CookieUtil.removeCookie(cookieHeader, cookieName))
+                        .filter(s -> !s.isEmpty())
+                        .collect(Collectors.toList());
+                    headers.remove(HttpHeaders.COOKIE);
+                    if (!filtered.isEmpty()) {
+                        filtered.forEach(c -> headers.add(HttpHeaders.COOKIE, c));
+                    }
+                }
+            })
             .build();
-        mutatedRequest.getCookies().remove(cookieName);
         return exchange.mutate().request(mutatedRequest).build();
     }
 

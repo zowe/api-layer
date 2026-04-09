@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
@@ -151,7 +152,7 @@ class OIDCAuthFilterTest {
         void givenValidTokenInCookie_thenAuthenticateAndStripCookie() {
             String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
             var request = MockServerHttpRequest.get("/apicatalog/api/v1/containers")
-                .header(HttpHeaders.COOKIE, cookieName + "=" + OIDC_TOKEN)
+                .cookie(new HttpCookie( cookieName, OIDC_TOKEN))
                 .build();
             var exchange = MockServerWebExchange.from(request);
             when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
