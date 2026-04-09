@@ -174,8 +174,8 @@ public class JGroupStabilityTest {
             var env = new HashMap<String, String>();
             env.put("ZWE_haInstance_id", "localhost" + String.valueOf(basePort).charAt(0));
             env.put("APIML_ENABLED", isModulith ? "true" : "false");
-            env.put("logbackService", "ZWEACS" + (index + 1));
-            env.put("LAUNCH_COMPONENT", "caching-service/build/libs");
+            env.put("logbackService", (isModulith ? "ZWEGW" : "ZWEACS") + (index + 1));
+            env.put("LAUNCH_COMPONENT", service + "/build/libs");
 
             env.put("ZWE_configs_port", String.valueOf(basePort + 25));
 
@@ -196,8 +196,9 @@ public class JGroupStabilityTest {
             env.put("attlsEnabledOnInfinispanTest", isAttls ? "true" : "false");
             env.put("ZWE_zowe_network_client_tls_attls", isAttls ? "true" : "false");
 
-            if (isAttls) {
+            if (isModulith) {
                 env.put("ZWE_configs_internal_discovery_port", String.valueOf(basePort + 1));
+                env.put("ZWE_configs_apiml_security_authorization_provider", "dummy");
             }
 
             ProcessBuilder builder = new ProcessBuilder(service + "-package/src/main/resources/bin/start.sh");
