@@ -44,6 +44,10 @@ logging:
         org.eclipse.jetty: WARN
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
 
+otel:
+    sdk:
+        disabled: true
+
 ##############################################################################################
 # APIML configuration section
 ##############################################################################################
