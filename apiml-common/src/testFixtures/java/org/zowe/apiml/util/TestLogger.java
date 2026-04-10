@@ -37,7 +37,7 @@ public class TestLogger extends AppenderBase<ILoggingEvent> implements Recorder<
     }
 
     @Override
-    protected void append(ILoggingEvent eventObject) {
+    protected synchronized void append(ILoggingEvent eventObject) {
         if (listening) {
             records.add(eventObject);
         }
@@ -55,28 +55,28 @@ public class TestLogger extends AppenderBase<ILoggingEvent> implements Recorder<
     }
 
     @Override
-    public void stopRecording() {
+    public synchronized void stopRecording() {
         records.clear();
         listening = false;
     }
 
     @Override
-    public Optional<ILoggingEvent> findFirst(Predicate<ILoggingEvent> filter) {
+    public synchronized Optional<ILoggingEvent> findFirst(Predicate<ILoggingEvent> filter) {
         return records.stream().filter(filter).findFirst();
     }
 
     @Override
-    public Optional<ILoggingEvent> findFirst(String messageInfix) {
+    public synchronized Optional<ILoggingEvent> findFirst(String messageInfix) {
         return records.stream().filter(x -> x.getMessage().contains(messageInfix)).findFirst();
     }
 
     @Override
-    public List<ILoggingEvent> find(Predicate<ILoggingEvent> filter) {
+    public synchronized List<ILoggingEvent> find(Predicate<ILoggingEvent> filter) {
         return records.stream().filter(filter).toList();
     }
 
     @Override
-    public List<ILoggingEvent> find(String messageInfix) {
+    public synchronized List<ILoggingEvent> find(String messageInfix) {
         return records.stream().filter(x -> x.getMessage().contains(messageInfix)).toList();
     }
 
