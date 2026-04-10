@@ -33,7 +33,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * A reactive WebFilter that performs OIDC token authentication.
@@ -143,10 +142,11 @@ public class OIDCAuthFilter extends AbstractTokenAuthFilter {
                 if (cookies != null) {
                     List<String> filtered = cookies.stream()
                         .map(cookieHeader -> CookieUtil.removeCookie(cookieHeader, cookieName))
-                        .filter(s -> !s.isEmpty())
-                        .collect(Collectors.toList());
+                        .filter(s -> !s.isEmpty()).toList();
                     headers.remove(HttpHeaders.COOKIE);
+                    log.debug("Removing cookies.");
                     if (!filtered.isEmpty()) {
+                        log.debug("Adding filtered cookies: {}", filtered.size());
                         filtered.forEach(c -> headers.add(HttpHeaders.COOKIE, c));
                     }
                 }
