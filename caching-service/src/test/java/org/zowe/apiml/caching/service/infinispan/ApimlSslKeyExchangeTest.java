@@ -114,17 +114,23 @@ class ApimlSslKeyExchangeTest {
         return false;
     }
 
+    private String[] acceptedInvalidAddressMessages = {
+        /* Windows */"Address is invalid on local machine",
+        /* Linux (Github Actions */ "Connection refused",
+        /* MacOS (Local) */ "Can't assign requested address (Address not available)"
+    };
+
     @Test
     void givenInvalidTarget_whenCreateSocketTo_thenLogTheError() {
         IllegalStateException e = assertThrows(IllegalStateException.class, () -> apimlSslKeyExchange.createSocketTo(INVALID_ADDRESS));
 
         assertNotNull(e.getCause());
-        assertTrue(containsAny(e.getCause().getMessage(), "Address is invalid on local machine", "Connection refused"), "Unexpected cause message: " + e.getCause().getMessage());
+        assertTrue(containsAny(e.getCause().getMessage(), acceptedInvalidAddressMessages), "Unexpected cause message: " + e.getCause().getMessage());
 
         String logMessage = getLogMessage();
         assertTrue(logMessage.contains("Cannot create socket to remote address"), "Unexpected message: " + logMessage);
-        assertTrue(containsAny(logMessage, "Address is invalid on local machine", "Connection refused"), "Unexpected message: " + logMessage);
-        assertTrue(logMessage.contains("ConnectException:"), "Unexpected message: " + logMessage);
+        assertTrue(containsAny(logMessage, acceptedInvalidAddressMessages), "Unexpected message: " + logMessage);
+        assertTrue(containsAny(logMessage, "ConnectException:", "java.net.NoRouteToHostException"), "Unexpected message: " + logMessage);
     }
 
     @Test
@@ -133,12 +139,12 @@ class ApimlSslKeyExchangeTest {
         IllegalStateException e = assertThrows(IllegalStateException.class, () -> apimlSslKeyExchange.createSocketTo(INVALID_ADDRESS, sslSocketFactory));
 
         assertNotNull(e.getCause());
-        assertTrue(containsAny(e.getCause().getMessage(), "Address is invalid on local machine", "Connection refused"), "Unexpected cause message: " + e.getCause().getMessage());
+        assertTrue(containsAny(e.getCause().getMessage(), acceptedInvalidAddressMessages), "Unexpected message: " + e.getCause().getMessage());
 
         String logMessage = getLogMessage();
         assertTrue(logMessage.contains("Cannot create socket to remote address"), "Unexpected message: " + logMessage);
-        assertTrue(containsAny(logMessage, "Address is invalid on local machine", "Connection refused"), "Unexpected message: " + logMessage);
-        assertTrue(logMessage.contains("ConnectException:"), "Unexpected message: " + logMessage);
+        assertTrue(containsAny(logMessage, acceptedInvalidAddressMessages), "Unexpected message: " + logMessage);
+        assertTrue(containsAny(logMessage, "ConnectException:", "java.net.NoRouteToHostException"), "Unexpected message: " + logMessage);
     }
 
 }
