@@ -2,8 +2,8 @@ dependencyResolutionManagement {
     versionCatalogs {
         libs {
             // for node projects
-            version('projectNode', '24.4.1')
-            version('projectNpm', '11.4.2')
+            version('projectNode', '24.5.0')
+            version('projectNpm', '11.5.2')
 
             version('springBoot', '2.7.18')
             version('springCloud', '2.2.10.RELEASE')
