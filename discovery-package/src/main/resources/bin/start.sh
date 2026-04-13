@@ -89,7 +89,7 @@ if [ "${ZWE_components_gateway_apiml_security_auth_uniqueCookie}" = "true" ]; th
 fi
 
 DISCOVERY_CODE=AD
-_BPXK_AUTOCVT=OFF
+_BPXK_AUTOCVT=ALL
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     -XX:+ExitOnOutOfMemoryError \
@@ -129,7 +129,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
-    -Dfile.encoding=UTF-8 \
+    -Dfile.encoding=COMPAT \
     -Dloader.path=${DISCOVERY_LOADER_PATH} \
     -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
     -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0:-"0.0.0.0"}} \

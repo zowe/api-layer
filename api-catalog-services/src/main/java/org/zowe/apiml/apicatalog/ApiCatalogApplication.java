@@ -46,7 +46,7 @@ public class ApiCatalogApplication {
         SpringApplication app = new SpringApplication(ApiCatalogApplication.class);
         app.addInitializers(new LatencyUtilsConfigInitializer());
         app.setLogStartupInfo(false);
-        app.run(args);
         new BuildInfo().logBuildInfo();
+        app.run(args);
     }
 }

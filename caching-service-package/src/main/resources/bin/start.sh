@@ -90,7 +90,7 @@ if [ -d "${original_infinispan_index_location}" ]; then
 fi
 
 CACHING_CODE=CS
-_BPXK_AUTOCVT=OFF
+_BPXK_AUTOCVT=ALL
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
   -XX:+ExitOnOutOfMemoryError \
@@ -101,7 +101,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   ${LOGBACK} \
   ${JVM_SECURITY_PROPERTIES} \
   ${CUSTOM_JVM_OPTS} \
-  -Dfile.encoding=UTF-8 \
+  -Dfile.encoding=COMPAT \
   -Dibm.serversocket.recover=true \
   -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
   -Djava.io.tmpdir=${TMPDIR:-/tmp} \

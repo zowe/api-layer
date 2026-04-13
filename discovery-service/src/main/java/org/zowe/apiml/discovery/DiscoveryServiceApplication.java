@@ -48,8 +48,8 @@ public class DiscoveryServiceApplication implements ApplicationListener<Applicat
         SpringApplication app = new SpringApplication(DiscoveryServiceApplication.class);
         app.addInitializers(new LatencyUtilsConfigInitializer());
         app.setLogStartupInfo(false);
-        app.run(args);
         new BuildInfo().logBuildInfo();
+        app.run(args);
     }
 
     @Override

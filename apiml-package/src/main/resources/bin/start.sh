@@ -215,7 +215,7 @@ fi
 # End OpenTelemetry
 
 APIML_CODE=AG
-_BPXK_AUTOCVT=OFF
+_BPXK_AUTOCVT=ALL
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Xms${ZWE_configs_heap_init:-${ZWE_components_gateway_heap_init:-32}}m -Xmx${ZWE_configs_heap_max:-${ZWE_components_gateway_heap_max:-512}}m \
     -XX:+ExitOnOutOfMemoryError \
@@ -324,7 +324,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dcaching.storage.size=${ZWE_components_caching_service_storage_size:-${ZWE_configs_storage_size:-10000}} \
     -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
     -Deureka.client.serviceUrl.defaultZone=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dfile.encoding=UTF-8 \
+    -Dfile.encoding=COMPAT \
     -Dibm.serversocket.recover=true \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Djava.library.path=${LIBPATH} \
