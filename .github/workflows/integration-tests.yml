@@ -2256,6 +2256,7 @@ jobs:
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "apiml"
+                    CACHING_STORAGE_INFINISPAN_NUMSEGMENTS: "16"
             apiml-2:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -2271,6 +2272,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: "apiml-2"
                     APIML_SERVICE_HOSTNAME: "apiml-2"
                     logbackService: ZWEAGW2
+                    CACHING_STORAGE_INFINISPAN_NUMSEGMENTS: "16"
             api-catalog-services:
                 image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:

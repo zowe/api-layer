@@ -20,7 +20,7 @@
 
 const getBaseUrl = (pEnvironment, pLocation) => {
     const location = pLocation || window.location;
-    const environment = pEnvironment || process.env;
+    const environment = pEnvironment || import.meta.env;
 
     // Going through the Gateway
     const urlParts = location.pathname.split('/');
@@ -29,13 +29,13 @@ const getBaseUrl = (pEnvironment, pLocation) => {
     }
 
     // Testing environment
-    if (environment.REACT_APP_GATEWAY_URL && environment.REACT_APP_CATALOG_HOME) {
-        return `${environment.REACT_APP_GATEWAY_URL}${environment.REACT_APP_CATALOG_HOME}`;
+    if (environment.VITE_GATEWAY_URL && environment.VITE_CATALOG_HOME) {
+        return `${environment.VITE_GATEWAY_URL}${environment.VITE_CATALOG_HOME}`;
     }
 
     // Local development environment
-    if (environment.REACT_APP_CATALOG_HOME) {
-        return `${location.protocol}//${location.host}${environment.REACT_APP_CATALOG_HOME}`;
+    if (environment.VITE_CATALOG_HOME) {
+        return `${location.protocol}//${location.host}${environment.VITE_CATALOG_HOME}`;
     }
 
     // Standalone access to the Catalog

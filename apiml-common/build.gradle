@@ -9,6 +9,9 @@ dependencies {
     implementation libs.spring.boot.starter.web
     implementation libs.spring.cloud.starter.eureka.client
     implementation libs.opentelemetry.spring.boot.starter
+    implementation libs.opentelemetry.exporter.common
+    implementation libs.opentelemetry.exporter.sender.okhttp
+
     compileOnly libs.netty.reactor.http
     implementation libs.eureka.core
 
@@ -18,6 +21,7 @@ dependencies {
     compileOnly libs.jakarta.validation
 
     testImplementation libs.spring.boot.starter.test
+    testImplementation libs.io.grpc
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

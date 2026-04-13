@@ -63,7 +63,7 @@ dependencyResolutionManagement {
             }
             version('jbossLogging', '3.6.2.Final')
             version('jerseySun', '1.19.4')
-            version('jettyWebSocketClient', '12.1.5')
+            version('jettyWebSocketClient', '12.1.6')
             version('jettison', '1.5.4')
             //0.12.x version contains breaking changes
             version('jjwt', '0.13.0')
@@ -116,6 +116,9 @@ dependencyResolutionManagement {
             version('commonsCompress', '1.28.0')
             version('bucket4j', '8.16.0')
             version('xstream', '1.4.21')
+            version('javaWebSocket', '1.6.0') // for testing
+            version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
+            version('ioGrpc', '1.80.0')
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
 
@@ -254,8 +257,15 @@ dependencyResolutionManagement {
             library('bucket4j_core', 'com.bucket4j', 'bucket4j_jdk17-core').versionRef('bucket4j')
             library('xstren', 'com.thoughtworks.xstream', 'xstream').versionRef('xstream') // to avoid security vulnerability CVE-2024-47072
             library('opentelemetry_spring_boot_starter', 'io.opentelemetry.instrumentation','opentelemetry-spring-boot-starter').versionRef('openTelemetry-starter')
+            library('opentelemetry_spring_boot_autoconfigure', 'io.opentelemetry.instrumentation','opentelemetry-spring-boot-autoconfigure').versionRef('openTelemetry-starter')
             library('opentelemetry_sdk_testing', 'io.opentelemetry','opentelemetry-sdk-testing').versionRef('openTelemetry-core')
             library('opentelemetry_sdk_extension_autoconfigure_spi', 'io.opentelemetry','opentelemetry-sdk-extension-autoconfigure-spi').versionRef('openTelemetry-core')
+            library('opentelemetry_exporter_common', 'io.opentelemetry', 'opentelemetry-exporter-common').versionRef('openTelemetry-core')
+            library('opentelemetry_exporter_sender_okhttp', 'io.opentelemetry', 'opentelemetry-exporter-sender-okhttp').versionRef('openTelemetry-core')
+            library('java_websocket', 'org.java-websocket', 'Java-WebSocket').versionRef('javaWebSocket')
+            library('tyrus_server', 'org.glassfish.tyrus', 'tyrus-server').versionRef('glassfishTyrus')
+            library('tyrus_grizzly_server', 'org.glassfish.tyrus', 'tyrus-container-grizzly-server').versionRef('glassfishTyrus')
+            library('io_grpc', 'io.grpc', 'grpc-stub').versionRef('ioGrpc')
 
             // Sample apps only
             library('jersey_client4', 'com.sun.jersey.contribs', 'jersey-apache-client4').versionRef('jerseySun')
@@ -284,13 +294,15 @@ dependencyResolutionManagement {
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - do not use in Spring unless really necessary
-            version('logback', '1.5.26')
+            version('logback', '1.5.27')
             version('mockitoCore', '5.21.0')
             version('mockitoInline', '5.2.0')
+            version('mockServer','5.15.0')
 
             library('logback_classic', 'ch.qos.logback', 'logback-classic').versionRef('logback')
             library('mockito_core', 'org.mockito', 'mockito-core').versionRef('mockitoCore')
             library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInline')
+            library('mock_server','org.mock-server','mockserver-netty').versionRef('mockServer')
 
 
             bundle('infinispan', [ 'infinispan_spring_boot3_starter_embedded', 'infinispan_lock', 'infinispan_jboss_marshalling', 'infinispan_annotations' ])

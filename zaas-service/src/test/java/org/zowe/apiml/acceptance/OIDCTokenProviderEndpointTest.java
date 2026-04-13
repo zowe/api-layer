@@ -31,9 +31,9 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
@@ -47,6 +47,7 @@ import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 
 import javax.net.ssl.SSLContext;
+
 import java.io.IOException;
 
 import static org.mockito.Mockito.mock;
@@ -157,7 +158,7 @@ class OIDCTokenProviderEndpointTest {
     }
 
     @Profile("OIDCTokenProviderEndpointTest")
-    @Configuration
+    @TestConfiguration
     static class Config {
 
         private static boolean mfUserExists;

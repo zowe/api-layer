@@ -8,8 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import process from 'process';
-import 'react-app-polyfill/ie11';
+import { Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { applyMiddleware, compose, createStore } from 'redux';
@@ -32,8 +31,6 @@ import Spinner from './components/Spinner/Spinner';
 import { AsyncAppContainer } from './components/App/AsyncModules';
 
 import('./index.css');
-
-window.process = process; // Polyfill process for the browser
 
 function errorHandler(error, getState, lastAction, dispatch) {
     log.error(error);
@@ -68,12 +65,13 @@ const persistor = persistStore(store);
 
 const container = document.getElementById('root');
 
-// const navigate = useNavigate();
 createRoot(container).render(
     <HashRouter>
         <Provider store={store}>
             <PersistGate loading={<Spinner isLoading />} persistor={persistor}>
-                <AsyncAppContainer />
+                <Suspense fallback={null}>
+                    <AsyncAppContainer />
+                </Suspense>
             </PersistGate>
         </Provider>
     </HashRouter>

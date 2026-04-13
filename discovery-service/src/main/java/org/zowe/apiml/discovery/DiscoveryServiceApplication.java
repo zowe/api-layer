@@ -13,6 +13,8 @@ package org.zowe.apiml.discovery;
 import jakarta.annotation.Nonnull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.actuate.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -27,7 +29,12 @@ import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 
 @EnableEurekaServer
-@SpringBootApplication
+@SpringBootApplication(
+    exclude = {
+        OpenTelemetryAutoConfiguration.class,
+        OpenTelemetryLoggingAutoConfiguration.class
+    }
+)
 @ComponentScan({
     "org.zowe.apiml.discovery",
     "org.zowe.apiml.product.eureka.web",

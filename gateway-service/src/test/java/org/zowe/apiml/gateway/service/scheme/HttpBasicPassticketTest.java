@@ -10,7 +10,14 @@
 
 package org.zowe.apiml.gateway.service.scheme;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
@@ -18,11 +25,22 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 
+@ExtendWith(MockitoExtension.class)
 class HttpBasicPassticketTest {
+
+    private static final String SERVICE_ID = "myservice";
+    private static final String APPLID = "APPLID";
+
+    @Mock(strictness = LENIENT)
+    private ServiceInstance serviceInstance;
+
+    @BeforeEach
+    void setup() {
+        doReturn(SERVICE_ID).when(serviceInstance).getServiceId();
+    }
 
     @Test
     void givenHttpBasicPassticketInstance_whenGetAuthenticationScheme_thenReturnProperType() {
@@ -34,8 +52,6 @@ class HttpBasicPassticketTest {
         RouteDefinition routeDefinition = new RouteDefinition();
         Authentication authentication = new Authentication();
         authentication.setApplid("applid");
-        ServiceInstance serviceInstance = mock(ServiceInstance.class);
-        doReturn("service").when(serviceInstance).getServiceId();
 
         new HttpBasicPassticket().apply(serviceInstance, routeDefinition, authentication);
 
@@ -45,18 +61,35 @@ class HttpBasicPassticketTest {
         assertEquals("PassticketFilterFactory", filterDefinition.getName());
     }
 
-    @Test
-    void givenNoApplid_whenApply_thenSkipConfiguration() {
-        RouteDefinition routeDefinition = new RouteDefinition();
-        new HttpBasicPassticket().apply(mock(ServiceInstance.class), routeDefinition, new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, null));
-        assertTrue(routeDefinition.getFilters().isEmpty());
+    @ParameterizedTest
+    @EmptySource
+    @NullSource
+    void givenNoApplid_whenApply_thenReturnFailoverFilter(String applid) {
+        var routeDefinition = new RouteDefinition();
+
+        new HttpBasicPassticket().apply(serviceInstance, routeDefinition, Authentication.builder().scheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET).applid(applid).build());
+
+        assertEquals(1, routeDefinition.getFilters().size());
+        var filter = routeDefinition.getFilters().get(0);
+        assertEquals("RoutingConfigurationErrorFilterFactory", filter.getName());
+        assertEquals(3, filter.getArgs().size());
+        assertEquals(SERVICE_ID, filter.getArgs().get("serviceId"));
+        assertEquals("APPLID is not configured", filter.getArgs().get("message"));
+        assertEquals("httpBasicPassTicket", filter.getArgs().get("authenticationScheme"));
     }
 
     @Test
-    void givenEmptyApplid_whenApply_thenSkipConfiguration() {
-        RouteDefinition routeDefinition = new RouteDefinition();
-        new HttpBasicPassticket().apply(mock(ServiceInstance.class), routeDefinition, new Authentication(AuthenticationScheme.HTTP_BASIC_PASSTICKET, ""));
-        assertTrue(routeDefinition.getFilters().isEmpty());
+    void givenValidConfiguration_whenApply_thenReturnAuthFilter() {
+        var routeDefinition = new RouteDefinition();
+
+        new HttpBasicPassticket().apply(serviceInstance, routeDefinition, Authentication.builder().scheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET).applid(APPLID).build());
+
+        assertEquals(1, routeDefinition.getFilters().size());
+        var filter = routeDefinition.getFilters().get(0);
+        assertEquals("PassticketFilterFactory", filter.getName());
+        assertEquals(2, filter.getArgs().size());
+        assertEquals(APPLID, filter.getArgs().get("applicationName"));
+        assertEquals(SERVICE_ID, filter.getArgs().get("serviceId"));
     }
 
 }

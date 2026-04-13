@@ -4,8 +4,14 @@ receivers:
     protocols:
       grpc:
         endpoint: 0.0.0.0:4317
+        tls:
+          cert_file: /keystore/localhost/localhost.keystore.cer
+          key_file: /keystore/localhost/localhost.keystore.key
       http:
         endpoint: 0.0.0.0:4318
+        tls:
+          cert_file: /keystore/localhost/localhost.keystore.cer
+          key_file: /keystore/localhost/localhost.keystore.key
 
 exporters:
   # signals (received and exported) are saved to files

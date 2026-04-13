@@ -40,7 +40,7 @@ import java.util.Optional;
 
 /**
  * Core class of security client
- * provides facility for performing login and validating JWT token
+ * provides facility for performing login and validating JWT
  */
 @Service
 @Slf4j
