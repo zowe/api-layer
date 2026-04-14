@@ -16,7 +16,7 @@ import io.restassured.config.SSLConfig;
 import io.restassured.response.Validatable;
 import io.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.utils.URIBuilder;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,7 +35,7 @@ import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
-import java.net.URISyntaxException;
+
 import java.util.LinkedList;
 import java.util.stream.Stream;
 
@@ -182,8 +182,8 @@ class ApiCatalogAuthenticationTest {
         class ReturnUnauthorized {
             @ParameterizedTest(name = "givenNoAuthentication {index} {0}")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
-            void givenNoAuthentication(String endpoint, Request request) throws URISyntaxException {
-                String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID_PATH + (IS_MODULITH_ENABLED ? CATALOG_PREFIX : "") + new URIBuilder().setPath(endpoint).build() + "'";
+            void givenNoAuthentication(String endpoint, Request request) {
+                String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID_PATH + (IS_MODULITH_ENABLED ? CATALOG_PREFIX : "") + endpoint + "'";
 
                 request.execute(
                         given()
@@ -202,8 +202,8 @@ class ApiCatalogAuthenticationTest {
 
             @ParameterizedTest(name = "givenInvalidBasicAuthentication {index} {0}")
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
-            void givenInvalidBasicAuthentication(String endpoint, Request request) throws URISyntaxException {
-                String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID_PATH + (IS_MODULITH_ENABLED ? CATALOG_PREFIX : "") + new URIBuilder().setPath(endpoint).build() + "'";
+            void givenInvalidBasicAuthentication(String endpoint, Request request) {
+                String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID_PATH + (IS_MODULITH_ENABLED ? CATALOG_PREFIX : "") + endpoint + "'";
 
                 request.execute(
                         given()
