@@ -104,15 +104,18 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
             .flatMap(serviceInstances -> {
                 if (serviceInstances.isEmpty()) {
                     // no instances available - just return
+                    log.debug("No services selected");
                     return Flux.just(serviceInstances);
                 }
 
                 boolean stickySession = lbTypeIsAuthentication(serviceInstances.iterator().next());
                 if (!stickySession) {
                     // service does not support sticky session by userId, just return
+                    log.debug("Service {} does not support sticky session", serviceId);
                     return Flux.just(serviceInstances);
                 }
 
+                log.debug("Obtain service instances for {} from the cache", serviceId);
                 return cache.retrieve(userId, serviceId)
                     .onErrorResume(t -> Mono.empty())
                     .flatMapMany(cacheRecord -> filterInstances(userId, serviceId, cacheRecord, serviceInstances))
