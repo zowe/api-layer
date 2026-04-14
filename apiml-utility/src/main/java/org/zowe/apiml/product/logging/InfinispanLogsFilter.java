@@ -23,6 +23,8 @@ import org.slf4j.MarkerFactory;
  * Specifically, the filter captures the debug message produced when Infinispan
  * fails to open or access a cache segment file (index) in {@code org.infinispan.persistence.sifs.FileProvider}.
  * It enhances the logs by attaching the <b>ZWECS137W</b> message ID and enriching the message text to improve the troubleshooting.
+ * Since logback is triggered before Spring, we cannot leverage the {@link org.zowe.apiml.message.log.ApimlLogger}
+ * Therefore, we have to use Slf4j, but we still document the ZWECS137W message under key 'org.zowe.apiml.cache.errorOpeningCachingFiles'.
  */
 public class InfinispanLogsFilter extends TurboFilter {
 
