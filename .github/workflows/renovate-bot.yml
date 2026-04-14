@@ -4,6 +4,16 @@ on:
     schedule:
         - cron: '0 0 * * 1-5' #UTC
     workflow_dispatch:
+        inputs:
+            log_level:
+                description: Renovate LOG_LEVEL (see https://docs.renovatebot.com/troubleshooting/#log-levels)
+                required: false
+                default: info
+                type: choice
+                options:
+                    - trace
+                    - debug
+                    - info
 
 jobs:
     renovate:
@@ -19,5 +29,4 @@ jobs:
                   configurationFile: ${{ github.workspace }}/renovate-config.js
                   token: ${{ secrets.ROBOT_PAT }}
               env:
-                  # RENOVATE_TOKEN should have access :read_user, api, write_repository (repo checkbox)
-                  LOG_LEVEL: debug
+                  LOG_LEVEL: ${{ github.event_name == 'workflow_dispatch' && inputs.log_level || 'info' }}
