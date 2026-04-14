@@ -2,8 +2,8 @@ dependencyResolutionManagement {
     versionCatalogs {
         libs {
             // for node projects
-            version('projectNode', '20.19.6')
-            version('projectNpm', '10.9.4')
+            version('projectNode', '24.10.0')
+            version('projectNpm', '10.9.0')
 
             version('springBoot', '3.5.10')
             version('springBootGraphQl', '3.5.10')
