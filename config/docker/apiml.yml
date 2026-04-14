@@ -1,4 +1,3 @@
-spring.profiles.include: diag,debug
 apiml:
     service:
         ssl:
