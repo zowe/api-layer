@@ -29,4 +29,5 @@ jobs:
                   configurationFile: ${{ github.workspace }}/renovate-config.js
                   token: ${{ secrets.ROBOT_PAT }}
               env:
+                  RENOVATE_GIT_AUTHOR: "Renovate Bot <renovate@whitesourcesoftware.com>"
                   LOG_LEVEL: ${{ github.event_name == 'workflow_dispatch' && inputs.log_level || 'info' }}
