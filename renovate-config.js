@@ -2,15 +2,15 @@ module.exports = {
     binarySource: "install",
     globalExtends: ["config:recommended"], // using this instead of "extends" solves the problem with order of the configuration
     repositories: ['zowe/api-layer'],
-    baseBranches: ["reboot/node_update", "v3.x.x"],
+    baseBranches: ["v2.x.x", "v3.x.x"],
     commitBody: "Signed-off-by: {{{gitAuthor}}}",
     dependencyDashboard: true,
     allowedPostUpgradeCommands: ['^npm install'],
     packageRules: [
         {
-            //for reboot/node_update branch ignore grouping from extends preset, find all packages which are patches,
+            //for v2.x.x branch ignore grouping from extends preset, find all packages which are patches,
             // slug them and make PR with name "all patch dependencies"
-            "matchBaseBranches": ["reboot/node_update"],
+            "matchBaseBranches": ["v2.x.x"],
             "groupName": "all patch dependencies",
             "groupSlug": "all-patch",
             "matchPackageNames": ["*"],
@@ -22,8 +22,8 @@ module.exports = {
             }
         },
         {
-            //for reboot/node_update make dashboard approval to all major and minor dependencies updates
-            "matchBaseBranches": ["reboot/node_update"],
+            //for v2.x.x make dashboard approval to all major and minor dependencies updates
+            "matchBaseBranches": ["v2.x.x"],
             "matchUpdateTypes": ["major", "minor"],
             "dependencyDashboardApproval": true,
         },
