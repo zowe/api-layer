@@ -19,25 +19,17 @@ import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
 /**
- * This filter's purpose is to hide or show the info level messages (and below log levels like debug etc.)
- * There are info level messages that are meant for debug mode only (originally @Slf4j)
- * There are info level messages that are meant to be displayed (like service startup messages)
- * <p>
- * Because ApimlLogger is using Slf4j in the background, there is conflict of interest.
- * Solution is that ApimlLogger is enhancing its logs with Marker instances and this filter is providing
- * adequate filtering.
+ * This filter intercepts Infinispan DEBUG log and transforms it into WARNING message.
+ * Specifically, the filter captures the debug message produced when Infinispan
+ * fails to open or access a cache segment file (index) in {@code org.infinispan.persistence.sifs.FileProvider}.
+ * It enhances the logs by attaching the <b>ZWECS137W</b> message ID and enriching the message text to improve the troubleshooting.
  */
 public class InfinispanLogsFilter extends TurboFilter {
-    static {
-        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        System.out.println("!!! INFINISPAN FILTER LOADED BY LOGBACK !!!");
-        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    }
 
     private static final String APIML_MARKER = "APIML-LOGGER";
     private static final String TARGET_LOGGER = "org.infinispan.persistence.sifs.FileProvider";
     private static final org.slf4j.Logger customLogger = LoggerFactory.getLogger(TARGET_LOGGER);
-    private static final String CUSTOM_INFO = "[ZOWE CACHE INFO]: Accessing a segment file that is no longer on disk.";
+    private static final String CUSTOM_MESSAGE = "ZWECS137W: Failed to open or access one of the index segment file inside the caching-service directory.";
 
     @Override
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
@@ -50,14 +42,14 @@ public class InfinispanLogsFilter extends TurboFilter {
                 String enhancedMessage;
                 try {
                     String formattedOriginal = String.format(format, params);
-                    enhancedMessage = CUSTOM_INFO + " | Original: " + formattedOriginal;
+                    enhancedMessage = CUSTOM_MESSAGE + " Exception: " + formattedOriginal;
                 } catch (Exception e) {
-                    enhancedMessage = CUSTOM_INFO + " | Original message (unformatted): " + format;
+                    enhancedMessage = CUSTOM_MESSAGE + " | Original message (unformatted): " + format;
                 }
 
-                customLogger.debug(bypassMarker, enhancedMessage, t);
+                customLogger.warn(bypassMarker, enhancedMessage, t);
             } else if (level.isGreaterOrEqual(Level.INFO)) {
-                customLogger.info(bypassMarker, CUSTOM_INFO);
+                customLogger.info(bypassMarker, CUSTOM_MESSAGE);
             }
             return FilterReply.DENY;
         }

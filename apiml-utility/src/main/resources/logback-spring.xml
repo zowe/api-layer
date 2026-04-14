@@ -80,4 +80,5 @@
     <logger name="org.zowe.apiml.opentelemetry" level="INFO">
         <appender-ref ref="OpenTelemetry" />
     </logger>
+    <logger name="org.infinispan.persistence.sifs.FileProvider" level="DEBUG" />
 </configuration>
