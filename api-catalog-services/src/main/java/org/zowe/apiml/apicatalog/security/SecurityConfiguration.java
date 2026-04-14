@@ -35,6 +35,7 @@ import org.springframework.security.web.authentication.preauth.x509.X509Authenti
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.filter.SecureConnectionFilter;
+import org.zowe.apiml.security.FixedHeadersConfigurer;
 import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.login.GatewayLoginProvider;
 import org.zowe.apiml.security.client.token.GatewayTokenProvider;
@@ -197,7 +198,7 @@ public class SecurityConfiguration {
     }
 
     private HttpSecurity baseConfiguration(HttpSecurity http) throws Exception {
-        http
+        return FixedHeadersConfigurer.fix(http
                 .csrf(csrf -> csrf.disable())   // NOSONAR
                 .headers(headers -> headers
                         .httpStrictTransportSecurity().disable()
@@ -217,9 +218,8 @@ public class SecurityConfiguration {
                                 handlerInitializer.getUnAuthorizedHandler(), new AntPathRequestMatcher("/**")
                         ))
                 .sessionManagement(management -> management
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-        return http;
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        );
     }
 
     @Bean

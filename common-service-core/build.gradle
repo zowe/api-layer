@@ -26,6 +26,9 @@ dependencies {
     compileOnly libs.eh.cache
     testImplementation libs.eh.cache
 
+    compileOnly libs.spring.security.config
+    compileOnly libs.spring.security.web
+
     implementation libs.spring.boot.starter.cache
     testImplementation libs.spring.boot.starter.cache
     implementation libs.spring.web
