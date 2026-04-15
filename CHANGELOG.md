@@ -2,7 +2,7 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `3.4.1 (2026-01-29)`
+## `APIML 3.5.3 / Zowe 3.4.1 (2026-01-29)`
 
 * Feature:  Support binding on multiple network interfaces (#4457) ([581217a](https://github.com/zowe/api-layer/commit/581217a)), closes [#4457](https://github.com/zowe/api-layer/issues/4457)
 
