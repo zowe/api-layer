@@ -21,8 +21,9 @@ import org.springframework.ui.ConcurrentModel;
 import org.springframework.ui.Model;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.product.version.BuildInfo;
-import org.zowe.apiml.product.version.BuildInfoDetails;
+import org.zowe.apiml.product.version.VersionInfo;
+import org.zowe.apiml.product.version.VersionInfoDetails;
+import org.zowe.apiml.product.version.VersionService;
 
 import java.util.*;
 
@@ -36,7 +37,7 @@ class GatewayHomepageControllerTest {
     private DiscoveryClient discoveryClient;
 
     private GatewayHomepageController gatewayHomepageController;
-    private BuildInfo buildInfo;
+    private VersionService versionService;
 
     private final String API_CATALOG_ID = "apicatalog";
     private final String AUTHORIZATION_SERVICE_ID = "zaas";
@@ -45,15 +46,14 @@ class GatewayHomepageControllerTest {
     void setup() {
         discoveryClient = mock(DiscoveryClient.class);
 
-        buildInfo = mock(BuildInfo.class);
+        versionService = mock(VersionService.class);
+        when(versionService.getVersion()).thenReturn(new VersionInfo(null, new VersionInfoDetails("unknown", "000", "abc")));
 
-        BuildInfoDetails buildInfoDetails = new BuildInfoDetails(new Properties(), new Properties());
-        when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
         ApplicationInfo applicationInfo = ApplicationInfo.builder()
             .isModulith(false)
             .authServiceId(CoreService.ZAAS.getServiceId()).build();
         gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, buildInfo, applicationInfo);
+            discoveryClient, versionService, applicationInfo);
         ReflectionTestUtils.setField(gatewayHomepageController, "apiCatalogServiceId", "apicatalog");
     }
 
@@ -69,19 +69,14 @@ class GatewayHomepageControllerTest {
 
     @Test
     void givenSpecificBuildVersion_whenHomePageCalled_thenBuildInfoShouldBeGivenVersionAndNumber() {
-        BuildInfo buildInfo = mock(BuildInfo.class);
-
-        Properties buildProperties = new Properties();
-        buildProperties.setProperty("build.version", "test-version");
-        buildProperties.setProperty("build.number", "test-number");
-        BuildInfoDetails buildInfoDetails = new BuildInfoDetails(buildProperties, new Properties());
-        when(buildInfo.getBuildInfoDetails()).thenReturn(buildInfoDetails);
+        VersionService versionService = mock(VersionService.class);
+        when(versionService.getVersion()).thenReturn(new VersionInfo(null, new VersionInfoDetails("test-version", "test-number", "abc")));
 
         ApplicationInfo applicationInfo = ApplicationInfo.builder()
             .isModulith(false)
             .authServiceId(CoreService.ZAAS.getServiceId()).build();
         GatewayHomepageController gatewayHomepageController = new GatewayHomepageController(
-            discoveryClient, buildInfo, applicationInfo);
+            discoveryClient, versionService, applicationInfo);
 
         Model model = new ConcurrentModel();
 
@@ -90,7 +85,29 @@ class GatewayHomepageControllerTest {
 
         Map<String, Object> actualModelMap = model.asMap();
 
-        assertThat(actualModelMap, IsMapContaining.hasEntry("buildInfoText", "Version test-version build # test-number"));
+        assertThat(actualModelMap, IsMapContaining.hasEntry("buildInfoText", "API ML Version test-version build # test-number"));
+    }
+
+    @Test
+    void givenZoweVersion_whenHomePageCalled_thenZoweVersionTextShouldBeIncluded() {
+        VersionService versionService = mock(VersionService.class);
+        when(versionService.getVersion()).thenReturn(new VersionInfo(
+            new VersionInfoDetails("2.0.0", "500", "def"),
+            new VersionInfoDetails("test-version", "test-number", "abc")
+        ));
+
+        ApplicationInfo applicationInfo = ApplicationInfo.builder()
+            .isModulith(false)
+            .authServiceId(CoreService.ZAAS.getServiceId()).build();
+        GatewayHomepageController gatewayHomepageController = new GatewayHomepageController(
+            discoveryClient, versionService, applicationInfo);
+
+        Model model = new ConcurrentModel();
+        gatewayHomepageController.init();
+        gatewayHomepageController.home(model);
+
+        Map<String, Object> actualModelMap = model.asMap();
+        assertThat(actualModelMap, IsMapContaining.hasEntry("zoweVersionText", "Zowe Version 2.0.0 build # 500"));
     }
 
 
