@@ -78,7 +78,7 @@ messages:
         reason: "A problem occurred while accessing one of the soft-index segment file used by Infinispan caching."
         action: "Verify that:
             - In your system, the MAXFILEPROC parameter is set to a sufficient value. If you still see this error, increase it until it disappears.
-            - There is enough space in the Caching Service workspace.
+            - There is enough space in the caching-service workspace directory.
             - The Zowe user has permission to access the caching-service workspace directory.
             - The caching-service workspace directory has read and write permissions."
 

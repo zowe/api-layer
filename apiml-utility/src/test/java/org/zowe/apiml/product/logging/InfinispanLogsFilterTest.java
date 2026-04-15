@@ -12,6 +12,8 @@ package org.zowe.apiml.product.logging;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import ch.qos.logback.core.spi.FilterReply;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,7 @@ import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class InfinispanLogsFilterTest {
 
@@ -47,8 +50,22 @@ class InfinispanLogsFilterTest {
 
     @Test
     void testDenyForTargetInfinispanLog() {
-        FilterReply reply = filterInstance.decide(null, targetLogger, Level.DEBUG, TARGET_FORMAT, new Object[]{101}, null);
-        assertEquals(FilterReply.DENY, reply, "Filter should DENY the original Infinispan log after re-logging it");
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.start();
+        targetLogger.addAppender(listAppender);
+
+        try {
+            FilterReply reply = filterInstance.decide(null, targetLogger, Level.DEBUG, TARGET_FORMAT, new Object[]{101}, null);
+            assertEquals(FilterReply.DENY, reply, "Filter should DENY the original Infinispan log after re-logging it");
+            assertEquals(1, listAppender.list.size(), "One enriched log should have been issued");
+            ILoggingEvent event = listAppender.list.get(0);
+            assertEquals(Level.WARN, event.getLevel(), "The enriched log should be a WARNING");
+            String logMessage = event.getFormattedMessage();
+            assertTrue(logMessage.contains("ZWECS137W"), "Message should contain message ID");
+            assertTrue(logMessage.contains("File 101 was not found"), "Message should contain original details");
+        } finally {
+            targetLogger.detachAppender(listAppender);
+        }
     }
 
     @Test

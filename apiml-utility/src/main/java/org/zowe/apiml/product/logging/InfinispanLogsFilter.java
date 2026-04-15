@@ -17,6 +17,7 @@ import ch.qos.logback.core.spi.FilterReply;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+import java.util.regex.Pattern;
 
 /**
  * This filter intercepts Infinispan DEBUG log and transforms it into WARNING message.
@@ -32,13 +33,14 @@ public class InfinispanLogsFilter extends TurboFilter {
     private static final String TARGET_LOGGER = "org.infinispan.persistence.sifs.FileProvider";
     private static final org.slf4j.Logger customLogger = LoggerFactory.getLogger(TARGET_LOGGER);
     private static final String CUSTOM_MESSAGE = "ZWECS137W: Failed to open or access one of the index segment file inside the caching-service directory.";
+    private static final Pattern LOG_PATTERN = Pattern.compile(".*File.*not found.*");
 
     @Override
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
         if (marker != null && APIML_MARKER.equals(marker.getName())) {
             return FilterReply.NEUTRAL;
         }
-        if (logger.getName().equals(TARGET_LOGGER) && format != null && format.contains("File") && format.contains("not found")) {
+        if (logger.getName().equals(TARGET_LOGGER) && format != null && LOG_PATTERN.matcher(format).matches()) {
             Marker bypassMarker = MarkerFactory.getMarker(APIML_MARKER);
             if (level.equals(Level.DEBUG)) {
                 String enhancedMessage;
