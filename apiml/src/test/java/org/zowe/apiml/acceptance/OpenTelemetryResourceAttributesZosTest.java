@@ -34,6 +34,7 @@ import org.zowe.apiml.gateway.MockService.Scope;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 import org.zowe.apiml.zaas.security.mapping.OIDCExternalMapper;
+import org.zowe.apiml.zaas.security.mapping.X509NativeMapper;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 
 import java.net.URI;
@@ -132,10 +133,14 @@ class OpenTelemetryResourceAttributesZosTest {
         @MockitoBean
         private OIDCTokenProvider oidcTokenProvider;
 
+        @MockitoBean
+        private X509NativeMapper x509TokenProvider;
+
         private MockService mockServiceZoweJwt;
         private MockService mockServicePassTicket;
         private MockService mockServicePassTicketMisconfigured;
         private MockService mockServiceBypass;
+        private MockService mockServiceWs;
 
         @BeforeAll
         void startMockServices() throws Exception {
@@ -170,6 +175,10 @@ class OpenTelemetryResourceAttributesZosTest {
                 .addEndpoint("/testservicebp/200")
                 .responseCode(200)
             .and().start();
+
+            mockServiceWs = mockServiceWs("testservicews")
+                .scope(Scope.CLASS)
+                .start();
         }
 
         @AfterAll
@@ -293,7 +302,7 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         @Test
-        void givenRouted_withAuthSuccess_thenLog() {
+        void givenRouted_withAuthJwt_success_thenLog() {
             given()
                 .cookie("apimlAuthenticationToken", login())
                 .get(basePath + "/testservice/api/v1/200")
@@ -314,6 +323,10 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("https", getAttribute(logBody, "url.scheme"));
             assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
             assertEquals("JWT", getAttribute(logBody, "auth.method"));
+        }
+
+        @Test
+        void givenRouted_withAuthJwt_failure_thenLog() {
         }
 
         @Test
@@ -411,7 +424,7 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         @Test
-        void givenRouted_withOidc_thenLog() {
+        void givenRouted_withOidc_success_thenLog() {
             when(oidcTokenProvider.isValid(VALID_OIDC_TOKEN)).thenReturn(true);
             when(oidcExternalMapper.mapToMainframeUserId(any())).thenReturn("USER");
 
@@ -439,7 +452,18 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         @Test
-        void givenRouted_withX509_thenLog() {
+        void givenRouted_withOidc_failure_thenLog() {
+            when(oidcTokenProvider.isValid(VALID_OIDC_TOKEN)).thenReturn(false);
+
+            given()
+                .header(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_OIDC_TOKEN)
+                .get(basePath + "/testservice/api/v1/200")
+            .then()
+                .statusCode(200);
+        }
+
+        @Test
+        void givenRouted_withX509_success_thenLog() {
             given()
                 .config(SslContext.clientCertUser)
                 .get(basePath + "/testservice/api/v1/200")
@@ -460,6 +484,35 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("https", getAttribute(logBody, "url.scheme"));
             assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
             assertEquals("CLIENT_CERT", getAttribute(logBody, "auth.method"));
+        }
+
+        @Test
+        void givenRouter_withX509_failure_thenLog() {
+            given()
+                .config(SslContext.tlsWithoutCert)
+                .get(basePath + "/testservice/api/v1/200")
+            .then()
+                .statusCode(200);
+
+            when(x509TokenProvider.isValid(any())).thenReturn(false);
+        }
+
+        @Test
+        void givenRouter_withWs_success_thenLog() {
+            given()
+                .get(basePath + "/testservicews/api/v1/200")
+            .then()
+                .statusCode(200);
+        }
+
+        @Test
+        void givenRouter_withPAT_success_thenLog() {
+
+        }
+
+        @Test
+        void givenRouter_withPAT_failure_thenLog() {
+
         }
 
         private String login() {
