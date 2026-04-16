@@ -35,7 +35,7 @@ public class InfinispanLogsFilter extends TurboFilter {
     private static final String TARGET_LOGGER = "org.infinispan.persistence.sifs.FileProvider";
     private static final org.slf4j.Logger customLogger = LoggerFactory.getLogger(TARGET_LOGGER);
     protected static Message customMessage;
-    private static final Pattern LOG_PATTERN = Pattern.compile("File \\d{1,5} was not found.*+");
+    private static final Pattern LOG_PATTERN = Pattern.compile("File \\d{1,5} was not found");
 
     static {
         try {
