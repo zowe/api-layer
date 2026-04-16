@@ -10,10 +10,10 @@
 
 package org.zowe.apiml.product.opentelemetry;
 
-import io.opentelemetry.exporter.internal.grpc.GrpcSenderConfig;
-import io.opentelemetry.exporter.internal.http.HttpSenderConfig;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpHttpSender;
+import io.opentelemetry.sdk.common.export.GrpcSenderConfig;
+import io.opentelemetry.sdk.common.export.HttpSenderConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -57,7 +57,7 @@ class ApimlSenderProviderTest {
     @Mock
     private HttpSenderConfig senderHttpConfig;
     @Mock
-    private GrpcSenderConfig<?> senderGrcpConfig;
+    private GrpcSenderConfig senderGrcpConfig;
 
     private HttpConfig oldValue;
 
@@ -106,7 +106,6 @@ class ApimlSenderProviderTest {
         @Test
         void testCreate_Grpc() {
             when(senderGrcpConfig.getEndpoint()).thenReturn(URI.create(HTTPS_LOCALHOST_4018_ENDPOINT));
-            when(senderGrcpConfig.getEndpointPath()).thenReturn(ENDPOINT);
 
             try (var mockedConstruction = mockConstruction(OkHttpGrpcSender.class, (mock, context) -> {
                 var args = context.arguments();
@@ -146,7 +145,6 @@ class ApimlSenderProviderTest {
         @Test
         void testCreate_Grcp() {
             when(senderGrcpConfig.getEndpoint()).thenReturn(URI.create(HTTPS_LOCALHOST_4018_ENDPOINT));
-            when(senderGrcpConfig.getEndpointPath()).thenReturn(ENDPOINT);
 
             try (var mockedConstruction = mockConstruction(OkHttpGrpcSender.class, (mock, context) -> {
                 var args = context.arguments();
