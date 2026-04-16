@@ -17,6 +17,8 @@ import ch.qos.logback.core.spi.FilterReply;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
 /**
  * This filter intercepts Infinispan DEBUG log and transforms it into WARNING message.
@@ -24,14 +26,26 @@ import org.slf4j.MarkerFactory;
  * fails to open or access a cache segment file (index) in {@code org.infinispan.persistence.sifs.FileProvider}.
  * It enhances the logs by attaching the <b>ZWECS137W</b> message ID and enriching the message text to improve the troubleshooting.
  * Since logback is triggered before Spring, we cannot leverage the {@link org.zowe.apiml.message.log.ApimlLogger}
- * Therefore, we have to use Slf4j, but we still document the ZWECS137W message under key 'org.zowe.apiml.cache.errorOpeningCachingFiles'.
+ * Therefore, we have to use Slf4j, but we still load the message with key 'org.zowe.apiml.cache.errorOpeningCachingFiles'.
  */
 public class InfinispanLogsFilter extends TurboFilter {
 
     private static final String APIML_MARKER = "APIML-LOGGER";
     private static final String TARGET_LOGGER = "org.infinispan.persistence.sifs.FileProvider";
     private static final org.slf4j.Logger customLogger = LoggerFactory.getLogger(TARGET_LOGGER);
-    private static final String CUSTOM_MESSAGE = "ZWECS137W: Failed to open or access one of the index segment file inside the caching-service directory.";
+    protected static Message customMessage;
+
+    static {
+        try {
+            var messageService = YamlMessageServiceInstance.getInstance();
+            messageService.loadMessages("/caching-log-messages.yml");
+            customMessage = messageService.createMessage("org.zowe.apiml.cache.errorOpeningCachingFiles");
+        } catch (Exception e) {
+            // set for unit test mocking
+            customMessage = null;
+        }
+
+    }
 
     @Override
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
@@ -43,9 +57,9 @@ public class InfinispanLogsFilter extends TurboFilter {
             String enhancedMessage;
             try {
                 String formattedOriginal = String.format(format, params);
-                enhancedMessage = CUSTOM_MESSAGE + " Exception: " + formattedOriginal;
+                enhancedMessage = customMessage.mapToLogMessage() + " Exception: " + formattedOriginal;
             } catch (Exception e) {
-                enhancedMessage = CUSTOM_MESSAGE + " | Original message (unformatted): " + format;
+                enhancedMessage = customMessage.mapToLogMessage() + " | Original message (unformatted): " + format;
             }
             customLogger.warn(bypassMarker, enhancedMessage, t);
 
