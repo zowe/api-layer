@@ -45,12 +45,8 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @TestInstance(Lifecycle.PER_CLASS)
@@ -162,7 +158,6 @@ class DeterministicLoadBalancerTest {
                 @Test
                 void whenServiceDoesNotHaveMetadata_thenUseDefaultList() {
                     when(instance1.getMetadata()).thenReturn(null);
-                    when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(LoadBalancerCacheRecord.NONE));
 
                     StepVerifier.create(loadBalancer.get(request))
                         .assertNext(chosenInstances -> {
@@ -178,8 +173,6 @@ class DeterministicLoadBalancerTest {
                     Map<String, String> metadata = new HashMap<>();
                     metadata.put("apiml.lb.type", "somethingelse");
                     when(instance1.getMetadata()).thenReturn(metadata);
-
-                    when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(LoadBalancerCacheRecord.NONE));
 
                     StepVerifier.create(loadBalancer.get(request))
                         .assertNext(chosenInstances -> {
@@ -247,6 +240,9 @@ class DeterministicLoadBalancerTest {
                                 assertNotNull(chosenInstances);
                                 assertEquals(1, chosenInstances.size());
                                 assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+                                verify(lbCache).retrieve("USER", "service");
+                                verify(lbCache).delete("USER", "service");
+                                verify(lbCache).store(eq("USER"), eq("service"), any());
                             })
                             .expectComplete()
                             .verify();
@@ -266,6 +262,8 @@ class DeterministicLoadBalancerTest {
                                 assertNotNull(chosenInstances);
                                 assertEquals(1, chosenInstances.size());
                                 assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+
+                                verify(lbCache).retrieve("USER", "service");
                             })
                             .expectComplete()
                             .verify();
@@ -368,15 +366,11 @@ class DeterministicLoadBalancerTest {
                 @BeforeEach
                 void setUp() {
                     var context = new RequestDataContext(requestData);
-                    MultiValueMap<String, String> cookie = new LinkedMultiValueMap<>();
-                    cookie.add("apimlAuthenticationToken", "invalidToken");
-
                     when(request.getContext()).thenReturn(context);
-                    when(requestData.getCookies()).thenReturn(cookie);
                 }
 
                 @Test
-                void whenInstanceIdExists_thenChoseeIt() {
+                void whenInstanceIdExists_thenChooseIt() {
                     var headers = new HttpHeaders();
                     headers.add("X-InstanceId", "instance2");
                     when(requestData.getHeaders()).thenReturn(headers);
@@ -386,6 +380,21 @@ class DeterministicLoadBalancerTest {
                             assertNotNull(chosenInstances);
                             assertEquals(1, chosenInstances.size());
                             assertEquals("instance2", chosenInstances.get(0).getInstanceId());
+                            verify(lbCache, never()).retrieve(any(), any());
+                        })
+                        .expectComplete()
+                        .verify();
+                }
+
+                @Test
+                void whenNoToken_thenDoNotCallCache() {
+                    when(requestData.getHeaders()).thenReturn(new HttpHeaders());
+                    when(requestData.getCookies()).thenReturn(new LinkedMultiValueMap<>());
+
+                    StepVerifier.create(loadBalancer.get(request))
+                        .assertNext(chosenInstances -> {
+                            assertNotNull(chosenInstances);
+                            verify(lbCache, never()).retrieve(any(), any());
                         })
                         .expectComplete()
                         .verify();

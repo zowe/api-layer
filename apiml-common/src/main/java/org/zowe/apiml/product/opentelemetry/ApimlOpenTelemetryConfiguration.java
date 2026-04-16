@@ -33,8 +33,8 @@ import org.zowe.apiml.security.HttpsFactory;
 public class ApimlOpenTelemetryConfiguration implements InitializingBean, BeanPostProcessor {
 
     static {
-        System.setProperty("io.opentelemetry.exporter.internal.http.HttpSenderProvider", "org.zowe.apiml.product.opentelemetry.ApimlSenderProvider");
-        System.setProperty("io.opentelemetry.exporter.internal.grcp.GrcpSenderProvider", "org.zowe.apiml.product.opentelemetry.ApimlSenderProvider");
+        System.setProperty("io.opentelemetry.sdk.common.export.HttpSenderProvider", "org.zowe.apiml.product.opentelemetry.ApimlSenderProvider");
+        System.setProperty("io.opentelemetry.sdk.common.export.GrpcSenderProvider", "org.zowe.apiml.product.opentelemetry.ApimlSenderProvider");
     }
 
     private final HttpConfig httpConfig;
