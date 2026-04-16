@@ -45,7 +45,6 @@ import static org.mockito.Mockito.when;
 class ApimlSenderProviderTest {
 
     private static final String INITIALIZED_HTTP_CONFIG = "initializedHttpConfig";
-    private static final String ENDPOINT = "/endpoint";
     private static final String HTTPS_LOCALHOST_4018_ENDPOINT = "https://localhost:4018/endpoint";
 
     private ApimlSenderProvider apimlSenderProvider;
@@ -95,8 +94,8 @@ class ApimlSenderProviderTest {
             try (var mockedConstruction = mockConstruction(OkHttpHttpSender.class, (mock, context) -> {
                 var args = context.arguments();
                 assertEquals(12, args.size());
-                assertSame(sslContext, args.get(9));
-                assertSame(x509TrustManager, args.get(10));
+                assertSame(sslContext, args.get(8));
+                assertSame(x509TrustManager, args.get(9));
             })) {
                 var client = apimlSenderProvider.createSender(senderHttpConfig);
                 assertNotNull(client);
@@ -109,7 +108,7 @@ class ApimlSenderProviderTest {
 
             try (var mockedConstruction = mockConstruction(OkHttpGrpcSender.class, (mock, context) -> {
                 var args = context.arguments();
-                assertEquals(9, args.size());
+                assertEquals(10, args.size());
                 assertSame(sslContext, args.get(6));
                 assertSame(x509TrustManager, args.get(7));
             })) {
@@ -134,7 +133,7 @@ class ApimlSenderProviderTest {
             try (var mockedConstruction = mockConstruction(OkHttpHttpSender.class, (mock, context) -> {
                 var args = context.arguments();
                 assertEquals(12, args.size());
-                assertNull(args.get(9));
+                assertNull(args.get(10));
                 assertNull(args.get(10));
             })) {
                 var client = apimlSenderProvider.createSender(senderHttpConfig);
@@ -148,7 +147,7 @@ class ApimlSenderProviderTest {
 
             try (var mockedConstruction = mockConstruction(OkHttpGrpcSender.class, (mock, context) -> {
                 var args = context.arguments();
-                assertEquals(9, args.size());
+                assertEquals(10, args.size());
                 assertNull(args.get(6));
                 assertNull(args.get(7));
             })) {
