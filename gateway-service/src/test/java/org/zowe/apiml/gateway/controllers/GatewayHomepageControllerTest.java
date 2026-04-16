@@ -107,7 +107,7 @@ class GatewayHomepageControllerTest {
         gatewayHomepageController.home(model);
 
         Map<String, Object> actualModelMap = model.asMap();
-        assertThat(actualModelMap, IsMapContaining.hasEntry("zoweVersionText", "Zowe Version 2.0.0 build # 500"));
+        assertThat(actualModelMap, IsMapContaining.hasEntry("zoweVersionText", "Zowe Version 2.0.0"));
     }
 
 
@@ -131,7 +131,7 @@ class GatewayHomepageControllerTest {
             .isModulith(false)
             .authServiceId(CoreService.GATEWAY.getServiceId()).build();
 
-        GatewayHomepageController underTest = new GatewayHomepageController(discoveryClient, buildInfo, applicationInfo);
+        GatewayHomepageController underTest = new GatewayHomepageController(discoveryClient, versionService, applicationInfo);
         Model model = new ConcurrentModel();
         underTest.home(model);
 
