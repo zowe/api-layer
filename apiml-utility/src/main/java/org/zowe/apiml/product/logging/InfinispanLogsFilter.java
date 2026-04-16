@@ -40,19 +40,15 @@ public class InfinispanLogsFilter extends TurboFilter {
         }
         if (logger.getName().equals(TARGET_LOGGER) && format != null && format.contains("File") && format.contains("not found")) {
             Marker bypassMarker = MarkerFactory.getMarker(APIML_MARKER);
-            if (level.equals(Level.DEBUG)) {
-                String enhancedMessage;
-                try {
-                    String formattedOriginal = String.format(format, params);
-                    enhancedMessage = CUSTOM_MESSAGE + " Exception: " + formattedOriginal;
-                } catch (Exception e) {
-                    enhancedMessage = CUSTOM_MESSAGE + " | Original message (unformatted): " + format;
-                }
-
-                customLogger.warn(bypassMarker, enhancedMessage, t);
-            } else if (level.isGreaterOrEqual(Level.INFO)) {
-                customLogger.info(bypassMarker, CUSTOM_MESSAGE);
+            String enhancedMessage;
+            try {
+                String formattedOriginal = String.format(format, params);
+                enhancedMessage = CUSTOM_MESSAGE + " Exception: " + formattedOriginal;
+            } catch (Exception e) {
+                enhancedMessage = CUSTOM_MESSAGE + " | Original message (unformatted): " + format;
             }
+            customLogger.warn(bypassMarker, enhancedMessage, t);
+
             return FilterReply.DENY;
         }
         return FilterReply.NEUTRAL;
