@@ -19,6 +19,7 @@ import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import java.util.regex.Pattern;
 
 /**
  * This filter intercepts Infinispan DEBUG log and transforms it into WARNING message.
@@ -34,6 +35,7 @@ public class InfinispanLogsFilter extends TurboFilter {
     private static final String TARGET_LOGGER = "org.infinispan.persistence.sifs.FileProvider";
     private static final org.slf4j.Logger customLogger = LoggerFactory.getLogger(TARGET_LOGGER);
     protected static Message customMessage;
+    private static final Pattern LOG_PATTERN = Pattern.compile("File \\d{1,5} was not found.*+");
 
     static {
         try {
@@ -52,7 +54,7 @@ public class InfinispanLogsFilter extends TurboFilter {
         if (marker != null && APIML_MARKER.equals(marker.getName())) {
             return FilterReply.NEUTRAL;
         }
-        if (logger.getName().equals(TARGET_LOGGER) && format != null && format.contains("File") && format.contains("not found")) {
+        if (logger.getName().equals(TARGET_LOGGER) && format != null && LOG_PATTERN.matcher(format).matches()) {
             Marker bypassMarker = MarkerFactory.getMarker(APIML_MARKER);
             String enhancedMessage;
             try {
