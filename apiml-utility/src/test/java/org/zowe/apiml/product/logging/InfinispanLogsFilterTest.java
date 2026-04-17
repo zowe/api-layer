@@ -34,6 +34,7 @@ class InfinispanLogsFilterTest {
     private static final String TARGET_LOGGER_PATH = "org.infinispan.persistence.sifs.FileProvider";
     private static final String OTHER_LOGGER_PATH = "org.zowe.apiml.SomeClass";
     private static final String TARGET_FORMAT = "File 101 was not found";
+    private  final Logger infinispanLogger = (Logger) LoggerFactory.getLogger("org.infinispan.persistence.sifs");
 
     private final Logger targetLogger = (Logger) LoggerFactory.getLogger(TARGET_LOGGER_PATH);
     private final Logger otherLogger = (Logger) LoggerFactory.getLogger(OTHER_LOGGER_PATH);
@@ -65,7 +66,7 @@ class InfinispanLogsFilterTest {
             assertEquals(FilterReply.DENY, reply, "Filter should DENY the original Infinispan log after re-logging it");
             assertEquals(1, listAppender.list.size(), "One enriched log should have been issued");
             ILoggingEvent event = listAppender.list.get(0);
-            assertEquals(Level.WARN, event.getLevel(), "The enriched log should be a WARNING");
+            assertEquals(Level.ERROR, event.getLevel(), "The enriched log should be a WARNING");
             String logMessage = event.getFormattedMessage();
             assertTrue(logMessage.contains("ZWECS137W"), "Message should contain message ID");
             assertTrue(logMessage.contains("File 101 was not found"), "Message should contain original details");
@@ -85,7 +86,7 @@ class InfinispanLogsFilterTest {
             assertEquals(FilterReply.DENY, reply, "Filter should DENY the original Infinispan log after re-logging it");
             assertEquals(1, listAppender.list.size(), "One enriched log should have been issued");
             ILoggingEvent event = listAppender.list.get(0);
-            assertEquals(Level.WARN, event.getLevel(), "The enriched log should be a WARNING");
+            assertEquals(Level.ERROR, event.getLevel(), "The enriched log should be a WARNING");
             String logMessage = event.getFormattedMessage();
             assertTrue(logMessage.contains("ZWECS137W"), "Message should contain message ID");
             assertTrue(logMessage.contains("File 101 was not found"), "Message should contain original details");
@@ -102,16 +103,32 @@ class InfinispanLogsFilterTest {
 
     @Test
     void testDenyForGenericLogWhenDebugDisabled() {
-        Logger infinispanLogger = (Logger) LoggerFactory.getLogger("org.infinispan");
         Level originalLevel = infinispanLogger.getLevel();
 
         try {
             infinispanLogger.setLevel(Level.INFO);
             String genericFormat = "Opening channel for file 123";
-            FilterReply reply = filterInstance.decide(null, targetLogger, Level.INFO, genericFormat, null, null);
+            FilterReply reply = filterInstance.decide(null, targetLogger, Level.DEBUG, genericFormat, null, null);
 
             assertEquals(FilterReply.DENY, reply,
-                "Generic DEBUG logs should be NEUTRAL when root debug is disabled");
+                "Generic DEBUG logs should be DENY when root debug is INFO");
+
+        } finally {
+            infinispanLogger.setLevel(originalLevel);
+        }
+    }
+
+    @Test
+    void testDenyForGenericLogWhenTraceEnabled() {
+        Level originalLevel = infinispanLogger.getLevel();
+
+        try {
+            infinispanLogger.setLevel(Level.TRACE);
+            String genericFormat = "Opening channel for file 123";
+            FilterReply reply = filterInstance.decide(null, targetLogger, Level.TRACE, genericFormat, null, null);
+
+            assertEquals(FilterReply.NEUTRAL, reply,
+                "Generic DEBUG logs should be NEUTRAL when root debug is TRACE");
 
         } finally {
             infinispanLogger.setLevel(originalLevel);
@@ -120,7 +137,6 @@ class InfinispanLogsFilterTest {
 
     @Test
     void testNeutralForSpecificLogWhenDebugDisabled() {
-        Logger infinispanLogger = (Logger) LoggerFactory.getLogger("org.infinispan");
         Level originalLevel = infinispanLogger.getLevel();
 
         try {
@@ -137,7 +153,6 @@ class InfinispanLogsFilterTest {
 
     @Test
     void testNeutralForGenericLogWhenDebugEnabled() {
-        Logger infinispanLogger = (Logger) LoggerFactory.getLogger("org.infinispan");
         Level originalLevel = infinispanLogger.getLevel();
 
         try {
@@ -155,7 +170,6 @@ class InfinispanLogsFilterTest {
 
     @Test
     void testDenyForSpecificLogWhenDebugEnabled() {
-        Logger infinispanLogger = (Logger) LoggerFactory.getLogger("org.infinispan");
         Level originalLevel = infinispanLogger.getLevel();
 
         try {

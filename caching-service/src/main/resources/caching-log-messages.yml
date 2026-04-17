@@ -71,16 +71,17 @@ messages:
         reason: "This caching storage method doesn't support this API."
         action: "Switch to Infinispan to be able to use this API."
 
-    -   key: org.zowe.apiml.cache.errorOpeningCachingFiles
-        number: ZWECS137
-        type: WARNING
-        text: "Failed to open or access one of the index segment file inside the caching-service directory."
-        reason: "A problem occurred while accessing one of the soft-index segment file used by Infinispan caching."
-        action: "Verify that:
-            - In your system, the MAXFILEPROC parameter is set to a sufficient value. If you still see this error, increase it until it disappears.
-            - There is enough space in the caching-service workspace directory.
-            - The Zowe user has permission to access the caching-service workspace directory.
-            - The caching-service workspace directory has read and write permissions."
+# This is just a reference. The message below is defined in the utility-log-messages.yml file
+#    -   key: org.zowe.apiml.cache.errorOpeningCachingFiles
+#        number: ZWECS137
+#        type: WARNING
+#        text: "Failed to open or access one of the index segment file inside the caching-service directory."
+#        reason: "A problem occurred while accessing one of the soft-index segment file used by Infinispan caching."
+#        action: "Verify that:
+#            - In your system, the MAXFILEPROC parameter is set to a sufficient value. If you still see this error, increase it until it disappears.
+#            - There is enough space in the caching-service workspace directory.
+#            - The Zowe user has permission to access the caching-service workspace directory.
+#            - The caching-service workspace directory has read and write permissions."
 
 
     # Storage messages (151 - 160)

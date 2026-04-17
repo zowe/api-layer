@@ -33,7 +33,7 @@ public class InfinispanLogsFilter extends TurboFilter {
 
     private static final String APIML_MARKER = "APIML-LOGGER";
     private static final String TARGET_LOGGER = "org.infinispan.persistence.sifs.FileProvider";
-    private static final String ROOT_LOGGER = "org.infinispan";
+    private static final String ROOT_LOGGER = "org.infinispan.persistence.sifs";
     private static final org.slf4j.Logger customLogger = LoggerFactory.getLogger(TARGET_LOGGER);
     private static final org.slf4j.Logger rootLogger = LoggerFactory.getLogger(ROOT_LOGGER);
     protected static Message customMessage;
@@ -41,12 +41,15 @@ public class InfinispanLogsFilter extends TurboFilter {
     private static String MAPPED_LOG_MESSAGE;
 
     static {
-        var messageService = YamlMessageServiceInstance.getInstance();
-        messageService.loadMessages("/caching-log-messages.yml");
-        customMessage = messageService.createMessage("org.zowe.apiml.cache.errorOpeningCachingFiles");
-        if (customMessage != null) {
+        try {
+            var messageService = YamlMessageServiceInstance.getInstance();
+            messageService.loadMessages("/utility-log-messages.yml");
+            customMessage = messageService.createMessage("org.zowe.apiml.cache.errorOpeningCachingFiles");
             MAPPED_LOG_MESSAGE = customMessage.mapToLogMessage();
+        } catch (Exception e) {
+            throw new RuntimeException("Could not load caching log messages", e);
         }
+
     }
 
     @Override
@@ -54,14 +57,14 @@ public class InfinispanLogsFilter extends TurboFilter {
         if (marker != null && APIML_MARKER.equals(marker.getName())) {
             return FilterReply.NEUTRAL;
         }
-        if (logger.getName().equals(TARGET_LOGGER)) {
-            if (format != null && LOG_PATTERN.matcher(format).matches()) {
+        if (format != null && logger.getName().equals(TARGET_LOGGER)) {
+            if (LOG_PATTERN.matcher(format).matches()) {
                 Marker bypassMarker = MarkerFactory.getMarker(APIML_MARKER);
                 String enhancedMessage = MAPPED_LOG_MESSAGE + " Exception: " + format;
-                customLogger.warn(bypassMarker, enhancedMessage, t);
+                customLogger.error(bypassMarker, enhancedMessage, t);
 
                 return FilterReply.DENY;
-            } else if (format != null && !LOG_PATTERN.matcher(format).matches() && !rootLogger.isDebugEnabled()) {
+            } else if (!rootLogger.isEnabledForLevel(org.slf4j.event.Level.intToLevel(Level.toLocationAwareLoggerInteger(level)))) {
                 return FilterReply.DENY;
             }
 
