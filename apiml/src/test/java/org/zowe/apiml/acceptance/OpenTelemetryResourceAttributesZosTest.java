@@ -221,6 +221,35 @@ class OpenTelemetryResourceAttributesZosTest {
             return logRecord;
         }
 
+        @Nested
+        class WhenServiceRequiresJwt {
+
+            @Nested
+            class WhenAuthPresent {
+            }
+
+            @Nested
+            class WhenAuthAbsent {
+            }
+        }
+
+        @Nested
+        class WhenServiceRequiresPassTicket {
+        }
+
+        @Nested
+        class WhenServiceRequiresX509 {
+        }
+
+        @Nested
+        class WhenServiceRequiresOidc {
+        }
+
+        @Nested
+        class WhenServiceRequiresSafIdt {
+        }
+
+
         @Test
         void givenRouted_whenAuthFail_thenLog() {
             given()
@@ -494,7 +523,7 @@ class OpenTelemetryResourceAttributesZosTest {
             .then()
                 .statusCode(200);
 
-            when(x509TokenProvider.isValid(any())).thenReturn(false);
+            // when(x509TokenProvider.isValid(any())).thenReturn(false);
         }
 
         @Test
