@@ -38,14 +38,14 @@ public class InfinispanLogsFilter extends TurboFilter {
     private static final org.slf4j.Logger rootLogger = LoggerFactory.getLogger(ROOT_LOGGER);
     protected static Message customMessage;
     private static final Pattern LOG_PATTERN = Pattern.compile("File \\d{1,5} was not found");
-    private static final String mappedLogMessage;
+    private static final String MAPPED_MESSAGE;
 
     static {
         try {
             var messageService = YamlMessageServiceInstance.getInstance();
             messageService.loadMessages("/utility-log-messages.yml");
             customMessage = messageService.createMessage("org.zowe.apiml.cache.errorOpeningCachingFiles");
-            mappedLogMessage = customMessage.mapToLogMessage();
+            MAPPED_MESSAGE = customMessage.mapToLogMessage();
         } catch (Exception e) {
             throw new IllegalStateException("Could not load caching log messages", e);
         }
@@ -60,7 +60,7 @@ public class InfinispanLogsFilter extends TurboFilter {
         if (format != null && logger.getName().equals(TARGET_LOGGER)) {
             if (LOG_PATTERN.matcher(format).matches()) {
                 Marker bypassMarker = MarkerFactory.getMarker(APIML_MARKER);
-                String enhancedMessage = mappedLogMessage + " Exception: " + format;
+                String enhancedMessage = MAPPED_MESSAGE + " Exception: " + format;
                 customLogger.error(bypassMarker, enhancedMessage, t);
 
                 return FilterReply.DENY;
