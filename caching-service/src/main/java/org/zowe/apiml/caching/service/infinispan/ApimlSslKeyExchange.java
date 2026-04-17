@@ -36,7 +36,7 @@ public class ApimlSslKeyExchange extends SSL_KEY_EXCHANGE {
     private static final ThreadLocal<List<Throwable>> EXCEPTIONS = new ThreadLocal<>();
 
     private static void addException(Exception e) {
-        List<Throwable> exceptionList = EXCEPTIONS.get();
+        var exceptionList = EXCEPTIONS.get();
         if (exceptionList == null) {
             exceptionList = new ArrayList<>();
         }
@@ -45,7 +45,7 @@ public class ApimlSslKeyExchange extends SSL_KEY_EXCHANGE {
     }
 
     String toString(Throwable t) {
-        List<Throwable> stack = new ArrayList<>();
+        var stack = new ArrayList<Throwable>();
         Throwable previous;
         do {
             stack.add(t);
@@ -60,7 +60,7 @@ public class ApimlSslKeyExchange extends SSL_KEY_EXCHANGE {
     }
 
     void printError(String message) {
-        List<Throwable> exceptionList = EXCEPTIONS.get();
+        var exceptionList = EXCEPTIONS.get();
         if (exceptionList != null) {
             printError(message, exceptionList);
             EXCEPTIONS.remove();
@@ -68,9 +68,9 @@ public class ApimlSslKeyExchange extends SSL_KEY_EXCHANGE {
     }
 
     void decorate(Exception e) {
-        List<Throwable> exceptionList = EXCEPTIONS.get();
+        var exceptionList = EXCEPTIONS.get();
         if (exceptionList != null) {
-            Iterator<Throwable> iterator = exceptionList.iterator();
+            var iterator = exceptionList.iterator();
             if ((e.getCause() == null) || (e.getCause() == e)) {
                 e.initCause(iterator.next());
             }
