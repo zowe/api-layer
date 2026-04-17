@@ -66,6 +66,7 @@ class ValidationJwtCacheRoutingTest extends AcceptanceTestWithMockServices {
                 .applid("dummy")
                 .addEndpoint("/%s-service/foo".formatted(scheme.toLowerCase()))
                 .assertion(exchange -> assertFalse(exchange.getRequestHeaders().containsKey("Authorization")))
+                .assertion(exchange -> assertFalse(exchange.getRequestHeaders().containsKey("X-SAF-Token")))
                 .assertion(exchange -> assertTrue(exchange.getRequestHeaders().containsKey("X-zowe-auth-failure")))
                 .responseCode(200)
                 .and()
