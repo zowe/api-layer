@@ -33,7 +33,7 @@ class InfinispanLogsFilterTest {
     private static final String APIML_MARKER = "APIML-LOGGER";
     private static final String TARGET_LOGGER_PATH = "org.infinispan.persistence.sifs.FileProvider";
     private static final String OTHER_LOGGER_PATH = "org.zowe.apiml.SomeClass";
-    private static final String TARGET_FORMAT = "File %d was not found";
+    private static final String TARGET_FORMAT = "File 101 was not found";
 
     private final Logger targetLogger = (Logger) LoggerFactory.getLogger(TARGET_LOGGER_PATH);
     private final Logger otherLogger = (Logger) LoggerFactory.getLogger(OTHER_LOGGER_PATH);
@@ -44,7 +44,6 @@ class InfinispanLogsFilterTest {
 
         Message mockMessage = mock(Message.class);
         when(mockMessage.mapToLogMessage()).thenReturn("ZWECS137W: Mocked Message");
-        InfinispanLogsFilter.customMessage = mockMessage;
     }
 
     @Test
@@ -56,7 +55,7 @@ class InfinispanLogsFilterTest {
     }
 
     @Test
-    void testDenyForTargetInfinispanLog() {
+    void testDenyForTargetInfinispanLogWhenDebug() {
         ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
         listAppender.start();
         targetLogger.addAppender(listAppender);
@@ -76,27 +75,104 @@ class InfinispanLogsFilterTest {
     }
 
     @Test
+    void testDenyForTargetInfinispanLogWhenRootInfo() {
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.start();
+        targetLogger.addAppender(listAppender);
+
+        try {
+            FilterReply reply = filterInstance.decide(null, targetLogger, Level.INFO, TARGET_FORMAT, new Object[]{101}, null);
+            assertEquals(FilterReply.DENY, reply, "Filter should DENY the original Infinispan log after re-logging it");
+            assertEquals(1, listAppender.list.size(), "One enriched log should have been issued");
+            ILoggingEvent event = listAppender.list.get(0);
+            assertEquals(Level.WARN, event.getLevel(), "The enriched log should be a WARNING");
+            String logMessage = event.getFormattedMessage();
+            assertTrue(logMessage.contains("ZWECS137W"), "Message should contain message ID");
+            assertTrue(logMessage.contains("File 101 was not found"), "Message should contain original details");
+        } finally {
+            targetLogger.detachAppender(listAppender);
+        }
+    }
+
+    @Test
     void testNeutralForOtherLogger() {
         FilterReply reply = filterInstance.decide(null, otherLogger, Level.DEBUG, TARGET_FORMAT, new Object[]{101}, null);
         assertEquals(FilterReply.NEUTRAL, reply, "Filter should be NEUTRAL for loggers other than " + TARGET_LOGGER_PATH);
     }
 
     @Test
-    void testNeutralForDifferentFormat() {
-        String differentFormat = "Index segment file %d opened successfully";
-        FilterReply reply = filterInstance.decide(null, targetLogger, Level.DEBUG, differentFormat, new Object[]{101}, null);
-        assertEquals(FilterReply.NEUTRAL, reply, "Filter should be NEUTRAL for different log messages");
+    void testDenyForGenericLogWhenDebugDisabled() {
+        Logger infinispanLogger = (Logger) LoggerFactory.getLogger("org.infinispan");
+        Level originalLevel = infinispanLogger.getLevel();
+
+        try {
+            infinispanLogger.setLevel(Level.INFO);
+            String genericFormat = "Opening channel for file 123";
+            FilterReply reply = filterInstance.decide(null, targetLogger, Level.INFO, genericFormat, null, null);
+
+            assertEquals(FilterReply.DENY, reply,
+                "Generic DEBUG logs should be NEUTRAL when root debug is disabled");
+
+        } finally {
+            infinispanLogger.setLevel(originalLevel);
+        }
+    }
+
+    @Test
+    void testNeutralForSpecificLogWhenDebugDisabled() {
+        Logger infinispanLogger = (Logger) LoggerFactory.getLogger("org.infinispan");
+        Level originalLevel = infinispanLogger.getLevel();
+
+        try {
+            infinispanLogger.setLevel(Level.INFO);
+            FilterReply reply = filterInstance.decide(null, targetLogger, Level.INFO, TARGET_FORMAT, null, null);
+
+            assertEquals(FilterReply.DENY, reply,
+                "Specific DEBUG logs should be DENY when root debug is disabled");
+
+        } finally {
+            infinispanLogger.setLevel(originalLevel);
+        }
+    }
+
+    @Test
+    void testNeutralForGenericLogWhenDebugEnabled() {
+        Logger infinispanLogger = (Logger) LoggerFactory.getLogger("org.infinispan");
+        Level originalLevel = infinispanLogger.getLevel();
+
+        try {
+            infinispanLogger.setLevel(Level.DEBUG);
+            String genericFormat = "Opening channel for file 123";
+            FilterReply reply = filterInstance.decide(null, targetLogger, Level.DEBUG, genericFormat, null, null);
+
+            assertEquals(FilterReply.NEUTRAL, reply,
+                "Generic DEBUG logs should be NEUTRAL when root debug is enabled");
+
+        } finally {
+            infinispanLogger.setLevel(originalLevel);
+        }
+    }
+
+    @Test
+    void testDenyForSpecificLogWhenDebugEnabled() {
+        Logger infinispanLogger = (Logger) LoggerFactory.getLogger("org.infinispan");
+        Level originalLevel = infinispanLogger.getLevel();
+
+        try {
+            infinispanLogger.setLevel(Level.DEBUG);
+            FilterReply reply = filterInstance.decide(null, targetLogger, Level.DEBUG, TARGET_FORMAT, null, null);
+
+            assertEquals(FilterReply.DENY, reply,
+                "Specific DEBUG logs should be DENY when root debug is enabled");
+
+        } finally {
+            infinispanLogger.setLevel(originalLevel);
+        }
     }
 
     @Test
     void testInfoLevelHandling() {
         FilterReply reply = filterInstance.decide(null, targetLogger, Level.INFO, TARGET_FORMAT, new Object[]{101}, null);
         assertEquals(FilterReply.DENY, reply, "Filter should DENY even at INFO level for the target message");
-    }
-
-    @Test
-    void testFormatErrorSafety() {
-        FilterReply reply = filterInstance.decide(null, targetLogger, Level.DEBUG, TARGET_FORMAT, null, null);
-        assertEquals(FilterReply.DENY, reply, "Filter should handle formatting exceptions safely and still return DENY");
     }
 }

@@ -41,18 +41,12 @@ public class InfinispanLogsFilter extends TurboFilter {
     private static String MAPPED_LOG_MESSAGE;
 
     static {
-        try {
-            var messageService = YamlMessageServiceInstance.getInstance();
-            messageService.loadMessages("/caching-log-messages.yml");
-            customMessage = messageService.createMessage("org.zowe.apiml.cache.errorOpeningCachingFiles");
-            if (customMessage != null) {
-                MAPPED_LOG_MESSAGE = customMessage.mapToLogMessage();
-            }
-        } catch (Exception e) {
-            // set for unit test mocking
-            customMessage = null;
+        var messageService = YamlMessageServiceInstance.getInstance();
+        messageService.loadMessages("/caching-log-messages.yml");
+        customMessage = messageService.createMessage("org.zowe.apiml.cache.errorOpeningCachingFiles");
+        if (customMessage != null) {
+            MAPPED_LOG_MESSAGE = customMessage.mapToLogMessage();
         }
-
     }
 
     @Override
@@ -63,13 +57,7 @@ public class InfinispanLogsFilter extends TurboFilter {
         if (logger.getName().equals(TARGET_LOGGER)) {
             if (format != null && LOG_PATTERN.matcher(format).matches()) {
                 Marker bypassMarker = MarkerFactory.getMarker(APIML_MARKER);
-                String enhancedMessage;
-                try {
-                    String formattedOriginal = String.format(format, params);
-                    enhancedMessage = MAPPED_LOG_MESSAGE + " Exception: " + formattedOriginal;
-                } catch (Exception e) {
-                    enhancedMessage = MAPPED_LOG_MESSAGE + " | Original message (unformatted): " + format;
-                }
+                String enhancedMessage = MAPPED_LOG_MESSAGE + " Exception: " + format;
                 customLogger.warn(bypassMarker, enhancedMessage, t);
 
                 return FilterReply.DENY;
