@@ -20,7 +20,6 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.server.ServerWebExchange;
@@ -119,6 +118,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
         StringUtils.equalsIgnoreCase(cookie.getName(), PAT_COOKIE_AUTH_NAME) ||
             StringUtils.equalsIgnoreCase(cookie.getName(), COOKIE_AUTH_NAME) ||
             StringUtils.startsWithIgnoreCase(cookie.getName(), COOKIE_AUTH_NAME + ".");
+
     private static final Predicate<HttpCookie> CREDENTIALS_COOKIE = cookie ->
         CREDENTIALS_COOKIE_INPUT.test(cookie) ||
             StringUtils.equalsIgnoreCase(cookie.getName(), "jwtToken") ||
@@ -127,6 +127,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     private static final Predicate<String> CREDENTIALS_HEADER_INPUT = headerName ->
         StringUtils.equalsIgnoreCase(headerName, HttpHeaders.AUTHORIZATION) ||
             StringUtils.equalsIgnoreCase(headerName, PAT_HEADER_NAME);
+
     private static final Predicate<String> CREDENTIALS_HEADER = headerName ->
         CREDENTIALS_HEADER_INPUT.test(headerName) ||
             CERTIFICATE_HEADERS_TEST.test(headerName) ||
@@ -210,9 +211,6 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
         var otelContext = OtelRequestContext.of(exchange);
         otelContext.authenticationFailed();
         otelContext.authErrorMessage(errorMessage);
-        Optional.ofNullable(exchange.getResponse().getStatusCode())
-            .flatMap(httpStatusCode -> Optional.ofNullable(HttpStatus.resolve(httpStatusCode.value())))
-            .ifPresent(httpStatus -> otelContext.authErrorType(httpStatus.getReasonPhrase()));
         Optional.ofNullable(getAuthenticationScheme()).ifPresent(otelContext::authMethod);
 
         return exchange.getRequest().mutate().headers(headers -> {
