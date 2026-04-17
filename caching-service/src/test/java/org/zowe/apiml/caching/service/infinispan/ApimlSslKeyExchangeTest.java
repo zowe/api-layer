@@ -27,11 +27,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLSocketFactory;
 import java.net.BindException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.atLeast;
@@ -69,31 +67,31 @@ class ApimlSslKeyExchangeTest {
     }
 
     private ApimlSslKeyExchange createApimlSslKeyExchange() throws Exception {
-        ApimlSslKeyExchange apimlSslKeyExchange = new ApimlSslKeyExchange() {
+        var instance = new ApimlSslKeyExchange() {
             @Override
             public Object down(Event evt) {
                 return evt.getArg();
             }
         };
 
-        apimlSslKeyExchange.setPortRange(0);
-        apimlSslKeyExchange.setKeystoreName("../keystore/localhost/localhost.keystore.p12");
-        apimlSslKeyExchange.setKeystorePassword("password");
-        apimlSslKeyExchange.setKeystoreType("PKCS12");
-        apimlSslKeyExchange.setTruststoreName("../keystore/localhost/localhost.truststore.p12");
-        apimlSslKeyExchange.setTruststorePassword("password");
-        apimlSslKeyExchange.setTruststoreType("PKCS12");
+        instance.setPortRange(0);
+        instance.setKeystoreName("../keystore/localhost/localhost.keystore.p12");
+        instance.setKeystorePassword("password");
+        instance.setKeystoreType("PKCS12");
+        instance.setTruststoreName("../keystore/localhost/localhost.truststore.p12");
+        instance.setTruststorePassword("password");
+        instance.setTruststoreType("PKCS12");
 
-        apimlSslKeyExchange.setDownProtocol(apimlSslKeyExchange);
+        instance.setDownProtocol(instance);
 
-        apimlSslKeyExchange.init();
+        instance.init();
 
-        return apimlSslKeyExchange;
+        return instance;
     }
 
     private String getLogMessage() {
         verify(mockedAppender, atLeast(1)).doAppend(loggingEventCaptor.capture());
-        List<LoggingEvent> logMessages = loggingEventCaptor.getAllValues();
+        var logMessages = loggingEventCaptor.getAllValues();
         assertEquals(1, logMessages.size());
         return logMessages.get(0).getFormattedMessage();
     }
@@ -105,7 +103,7 @@ class ApimlSslKeyExchangeTest {
         try {
             occupiedPort.start();
 
-            IllegalStateException e = assertThrows(IllegalStateException.class, apimlSslKeyExchange::createServerSocket);
+            var e = assertThrows(IllegalStateException.class, apimlSslKeyExchange::createServerSocket);
             assertNotNull(e.getCause());
             assertTrue(e.getCause().getMessage().contains("Address already in use"), "Unexpected cause message: " + e.getCause().getMessage());
 
@@ -129,7 +127,7 @@ class ApimlSslKeyExchangeTest {
 
     @Test
     void givenInvalidTarget_whenCreateSocketTo_thenLogTheError() {
-        IllegalStateException e = assertThrows(IllegalStateException.class, () -> apimlSslKeyExchange.createSocketTo(INVALID_ADDRESS));
+        var e = assertThrows(IllegalStateException.class, () -> apimlSslKeyExchange.createSocketTo(INVALID_ADDRESS));
 
         assertNotNull(e.getCause());
         assertTrue(e.getCause() instanceof ConnectException || e.getCause() instanceof BindException, "Unexpected exception: " + e.getCause().getClass());
@@ -143,8 +141,8 @@ class ApimlSslKeyExchangeTest {
 
     @Test
     void givenInvalidTargetWithSslFactory_whenCreateSocketTo_thenLogTheError() {
-        SSLSocketFactory sslSocketFactory = apimlSslKeyExchange.getClientSSLContext().getSocketFactory();
-        IllegalStateException e = assertThrows(IllegalStateException.class, () -> apimlSslKeyExchange.createSocketTo(INVALID_ADDRESS, sslSocketFactory));
+        var sslSocketFactory = apimlSslKeyExchange.getClientSSLContext().getSocketFactory();
+        var e = assertThrows(IllegalStateException.class, () -> apimlSslKeyExchange.createSocketTo(INVALID_ADDRESS, sslSocketFactory));
 
         assertNotNull(e.getCause());
         assertTrue(e.getCause() instanceof ConnectException || e.getCause() instanceof BindException, "Unexpected exception: " + e.getCause().getClass());

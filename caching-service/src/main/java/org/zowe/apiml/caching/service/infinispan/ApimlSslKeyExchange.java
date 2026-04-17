@@ -22,11 +22,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.security.KeyManagementException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,6 +77,7 @@ public class ApimlSslKeyExchange extends SSL_KEY_EXCHANGE {
         }
     }
 
+    @Override
     protected SSLServerSocket createServerSocket() throws Exception {
         try {
             return super.createServerSocket();
@@ -139,13 +137,13 @@ public class ApimlSslKeyExchange extends SSL_KEY_EXCHANGE {
     }
 
     @Override
-    public SSL_KEY_EXCHANGE setClientSSLContext(SSLContext client_ssl_ctx) {
-        return super.setClientSSLContext(update(client_ssl_ctx));
+    public SSL_KEY_EXCHANGE setClientSSLContext(SSLContext clientSslCtx) {
+        return super.setClientSSLContext(update(clientSslCtx));
     }
 
     @Override
-    public SSL_KEY_EXCHANGE setServerSSLContext(SSLContext server_ssl_ctx) {
-        return super.setServerSSLContext(update(server_ssl_ctx));
+    public SSL_KEY_EXCHANGE setServerSSLContext(SSLContext serverSslCtx) {
+        return super.setServerSSLContext(update(serverSslCtx));
     }
 
     @RequiredArgsConstructor
@@ -165,17 +163,17 @@ public class ApimlSslKeyExchange extends SSL_KEY_EXCHANGE {
         }
 
         @Override
-        public Socket createSocket(Socket s, String host, int port, boolean autoClose) throws IOException {
+        public Socket createSocket(Socket s, String host, int port, boolean autoClose) {
             throw new IllegalStateException("Not implemented");
         }
 
         @Override
-        public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
+        public Socket createSocket(String host, int port) {
             throw new IllegalStateException("Not implemented");
         }
 
         @Override
-        public Socket createSocket(String host, int port, InetAddress localHost, int localPort) throws IOException, UnknownHostException {
+        public Socket createSocket(String host, int port, InetAddress localHost, int localPort) {
             throw new IllegalStateException("Not implemented");
         }
 
@@ -190,7 +188,7 @@ public class ApimlSslKeyExchange extends SSL_KEY_EXCHANGE {
         }
 
         @Override
-        public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort) throws IOException {
+        public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort) {
             throw new IllegalStateException("Not implemented");
         }
 
@@ -213,12 +211,12 @@ public class ApimlSslKeyExchange extends SSL_KEY_EXCHANGE {
         }
 
         @Override
-        public ServerSocket createServerSocket(int port) throws IOException {
+        public ServerSocket createServerSocket(int port) {
             throw new IllegalStateException("Not implemented");
         }
 
         @Override
-        public ServerSocket createServerSocket(int port, int backlog) throws IOException {
+        public ServerSocket createServerSocket(int port, int backlog) {
             throw new IllegalStateException("Not implemented");
         }
 
@@ -243,7 +241,7 @@ public class ApimlSslKeyExchange extends SSL_KEY_EXCHANGE {
         private final SSLServerSocketFactory sslServerSocketFactory;
 
         @Override
-        protected void engineInit(KeyManager[] km, TrustManager[] tm, SecureRandom sr) throws KeyManagementException {
+        protected void engineInit(KeyManager[] km, TrustManager[] tm, SecureRandom sr) {
             throw new IllegalStateException("Not implemented");
         }
 
