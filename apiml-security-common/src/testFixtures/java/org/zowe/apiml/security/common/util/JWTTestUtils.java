@@ -34,6 +34,10 @@ public class JWTTestUtils {
         return createToken(username, domain, ltpaToken, config, "APIML");
     }
 
+    public static String createExpiredZoweJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
+        return createExpiredToken(username, domain, ltpaToken, config, "APIML");
+    }
+
     public static String createZosmfJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
         return createToken(username, domain, ltpaToken, config, "zOSMF");
     }
@@ -41,6 +45,23 @@ public class JWTTestUtils {
     public static String createToken(String username, String domain, String ltpaToken, HttpsConfig config, String issuer) {
         long now = System.currentTimeMillis();
         long expiration = now + 100_000L;
+        Key jwtSecret = SecurityUtils.loadKey(config);
+
+        return Jwts.builder()
+            .subject(username)
+            .claim("dom", domain)
+            .claim("ltpa", ltpaToken)
+            .issuedAt(new Date(now))
+            .expiration(new Date(expiration))
+            .issuer(issuer)
+            .id(UUID.randomUUID().toString())
+            .signWith(jwtSecret)
+            .compact();
+    }
+
+    public static String createExpiredToken(String username, String domain, String ltpaToken, HttpsConfig config, String issuer) {
+        long now = System.currentTimeMillis();
+        long expiration = now - 200_000L;
         Key jwtSecret = SecurityUtils.loadKey(config);
 
         return Jwts.builder()
