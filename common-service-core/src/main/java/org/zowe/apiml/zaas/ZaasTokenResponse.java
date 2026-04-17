@@ -10,10 +10,13 @@
 
 package org.zowe.apiml.zaas;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -24,5 +27,11 @@ public class ZaasTokenResponse {
     private String cookieName;
     private String headerName;
     private String token;
+    @JsonIgnore // to avoid a breaking change, this value is needed only in Otel via API call, not rest
+    private String userId;
+    @JsonIgnore // to avoid a breaking change, this value is needed only in Otel via API call, not rest
+    private List<String> distributedIds;
+    @JsonIgnore // to avoid a breaking change, this value is needed only in Otel via API call, not rest
+    private String authSourceType;
 
 }

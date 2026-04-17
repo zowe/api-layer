@@ -8,38 +8,46 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import jest from 'jest-mock';
 import { userService } from './user.service';
 
 function mockFetch(data) {
     return jest.fn().mockImplementation(() =>
         Promise.resolve({
             ok: true,
-            json: () => data,
+            status: 200,
+            text: () => Promise.resolve(JSON.stringify(data)),
+            json: () => Promise.resolve(data),
         })
     );
 }
 
 describe('>>> User service tests', () => {
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
     it('should return user on login', async () => {
         const result = {};
-        const fetch = mockFetch(result);
+        const fetchMock = mockFetch(result);
+        global.fetch = fetchMock;
         const user = await userService.login({ username: 'user', password: 'password' });
         expect(user).toEqual(result);
-        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
     it('should logout', async () => {
         const result = {};
-        const fetch = mockFetch(result);
+        const fetchMock = mockFetch(result);
+        global.fetch = fetchMock;
         await userService.logout();
-        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
     it('should validate with query', async () => {
-        const result = {};
-        const fetch = mockFetch(result);
+        const result = { status: 200 };
+        const fetchMock = mockFetch(result);
+        global.fetch = fetchMock;
         await userService.query();
-        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 });

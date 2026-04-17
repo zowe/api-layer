@@ -28,6 +28,13 @@ server:
     #     trustStorePassword: password
     #     trustStoreType: PKCS12
 apiml:
+    catalog:
+        eureka:
+            instance:
+                metadata-map:
+                    apiml:
+                        corsEnabled: true
+                        corsAllowedOrigins: http://localhost:5173
     internal-discovery:
         port: 10011
     health:
@@ -99,7 +106,7 @@ otel:
         include-trace-context: true
     exporter:
         otlp:
-            endpoint: http://localhost:4318
+            endpoint: https://localhost:4318
     sdk:
         disabled: true
 

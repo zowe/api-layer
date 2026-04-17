@@ -30,8 +30,11 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.util.ResourceUtils;
 import org.zowe.apiml.gateway.ApplicationRegistry;
 import org.zowe.apiml.gateway.MockService;
+import org.zowe.apiml.gateway.MockWebSocketService;
+import org.zowe.apiml.gateway.MockWebSocketTyrusService;
 
 import javax.net.ssl.SSLContext;
+
 import java.net.Socket;
 import java.security.cert.X509Certificate;
 import java.util.Map;
@@ -77,6 +80,10 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
     @Autowired
     protected ApplicationRegistry applicationRegistry;
 
+    protected SSLContext apimlSSLContext;
+
+    protected SSLContext apimlNonStrictSSLContext;
+
     @BeforeEach
     void resetCounters() {
         applicationRegistry.getMockServices().forEach(MockService::resetCounter);
@@ -93,9 +100,14 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
         TrustStrategy trustStrategy = (X509Certificate[] chain, String authType) -> true;
         X509HostnameVerifier hostnameVerifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
 
-        SSLContext apimlSSLContext = SSLContextBuilder.create()
+        apimlSSLContext = SSLContextBuilder.create()
             .loadKeyMaterial(ResourceUtils.getFile(apimlKeyStorePath), apimlKeyStorePassword, apimlKeyPassword)
             .loadTrustMaterial(null, trustStrategy).build();
+
+        apimlNonStrictSSLContext = SSLContextBuilder.create()
+            .loadKeyMaterial(ResourceUtils.getFile("../keystore/localhost/nonlocalhost.keystore.p12"), apimlKeyStorePassword, apimlKeyPassword)
+            .loadTrustMaterial(null, trustStrategy).build();
+
         apimlCert = RestAssuredConfig.newConfig()
             .sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(apimlSSLContext, hostnameVerifier)));
 
@@ -134,6 +146,41 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
     protected MockService.MockServiceBuilder mockService(String serviceId) {
         return MockService.builder()
             .statusChangedlistener(mockService -> {
+                applicationRegistry.update(mockService);
+                updateRoutingRules();
+            })
+            .serviceId(serviceId);
+    }
+
+    /**
+     * Create web socket mock service. It will be automatically registered and removed. It is not necessary to handle
+     * its lifecycle.
+     *
+     * Example:
+     *
+     * MockService myService;
+     *
+     * @BeforeAll
+     * void createMyService() {
+     *     myService = mockServiceWs("myservice").scope(MockService.Scope.CLASS)
+     *          .start();
+     * }
+     *
+     * @param serviceId serviceId of the new service
+     * @return builder to define a new MockService
+     */
+    protected MockWebSocketService.MockWsServiceBuilder mockServiceWs(String serviceId) {
+        return MockWebSocketService.wsBuilder()
+            .statusChangedListener(mockService -> {
+                applicationRegistry.update(mockService);
+                updateRoutingRules();
+            })
+            .serviceId(serviceId);
+    }
+
+    protected MockWebSocketTyrusService.MockWsTyrusServiceBuilder mockServiceWsTyrus(String serviceId) {
+        return MockWebSocketTyrusService.wsTyrusBuilder()
+            .statusChangedListener(mockService -> {
                 applicationRegistry.update(mockService);
                 updateRoutingRules();
             })

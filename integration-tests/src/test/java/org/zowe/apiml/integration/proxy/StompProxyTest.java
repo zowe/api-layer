@@ -30,7 +30,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_STOMP;
 
-public class StompProxyTest extends WebSocketProxyTest {
+class StompProxyTest extends WebSocketProxyTest {
 
     private static final String SEND_ENDPOINT = "/app/replyWithSameSize/";
     private static final String SUBSCRIBE_ENDPOINT = "/topic/replyWithSameSize/";
@@ -49,7 +49,7 @@ public class StompProxyTest extends WebSocketProxyTest {
             .orElse(DEFAULT_CONNECTION_TIMEOUT);
 
     @BeforeAll
-    public static void setUpStompClient() {
+    static void setUpStompClient() {
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         container.setDefaultMaxTextMessageBufferSize(3 * 1024 * 1024);
         container.setDefaultMaxBinaryMessageBufferSize(3 * 1024 * 1024);
@@ -94,5 +94,7 @@ public class StompProxyTest extends WebSocketProxyTest {
         public void handleFrame(StompHeaders stompHeaders, Object o) {
             completableFuture.complete((String) o);
         }
+
     }
+
 }

@@ -24,18 +24,19 @@ import org.zowe.apiml.zaas.ZaasTokenResponse;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSourceService;
+import org.zowe.apiml.zaas.security.service.schema.source.OIDCAuthSource;
+import org.zowe.apiml.zaas.security.service.schema.source.ParsedTokenAuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import reactor.test.StepVerifier;
 
 import javax.management.ServiceNotFoundException;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
+import static org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Origin.ZOWE;
 
 class ZaasSchemeTransformApiTest {
 
@@ -178,7 +179,6 @@ class ZaasSchemeTransformApiTest {
 
             @BeforeEach
             void setup() {
-
                 var parsed = mock(AuthSource.Parsed.class);
                 when(parsed.getUserId()).thenReturn("USER1");
                 when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
@@ -188,7 +188,6 @@ class ZaasSchemeTransformApiTest {
 
             @Test
             void whenValidUser_returnsToken() throws PassTicketException {
-
                 when(tokenCreationService.createSafIdTokenWithoutCredentials("USER1", "app1"))
                     .thenReturn("saf-idt");
 
@@ -199,8 +198,29 @@ class ZaasSchemeTransformApiTest {
             }
 
             @Test
-            void whenSafIdTokenCreationFails_returnsError() {
+            void whenOidc_returnsDistributedId() throws PassTicketException {
+                var parsed = mock(AuthSource.Parsed.class);
+                when(parsed.getUserId()).thenReturn("USER1");
+                var oidcAuthSource = mock(OIDCAuthSource.class);
+                when(oidcAuthSource.getDistributedId()).thenReturn(Arrays.asList("USERD1", "USERD2"));
+                when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(oidcAuthSource));
+                when(authSourceService.parse(oidcAuthSource)).thenReturn(parsed);
 
+                when(tokenCreationService.createSafIdTokenWithoutCredentials("USER1", "app1"))
+                    .thenReturn("saf-idt");
+
+                StepVerifier.create(transformApi.safIdt(credentials)).assertNext(result -> {
+                    assertNotNull(result);
+                    assertEquals("saf-idt", result.getBody().getToken());
+                    assertNotNull(result.getBody().getDistributedIds());
+                    assertEquals(2, result.getBody().getDistributedIds().size());
+                    assertEquals("USERD1", result.getBody().getDistributedIds().get(0));
+                    assertEquals("USERD2", result.getBody().getDistributedIds().get(1));
+                }).verifyComplete();
+            }
+
+            @Test
+            void whenSafIdTokenCreationFails_returnsError() {
                 when(tokenCreationService.createSafIdTokenWithoutCredentials("USER1", "app1"))
                     .thenThrow(new RuntimeException("Simulated SAF IDT failure"));
 
@@ -209,6 +229,7 @@ class ZaasSchemeTransformApiTest {
                     assertNull(result.getBody());
                 }).verifyComplete();
             }
+
         }
 
         @Nested
@@ -362,6 +383,78 @@ class ZaasSchemeTransformApiTest {
 
         }
 
+
+    }
+
+    @Nested
+    class Oidc {
+
+        private static final String USER_ID = "myUserId";
+        private static final List<String> DISTRIBUTED_IDS = Arrays.asList("userA", "userB");
+
+        private AuthSourceService authSourceService = mock(AuthSourceService.class);
+        private PassTicketService passTicketService = mock(PassTicketService.class);
+        private ZosmfService zosmfService = mock(ZosmfService.class);
+        private TokenCreationService tokenCreationService = mock(TokenCreationService.class);
+        private MessageService messageService = mock(MessageService.class);
+
+        private ZaasSchemeTransformApi transformApi = new ZaasSchemeTransformApi(authSourceService, passTicketService, zosmfService, tokenCreationService, messageService);
+
+        @BeforeEach
+        void setup() {
+            var oidcAuthSource = mock(OIDCAuthSource.class);
+            doReturn(DISTRIBUTED_IDS).when(oidcAuthSource).getDistributedId();
+            doReturn("rawData").when(oidcAuthSource).getRawSource();
+            doReturn(Optional.of(oidcAuthSource)).when(authSourceService).getAuthSourceFromRequest(any());
+            var parsedAuthSource = new ParsedTokenAuthSource(USER_ID, new Date(), new Date(), ZOWE);
+            doReturn(parsedAuthSource).when(authSourceService).parse(oidcAuthSource);
+            doReturn(true).when(authSourceService).isValid(any());
+        }
+
+        @Test
+        void giveOidcToken_whenPassticket_thenReturnUserIds() {
+            var requestCredentials = RequestCredentials.builder().applId("APPLID").build();
+
+            StepVerifier.create(transformApi.passticket(requestCredentials))
+                .assertNext(response -> {
+                    assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
+                    assertSame(USER_ID, response.getBody().getUserId());
+                }).verifyComplete();
+        }
+
+        @Test
+        void giveOidcToken_whenSafIdt_thenReturnUserIds() {
+            var requestCredentials = RequestCredentials.builder().applId("APPLID").build();
+
+            StepVerifier.create(transformApi.safIdt(requestCredentials))
+                .assertNext(response -> {
+                    assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
+                    assertSame(USER_ID, response.getBody().getUserId());
+                }).verifyComplete();
+        }
+
+        @Test
+        void giveOidcToken_whenZosmf_thenReturnUserIds() throws ServiceNotFoundException {
+            var requestCredentials = RequestCredentials.builder().build();
+            doReturn(ZaasTokenResponse.builder().distributedIds(DISTRIBUTED_IDS).userId(USER_ID).build()).when(zosmfService).exchangeAuthenticationForZosmfToken(any(), any());
+
+            StepVerifier.create(transformApi.zosmf(requestCredentials))
+                .assertNext(response -> {
+                    assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
+                    assertSame(USER_ID, response.getBody().getUserId());
+                }).verifyComplete();
+        }
+
+        @Test
+        void giveOidcToken_whenZoweJwt_thenReturnUserIds() {
+            var requestCredentials = RequestCredentials.builder().build();
+
+            StepVerifier.create(transformApi.zoweJwt(requestCredentials))
+                .assertNext(response -> {
+                    assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
+                    assertSame(USER_ID, response.getBody().getUserId());
+                }).verifyComplete();
+        }
 
     }
 

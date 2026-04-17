@@ -12,35 +12,33 @@ package org.zowe.apiml.gateway.filters.security;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.gateway.service.TokenProvider;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.util.CookieUtil;
 import reactor.core.publisher.Mono;
 
 import java.net.ConnectException;
-import java.net.HttpCookie;
-import java.util.Optional;
 
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.zowe.apiml.security.common.token.TokenAuthentication.createAuthenticated;
 
 @RequiredArgsConstructor
-public class TokenAuthFilter implements WebFilter {
+public class TokenAuthFilter extends AbstractTokenAuthFilter {
 
-    public static final String HEADER_PREFIX = "Bearer ";
     private final TokenProvider tokenProvider;
     private final AuthConfigurationProperties authConfigurationProperties;
     private final AuthExceptionHandlerReactive authExceptionHandlerReactive;
+
+    @Override
+    protected AuthConfigurationProperties getAuthConfigurationProperties() {
+        return authConfigurationProperties;
+    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -65,18 +63,6 @@ public class TokenAuthFilter implements WebFilter {
         ).orElseGet(() -> chain.filter(exchange));
     }
 
-    private Optional<String> resolveToken(ServerHttpRequest request) {
-        String bearerToken = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (StringUtils.startsWith(bearerToken, HEADER_PREFIX)) {
-            return Optional.of(bearerToken.substring(HEADER_PREFIX.length()));
-        }
-
-        String cookieName = authConfigurationProperties.getCookieProperties().getCookieName();
-        return CookieUtil.readCookies(request.getHeaders())
-            .filter(httpCookie -> StringUtils.equals(cookieName, httpCookie.getName()))
-            .findFirst()
-            .map(HttpCookie::getValue);
-    }
 
     private boolean isServiceUnavailable(Throwable ex) {
         return ex instanceof ConnectException

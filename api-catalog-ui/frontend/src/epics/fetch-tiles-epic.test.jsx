@@ -82,9 +82,6 @@ test('it should return a successful result then stop after one cycle', () => {
         c: fetchTilesStop(),
     };
 
-    process.env.REACT_APP_STATUS_UPDATE_DEBOUNCE = '10';
-    process.env.REACT_APP_STATUS_UPDATE_PERIOD = '50';
-    process.env.REACT_APP_STATUS_UPDATE_SCALING_DURATION = '10';
     const ts = createTestScheduler(deepEquals);
     const dependencies = {
         ajax: jest.fn(() => of(ajaxResponse)),
@@ -107,9 +104,6 @@ test('it should return a successful result then stop after one cycle for a expli
         c: fetchTilesStop(),
     };
 
-    process.env.REACT_APP_STATUS_UPDATE_DEBOUNCE = '10';
-    process.env.REACT_APP_STATUS_UPDATE_PERIOD = '50';
-    process.env.REACT_APP_STATUS_UPDATE_SCALING_DURATION = '10';
     const ts = createTestScheduler(deepEquals);
     const dependencies = {
         ajax: jest.fn(() => of(ajaxResponse)),
@@ -137,9 +131,6 @@ test('it should request, fail with a terminating FAILED action with an enclosed 
         scheduler: ts,
     };
 
-    process.env.REACT_APP_STATUS_UPDATE_DEBOUNCE = '10';
-    process.env.REACT_APP_STATUS_UPDATE_PERIOD = '50';
-    process.env.REACT_APP_STATUS_UPDATE_SCALING_DURATION = '10';
     const source = new ActionsObservable(ts.createColdObservable(marbles1, values));
     const actual = fetchTilesPollingEpic(source, null, dependencies);
     ts.expectObservable(actual).toBe(marbles2, values);
@@ -154,6 +145,7 @@ test('it should fail when runs out of retry attempts', () => {
         c: fetchTilesFailed(retryError),
     };
 
+    import.meta.env.VITE_STATUS_UPDATE_MAX_RETRIES = '0';
     const ts = createTestScheduler((actualResult) =>
         expect(actualResult).toEqual(
             expect.arrayContaining([
@@ -173,10 +165,6 @@ test('it should fail when runs out of retry attempts', () => {
         scheduler: ts,
     };
 
-    process.env.REACT_APP_STATUS_UPDATE_DEBOUNCE = '10';
-    process.env.REACT_APP_STATUS_UPDATE_PERIOD = '50';
-    process.env.REACT_APP_STATUS_UPDATE_SCALING_DURATION = '10';
-    process.env.REACT_APP_STATUS_UPDATE_MAX_RETRIES = '0';
     const source = new ActionsObservable(ts.createColdObservable(marbles1, values));
     const actual = fetchTilesPollingEpic(source, null, dependencies);
     ts.expectObservable(actual).toBe(marbles2, values);
@@ -191,16 +179,13 @@ test('it when retries then no response', () => {
         c: fetchTilesFailed(retryError),
     };
 
+    import.meta.env.VITE_STATUS_UPDATE_MAX_RETRIES = '1';
     const ts = createTestScheduler((actualResult) => expect(actualResult).toEqual([]));
     const dependencies = {
         ajax: () => throwError(retryError),
         scheduler: ts,
     };
 
-    process.env.REACT_APP_STATUS_UPDATE_DEBOUNCE = '10';
-    process.env.REACT_APP_STATUS_UPDATE_PERIOD = '50';
-    process.env.REACT_APP_STATUS_UPDATE_SCALING_DURATION = '10';
-    process.env.REACT_APP_STATUS_UPDATE_MAX_RETRIES = '1';
     const source = new ActionsObservable(ts.createColdObservable(marbles1, values));
     const actual = fetchTilesPollingEpic(source, null, dependencies);
     ts.expectObservable(actual).toBe(marbles2, values);

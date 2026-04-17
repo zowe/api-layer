@@ -16,9 +16,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
@@ -84,6 +87,9 @@ class TokenAuthFilterTest {
                     .thenReturn(new HttpHeaders(
                         toMultiValueMap(
                             singletonMap("Cookie", asList("apimlAuthenticationToken=token")))));
+                MultiValueMap<String, HttpCookie> cookies = new LinkedMultiValueMap<>();
+                cookies.add(COOKIE_NAME, new HttpCookie(COOKIE_NAME, "token"));
+                when(httpRequest.getCookies()).thenReturn(cookies);
             }
 
             private void mockTokenInHeader() {
@@ -183,6 +189,7 @@ class TokenAuthFilterTest {
             @Test
             void thenContinueChain() {
                 when(httpRequest.getHeaders()).thenReturn(HttpHeaders.EMPTY);
+                when(httpRequest.getCookies()).thenReturn(new LinkedMultiValueMap<>());
                 tokenAuthFilter.filter(serverWebExchange, chain);
                 verify(chain, times(1)).filter(any());
             }

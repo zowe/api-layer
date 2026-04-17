@@ -15,12 +15,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Joiner;
 import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.InstanceInfo.PortType;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Singular;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -77,11 +80,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Builder(builderClassName = "MockServiceBuilder", buildMethodName = "internalBuild")
 @Getter
 @Slf4j
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
+@NoArgsConstructor(access = AccessLevel.PACKAGE)
 public class MockService implements AutoCloseable {
 
-    private static int idCounter = 1;
+    protected static int idCounter = 1;
     // in case on zombie mode is necessary to have a unique port number, on start replaced with the real one
-    private int port;
+    protected int port;
 
     /**
      * HTTP server to handle requests and the endpoint configuration
@@ -89,21 +94,21 @@ public class MockService implements AutoCloseable {
     @Getter(AccessLevel.NONE)
     private HttpServer server;
     @Getter(AccessLevel.NONE)
-    private List<Endpoint> endpointsConfig;
+    protected List<Endpoint> endpointsConfig;
 
     /**
      * Service identification
      */
-    private String serviceId;
-    private String vipAddress;
+    protected String serviceId;
+    protected String vipAddress;
     @Builder.Default
-    private String hostname = "localhost";
+    protected String hostname = "localhost";
 
     /**
      * Routing configuration
      */
-    private String gatewayUrl;
-    private String serviceUrl;
+    protected String gatewayUrl;
+    protected String serviceUrl;
 
     /**
      * Authentication configuration
@@ -116,28 +121,28 @@ public class MockService implements AutoCloseable {
      * {@link AcceptanceTestWithMockServices} use it to releasing an instance.
      */
     @Builder.Default
-    private Scope scope = Scope.TEST;
+    protected Scope scope = Scope.TEST;
 
     @Singular
     @Getter(AccessLevel.NONE)
-    private List<Consumer<MockService>> statusChangedlisteners;
+    protected List<Consumer<MockService>> statusChangedlisteners;
 
     /**
      * All registered endpoints. It is possible to get any instance by path. If there is just one endpoint in the
      * service, you can use {@link MockService#getEndpoint()}
      */
-    private final Map<String, Endpoint> endpoints = new HashMap<>();
+    protected final Map<String, Endpoint> endpoints = new HashMap<>();
 
     /**
      * Additional metadata added on top of standard one required for the mock service to run
      */
-    private Map<? extends String, ? extends String> additionalMetadata;
+    protected Map<? extends String, ? extends String> additionalMetadata;
 
     /**
      * Status of the service - see possible values {@link MockService.Status}
      */
     @Getter(AccessLevel.NONE)
-    private final AtomicReference<Status> status = new AtomicReference<>(Status.STOPPED);
+    protected final AtomicReference<Status> status = new AtomicReference<>(Status.STOPPED);
 
     /**
      * Collector of assert error on server side. To throw them in a test is necessary to call
@@ -176,7 +181,7 @@ public class MockService implements AutoCloseable {
         }
     }
 
-    private static void setAssertionError(AssertionError assertionError) {
+    static void setAssertionError(AssertionError assertionError) {
         if (MockService.assertionError == null) {
             // in case of the first error, just store the exception
             MockService.assertionError = assertionError;
@@ -203,7 +208,7 @@ public class MockService implements AutoCloseable {
         }
     }
 
-    private void setStatus(Status status) {
+    void setStatus(Status status) {
         if (this.status.get() != status) {
             this.status.set(status);
             fireStatusChanged();
@@ -291,7 +296,7 @@ public class MockService implements AutoCloseable {
         status.set(Status.CANCELLING);
     }
 
-    private Map<String, String> getMetadata() {
+    Map<String, String> getMetadata() {
         Map<String, String> metadata = new HashMap<>();
         metadata.put("apiml.routes.api-v1.gatewayUrl", "api/v1");
         metadata.put("apiml.routes.api-v1.serviceUrl", "/" + serviceId);
@@ -313,16 +318,17 @@ public class MockService implements AutoCloseable {
      *
      * @return instanceInfo with all related data
      */
-    public InstanceInfo getInstanceInfo() {
+    public InstanceInfo.Builder getInstanceInfo() {
         return InstanceInfo.Builder.newBuilder()
             .setInstanceId(getInstanceId())
             .setHostName(hostname)
             .setPort(port)
+            .enablePort(PortType.SECURE, false)
+            .enablePort(PortType.UNSECURE, true)
             .setAppName(serviceId)
             .setVIPAddress(vipAddress != null ? vipAddress : serviceId)
             .setStatus(InstanceInfo.InstanceStatus.UP)
-            .setMetadata(getMetadata())
-            .build();
+            .setMetadata(getMetadata());
     }
 
     /**
@@ -331,7 +337,7 @@ public class MockService implements AutoCloseable {
      * @return EurekaServiceInstance with all related data
      */
     public EurekaServiceInstance getEurekaServiceInstance() {
-        InstanceInfo instanceInfo = getInstanceInfo();
+        InstanceInfo instanceInfo = getInstanceInfo().build();
         return instanceInfo == null ? null : new EurekaServiceInstance(instanceInfo);
     }
 
@@ -430,7 +436,7 @@ public class MockService implements AutoCloseable {
          * {@link MockService#checkAssertionErrors()}
          */
         @Singular
-        private List<Consumer<HttpExchange>> assertions;
+        protected List<Consumer<HttpExchange>> assertions;
 
         /**
          * Counter of calls. It contains amount of received requests.
