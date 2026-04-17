@@ -33,7 +33,9 @@ public class InfinispanLogsFilter extends TurboFilter {
 
     private static final String APIML_MARKER = "APIML-LOGGER";
     private static final String TARGET_LOGGER = "org.infinispan.persistence.sifs.FileProvider";
+    private static final String ROOT_LOGGER = "org.infinispan";
     private static final org.slf4j.Logger customLogger = LoggerFactory.getLogger(TARGET_LOGGER);
+    private static final org.slf4j.Logger rootLogger = LoggerFactory.getLogger(ROOT_LOGGER);
     protected static Message customMessage;
     private static final Pattern LOG_PATTERN = Pattern.compile("File \\d{1,5} was not found");
 
@@ -54,20 +56,24 @@ public class InfinispanLogsFilter extends TurboFilter {
         if (marker != null && APIML_MARKER.equals(marker.getName())) {
             return FilterReply.NEUTRAL;
         }
-        if (logger.getName().equals(TARGET_LOGGER) && format != null && LOG_PATTERN.matcher(format).matches()) {
-            Marker bypassMarker = MarkerFactory.getMarker(APIML_MARKER);
-            String enhancedMessage;
-            try {
-                String formattedOriginal = String.format(format, params);
-                enhancedMessage = customMessage.mapToLogMessage() + " Exception: " + formattedOriginal;
-            } catch (Exception e) {
-                enhancedMessage = customMessage.mapToLogMessage() + " | Original message (unformatted): " + format;
-            }
-            customLogger.warn(bypassMarker, enhancedMessage, t);
+        if (logger.getName().equals(TARGET_LOGGER)) {
+            if (format != null && LOG_PATTERN.matcher(format).matches()) {
+                Marker bypassMarker = MarkerFactory.getMarker(APIML_MARKER);
+                String enhancedMessage;
+                try {
+                    String formattedOriginal = String.format(format, params);
+                    enhancedMessage = customMessage.mapToLogMessage() + " Exception: " + formattedOriginal;
+                } catch (Exception e) {
+                    enhancedMessage = customMessage.mapToLogMessage() + " | Original message (unformatted): " + format;
+                }
+                customLogger.warn(bypassMarker, enhancedMessage, t);
 
-            return FilterReply.DENY;
+                return FilterReply.DENY;
+            } else if (format != null && !LOG_PATTERN.matcher(format).matches() && !rootLogger.isDebugEnabled()) {
+                return FilterReply.DENY;
+            }
+
         }
         return FilterReply.NEUTRAL;
-
     }
 }
