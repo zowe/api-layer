@@ -226,14 +226,14 @@ truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certi
 keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}"
 truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
 
-client_key_alias="${ZWE_configs_apiml_service_ssl_keystore_alias:-${ZWE_zowe_certificate_client_keystore_alias:-${key_alias}}}"
-client_keystore_type="${ZWE_configs_apiml_service_ssl_keystore_type:-${ZWE_zowe_certificate_client_keystore_type:-${keystore_type}}}"
-client_keystore_pass="${ZWE_configs_apiml_service_ssl_keystore_password:-${ZWE_zowe_certificate_client_keystore_password:-${keystore_pass}}}"
-client_key_pass="${ZWE_configs_apiml_service_ssl_key_password:-${ZWE_zowe_certificate_client_key_password:-${key_pass}}}"
-client_keystore_location="${ZWE_configs_apiml_service_ssl_keystore_file:-${ZWE_zowe_certificate_client_keystore_file:-${keystore_location}}}"
-client_truststore_type="${ZWE_configs_apiml_service_ssl_truststore_type:-${ZWE_zowe_certificate_client_truststore_type:-${truststore_type}}}"
-client_truststore_pass="${ZWE_configs_apiml_service_ssl_truststore_password:-${ZWE_zowe_certificate_client_truststore_password:-${truststore_pass}}}"
-client_truststore_location="${ZWE_configs_apiml_service_ssl_truststore_file:-${ZWE_zowe_certificate_client_truststore_file:-${truststore_location}}}"
+client_key_alias="${ZWE_configs_apiml_service_ssl_keystore_alias:-${ZWE_zowe_certificate_keystore_clientCertificateAlias:-${key_alias}}}"
+client_keystore_type="${ZWE_configs_apiml_service_ssl_keystore_type:-${keystore_type}}"
+client_keystore_pass="${ZWE_configs_apiml_service_ssl_keystore_password:-${keystore_pass}}"
+client_key_pass="${ZWE_configs_apiml_service_ssl_key_password:-${key_pass}}"
+client_keystore_location="${ZWE_configs_apiml_service_ssl_keystore_file:-${keystore_location}}"
+client_truststore_type="${ZWE_configs_apiml_service_ssl_truststore_type:-${truststore_type}}"
+client_truststore_pass="${ZWE_configs_apiml_service_ssl_truststore_password:-${truststore_pass}}"
+client_truststore_location="${ZWE_configs_apiml_service_ssl_truststore_file:-${truststore_location}}"
 
 # Handle RACF keyring URL transformations
 if [ "${keystore_type}" = "JCERACFKS" ]; then
