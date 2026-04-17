@@ -123,13 +123,16 @@ class LogoutHandlerTest {
     }
 
     @Test
-    void shouldInvalidateValidTokenSuccessfully() {
+    void shouldInvalidateValidTokenSuccessfully_WithInfinispan() {
         var request = MockServerHttpRequest.get("/logout")
             .header(HttpHeaders.AUTHORIZATION, "Bearer token123")
             .build();
         var exchange = MockServerWebExchange.from(request);
         WebFilterChain mockChain = mock(WebFilterChain.class);
         var webFilterExchange = new WebFilterExchange(exchange, mockChain);
+
+        when(applicationContext.containsBean("infinispanConfig")).thenReturn(true);
+        logoutHandler.init();
 
         when(authenticationService.isInvalidated("token123")).thenReturn(false);
         Applications mockApplications = mock(Applications.class);
@@ -140,6 +143,29 @@ class LogoutHandlerTest {
             .verifyComplete();
 
         verify(authenticationService).invalidateJwtTokenGateway(eq("token123"), eq(false), eq(application));
+    }
+
+    @Test
+    void shouldInvalidateValidTokenSuccessfully_WithoutInfinispan() {
+        var request = MockServerHttpRequest.get("/logout")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer token123")
+            .build();
+        var exchange = MockServerWebExchange.from(request);
+        WebFilterChain mockChain = mock(WebFilterChain.class);
+        var webFilterExchange = new WebFilterExchange(exchange, mockChain);
+
+        when(applicationContext.containsBean("infinispanConfig")).thenReturn(false);
+        logoutHandler.init();
+
+        when(authenticationService.isInvalidated("token123")).thenReturn(false);
+        Applications mockApplications = mock(Applications.class);
+        when(registry.getApplications()).thenReturn(mockApplications);
+        var application = mock(Application.class);
+        when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(application);
+        StepVerifier.create(logoutHandler.logout(webFilterExchange, mock(Authentication.class)))
+            .verifyComplete();
+
+        verify(authenticationService).invalidateJwtTokenGateway(eq("token123"), eq(true), eq(application));
     }
 
     @Test
