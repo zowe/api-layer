@@ -2,7 +2,7 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `3.4.1 (2026-01-29)`
+## `APIML 3.5.3 / Zowe 3.4.1 (2026-01-29)`
 
 * Feature:  Support binding on multiple network interfaces (#4457) ([581217a](https://github.com/zowe/api-layer/commit/581217a)), closes [#4457](https://github.com/zowe/api-layer/issues/4457)
 
@@ -17,7 +17,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Fix Node.js enabler (#4434) ([172ec16](https://github.com/zowe/api-layer/commit/172ec16)), closes [#4434](https://github.com/zowe/api-layer/issues/4434)
 * Bugfix:  Loading JWKs from z/OSMF (#4432) ([d592a4e](https://github.com/zowe/api-layer/commit/d592a4e)), closes [#4432](https://github.com/zowe/api-layer/issues/4432)
 
-## `APIML 3.4.0 / Zowe 3.4.0 (2025-11-12)`
+## `APIML 3.4.10 / Zowe 3.4.0 (2025-11-12)`
 
 * Feature:  Enable opentelemetry for modulith  (#4380) ([259a2fc](https://github.com/zowe/api-layer/commit/259a2fc)), closes [#4380](https://github.com/zowe/api-layer/issues/4380)
 * Feature:  Support keyrings with ICSF keys (#4354) ([eeb3ade](https://github.com/zowe/api-layer/commit/eeb3ade)), closes [#4354](https://github.com/zowe/api-layer/issues/4354)
@@ -35,7 +35,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Resolve conflicting beans (#4387) ([e551700](https://github.com/zowe/api-layer/commit/e551700)), closes [#4387](https://github.com/zowe/api-layer/issues/4387)
 * Bugfix:  Fix URLs for onboarding when AT-TLS is enabled (#4169) ([fc46df1](https://github.com/zowe/api-layer/commit/fc46df1)), closes [#4169](https://github.com/zowe/api-layer/issues/4169)
 
-## `3.3.1 (2025-10-20)`
+## `APIML 3.3.12 / Zowe 3.3.1 (2025-10-20)`
 
 * Feature:  Support configurable username field for OIDC tokens (#4300) ([f9711b2](https://github.com/zowe/api-layer/commit/f9711b2)), closes [#4300](https://github.com/zowe/api-layer/issues/4300)
 * Feature:  Support multiple OIDC providers at the same time (#4295) ([686061c](https://github.com/zowe/api-layer/commit/801927)), closes [#4321](https://github.com/zowe/api-layer/issues/4295)
@@ -62,7 +62,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Fix of Tomcat customizers to be supported also by reactive framework (#4336) ([3bff245](https://github.com/zowe/api-layer/commit/3bff245)), closes [#4336](https://github.com/zowe/api-layer/issues/4336)
 * Bugfix:  Requirement of client certificate on ZAAS call when AT-TLS is used & add AT-TLS support to DC (#4347) ([47525ee](https://github.com/zowe/api-layer/commit/47525ee)), closes [#4347](https://github.com/zowe/api-layer/issues/4347)
 
-## `3.3.0 (2025-08-18)`
+## `APIML 3.3.7 / Zowe 3.3.0 (2025-08-18)`
 
 * Feature:  New configuration property **`apiml.security.forwardHeader.trustedProxies`** added to specify the regular expression pattern used to identify trusted proxies from which `X-Forwarded-*` headers are accepted and forwarded. Mitigates CVE-2025-41235. (#4171) ([ff8c81d](https://github.com/zowe/api-layer/commit/ff8c81d)), closes [#4171](https://github.com/zowe/api-layer/pull/4171)
 * Feature:  Support independent response time route setting (#3981) ([aba1b0f](https://github.com/zowe/api-layer/commit/aba1b0f)), closes [#3981](https://github.com/zowe/api-layer/issues/3981)
