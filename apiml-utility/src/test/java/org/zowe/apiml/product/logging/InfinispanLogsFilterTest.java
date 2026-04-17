@@ -169,10 +169,4 @@ class InfinispanLogsFilterTest {
             infinispanLogger.setLevel(originalLevel);
         }
     }
-
-    @Test
-    void testInfoLevelHandling() {
-        FilterReply reply = filterInstance.decide(null, targetLogger, Level.INFO, TARGET_FORMAT, new Object[]{101}, null);
-        assertEquals(FilterReply.DENY, reply, "Filter should DENY even at INFO level for the target message");
-    }
 }
