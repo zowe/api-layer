@@ -10,10 +10,10 @@
 
 package org.zowe.apiml.product.opentelemetry;
 
-import io.opentelemetry.exporter.internal.grpc.GrpcSenderConfig;
-import io.opentelemetry.exporter.internal.http.HttpSenderConfig;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpHttpSender;
+import io.opentelemetry.sdk.common.export.GrpcSenderConfig;
+import io.opentelemetry.sdk.common.export.HttpSenderConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -45,7 +45,6 @@ import static org.mockito.Mockito.when;
 class ApimlSenderProviderTest {
 
     private static final String INITIALIZED_HTTP_CONFIG = "initializedHttpConfig";
-    private static final String ENDPOINT = "/endpoint";
     private static final String HTTPS_LOCALHOST_4018_ENDPOINT = "https://localhost:4018/endpoint";
 
     private ApimlSenderProvider apimlSenderProvider;
@@ -57,7 +56,7 @@ class ApimlSenderProviderTest {
     @Mock
     private HttpSenderConfig senderHttpConfig;
     @Mock
-    private GrpcSenderConfig<?> senderGrcpConfig;
+    private GrpcSenderConfig senderGrcpConfig;
 
     private HttpConfig oldValue;
 
@@ -95,8 +94,8 @@ class ApimlSenderProviderTest {
             try (var mockedConstruction = mockConstruction(OkHttpHttpSender.class, (mock, context) -> {
                 var args = context.arguments();
                 assertEquals(12, args.size());
-                assertSame(sslContext, args.get(9));
-                assertSame(x509TrustManager, args.get(10));
+                assertSame(sslContext, args.get(8));
+                assertSame(x509TrustManager, args.get(9));
             })) {
                 var client = apimlSenderProvider.createSender(senderHttpConfig);
                 assertNotNull(client);
@@ -106,11 +105,10 @@ class ApimlSenderProviderTest {
         @Test
         void testCreate_Grpc() {
             when(senderGrcpConfig.getEndpoint()).thenReturn(URI.create(HTTPS_LOCALHOST_4018_ENDPOINT));
-            when(senderGrcpConfig.getEndpointPath()).thenReturn(ENDPOINT);
 
             try (var mockedConstruction = mockConstruction(OkHttpGrpcSender.class, (mock, context) -> {
                 var args = context.arguments();
-                assertEquals(9, args.size());
+                assertEquals(10, args.size());
                 assertSame(sslContext, args.get(6));
                 assertSame(x509TrustManager, args.get(7));
             })) {
@@ -135,7 +133,7 @@ class ApimlSenderProviderTest {
             try (var mockedConstruction = mockConstruction(OkHttpHttpSender.class, (mock, context) -> {
                 var args = context.arguments();
                 assertEquals(12, args.size());
-                assertNull(args.get(9));
+                assertNull(args.get(10));
                 assertNull(args.get(10));
             })) {
                 var client = apimlSenderProvider.createSender(senderHttpConfig);
@@ -146,11 +144,10 @@ class ApimlSenderProviderTest {
         @Test
         void testCreate_Grcp() {
             when(senderGrcpConfig.getEndpoint()).thenReturn(URI.create(HTTPS_LOCALHOST_4018_ENDPOINT));
-            when(senderGrcpConfig.getEndpointPath()).thenReturn(ENDPOINT);
 
             try (var mockedConstruction = mockConstruction(OkHttpGrpcSender.class, (mock, context) -> {
                 var args = context.arguments();
-                assertEquals(9, args.size());
+                assertEquals(10, args.size());
                 assertNull(args.get(6));
                 assertNull(args.get(7));
             })) {
