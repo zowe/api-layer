@@ -122,6 +122,7 @@ dependencyResolutionManagement {
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
 
+
             library('modulith', 'org.springframework.modulith', 'spring-modulith-bom').versionRef('modulith')
             library('modulith_core', 'org.springframework.modulith', 'spring-modulith-starter-core').versionRef('modulith')
             library('modulith_test', 'org.springframework.modulith', 'spring-modulith-starter-test').versionRef('modulith')
