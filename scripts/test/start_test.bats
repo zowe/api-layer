@@ -468,7 +468,7 @@ teardown() {
     export -f uname
     . "${SCRIPTS_DIR}/apiml-common-scripts.sh"
     [ "$QUICK_START" = "-Xquickstart" ]
-    [ "$SHARED_CLASSES_OPTS" = "-Xshareclasses:name=apiml_shared_classes,nonfatal" ]
+    [ "$SHARED_CLASSES_OPTS" = "-Xshareclasses:name=apiml_shared_classes,nonfatal,silent" ]
 }
 
 @test "apiml-common-scripts: sets ADD_OPENS for Java modules" {
