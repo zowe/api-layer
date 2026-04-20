@@ -144,7 +144,7 @@ messages:
     - key: org.zowe.apiml.security.zosmfInstanceNotFound
       number: ZWEAG108
       type: ERROR
-      text: "z/OSMF instance '%s' not found or incorrectly configured. ZAAS is shutting down."
+      text: "z/OSMF instance '%s' not found or incorrectly configured."
       reason: "The ZAAS could not find the z/OSMF instance from the Discovery Service or it could not communicate with the provided z/OSMF instance."
       action: "Ensure that the z/OSMF instance is configured correctly and that it is successfully registered to the Discovery Service and that the API Mediation Layer can communicate with the provided z/OSMF instance. The default timeout is 5 minutes. On a slower system, add the variable components.zaas.apiml.security.jwtInitializerTimeout:... and the value in minutes into Zowe's configuration to override this value."
 
