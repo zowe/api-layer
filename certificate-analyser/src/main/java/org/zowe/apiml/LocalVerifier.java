@@ -160,7 +160,7 @@ public class LocalVerifier implements Verifier {
         if (clientAuth) {
             System.out.println("Certificate can be used for client authentication.");
         } else {
-            System.out.println("Certificate cannot be used for client authentication. " +
+            System.out.println("Certificate can't be used for client authentication. " +
                 "Provide certificate with Extended Key Usage (EKU) extension clientAuth OID " + OID_CLIENT_AUTH);
         }
         System.out.println("++++++++");
