@@ -44,7 +44,7 @@ class SuccessfulTicketHandlerTest {
     private final MessageService messageService = new YamlMessageService("/zaas-messages.yml");
     private final PassTicketService passTicketService = new PassTicketService();
     private final SuccessfulTicketHandler successfulTicketHandlerHandler = new SuccessfulTicketHandler(mapper, passTicketService, messageService);
-    private final TokenAuthentication tokenAuthentication = new TokenAuthentication(USER, TOKEN);
+    private final TokenAuthentication tokenAuthentication = new TokenAuthentication(TOKEN);
 
     @BeforeEach
     void setUp() {

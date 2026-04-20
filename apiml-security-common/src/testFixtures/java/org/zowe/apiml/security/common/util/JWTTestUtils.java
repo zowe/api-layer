@@ -55,16 +55,19 @@ public class JWTTestUtils {
             .compact();
     }
 
-    public static String createDummyJwtToken(String username, String issuer) {
+    public static String createDummyJwtToken(String username, String issuer, long expiration) {
         long now = System.currentTimeMillis();
-        long expiration = now + 100_000L;
         return Jwts.builder()
             .subject(username)
             .issuedAt(new Date(now))
-            .expiration(new Date(expiration))
+            .expiration(new Date(now + expiration))
             .issuer(issuer)
             .id(UUID.randomUUID().toString())
             .compact();
+    }
+
+    public static String createDummyJwtToken(String username, String issuer) {
+        return createDummyJwtToken(username, issuer, 100_000L);
     }
 
     public static String createDummyAPIMLToken(String username) {

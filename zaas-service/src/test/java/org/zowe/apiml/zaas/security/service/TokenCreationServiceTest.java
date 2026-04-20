@@ -82,7 +82,7 @@ class TokenCreationServiceTest {
     void givenZosmfIsUnavailable_whenTokenIsRequested_thenTokenCreatedByApiMlIsReturned() {
         when(providers.isZosfmUsed()).thenReturn(false);
         when(authenticationService.createJwtToken(eq(VALID_USER_ID), any(), any())).thenReturn(VALID_APIML_TOKEN);
-        when(authenticationService.createTokenAuthentication(VALID_USER_ID, VALID_APIML_TOKEN)).thenReturn(new TokenAuthentication(VALID_USER_ID, VALID_APIML_TOKEN));
+        when(authenticationService.createTokenAuthentication(VALID_USER_ID, VALID_APIML_TOKEN)).thenReturn(new TokenAuthentication(VALID_APIML_TOKEN));
 
         String jwtToken = underTest.createJwtTokenWithoutCredentials(VALID_USER_ID);
         assertThat(jwtToken, is(VALID_APIML_TOKEN));
@@ -92,7 +92,7 @@ class TokenCreationServiceTest {
     void givenZosmfIsntPresentBecauseOfError_whenTokenIsRequested_shouldReturnTokenCreatedByApiMl() {
         when(providers.isZosfmUsed()).thenThrow(new AuthenticationServiceException("zOSMF id invalid"));
         when(authenticationService.createJwtToken(eq(VALID_USER_ID), any(), any())).thenReturn(VALID_APIML_TOKEN);
-        when(authenticationService.createTokenAuthentication(VALID_USER_ID, VALID_APIML_TOKEN)).thenReturn(new TokenAuthentication(VALID_USER_ID, VALID_APIML_TOKEN));
+        when(authenticationService.createTokenAuthentication(VALID_USER_ID, VALID_APIML_TOKEN)).thenReturn(new TokenAuthentication(VALID_APIML_TOKEN));
 
         String jwtToken = underTest.createJwtTokenWithoutCredentials(VALID_USER_ID);
         assertThat(jwtToken, is(VALID_APIML_TOKEN));
@@ -103,7 +103,7 @@ class TokenCreationServiceTest {
         when(providers.isZosmfAvailable()).thenReturn(true);
         when(providers.isZosfmUsed()).thenReturn(true);
         when(passTicketService.generate(VALID_USER_ID, VALID_ZOSMF_APPLID)).thenReturn(PASSTICKET);
-        when(zosmfAuthenticationProvider.authenticate(any())).thenReturn(new TokenAuthentication(VALID_USER_ID, VALID_ZOSMF_TOKEN));
+        when(zosmfAuthenticationProvider.authenticate(any())).thenReturn(new TokenAuthentication(VALID_ZOSMF_TOKEN));
 
         String jwtToken = underTest.createJwtTokenWithoutCredentials(VALID_USER_ID);
         assertThat(jwtToken, is(VALID_ZOSMF_TOKEN));

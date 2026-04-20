@@ -14,6 +14,7 @@ import com.nimbusds.jwt.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.zowe.apiml.security.common.util.JwtUtils;
 import org.zowe.apiml.security.common.login.LoginFilter;
@@ -36,7 +37,6 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
     private static final String DOMAIN_CLAIM_NAME = "dom";
     private static final String SCOPES = "scopes";
 
-
     @Getter
     private final JWT jwt;
     private final JWTClaimsSet claims;
@@ -49,15 +49,6 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
     public enum Type {
         JWT,
         OIDC
-    }
-
-    public TokenAuthentication(String tokenString) {
-        this(tokenString, (Type) null);
-    }
-
-    public TokenAuthentication(String userId, String tokenString) {
-        this(tokenString);
-        checkUserId(userId);
     }
 
     public TokenAuthentication(String tokenString, Type type) {
@@ -73,26 +64,31 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
         }
     }
 
+    public TokenAuthentication(String tokenString) {
+        this(tokenString, Type.JWT);
+    }
+
     public TokenAuthentication(String userId, String tokenString, Type type) {
         this(tokenString, type);
         checkUserId(userId);
     }
 
-
-        public static TokenAuthentication createAuthenticated(String tokenString, Type type) {
+    public static TokenAuthentication createAuthenticated(String tokenString, Type type) {
         var tokenAuthentication = new TokenAuthentication(tokenString, type);
         tokenAuthentication.setAuthenticated(true);
         return tokenAuthentication;
-    }
-
-    public static TokenAuthentication createAuthenticated(String tokenString, String type) {
-        return createAuthenticated(tokenString, Type.valueOf(type));
     }
 
     public static TokenAuthentication createAuthenticated(String userId, String token, Type type) {
         var tokenAuthentication = new TokenAuthentication(userId, token, type);
         tokenAuthentication.setAuthenticated(true);
         return tokenAuthentication;
+    }
+
+    @SuppressWarnings("squid:S3655")
+    public static TokenAuthentication createAuthenticatedFromHeader(String token, String authHeader) {
+        var loginRequest = LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(authHeader));
+        return createAuthenticated(loginRequest.get().getUsername(), token, Type.JWT);
     }
 
     public boolean isExpired() {
@@ -128,10 +124,14 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
         return queryResponse.getUserId();
     }
 
-    @SuppressWarnings("squid:S3655")
-    public static TokenAuthentication createAuthenticatedFromHeader(String token, String authHeader) {
-        var loginRequest = LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(authHeader));
-        return createAuthenticated(loginRequest.get().getUsername(), token, Type.JWT);
+    @Override
+    public void setAuthenticated(boolean authenticated) {
+        if (authenticated && isExpired()) {
+            throw new TokenExpireException(
+                "Unable to set authentication as true because the token ...%s expired on %s"
+                    .formatted(StringUtils.right(jwt.getParsedString(), 15), getExpiration()));
+        }
+        super.setAuthenticated(authenticated);
     }
 
     private QueryResponse parseQueryResponse(JWTClaimsSet claims) {

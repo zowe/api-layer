@@ -123,7 +123,7 @@ class SuccessfulQueryHandlerTest {
     @Test
     void shouldSetResponseParameters() throws Exception {
         httpServletResponse = new MockHttpServletResponse();
-        TokenAuthentication tokenAuthentication = new TokenAuthentication(USER, jwtToken);
+        TokenAuthentication tokenAuthentication = new TokenAuthentication(jwtToken);
         httpServletResponse.setStatus(HttpStatus.EXPECTATION_FAILED.value());
         assertNotEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
 
@@ -137,7 +137,7 @@ class SuccessfulQueryHandlerTest {
     @Test
     void shouldWriteModelToBody() throws Exception {
         httpServletResponse = new MockHttpServletResponse();
-        TokenAuthentication tokenAuthentication = new TokenAuthentication(USER, jwtToken);
+        TokenAuthentication tokenAuthentication = new TokenAuthentication(jwtToken);
 
         successfulQueryHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);
 

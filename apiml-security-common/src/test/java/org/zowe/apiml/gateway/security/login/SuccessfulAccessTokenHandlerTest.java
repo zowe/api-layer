@@ -39,7 +39,7 @@ class SuccessfulAccessTokenHandlerTest {
 
     private static final String USERNAME = "user";
     public static final String JWT_TOKEN = JWTTestUtils.createDummyAPIMLToken(USERNAME);
-    private final TokenAuthentication dummyAuth = new TokenAuthentication(USERNAME, JWT_TOKEN);
+    private final TokenAuthentication dummyAuth = new TokenAuthentication(JWT_TOKEN);
     private SuccessfulAccessTokenHandler underTest;
     private AccessTokenProvider accessTokenProvider;
     private MockHttpServletRequest httpServletRequest;

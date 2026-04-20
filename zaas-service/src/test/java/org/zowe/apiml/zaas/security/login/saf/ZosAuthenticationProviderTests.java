@@ -58,7 +58,7 @@ class ZosAuthenticationProviderTests {
         String validJwtToken = JWTTestUtils.createDummyAPIMLToken(VALID_USERID);
         when(mockService.createJwtToken(anyString(), anyString(), any())).thenReturn(validJwtToken);
         when(mockService.createTokenAuthentication(VALID_USERID, validJwtToken))
-            .thenReturn(new TokenAuthentication(VALID_USERID, validJwtToken));
+            .thenReturn(new TokenAuthentication(validJwtToken));
 
         Authentication authentication = provider.authenticate(VALID_TOKEN);
         assertThat(VALID_USERID, is(authentication.getPrincipal()));

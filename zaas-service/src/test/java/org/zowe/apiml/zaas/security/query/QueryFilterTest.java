@@ -42,7 +42,7 @@ class QueryFilterTest {
     private MockHttpServletResponse httpServletResponse;
     private QueryFilter queryFilter;
 
-    private final String VALID_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJNZSIsImRvbSI6InRoaXMuY29tIiwibHRwYSI6Imx0cGFUb2tlbiIsImlhdCI6MTU1NDg4MzMzNCwiZXhwIjoxNTU0OTY5NzM0LCJpc3MiOiJBUElNTCIsImp0aSI6IjNkMzU3M2VhLWMxMzktNGE5Yy1iZDU5LWVjYmIyMmM0ZDcxZCJ9.bLe_d3b3bZC-K5K49fj1aHL_xDWMPsAgwKkrfewOrHhrxVL6lSphpGx52b8YvjaMUkFpVO12jCEDoYC1JLaQhQ";
+    private final String VALID_TOKEN = JWTTestUtils.createDummyJwtToken("me", "APIML");
 
     @Mock
     private AuthenticationSuccessHandler authenticationSuccessHandler;

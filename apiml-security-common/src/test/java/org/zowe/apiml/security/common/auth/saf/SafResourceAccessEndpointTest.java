@@ -42,7 +42,7 @@ class SafResourceAccessEndpointTest {
     private static final String UNSUPPORTED_CLASS = "testClass";
     private static final String RESOURCE = "resourceTest";
     private static final String LEVEL = "READ";
-    private static final Authentication authentication = new TokenAuthentication(USER_ID, JWTTestUtils.createDummyAPIMLToken(USER_ID));
+    private static final Authentication authentication = new TokenAuthentication(JWTTestUtils.createDummyAPIMLToken(USER_ID));
 
     @Mock
     private RestTemplate restTemplate;

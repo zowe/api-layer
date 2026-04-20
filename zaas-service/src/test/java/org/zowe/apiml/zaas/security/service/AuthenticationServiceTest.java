@@ -34,6 +34,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.support.SimpleValueWrapper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -67,7 +68,6 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
-import java.time.Clock;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -110,11 +110,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     @Mock
     private CacheManager cacheManager;
     @Mock
-    private Cache validatedJwtTokenCache;
+    private Cache validatedJwtTokensCache;
     @Mock
     private Cache invalidatedJwtTokensCache;
-    @Mock
-    private Clock clock;
 
     static {
         KeyPair keyPair = SecurityUtils.generateKeyPair("RSA", 2048);
@@ -129,7 +127,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         authConfigurationProperties = new AuthConfigurationProperties();
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        when(cacheManager.getCache("validatedJwtTokens")).thenReturn(validatedJwtTokenCache);
+        when(cacheManager.getCache("validatedJwtTokens")).thenReturn(validatedJwtTokensCache);
         when(cacheManager.getCache("invalidatedJwtTokens")).thenReturn(invalidatedJwtTokensCache);
 
         authService = new AuthenticationService(
@@ -168,7 +166,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             TokenAuthentication token = new TokenAuthentication(jwtToken);
             TokenAuthentication jwtValidation = authService.validateJwtToken(token);
 
-            verify(validatedJwtTokenCache, times(1)).put(jwtToken, jwtValidation);
+            verify(validatedJwtTokensCache, times(1)).put(jwtToken, jwtValidation);
             assertEquals(USER, jwtValidation.getPrincipal());
             assertEquals(jwtValidation.getCredentials(), jwtToken);
             assertTrue(jwtValidation.isAuthenticated());
@@ -221,7 +219,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
                 TokenNotValidException.class,
                 () -> authService.validateJwtToken(tokenAuthentication)
             );
-            verify(validatedJwtTokenCache, times(1)).get(brokenToken);
+            verify(validatedJwtTokensCache, times(1)).get(brokenToken);
         }
 
         @Test
@@ -230,7 +228,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
                 TokenNotValidException.class,
                 () -> authService.validateJwtToken((TokenAuthentication) null)
             );
-            verify(validatedJwtTokenCache, never()).put(any(),any());
+            verify(validatedJwtTokensCache, never()).put(any(),any());
         }
 
         @Test
@@ -242,7 +240,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
                 () -> authService.validateJwtToken(jwtToken)
             );
 
-            verify(validatedJwtTokenCache, times(1)).get(jwtToken);
+            verify(validatedJwtTokensCache, times(1)).get(jwtToken);
         }
 
         @Test
@@ -263,7 +261,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
                 TokenNotValidException.class,
                 () -> authService.validateJwtToken((String) null)
             );
-            verify(validatedJwtTokenCache, never()).put(any(),any());
+            verify(validatedJwtTokensCache, never()).put(any(),any());
         }
     }
 
@@ -453,7 +451,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             assertEquals("Invalid Credentials", exception.getMessage());
             verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.JWT, token);
-            verify(validatedJwtTokenCache, never()).evict(any());
+            verify(validatedJwtTokensCache, never()).evict(any());
             verify(invalidatedJwtTokensCache, never()).put(any(), any());
         }
 
@@ -489,7 +487,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             assertTrue(authService.invalidateJwtToken(token, false));
             verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.JWT, token);
-            verify(validatedJwtTokenCache, times(1)).evict(token);
+            verify(validatedJwtTokensCache, times(1)).evict(token);
             verify(invalidatedJwtTokensCache, times(1)).put(token, Boolean.TRUE);
         }
 
@@ -501,7 +499,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             assertTrue(authService.invalidateJwtToken(token, false));
             verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.LTPA, LTPA_TOKEN);
-            verify(validatedJwtTokenCache, times(1)).evict(token);
+            verify(validatedJwtTokensCache, times(1)).evict(token);
             verify(invalidatedJwtTokensCache, times(1)).put(token, Boolean.TRUE);
         }
 
@@ -518,7 +516,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             assertEquals(zosmfJwt, tokenAuthentication.getCredentials());
             assertEquals(userId, tokenAuthentication.getPrincipal());
             verify(zosmfService, times(1)).validate(zosmfJwt);
-            verify(validatedJwtTokenCache, times(1)).put(zosmfJwt, tokenAuthentication);
+            verify(validatedJwtTokensCache, times(1)).put(zosmfJwt, tokenAuthentication);
         }
     }
 
@@ -533,7 +531,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             when(zosmfService.validate(token)).thenThrow(new ServiceNotAccessibleException("All validation strategies failed"));
 
             assertThrows(ServiceNotAccessibleException.class, () -> authService.validateJwtToken(token));
-            verify(validatedJwtTokenCache, never()).put(any(), any());
+            verify(validatedJwtTokensCache, never()).put(any(), any());
         }
     }
 
@@ -577,6 +575,30 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         lenient().when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
         lenient().when(jwtSecurityInitializer.getJwtAlgorithm()).thenReturn(AlgorithmIdentifiers.RSA_USING_SHA256);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
+    }
+
+    @Nested
+    class GivenJwtInvalidationCacheTest {
+
+        @Test
+        void whenTokenAlreadyInvalidated_thenUseCache() {
+            stubJWTSecurityForSign();
+
+            String jwtToken01 = authService.createJwtToken("user01", "domain01", "ltpa01");
+            when(invalidatedJwtTokensCache.get(jwtToken01)).thenReturn(null);
+            authService.invalidateJwtToken(jwtToken01, false);
+            verify(validatedJwtTokensCache,times(1)).evict(jwtToken01);
+            verify(invalidatedJwtTokensCache,times(1)).put(jwtToken01, Boolean.TRUE);
+            verify(zosmfService, times(1)).invalidate(ZosmfService.TokenType.LTPA, "ltpa01");
+
+            Mockito.reset(validatedJwtTokensCache, invalidatedJwtTokensCache, zosmfService);
+            when(invalidatedJwtTokensCache.get(jwtToken01)).thenReturn(new SimpleValueWrapper(Boolean.TRUE));
+            authService.invalidateJwtToken(jwtToken01, false);
+            verify(invalidatedJwtTokensCache, times(1)).get(jwtToken01);
+            verify(validatedJwtTokensCache, never()).evict(jwtToken01);
+            verify(invalidatedJwtTokensCache, never()).put(jwtToken01, Boolean.TRUE);
+            verify(zosmfService, never()).invalidate(any(), any());
+        }
     }
 
     @Nested
@@ -634,7 +656,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             assertThrows(TokenNotValidException.class, () -> authService.validateJwtToken(jwtToken01));
             verify(jwtSecurityInitializer, times(2)).getJwtVerifier();
         }
-
     }
 
     @Test

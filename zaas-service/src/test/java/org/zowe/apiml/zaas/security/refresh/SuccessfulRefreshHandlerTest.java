@@ -65,7 +65,7 @@ class SuccessfulRefreshHandlerTest {
 
         @Test
         void tokenTypeOfAuthenticationIssuesToken() throws ServletException, IOException {
-            Authentication auth = new TokenAuthentication("USER", TOKEN);
+            Authentication auth = new TokenAuthentication(TOKEN);
             underTest.onAuthenticationSuccess(request, response, auth);
             verify(authenticationService, atLeastOnce()).invalidateJwtToken(TOKEN, true);
             assertThat(response.getStatus(), is(HttpStatus.NO_CONTENT.value()));
