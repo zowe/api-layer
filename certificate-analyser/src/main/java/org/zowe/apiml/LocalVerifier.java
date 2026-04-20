@@ -131,50 +131,42 @@ public class LocalVerifier implements Verifier {
         return notMatching.isEmpty();
     }
 
-    boolean verifyServer(X509Certificate serverCert) {
-        try {
-            boolean serverAuth = serverCert.getExtendedKeyUsage().contains("1.3.6.1.5.5.7.3.1");
+    boolean verifyServer(List<String> extendedKeyUsage) {
 
-            System.out.println("++++++++");
-            if (serverAuth) {
-                System.out.println("Certificate can be used for web server.");
-            } else {
-                System.out.println("Certificate can't be used for web server. " +
-                    "Provide certificate with extended key usage: 1.3.6.1.5.5.7.3.1");
-            }
-            System.out.println("++++++++");
+        System.out.println("++++++++");
 
-            return serverAuth;
-        } catch (CertificateParsingException e) {
-            System.err.println(e.getMessage());
+        boolean serverAuth = extendedKeyUsage.contains("1.3.6.1.5.5.7.3.1");
+
+        if (serverAuth) {
+            System.out.println("Certificate can be used for web server.");
+        } else {
+            System.out.println("Certificate can't be used for web server. " +
+                "Provide certificate with extended key usage: 1.3.6.1.5.5.7.3.1");
         }
+        System.out.println("++++++++");
 
-        return false;
+        return serverAuth;
+
     }
 
-    boolean verifyX509(X509Certificate serverCert) {
-        try {
-            boolean clientAuth = serverCert.getExtendedKeyUsage().contains("1.3.6.1.5.5.7.3.2");
+    boolean verifyX509(List<String> extendedKeyUsage) {
 
-            System.out.println("++++++++");
-            if (clientAuth) {
-                System.out.println("Certificate can be used for client authentication.");
-            } else {
-                System.out.println("Certificate can't be used for client authentication. " +
-                    "Provide certificate with extended key usage: 1.3.6.1.5.5.7.3.2");
-            }
-            System.out.println("++++++++");
+        boolean clientAuth = extendedKeyUsage.contains("1.3.6.1.5.5.7.3.2");
 
-            return clientAuth;
-        } catch (CertificateParsingException e) {
-            System.err.println(e.getMessage());
+        System.out.println("++++++++");
+        if (clientAuth) {
+            System.out.println("Certificate can be used for client authentication.");
+        } else {
+            System.out.println("Certificate can't be used for client authentication. " +
+                "Provide certificate with extended key usage: 1.3.6.1.5.5.7.3.2");
         }
+        System.out.println("++++++++");
 
-        return false;
+        return clientAuth;
     }
 
     boolean verifyJwt(X509Certificate serverCert) {
-        boolean supportedAlgorithm = serverCert.getSigAlgOID().contains("1.2.840.113549.1.1.11");
+        boolean supportedAlgorithm = serverCert.getSigAlgOID() != null && serverCert.getSigAlgOID().contains("1.2.840.113549.1.1.11");
 
         System.out.println("++++++++");
         if (supportedAlgorithm) {
@@ -199,8 +191,23 @@ public class LocalVerifier implements Verifier {
         if (requiredHostnames != null) {
             hostNameCheck = verifyHostnames(serverCert);
         }
-        boolean serverCheck = verifyServer(serverCert);
-        boolean x509Check = verifyX509(serverCert);
+        boolean serverCheck = false;
+        boolean x509Check = false;
+        try {
+            if (serverCert.getExtendedKeyUsage() == null) {
+                System.out.println("Certificate does not contain extended key usage.");
+                serverCheck = true;
+                System.out.println("Certificate can be used for web server.");
+                x509Check = true;
+                System.out.println("Certificate can be used for client authentication.");
+            } else {
+                serverCheck = verifyServer(serverCert.getExtendedKeyUsage());
+                x509Check = verifyX509(serverCert.getExtendedKeyUsage());
+            }
+
+        } catch (CertificateParsingException e) {
+            System.err.println(e.getMessage());
+        }
         boolean verifyJwt = verifyJwt(serverCert);
 
         return expirationCheck && hostNameCheck && serverCheck && x509Check && verifyJwt;
