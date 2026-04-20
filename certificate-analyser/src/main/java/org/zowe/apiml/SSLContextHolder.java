@@ -46,7 +46,7 @@ public class SSLContextHolder {
         trustFactory.init(stores.getTrustStore());
         KeyManagerFactory keyFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         keyFactory.init(stores.getKeyStore(), stores.getConf().getKeyPasswd().toCharArray());
-        conf.sslContextWithKeystore = SSLContext.getInstance("TLSv1.2");
+        conf.sslContextWithKeystore = SSLContext.getInstance(stores.getConf().getTlsVersion());
         X509KeyManager originalKm = (X509KeyManager) keyFactory.getKeyManagers()[0];
         X509KeyManager km = new X509KeyManager() {
             public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
@@ -98,7 +98,7 @@ public class SSLContextHolder {
         KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
         emptyKeystore.load(null, null);
         keyFactory.init(emptyKeystore, null);
-        conf.sslContext = SSLContext.getInstance("TLSv1.2");
+        conf.sslContext = SSLContext.getInstance(stores.getConf().getTlsVersion());
         conf.sslContext.init(keyFactory.getKeyManagers(), trustFactory.getTrustManagers(), new SecureRandom());
         return conf;
 
