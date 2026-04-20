@@ -143,9 +143,9 @@ dependencyResolutionManagement {
             library('spring_boot_starter_cache', 'org.springframework.boot', 'spring-boot-starter-cache').versionRef('springBoot')
             library('spring_boot_starter_webflux', 'org.springframework.boot', 'spring-boot-starter-webflux').versionRef('springBoot')
             library('spring_boot_starter_oauth2_client', 'org.springframework.boot', 'spring-boot-starter-oauth2-client').versionRef('springBoot')
-            library('tomcat_embed_core', 'org.apache.tomcat.embed:tomcat-embed-core').versionRef('tomcat') //temporary workaround to allow vulnerabilities to be resolved. Remove once SpringBoot goes to 3.5.14.  
-            library('tomcat_embed_el', 'org.apache.tomcat.embed:tomcat-embed-el').versionRef('tomcat') //temporary workaround to allow vulnerabilities to be resolved. Remove once SpringBoot goes to 3.5.14.  
-            library('tomcat_embed_websocket', 'org.apache.tomcat.embed:tomcat-embed-websocket').versionRef('tomcat') //temporary workaround to allow vulnerabilities to be resolved. Remove once SpringBoot goes to 3.5.14.  
+            library('tomcat_embed_core', 'org.apache.tomcat.embed', 'tomcat-embed-core').versionRef('tomcat') //temporary workaround to allow vulnerabilities to be resolved. Remove once SpringBoot goes to 3.5.14.  
+            library('tomcat_embed_el', 'org.apache.tomcat.embed', 'tomcat-embed-el').versionRef('tomcat') //temporary workaround to allow vulnerabilities to be resolved. Remove once SpringBoot goes to 3.5.14.  
+            library('tomcat_embed_websocket', 'org.apache.tomcat.embed', 'tomcat-embed-websocket').versionRef('tomcat') //temporary workaround to allow vulnerabilities to be resolved. Remove once SpringBoot goes to 3.5.14.  
             
             library('spring_cloud_starter_eureka_client', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-client').versionRef('springCloudNetflix')
             library('spring_cloud_starter_eureka_server', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-server').versionRef('springCloudNetflix')
