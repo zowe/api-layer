@@ -85,6 +85,7 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         return super.filter(exchange, chain).onErrorResume(e -> {
             if (e.getCause() instanceof ConnectException) {
+                log.debug("Connection to {} was not established: {}", exchange.getRequest().getURI(), e.getMessage());
                 var uri = exchange.getRequest().getURI();
                 return Mono.error(new ServiceNotAccessibleException(String.format("Service is not available at %s://%s:%d", uri.getScheme(), uri.getHost(), uri.getPort()), e));
             }

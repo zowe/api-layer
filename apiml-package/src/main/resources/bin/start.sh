@@ -140,9 +140,9 @@ fi
 echo "Setting loader path: ${APIML_LOADER_PATH}"
 
 # Debug profile
-if [ "${ZWE_components_gateway_debug:-${ZWE_configs_debug:-false}}" = "true" ]; then
-    if [ -n "${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}" ]; then
-        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}"
+if [ "${ZWE_components_apiml_debug:-${ZWE_components_gateway_debug:-${ZWE_configs_debug:-false}}}" = "true" ]; then
+    if [ -n "${ZWE_configs_spring_profiles_active:-${ZWE_components_apiml_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}}" ]; then
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_apiml_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}}"
     fi
     add_profile "debug"
 fi
@@ -334,6 +334,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Djgroups.bind.address=${ZWE_components_caching_service_storage_infinispan_jgroups_host:-${ZWE_configs_storage_infinispan_jgroups_host:-${ZWE_haInstance_hostname:-localhost}}} \
     -Djgroups.bind.port=${ZWE_components_caching_service_storage_infinispan_jgroups_port:-${ZWE_configs_storage_infinispan_jgroups_port:-7600}} \
     -Djgroups.keyExchange.port=${ZWE_components_caching_service_storage_infinispan_jgroups_keyExchange_port:-${ZWE_configs_storage_infinispan_jgroups_keyExchange_port:-7601}} \
+    -Djgroups.keyExchange.socketTimeout=${ZWE_components_caching_service_storage_infinispan_jgroups_keyExchange_socketTimeout:-${ZWE_configs_storage_infinispan_jgroups_keyExchange_socketTimeout:-5000}} \
     -Djgroups.tcp.diag.enabled=${ZWE_components_caching_service_storage_infinispan_jgroups_tcp_diag_enabled:-${ZWE_configs_storage_infinispan_jgroups_tcp_diag_enabled:-false}} \
     -Dloader.path=${APIML_LOADER_PATH} \
     -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \

@@ -46,6 +46,10 @@ eureka:
         serviceUrl:
             defaultZone: ${apiml.discovery.allPeersUrls}
 
+otel:
+    sdk:
+        disabled: true
+
 management:
     endpoints:
         web:

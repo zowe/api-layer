@@ -27,7 +27,8 @@ import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
     exclude = {
         ReactiveOAuth2ClientAutoConfiguration.class,
         OpenTelemetryAutoConfiguration.class,
-        OpenTelemetryLoggingAutoConfiguration.class
+        OpenTelemetryLoggingAutoConfiguration.class,
+        io.opentelemetry.instrumentation.spring.autoconfigure.OpenTelemetryAutoConfiguration.class
     },
     scanBasePackages = {
         "org.zowe.apiml.filter",
@@ -73,4 +74,5 @@ public class ApimlApplication {
             System.exit(2);
         }
     }
+
 }

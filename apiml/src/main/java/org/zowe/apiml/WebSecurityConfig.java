@@ -11,12 +11,16 @@
 package org.zowe.apiml;
 
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ProviderManager;
@@ -26,6 +30,7 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.security.web.server.authentication.logout.HttpStatusReturningServerLogoutSuccessHandler;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
@@ -33,10 +38,12 @@ import org.springframework.security.web.server.util.matcher.NegatedServerWebExch
 import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher.MatchResult;
+import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.filter.BasicLoginFilter;
 import org.zowe.apiml.filter.CachedBodyFilter;
 import org.zowe.apiml.filter.CategorizeCertsWebFilter;
 import org.zowe.apiml.filter.LogoutHandler;
+import org.zowe.apiml.filter.OIDCAuthFilter;
 import org.zowe.apiml.filter.QueryWebFilter;
 import org.zowe.apiml.filter.X509AuthFilter;
 import org.zowe.apiml.gateway.filters.security.AuthExceptionHandlerReactive;
@@ -45,13 +52,16 @@ import org.zowe.apiml.handler.FailedAuthenticationWebHandler;
 import org.zowe.apiml.handler.LocalTokenProvider;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.util.X509Util;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 import org.zowe.apiml.util.HttpUtils;
 import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import org.zowe.apiml.zaas.security.login.x509.X509AuthenticationProvider;
+import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.query.TokenAuthenticationProvider;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -87,6 +97,15 @@ public class WebSecurityConfig {
     private final TokenAuthenticationProvider tokenAuthenticationProvider;
     private final HttpUtils httpUtils;
 
+    @Setter(onMethod_ = {@Autowired(required = false)})
+    private OIDCProvider oidcProvider;
+
+    @Setter(onMethod_ = {@Autowired(required = false), @Qualifier("oidcMapper")})
+    private AuthenticationMapper oidcMapper;
+
+    @Value("${apiml.security.oidc.userIdField:sub}")
+    private String oidcUserIdFieldPath;
+
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
 
@@ -98,6 +117,9 @@ public class WebSecurityConfig {
 
     @Value("${apiml.internal-discovery.port:10011}")
     private int internalDiscoveryPort;
+
+    @Value("${apiml.security.oidc.enabled:false}")
+    private boolean isOidcEnabled;
 
     private static final List<String> UNAUTHENTICATED_PATTERNS = List.of(
         "/application/",
@@ -208,6 +230,23 @@ public class WebSecurityConfig {
 
     private ServerHttpSecurity x509SecurityConfig(ServerHttpSecurity http) {
         return x509SecurityConfig(http, true);
+    }
+
+    private OIDCAuthFilter createOidcAuthFilter(AuthConfigurationProperties authConfigurationProperties) {
+        List<String> fieldPath = Arrays.asList(oidcUserIdFieldPath.trim().split("\\."));
+        return new OIDCAuthFilter(oidcProvider, oidcMapper, authConfigurationProperties, fieldPath);
+    }
+
+    /**
+     * Adds the OIDC filter before AUTHENTICATION so it runs before TokenAuthFilter.
+     * On successful OIDC validation the filter strips the token from the request,
+     * preventing TokenAuthFilter from re-validating and rejecting it.
+     */
+    private ServerHttpSecurity addOidcFilterIfEnabled(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
+        if (isOidcEnabled) {
+            http.addFilterBefore(createOidcAuthFilter(authConfigurationProperties), SecurityWebFiltersOrder.AUTHENTICATION);
+        }
+        return http;
     }
 
     /**
@@ -337,7 +376,8 @@ public class WebSecurityConfig {
      * @return
      */
     @Bean
-    SecurityWebFilterChain loginAndLogoutSecurityWebFilterChain(ServerHttpSecurity http, LogoutHandler logoutHandler) {
+    SecurityWebFilterChain loginAndLogoutSecurityWebFilterChain(ServerHttpSecurity http, LogoutHandler logoutHandler,
+                                                                AuthConfigurationProperties authConfigurationProperties) {
         var man = new ProviderManager(x509AuthenticationProvider);
         var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
         http.csrf(ServerHttpSecurity.CsrfSpec::disable)
@@ -359,29 +399,36 @@ public class WebSecurityConfig {
             .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION);
+        addOidcFilterIfEnabled(http, authConfigurationProperties);
 
         return http.build();
     }
 
     /**
-     * This security filter chain secures the /query endpoint
+     * This security filter chain secures the /query endpoint.
+     * Supports OIDC token authentication (when enabled) in addition to APIML JWT.
+     * The OIDC filter runs before QueryWebFilter; on successful OIDC auth it strips the token
+     * from the request so QueryWebFilter does not attempt to re-validate the non-APIML JWT.
      *
      * @param http
+     * @param authConfigurationProperties
      * @return
      */
     @Bean
-    SecurityWebFilterChain queryFilter(ServerHttpSecurity http) {
+    SecurityWebFilterChain queryFilter(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
         var man = new ProviderManager(tokenAuthenticationProvider);
         var reactiveTokenAuthProvider = new ReactiveAuthenticationManagerAdapter(man);
 
+        addOidcFilterIfEnabled(http, authConfigurationProperties);
         return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
             .securityMatcher(new AndServerWebExchangeMatcher(
                 pathMatchers("gateway/api/v1/auth/query")
             ))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
-            .addFilterAfter(new QueryWebFilter(failedAuthenticationWebHandler, HttpMethod.GET, false, reactiveTokenAuthProvider, httpUtils), SecurityWebFiltersOrder.FIRST)
+            .addFilterAfter(new QueryWebFilter(failedAuthenticationWebHandler, HttpMethod.GET, false, reactiveTokenAuthProvider, httpUtils), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
+
     }
 
     /**
@@ -527,6 +574,84 @@ public class WebSecurityConfig {
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
+    }
+
+    /**
+     * Secures the API Catalog's apidoc and static-api refresh endpoints in the modulith.
+     * These endpoints additionally support x509 client certificate authentication.
+     * Unauthenticated requests receive a WWW-Authenticate: Basic header.
+     */
+    @Bean
+    SecurityWebFilterChain apiCatalogCertEndpoints(ServerHttpSecurity http,
+                                                   AuthConfigurationProperties authConfigurationProperties,
+                                                   AuthExceptionHandlerReactive authExceptionHandlerReactive,
+                                                   ServerAuthenticationEntryPoint serverAuthenticationEntryPoint) {
+        http
+            .securityMatcher(pathMatchers(
+                "/apicatalog/api/v1/apidoc/**",
+                "/apicatalog/api/v1/static-api/refresh"
+            ))
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .exceptionHandling(eh -> eh.authenticationEntryPoint(
+                catalogEntryPoint(serverAuthenticationEntryPoint)
+            ));
+
+        if (verifySslCertificatesOfServices) {
+            http.x509(x509 -> x509
+                .principalExtractor(X509Util.x509PrincipalExtractor())
+                .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
+            );
+        }
+
+        http
+            .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION);
+
+        return http.build();
+    }
+
+    /**
+     * Secures the API Catalog's remaining protected endpoints in the modulith.
+     * Supports authentication via JWT token, basic credentials, and OIDC token (when enabled).
+     * The OIDC filter runs before TokenAuthFilter; on successful OIDC auth it strips the token
+     * from the request so TokenAuthFilter does not reject the non-APIML JWT.
+     */
+    @Bean
+    SecurityWebFilterChain apiCatalogAuthenticatedEndpoints(ServerHttpSecurity http,
+                                                            AuthConfigurationProperties authConfigurationProperties,
+                                                            AuthExceptionHandlerReactive authExceptionHandlerReactive,
+                                                            ServerAuthenticationEntryPoint serverAuthenticationEntryPoint) {
+        http
+            .securityMatcher(pathMatchers(
+                "/apicatalog/api/v1/static-api/**",
+                "/apicatalog/api/v1/containers",
+                "/apicatalog/api/v1/containers/**",
+                "/apicatalog/api/v1/application/**",
+                "/apicatalog/api/v1/services/**"
+            ))
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .exceptionHandling(eh -> eh.authenticationEntryPoint(
+                catalogEntryPoint(serverAuthenticationEntryPoint)
+            ));
+
+        addOidcFilterIfEnabled(http, authConfigurationProperties);
+
+        http
+            .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION);
+
+        return http.build();
+    }
+
+    private ServerAuthenticationEntryPoint catalogEntryPoint(ServerAuthenticationEntryPoint delegate) {
+        return (exchange, exception) -> {
+            exchange.getResponse().getHeaders().set(HttpHeaders.WWW_AUTHENTICATE, ApimlConstants.BASIC_AUTHENTICATION_PREFIX);
+            return delegate.commence(exchange, exception);
+        };
     }
 
     /**
