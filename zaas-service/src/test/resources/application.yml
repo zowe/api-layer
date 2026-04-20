@@ -113,6 +113,10 @@ management:
         health:
             showDetails: always
 
+otel:
+    sdk:
+        disabled: true
+
 eureka:
     instance:
         hostname: ${apiml.service.hostname}

@@ -55,6 +55,8 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -142,6 +144,7 @@ public class SecurityConfiguration {
      */
     @Bean
     @Order(3)
+    @ConditionalOnMissingBean(name = "modulithConfig")
     SecurityWebFilterChain basicAuthOrTokenOrCertApiDocFilterChain(
         ServerHttpSecurity http,
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
@@ -165,6 +168,7 @@ public class SecurityConfiguration {
 
     @Bean
     @Order(4)
+    @ConditionalOnMissingBean(name = "modulithConfig")
     SecurityWebFilterChain healthEndpointSecurityWebFilterChain(
         ServerHttpSecurity http,
         @Value("${apiml.health.protected:true}") boolean isHealthEndpointProtected,
@@ -189,6 +193,7 @@ public class SecurityConfiguration {
 
     @Bean
     @Order(5)
+    @ConditionalOnMissingBean(name = "modulithConfig")
     SecurityWebFilterChain basicAuthOrTokenAllEndpointsFilterChain(
         ServerHttpSecurity http,
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
@@ -369,7 +374,8 @@ public class SecurityConfiguration {
     ) {
         return (exchange, authenticationException) -> {
             try {
-                ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.login.invalidCredentials", exchange.getRequest().getPath().toString()).mapToView();
+                var path = URLDecoder.decode(String.valueOf(exchange.getRequest().getPath()), StandardCharsets.UTF_8);
+                ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.login.invalidCredentials", path).mapToView();
                 DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(mapper.writeValueAsBytes(message));
                 exchange.getResponse().setRawStatusCode(SC_UNAUTHORIZED);
                 exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
