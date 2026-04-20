@@ -104,6 +104,9 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${caching.storage.infinispan.distributedSyncTimeoutSecs:360}")
     private int distributedSyncTimeout;
 
+    @Value("${caching.storage.infinispan.numSegments:256}")
+    private int numSegments;
+
     private AtomicReference<ClusteredLock> zoweInvalidatedTokenLock = new AtomicReference<>();
 
     @Override
@@ -153,7 +156,9 @@ public class InfinispanConfig implements InitializingBean {
         holder.newConfigurationBuilder("default")
             .persistence()
             .addSoftIndexFileStore()
-            .clustering().cacheMode(CacheMode.REPL_SYNC);
+            .clustering()
+            .cacheMode(CacheMode.REPL_SYNC)
+            .hash().numSegments(numSegments);
         holder.getGlobalConfigurationBuilder().defaultCacheName("default");
         holder.getGlobalConfigurationBuilder().transport().stack("prod").distributedSyncTimeout(distributedSyncTimeout, TimeUnit.SECONDS);
         return holder;
@@ -163,8 +168,11 @@ public class InfinispanConfig implements InitializingBean {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder
             .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
-            .persistence().addSoftIndexFileStore().clustering()
-            .clustering().cacheMode(CacheMode.REPL_SYNC);
+            .persistence()
+            .addSoftIndexFileStore()
+            .clustering()
+            .cacheMode(CacheMode.REPL_SYNC)
+            .hash().numSegments(numSegments);
         return builder;
     }
 
@@ -180,9 +188,9 @@ public class InfinispanConfig implements InitializingBean {
         System.setProperty("infinispan.ssl.keyStore", keyStore);
         System.setProperty("infinispan.ssl.keyStorePassword", keyStorePass);
 
-        System.setProperty("infinispan.ssl.trustStoreType", keyStoreType);
-        System.setProperty("infinispan.ssl.trustStore", keyStore);
-        System.setProperty("infinispan.ssl.trustStorePassword", keyStorePass);
+        System.setProperty("infinispan.ssl.trustStoreType", trustStoreType);
+        System.setProperty("infinispan.ssl.trustStore", trustStore);
+        System.setProperty("infinispan.ssl.trustStorePassword", trustStorePass);
 
         List<String> caches;
         if (applicationInfo.isModulith()) {

@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "infinispan")
-public class CachesHealthIndicator extends AbstractHealthIndicator {
+public class InfinispanHealthIndicator extends AbstractHealthIndicator {
 
     @Value("${caching.storage.infinispan.initialHosts:}")
     private String initialHosts;
@@ -69,7 +69,7 @@ public class CachesHealthIndicator extends AbstractHealthIndicator {
             var initialHostsArray = StringUtils.split(initialHosts, ",");
             boolean allMembers = initialHostsArray.length <= nativeCacheManager.getMembers().size();
             var cluster = Map.of(
-                "status", allMembers ? Status.UP : Status.DOWN,
+                "status", allMembers ? Status.UP.getCode() : Status.DOWN.getCode(),
                 "address", nativeCacheManager.getAddress().toString(),
                 "initialHosts", initialHostsArray,
                 "members", nativeCacheManager.getMembers().stream().map(Address::toString).toList()

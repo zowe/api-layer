@@ -350,6 +350,7 @@ logging:
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.springframework.security: TRACE
         org.springframework.security.web: TRACE
+        org.springframework.security.authentication: DEBUG
         org.springdoc.core: DEBUG
         org.zowe.apiml: DEBUG
         reactor.netty: DEBUG

@@ -25,7 +25,6 @@ import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.core5.ssl.PrivateKeyStrategy;
 import org.apache.hc.core5.ssl.SSLContextBuilder;
-import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.hc.core5.util.Timeout;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
@@ -33,11 +32,18 @@ import org.zowe.apiml.security.HttpsConfigError.ErrorCode;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.security.*;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.Collection;
 
 
 @Slf4j
@@ -48,6 +54,7 @@ public class HttpsFactory {
     private SSLContext secureSslContext;
     private KeyStore usedKeyStore = null;
     private ApimlLogger apimlLog;
+    private Collection<TrustManager> trustManagers;
 
     public HttpsFactory(HttpsConfig httpsConfig) {
         this.config = httpsConfig;
@@ -188,11 +195,15 @@ public class HttpsFactory {
 
     private synchronized SSLContext createSecureSslContext() {
         log.debug("Protocol: {}", config.getProtocol());
-        SSLContextBuilder sslContextBuilder = SSLContexts.custom();
+        var sslContextBuilder = org.zowe.apiml.security.ApimlSSLContextBuilder.create();
         try {
-            loadTrustMaterial(sslContextBuilder);
+            if (config.isNonStrictVerifySslCertificatesOfServices()) {
+                sslContextBuilder = HostnameIgnoringSSLContextBuilder.create();
+            }
             loadKeyMaterial(sslContextBuilder);
+            loadTrustMaterial(sslContextBuilder);
             this.secureSslContext = sslContextBuilder.build();
+            this.trustManagers = sslContextBuilder.getTrustManagers();
             validateSslConfig();
             return secureSslContext;
         } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException

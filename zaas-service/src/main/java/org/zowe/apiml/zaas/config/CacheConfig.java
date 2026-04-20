@@ -132,7 +132,7 @@ public class CacheConfig {
             )
             .withKeyCopier(IdentityCopier.identityCopier())
             .withValueCopier(SerializingCopier.asCopierClass())
-            .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofDays(1))).build();
+            .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(10))).build();
         caches.put("validationJwtToken", validationJwtTokenConf);
 
         var zosmfInfoConf = CacheConfigurationBuilder.newCacheConfigurationBuilder(

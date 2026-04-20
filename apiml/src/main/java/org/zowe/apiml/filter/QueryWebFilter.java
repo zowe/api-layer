@@ -66,12 +66,21 @@ public class QueryWebFilter implements WebFilter {
                 new WebFilterExchange(exchange, chain), ex);
         }
 
-        return attemptAuthentication(exchange)
+        Mono<Void> authFlow = attemptAuthentication(exchange)
             .flatMap(authResult -> chain.filter(exchange)
-                    .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authResult))
-            )
+                .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authResult)))
             .onErrorResume(AuthenticationException.class, failed ->
                 this.failureHandler.onAuthenticationFailure(new WebFilterExchange(exchange, chain), failed));
+
+        if (protectedByCertificate) {
+            return authFlow;
+        }
+
+        return ReactiveSecurityContextHolder.getContext()
+            .map(SecurityContext::getAuthentication)
+            .filter(Authentication::isAuthenticated)
+            .flatMap(auth -> chain.filter(exchange))
+            .switchIfEmpty(authFlow);
     }
 
     private Mono<Authentication> attemptAuthentication(ServerWebExchange exchange) {

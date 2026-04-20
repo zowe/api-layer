@@ -67,6 +67,7 @@ public class ApplicationRegistry {
         instanceIdToService.values().stream()
             .filter(i -> StringUtils.equalsIgnoreCase(serviceId, i.getServiceId()))
             .map(MockService::getInstanceInfo)
+            .map(InstanceInfo.Builder::build)
             .forEach(application::addInstance);
         return application;
     }
@@ -85,6 +86,7 @@ public class ApplicationRegistry {
     public List<InstanceInfo> getInstances() {
         return instanceIdToService.values().stream()
             .map(MockService::getInstanceInfo)
+            .map(InstanceInfo.Builder::build)
             .toList();
     }
 

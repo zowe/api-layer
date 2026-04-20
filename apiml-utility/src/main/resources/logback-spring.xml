@@ -7,6 +7,7 @@
     <property name="STORAGE_LOCATION" value="${apiml.logs.location}"/>
     <property name="apimlLogPattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} %clr&lt;${logbackService:-${logbackServiceName}}:%thread:${PID:- }&gt; %magenta(%X{userid:-}) %cyan(%-5level) %clr\(\(%logger{15}\)\) %msg%n"/>
 
+    <turboFilter class="org.zowe.apiml.product.logging.InfinispanLogsFilter"/>
     <turboFilter class="org.zowe.apiml.product.logging.UseridFilter"/>
 
     <springProfile name="!debug &amp; !diag &amp; !dev">
@@ -27,6 +28,8 @@
             </layout>
         </encoder>
     </appender>
+
+    <appender name="OpenTelemetry" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender"/>
 
     <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
         <key>spring.profiles.active</key>
@@ -73,4 +76,9 @@
             </root>
         </else>
     </if>
+
+    <logger name="org.zowe.apiml.opentelemetry" level="INFO">
+        <appender-ref ref="OpenTelemetry" />
+    </logger>
+    <logger name="org.infinispan.persistence.sifs.FileProvider" level="DEBUG" />
 </configuration>

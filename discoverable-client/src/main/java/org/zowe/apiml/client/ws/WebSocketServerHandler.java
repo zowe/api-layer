@@ -16,6 +16,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
 public class WebSocketServerHandler extends AbstractWebSocketHandler {
+
     @Override
     public void handleMessage(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage)
             throws Exception {
@@ -25,4 +26,5 @@ public class WebSocketServerHandler extends AbstractWebSocketHandler {
             webSocketSession.close();
         }
     }
+
 }

@@ -14,7 +14,6 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.SignedJWT;
@@ -27,19 +26,15 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.NumericDate;
 import org.jose4j.lang.JoseException;
 import org.jose4j.lang.UncheckedJoseException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.http.HttpHeaders;
@@ -61,7 +56,6 @@ import org.zowe.apiml.zaas.controllers.AuthController;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
-import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.time.Clock;
 import java.util.Arrays;
@@ -85,7 +79,6 @@ import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.
 @Service
 @RequiredArgsConstructor
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
-@EnableAspectJAutoProxy(proxyTargetClass = true)
 @ConditionalOnMissingBean(name = "modulithConfig")
 public class AuthenticationService {
 
@@ -105,13 +98,15 @@ public class AuthenticationService {
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
     private final Clock clock;
-
-    // to force calling inside methods with aspects - ie. ehCache aspect
-    private AuthenticationService meAsProxy;
+    private boolean isModulithMode;
+    private Cache validationJwtTokenCache;
+    private Cache invalidatedJwtTokensCache;
 
     @PostConstruct
     public void afterPropertiesSet() {
-        meAsProxy = applicationContext.getBean(AuthenticationService.class);
+        isModulithMode = applicationContext.containsBean("modulithConfig");
+        validationJwtTokenCache = cacheManager.getCache(CACHE_VALIDATION_JWT_TOKEN);
+        invalidatedJwtTokensCache = cacheManager.getCache(CACHE_INVALIDATED_JWT_TOKENS);
     }
 
     /**
@@ -160,9 +155,11 @@ public class AuthenticationService {
             jws.setPayload(newClaims.toJson());
             jws.setKey(jwtSecurityInitializer.getJwtSecret());
             jws.setHeader("typ", "JWT");
-            jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+            jws.setAlgorithmHeaderValue(jwtSecurityInitializer.getJwtAlgorithm());
             jws.setDoKeyValidation(false);
-            return jws.getCompactSerialization();
+            String token = jws.getCompactSerialization();
+            log.debug("JWT created, last chars of signature: ...{}", StringUtils.right(token, 15));
+            return token;
         } catch (JoseException e) {
             throw new UncheckedJoseException(e.getMessage(), e);
         }
@@ -180,9 +177,6 @@ public class AuthenticationService {
     }
 
     /**
-     * TODO consider the following scenarios during the fix:
-     *      * Cache hit on CACHE_INVALIDATED_JWT_TOKENS with return true -> method is not executed -> CacheEvict on CACHE_VALIDATION_JWT_TOKEN does not happen
-     *      * Cache miss on CACHE_INVALIDATED_JWT_TOKENS -> method is executed and return is false -> CacheEvict on CACHE_VALIDATION_JWT_TOKEN happens nevertheless
      * Method will invalidate jwtToken. It could be called from two reasons:
      * - on logout phase (distribute = true)
      * - from another ZAAS instance to notify about change (distribute = false)
@@ -193,27 +187,39 @@ public class AuthenticationService {
      * @param distribute distribute invalidation to another instances?
      * @return state of invalidate (true - token was invalidated)
      */
-    @CacheEvict(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken")
-    @Cacheable(value = CACHE_INVALIDATED_JWT_TOKENS, key = "#jwtToken", condition = "#jwtToken != null")
     public Boolean invalidateJwtToken(String jwtToken, boolean distribute) {
-        var app = eurekaClient.getApplication(CoreService.ZAAS.getServiceId());
-        return invalidate(jwtToken, distribute, app);
+        log.debug("Invalidating JWT: ...{}", StringUtils.right(jwtToken, 15));
+        if (jwtToken != null && isInvalidated(jwtToken)) {
+            return Boolean.TRUE;
+        }
+
+        Application app = isModulithMode
+            ? eurekaClient.getApplication(CoreService.GATEWAY.getServiceId())
+            : eurekaClient.getApplication(CoreService.ZAAS.getServiceId());
+
+        return doInvalidateAndUpdateCaches(jwtToken, distribute, app);
     }
 
-    private Boolean invalidate(String jwtToken, boolean distribute, Application app) {
-        /*
-         * until ehCache is not distributed, send to other instances invalidation request
-         */
+    private Boolean doInvalidateAndUpdateCaches(String jwtToken, boolean distribute, Application app) {
+        Boolean result = doInvalidate(jwtToken, distribute, app);
+
+        if (Boolean.TRUE.equals(result) && jwtToken != null) {
+            evictValidationCache(jwtToken);
+            putInvalidatedCache(jwtToken);
+        }
+
+        return result;
+    }
+
+    private Boolean doInvalidate(String jwtToken, boolean distribute, Application app) {
         boolean isInvalidatedOnAnotherInstance = false;
         if (distribute) {
             isInvalidatedOnAnotherInstance = invalidateTokenOnAnotherInstance(jwtToken, app);
             if (!isInvalidatedOnAnotherInstance) {
                 return Boolean.FALSE;
             }
-
         }
 
-        // invalidate token in z/OSMF
         final QueryResponse queryResponse = parseJwtToken(jwtToken);
         try {
             switch (queryResponse.getSource()) {
@@ -236,6 +242,24 @@ public class AuthenticationService {
         return Boolean.TRUE;
     }
 
+    private void putValidationCache(String jwtToken, TokenAuthentication tokenAuthentication) {
+        if (jwtToken != null && validationJwtTokenCache != null) {
+            validationJwtTokenCache.put(jwtToken, tokenAuthentication);
+        }
+    }
+
+    private void evictValidationCache(String jwtToken) {
+        if (validationJwtTokenCache != null) {
+            validationJwtTokenCache.evict(jwtToken);
+        }
+    }
+
+    private void putInvalidatedCache(String jwtToken) {
+        if (invalidatedJwtTokensCache != null) {
+            invalidatedJwtTokensCache.put(jwtToken, Boolean.TRUE);
+        }
+    }
+
     /**
      * Method will invalidate jwtToken. It could be called from two reasons:
      * - on logout phase (distribute = true)
@@ -245,13 +269,12 @@ public class AuthenticationService {
      * @param distribute distribute invalidation to another instances?
      * @return state of invalidate (true - token was invalidated)
      */
-    @CacheEvict(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken")
-    @Cacheable(value = CACHE_INVALIDATED_JWT_TOKENS, key = "#jwtToken", condition = "#jwtToken != null")
     public Boolean invalidateJwtTokenGateway(String jwtToken, boolean distribute, Application app) {
-        /*
-         * until ehCache is not distributed, send to other instances invalidation request
-         */
-        return invalidate(jwtToken, distribute, app);
+        if (jwtToken != null && isInvalidated(jwtToken)) {
+            return Boolean.TRUE;
+        }
+
+        return doInvalidateAndUpdateCaches(jwtToken, distribute, app);
     }
 
     /**
@@ -297,26 +320,31 @@ public class AuthenticationService {
      * @param jwtToken token to check
      * @return true - token is invalidated, otherwise token is still valid
      */
-    @Cacheable(value = CACHE_INVALIDATED_JWT_TOKENS, unless = "true", key = "#jwtToken", condition = "#jwtToken != null")
-    public Boolean isInvalidated(String jwtToken) {
-        return Boolean.FALSE;
+    public boolean isInvalidated(String jwtToken) {
+        if (invalidatedJwtTokensCache == null) {
+            return false;
+        }
+        Cache.ValueWrapper wrapper = invalidatedJwtTokensCache.get(jwtToken);
+        boolean result = wrapper != null && Boolean.TRUE.equals(wrapper.get());
+        log.debug("Token invalidation check for ...{}: {}", StringUtils.right(jwtToken, 15), result);
+        return result;
     }
 
     private JWTClaimsSet validateAndParseLocalJwtToken(String jwtToken) {
         try {
             var parsedJwt = JWTParser.parse(jwtToken);
             if (parsedJwt instanceof SignedJWT signedJwt) {
-                var rsaVerifier = new RSASSAVerifier((RSAPublicKey) jwtSecurityInitializer.getJwtPublicKey());
-                var verified = signedJwt.verify(rsaVerifier);
+                var verified = signedJwt.verify(jwtSecurityInitializer.getJwtVerifier());
                 if (verified) {
                     var claims = parsedJwt.getJWTClaimsSet();
                     if (claims.getExpirationTime().toInstant().isBefore(clock.instant())) {
-                        log.debug("OIDC Token is expired");
-                        throw new ExpiredJWTException("OIDC Token is expired");
+                        log.debug("JWT is expired, with expiration time: {}", claims.getExpirationTime().toInstant().toString());
+                        throw new ExpiredJWTException("JWT is expired");
                     }
                     return claims;
                 }
-                throw new BadJWTException("Token signature is invalid for public key");
+                log.debug("JWT signature verification failed, last chars of signature: ...{}", StringUtils.right(jwtToken, 15));
+                throw new BadJWTException("Token signature is invalid for public key: " + jwtSecurityInitializer.getJwkPublicKey().get().toString());
             } else {
                 throw new BadJWTException("Token is not signed");
             }
@@ -342,8 +370,16 @@ public class AuthenticationService {
      * @param jwtToken token to verification
      * @return true if token is still valid, otherwise false
      */
-    @Cacheable(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken", condition = "#jwtToken != null")
     public TokenAuthentication validateJwtToken(String jwtToken) {
+        log.debug("Validating JWT: ...{}", StringUtils.right(jwtToken, 15));
+        if (jwtToken != null && validationJwtTokenCache != null) {
+            Cache.ValueWrapper cached = validationJwtTokenCache.get(jwtToken);
+            if (cached != null) {
+                log.debug("JWT found in the cache.");
+                return (TokenAuthentication) cached.get();
+            }
+        }
+
         QueryResponse queryResponse = parseJwtToken(jwtToken);
         boolean isValid = switch (queryResponse.getSource()) {
             case ZOWE -> {
@@ -353,11 +389,12 @@ public class AuthenticationService {
             case ZOSMF -> zosmfService.validate(jwtToken);
             default -> throw new TokenNotValidException("Unknown token type.");
         };
+        boolean notInvalidated = !isInvalidated(jwtToken);
         TokenAuthentication tokenAuthentication = new TokenAuthentication(queryResponse.getUserId(), jwtToken, TokenAuthentication.Type.JWT);
-        // without a proxy cache aspect is not working, thus it is necessary get bean from application context
-        final boolean authenticated = !meAsProxy.isInvalidated(jwtToken);
-        tokenAuthentication.setAuthenticated(authenticated && isValid);
+        tokenAuthentication.setAuthenticated(notInvalidated && isValid);
 
+        putValidationCache(jwtToken, tokenAuthentication);
+        log.debug("JWT validation result: {}", tokenAuthentication.isAuthenticated());
         return tokenAuthentication;
     }
 
@@ -369,12 +406,13 @@ public class AuthenticationService {
      * @param jwtToken token of user
      * @return authenticated {@link TokenAuthentication} using information about invalidating of token
      */
-    @CachePut(value = CACHE_VALIDATION_JWT_TOKEN, key = "#jwtToken", condition = "#jwtToken != null")
     public TokenAuthentication createTokenAuthentication(String user, String jwtToken) {
+        boolean notInvalidated = !isInvalidated(jwtToken);
         final TokenAuthentication out = new TokenAuthentication(user, jwtToken, TokenAuthentication.Type.JWT);
-        // without a proxy cache aspect is not working, thus it is necessary get bean from application context
-        final boolean authenticated = !meAsProxy.isInvalidated(jwtToken);
-        out.setAuthenticated(authenticated);
+        out.setAuthenticated(notInvalidated);
+
+        putValidationCache(jwtToken, out);
+
         return out;
     }
 
@@ -418,8 +456,11 @@ public class AuthenticationService {
         if (token == null) {
             throw new TokenNotValidException("Null token.");
         }
-        parseJwtToken(token.getCredentials()); // throws on expired token, this needs to happen before cache, which is in the next line
-        return meAsProxy.validateJwtToken(token.getCredentials());
+        parseJwtToken(token.getCredentials()); // throws on expired token, this needs to happen before cache
+        
+        var tokenAuth = validateJwtToken(token.getCredentials());
+        
+        return tokenAuth;
     }
 
     /**
@@ -430,6 +471,7 @@ public class AuthenticationService {
      * @return the query response
      */
     public QueryResponse parseJwtToken(String jwtToken) {
+        log.debug("Parsing JWT: ...{}", StringUtils.right(jwtToken, 15));
         var claims = getJwtClaims(jwtToken);
         return parseQueryResponse(claims);
     }

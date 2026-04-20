@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.filters;
 
+import com.google.common.annotations.VisibleForTesting;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -22,19 +23,18 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
-import org.zowe.apiml.security.common.util.X509Util;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
+import org.zowe.apiml.security.common.util.X509Util;
 import org.zowe.apiml.util.CookieUtil;
 import reactor.core.publisher.Mono;
 
 import java.net.HttpCookie;
 import java.security.cert.CertificateEncodingException;
-import java.util.AbstractMap;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -143,6 +143,13 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
         this.messageService = messageService;
     }
 
+    @VisibleForTesting
+    AbstractAuthSchemeFactory() {
+        this(null, null, null);
+    }
+
+    protected abstract AuthenticationScheme getAuthenticationScheme();
+
     protected abstract Function<RequestCredentials, Mono<AbstractAuthSchemeFactory.AuthorizationResponse<R>>> getAuthorizationResponseTransformer();
 
     /**
@@ -200,6 +207,10 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
      * @return mutated request
      */
     protected ServerHttpRequest cleanHeadersOnAuthFail(ServerWebExchange exchange, String errorMessage) {
+        var otelContext = OtelRequestContext.of(exchange);
+        otelContext.authenticationFailed();
+        Optional.ofNullable(getAuthenticationScheme()).ifPresent(otelContext::authMethod);
+
         return exchange.getRequest().mutate().headers(headers -> {
             // update original request - to remove all potential headers and cookies with credentials
             Arrays.stream(CERTIFICATE_HEADERS).forEach(headers::remove);
@@ -218,6 +229,8 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
      * @return mutated request
      */
     protected ServerHttpRequest cleanHeadersOnAuthSuccess(ServerWebExchange exchange) {
+        OtelRequestContext.of(exchange).authenticationSuccess();
+
         return exchange.getRequest().mutate().headers(headers -> {
             // get all current cookies
             List<HttpCookie> cookies = CookieUtil.readCookies(headers).toList();
