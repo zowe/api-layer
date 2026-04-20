@@ -68,7 +68,6 @@ import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.time.Clock;
-import java.time.Instant;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -135,14 +134,13 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         authService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer,
-            zosmfService, eurekaClient, restTemplate, cacheManager, cacheUtils, clock
+            zosmfService, eurekaClient, restTemplate, cacheManager, cacheUtils
         );
         authService.afterPropertiesSet();
 
         scopes = new HashSet<>();
         scopes.add("Service1");
         scopes.add("Service2");
-        lenient().when(clock.instant()).thenReturn(Instant.now());
     }
 
     @Nested
@@ -601,9 +599,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @MockitoBean(name = "restTemplateWithKeystore")
         private RestTemplate restTemplateWithKeystore;
 
-        @MockitoBean
-        private Clock clock;
-
         @Autowired
         private AuthenticationService authService;
 
@@ -617,7 +612,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
             when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
             when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
-            when(clock.instant()).thenReturn(Instant.now());
             String jwtToken01 = authService.createJwtToken("user01", "domain01", "ltpa01");
             String jwtToken02 = authService.createJwtToken("user02", "domain02", "ltpa02");
 
@@ -656,7 +650,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         TokenAuthentication tokenAuthentication;
 
-        tokenAuthentication = authService.createTokenAuthentication(token);
+        tokenAuthentication = authService.createTokenAuthentication(user, token);
         assertTokenAuthentication.accept(tokenAuthentication);
     }
 

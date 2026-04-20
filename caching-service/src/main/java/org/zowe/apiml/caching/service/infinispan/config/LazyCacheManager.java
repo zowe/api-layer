@@ -326,7 +326,6 @@ public class LazyCacheManager extends DefaultCacheManager {
                 try {
                     underInit.defineConfiguration(cacheName, cacheConfig);
                 } catch (Exception e) {
-                    //Todo improve message
                     log.warn("Configuration for cache {} already exists", cacheName, e);
                 }
             } catch (Exception e) {

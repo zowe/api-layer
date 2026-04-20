@@ -118,8 +118,7 @@ public class CacheConfig {
         var caches = new HashMap<String, CacheConfiguration<?, ?>>();
 
         var invalidatedJwtTokensConf = CacheConfigurationBuilder.newCacheConfigurationBuilder(
-                String.class, Boolean.class, ResourcePoolsBuilder.newResourcePoolsBuilder()
-                    .disk(10, MemoryUnit.MB).heap(1, MemoryUnit.MB)
+                String.class, Boolean.class, ResourcePoolsBuilder.newResourcePoolsBuilder().disk(10, MemoryUnit.MB).heap(1, MemoryUnit.MB)
             ).withService(new OffHeapDiskStoreConfiguration("pool1", 1, 1))
             .withKeyCopier(IdentityCopier.identityCopier())
             .withValueCopier(IdentityCopier.identityCopier())
@@ -128,13 +127,13 @@ public class CacheConfig {
 
         caches.put("invalidatedJwtTokens", invalidatedJwtTokensConf);
 
-        var validationJwtTokenConf = CacheConfigurationBuilder.newCacheConfigurationBuilder(
+        var validatedJwtTokensConf = CacheConfigurationBuilder.newCacheConfigurationBuilder(
                 String.class, TokenAuthentication.class, ResourcePoolsBuilder.newResourcePoolsBuilder().heap(1000, EntryUnit.ENTRIES)
             )
             .withKeyCopier(IdentityCopier.identityCopier())
             .withValueCopier(SerializingCopier.asCopierClass())
             .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(1))).build();
-        caches.put("validatedJwtTokens", validationJwtTokenConf);
+        caches.put("validatedJwtTokens", validatedJwtTokensConf);
 
         var zosmfInfoConf = CacheConfigurationBuilder.newCacheConfigurationBuilder(
                 String.class, String.class, ResourcePoolsBuilder.newResourcePoolsBuilder().heap(10, EntryUnit.ENTRIES)

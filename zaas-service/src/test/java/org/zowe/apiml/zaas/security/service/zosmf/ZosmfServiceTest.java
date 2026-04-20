@@ -528,7 +528,7 @@ class ZosmfServiceTest {
             doThrow(RuntimeException.class).when(tokenValidationStrategy1).validate(any());
             doValidate(tokenValidationStrategy2, TokenValidationRequest.STATUS.AUTHENTICATED);
 
-            var validationResult = assertDoesNotThrow(() -> zosmfService.validate("TOKN"));
+            var validationResult = assertDoesNotThrow(() -> zosmfService.validate("TOKEN"));
             assertTrue(validationResult);
 
             verify(tokenValidationStrategy1, times(1)).validate(any());
@@ -542,7 +542,7 @@ class ZosmfServiceTest {
             doThrow(RuntimeException.class).when(tokenValidationStrategy1).validate(any());
             doThrow(RuntimeException.class).when(tokenValidationStrategy2).validate(any());
 
-            assertThrows(ServiceNotAccessibleException.class, () -> zosmfService.validate("TOKN"));
+            assertThrows(ServiceNotAccessibleException.class, () -> zosmfService.validate("TOKEN"));
 
             verify(tokenValidationStrategy1, times(1)).validate(any());
             verify(tokenValidationStrategy2, times(1)).validate(any());
@@ -555,7 +555,7 @@ class ZosmfServiceTest {
             doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.INVALID);
             doValidate(tokenValidationStrategy2, TokenValidationRequest.STATUS.INVALID);
 
-            assertThrows(TokenNotValidException.class, () -> zosmfService.validate("TOKN"));
+            assertThrows(TokenNotValidException.class, () -> zosmfService.validate("TOKEN"));
 
             verify(tokenValidationStrategy1, times(1)).validate(any());
             verify(tokenValidationStrategy2, times(1)).validate(any());
@@ -567,26 +567,26 @@ class ZosmfServiceTest {
             ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(Collections.singletonList(tokenValidationStrategy1));
 
             //UNKNOWN by default
-            assertThrows(TokenNotValidException.class, () -> zosmfService.validate("TOKN"));
+            assertThrows(TokenNotValidException.class, () -> zosmfService.validate("TOKEN"));
 
             doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.AUTHENTICATED);
 
-            assertThat(zosmfService.validate("TOKN"), is(true));
+            assertThat(zosmfService.validate("TOKEN"), is(true));
 
             doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.INVALID);
-            assertThrows(TokenNotValidException.class, () -> zosmfService.validate("TOKN"));
+            assertThrows(TokenNotValidException.class, () -> zosmfService.validate("TOKEN"));
         }
 
         @Test
         void givenFirstValidationStrategyAuthentications_thenDontUseSecondValidationStrategy() {
             ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(validationStrategyList);
 
-            assertThrows(TokenNotValidException.class, () -> zosmfService.validate("TOKN"));
+            assertThrows(TokenNotValidException.class, () -> zosmfService.validate("TOKEN"));
             verify(tokenValidationStrategy1, times(1)).validate(any());
             verify(tokenValidationStrategy2, times(1)).validate(any());
 
             doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.AUTHENTICATED);
-            assertThat(zosmfService.validate("TOKN"), is(true));
+            assertThat(zosmfService.validate("TOKEN"), is(true));
             verify(tokenValidationStrategy1, times(2)).validate(any());
             verify(tokenValidationStrategy2, times(1)).validate(any());
         }
@@ -598,7 +598,7 @@ class ZosmfServiceTest {
             doValidate(tokenValidationStrategy1, TokenValidationRequest.STATUS.INVALID);
             doValidate(tokenValidationStrategy2, TokenValidationRequest.STATUS.AUTHENTICATED);
 
-            assertThat(zosmfService.validate("TOKN"), is(true));
+            assertThat(zosmfService.validate("TOKEN"), is(true));
             verify(tokenValidationStrategy1, times(1)).validate(any());
             verify(tokenValidationStrategy2, times(1)).validate(any());
         }
@@ -606,7 +606,7 @@ class ZosmfServiceTest {
         @Test
         void suppliesValidationRequestWithVerifiedEndpointsList() {
             ZosmfService zosmfService = getZosmfServiceWithValidationStrategy(validationStrategyList);
-            assertThrows(TokenNotValidException.class, () -> zosmfService.validate("TOKN"));
+            assertThrows(TokenNotValidException.class, () -> zosmfService.validate("TOKEN"));
             verify(tokenValidationStrategy1).validate(argThat(request -> !request.getEndpointExistenceMap().isEmpty()));
         }
 

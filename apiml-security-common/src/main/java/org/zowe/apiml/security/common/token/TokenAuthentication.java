@@ -31,19 +31,25 @@ import java.util.*;
 public class TokenAuthentication extends AbstractAuthenticationToken {
 
     @Serial
-    //TODO: regenerate
     private static final long serialVersionUID = 82346593850419807L;
 
     private static final String DOMAIN_CLAIM_NAME = "dom";
     private static final String SCOPES = "scopes";
 
 
+    @Getter
     private final JWT jwt;
     private final JWTClaimsSet claims;
+    @Getter
     private final QueryResponse queryResponse;
 
     @Getter
     private Type type;
+
+    public enum Type {
+        JWT,
+        OIDC
+    }
 
     public TokenAuthentication(String tokenString) {
         this(tokenString, (Type) null);
@@ -89,10 +95,6 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
         return tokenAuthentication;
     }
 
-    public JWT getJwt() {
-        return jwt;
-    }
-
     public boolean isExpired() {
         return queryResponse.isExpired();
     }
@@ -108,24 +110,6 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
     public String getClaimAsString(String claimName) throws ParseException {
         return claims.getClaimAsString(claimName);
     }
-
-    public QueryResponse getQueryResponse() {
-        return queryResponse;
-    }
-
-//    public TokenAuthenticationEnhanced(String token, Type type) {
-//        this(null, token, type);
-//    }
-//
-//    public TokenAuthenticationEnhanced(String username, String token) {
-//        this(username, token, (Type) null);
-//    }
-//
-//    public TokenAuthenticationEnhanced(String username, String token, Type type) {
-//        super(Collections.emptyList());
-//        this.token = token;
-//        this.type = type;
-//    }
 
     /**
      * @return the token that prove the username is correct
@@ -144,27 +128,10 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
         return queryResponse.getUserId();
     }
 
-//    /**
-//     * Creates the TokenAuthentication with fulfilled username (principal), token and marked as authenticated.
-//     * @param username Username, who is authenticated
-//     * @param token Token, which authenticate the user
-//     * @return TokenAuthentication marked as authenticated with username, token
-//     */
-//    public static TokenAuthenticationEnhanced createAuthenticated(String username, String token, Type type) {
-//        final TokenAuthenticationEnhanced out = new TokenAuthenticationEnhanced(username, token, type);
-//        out.setAuthenticated(true);
-//        return out;
-//    }
-
     @SuppressWarnings("squid:S3655")
     public static TokenAuthentication createAuthenticatedFromHeader(String token, String authHeader) {
         var loginRequest = LoginFilter.getCredentialFromAuthorizationHeader(Optional.of(authHeader));
         return createAuthenticated(loginRequest.get().getUsername(), token, Type.JWT);
-    }
-
-    public enum Type {
-        JWT,
-        OIDC
     }
 
     private QueryResponse parseQueryResponse(JWTClaimsSet claims) {

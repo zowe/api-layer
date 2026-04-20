@@ -40,7 +40,6 @@ import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
 import java.security.KeyPair;
 import java.security.PrivateKey;
-import java.time.Clock;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -85,9 +84,6 @@ class SuccessfulQueryHandlerTest {
     @Mock
     private TokenCreationService tokenCreationService;
 
-    @Mock
-    private Clock clock;
-
     @BeforeEach
     void setup() {
         httpServletRequest = new MockHttpServletRequest();
@@ -113,8 +109,7 @@ class SuccessfulQueryHandlerTest {
 
         AuthenticationService authService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
-            eurekaClient, restTemplate, cacheManager, new CacheUtils(), clock
-        );
+            eurekaClient, restTemplate, cacheManager, new CacheUtils());
         lenient().when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
         lenient().when(jwtSecurityInitializer.getJwtAlgorithm()).thenReturn(AlgorithmIdentifiers.RSA_USING_SHA256);
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);

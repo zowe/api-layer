@@ -212,8 +212,6 @@ public class InfinispanConfig implements InitializingBean {
         if (applicationInfo.isModulith()) {
             caches = new HashMap<>();
 
-            //Security distributed caches
-            //TODO resolve size and lifespan
             caches.put(CACHE_ZOWE, getDistributedCacheConfig());
             caches.put(CACHE_ZOWE_INVALIDATED_TOKEN, getDistributedCacheConfig());
             caches.put("invalidatedJwtTokens", getDistributedCacheConfig());
@@ -232,9 +230,8 @@ public class InfinispanConfig implements InitializingBean {
 
         } else {
             caches = new HashMap<>();
-            //TODO resolve size and lifespan
-            var defaultCacheconfig = getDistributedCacheConfig();
-            Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN).forEach( c -> caches.put(c,defaultCacheconfig));
+            var defaultCacheConfig = getDistributedCacheConfig();
+            Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN).forEach( c -> caches.put(c,defaultCacheConfig));
         }
 
         return new LazyCacheManager(getCacheManagerConfig(resourceLoader), caches);

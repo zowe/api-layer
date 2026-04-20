@@ -322,7 +322,6 @@ public class SecurityConfiguration {
                         }
                     })
                     .map(pair -> ReactiveSecurityContextHolder.withAuthentication(
-                        //TODO: WTF?! token used as username?
                         createAuthenticated(pair.getValue().getUserId(), pair.getKey(), TokenAuthentication.Type.JWT)
                     ))
                     .orElse(context)

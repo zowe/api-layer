@@ -51,7 +51,6 @@ import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
 import java.text.ParseException;
-import java.time.Clock;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -79,8 +78,6 @@ public class AuthenticationService {
     private static final String AUTH_PROV_CLAIM = "auth.prov";
     private static final String SCOPES = "scopes";
     private static final String CACHE_VALIDATED_JWT_TOKENS = "validatedJwtTokens";
-    //    private static final String CACHE_VALIDATION_JWT_TOKEN = "validatedJwtTokens";
-//    private static final String CACHE_VALIDATION_JWT_TOKEN2 = "validatedJwtTokens";
     private static final String CACHE_INVALIDATED_JWT_TOKENS = "invalidatedJwtTokens";
 
     private final ApplicationContext applicationContext;
@@ -91,20 +88,14 @@ public class AuthenticationService {
     private final RestTemplate restTemplate;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
-    private final Clock clock;
     private boolean isModulithMode;
-    private boolean isInfinispanEnabled;
     private Cache validatedJwtTokensCache;
-    //private Cache validatedJwtTokensCache2;
     private Cache invalidatedJwtTokensCache;
 
     @PostConstruct
     public void afterPropertiesSet() {
         isModulithMode = applicationContext.containsBean("modulithConfig");
-        isInfinispanEnabled = applicationContext.containsBean("infinispanConfig");
         validatedJwtTokensCache = cacheManager.getCache(CACHE_VALIDATED_JWT_TOKENS);
-        //    validatedJwtTokensCache = cacheManager.getCache(CACHE_VALIDATION_JWT_TOKEN);
-    //    validatedJwtTokensCache2 = cacheManager.getCache(CACHE_VALIDATION_JWT_TOKEN2);
         invalidatedJwtTokensCache = cacheManager.getCache(CACHE_INVALIDATED_JWT_TOKENS);
     }
 
@@ -192,10 +183,6 @@ public class AuthenticationService {
             ? eurekaClient.getApplication(CoreService.GATEWAY.getServiceId())
             : eurekaClient.getApplication(CoreService.ZAAS.getServiceId());
 
-        //modulith and infinispan ensures distribution via replication
-        //check with achmelo
-        if (isModulithMode && isInfinispanEnabled) distribute = false;
-
         return doInvalidateAndUpdateCaches(jwtToken, distribute, app);
     }
 
@@ -242,12 +229,6 @@ public class AuthenticationService {
     }
 
     private void putValidationCache(String jwtToken, TokenAuthentication tokenAuthentication) {
-        if (jwtToken != null && validatedJwtTokensCache != null) {
-            validatedJwtTokensCache.put(jwtToken, tokenAuthentication);
-        }
-    }
-
-    private void putValidationCache2(String jwtToken, TokenAuthentication tokenAuthentication) {
         if (jwtToken != null && validatedJwtTokensCache != null) {
             validatedJwtTokensCache.put(jwtToken, tokenAuthentication);
         }
@@ -335,31 +316,6 @@ public class AuthenticationService {
         return result;
     }
 
-//    private JWTClaimsSet validateAndParseLocalJwtToken(String jwtToken) {
-//        try {
-//            var parsedJwt = JWTParser.parse(jwtToken);
-//            if (parsedJwt instanceof SignedJWT signedJwt) {
-//                var verified = signedJwt.verify(jwtSecurityInitializer.getJwtVerifier());
-//                if (verified) {
-//                    var claims = parsedJwt.getJWTClaimsSet();
-//                    if (claims.getExpirationTime().toInstant().isBefore(clock.instant())) {
-//                        log.debug("JWT is expired, with expiration time: {}", claims.getExpirationTime().toInstant().toString());
-//                        throw new ExpiredJWTException("JWT is expired");
-//                    }
-//                    return claims;
-//                }
-//                log.debug("JWT signature verification failed, last chars of signature: ...{}", StringUtils.right(jwtToken, 15));
-//                throw new BadJWTException("Token signature is invalid for public key: " + jwtSecurityInitializer.getJwkPublicKey().get().toString());
-//            } else {
-//                throw new BadJWTException("Token is not signed");
-//            }
-//        } catch (ParseException e) {
-//            throw handleJwtParserException(new BadJWTException(e.getMessage()));
-//        } catch (RuntimeException | BadJWTException | JOSEException exception) {
-//            throw handleJwtParserException(exception);
-//        }
-//    }
-
     private void validateLocalJwtToken(TokenAuthentication tokenAuthentication) {
         try {
             var parsedJwt = tokenAuthentication.getJwt();
@@ -395,36 +351,6 @@ public class AuthenticationService {
      * @param jwtToken token to verification
      * @return true if token is still valid, otherwise false
      */
-//    public TokenAuthentication validateJwtToken(String jwtToken) {
-//        log.debug("Validating JWT: ...{}", StringUtils.right(jwtToken, 15));
-//        if (jwtToken != null && validatedJwtTokensCache != null) {
-//            Cache.ValueWrapper cached = validatedJwtTokensCache.get(jwtToken);
-//            if (cached != null) {
-//                var tokenAuthentication = (TokenAuthentication) cached.get();
-//                log.debug("JWT found in the cache. Is authenticated: {}", tokenAuthentication.isAuthenticated());
-//                // check for expiration needed
-//                // add test
-//                return tokenAuthentication;
-//            }
-//        }
-//
-//        try {
-//            QueryResponse queryResponse = parseJwtToken(jwtToken);
-//            switch (queryResponse.getSource()) {
-//                case ZOWE -> validateAndParseLocalJwtToken(jwtToken);
-//                case ZOSMF -> zosmfService.validate(jwtToken);
-//                default -> throw new TokenNotValidException("Unknown token type.");
-//            }
-//            boolean notInvalidated = !isInvalidated(jwtToken);
-//            return processJWTvalidationResult(queryResponse, jwtToken, notInvalidated);
-//        } catch (TokenNotValidException | TokenExpireException ex) {
-//            log.debug("JWT token is not valid", ex);
-//
-//            processJWTvalidationResult(parseJwtTokenIgnoreExpiration(jwtToken), jwtToken, false);
-//            throw ex;
-//        }
-//    }
-
     public TokenAuthentication validateJwtToken(String jwtToken) {
         if (jwtToken == null) {
             throw new TokenNotValidException("Token is null");
@@ -457,18 +383,8 @@ public class AuthenticationService {
             default -> throw new TokenNotValidException("Unknown token type.");
         }
         tokenAuthentication.setAuthenticated(true);
-        putValidationCache2(jwtToken, tokenAuthentication);
-        log.debug("JWT validation result: {}", tokenAuthentication.isAuthenticated());
-        return tokenAuthentication;
-    }
-
-    private TokenAuthentication processJWTvalidationResult(String jwtToken, Boolean tokenValid) {
-        TokenAuthentication tokenAuthentication = new TokenAuthentication(jwtToken, TokenAuthentication.Type.JWT);
-        tokenAuthentication.setAuthenticated(tokenValid);
-
         putValidationCache(jwtToken, tokenAuthentication);
-        log.debug("JWT validation result: {}", tokenAuthentication.isAuthenticated());
-
+        log.debug("JWT token ...{} is valid", tokenSample);
         return tokenAuthentication;
     }
 
@@ -483,17 +399,6 @@ public class AuthenticationService {
     public TokenAuthentication createTokenAuthentication(String user, String jwtToken) {
         boolean notInvalidated = !isInvalidated(jwtToken);
         final TokenAuthentication out = new TokenAuthentication(user, jwtToken, TokenAuthentication.Type.JWT);
-        out.setAuthenticated(notInvalidated);
-
-        putValidationCache(jwtToken, out);
-
-        return out;
-    }
-
-    //TODO try to simplify to single function
-    public TokenAuthentication createTokenAuthentication(String jwtToken) {
-        boolean notInvalidated = !isInvalidated(jwtToken);
-        final TokenAuthentication out = new TokenAuthentication(jwtToken, TokenAuthentication.Type.JWT);
         out.setAuthenticated(notInvalidated);
 
         putValidationCache(jwtToken, out);
@@ -542,9 +447,7 @@ public class AuthenticationService {
             throw new TokenNotValidException("Null token.");
         }
 
-        var tokenAuth = validateJwtToken(token.getCredentials());
-
-        return tokenAuth;
+        return validateJwtToken(token.getCredentials());
     }
 
     /**
@@ -558,40 +461,6 @@ public class AuthenticationService {
         log.debug("Parsing JWT: ...{}", StringUtils.right(jwtToken, 15));
         return new TokenAuthentication(jwtToken);
     }
-
-    /**
-     * Parses the JWT token and return a {@link QueryResponse} object containing the domain, user id, type (Zowe / z/OSMF),
-     * date of creation and date of expiration. Does not validate expiration.
-     *
-     * @param jwtToken the JWT token
-     * @return the query response
-     */
-//    public QueryResponse parseJwtTokenIgnoreExpiration(String jwtToken) {
-//        log.debug("Parsing JWT: ...{}", StringUtils.right(jwtToken, 15));
-//        return new TokenAuthentication(jwtToken).getQueryResponse();
-//    }
-
-
-//    public QueryResponse parseQueryResponse(JWTClaimsSet claims) {
-//        Object scopesObject = claims.getClaim(SCOPE);
-//        List<String> scopes = Collections.emptyList();
-//        if (scopesObject instanceof List<?>) {
-//            scopes = (List<String>) scopesObject;
-//        }
-//        try {
-//            return new QueryResponse(
-//                claims.getClaimAsString(DOMAIN_CLAIM_NAME),
-//                claims.getSubject(),
-//                claims.getIssueTime(),
-//                claims.getExpirationTime(),
-//                claims.getIssuer(),
-//                scopes,
-//                QueryResponse.Source.valueByIssuer(claims.getIssuer())
-//            );
-//        } catch (ParseException e) {
-//            throw new TokenNotValidException(e.getMessage(), e);
-//        }
-//    }
 
     /**
      * This method resolves the token origin directly by decoding token claims.

@@ -111,7 +111,7 @@ class TokenAuthFilterTest {
 
                 QueryResponse response = new QueryResponse();
                 response.setUserId("user");
-                when(tokenProvider.validateToken("token")).thenReturn(Mono.just(response));
+                when(tokenProvider.validateToken(JWT_TOKEN)).thenReturn(Mono.just(response));
                 Mono<Void> monoSpy = spy(Mono.empty());
                 when(chain.filter(any())).thenReturn(monoSpy);
 
