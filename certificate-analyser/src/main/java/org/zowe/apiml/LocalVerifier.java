@@ -23,6 +23,9 @@ import java.util.regex.Pattern;
 public class LocalVerifier implements Verifier {
 
     private static final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss. SSSZ");
+    private static final String OID_SERVER_AUTH = "1.3.6.1.5.5.7.3.1";
+    private static final String OID_CLIENT_AUTH = "1.3.6.1.5.5.7.3.2";
+    private static final String OID_SHA256_RSA = "1.2.840.113549.1.1.11";
 
     private final Stores stores;
     private final String[] requiredHostnames;
@@ -135,13 +138,13 @@ public class LocalVerifier implements Verifier {
 
         System.out.println("++++++++");
 
-        boolean serverAuth = extendedKeyUsage.contains("1.3.6.1.5.5.7.3.1");
+        boolean serverAuth = extendedKeyUsage.contains(OID_SERVER_AUTH);
 
         if (serverAuth) {
             System.out.println("Certificate can be used for web server.");
         } else {
             System.out.println("Certificate can't be used for web server. " +
-                "Provide certificate with extended key usage: 1.3.6.1.5.5.7.3.1");
+                "Provide certificate with extended key usage: " + OID_SERVER_AUTH);
         }
         System.out.println("++++++++");
 
@@ -151,14 +154,14 @@ public class LocalVerifier implements Verifier {
 
     boolean verifyX509(List<String> extendedKeyUsage) {
 
-        boolean clientAuth = extendedKeyUsage.contains("1.3.6.1.5.5.7.3.2");
+        boolean clientAuth = extendedKeyUsage.contains(OID_CLIENT_AUTH);
 
         System.out.println("++++++++");
         if (clientAuth) {
             System.out.println("Certificate can be used for client authentication.");
         } else {
             System.out.println("Certificate can't be used for client authentication. " +
-                "Provide certificate with extended key usage: 1.3.6.1.5.5.7.3.2");
+                "Provide certificate with extended key usage: " + OID_CLIENT_AUTH);
         }
         System.out.println("++++++++");
 
@@ -166,7 +169,7 @@ public class LocalVerifier implements Verifier {
     }
 
     boolean verifyJwt(X509Certificate serverCert) {
-        boolean supportedAlgorithm = serverCert.getSigAlgOID() != null && serverCert.getSigAlgOID().contains("1.2.840.113549.1.1.11");
+        boolean supportedAlgorithm = serverCert.getSigAlgOID() != null && serverCert.getSigAlgOID().contains(OID_SHA256_RSA);
 
         System.out.println("++++++++");
         if (supportedAlgorithm) {
