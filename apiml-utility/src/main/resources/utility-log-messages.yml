@@ -17,6 +17,16 @@ messages:
       reason: "All key API Mediation Layer services started."
       action: "No action required."
 
+    - key: org.zowe.apiml.cache.errorOpeningCachingFiles
+      number: ZWECS137
+      type: WARNING
+      text: "Failed to open or access one of the index segment file inside the caching-service directory."
+      reason: "A problem occurred while accessing one of the soft-index segment file used by Infinispan caching."
+      action: "Verify that:
+            - In your system, the MAXFILEPROC parameter is set to a sufficient value. If you still see this error, increase it until it disappears.
+            - There is enough space in the caching-service workspace directory.
+            - The Zowe user has permission to access the caching-service workspace directory.
+            - The caching-service workspace directory has read and write permissions."
     # General messages
     # 100-199
 
