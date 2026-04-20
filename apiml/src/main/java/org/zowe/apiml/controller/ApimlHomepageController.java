@@ -71,7 +71,7 @@ public class ApimlHomepageController {
         }
         VersionInfoDetails zowe = versionInfo.getZowe();
         if (zowe != null && zowe.getVersion() != null && !zowe.getVersion().equalsIgnoreCase("unknown")) {
-            zoweVersionText = String.format("Zowe Version %s", zowe.getVersion(), zowe.getBuildNumber());
+            zoweVersionText = String.format("Zowe Version %s build # %s", zowe.getVersion(), zowe.getBuildNumber());
         }
     }
 
