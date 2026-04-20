@@ -13,6 +13,7 @@ package org.zowe.apiml;
 import picocli.CommandLine;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @SuppressWarnings("squid:S106") //ignoring the System.out System.err warnings
@@ -26,6 +27,8 @@ public class Analyser {
             if (conf.isHelpRequested()) {
                 cmd.printVersionHelp(System.out);
                 CommandLine.usage(new ApimlConf(), System.out);
+                System.out.println("\nUse '--zosmf-jwt-check' as the first argument to run the z/OSMF JWT endpoint check.");
+                System.out.println("Example: java -jar certificate-analyser.jar --zosmf-jwt-check --help");
                 return 8;
             }
 
@@ -63,7 +66,12 @@ public class Analyser {
     }
 
     public static final void main(String[] args) {
-        System.exit(mainWithExitCode(args));
+        if (args.length > 0 && "--zosmf-jwt-check".equals(args[0])) {
+            String[] remaining = Arrays.copyOfRange(args, 1, args.length);
+            System.exit(ZosmfJwtCheckRunner.run(remaining));
+        } else {
+            System.exit(mainWithExitCode(args));
+        }
     }
 
 }
