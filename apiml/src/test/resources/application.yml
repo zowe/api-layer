@@ -1,8 +1,8 @@
 logging:
     level:
-        ROOT: DEBUG
-        org.springframework: DEBUG
-        org.springframework.boot.autoconfigure.web: DEBUG
+        ROOT: INFO
+        #org.springframework: DEBUG
+        #org.springframework.boot.autoconfigure.web: DEBUG
         org.springframework.cloud.gateway: DEBUG
         org.springframework.http.server.reactive: DEBUG
         org.springframework.web.reactive: DEBUG
@@ -39,6 +39,7 @@ otel:
         disabled: true
 
 apiml:
+    enabled: false
     catalog:
         serviceId: apicatalog
     discovery:
@@ -171,9 +172,7 @@ apiml:
     webClientConfig.enabled: true
 caching:
     storage:
-        mode: infinispan
-        infinispan:
-            initialHosts: localhost[7099]
+        mode: inMemory
 jgroups:
     bind:
         port: 7600
