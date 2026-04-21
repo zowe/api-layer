@@ -140,7 +140,6 @@ class OpenTelemetryResourceAttributesZosTest {
         private X509NativeMapper x509TokenProvider;
 
         private MockService mockServicePassTicketMisconfigured;
-        private MockService mockServiceBypass;
         private MockService mockServiceWs;
 
         @BeforeAll
@@ -152,13 +151,6 @@ class OpenTelemetryResourceAttributesZosTest {
                 .scope(Scope.CLASS)
                 .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET)
                 .addEndpoint("/testservicepterror/200")
-                .responseCode(200)
-            .and().start();
-
-            mockServiceBypass = mockService("testservicebp")
-                .scope(Scope.CLASS)
-                .authenticationScheme(AuthenticationScheme.BYPASS)
-                .addEndpoint("/testservicebp/200")
                 .responseCode(200)
             .and().start();
 
@@ -216,7 +208,68 @@ class OpenTelemetryResourceAttributesZosTest {
         @Nested
         class WhenServiceDoesNotExist {
 
+            @Test
+            void givenNoRoute_thenLog() {
+                given()
+                    .get(basePath + "/nonexistant/api/v1/200")
+                .then()
+                    .statusCode(404);
 
+                var logRecord = assertOneLogRecordExported();
+                assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                @SuppressWarnings("null")
+                var logBody = logRecord.getBodyValue().asString();
+                assertNull(getAttribute(logBody, "user.id"));
+                assertEquals("nonexistant", getAttribute(logBody, "service.id"));
+                assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                assertNull(getAttribute(logBody, "auth.status"));
+                assertNull(getAttribute(logBody, "service.instance.id"));
+                assertEquals("404", getAttribute(logBody, "service.response_code"));
+                assertEquals("/nonexistant/api/v1/200", getAttribute(logBody, "url.path"));
+                assertEquals("https", getAttribute(logBody, "url.scheme"));
+                assertNull(getAttribute(logBody, "auth.method"));
+            }
+
+        }
+
+        @Nested
+        class WhenServiceBypass {
+
+            private MockService mockServiceBypass;
+
+            @BeforeAll
+            void init() {
+                mockServiceBypass = mockService("testservicebp")
+                    .scope(Scope.CLASS)
+                    .authenticationScheme(AuthenticationScheme.BYPASS)
+                    .addEndpoint("/testservicebp/200")
+                    .responseCode(200)
+                .and().start();
+            }
+
+            @Test
+            void givenRouted_withBypass_thenLog() {
+                given()
+                    .cookie(AUTH_COOKIE, login())
+                    .get(basePath + "/testservicebp/api/v1/200")
+                .then()
+                    .statusCode(200);
+
+                var logRecord = assertOneLogRecordExported();
+                assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                @SuppressWarnings("null")
+                var logBody = logRecord.getBodyValue().asString();
+                assertNull(getAttribute(logBody, "user.id"));
+                assertEquals("testservicebp", getAttribute(logBody, "service.id"));
+                assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                assertNull(getAttribute(logBody, "auth.status"));
+                assertEquals("localhost:testservicebp:" + mockServiceBypass.getPort(), getAttribute(logBody, "service.instance.id"));
+                assertEquals("200", getAttribute(logBody, "service.response_code"));
+                assertEquals("/testservicebp/api/v1/200", getAttribute(logBody, "url.path"));
+                assertEquals("https", getAttribute(logBody, "url.scheme"));
+                assertNull(getAttribute(logBody, "auth.method"));
+                assertEquals("bypass", getAttribute(logBody, "auth.service.auth.method"));
+            }
 
         }
 
@@ -244,6 +297,30 @@ class OpenTelemetryResourceAttributesZosTest {
 
                 @Nested
                 class WhenAuthSuccess {
+
+                    @Test
+                    void givenRouted_withAuthJwt_success_thenLog() {
+                        given()
+                            .cookie("apimlAuthenticationToken", login())
+                            .get(basePath + "/testservice/api/v1/200")
+                        .then()
+                            .statusCode(200);
+
+                        var logRecord = assertOneLogRecordExported();
+                        assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                        @SuppressWarnings("null")
+                        var logBody = logRecord.getBodyValue().asString();
+                        assertEquals("USER", getAttribute(logBody, "user.id"));
+                        assertEquals("testservice", getAttribute(logBody, "service.id"));
+                        assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                        assertEquals("OK", getAttribute(logBody, "auth.status"));
+                        assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
+                        assertEquals("200", getAttribute(logBody, "service.response_code"));
+                        assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
+                        assertEquals("https", getAttribute(logBody, "url.scheme"));
+                        assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
+                        assertEquals("JWT", getAttribute(logBody, "auth.method"));
+                    }
 
                     @Test
                     void givenRouted_withX509_success_thenLog() {
@@ -408,7 +485,7 @@ class OpenTelemetryResourceAttributesZosTest {
 
             private MockService mockServicePassTicket;
 
-            @BeforeEach
+            @BeforeAll
             void setUp() {
                 mockServicePassTicket = mockService("testservicept")
                     .scope(Scope.CLASS)
@@ -556,76 +633,6 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         @Test
-        void givenRouted_withAuthJwt_success_thenLog() {
-            given()
-                .cookie("apimlAuthenticationToken", login())
-                .get(basePath + "/testservice/api/v1/200")
-            .then()
-                .statusCode(200);
-
-            var logRecord = assertOneLogRecordExported();
-            assertAttributesBase(logRecord.getResource().getAttributes(), port);
-            @SuppressWarnings("null")
-            var logBody = logRecord.getBodyValue().asString();
-            assertEquals("USER", getAttribute(logBody, "user.id"));
-            assertEquals("testservice", getAttribute(logBody, "service.id"));
-            assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertEquals("OK", getAttribute(logBody, "auth.status"));
-            assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
-            assertEquals("200", getAttribute(logBody, "service.response_code"));
-            assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
-            assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
-            assertEquals("JWT", getAttribute(logBody, "auth.method"));
-        }
-
-        @Test
-        void givenNoRoute_thenLog() {
-            given()
-                .get(basePath + "/nonexistant/api/v1/200")
-            .then()
-                .statusCode(404);
-
-            var logRecord = assertOneLogRecordExported();
-            assertAttributesBase(logRecord.getResource().getAttributes(), port);
-            @SuppressWarnings("null")
-            var logBody = logRecord.getBodyValue().asString();
-            assertNull(getAttribute(logBody, "user.id"));
-            assertEquals("nonexistant", getAttribute(logBody, "service.id"));
-            assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertNull(getAttribute(logBody, "auth.status"));
-            assertNull(getAttribute(logBody, "service.instance.id"));
-            assertEquals("404", getAttribute(logBody, "service.response_code"));
-            assertEquals("/nonexistant/api/v1/200", getAttribute(logBody, "url.path"));
-            assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertNull(getAttribute(logBody, "auth.method"));
-        }
-
-        @Test
-        void givenRouted_withBypass_thenLog() {
-            given()
-                .cookie(AUTH_COOKIE, login())
-                .get(basePath + "/testservicebp/api/v1/200")
-            .then()
-                .statusCode(200);
-
-            var logRecord = assertOneLogRecordExported();
-            assertAttributesBase(logRecord.getResource().getAttributes(), port);
-            @SuppressWarnings("null")
-            var logBody = logRecord.getBodyValue().asString();
-            assertNull(getAttribute(logBody, "user.id"));
-            assertEquals("testservicebp", getAttribute(logBody, "service.id"));
-            assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertNull(getAttribute(logBody, "auth.status"));
-            assertEquals("localhost:testservicebp:" + mockServiceBypass.getPort(), getAttribute(logBody, "service.instance.id"));
-            assertEquals("200", getAttribute(logBody, "service.response_code"));
-            assertEquals("/testservicebp/api/v1/200", getAttribute(logBody, "url.path"));
-            assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertNull(getAttribute(logBody, "auth.method"));
-            assertEquals("bypass", getAttribute(logBody, "auth.service.auth.method"));
-        }
-
-        @Test
         void givenRouted_withMisconfiguredAuthPassTicket_thenLog() {
             given()
                 .cookie(AUTH_COOKIE, login())
@@ -684,33 +691,6 @@ class OpenTelemetryResourceAttributesZosTest {
     }
 
 /*        @Test
-        void givenRouter_withX509_failure_thenLog() {
-            given()
-                .config(SslContext.tlsWithoutCert)
-                .get(basePath + "/testservice/api/v1/200")
-            .then()
-                .statusCode(200);
-
-            // when(x509TokenProvider.isValid(any())).thenReturn(false);
-        }
-
-        @Test
-        void givenRouter_withWs_success_thenLog() {
-            given()
-                .get(basePath + "/testservicews/api/v1/200")
-            .then()
-                .statusCode(200);
-        }
-
-        @Test
-        void givenRouter_withPAT_success_thenLog() {
-
-        }
-
-        @Test
-        void givenRouter_withPAT_failure_thenLog() {
-
-        }
 
         private String login() {
             var token = given()
