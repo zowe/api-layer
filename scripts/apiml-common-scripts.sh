@@ -97,7 +97,7 @@ fi
 ZOWE_CONSOLE_LOG_CHARSET=UTF-8
 if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
-    SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal"
+    SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal,silent"
 
     JAVA_VERSION=$(${JAVA_HOME}/bin/javap -J-Xms4m -J-Xmx16m -verbose java.lang.String \
         | grep "major version" \
