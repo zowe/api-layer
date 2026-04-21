@@ -70,33 +70,26 @@ class LocalVerifierTest {
         @Test
         void givenServerCertUsage_whenVerifyServer_thenReturnTrue() throws CertificateParsingException {
             LocalVerifier localVerifier = new LocalVerifier(null, null);
-            X509Certificate cert = mock(X509Certificate.class);
-            doReturn(Arrays.asList("1.3.6.1.5.5.7.3.1")).when(cert).getExtendedKeyUsage();
-            assertTrue(localVerifier.verifyServer(cert));
+
+            assertTrue(localVerifier.verifyServer(Arrays.asList("1.3.6.1.5.5.7.3.1")));
         }
 
         @Test
         void givenNoServerCertUsage_whenVerifyServer_thenReturnFalse() throws CertificateParsingException {
             LocalVerifier localVerifier = new LocalVerifier(null, null);
-            X509Certificate cert = mock(X509Certificate.class);
-            doReturn(Arrays.asList("a", "b", "c")).when(cert).getExtendedKeyUsage();
-            assertFalse(localVerifier.verifyServer(cert));
+            assertFalse(localVerifier.verifyServer(Arrays.asList("a", "b", "c")));
         }
 
         @Test
         void givenX509_whenVerifyX509_thenReturnTrue() throws CertificateParsingException {
             LocalVerifier localVerifier = new LocalVerifier(null, null);
-            X509Certificate cert = mock(X509Certificate.class);
-            doReturn(Arrays.asList("1.3.6.1.5.5.7.3.2")).when(cert).getExtendedKeyUsage();
-            assertTrue(localVerifier.verifyX509(cert));
+            assertTrue(localVerifier.verifyX509(Arrays.asList("1.3.6.1.5.5.7.3.2")));
         }
 
         @Test
         void givenNoX509_whenVerifyX509_thenReturnFalse() throws CertificateParsingException {
             LocalVerifier localVerifier = new LocalVerifier(null, null);
-            X509Certificate cert = mock(X509Certificate.class);
-            doReturn(Arrays.asList("1.3.6.1.5.5.7.3", "2")).when(cert).getExtendedKeyUsage();
-            assertFalse(localVerifier.verifyX509(cert));
+            assertFalse(localVerifier.verifyX509(Arrays.asList("1.3.6.1.5.5.7.3", "2")));
         }
 
     }

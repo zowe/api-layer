@@ -43,6 +43,8 @@ public class ApimlConf implements Config {
     private boolean clientCertAuth;
     @Option(names = {"-d", "--hostnames"}, split = ",", description = "All hostnames that should match with the server certificate separated by comma")
     private String[] requiredHostNames;
+    @Option(names = {"--tlsversion"}, description = "TLS version, default is TLSv1.2")
+    private String tlsVersion = "TLSv1.2";
 
     public String getKeyStore() {
         return keyStore;
@@ -94,6 +96,10 @@ public class ApimlConf implements Config {
 
     public String[] getRequiredHostNames() {
         return requiredHostNames;
+    }
+
+    public String getTlsVersion() {
+        return tlsVersion;
     }
 }
 

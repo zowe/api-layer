@@ -32,4 +32,6 @@ public interface Config {
     boolean isDoLocalHandshake();
 
     boolean isClientCertAuth();
+
+    String getTlsVersion();
 }
