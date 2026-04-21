@@ -356,21 +356,20 @@ public class AuthenticationService {
             throw new TokenNotValidException("Token is null");
         }
 
-        var tokenSample = StringUtils.right(jwtToken, 15);
-        log.debug("Validating JWT: ...{}", tokenSample);
+        log.debug("Validating JWT: ...{}", StringUtils.right(jwtToken, 15));
         if (isInvalidated(jwtToken)) {
             //add test
-            throw new TokenNotValidException("Token ...%s was invalidated.".formatted(tokenSample));
+            throw new TokenNotValidException("Token ...%s was invalidated.".formatted(StringUtils.right(jwtToken, 15)));
         }
 
         if (validatedJwtTokensCache != null) {
             Cache.ValueWrapper cached = validatedJwtTokensCache.get(jwtToken);
             if (cached != null) {
                 var tokenAuthentication = (TokenAuthentication) cached.get();
-                log.debug("JWT ...{} found in the cache. Is authenticated: {}", tokenSample, tokenAuthentication.isAuthenticated());
+                log.debug("JWT ...{} found in the cache. Is authenticated: {}", StringUtils.right(jwtToken, 15), tokenAuthentication.isAuthenticated());
                 if (tokenAuthentication.isExpired()) {
                     // add test
-                    throw new TokenExpireException("Token ...%s expired on %s".formatted(tokenSample, tokenAuthentication.getExpiration()));
+                    throw new TokenExpireException("Token ...%s expired on %s".formatted(StringUtils.right(jwtToken, 15), tokenAuthentication.getExpiration()));
                 }
                 return tokenAuthentication;
             }
@@ -384,7 +383,7 @@ public class AuthenticationService {
         }
         tokenAuthentication.setAuthenticated(true);
         putValidationCache(jwtToken, tokenAuthentication);
-        log.debug("JWT token ...{} is valid", tokenSample);
+        log.debug("JWT token ...{} is valid", StringUtils.right(jwtToken, 15));
         return tokenAuthentication;
     }
 

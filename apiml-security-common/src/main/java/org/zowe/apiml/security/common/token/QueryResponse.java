@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.cache.EntryExpiration;
 import org.zowe.apiml.util.UrlUtils;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +30,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class QueryResponse implements EntryExpiration, Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 4282686067850298800L;
 
     private String domain;
     private String userId;

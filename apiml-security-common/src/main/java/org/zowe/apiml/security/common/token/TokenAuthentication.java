@@ -42,9 +42,8 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
     private final JWTClaimsSet claims;
     @Getter
     private final QueryResponse queryResponse;
-
     @Getter
-    private Type type;
+    private final Type type;
 
     public enum Type {
         JWT,

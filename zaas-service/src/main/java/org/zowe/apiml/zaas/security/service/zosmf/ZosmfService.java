@@ -515,15 +515,10 @@ public class ZosmfService extends AbstractZosmfService {
 
         log.debug("Token validation strategies exhausted, final validation status: {}", request.getAuthenticated());
 
-        if (isTokenValid.isPresent()) {
-            if (isTokenValid.get()) {
-                return true;
-            } else {
-                throw new TokenNotValidException("Token is not valid by any of zosmf validation strategies");
-            }
+        if (isTokenValid.orElseThrow( () -> new ServiceNotAccessibleException("All token validation strategies has failed with " + request.getZosmfBaseUrl()))) {
+            return true;
         }
-
-        throw new ServiceNotAccessibleException("All token validation strategies has failed with " + request.getZosmfBaseUrl());
+        throw new TokenNotValidException("Token is not valid by any of zosmf validation strategies");
     }
 
     private boolean requestIsAuthenticated(TokenValidationRequest request) {
