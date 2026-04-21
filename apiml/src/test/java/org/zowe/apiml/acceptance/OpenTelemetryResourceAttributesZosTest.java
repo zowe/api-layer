@@ -41,6 +41,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.restassured.RestAssured.given;
@@ -201,7 +202,7 @@ class OpenTelemetryResourceAttributesZosTest {
 
         private LogRecordData assertOneLogRecordExported() {
             var logs = assertLogsExported();
-            assertEquals(1, logs.size());
+            assertEquals(1, logs.size(), "Expected 1 log record, was " + logs.size() + " logs exported: " + logs.stream().map(LogRecordData::getBodyValue).map(String::valueOf).collect(Collectors.joining(", ")));
 
             var logRecord = logs.get(0);
             assertEquals("INFO", logRecord.getSeverityText(), "Expected INFO log level, was " + logRecord.getSeverityText());

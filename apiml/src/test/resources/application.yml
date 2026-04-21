@@ -39,7 +39,6 @@ otel:
         disabled: true
 
 apiml:
-    enabled: false
     catalog:
         serviceId: apicatalog
     discovery:
