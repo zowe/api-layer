@@ -139,7 +139,6 @@ class OpenTelemetryResourceAttributesZosTest {
         @MockitoBean
         private X509NativeMapper x509TokenProvider;
 
-        private MockService mockServiceZoweJwt;
         private MockService mockServicePassTicketMisconfigured;
         private MockService mockServiceBypass;
         private MockService mockServiceWs;
@@ -148,16 +147,6 @@ class OpenTelemetryResourceAttributesZosTest {
         void startMockServices() throws Exception {
             SslContextConfigurer configurer = new SslContextConfigurer("password".toCharArray(), "../keystore/client_cert/client-certs.p12", "../keystore/localhost/localhost.keystore.p12");
             SslContext.prepareSslAuthentication(configurer);
-
-            mockServiceZoweJwt = mockService("testservice")
-                .scope(Scope.CLASS)
-                .authenticationScheme(AuthenticationScheme.ZOWE_JWT)
-                .addEndpoint("/testservice/200")
-                .responseCode(200)
-            .and()
-                .addEndpoint("/testservice/401")
-                .responseCode(401)
-            .and().start();
 
             mockServicePassTicketMisconfigured = mockService("testservicepterror")
                 .scope(Scope.CLASS)
@@ -218,20 +207,199 @@ class OpenTelemetryResourceAttributesZosTest {
             return logRecord;
         }
 
+        // Requests that target API ML (/login, /query, /logout, /services, etc.)
+        @Nested
+        class WhenRequestToAPIML {
+
+        }
+
         @Nested
         class WhenServiceDoesNotExist {
+
+
 
         }
 
         @Nested
         class WhenServiceRequiresJwt {
 
+            private MockService mockServiceZoweJwt;
+
+            @BeforeEach
+            void setUp() {
+                mockServiceZoweJwt = mockService("testservice")
+                    .scope(Scope.CLASS)
+                    .authenticationScheme(AuthenticationScheme.ZOWE_JWT)
+                    .addEndpoint("/testservice/200")
+                    .responseCode(200)
+                .and()
+                    .addEndpoint("/testservice/401")
+                    .responseCode(401)
+                .and().start();
+            }
+
+
             @Nested
             class WhenAuthPresent {
+
+                @Nested
+                class WhenAuthSuccess {
+
+                    @Test
+                    void givenRouted_withX509_success_thenLog() {
+                        given()
+                            .config(SslContext.clientCertUser)
+                            .get(basePath + "/testservice/api/v1/200")
+                        .then()
+                            .statusCode(200);
+
+                        var logRecord = assertOneLogRecordExported();
+                        assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                        @SuppressWarnings("null")
+                        var logBody = logRecord.getBodyValue().asString();
+                        assertEquals("USER", getAttribute(logBody, "user.id"));
+                        assertEquals("testservice", getAttribute(logBody, "service.id"));
+                        assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                        assertEquals("OK", getAttribute(logBody, "auth.status"));
+                        assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
+                        assertEquals("200", getAttribute(logBody, "service.response_code"));
+                        assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
+                        assertEquals("https", getAttribute(logBody, "url.scheme"));
+                        assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
+                        assertEquals("CLIENT_CERT", getAttribute(logBody, "auth.method"));
+                    }
+
+                    @Test
+                    void givenRouted_withOidc_success_thenLog() {
+                        when(oidcTokenProvider.isValid(VALID_OIDC_TOKEN)).thenReturn(true);
+                        when(oidcExternalMapper.mapToMainframeUserId(any())).thenReturn("USER");
+
+                        given()
+                            .header(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_OIDC_TOKEN)
+                            .get(basePath + "/testservice/api/v1/200")
+                        .then()
+                            .statusCode(200);
+
+                        var logRecord = assertOneLogRecordExported();
+                        assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                        @SuppressWarnings("null")
+                        var logBody = logRecord.getBodyValue().asString();
+                        assertEquals("USER", getAttribute(logBody, "user.id"));
+                        assertEquals(List.of("oidc.username"), getAttribute(logBody, "user.distributed.id"));
+                        assertEquals("testservice", getAttribute(logBody, "service.id"));
+                        assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                        assertEquals("OK", getAttribute(logBody, "auth.status"));
+                        assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
+                        assertEquals("200", getAttribute(logBody, "service.response_code"));
+                        assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
+                        assertEquals("https", getAttribute(logBody, "url.scheme"));
+                        assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
+                        assertEquals("OIDC", getAttribute(logBody, "auth.method"));
+                    }
+
+                }
+
+                @Nested
+                class WhenAuthFailure {
+
+                    @Test
+                    void givenRouted_whenAuthFail_thenLog() {
+                        given()
+                            .get(basePath + "/testservice/api/v1/200")
+                        .then()
+                            .statusCode(200);
+
+                        var logRecord = assertOneLogRecordExported();
+
+                        assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                        @SuppressWarnings("null")
+                        var logBody = logRecord.getBodyValue().asString();
+                        assertEquals("testservice", getAttribute(logBody, "service.id"));
+                        assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                        assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                        assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
+                        assertEquals("200", getAttribute(logBody, "service.response_code"));
+                        assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
+                        assertEquals("https", getAttribute(logBody, "url.scheme"));
+                        assertNull(getAttribute(logBody, "auth.method"));
+                        assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
+                    }
+
+                    @Test
+                    void givenRouted_withAuthJwt_failure_invalidToken_thenLog() {
+                        given()
+                            .cookie("apimlAuthenticationToken", "invalid.jwt.token")
+                            .get(basePath + "/testservice/api/v1/401")
+                        .then()
+                            .statusCode(401);
+
+                        var logRecord = assertOneLogRecordExported();
+                        var logBody = logRecord.getBodyValue().asString();
+                        assertEquals("testservice", getAttribute(logBody, "service.id"));
+                        assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                        assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                        assertEquals("ZWEAO402E The request has not been applied because it lacks valid authentication credentials.", getAttribute(logBody, "auth.error.message"));
+                        assertEquals("org.zowe.apiml.security.common.token.TokenNotValidException", getAttribute(logBody, "auth.error.type"));
+                        assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
+                        assertEquals("401", getAttribute(logBody, "service.response_code"));
+                        assertEquals("/testservice/api/v1/401", getAttribute(logBody, "url.path"));
+                        assertEquals("https", getAttribute(logBody, "url.scheme"));
+                        assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
+                        assertEquals("JWT", getAttribute(logBody, "auth.method"));
+                    }
+
+                    @Test
+                    void givenRouted_withAuthJwt_failure_expiredToken_thenLog() {
+                        given()
+                            .cookie("apimlAuthenticationToken", createExpiredZoweJwtToken("USER", "z/OS", "Ltpa", httpConfig.getHttpsConfig()))
+                            .get(basePath + "/testservice/api/v1/401")
+                        .then()
+                            .statusCode(401);
+
+                        var logRecord = assertOneLogRecordExported();
+                        var logBody = logRecord.getBodyValue().asString();
+                        assertEquals("testservice", getAttribute(logBody, "service.id"));
+                        assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                        assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                        assertEquals("ZWEAO402E The request has not been applied because it lacks valid authentication credentials.", getAttribute(logBody, "auth.error.message"));
+                        assertEquals("org.zowe.apiml.security.common.token.TokenExpireException", getAttribute(logBody, "auth.error.type"));
+                        assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
+                        assertEquals("401", getAttribute(logBody, "service.response_code"));
+                        assertEquals("/testservice/api/v1/401", getAttribute(logBody, "url.path"));
+                        assertEquals("https", getAttribute(logBody, "url.scheme"));
+                        assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
+                        assertEquals("JWT", getAttribute(logBody, "auth.method"));
+                    }
+
+                    @Test
+                    void givenRouted_withAuthJwt_noJwt_thenLog() {
+                        given()
+                            .get(basePath + "/testservice/api/v1/401")
+                        .then()
+                            .statusCode(401);
+
+                        var logRecord = assertOneLogRecordExported();
+                        var logBody = logRecord.getBodyValue().asString();
+                        assertEquals("testservice", getAttribute(logBody, "service.id"));
+                        assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                        assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                        assertEquals("ZWEAG160E No authentication provided in the request", getAttribute(logBody, "auth.error.message"));
+                        assertEquals("org.springframework.security.authentication.InsufficientAuthenticationException", getAttribute(logBody, "auth.error.type"));
+                        assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
+                        assertEquals("401", getAttribute(logBody, "service.response_code"));
+                        assertEquals("/testservice/api/v1/401", getAttribute(logBody, "url.path"));
+                        assertEquals("https", getAttribute(logBody, "url.scheme"));
+                        assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
+                        assertNull(getAttribute(logBody, "auth.method"));
+                    }
+
+                }
+
             }
 
             @Nested
             class WhenAuthAbsent {
+
             }
         }
 
@@ -283,8 +451,6 @@ class OpenTelemetryResourceAttributesZosTest {
             @Nested
             class WhenAuthAbsent {
 
-
-
             }
 
         }
@@ -295,29 +461,6 @@ class OpenTelemetryResourceAttributesZosTest {
             @Nested
             class WhenAuthPresent {
 
-                @Test
-                void givenRouted_withX509_success_thenLog() {
-                    given()
-                        .config(SslContext.clientCertUser)
-                        .get(basePath + "/testservice/api/v1/200")
-                    .then()
-                        .statusCode(200);
-
-                    var logRecord = assertOneLogRecordExported();
-                    assertAttributesBase(logRecord.getResource().getAttributes(), port);
-                    @SuppressWarnings("null")
-                    var logBody = logRecord.getBodyValue().asString();
-                    assertEquals("USER", getAttribute(logBody, "user.id"));
-                    assertEquals("testservice", getAttribute(logBody, "service.id"));
-                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
-                    assertEquals("OK", getAttribute(logBody, "auth.status"));
-                    assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
-                    assertEquals("200", getAttribute(logBody, "service.response_code"));
-                    assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
-                    assertEquals("https", getAttribute(logBody, "url.scheme"));
-                    assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
-                    assertEquals("CLIENT_CERT", getAttribute(logBody, "auth.method"));
-                }
 
             }
 
@@ -353,30 +496,6 @@ class OpenTelemetryResourceAttributesZosTest {
             class WhenAuthAbsent {
             }
 
-        }
-
-
-        @Test
-        void givenRouted_whenAuthFail_thenLog() {
-            given()
-                .get(basePath + "/testservice/api/v1/200")
-            .then()
-                .statusCode(200);
-
-            var logRecord = assertOneLogRecordExported();
-
-            assertAttributesBase(logRecord.getResource().getAttributes(), port);
-            @SuppressWarnings("null")
-            var logBody = logRecord.getBodyValue().asString();
-            assertEquals("testservice", getAttribute(logBody, "service.id"));
-            assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertEquals("ERROR", getAttribute(logBody, "auth.status"));
-            assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
-            assertEquals("200", getAttribute(logBody, "service.response_code"));
-            assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
-            assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertNull(getAttribute(logBody, "auth.method"));
-            assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
         }
 
         private Object getAttribute(String logBody, String attributeName) {
@@ -461,74 +580,6 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         @Test
-        void givenRouted_withAuthJwt_failure_invalidToken_thenLog() {
-            given()
-                .cookie("apimlAuthenticationToken", "invalid.jwt.token")
-                .get(basePath + "/testservice/api/v1/401")
-            .then()
-                .statusCode(401);
-
-            var logRecord = assertOneLogRecordExported();
-            var logBody = logRecord.getBodyValue().asString();
-            assertEquals("testservice", getAttribute(logBody, "service.id"));
-            assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertEquals("ERROR", getAttribute(logBody, "auth.status"));
-            assertEquals("ZWEAO402E The request has not been applied because it lacks valid authentication credentials.", getAttribute(logBody, "auth.error.message"));
-            assertEquals("org.zowe.apiml.security.common.token.TokenNotValidException", getAttribute(logBody, "auth.error.type"));
-            assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
-            assertEquals("401", getAttribute(logBody, "service.response_code"));
-            assertEquals("/testservice/api/v1/401", getAttribute(logBody, "url.path"));
-            assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
-            assertEquals("JWT", getAttribute(logBody, "auth.method"));
-        }
-
-        @Test
-        void givenRouted_withAuthJwt_failure_expiredToken_thenLog() {
-            given()
-                .cookie("apimlAuthenticationToken", createExpiredZoweJwtToken("USER", "z/OS", "Ltpa", httpConfig.getHttpsConfig()))
-                .get(basePath + "/testservice/api/v1/401")
-            .then()
-                .statusCode(401);
-
-            var logRecord = assertOneLogRecordExported();
-            var logBody = logRecord.getBodyValue().asString();
-            assertEquals("testservice", getAttribute(logBody, "service.id"));
-            assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertEquals("ERROR", getAttribute(logBody, "auth.status"));
-            assertEquals("ZWEAO402E The request has not been applied because it lacks valid authentication credentials.", getAttribute(logBody, "auth.error.message"));
-            assertEquals("org.zowe.apiml.security.common.token.TokenExpireException", getAttribute(logBody, "auth.error.type"));
-            assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
-            assertEquals("401", getAttribute(logBody, "service.response_code"));
-            assertEquals("/testservice/api/v1/401", getAttribute(logBody, "url.path"));
-            assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
-            assertEquals("JWT", getAttribute(logBody, "auth.method"));
-        }
-
-        @Test
-        void givenRouted_withAuthJwt_noJwt_thenLog() {
-            given()
-                .get(basePath + "/testservice/api/v1/401")
-            .then()
-                .statusCode(401);
-
-            var logRecord = assertOneLogRecordExported();
-            var logBody = logRecord.getBodyValue().asString();
-            assertEquals("testservice", getAttribute(logBody, "service.id"));
-            assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertEquals("ERROR", getAttribute(logBody, "auth.status"));
-            assertEquals("ZWEAG160E No authentication provided in the request", getAttribute(logBody, "auth.error.message"));
-            assertEquals("org.springframework.security.authentication.InsufficientAuthenticationException", getAttribute(logBody, "auth.error.type"));
-            assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
-            assertEquals("401", getAttribute(logBody, "service.response_code"));
-            assertEquals("/testservice/api/v1/401", getAttribute(logBody, "url.path"));
-            assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
-            assertNull(getAttribute(logBody, "auth.method"));
-        }
-
-        @Test
         void givenNoRoute_thenLog() {
             given()
                 .get(basePath + "/nonexistant/api/v1/200")
@@ -596,34 +647,6 @@ class OpenTelemetryResourceAttributesZosTest {
             assertEquals("https", getAttribute(logBody, "url.scheme"));
             assertEquals("httpBasicPassTicket", getAttribute(logBody, "auth.service.auth.method"));
             assertNull(getAttribute(logBody, "auth.method"));
-        }
-
-        @Test
-        void givenRouted_withOidc_success_thenLog() {
-            when(oidcTokenProvider.isValid(VALID_OIDC_TOKEN)).thenReturn(true);
-            when(oidcExternalMapper.mapToMainframeUserId(any())).thenReturn("USER");
-
-            given()
-                .header(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_OIDC_TOKEN)
-                .get(basePath + "/testservice/api/v1/200")
-            .then()
-                .statusCode(200);
-
-            var logRecord = assertOneLogRecordExported();
-            assertAttributesBase(logRecord.getResource().getAttributes(), port);
-            @SuppressWarnings("null")
-            var logBody = logRecord.getBodyValue().asString();
-            assertEquals("USER", getAttribute(logBody, "user.id"));
-            assertEquals(List.of("oidc.username"), getAttribute(logBody, "user.distributed.id"));
-            assertEquals("testservice", getAttribute(logBody, "service.id"));
-            assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertEquals("OK", getAttribute(logBody, "auth.status"));
-            assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
-            assertEquals("200", getAttribute(logBody, "service.response_code"));
-            assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
-            assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
-            assertEquals("OIDC", getAttribute(logBody, "auth.method"));
         }
 
         @Test
