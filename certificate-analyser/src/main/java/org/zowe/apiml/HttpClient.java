@@ -26,10 +26,14 @@ public class HttpClient {
     public int executeCall(URL url) throws IOException {
         HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
         HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        con.setConnectTimeout(5000);
-        con.setReadTimeout(5000);
-        return con.getResponseCode();
+        try {
+            con.setRequestMethod("GET");
+            con.setConnectTimeout(5000);
+            con.setReadTimeout(5000);
+            return con.getResponseCode();
+        } finally {
+            con.disconnect();
+        }
     }
 
 }

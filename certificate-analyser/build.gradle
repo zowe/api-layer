@@ -7,6 +7,7 @@ dependencies {
     annotationProcessor libs.picocli.codegen
 
     testImplementation libs.mockito.core
+    testImplementation libs.mockito.junit.jupiter
     testImplementation libs.hamcrest
 }
 
