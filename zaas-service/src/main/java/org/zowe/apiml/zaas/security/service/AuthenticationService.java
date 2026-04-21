@@ -358,7 +358,6 @@ public class AuthenticationService {
 
         log.debug("Validating JWT: ...{}", StringUtils.right(jwtToken, 15));
         if (isInvalidated(jwtToken)) {
-            //add test
             throw new TokenNotValidException("Token ...%s was invalidated.".formatted(StringUtils.right(jwtToken, 15)));
         }
 

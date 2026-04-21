@@ -132,6 +132,7 @@ public class CacheConfig {
             )
             .withKeyCopier(IdentityCopier.identityCopier())
             .withValueCopier(SerializingCopier.asCopierClass())
+            // 1 minute to force zosmf tokens validation against zosmf for invalidated tokens
             .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(1))).build();
         caches.put("validatedJwtTokens", validatedJwtTokensConf);
 

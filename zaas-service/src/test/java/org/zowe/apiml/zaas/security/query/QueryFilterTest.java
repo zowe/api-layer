@@ -42,7 +42,7 @@ class QueryFilterTest {
     private MockHttpServletResponse httpServletResponse;
     private QueryFilter queryFilter;
 
-    private final String VALID_TOKEN = JWTTestUtils.createDummyJwtToken("me", "APIML");
+    private static final String VALID_TOKEN = JWTTestUtils.createDummyJwtToken("me", "APIML");
 
     @Mock
     private AuthenticationSuccessHandler authenticationSuccessHandler;

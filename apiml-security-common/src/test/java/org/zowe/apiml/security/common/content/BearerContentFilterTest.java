@@ -43,13 +43,14 @@ import static org.mockito.Mockito.when;
 
 class BearerContentFilterTest {
 
+    private static final String JWT_TOKEN = JWTTestUtils.createDummyAPIMLToken("user");
+    private static final String BEARER_AUTH = "Bearer %s".formatted(JWT_TOKEN);
+
     private BearerContentFilter bearerContentFilter;
     private final FilterChain filterChain = mock(FilterChain.class);
     private final AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
     private final AuthenticationFailureHandler authenticationFailureHandler = mock(AuthenticationFailureHandler.class);
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler = mock(ResourceAccessExceptionHandler.class);
-    public static final String JWT_TOKEN = JWTTestUtils.createDummyAPIMLToken("user");
-    private final static String BEARER_AUTH = "Bearer %s".formatted(JWT_TOKEN);
 
     private MockHttpServletRequest request;
     private MockHttpServletResponse response;

@@ -46,6 +46,8 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
 import static org.zowe.apiml.security.SecurityUtils.isKeyring;
@@ -110,7 +112,7 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${caching.storage.infinispan.numSegments:256}")
     private int numSegments;
 
-    private AtomicReference<ClusteredLock> zoweInvalidatedTokenLock = new AtomicReference<>();
+    private final AtomicReference<ClusteredLock> zoweInvalidatedTokenLock = new AtomicReference<>();
 
     @Override
     public void afterPropertiesSet() {
@@ -209,14 +211,15 @@ public class InfinispanConfig implements InitializingBean {
         System.setProperty("infinispan.ssl.trustStore", trustStore);
         System.setProperty("infinispan.ssl.trustStorePassword", trustStorePass);
 
-        Map<String, ConfigurationBuilder> caches;
-        if (applicationInfo.isModulith()) {
-            caches = new HashMap<>();
+        var caches = Stream.of(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN)
+            .collect(Collectors.toMap( cacheName -> cacheName, cacheName -> getDistributedCacheConfig()));
 
+        if (applicationInfo.isModulith()) {
             caches.put(CACHE_ZOWE, getDistributedCacheConfig());
             caches.put(CACHE_ZOWE_INVALIDATED_TOKEN, getDistributedCacheConfig());
             caches.put("invalidatedJwtTokens", getDistributedCacheConfig());
 
+            // 1 minute to force zosmf tokens validation against zosmf for invalidated tokens
             caches.put("validatedJwtTokens", getSimpleCacheConfig(BIG_CACHE_SIZE, Duration.ofMinutes(1)));
 
             //Small local caches
@@ -228,11 +231,6 @@ public class InfinispanConfig implements InitializingBean {
             caches.put("trustedCertificates", getSimpleCacheConfig(BIG_CACHE_SIZE, Duration.ofHours(1)));
             caches.put("parseOIDCToken", getSimpleCacheConfig(BIG_CACHE_SIZE, Duration.ofSeconds(20)));
             caches.put("validationOIDCToken", getSimpleCacheConfig(BIG_CACHE_SIZE, Duration.ofSeconds(20)));
-
-        } else {
-            caches = new HashMap<>();
-            var defaultCacheConfig = getDistributedCacheConfig();
-            Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN).forEach( c -> caches.put(c,defaultCacheConfig));
         }
 
         return new LazyCacheManager(getCacheManagerConfig(resourceLoader), caches);

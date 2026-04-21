@@ -65,12 +65,12 @@ class TokenCreationServiceTest {
     @Mock
     private SafIdtProvider safIdtProvider;
 
-    private final String VALID_USER_ID = "validUserId";
-    private final String VALID_ZOSMF_TOKEN = JWTTestUtils.createDummyZOSMFToken(VALID_USER_ID);
-    private final String VALID_APIML_TOKEN = JWTTestUtils.createDummyAPIMLToken(VALID_USER_ID);
-    private final String PASSTICKET = "passTicket";
-    private final String VALID_ZOSMF_APPLID = "IZUDFLT";
-    private final String VALID_SAFIDT = "validSAFIdentityToken";
+    private static final String VALID_USER_ID = "validUserId";
+    private static final String VALID_ZOSMF_TOKEN = JWTTestUtils.createDummyZOSMFToken(VALID_USER_ID);
+    private static final String VALID_APIML_TOKEN = JWTTestUtils.createDummyAPIMLToken(VALID_USER_ID);
+    private static final String PASSTICKET = "passTicket";
+    private static final String VALID_ZOSMF_APPLID = "IZUDFLT";
+    private static final String VALID_SAFIDT = "validSAFIdentityToken";
 
     @BeforeEach
     void setUp() {
