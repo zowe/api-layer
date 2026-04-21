@@ -17,13 +17,13 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-public class SSLContextFactory {
+public class SSLContextHolder {
 
     private final Stores stores;
     private SSLContext sslContext;
     private SSLContext sslContextWithKeystore;
 
-    private SSLContextFactory(Stores stores) {
+    private SSLContextHolder(Stores stores) {
         this.stores = stores;
     }
 
@@ -39,14 +39,14 @@ public class SSLContextFactory {
         return sslContextWithKeystore;
     }
 
-    static SSLContextFactory initSSLContextWithKeystore(Stores stores) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+    static SSLContextHolder initSSLContextWithKeystore(Stores stores) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
 
-        SSLContextFactory conf = new SSLContextFactory(stores);
+        SSLContextHolder conf = new SSLContextHolder(stores);
         TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustFactory.init(stores.getTrustStore());
         KeyManagerFactory keyFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         keyFactory.init(stores.getKeyStore(), stores.getConf().getKeyPasswd().toCharArray());
-        conf.sslContextWithKeystore = SSLContext.getInstance("TLSv1.2");
+        conf.sslContextWithKeystore = SSLContext.getInstance(stores.getConf().getTlsVersion());
         X509KeyManager originalKm = (X509KeyManager) keyFactory.getKeyManagers()[0];
         X509KeyManager km = new X509KeyManager() {
             public String chooseClientAlias(String[] keyType, Principal[] issuers, Socket socket) {
@@ -88,9 +88,9 @@ public class SSLContextFactory {
 
     }
 
-    static SSLContextFactory initSSLContextWithoutKeystore(Stores stores) throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+    static SSLContextHolder initSSLContextWithoutKeystore(Stores stores) throws CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
 
-        SSLContextFactory conf = new SSLContextFactory(stores);
+        SSLContextHolder conf = new SSLContextHolder(stores);
         TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustFactory.init(stores.getTrustStore());
         KeyManagerFactory keyFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
@@ -98,7 +98,7 @@ public class SSLContextFactory {
         KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
         emptyKeystore.load(null, null);
         keyFactory.init(emptyKeystore, null);
-        conf.sslContext = SSLContext.getInstance("TLSv1.2");
+        conf.sslContext = SSLContext.getInstance(stores.getConf().getTlsVersion());
         conf.sslContext.init(keyFactory.getKeyManagers(), trustFactory.getTrustManagers(), new SecureRandom());
         return conf;
 

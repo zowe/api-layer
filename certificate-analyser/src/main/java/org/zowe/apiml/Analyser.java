@@ -30,25 +30,25 @@ public class Analyser {
             }
 
             Stores stores = new Stores(conf);
-            SSLContextFactory sslContextFactory = SSLContextFactory.initSSLContextWithoutKeystore(stores);
+            SSLContextHolder sslContextHolder = SSLContextHolder.initSSLContextWithoutKeystore(stores);
             List<Verifier> verifiers = new ArrayList<>();
             HttpClient client;
             if (conf.getRemoteUrl() != null) {
                 if (conf.isClientCertAuth()) {
-                    sslContextFactory = SSLContextFactory.initSSLContextWithKeystore(stores);
-                    client = new HttpClient(sslContextFactory.getSslContextWithKeystore());
+                    sslContextHolder = SSLContextHolder.initSSLContextWithKeystore(stores);
+                    client = new HttpClient(sslContextHolder.getSslContextWithKeystore());
                 } else {
-                    client = new HttpClient(sslContextFactory.getSslContext());
+                    client = new HttpClient(sslContextHolder.getSslContext());
                 }
-                verifiers.add(new RemoteHandshake(sslContextFactory, client));
+                verifiers.add(new RemoteHandshake(sslContextHolder, client));
             } else {
                 System.out.println("No remote will be verified. Specify \"-r\" or \"--remoteurl\" if you wish to verify the trust.");
             }
 
             if (conf.isDoLocalHandshake()) {
-                sslContextFactory = SSLContextFactory.initSSLContextWithKeystore(stores);
-                client = new HttpClient(sslContextFactory.getSslContextWithKeystore());
-                verifiers.add(new LocalHandshake(sslContextFactory, client));
+                sslContextHolder = SSLContextHolder.initSSLContextWithKeystore(stores);
+                client = new HttpClient(sslContextHolder.getSslContextWithKeystore());
+                verifiers.add(new LocalHandshake(sslContextHolder, client));
             }
             if (conf.getKeyStore() != null) {
                 verifiers.add(new LocalVerifier(stores, conf.getRequiredHostNames()));
