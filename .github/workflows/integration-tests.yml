@@ -210,6 +210,9 @@ jobs:
                     APIML_SERVICE_HOSTNAME: apiml
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
                     logbackService: ZWEAGW1
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_BIND_ADDRESS: apiml
+                    JGROUPS_KEYEXCHANGE_PORT: 7601
             apiml-2:
                 image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -226,6 +229,9 @@ jobs:
                     APIML_SERVICE_HOSTNAME: apiml-2
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
                     logbackService: ZWEAGW2
+                    JGROUPS_BIND_PORT: 7600
+                    JGROUPS_BIND_ADDRESS: apiml
+                    JGROUPS_KEYEXCHANGE_PORT: 7601
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
