@@ -16,6 +16,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.caching.service.infinispan.config.LazyCacheManager;
 
 import java.time.Duration;
@@ -26,6 +27,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @AcceptanceTest
+@TestPropertySource(properties = {
+    "caching.storage.mode=infinispan",
+    "caching.storage.infinispan.initialHosts=localhost[7800]",
+    "infinispan.embedded.enabled=true",
+    "jgroups.bind.port=7800",
+    "jgroups.bind.address=localhost",
+    "apiml.enabled=false"
+})
 class InfinispanCacheConfigurationTest {
 
     @Autowired
