@@ -29,6 +29,7 @@ import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.service.schema.source.OIDCAuthSource;
 import reactor.core.publisher.Mono;
@@ -46,8 +47,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class OIDCAuthFilterTest {
 
-    private static final String OIDC_TOKEN = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2V5In0.eyJzdWIiOiJ0ZXN0dXNlckBleGFtcGxlLmNvbSIsImlhdCI6MTcxMTUyMDAwMCwiZXhwIjo5OTk5OTk5OTk5fQ.fake-signature";
     private static final String MAINFRAME_USER = "TESTUSER";
+    public static final String OIDC_TOKEN = JWTTestUtils.createDummyJwtToken(MAINFRAME_USER, "https://oidc.provider");
     private static final List<String> USER_ID_FIELD_PATH = List.of("sub");
 
     @Mock private OIDCProvider oidcProvider;
@@ -184,7 +185,7 @@ class OIDCAuthFilterTest {
             var exchange = MockServerWebExchange.from(request);
             when(chain.filter(exchange)).thenReturn(Mono.empty());
 
-            Authentication existingAuth = TokenAuthentication.createAuthenticated("EXISTING_USER", "some-jwt", TokenAuthentication.Type.JWT);
+            Authentication existingAuth = TokenAuthentication.createAuthenticated("EXISTING_USER", JWTTestUtils.createDummyAPIMLToken("EXISTING_USER"), TokenAuthentication.Type.JWT);
             var securityContext = new SecurityContextImpl(existingAuth);
 
             var result = filter.filter(exchange, chain)
