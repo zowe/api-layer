@@ -127,7 +127,8 @@ task runLocalIntegrationTests(type: Test) {
             'HATest',
             'ChaoticHATest',
             'OidcOauth2Test',
-            'MultipleRegistrationsTest'
+            'MultipleRegistrationsTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
     outputs.upToDateWhen { false }
@@ -151,7 +152,8 @@ task runAllIntegrationTestsNormal(type: Test) {
             'NotAttlsTest',
             'OidcOauth2Test',
             'MultipleRegistrationsTest',
-            'HealthEndpointProtectionDisabledTest'
+            'HealthEndpointProtectionDisabledTest',
+            'InfinispanJGroupStabilityTest'
         )
 
     }
@@ -208,7 +210,8 @@ task runAllIntegrationTestsForZoweNonHaTestingOnZos(type: Test) {
             'CloudGatewayProxyTest',
             'CloudGatewayAuthTest',
             'CloudGatewayCentralRegistry',
-            'SafIdTokenTest'
+            'SafIdTokenTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 
@@ -253,7 +256,8 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
             'CloudGatewayCentralRegistry',
             'SafIdTokenTest',
             'ChaoticHATest',
-            'GraphQLTest'
+            'GraphQLTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 
@@ -285,7 +289,8 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
             'ChaoticHATest',
             'OidcOauth2Test',
             'MultipleRegistrationsTest',
-            'NotForMainframeTest'
+            'NotForMainframeTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
     outputs.upToDateWhen { false }
@@ -313,7 +318,8 @@ task runCITests(type: Test) {
             'ChaoticHATest',
             'OidcOauth2Test',
             'MultipleRegistrationsTest',
-            'HealthEndpointProtectionDisabledTest'
+            'HealthEndpointProtectionDisabledTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 }
@@ -347,7 +353,8 @@ task runContainerTests(type: Test) {
             'CloudGatewayServiceRouting',
             'CloudGatewayCentralRegistry',
             'ZaasTest',
-            'HealthEndpointProtectionDisabledTest'
+            'HealthEndpointProtectionDisabledTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 }
@@ -384,7 +391,8 @@ task runBaseTests(type: Test) {
             'CloudGatewayServiceRouting',
             'CloudGatewayCentralRegistry',
             'MultipleRegistrationsTest',
-            'HealthEndpointProtectionDisabledTest'
+            'HealthEndpointProtectionDisabledTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 }
@@ -485,7 +493,8 @@ task runZosmfAuthTest(type: Test) {
             'zOSMFAuthTest'
         )
         excludeTags(
-            'InfinispanStorageTest'
+            'InfinispanStorageTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 }
@@ -517,7 +526,8 @@ task runCachingServiceTests(type: Test) {
             'CachingServiceTest'
         )
         excludeTags(
-            'InfinispanStorageTest'
+            'InfinispanStorageTest',
+            'InfinispanJGroupStabilityTest'
         )
     }
 }
@@ -533,6 +543,20 @@ task runInfinispanServiceTests(type: Test) {
         includeTags(
             'CachingServiceTest',
             'InfinispanStorageTest'
+        )
+    }
+}
+
+task runInfinispanJGroupStabilityTest(type: Test) {
+    group "integration tests"
+    description "Run Caching service with infinispan storage for testing JGroup stability"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'InfinispanJGroupStabilityTest'
         )
     }
 }
