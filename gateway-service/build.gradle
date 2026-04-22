@@ -102,6 +102,7 @@ dependencies {
     testImplementation libs.java.websocket
 
     testImplementation(testFixtures(project(":apiml-common")))
+    testImplementation(testFixtures(project(":apiml-security-common")))
 
     testFixturesImplementation libs.spring.boot.starter.test
     testFixturesImplementation libs.commons.io

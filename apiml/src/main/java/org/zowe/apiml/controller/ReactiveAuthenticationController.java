@@ -198,7 +198,7 @@ public class ReactiveAuthenticationController {
             .map(tokenAuthentication -> ResponseEntity
                     .ok()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(authenticationService.parseJwtToken(tokenAuthentication.getCredentials()))
+                    .body(authenticationService.parseJwtToken(tokenAuthentication.getCredentials()).getQueryResponse())
             )
             .switchIfEmpty(Mono.just(ResponseEntity.status(SC_UNAUTHORIZED).build()));
     }

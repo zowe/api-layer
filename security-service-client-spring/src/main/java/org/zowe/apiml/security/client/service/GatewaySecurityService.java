@@ -33,6 +33,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -124,7 +125,7 @@ public class GatewaySecurityService implements GatewaySecurity {
     }
 
     @Override
-    public QueryResponse verifyOidc(String token) {
+    public TokenAuthentication verifyOidc(String token) {
         ServiceAddress gatewayConfigProperties = gatewayClient.getGatewayConfigProperties();
         String uri = String.format("%s://%s%s", gatewayConfigProperties.getScheme(),
             gatewayConfigProperties.getHostname(), authConfigurationProperties.getGatewayOidcValidateEndpoint());
@@ -145,7 +146,7 @@ public class GatewaySecurityService implements GatewaySecurity {
                     responseHandler.handleErrorType(response, errorType, uri);
                     return null;
                 }
-                return new QueryResponse();
+                return new TokenAuthentication(token);
             });
         } catch (IOException e) {
             responseHandler.handleException(e);
