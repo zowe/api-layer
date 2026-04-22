@@ -41,6 +41,7 @@ import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 import java.net.URI;
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.restassured.RestAssured.given;
@@ -218,7 +219,7 @@ class OpenTelemetryResourceAttributesZosTest {
                 .then()
                     .statusCode(404);
 
-                var logRecord = assertOneLogRecordExported();
+                var logRecord = assertOneLogRecordExported("/nonexistant/api/v1/200");
                 assertAttributesBase(logRecord.getResource().getAttributes(), port);
                 @SuppressWarnings("null")
                 var logBody = logRecord.getBodyValue().asString();
@@ -258,7 +259,7 @@ class OpenTelemetryResourceAttributesZosTest {
                 .then()
                     .statusCode(200);
 
-                var logRecord = assertOneLogRecordExported();
+                var logRecord = assertOneLogRecordExported("/testservicebp/api/v1/200");
                 assertAttributesBase(logRecord.getResource().getAttributes(), port);
                 @SuppressWarnings("null")
                 var logBody = logRecord.getBodyValue().asString();
@@ -309,7 +310,7 @@ class OpenTelemetryResourceAttributesZosTest {
                         .then()
                             .statusCode(200);
 
-                        var logRecord = assertOneLogRecordExported();
+                        var logRecord = assertOneLogRecordExported("/testservice/api/v1/200");
                         assertAttributesBase(logRecord.getResource().getAttributes(), port);
                         @SuppressWarnings("null")
                         var logBody = logRecord.getBodyValue().asString();
@@ -333,7 +334,7 @@ class OpenTelemetryResourceAttributesZosTest {
                         .then()
                             .statusCode(200);
 
-                        var logRecord = assertOneLogRecordExported();
+                        var logRecord = assertOneLogRecordExported("/testservice/api/v1/200");
                         assertAttributesBase(logRecord.getResource().getAttributes(), port);
                         @SuppressWarnings("null")
                         var logBody = logRecord.getBodyValue().asString();
@@ -360,7 +361,7 @@ class OpenTelemetryResourceAttributesZosTest {
                         .then()
                             .statusCode(200);
 
-                        var logRecord = assertOneLogRecordExported();
+                        var logRecord = assertOneLogRecordExported("/testservice/api/v1/200");
                         assertAttributesBase(logRecord.getResource().getAttributes(), port);
                         @SuppressWarnings("null")
                         var logBody = logRecord.getBodyValue().asString();
@@ -389,7 +390,7 @@ class OpenTelemetryResourceAttributesZosTest {
                         .then()
                             .statusCode(200);
 
-                        var logRecord = assertOneLogRecordExported();
+                        var logRecord = assertOneLogRecordExported("/testservice/api/v1/200");
 
                         assertAttributesBase(logRecord.getResource().getAttributes(), port);
                         @SuppressWarnings("null")
@@ -413,7 +414,7 @@ class OpenTelemetryResourceAttributesZosTest {
                         .then()
                             .statusCode(401);
 
-                        var logRecord = assertOneLogRecordExported();
+                        var logRecord = assertOneLogRecordExported("/testservice/api/v1/401");
                         var logBody = logRecord.getBodyValue().asString();
                         assertEquals("testservice", getAttribute(logBody, "service.id"));
                         assertEquals("GET", getAttribute(logBody, "http.request.method"));
@@ -436,7 +437,7 @@ class OpenTelemetryResourceAttributesZosTest {
                         .then()
                             .statusCode(401);
 
-                        var logRecord = assertOneLogRecordExported();
+                        var logRecord = assertOneLogRecordExported("/testservice/api/v1/401");
                         var logBody = logRecord.getBodyValue().asString();
                         assertEquals("testservice", getAttribute(logBody, "service.id"));
                         assertEquals("GET", getAttribute(logBody, "http.request.method"));
@@ -458,7 +459,7 @@ class OpenTelemetryResourceAttributesZosTest {
                         .then()
                             .statusCode(401);
 
-                        var logRecord = assertOneLogRecordExported();
+                        var logRecord = assertOneLogRecordExported("/testservice/api/v1/401");
                         var logBody = logRecord.getBodyValue().asString();
                         assertEquals("testservice", getAttribute(logBody, "service.id"));
                         assertEquals("GET", getAttribute(logBody, "http.request.method"));
@@ -510,7 +511,7 @@ class OpenTelemetryResourceAttributesZosTest {
                     .then()
                         .statusCode(200);
 
-                    var logRecord = assertOneLogRecordExported();
+                    var logRecord = assertOneLogRecordExported("/testservicept/api/v1/200");
                     assertAttributesBase(logRecord.getResource().getAttributes(), port);
                     @SuppressWarnings("null")
                     var logBody = logRecord.getBodyValue().asString();
@@ -597,7 +598,7 @@ class OpenTelemetryResourceAttributesZosTest {
             .then()
                 .statusCode(401);
 
-            var logRecord = assertOneLogRecordExported();
+            var logRecord = assertOneLogRecordExported("/gateway/api/v1/auth/login");
             assertAttributesBase(logRecord.getResource().getAttributes(), port);
             @SuppressWarnings("null")
             var logBody = logRecord.getBodyValue().asString();
