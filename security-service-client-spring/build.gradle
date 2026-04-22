@@ -8,6 +8,7 @@ dependencies {
 
     testImplementation libs.spring.boot.starter.test
     testImplementation(testFixtures(project(":apiml-common")))
+    testImplementation(testFixtures(project(":apiml-security-common")))
 
     compileOnly libs.lombok
     testCompileOnly libs.lombok

@@ -21,6 +21,7 @@ import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,8 +32,9 @@ class ApiCatalogLogoutSuccessHandlerTest {
 
     @Test
     void testOnLogoutSuccess() {
+        var token = JWTTestUtils.createDummyAPIMLToken("user");
         var request = MockServerHttpRequest.get("/logout")
-            .header(HttpHeaders.AUTHORIZATION, "Bearer token123")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer %s".formatted(token))
             .build();
         var exchange = MockServerWebExchange.from(request);
         WebFilterChain mockChain = mock(WebFilterChain.class);
@@ -43,7 +45,7 @@ class ApiCatalogLogoutSuccessHandlerTest {
 
         StepVerifier.create(apiCatalogLogoutSuccessHandler.onLogoutSuccess(
                 webFilterExchange,
-                new TokenAuthentication("TEST_TOKEN_STRING")
+                new TokenAuthentication(token)
             ))
         .verifyComplete();
 
