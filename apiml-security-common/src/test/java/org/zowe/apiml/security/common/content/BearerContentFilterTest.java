@@ -25,6 +25,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -42,12 +43,14 @@ import static org.mockito.Mockito.when;
 
 class BearerContentFilterTest {
 
+    private static final String JWT_TOKEN = JWTTestUtils.createDummyAPIMLToken("user");
+    private static final String BEARER_AUTH = "Bearer %s".formatted(JWT_TOKEN);
+
     private BearerContentFilter bearerContentFilter;
     private final FilterChain filterChain = mock(FilterChain.class);
     private final AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
     private final AuthenticationFailureHandler authenticationFailureHandler = mock(AuthenticationFailureHandler.class);
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler = mock(ResourceAccessExceptionHandler.class);
-    private final static String BEARER_AUTH = "Bearer token";
 
     private MockHttpServletRequest request;
     private MockHttpServletResponse response;
@@ -70,8 +73,7 @@ class BearerContentFilterTest {
 
             @Test
             void thenSuccess() throws ServletException, IOException {
-                String token = "token";
-                TokenAuthentication tokenAuthentication = new TokenAuthentication(token, TokenAuthentication.Type.JWT);
+                TokenAuthentication tokenAuthentication = new TokenAuthentication(JWT_TOKEN, TokenAuthentication.Type.JWT);
                 request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
 
                 bearerContentFilter.doFilter(request, response, filterChain);
@@ -89,10 +91,9 @@ class BearerContentFilterTest {
 
             @Test
             void thenAuthenticationFails() throws ServletException, IOException {
-                String token = "token";
                 RuntimeException exception = new RuntimeException("No Gateway");
 
-                TokenAuthentication tokenAuthentication = new TokenAuthentication(token, TokenAuthentication.Type.JWT);
+                TokenAuthentication tokenAuthentication = new TokenAuthentication(JWT_TOKEN, TokenAuthentication.Type.JWT);
 
                 request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
                 when(authenticationManager.authenticate(tokenAuthentication)).thenThrow(exception);
@@ -140,10 +141,9 @@ class BearerContentFilterTest {
 
             @Test
             void thenAuthenticationFails() throws ServletException, IOException {
-                String token = "token";
                 AuthenticationException exception = new BadCredentialsException("Token not valid");
 
-                TokenAuthentication tokenAuthentication = new TokenAuthentication(token, TokenAuthentication.Type.JWT);
+                TokenAuthentication tokenAuthentication = new TokenAuthentication(JWT_TOKEN, TokenAuthentication.Type.JWT);
                 request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
                 when(authenticationManager.authenticate(tokenAuthentication)).thenThrow(exception);
 
@@ -189,7 +189,7 @@ class BearerContentFilterTest {
             request.addHeader(HttpHeaders.AUTHORIZATION, BEARER_AUTH);
             Optional<AbstractAuthenticationToken> content = bearerContentFilter.extractContent(request);
 
-            TokenAuthentication actualToken = new TokenAuthentication("token", TokenAuthentication.Type.JWT);
+            TokenAuthentication actualToken = new TokenAuthentication(JWT_TOKEN, TokenAuthentication.Type.JWT);
 
             assertTrue(content.isPresent());
             assertEquals(actualToken, content.get());

@@ -26,8 +26,6 @@ import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
-import java.time.Clock;
-
 @Slf4j
 @Service
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
@@ -40,7 +38,7 @@ public class ModulithAuthenticationService extends AuthenticationService {
             ZosmfService zosmfService, EurekaClient eurekaClient, RestTemplate restTemplate, CacheManager cacheManager,
             CacheUtils cacheUtils) {
         super(applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService, eurekaClient, restTemplate,
-                cacheManager, cacheUtils, Clock.systemUTC());
+                cacheManager, cacheUtils);
     }
 
     @Override

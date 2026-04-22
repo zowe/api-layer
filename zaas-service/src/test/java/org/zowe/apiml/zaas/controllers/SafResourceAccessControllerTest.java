@@ -28,6 +28,7 @@ import static org.apache.hc.core5.http.HttpStatus.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -62,9 +63,10 @@ class SafResourceAccessControllerTest {
     void setUp() {
         SafResourceAccessController controller = new SafResourceAccessController(safResourceAccessVerifying, messageService);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
-        TokenAuthentication auth = new TokenAuthentication("user", "token");
-        auth.setAuthenticated(true);
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        var tokenAuthenticationMock = mock(TokenAuthentication.class);
+        when(tokenAuthenticationMock.isAuthenticated()).thenReturn(true);
+        when(tokenAuthenticationMock.getPrincipal()).thenReturn("user");
+        SecurityContextHolder.getContext().setAuthentication(tokenAuthenticationMock);
     }
 
     @Nested
