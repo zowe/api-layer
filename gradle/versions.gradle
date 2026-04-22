@@ -260,6 +260,7 @@ dependencyResolutionManagement {
             library('swagger_models', 'io.swagger.core.v3', 'swagger-models').versionRef('swaggerCore') // Added to force minimum transitive version
             library('swagger_inflector', 'io.swagger', 'swagger-inflector').versionRef('swaggerInflector')
             library('thymeleaf_spring5', 'org.thymeleaf', 'thymeleaf-spring5').versionRef('thymeleaf')
+            library('thymeleaf_spring6', 'org.thymeleaf', 'thymeleaf-spring6').versionRef('thymeleaf')
             library('thymeleaf', 'org.thymeleaf', 'thymeleaf').versionRef('thymeleaf')
             library('woodstox_core', 'com.fasterxml.woodstox', 'woodstox-core').versionRef('woodstoxCore')
             library('spring_boot_starter_graphql', 'org.springframework.boot', 'spring-boot-starter-graphql').versionRef('springBootGraphQl')
