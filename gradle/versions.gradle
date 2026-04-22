@@ -7,6 +7,7 @@ dependencyResolutionManagement {
 
             version('springBoot', '3.5.13')
             version('tomcat', '10.1.54')  //temporary workaround to allow vulnerabilities to be resolved. Remove once SpringBoot goes to 3.5.14.
+            version('springSecurity', '6.5.10')  //temporary workaround to allow vulnerabilities to be resolved. Remove once SpringBoot goes to 3.5.14 (?).
             version('springBootGraphQl', '3.5.13')
             version('springCloudNetflix', '4.3.2')
             version('springCloudCommons', '4.3.2')
@@ -146,6 +147,10 @@ dependencyResolutionManagement {
             library('tomcat_embed_core', 'org.apache.tomcat.embed', 'tomcat-embed-core').versionRef('tomcat') //temporary workaround to allow vulnerabilities to be resolved. Remove once SpringBoot goes to 3.5.14.
             library('tomcat_embed_el', 'org.apache.tomcat.embed', 'tomcat-embed-el').versionRef('tomcat') //temporary workaround to allow vulnerabilities to be resolved. Remove once SpringBoot goes to 3.5.14.
             library('tomcat_embed_websocket', 'org.apache.tomcat.embed', 'tomcat-embed-websocket').versionRef('tomcat') //temporary workaround to allow vulnerabilities to be resolved. Remove once SpringBoot goes to 3.5.14.
+            library('spring-security-config', 'org.springframework.security', 'spring-security-config').versionRef('springSecurity') //temporary workaround to allow vulnerabilities to be resolved. Remove once SpringBoot goes to 3.5.14.
+            library('spring-security-core', 'org.springframework.security', 'spring-security-core').versionRef('springSecurity') //temporary workaround to allow vulnerabilities to be resolved. Remove once SpringBoot goes to 3.5.14.
+            library('spring-security-crypto', 'org.springframework.security', 'spring-security-crypto').versionRef('springSecurity') //temporary workaround to allow vulnerabilities to be resolved. Remove once SpringBoot goes to 3.5.14.
+            library('spring-security-web', 'org.springframework.security', 'spring-security-web').versionRef('springSecurity') //temporary workaround to allow vulnerabilities to be resolved. Remove once SpringBoot goes to 3.5.14.
 
             library('spring_cloud_starter_eureka_client', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-client').versionRef('springCloudNetflix')
             library('spring_cloud_starter_eureka_server', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-server').versionRef('springCloudNetflix')
