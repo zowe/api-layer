@@ -348,15 +348,15 @@ public class SecurityConfiguration {
                 Optional.ofNullable(exchange.getRequest().getHeaders().getFirst(HEADER_OIDC_TOKEN))
                     .map(token -> {
                         try {
-                            return Map.entry(token, gatewaySecurity.verifyOidc(token));
+                            var tokenAuthentication = gatewaySecurity.verifyOidc(token);
+                            tokenAuthentication.setAuthenticated(true);
+                            return tokenAuthentication;
                         } catch (Exception e) {
                             log.debug("Cannot verify OIDC token: {}", token, e);
                             return null;
                         }
                     })
-                    .map(pair -> ReactiveSecurityContextHolder.withAuthentication(
-                        createAuthenticated(pair.getValue().getUserId(), pair.getKey(), TokenAuthentication.Type.OIDC)
-                    ))
+                    .map(ReactiveSecurityContextHolder::withAuthentication)
                     .orElse(context)
             );
     }

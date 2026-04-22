@@ -33,6 +33,7 @@ import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.security.common.token.X509AuthenticationToken;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.util.HttpUtils;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -132,12 +133,6 @@ class QueryWebFilterTest {
                     initAuthentication(X509AuthenticationToken.class, true);
                     when(authentication.isAuthenticated()).thenReturn(true);
 
-                    var tokenAuthentication = mock(Authentication.class);
-                    when(authenticationService.authenticate(argThat(token -> token instanceof TokenAuthentication t && t.getType().equals(TokenAuthentication.Type.JWT) && t.getCredentials().equals("expiredToken"))))
-                        .thenReturn(Mono.just(tokenAuthentication));
-
-                    when(tokenAuthentication.isAuthenticated()).thenReturn(false);
-
                     when(failureHandler.onAuthenticationFailure(any(), isA(TokenNotValidException.class)))
                         .thenReturn(Mono.empty());
 
@@ -148,12 +143,13 @@ class QueryWebFilterTest {
 
                 @Test
                 void whenProtectedByCert_UseCurrentAuthentication() {
-                    initRequest(r -> r.cookie(new HttpCookie("apimlAuthenticationToken", "validToken")));
+                    var validToken = JWTTestUtils.createDummyAPIMLToken("user");
+                    initRequest(r -> r.cookie(new HttpCookie("apimlAuthenticationToken", validToken)));
                     initAuthentication(X509AuthenticationToken.class, true);
 
                     when(authentication.isAuthenticated()).thenReturn(true);
 
-                    when(authenticationService.authenticate(argThat(token -> token instanceof TokenAuthentication t && t.getType().equals(TokenAuthentication.Type.JWT) && t.getCredentials().equals("validToken"))))
+                    when(authenticationService.authenticate(argThat(token -> token instanceof TokenAuthentication t && t.getType().equals(TokenAuthentication.Type.JWT) && t.getCredentials().equals(validToken))))
                         .thenReturn(Mono.just(authentication));
 
                     var mockMono = mock(Mono.class);

@@ -127,13 +127,14 @@ public class CacheConfig {
 
         caches.put("invalidatedJwtTokens", invalidatedJwtTokensConf);
 
-        var validationJwtTokenConf = CacheConfigurationBuilder.newCacheConfigurationBuilder(
+        var validatedJwtTokensConf = CacheConfigurationBuilder.newCacheConfigurationBuilder(
                 String.class, TokenAuthentication.class, ResourcePoolsBuilder.newResourcePoolsBuilder().heap(1000, EntryUnit.ENTRIES)
             )
             .withKeyCopier(IdentityCopier.identityCopier())
             .withValueCopier(SerializingCopier.asCopierClass())
-            .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(10))).build();
-        caches.put("validationJwtToken", validationJwtTokenConf);
+            // 1 minute to force zosmf tokens validation against zosmf for invalidated tokens
+            .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofMinutes(1))).build();
+        caches.put("validatedJwtTokens", validatedJwtTokensConf);
 
         var zosmfInfoConf = CacheConfigurationBuilder.newCacheConfigurationBuilder(
                 String.class, String.class, ResourcePoolsBuilder.newResourcePoolsBuilder().heap(10, EntryUnit.ENTRIES)
@@ -193,7 +194,6 @@ public class CacheConfig {
 
         return new JCacheCacheManager(cacheManager);
     }
-
 
     @ConditionalOnProperty(value = "apiml.caching.enabled", havingValue = "false")
     @Bean("cacheManager")

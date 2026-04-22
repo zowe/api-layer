@@ -103,10 +103,6 @@ public class JwtUtils {
         return new TokenNotValidException("An internal error occurred while validating the token therefore the token is no longer valid.", exception);
     }
 
-    boolean verifyJwtSignatureWithJwk() {
-        return false;
-    }
-
     /**
      * Extracts value of a field from an OIDC token. The value is extracted from a custom path which supports nested objects.
      * @param token to extract the field from

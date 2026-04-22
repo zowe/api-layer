@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.zowe.apiml.passticket.PassTicketException;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.zaas.security.login.zosmf.ZosmfAuthenticationProvider;
 import org.zowe.apiml.zaas.security.service.saf.SafIdtException;
@@ -64,12 +65,12 @@ class TokenCreationServiceTest {
     @Mock
     private SafIdtProvider safIdtProvider;
 
-    private final String VALID_USER_ID = "validUserId";
-    private final String VALID_ZOSMF_TOKEN = "validZosmfToken";
-    private final String VALID_APIML_TOKEN = "validApimlToken";
-    private final String PASSTICKET = "passTicket";
-    private final String VALID_ZOSMF_APPLID = "IZUDFLT";
-    private final String VALID_SAFIDT = "validSAFIdentityToken";
+    private static final String VALID_USER_ID = "validUserId";
+    private static final String VALID_ZOSMF_TOKEN = JWTTestUtils.createDummyZOSMFToken(VALID_USER_ID);
+    private static final String VALID_APIML_TOKEN = JWTTestUtils.createDummyAPIMLToken(VALID_USER_ID);
+    private static final String PASSTICKET = "passTicket";
+    private static final String VALID_ZOSMF_APPLID = "IZUDFLT";
+    private static final String VALID_SAFIDT = "validSAFIdentityToken";
 
     @BeforeEach
     void setUp() {
@@ -81,7 +82,7 @@ class TokenCreationServiceTest {
     void givenZosmfIsUnavailable_whenTokenIsRequested_thenTokenCreatedByApiMlIsReturned() {
         when(providers.isZosfmUsed()).thenReturn(false);
         when(authenticationService.createJwtToken(eq(VALID_USER_ID), any(), any())).thenReturn(VALID_APIML_TOKEN);
-        when(authenticationService.createTokenAuthentication(VALID_USER_ID, VALID_APIML_TOKEN)).thenReturn(new TokenAuthentication(VALID_USER_ID, VALID_APIML_TOKEN));
+        when(authenticationService.createTokenAuthentication(VALID_USER_ID, VALID_APIML_TOKEN)).thenReturn(new TokenAuthentication(VALID_APIML_TOKEN));
 
         String jwtToken = underTest.createJwtTokenWithoutCredentials(VALID_USER_ID);
         assertThat(jwtToken, is(VALID_APIML_TOKEN));
@@ -91,7 +92,7 @@ class TokenCreationServiceTest {
     void givenZosmfIsntPresentBecauseOfError_whenTokenIsRequested_shouldReturnTokenCreatedByApiMl() {
         when(providers.isZosfmUsed()).thenThrow(new AuthenticationServiceException("zOSMF id invalid"));
         when(authenticationService.createJwtToken(eq(VALID_USER_ID), any(), any())).thenReturn(VALID_APIML_TOKEN);
-        when(authenticationService.createTokenAuthentication(VALID_USER_ID, VALID_APIML_TOKEN)).thenReturn(new TokenAuthentication(VALID_USER_ID, VALID_APIML_TOKEN));
+        when(authenticationService.createTokenAuthentication(VALID_USER_ID, VALID_APIML_TOKEN)).thenReturn(new TokenAuthentication(VALID_APIML_TOKEN));
 
         String jwtToken = underTest.createJwtTokenWithoutCredentials(VALID_USER_ID);
         assertThat(jwtToken, is(VALID_APIML_TOKEN));
@@ -102,7 +103,7 @@ class TokenCreationServiceTest {
         when(providers.isZosmfAvailable()).thenReturn(true);
         when(providers.isZosfmUsed()).thenReturn(true);
         when(passTicketService.generate(VALID_USER_ID, VALID_ZOSMF_APPLID)).thenReturn(PASSTICKET);
-        when(zosmfAuthenticationProvider.authenticate(any())).thenReturn(new TokenAuthentication(VALID_USER_ID, VALID_ZOSMF_TOKEN));
+        when(zosmfAuthenticationProvider.authenticate(any())).thenReturn(new TokenAuthentication(VALID_ZOSMF_TOKEN));
 
         String jwtToken = underTest.createJwtTokenWithoutCredentials(VALID_USER_ID);
         assertThat(jwtToken, is(VALID_ZOSMF_TOKEN));
