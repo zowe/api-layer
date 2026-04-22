@@ -54,7 +54,7 @@ public class SuccessfulQueryHandler implements AuthenticationSuccessHandler {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpStatus.OK.value());
 
-        mapper.writeValue(response.getWriter(), authenticationService.parseJwtToken(token));
+        mapper.writeValue(response.getWriter(), authenticationService.parseJwtToken(token).getQueryResponse());
 
         response.getWriter().flush();
         if (!response.isCommitted()) {
