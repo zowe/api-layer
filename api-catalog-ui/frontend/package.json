@@ -167,7 +167,8 @@
         "js-yaml": "4.1.1",
         "qs": "6.15.1",
         "path-to-regexp": "8.4.2",
-        "minimatch": "3.1.5"
+        "minimatch": "3.1.5",
+        "brace-expansion"  : "1.1.14"
     },
     "engines": {
         "npm": "=10.9.8",
