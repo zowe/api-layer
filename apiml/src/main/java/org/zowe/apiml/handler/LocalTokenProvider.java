@@ -41,7 +41,7 @@ public class LocalTokenProvider extends TokenProvider {
             log.debug("Validating JWT.");
             authenticationService.validateJwtToken(token);
             log.debug("Parsing JWT.");
-            return authenticationService.parseJwtToken(token);
+            return authenticationService.parseJwtToken(token).getQueryResponse();
         }).onErrorResume(e ->
             Mono.error(new AuthenticationCredentialsNotFoundException("Token validation failed", e))
         );

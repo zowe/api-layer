@@ -34,6 +34,7 @@ import org.zowe.apiml.security.client.service.GatewaySecurityService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -49,7 +50,7 @@ class GatewayTokenProviderTest {
 
         private static final String USER = "USER";
         private static final String DOMAIN = "PASS";
-        private static final String VALID_TOKEN = "VALID_TOKEN";
+        private static final String VALID_TOKEN = JWTTestUtils.createDummyAPIMLToken(USER);
 
         private final GatewaySecurityService gatewaySecurityService = mock(GatewaySecurityService.class);
         private final GatewayTokenProvider gatewayTokenProvider = new GatewayTokenProvider(gatewaySecurityService);
@@ -81,6 +82,7 @@ class GatewayTokenProviderTest {
 
     @Nested
     class Tokens {
+        private static final String VALID_TOKEN = JWTTestUtils.createDummyAPIMLToken("user");
 
         GatewayTokenProvider gatewayTokenProvider;
         CloseableHttpClient closeableHttpClient = mock(CloseableHttpClient.class);
@@ -110,7 +112,7 @@ class GatewayTokenProviderTest {
                     String[] cookieParts = get.getHeader("cookie").getValue().split("=");
                     assertEquals("apimlAuthenticationToken", cookieParts[0]);
                     token = cookieParts[1];
-                    entity = new StringEntity(new ObjectMapper().writeValueAsString(new QueryResponse()), ContentType.APPLICATION_JSON);
+                    entity = new StringEntity(new ObjectMapper().writeValueAsString((new TokenAuthentication(VALID_TOKEN).getQueryResponse())), ContentType.APPLICATION_JSON);
                 } else if (request instanceof HttpPost post) {
                     // oid validation
                     assertEquals("https://localhost/gateway/api/v1/auth/oidc-token/validate", post.getUri().toString());
@@ -119,7 +121,7 @@ class GatewayTokenProviderTest {
                     fail("Unknown request");
                 }
 
-                var response = new BasicClassicHttpResponse("valid".equals(token) ? 200 : 401);
+                var response = new BasicClassicHttpResponse(VALID_TOKEN.equals(token) ? 200 : 401);
                 if (entity != null) {
                     response.setEntity(entity);
                 }
@@ -129,7 +131,7 @@ class GatewayTokenProviderTest {
 
         @Test
         void givenValidOidcToken_whenAuthenticate_thenCallOidcEndpoint() {
-            var authenticate = gatewayTokenProvider.authenticate(new TokenAuthentication("valid", TokenAuthentication.Type.OIDC));
+            var authenticate = gatewayTokenProvider.authenticate(new TokenAuthentication(VALID_TOKEN, TokenAuthentication.Type.OIDC));
             assertTrue(authenticate.isAuthenticated());
         }
 
@@ -139,7 +141,7 @@ class GatewayTokenProviderTest {
             "JWT"
         })
         void givenValidJwtToken_whenAuthenticate_thenCallOidcEndpoint(TokenAuthentication.Type type) {
-            var authenticate = gatewayTokenProvider.authenticate(new TokenAuthentication("valid", type));
+            var authenticate = gatewayTokenProvider.authenticate(new TokenAuthentication(VALID_TOKEN, type));
             assertTrue(authenticate.isAuthenticated());
         }
 

@@ -24,6 +24,7 @@ import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 
@@ -109,8 +110,10 @@ class GatewaySecurityApiTest {
 
             String validToken = "valid-jwt";
             QueryResponse expectedResponse = new QueryResponse(); // Assuming a default or populated response
+            var tokenAuthenticationMock = mock(TokenAuthentication.class);
+            when(tokenAuthenticationMock.getQueryResponse()).thenReturn(expectedResponse);
             when(authenticationService.validateJwtToken(validToken)).thenReturn(tokenAuthenticated);
-            when(authenticationService.parseJwtToken(validToken)).thenReturn(expectedResponse);
+            when(authenticationService.parseJwtToken(validToken)).thenReturn(tokenAuthenticationMock);
 
             QueryResponse actualResponse = gatewaySecurityApi.query(validToken);
 
@@ -150,10 +153,10 @@ class GatewaySecurityApiTest {
 
     @Test
     void whenVerifyOidc_andTokenIsValid_thenReturnResponse() {
-        String validOidcToken = "valid-oidc-token";
+        String validOidcToken = JWTTestUtils.createDummyJwtToken("user", "https://oidc-provider");
         when(oidcProvider.isValid(validOidcToken)).thenReturn(true);
 
-        QueryResponse response = gatewaySecurityApi.verifyOidc(validOidcToken);
+        QueryResponse response = gatewaySecurityApi.verifyOidc(validOidcToken).getQueryResponse();
 
         assertNotNull(response, "QueryResponse should not be null for a valid OIDC token");
     }

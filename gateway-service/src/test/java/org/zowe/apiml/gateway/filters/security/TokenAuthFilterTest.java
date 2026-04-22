@@ -30,6 +30,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties.CookieProperties;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -45,6 +46,8 @@ import static org.springframework.util.CollectionUtils.toMultiValueMap;
 class TokenAuthFilterTest {
 
     private static final String COOKIE_NAME = "apimlAuthenticationToken";
+    public static final String USERNAME = "user";
+    public static final String JWT_TOKEN = JWTTestUtils.createDummyAPIMLToken(USERNAME);
 
     @Mock
     private TokenProvider tokenProvider;
@@ -86,9 +89,9 @@ class TokenAuthFilterTest {
                 when(httpRequest.getHeaders())
                     .thenReturn(new HttpHeaders(
                         toMultiValueMap(
-                            singletonMap("Cookie", asList("apimlAuthenticationToken=token")))));
+                            singletonMap("Cookie", asList("apimlAuthenticationToken=%s".formatted(JWT_TOKEN))))));
                 MultiValueMap<String, HttpCookie> cookies = new LinkedMultiValueMap<>();
-                cookies.add(COOKIE_NAME, new HttpCookie(COOKIE_NAME, "token"));
+                cookies.add(COOKIE_NAME, new HttpCookie(COOKIE_NAME, JWT_TOKEN));
                 when(httpRequest.getCookies()).thenReturn(cookies);
             }
 
@@ -96,7 +99,7 @@ class TokenAuthFilterTest {
                 when(httpRequest.getHeaders())
                     .thenReturn(new HttpHeaders(
                         toMultiValueMap(
-                            singletonMap("Authorization", asList("Bearer token"))
+                            singletonMap("Authorization", asList("Bearer %s".formatted(JWT_TOKEN)))
                         )
                     ));
             }
@@ -108,7 +111,7 @@ class TokenAuthFilterTest {
 
                 QueryResponse response = new QueryResponse();
                 response.setUserId("user");
-                when(tokenProvider.validateToken("token")).thenReturn(Mono.just(response));
+                when(tokenProvider.validateToken(JWT_TOKEN)).thenReturn(Mono.just(response));
                 Mono<Void> monoSpy = spy(Mono.empty());
                 when(chain.filter(any())).thenReturn(monoSpy);
 
@@ -124,8 +127,8 @@ class TokenAuthFilterTest {
             void givenTokenIsInCookieValid_thenCreateAuthentication() {
                 mockTokenInCookie();
                 QueryResponse response = new QueryResponse();
-                response.setUserId("user");
-                when(tokenProvider.validateToken("token")).thenReturn(Mono.just(response));
+                response.setUserId(USERNAME);
+                when(tokenProvider.validateToken(JWT_TOKEN)).thenReturn(Mono.just(response));
                 Mono<Void> monoSpy = spy(Mono.empty());
                 when(chain.filter(any())).thenReturn(monoSpy);
 
@@ -141,7 +144,7 @@ class TokenAuthFilterTest {
                 mockTokenInCookie();
                 var webEx = mock(WebClientResponseException.class);
                 when(webEx.getStatusCode()).thenReturn(HttpStatus.SERVICE_UNAVAILABLE);
-                when(tokenProvider.validateToken("token")).thenReturn(Mono.error(webEx));
+                when(tokenProvider.validateToken(JWT_TOKEN)).thenReturn(Mono.error(webEx));
 
                 when(authExceptionHandlerReactive.handleServiceUnavailable(any()))
                     .thenReturn(Mono.empty());
@@ -154,7 +157,7 @@ class TokenAuthFilterTest {
             @Test
             void givenTokenIsInvalidEmpty_thenStopChainAndReturnEmpty() {
                 mockTokenInCookie();
-                when(tokenProvider.validateToken("token")).thenReturn(Mono.empty());
+                when(tokenProvider.validateToken(JWT_TOKEN)).thenReturn(Mono.empty());
 
                 StepVerifier.create(tokenAuthFilter.filter(serverWebExchange, chain))
                     .expectComplete()
@@ -166,7 +169,7 @@ class TokenAuthFilterTest {
             @Test
             void givenTokenIsInvalidEmptyUser_thenHandleException() {
                 mockTokenInCookie();
-                when(tokenProvider.validateToken("token")).thenReturn(Mono.just(new QueryResponse()));
+                when(tokenProvider.validateToken(JWT_TOKEN)).thenReturn(Mono.just(new QueryResponse()));
                 when(authExceptionHandlerReactive.handleTokenNotValid(any()))
                     .thenReturn(Mono.error(new TokenNotValidException("Invalid token")));
 

@@ -16,7 +16,9 @@ import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.compatibility.ApimlHealthCheckHandler;
@@ -43,6 +45,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     private AtomicBoolean startedInformationPublished = new AtomicBoolean(false);
+    private AtomicBoolean applicationReady = new AtomicBoolean(false);
 
     public GatewayHealthIndicator(DiscoveryClient discoveryClient,
                                   @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId) {
@@ -73,9 +76,14 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
             builder.withDetail(CoreService.API_CATALOG.getServiceId(), toStatus(apiCatalogUp).getCode());
         }
 
-        if (discoveryUp && apiCatalogUp && zaasUp) {
+        if (discoveryUp && apiCatalogUp && zaasUp && applicationReady.get()) {
             onFullyUp();
         }
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationEvent(ApplicationReadyEvent event) {
+        applicationReady.set(true);
     }
 
     private void onFullyUp() {
