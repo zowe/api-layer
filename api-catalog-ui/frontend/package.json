@@ -146,6 +146,10 @@
                 "fast-xml-parser": "5.6.0"
             }
         },
+        "cosmiconfig": {
+            "yaml": "1.10.3"
+        },
+
         "nth-check": "2.1.1",
         "jsdom": "16.7.0",
         "got": "14.6.6",
