@@ -109,32 +109,32 @@ public class JGroupStabilityTest {
                 new X509ExtendedTrustManager() {
                     @Override
                     public void checkClientTrusted(X509Certificate[] x509Certificates, String s, Socket socket) throws CertificateException {
-
+                        // Intentionally empty to ignore SSLContext
                     }
 
                     @Override
                     public void checkServerTrusted(X509Certificate[] x509Certificates, String s, Socket socket) throws CertificateException {
-
+                        // Intentionally empty to ignore SSLContext
                     }
 
                     @Override
                     public void checkClientTrusted(X509Certificate[] x509Certificates, String s, SSLEngine sslEngine) throws CertificateException {
-
+                        // Intentionally empty to ignore SSLContext
                     }
 
                     @Override
                     public void checkServerTrusted(X509Certificate[] x509Certificates, String s, SSLEngine sslEngine) throws CertificateException {
-
+                        // Intentionally empty to ignore SSLContext
                     }
 
                     @Override
                     public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
-
+                        // Intentionally empty to ignore SSLContext
                     }
 
                     @Override
                     public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
-
+                        // Intentionally empty to ignore SSLContext
                     }
 
                     @Override
@@ -200,7 +200,7 @@ public class JGroupStabilityTest {
 
             try {
                 serviceProcess = builder.start();
-                readLogs(serviceProcess, pid -> CachingService.this.pid = pid);
+                readLogs(serviceProcess, processId -> CachingService.this.pid = processId);
             } catch (IOException ioException) {
                 fail(ioException);
             }
@@ -229,7 +229,7 @@ public class JGroupStabilityTest {
             ProcessBuilder builder = new ProcessBuilder(parts);
             try {
                 Process process = builder.start();
-                readLogs(process, pid -> {
+                readLogs(process, processId -> {
                 });
                 int rc = process.waitFor();
                 log.info("Command '{}' ends with RC={}", StringUtils.join(parts, " "), rc);
