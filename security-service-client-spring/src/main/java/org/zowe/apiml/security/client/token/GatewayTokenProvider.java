@@ -40,7 +40,7 @@ public class GatewayTokenProvider implements AuthenticationProvider {
         TokenAuthentication tokenAuthentication = (TokenAuthentication) authentication;
         QueryResponse queryResponse;
         if (tokenAuthentication.getType() == TokenAuthentication.Type.OIDC) {
-            queryResponse = gatewaySecurity.verifyOidc(tokenAuthentication.getCredentials());
+            queryResponse = gatewaySecurity.verifyOidc(tokenAuthentication.getCredentials()).getQueryResponse();
         } else {
             queryResponse = gatewaySecurity.query(tokenAuthentication.getCredentials());
         }

@@ -11,28 +11,88 @@
 package org.zowe.apiml.security.common.token;
 
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.zowe.apiml.security.common.token.TokenAuthentication.Type.JWT;
+import static org.zowe.apiml.security.common.token.TokenAuthentication.Type.OIDC;
 
 class TokenAuthenticationTest {
 
+    public static final String USERNAME = "user";
+    public static final String JWT_TOKEN = JWTTestUtils.createDummyAPIMLToken(USERNAME);
+    public static final String EXPIRED_JWT_TOKEN = JWTTestUtils.createDummyJwtToken(USERNAME, "APIML", -100_000L);
+
     @Test
     void testCreateAuthenticated() {
-        TokenAuthentication ta = TokenAuthentication.createAuthenticated("user", "token", JWT);
-        assertEquals("user", ta.getPrincipal());
-        assertEquals("token", ta.getCredentials());
-        assertEquals(JWT, ta.getType());
-        assertTrue(ta.isAuthenticated());
+        var ta = TokenAuthentication.createAuthenticated(USERNAME, JWT_TOKEN, JWT);
+        validateTokenAuthentication(ta, JWT_TOKEN, true);
     }
 
     @Test
     void testCreateAuthenticatedFromHeader() {
-        TokenAuthentication ta = TokenAuthentication.createAuthenticatedFromHeader("user", "Basic dXNlcjpwYXNzd29yZA==");
-        assertEquals("user", ta.getPrincipal());
-        assertEquals("user", ta.getCredentials());
-        assertTrue(ta.isAuthenticated());
+        var ta = TokenAuthentication.createAuthenticatedFromHeader(JWT_TOKEN, "Basic dXNlcjpwYXNzd29yZA==");
+        validateTokenAuthentication(ta, JWT_TOKEN, true);
+    }
+
+    @Test
+    void testAuthenticationFalseByDefault() {
+        var ta = new TokenAuthentication(JWT_TOKEN);
+        validateTokenAuthentication(ta, JWT_TOKEN, false);
+    }
+
+    @Test
+    void testExceptionThrownOnUnparsableToken() {
+        assertThrows(TokenNotValidException.class, () -> new TokenAuthentication("unparsableToken"));
+    }
+
+    @Test
+    void testExpiredTokenDoesNotFailParsing() {
+        var ta = new TokenAuthentication(EXPIRED_JWT_TOKEN);
+        validateTokenAuthentication(ta, EXPIRED_JWT_TOKEN, false);
+    }
+
+    @Test
+    void testSettingAuthenticationTrueWithExpiredTokenFails() {
+        var ta = new TokenAuthentication(EXPIRED_JWT_TOKEN);
+        assertThrows(TokenExpireException.class, () -> ta.setAuthenticated(true));
+    }
+
+    @Test
+    void testSettingAuthenticationFalseWithExpiredTokenSucceeds() {
+        var ta = new TokenAuthentication(EXPIRED_JWT_TOKEN);
+        ta.setAuthenticated(false);
+
+        validateTokenAuthentication(ta, EXPIRED_JWT_TOKEN, false);
+    }
+
+    @Test
+    void testUsernameNotMatchingTokenFails() {
+        assertThrows(TokenNotValidException.class, () -> TokenAuthentication.createAuthenticated("someUser", JWT_TOKEN, JWT));
+    }
+
+    @Test
+    void testOIDCTokenIsParsed() {
+        var user = "distributed-id";
+        var provider = "https://oidc-provider";
+        var oidcToken = JWTTestUtils.createDummyJwtToken(user, provider);
+        var ta = new TokenAuthentication(oidcToken, OIDC);
+
+        assertEquals(user, ta.getPrincipal());
+        assertEquals(oidcToken, ta.getCredentials());
+        assertEquals(OIDC, ta.getType());
+        assertEquals(QueryResponse.Source.OIDC, ta.getSource());
+        assertEquals(provider, ta.getQueryResponse().getIssuer());
+        assertFalse(ta.isAuthenticated());
+    }
+
+    private void validateTokenAuthentication(TokenAuthentication ta, String jwt, boolean isAuthenticated) {
+        assertEquals(USERNAME, ta.getPrincipal());
+        assertEquals(jwt, ta.getCredentials());
+        assertEquals(JWT, ta.getType());
+        assertEquals(QueryResponse.Source.ZOWE, ta.getSource());
+        assertEquals("APIML", ta.getQueryResponse().getIssuer());
+        assertEquals(isAuthenticated, ta.isAuthenticated());
     }
 
 }
