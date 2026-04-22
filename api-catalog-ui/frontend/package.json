@@ -53,9 +53,6 @@
         "util": "0.12.5",
         "uuid": "10.0.0"
     },
-    "override": {
-        "minimatch": "3.1.5"
-    },
     "scripts": {
         "lint": "eslint \"src/**/*.{js,jsx}\"",
         "start": "vite",
@@ -168,7 +165,8 @@
         },
         "js-yaml": "4.1.1",
         "qs": "6.15.1",
-        "path-to-regexp": "8.4.2"
+        "path-to-regexp": "8.4.2",
+        "minimatch": "3.1.5"
     },
     "engines": {
         "npm": "=10.9.8",
