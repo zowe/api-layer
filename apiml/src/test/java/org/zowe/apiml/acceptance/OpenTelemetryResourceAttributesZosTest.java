@@ -19,11 +19,15 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -40,13 +44,20 @@ import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 
 import java.net.URI;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.restassured.RestAssured.given;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.security.common.util.JWTTestUtils.createExpiredZoweJwtToken;
@@ -80,7 +91,6 @@ class OpenTelemetryResourceAttributesZosTest {
             "otel.logs.exporter=none"
         }
     )
-    @DirtiesContext
     class WhenBasicConfig {
 
         @Autowired
@@ -121,6 +131,7 @@ class OpenTelemetryResourceAttributesZosTest {
         }
     )
     @ActiveProfiles({"OpenTelemetryTest", "zos"})
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class WhenOnboardedService extends AcceptanceTestWithMockServices {
 
         private static final String VALID_OIDC_TOKEN = "ewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiCn0.c29tZVNpZ25lZEhhc2hDb2Rl";
@@ -140,13 +151,30 @@ class OpenTelemetryResourceAttributesZosTest {
         @MockitoBean
         private X509NativeMapper x509TokenProvider;
 
+        private MockService mockServiceBypass;
+        private MockService mockServicePassTicket;
         private MockService mockServicePassTicketMisconfigured;
-        private MockService mockServiceWs;
+        private MockService mockServiceZoweJwt;
 
         @BeforeAll
         void startMockServices() throws Exception {
             SslContextConfigurer configurer = new SslContextConfigurer("password".toCharArray(), "../keystore/client_cert/client-certs.p12", "../keystore/localhost/localhost.keystore.p12");
             SslContext.prepareSslAuthentication(configurer);
+
+            mockServiceBypass = mockService("testservicebp")
+                    .scope(Scope.CLASS)
+                    .authenticationScheme(AuthenticationScheme.BYPASS)
+                    .addEndpoint("/testservicebp/200")
+                    .responseCode(200)
+                .and().start();
+
+            mockServicePassTicket = mockService("testservicept")
+                .scope(Scope.CLASS)
+                .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET)
+                .applid("TSTSVRPT")
+                .addEndpoint("/testservicept/200")
+                .responseCode(200)
+            .and().start();
 
             mockServicePassTicketMisconfigured = mockService("testservicepterror")
                 .scope(Scope.CLASS)
@@ -155,9 +183,15 @@ class OpenTelemetryResourceAttributesZosTest {
                 .responseCode(200)
             .and().start();
 
-            mockServiceWs = mockServiceWs("testservicews")
+            mockServiceZoweJwt = mockService("testservice")
                 .scope(Scope.CLASS)
-                .start();
+                .authenticationScheme(AuthenticationScheme.ZOWE_JWT)
+                .addEndpoint("/testservice/200")
+                .responseCode(200)
+            .and()
+                .addEndpoint("/testservice/401")
+                .responseCode(401)
+            .and().start();
         }
 
         @AfterAll
@@ -207,6 +241,53 @@ class OpenTelemetryResourceAttributesZosTest {
         @Nested
         class WhenRequestToAPIML {
 
+            @Test
+            void givenLoginEndpoint_thenLog() {
+                given()
+                    .auth().preemptive()
+                    .basic("wronguser", "wrongpass")
+                    .post(basePath + "/gateway/api/v1/auth/login")
+                .then()
+                    .statusCode(401);
+
+                var logRecord = assertOneLogRecordExported("/gateway/api/v1/auth/login");
+                assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                @SuppressWarnings("null")
+                var logBody = logRecord.getBodyValue().asString();
+                assertEquals("gateway", getAttribute(logBody, "service.id"));
+                assertEquals("POST", getAttribute(logBody, "http.request.method"));
+                assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                assertEquals("EACCES: Permission is denied; the specified password is incorrect", getAttribute(logBody, "auth.error.message"));
+                assertEquals("Unauthorized", getAttribute(logBody, "auth.error.type"));
+                assertEquals("localhost:gateway:" + port, getAttribute(logBody, "service.instance.id"));
+                assertEquals("401", getAttribute(logBody, "service.response_code"));
+                assertEquals("/gateway/api/v1/auth/login", getAttribute(logBody, "url.path"));
+                assertEquals("https", getAttribute(logBody, "url.scheme"));
+                assertEquals("basicAuth", getAttribute(logBody, "auth.service.auth.method"));
+            }
+
+            @Test
+            void givenCatalogEndpoint_thenLog() {
+                given()
+                    .get(basePath + "/apicatalog/ui/v1/index.html")
+                .then()
+                    .statusCode(200);
+
+                var logRecord = assertOneLogRecordExported("/testservicebp/api/v1/200");
+                assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                @SuppressWarnings("null")
+                var logBody = logRecord.getBodyValue().asString();
+                assertNull(getAttribute(logBody, "user.id"));
+                assertEquals("apicatalog", getAttribute(logBody, "service.id"));
+                assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                assertNull(getAttribute(logBody, "auth.status"));
+                assertEquals("localhost:apicatalog:" + port, getAttribute(logBody, "service.instance.id"));
+                assertEquals("200", getAttribute(logBody, "service.response_code"));
+                assertEquals("/apicatalog/ui/v1/index.html", getAttribute(logBody, "url.path"));
+                assertEquals("https", getAttribute(logBody, "url.scheme"));
+                assertNull(getAttribute(logBody, "auth.method"));
+            }
+
         }
 
         @Nested
@@ -239,18 +320,6 @@ class OpenTelemetryResourceAttributesZosTest {
         @Nested
         class WhenServiceBypass {
 
-            private MockService mockServiceBypass;
-
-            @BeforeAll
-            void init() {
-                mockServiceBypass = mockService("testservicebp")
-                    .scope(Scope.CLASS)
-                    .authenticationScheme(AuthenticationScheme.BYPASS)
-                    .addEndpoint("/testservicebp/200")
-                    .responseCode(200)
-                .and().start();
-            }
-
             @Test
             void givenRouted_withBypass_thenLog() {
                 given()
@@ -279,22 +348,6 @@ class OpenTelemetryResourceAttributesZosTest {
 
         @Nested
         class WhenServiceRequiresJwt {
-
-            private MockService mockServiceZoweJwt;
-
-            @BeforeEach
-            void setUp() {
-                mockServiceZoweJwt = mockService("testservice")
-                    .scope(Scope.CLASS)
-                    .authenticationScheme(AuthenticationScheme.ZOWE_JWT)
-                    .addEndpoint("/testservice/200")
-                    .responseCode(200)
-                .and()
-                    .addEndpoint("/testservice/401")
-                    .responseCode(401)
-                .and().start();
-            }
-
 
             @Nested
             class WhenAuthPresent {
@@ -407,6 +460,17 @@ class OpenTelemetryResourceAttributesZosTest {
                     }
 
                     @Test
+                    void givenRouted_withOidc_failure_thenLog() {
+                        when(oidcTokenProvider.isValid(VALID_OIDC_TOKEN)).thenReturn(false);
+
+                        given()
+                            .header(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_OIDC_TOKEN)
+                            .get(basePath + "/testservice/api/v1/200")
+                        .then()
+                            .statusCode(200);
+                    }
+
+                    @Test
                     void givenRouted_withAuthJwt_failure_invalidToken_thenLog() {
                         given()
                             .cookie("apimlAuthenticationToken", "invalid.jwt.token")
@@ -487,24 +551,40 @@ class OpenTelemetryResourceAttributesZosTest {
         @Nested
         class WhenServiceRequiresPassTicket {
 
-            private MockService mockServicePassTicket;
+            @Nested
+            class WhenMisconfigured {
 
-            @BeforeAll
-            void setUp() {
-                mockServicePassTicket = mockService("testservicept")
-                    .scope(Scope.CLASS)
-                    .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET)
-                    .applid("TSTSVRPT")
-                    .addEndpoint("/testservicept/200")
-                    .responseCode(200)
-                .and().start();
+                @Test
+                void thenLog() {
+                    given()
+                        .cookie(AUTH_COOKIE, login())
+                        .get(basePath + "/testservicepterror/api/v1/200")
+                    .then()
+                        .statusCode(200);
+
+                    var logRecord = assertOneLogRecordExported("/testservicepterror/api/v1/200");
+                    assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                    @SuppressWarnings("null")
+                    var logBody = logRecord.getBodyValue().asString();
+                    assertNull(getAttribute(logBody, "user.id"));
+                    assertEquals("testservicepterror", getAttribute(logBody, "service.id"));
+                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                    assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                    assertEquals(mockServicePassTicketMisconfigured.getInstanceId(), getAttribute(logBody, "service.instance.id"));
+                    assertEquals("200", getAttribute(logBody, "service.response_code"));
+                    assertEquals("/testservicepterror/api/v1/200", getAttribute(logBody, "url.path"));
+                    assertEquals("https", getAttribute(logBody, "url.scheme"));
+                    assertEquals("httpBasicPassTicket", getAttribute(logBody, "auth.service.auth.method"));
+                    assertNull(getAttribute(logBody, "auth.method"));
+                }
+
             }
 
             @Nested
             class WhenAuthPresent {
 
                 @Test
-                void givenRouted_withAuthPassTicketSucess_thenLog() {
+                void whenSucess_thenLog() {
                     given()
                         .cookie(AUTH_COOKIE, login())
                         .get(basePath + "/testservicept/api/v1/200")
@@ -589,88 +669,6 @@ class OpenTelemetryResourceAttributesZosTest {
             }
         }
 
-        @Test
-        void givenLoginEndpoint_thenLog() {
-            given()
-                .auth().preemptive()
-                .basic("wronguser", "wrongpass")
-                .post(basePath + "/gateway/api/v1/auth/login")
-            .then()
-                .statusCode(401);
-
-            var logRecord = assertOneLogRecordExported("/gateway/api/v1/auth/login");
-            assertAttributesBase(logRecord.getResource().getAttributes(), port);
-            @SuppressWarnings("null")
-            var logBody = logRecord.getBodyValue().asString();
-            assertEquals("gateway", getAttribute(logBody, "service.id"));
-            assertEquals("POST", getAttribute(logBody, "http.request.method"));
-            assertEquals("ERROR", getAttribute(logBody, "auth.status"));
-            assertEquals("EACCES: Permission is denied; the specified password is incorrect", getAttribute(logBody, "auth.error.message"));
-            assertEquals("Unauthorized", getAttribute(logBody, "auth.error.type"));
-            assertEquals("localhost:gateway:" + port, getAttribute(logBody, "service.instance.id"));
-            assertEquals("401", getAttribute(logBody, "service.response_code"));
-            assertEquals("/gateway/api/v1/auth/login", getAttribute(logBody, "url.path"));
-            assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertEquals("basicAuth", getAttribute(logBody, "auth.service.auth.method"));
-        }
-
-        @Test
-        void givenCatalogEndpoint_thenLog() {
-            given()
-                .get(basePath + "/apicatalog/ui/v1/index.html")
-            .then()
-                .statusCode(200);
-
-            var logRecord = assertOneLogRecordExported("/testservicebp/api/v1/200");
-            assertAttributesBase(logRecord.getResource().getAttributes(), port);
-            @SuppressWarnings("null")
-            var logBody = logRecord.getBodyValue().asString();
-            assertNull(getAttribute(logBody, "user.id"));
-            assertEquals("apicatalog", getAttribute(logBody, "service.id"));
-            assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertNull(getAttribute(logBody, "auth.status"));
-            assertEquals("localhost:apicatalog:" + port, getAttribute(logBody, "service.instance.id"));
-            assertEquals("200", getAttribute(logBody, "service.response_code"));
-            assertEquals("/apicatalog/ui/v1/index.html", getAttribute(logBody, "url.path"));
-            assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertNull(getAttribute(logBody, "auth.method"));
-        }
-
-        @Test
-        void givenRouted_withMisconfiguredAuthPassTicket_thenLog() {
-            given()
-                .cookie(AUTH_COOKIE, login())
-                .get(basePath + "/testservicepterror/api/v1/200")
-            .then()
-                .statusCode(200);
-
-            var logRecord = assertOneLogRecordExported("/testservicepterror/api/v1/200");
-            assertAttributesBase(logRecord.getResource().getAttributes(), port);
-            @SuppressWarnings("null")
-            var logBody = logRecord.getBodyValue().asString();
-            assertNull(getAttribute(logBody, "user.id"));
-            assertEquals("testservicepterror", getAttribute(logBody, "service.id"));
-            assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertEquals("ERROR", getAttribute(logBody, "auth.status"));
-            assertEquals(mockServicePassTicketMisconfigured.getInstanceId(), getAttribute(logBody, "service.instance.id"));
-            assertEquals("200", getAttribute(logBody, "service.response_code"));
-            assertEquals("/testservicepterror/api/v1/200", getAttribute(logBody, "url.path"));
-            assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertEquals("httpBasicPassTicket", getAttribute(logBody, "auth.service.auth.method"));
-            assertNull(getAttribute(logBody, "auth.method"));
-        }
-
-        @Test
-        void givenRouted_withOidc_failure_thenLog() {
-            when(oidcTokenProvider.isValid(VALID_OIDC_TOKEN)).thenReturn(false);
-
-            given()
-                .header(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " " + VALID_OIDC_TOKEN)
-                .get(basePath + "/testservice/api/v1/200")
-            .then()
-                .statusCode(200);
-        }
-
         private String login() {
             var token = given()
                 .contentType(ContentType.JSON)
@@ -694,30 +692,4 @@ class OpenTelemetryResourceAttributesZosTest {
         }
     }
 
-/*        @Test
-
-        private String login() {
-            var token = given()
-                .contentType(ContentType.JSON)
-                .body("""
-                        {
-                            "username": "USER",
-                            "password": "validPassword"
-                        }
-                    """)
-                .log().all()
-            .when()
-                .post(URI.create(basePath + LOGIN_ENDPOINT))
-            .then()
-                .statusCode(204)
-                .cookie(AUTH_COOKIE)
-            .extract()
-                .cookie(AUTH_COOKIE);
-
-            setUp(); // clean up log emitted from the login
-            return token;
-        }
-
-    }
-*/
 }
