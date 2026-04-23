@@ -29,7 +29,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.NestedTestConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.NestedTestConfiguration.EnclosingConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
@@ -132,6 +134,7 @@ class OpenTelemetryResourceAttributesZosTest {
     )
     @ActiveProfiles({"OpenTelemetryTest", "zos"})
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @NestedTestConfiguration(EnclosingConfiguration.OVERRIDE)
     class WhenOnboardedService extends AcceptanceTestWithMockServices {
 
         private static final String VALID_OIDC_TOKEN = "ewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiCn0.c29tZVNpZ25lZEhhc2hDb2Rl";
@@ -151,47 +154,10 @@ class OpenTelemetryResourceAttributesZosTest {
         @MockitoBean
         private X509NativeMapper x509TokenProvider;
 
-        private MockService mockServiceBypass;
-        private MockService mockServicePassTicket;
-        private MockService mockServicePassTicketMisconfigured;
-        private MockService mockServiceZoweJwt;
-
         @BeforeAll
         void startMockServices() throws Exception {
             SslContextConfigurer configurer = new SslContextConfigurer("password".toCharArray(), "../keystore/client_cert/client-certs.p12", "../keystore/localhost/localhost.keystore.p12");
             SslContext.prepareSslAuthentication(configurer);
-
-            mockServiceBypass = mockService("testservicebp")
-                    .scope(Scope.CLASS)
-                    .authenticationScheme(AuthenticationScheme.BYPASS)
-                    .addEndpoint("/testservicebp/200")
-                    .responseCode(200)
-                .and().start();
-
-            mockServicePassTicket = mockService("testservicept")
-                .scope(Scope.CLASS)
-                .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET)
-                .applid("TSTSVRPT")
-                .addEndpoint("/testservicept/200")
-                .responseCode(200)
-            .and().start();
-
-            mockServicePassTicketMisconfigured = mockService("testservicepterror")
-                .scope(Scope.CLASS)
-                .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET)
-                .addEndpoint("/testservicepterror/200")
-                .responseCode(200)
-            .and().start();
-
-            mockServiceZoweJwt = mockService("testservice")
-                .scope(Scope.CLASS)
-                .authenticationScheme(AuthenticationScheme.ZOWE_JWT)
-                .addEndpoint("/testservice/200")
-                .responseCode(200)
-            .and()
-                .addEndpoint("/testservice/401")
-                .responseCode(401)
-            .and().start();
         }
 
         @AfterAll
@@ -239,6 +205,7 @@ class OpenTelemetryResourceAttributesZosTest {
 
         // Requests that target API ML (/login, /query, /logout, /services, etc.)
         @Nested
+        @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         class WhenRequestToAPIML {
 
             @Test
@@ -273,7 +240,7 @@ class OpenTelemetryResourceAttributesZosTest {
                 .then()
                     .statusCode(200);
 
-                var logRecord = assertOneLogRecordExported("/testservicebp/api/v1/200");
+                var logRecord = assertOneLogRecordExported("/apicatalog/ui/v1/index.html");
                 assertAttributesBase(logRecord.getResource().getAttributes(), port);
                 @SuppressWarnings("null")
                 var logBody = logRecord.getBodyValue().asString();
@@ -291,6 +258,7 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         @Nested
+        @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         class WhenServiceDoesNotExist {
 
             @Test
@@ -318,7 +286,20 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         @Nested
+        @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         class WhenServiceBypass {
+
+            private MockService mockServiceBypass;
+
+            @BeforeAll
+            void init() {
+                mockServiceBypass = mockService("testservicebp")
+                    .scope(Scope.CLASS)
+                    .authenticationScheme(AuthenticationScheme.BYPASS)
+                    .addEndpoint("/testservicebp/200")
+                    .responseCode(200)
+                .and().start();
+            }
 
             @Test
             void givenRouted_withBypass_thenLog() {
@@ -347,7 +328,23 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         @Nested
+        @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         class WhenServiceRequiresJwt {
+
+            private MockService mockServiceZoweJwt;
+
+            @BeforeAll
+            void init() {
+                mockServiceZoweJwt = mockService("testservice")
+                    .scope(Scope.CLASS)
+                    .authenticationScheme(AuthenticationScheme.ZOWE_JWT)
+                    .addEndpoint("/testservice/200")
+                    .responseCode(200)
+                .and()
+                    .addEndpoint("/testservice/401")
+                    .responseCode(401)
+                .and().start();
+            }
 
             @Nested
             class WhenAuthPresent {
@@ -549,7 +546,29 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         @Nested
+        @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         class WhenServiceRequiresPassTicket {
+
+            private MockService mockServicePassTicket;
+            private MockService mockServicePassTicketMisconfigured;
+
+            @BeforeAll
+            void init() {
+                mockServicePassTicket = mockService("testservicept")
+                    .scope(Scope.CLASS)
+                    .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET)
+                    .applid("TSTSVRPT")
+                    .addEndpoint("/testservicept/200")
+                    .responseCode(200)
+                .and().start();
+
+                mockServicePassTicketMisconfigured = mockService("testservicepterror")
+                    .scope(Scope.CLASS)
+                    .authenticationScheme(AuthenticationScheme.HTTP_BASIC_PASSTICKET)
+                    .addEndpoint("/testservicepterror/200")
+                    .responseCode(200)
+                .and().start();
+            }
 
             @Nested
             class WhenMisconfigured {
@@ -617,6 +636,7 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         @Nested
+        @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         class WhenServiceRequiresX509 {
 
             @Nested
@@ -632,6 +652,7 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         @Nested
+        @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         class WhenServiceRequiresOidc {
 
             @Nested
@@ -646,6 +667,7 @@ class OpenTelemetryResourceAttributesZosTest {
         }
 
         @Nested
+        @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         class WhenServiceRequiresSafIdt {
 
             @Nested
