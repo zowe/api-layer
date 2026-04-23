@@ -71,7 +71,7 @@ class JwtValidationCacheTest {
         SslContextConfigurer configurer = new SslContextConfigurer(password, clientCertKeystore, keystore);
         SslContext.prepareSslAuthentication(configurer);
         expiredJwtToken = JWTTestUtils.createExpiredZoweJwtToken("user", "z/OS", "Ltpa", httpConfig.getHttpsConfig());
-        validationJwtTokenCache = cacheManager.getCache("validationJwtToken");
+        validationJwtTokenCache = cacheManager.getCache("validatedJwtTokens");
         validationJwtTokenCache.put(expiredJwtToken, new TokenAuthentication(expiredJwtToken));
     }
 

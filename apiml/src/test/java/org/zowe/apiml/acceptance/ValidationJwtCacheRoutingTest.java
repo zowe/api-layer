@@ -81,7 +81,7 @@ class ValidationJwtCacheRoutingTest extends AcceptanceTestWithMockServices {
         SslContextConfigurer configurer = new SslContextConfigurer(password, client_cert_keystore, keystore);
         SslContext.prepareSslAuthentication(configurer);
         expiredJwtToken = JWTTestUtils.createExpiredZoweJwtToken("user", "z/OS", "Ltpa", httpConfig.getHttpsConfig());
-        validationJwtTokenCache = cacheManager.getCache("validationJwtToken");
+        validationJwtTokenCache = cacheManager.getCache("validatedJwtTokens");
         validationJwtTokenCache.put(expiredJwtToken, new TokenAuthentication(expiredJwtToken));
     }
 
