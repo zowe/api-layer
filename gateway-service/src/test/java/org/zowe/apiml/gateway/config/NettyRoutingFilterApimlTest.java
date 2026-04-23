@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.ConnectTimeoutException;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import org.hamcrest.Matchers;
@@ -28,6 +29,8 @@ import org.zowe.apiml.ticket.TicketResponse;
 import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLException;
+import java.net.ConnectException;
+import java.nio.channels.ClosedChannelException;
 import java.time.Duration;
 
 import static io.restassured.RestAssured.given;
@@ -154,6 +157,39 @@ class NettyRoutingFilterApimlTest {
                 verify(httpClientWithCert).responseTimeout(Duration.ofMillis(23));
             }
 
+        }
+
+    }
+
+    @Nested
+    class IsServiceUnavailable {
+
+        @Test
+        void givenConnectTimeoutException_whenIsServiceUnavailable_thenReturnsTrue() {
+            assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(new ConnectTimeoutException("connect timed out")));
+        }
+
+        @Test
+        void givenConnectException_whenIsServiceUnavailable_thenReturnsTrue() {
+            assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(new ConnectException("connection refused")));
+        }
+
+        @Test
+        void givenConnectExceptionNestedInClosedChannelException_whenIsServiceUnavailable_thenReturnsTrue() {
+            ClosedChannelException outer = new ClosedChannelException();
+            ConnectException inner = new ConnectException("connection refused");
+            outer.initCause(inner);
+            assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(outer));
+        }
+
+        @Test
+        void givenUnrelatedException_whenIsServiceUnavailable_thenReturnsFalse() {
+            assertFalse(NettyRoutingFilterApiml.isServiceUnavailable(new RuntimeException("some other error")));
+        }
+
+        @Test
+        void givenSslException_whenIsServiceUnavailable_thenReturnsFalse() {
+            assertFalse(NettyRoutingFilterApiml.isServiceUnavailable(new javax.net.ssl.SSLException("cert error")));
         }
 
     }

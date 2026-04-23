@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.config;
 
 import io.netty.channel.ChannelOption;
+import io.netty.channel.ConnectTimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,7 @@ import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
 import java.net.ConnectException;
+import java.net.NoRouteToHostException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -84,14 +86,26 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         return super.filter(exchange, chain).onErrorResume(e -> {
-            if (e.getCause() instanceof ConnectException) {
+            if (isServiceUnavailable(e)) {
                 log.debug("Connection to {} was not established: {}", exchange.getRequest().getURI(), e.getMessage());
                 var uri = exchange.getRequest().getURI();
                 return Mono.error(new ServiceNotAccessibleException(String.format("Service is not available at %s://%s:%d", uri.getScheme(), uri.getHost(), uri.getPort()), e));
             }
             return Mono.error(e);
         });
+    }
 
+    static boolean isServiceUnavailable(Throwable e) {
+        Throwable cause = e;
+        while (cause != null) {
+            if (cause instanceof ConnectException
+                    || cause instanceof ConnectTimeoutException
+                    || cause instanceof NoRouteToHostException) {
+                return true;
+            }
+            cause = cause.getCause();
+        }
+        return false;
     }
 
 }
