@@ -13,6 +13,9 @@ package org.zowe.apiml.gateway.filters;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -22,19 +25,24 @@ import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ExtendWith(MockitoExtension.class)
 class RoutingConfigurationErrorFilterFactoryTest {
 
     private static final String MESSAGE = "test message";
 
-    private RoutingConfigurationErrorFilterFactory underTest;
+
     private GatewayFilter filter;
 
     private MockServerHttpRequest request = MockServerHttpRequest.get("https://localhost/some/url").build();
-    private MockServerWebExchange exchange;
+    private MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+    @Spy
+    private RoutingConfigurationErrorFilterFactory underTest = new RoutingConfigurationErrorFilterFactory(null, null);
+    @Spy
+    private OtelRequestContext otelContext = OtelRequestContext.of(exchange);
 
     @BeforeEach
     void init() {
@@ -44,13 +52,11 @@ class RoutingConfigurationErrorFilterFactoryTest {
         config.setAuthenticationScheme("safIdt");
         config.setServiceId("serviceId");
 
-        underTest = spy(new RoutingConfigurationErrorFilterFactory(null, null));
         filter = underTest.apply(config);
     }
 
     @Test
     void givenConfig_whenApply_thenSetAuthInformationWithoutErrorType() {
-        var otelContext = spy(OtelRequestContext.of(exchange));
         exchange.getAttributes().put(OtelRequestContext.OTEL_CONTEXT, otelContext);
 
         StepVerifier.create(filter.filter(exchange, e -> Mono.empty())).verifyComplete();
@@ -64,7 +70,6 @@ class RoutingConfigurationErrorFilterFactoryTest {
 
     @Test
     void givenConfig_whenApply_thenSetFailedAuthInformationWithErrorType() {
-        var otelContext = spy(OtelRequestContext.of(exchange));
         exchange.getAttributes().put(OtelRequestContext.OTEL_CONTEXT, otelContext);
         exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
 
