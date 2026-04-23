@@ -42,6 +42,7 @@ import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 import org.zowe.apiml.zaas.security.mapping.OIDCExternalMapper;
 import org.zowe.apiml.zaas.security.mapping.X509NativeMapper;
+import org.zowe.apiml.zaas.security.service.saf.SafIdtProvider;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 
 import java.net.URI;
@@ -302,7 +303,7 @@ class OpenTelemetryResourceAttributesZosTest {
             }
 
             @Test
-            void givenRouted_withBypass_thenLog() {
+            void thenLog() {
                 given()
                     .cookie(AUTH_COOKIE, login())
                     .get(basePath + "/testservicebp/api/v1/200")
@@ -433,6 +434,7 @@ class OpenTelemetryResourceAttributesZosTest {
                 @Nested
                 class WhenAuthFailure {
 
+                    // Is this test the same as whenNoJwtProvided_thenLog?
                     @Test
                     void givenRouted_whenAuthFail_thenLog() {
                         given()
@@ -457,7 +459,7 @@ class OpenTelemetryResourceAttributesZosTest {
                     }
 
                     @Test
-                    void givenRouted_withOidc_failure_thenLog() {
+                    void whenOidcTokenInvalid_thenLog() {
                         when(oidcTokenProvider.isValid(VALID_OIDC_TOKEN)).thenReturn(false);
 
                         given()
@@ -465,10 +467,15 @@ class OpenTelemetryResourceAttributesZosTest {
                             .get(basePath + "/testservice/api/v1/200")
                         .then()
                             .statusCode(200);
+
+                        // TODO assertions
+                        var logRecord = assertOneLogRecordExported("/testservice/api/v1/200");
+
+                        assertAttributesBase(logRecord.getResource().getAttributes(), port);
                     }
 
                     @Test
-                    void givenRouted_withAuthJwt_failure_invalidToken_thenLog() {
+                    void whenInvalidToken_thenLog() {
                         given()
                             .cookie("apimlAuthenticationToken", "invalid.jwt.token")
                             .get(basePath + "/testservice/api/v1/401")
@@ -491,7 +498,7 @@ class OpenTelemetryResourceAttributesZosTest {
                     }
 
                     @Test
-                    void givenRouted_withAuthJwt_failure_expiredToken_thenLog() {
+                    void whenExpiredToken_thenLog() {
                         given()
                             .cookie("apimlAuthenticationToken", createExpiredZoweJwtToken("USER", "z/OS", "Ltpa", httpConfig.getHttpsConfig()))
                             .get(basePath + "/testservice/api/v1/401")
@@ -513,28 +520,6 @@ class OpenTelemetryResourceAttributesZosTest {
                         assertEquals("JWT", getAttribute(logBody, "auth.method"));
                     }
 
-                    @Test
-                    void givenRouted_withAuthJwt_noJwt_thenLog() {
-                        given()
-                            .get(basePath + "/testservice/api/v1/401")
-                        .then()
-                            .statusCode(401);
-
-                        var logRecord = assertOneLogRecordExported("/testservice/api/v1/401");
-                        var logBody = logRecord.getBodyValue().asString();
-                        assertEquals("testservice", getAttribute(logBody, "service.id"));
-                        assertEquals("GET", getAttribute(logBody, "http.request.method"));
-                        assertEquals("ERROR", getAttribute(logBody, "auth.status"));
-                        assertEquals("ZWEAG160E No authentication provided in the request", getAttribute(logBody, "auth.error.message"));
-                        assertEquals("org.springframework.security.authentication.InsufficientAuthenticationException", getAttribute(logBody, "auth.error.type"));
-                        assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
-                        assertEquals("401", getAttribute(logBody, "service.response_code"));
-                        assertEquals("/testservice/api/v1/401", getAttribute(logBody, "url.path"));
-                        assertEquals("https", getAttribute(logBody, "url.scheme"));
-                        assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
-                        assertNull(getAttribute(logBody, "auth.method"));
-                    }
-
                 }
 
             }
@@ -542,7 +527,30 @@ class OpenTelemetryResourceAttributesZosTest {
             @Nested
             class WhenAuthAbsent {
 
+                @Test
+                void whenNoJwtProvided_thenLog() {
+                    given()
+                        .get(basePath + "/testservice/api/v1/401")
+                    .then()
+                        .statusCode(401);
+
+                    var logRecord = assertOneLogRecordExported("/testservice/api/v1/401");
+                    var logBody = logRecord.getBodyValue().asString();
+                    assertEquals("testservice", getAttribute(logBody, "service.id"));
+                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                    assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                    assertEquals("ZWEAG160E No authentication provided in the request", getAttribute(logBody, "auth.error.message"));
+                    assertEquals("org.springframework.security.authentication.InsufficientAuthenticationException", getAttribute(logBody, "auth.error.type"));
+                    assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
+                    assertEquals("401", getAttribute(logBody, "service.response_code"));
+                    assertEquals("/testservice/api/v1/401", getAttribute(logBody, "url.path"));
+                    assertEquals("https", getAttribute(logBody, "url.scheme"));
+                    assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
+                    assertNull(getAttribute(logBody, "auth.method"));
+                }
+
             }
+
         }
 
         @Nested
@@ -631,6 +639,18 @@ class OpenTelemetryResourceAttributesZosTest {
             @Nested
             class WhenAuthAbsent {
 
+                @Test
+                void whenNoPassTicketProvided_thenLog() {
+                    given()
+                        .get(basePath + "/testservicept/api/v1/401")
+                    .then()
+                        .statusCode(401);
+
+                    var logRecord = assertOneLogRecordExported("/testservicept/api/v1/401");
+
+                    // TODO Complete
+                }
+
             }
 
         }
@@ -639,6 +659,21 @@ class OpenTelemetryResourceAttributesZosTest {
         @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         class WhenServiceRequiresX509 {
 
+            @MockitoBean
+            private X509NativeMapper x509TokenProvider;
+
+            private MockService mockServiceX509;
+
+            @BeforeAll
+            void init() {
+                mockServiceX509 = mockService("testservicex509")
+                    .scope(Scope.CLASS)
+                    .authenticationScheme(AuthenticationScheme.X509)
+                    .addEndpoint("/testservicex509/200")
+                    .responseCode(200)
+                .and().start();
+            }
+
             @Nested
             class WhenAuthPresent {
 
@@ -647,21 +682,7 @@ class OpenTelemetryResourceAttributesZosTest {
 
             @Nested
             class WhenAuthAbsent {
-            }
 
-        }
-
-        @Nested
-        @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-        class WhenServiceRequiresOidc {
-
-            @Nested
-            class WhenAuthPresent {
-
-            }
-
-            @Nested
-            class WhenAuthAbsent {
             }
 
         }
@@ -670,13 +691,70 @@ class OpenTelemetryResourceAttributesZosTest {
         @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         class WhenServiceRequiresSafIdt {
 
+            @MockitoBean
+            private SafIdtProvider safIdtProvider;
+
+            private MockService mockServiceSafIdt;
+
+            @BeforeAll
+            void init() {
+                mockServiceSafIdt = mockService("testservicesafidt")
+                    .scope(Scope.CLASS)
+                    .authenticationScheme(AuthenticationScheme.SAF_IDT)
+                    .addEndpoint("/testservicesafidt/200")
+                    .responseCode(200)
+                .and().start();
+            }
+
             @Nested
             class WhenAuthPresent {
+
+                @Test
+                void whenSuccess_thenLog() {
+                    given()
+                        .cookie(AUTH_COOKIE, login())
+                        .get(basePath + "/testservicesafidt/api/v1/200")
+                    .then()
+                        .statusCode(200);
+
+                    var logRecord = assertOneLogRecordExported("/testservicesafidt/api/v1/200");
+                    assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                    @SuppressWarnings("null")
+                    var logBody = logRecord.getBodyValue().asString();
+                    assertEquals("USER", getAttribute(logBody, "user.id"));
+                    assertEquals("testservicesafidt", getAttribute(logBody, "service.id"));
+                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                    assertEquals("SUCCESS", getAttribute(logBody, "auth.status"));
+                    assertEquals("localhost:testservicesafidt:" + mockServiceSafIdt.getPort(), getAttribute(logBody, "service.instance.id"));
+                    assertEquals("200", getAttribute(logBody, "service.response_code"));
+                    assertEquals("/testservicesafidt/api/v1/200", getAttribute(logBody, "url.path"));
+                    assertEquals("https", getAttribute(logBody, "url.scheme"));
+                    assertEquals("safIdt", getAttribute(logBody, "auth.service.auth.method"));
+                    assertEquals("JWT", getAttribute(logBody, "auth.method"));
+                }
+
+                @Test
+                void whenFailure_thenLog() {
+
+                }
 
             }
 
             @Nested
             class WhenAuthAbsent {
+
+                @Test
+                void whenNoSafIdtProvided_thenLog() {
+                    given()
+                        .get(basePath + "/testservice/api/v1/401")
+                    .then()
+                        .statusCode(401);
+
+                    var logRecord = assertOneLogRecordExported("/testservice/api/v1/401");
+
+                    // TODO Complete
+                }
+
             }
 
         }
@@ -712,6 +790,7 @@ class OpenTelemetryResourceAttributesZosTest {
             setUp(); // clean up log emitted from the login
             return token;
         }
+
     }
 
 }
