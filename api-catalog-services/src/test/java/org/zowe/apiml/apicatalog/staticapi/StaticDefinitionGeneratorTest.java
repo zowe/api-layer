@@ -22,6 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
@@ -44,7 +45,7 @@ class StaticDefinitionGeneratorTest {
 
         @BeforeEach
         void setUp() {
-            TokenAuthentication authentication = new TokenAuthentication("token");
+            TokenAuthentication authentication = new TokenAuthentication(JWTTestUtils.createDummyAPIMLToken("user"));
             authentication.setAuthenticated(true);
             SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
             ReflectionTestUtils.setField(staticDefinitionGenerator, "staticApiDefinitionsDirectories", configFileLocation);
@@ -115,7 +116,7 @@ class StaticDefinitionGeneratorTest {
 
         @BeforeEach
         void setUp() {
-            TokenAuthentication authentication = new TokenAuthentication("token");
+            TokenAuthentication authentication = new TokenAuthentication(JWTTestUtils.createDummyAPIMLToken("user"));
             authentication.setAuthenticated(true);
             SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
             ReflectionTestUtils.setField(staticDefinitionGenerator, "staticApiDefinitionsDirectories", "../config/local/api-defs");
