@@ -7,7 +7,7 @@
         "@emotion/is-prop-valid": "1.4.0",
         "@emotion/react": "11.14.0",
         "@emotion/styled": "11.14.1",
-        "@eslint/migrate-config": "1.6.1",
+        "@eslint/migrate-config": "2.0.6",
         "@jest/globals": "29.7.0",
         "@material-ui/core": "4.12.4",
         "@material-ui/icons": "4.11.3",
