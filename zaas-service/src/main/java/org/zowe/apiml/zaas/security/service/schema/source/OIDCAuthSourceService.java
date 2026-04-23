@@ -161,7 +161,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
             }
         }
         logger.log(MessageType.DEBUG, "Parsing OIDC token.");
-        QueryResponse response = authenticationService.parseJwtToken(token);
+        QueryResponse response = authenticationService.parseJwtToken(token).getQueryResponse();
 
         AuthSource.Origin origin = AuthSource.Origin.valueByTokenSource(response.getSource());
         return new ParsedTokenAuthSource(mappedUser, response.getCreation(), response.getExpiration(), origin);

@@ -11,6 +11,7 @@
 package org.zowe.apiml.security.client.service;
 
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import java.util.Optional;
 
@@ -33,6 +34,6 @@ public interface GatewaySecurity {
      */
     QueryResponse query(String token);
 
-    QueryResponse verifyOidc(String token);
+    TokenAuthentication verifyOidc(String token);
 
 }

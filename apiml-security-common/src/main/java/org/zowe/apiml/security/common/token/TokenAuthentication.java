@@ -10,73 +10,78 @@
 
 package org.zowe.apiml.security.common.token;
 
+import com.nimbusds.jwt.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.zowe.apiml.security.common.util.JwtUtils;
 import org.zowe.apiml.security.common.login.LoginFilter;
 
-import java.util.Collections;
-import java.util.Optional;
+import java.io.Serial;
+import java.text.ParseException;
+import java.util.*;
 
 /**
  * This object is added to security context after successful authentication.
  * Contains username and valid JWT token.
  */
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = false, onlyExplicitlyIncluded = true)
+@Slf4j
 public class TokenAuthentication extends AbstractAuthenticationToken {
 
-    private static final long serialVersionUID = 9187160928171618141L;
+    @Serial
+    private static final long serialVersionUID = 82346593850419807L;
 
-    private final String username;
-    private final String token;
+    private static final String DOMAIN_CLAIM_NAME = "dom";
+    private static final String SCOPES = "scopes";
+
     @Getter
-    private Type type;
+    private final JWT jwt;
+    private final JWTClaimsSet claims;
+    @Getter
+    private final QueryResponse queryResponse;
+    @Getter
+    private final Type type;
 
-    public TokenAuthentication(String token) {
-        this(token, (Type) null);
+    public enum Type {
+        JWT,
+        OIDC
     }
 
-    public TokenAuthentication(String token, Type type) {
-        this(null, token, type);
-    }
-
-    public TokenAuthentication(String username, String token) {
-        this(username, token, (Type) null);
-    }
-
-    public TokenAuthentication(String username, String token, Type type) {
+    public TokenAuthentication(String tokenString, Type type) {
         super(Collections.emptyList());
-        this.username = username;
-        this.token = token;
-        this.type = type;
+
+        try {
+            this.jwt = JWTParser.parse(tokenString);
+            this.claims = jwt.getJWTClaimsSet();
+            this.queryResponse = parseQueryResponse(claims);
+            this.type = type;
+        } catch (ParseException ex) {
+            throw JwtUtils.handleJwtParserException(ex);
+        }
     }
 
-    /**
-     * @return the token that prove the username is correct
-     */
-    @Override
-    public String getCredentials() {
-        return token;
+    public TokenAuthentication(String tokenString) {
+        this(tokenString, Type.JWT);
     }
 
-    /**
-     * @return the username being authenticated
-     */
-    @Override
-    public String getPrincipal() {
-        return username;
+    public TokenAuthentication(String userId, String tokenString, Type type) {
+        this(tokenString, type);
+        checkUserId(userId);
     }
 
-    /**
-     * Creates the TokenAuthentication with fulfilled username (principal), token and marked as authenticated.
-     * @param username Username, who is authenticated
-     * @param token Token, which authenticate the user
-     * @return TokenAuthentication marked as authenticated with username, token
-     */
-    public static TokenAuthentication createAuthenticated(String username, String token, Type type) {
-        final TokenAuthentication out = new TokenAuthentication(username, token, type);
-        out.setAuthenticated(true);
-        return out;
+    public static TokenAuthentication createAuthenticated(String tokenString, Type type) {
+        var tokenAuthentication = new TokenAuthentication(tokenString, type);
+        tokenAuthentication.setAuthenticated(true);
+        return tokenAuthentication;
+    }
+
+    public static TokenAuthentication createAuthenticated(String userId, String token, Type type) {
+        var tokenAuthentication = new TokenAuthentication(userId, token, type);
+        tokenAuthentication.setAuthenticated(true);
+        return tokenAuthentication;
     }
 
     @SuppressWarnings("squid:S3655")
@@ -85,9 +90,75 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
         return createAuthenticated(loginRequest.get().getUsername(), token, Type.JWT);
     }
 
-    public enum Type {
-        JWT,
-        OIDC
+    public boolean isExpired() {
+        return queryResponse.isExpired();
     }
 
+    public Date getExpiration() {
+        return queryResponse.getExpiration();
+    }
+
+    public QueryResponse.Source getSource() {
+        return queryResponse.getSource();
+    }
+
+    public String getClaimAsString(String claimName) throws ParseException {
+        return claims.getClaimAsString(claimName);
+    }
+
+    /**
+     * @return the token that prove the username is correct
+     */
+    @Override
+    @EqualsAndHashCode.Include
+    public String getCredentials() {
+        return jwt.getParsedString();
+    }
+
+    /**
+     * @return the username being authenticated
+     */
+    @Override
+    public String getPrincipal() {
+        return queryResponse.getUserId();
+    }
+
+    @Override
+    public void setAuthenticated(boolean authenticated) {
+        if (authenticated && isExpired()) {
+            throw new TokenExpireException(
+                "Unable to set authentication as true because the token ...%s expired on %s"
+                    .formatted(StringUtils.right(jwt.getParsedString(), 15), getExpiration()));
+        }
+        super.setAuthenticated(authenticated);
+    }
+
+    private QueryResponse parseQueryResponse(JWTClaimsSet claims) {
+        Object scopesObject = claims.getClaim(SCOPES);
+        List<String> scopes = Collections.emptyList();
+        if (scopesObject instanceof List<?>) {
+            scopes = (List<String>) scopesObject;
+        }
+        try {
+            return new QueryResponse(
+                claims.getClaimAsString(DOMAIN_CLAIM_NAME),
+                claims.getSubject(),
+                claims.getIssueTime(),
+                claims.getExpirationTime(),
+                claims.getIssuer(),
+                scopes,
+                QueryResponse.Source.valueByIssuer(claims.getIssuer())
+            );
+        } catch (ParseException e) {
+            throw new TokenNotValidException(e.getMessage(), e);
+        }
+    }
+
+    private void checkUserId(String userId) {
+        var principal = getPrincipal();
+        if (userId == null || !userId.equalsIgnoreCase(principal)) {
+            log.debug("Username '{}' does not match the one in token '{}' or is null", userId, principal);
+            throw new TokenNotValidException("Token is not valid for provided username");
+        }
+    }
 }
