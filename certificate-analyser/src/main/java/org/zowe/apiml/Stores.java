@@ -81,8 +81,14 @@ public class Stores {
             }
             return;
         }
-        try (InputStream trustStoreIStream = new FileInputStream(conf.getTrustStore())) {
-            this.trustStore = readKeyStore(trustStoreIStream, conf.getTrustPasswd().toCharArray(), conf.getTrustStoreType());
+        if (isKeyring(conf.getTrustStore())) {
+            try (InputStream trustStoreIStream = keyRingUrl(conf.getTrustStore()).openStream()) {
+                this.trustStore = readKeyStore(trustStoreIStream, conf.getTrustPasswd().toCharArray(), conf.getTrustStoreType());
+            }
+        } else {
+            try (InputStream trustStoreIStream = new FileInputStream(conf.getTrustStore())) {
+                this.trustStore = readKeyStore(trustStoreIStream, conf.getTrustPasswd().toCharArray(), conf.getTrustStoreType());
+            }
         }
 
     }
