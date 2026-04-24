@@ -31,6 +31,7 @@ import org.springframework.http.MediaType;
 import javax.net.ssl.*;
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -172,7 +173,7 @@ public class JGroupStabilityTest {
             log.info("Starting {} on ports based on {}", service, basePort);
 
             var env = new HashMap<String, String>();
-            env.put("ZWE_haInstance_id", "localhost" + (index + 1));
+            env.put("ZWE_haInstance_id", "localhost_" + (isModulith ? "Single" : "Multi") + "_" + (isAttls ? "Attls" : "NativeTls") + "_" + (index + 1));
             env.put("APIML_ENABLED", isModulith ? "true" : "false");
             env.put("logbackService", (isModulith ? "ZWEGW" : "ZWEACS") + (index + 1));
             env.put("LAUNCH_COMPONENT", service + "/build/libs");
@@ -184,6 +185,7 @@ public class JGroupStabilityTest {
             env.put("ZWE_configs_storage_infinispan_jgroups_keyExchange_port", String.valueOf(basePort + 601));
             env.put("ZWE_configs_storage_infinispan_initialHosts", Arrays.stream(BASE_PORTS).mapToObj(bp -> "localhost[" + (bp + 600) + "]").collect(Collectors.joining(",")));
             env.put("ZWE_configs_storage_mode", "infinispan");
+            env.put("ZWE_zowe_workspaceDirectory", Paths.get(".").toAbsolutePath().normalize().toString());
 
             env.put("ZWE_zowe_certificate_keystore_file", "keystore/localhost/localhost.keystore.p12");
             env.put("ZWE_zowe_certificate_keystore_password", "password");
