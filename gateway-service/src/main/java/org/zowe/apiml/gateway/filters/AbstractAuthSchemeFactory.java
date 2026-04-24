@@ -156,7 +156,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
 
     protected abstract AuthenticationScheme getAuthenticationScheme();
 
-    protected abstract Function<RequestCredentials, Mono<AbstractAuthSchemeFactory.AuthorizationResponse<R>>> getAuthorizationResponseTransformer();
+    protected abstract Function<RequestCredentials, Mono<AbstractAuthSchemeFactory.AuthorizationResponse<R>>> getAuthorizationResponseTransformer(ServerWebExchange exchange);
 
     /**
      * The method responsible for reading a response from a ZAAS component and decorating of user request (i.e. set
@@ -260,7 +260,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     }
 
     protected GatewayFilter createGatewayFilter(T config) {
-        return (exchange, chain) -> getAuthorizationResponseTransformer()
+        return (exchange, chain) -> getAuthorizationResponseTransformer(exchange)
             .apply(createRequestCredentials(exchange, config).build())
             .flatMap(response -> processResponse(exchange, chain, response));
     }

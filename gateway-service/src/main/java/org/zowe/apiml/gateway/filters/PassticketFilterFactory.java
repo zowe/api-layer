@@ -56,8 +56,8 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
     }
 
     @Override
-    protected Function<RequestCredentials, Mono<AuthorizationResponse<TicketResponse>>> getAuthorizationResponseTransformer() {
-        return zaasSchemeTransform::passticket;
+    protected Function<RequestCredentials, Mono<AuthorizationResponse<TicketResponse>>> getAuthorizationResponseTransformer(ServerWebExchange exchange) {
+        return requestCredentials -> zaasSchemeTransform.passticket(requestCredentials, exchange);
     }
 
     @Override

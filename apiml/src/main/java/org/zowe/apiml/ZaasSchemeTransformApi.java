@@ -24,11 +24,14 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.ClientResponse;
+import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.filters.*;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.passticket.ApplicationNameNotProvidedException;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
+import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import org.zowe.apiml.ticket.TicketResponse;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
@@ -93,10 +96,11 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         return new ErrorHeaders(errorMessage);
     }
 
-    private ErrorHeaders createInvalidAuthenticationErrorMessage() {
+    private <R> Mono<AbstractAuthSchemeFactory.AuthorizationResponse<R>> createInvalidAuthenticationErrorMessage() {
         String messageKey = "org.zowe.apiml.common.unauthorized";
         String logMessage = messageService.createMessage(messageKey).mapToLogMessage();
-        return new ErrorHeaders(logMessage);
+        var headers = new ErrorHeaders(logMessage);
+        return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(headers, null));
     }
 
     private AbstractAuthSchemeFactory.AuthorizationResponse<String> createMissingAuthenticationErrorMessage() {
@@ -110,11 +114,12 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
     }
 
     @Override
-    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<TicketResponse>> passticket(RequestCredentials requestCredentials) {
+    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<TicketResponse>> passticket(RequestCredentials requestCredentials, ServerWebExchange exchange) {
         var applicationName = requestCredentials.getApplId();
+        var otelRequestContext = OtelRequestContext.of(exchange);
         if (StringUtils.isBlank(applicationName)) {
-            // TODO update errorType when passticket ApplId is missing
-            return createAuthorizationResponse(createErrorMessage("ApplicationName not provided."), TicketResponse.builder().errorType("").build());
+            otelRequestContext.authErrorType(ApplicationNameNotProvidedException.class.getName());
+            return createAuthorizationResponse(createErrorMessage("ApplicationName not provided."),null);
         }
 
         try {
@@ -122,11 +127,13 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
             var missingAuthenticationErrorResponse = createMissingAuthenticationErrorMessage();
             if (authSource.isEmpty()) {
-                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), TicketResponse.builder().errorType(missingAuthenticationErrorResponse.getBody()).build());
+                otelRequestContext.authErrorType(missingAuthenticationErrorResponse.getBody());
+                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), null);
             }
             updateServiceId(authSource, request);
             if (!authSourceService.isValid(authSource.get())) {
-                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), TicketResponse.builder().errorType(missingAuthenticationErrorResponse.getBody()).build());
+                otelRequestContext.authErrorType(missingAuthenticationErrorResponse.getBody());
+                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), null);
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
@@ -149,7 +156,8 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             return Mono.error(new ZaasInternalErrorException(currentApimlId, e.getMessage()));
         } catch (Exception e) {
             log.debug("Token has expired", e);
-            return createAuthorizationResponse(createInvalidAuthenticationErrorMessage(), TicketResponse.builder().errorType(e.getClass().getName()).build());
+            otelRequestContext.authErrorType(e.getClass().getName());
+            return createInvalidAuthenticationErrorMessage();
         }
     }
 
@@ -162,11 +170,12 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
     }
 
     @Override
-    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> safIdt(RequestCredentials requestCredentials) {
+    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> safIdt(RequestCredentials requestCredentials, ServerWebExchange exchange) {
         var applicationName = requestCredentials.getApplId();
+        var otelRequestContext = OtelRequestContext.of(exchange);
         if (StringUtils.isBlank(applicationName)) {
-            // TODO update errorType when ApplId is missing
-            return createAuthorizationResponse(createErrorMessage("ApplicationName not provided."), ZaasTokenResponse.builder().errorType("").build());
+            otelRequestContext.authErrorType(ApplicationNameNotProvidedException.class.getName());
+            return createAuthorizationResponse(createErrorMessage("ApplicationName not provided."), null);
         }
 
         try {
@@ -174,11 +183,13 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
             var missingAuthenticationErrorResponse = createMissingAuthenticationErrorMessage();
             if (authSource.isEmpty()) {
-                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), ZaasTokenResponse.builder().errorType(missingAuthenticationErrorResponse.getBody()).build());
+                otelRequestContext.authErrorType(missingAuthenticationErrorResponse.getBody());
+                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), null);
             }
             updateServiceId(authSource, request);
             if (!authSourceService.isValid(authSource.get())) {
-                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), ZaasTokenResponse.builder().errorType(missingAuthenticationErrorResponse.getBody()).build());
+                otelRequestContext.authErrorType(missingAuthenticationErrorResponse.getBody());
+                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), null);
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
@@ -197,22 +208,26 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot generate SAF IDT", e);
-            return createAuthorizationResponse(createErrorMessage(e.getMessage()), ZaasTokenResponse.builder().errorType(e.getClass().getName()).build());
+            otelRequestContext.authErrorType(e.getClass().getName());
+            return createAuthorizationResponse(createErrorMessage(e.getMessage()), null);
         }
     }
 
     @Override
-    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> zosmf(RequestCredentials requestCredentials) {
+    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> zosmf(RequestCredentials requestCredentials, ServerWebExchange exchange) {
+        var otelRequestContext = OtelRequestContext.of(exchange);
         try {
             var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
             var missingAuthenticationErrorResponse = createMissingAuthenticationErrorMessage();
             if (authSource.isEmpty()) {
-                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), ZaasTokenResponse.builder().errorType(missingAuthenticationErrorResponse.getBody()).build());
+                otelRequestContext.authErrorType(missingAuthenticationErrorResponse.getBody());
+                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), null);
             }
             updateServiceId(authSource, request);
             if (!authSourceService.isValid(authSource.get())) {
-                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), ZaasTokenResponse.builder().errorType(missingAuthenticationErrorResponse.getBody()).build());
+                otelRequestContext.authErrorType(missingAuthenticationErrorResponse.getBody());
+                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), null);
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
@@ -227,27 +242,30 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             return Mono.just(new AbstractAuthSchemeFactory.AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot obtain z/OSMF token", e);
-            return createAuthorizationResponse(createErrorMessage(e.getMessage()), ZaasTokenResponse.builder().errorType(e.getClass().getName()).build());
+            otelRequestContext.authErrorType(e.getClass().getName());
+            return createAuthorizationResponse(createErrorMessage(e.getMessage()), null);
         }
     }
 
     @Override
-    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> zoweJwt(RequestCredentials requestCredentials) {
-        var zaasTokenResponseBuilder = ZaasTokenResponse.builder();
+    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> zoweJwt(RequestCredentials requestCredentials, ServerWebExchange exchange) {
+        var otelRequestContext = OtelRequestContext.of(exchange);
         try {
             var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
             var missingAuthenticationErrorResponse = createMissingAuthenticationErrorMessage();
             if (authSource.isEmpty()) {
-                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), zaasTokenResponseBuilder.errorType(missingAuthenticationErrorResponse.getBody()).build());
+                otelRequestContext.authErrorType(missingAuthenticationErrorResponse.getBody());
+                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), null);
             }
             updateServiceId(authSource, request);
             if (!authSourceService.isValid(authSource.get())) {
-                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), zaasTokenResponseBuilder.errorType(missingAuthenticationErrorResponse.getBody()).build());
+                otelRequestContext.authErrorType(missingAuthenticationErrorResponse.getBody());
+                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), null);
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
             var token = authSourceService.getJWT(authSource.get());
-            var response = zaasTokenResponseBuilder.cookieName(COOKIE_AUTH_NAME)
+            var response = ZaasTokenResponse.builder().cookieName(COOKIE_AUTH_NAME)
                 .token(token)
                 .userId(authSourceParsed.getUserId())
                 .distributedIds(authSource.filter(OIDCAuthSource.class::isInstance)
@@ -261,10 +279,10 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         } catch (Exception e) {
             log.debug("Cannot obtain Zowe JWT token", e);
             if (e.getCause() instanceof BadJWTException || e.getCause() instanceof ParseException || e.getCause() instanceof ExpiredJWTException) {
-                zaasTokenResponseBuilder.authSourceType(AuthSource.AuthSourceType.JWT.name());
+                otelRequestContext.authSourceType(AuthSource.AuthSourceType.JWT.name());
             }
-            return createAuthorizationResponse(createInvalidAuthenticationErrorMessage(), zaasTokenResponseBuilder.errorType(e.getClass().getName()).build());
-
+            otelRequestContext.authErrorType(e.getClass().getName());
+            return createInvalidAuthenticationErrorMessage();
         }
     }
 

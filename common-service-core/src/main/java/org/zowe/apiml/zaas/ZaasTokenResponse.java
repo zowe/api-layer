@@ -33,7 +33,5 @@ public class ZaasTokenResponse {
     private List<String> distributedIds;
     @JsonIgnore // to avoid a breaking change, this value is needed only in Otel via API call, not rest
     private String authSourceType;
-    @JsonIgnore
-    private String errorType;
 
 }
