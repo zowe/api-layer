@@ -202,7 +202,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     }
 
     /**
-     * This method remove a necessary subset of credentials in case of authentication fail. If ZAAS cannot generate a
+     * This method removes a necessary subset of credentials in case of authentication fail. If ZAAS cannot generate a
      * new credentials (i.e. because of basic authentication, expired token, etc.) the Gateway should provide the original
      * credentials passed by a user. But there are headers that could be removed to avoid misusing (see forwarding
      * certificate - user cannot provide a public certificate to take foreign privileges).
