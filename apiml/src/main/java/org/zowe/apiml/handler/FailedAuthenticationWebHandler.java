@@ -53,11 +53,11 @@ public class FailedAuthenticationWebHandler implements ServerAuthenticationFailu
         log.debug("Unauthorized access to '{}' endpoint", requestUri);
         otelContext.authenticationFailed();
         otelContext.authErrorMessage(exception.getMessage());
+        otelContext.authErrorType(exception.getClass().getName());
         var bufferFactory = new DefaultDataBufferFactory();
         AtomicReference<DefaultDataBuffer> buffer = new AtomicReference<>();
         BiConsumer<ApiMessageView, HttpStatus> consumer = (message, status) -> {
             exchange.getResponse().setStatusCode(status);
-            otelContext.authErrorType(status.getReasonPhrase());
             if (message != null) {
                 exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
                 try {

@@ -53,7 +53,7 @@ class AbstractTokenFilterFactoryTest {
 
             new AbstractTokenFilterFactory<>(AbstractTokenFilterFactory.Config.class, null, null) {
                 @Override
-                protected Function<RequestCredentials, Mono<AuthorizationResponse<ZaasTokenResponse>>> getAuthorizationResponseTransformer() {
+                protected Function<RequestCredentials, Mono<AuthorizationResponse<ZaasTokenResponse>>> getAuthorizationResponseTransformer(ServerWebExchange exchange) {
                     return null;
                 }
 

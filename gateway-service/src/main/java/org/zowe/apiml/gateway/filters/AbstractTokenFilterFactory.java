@@ -75,7 +75,6 @@ public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFa
             Optional.ofNullable(responseBody).map(ZaasTokenResponse::getUserId).ifPresent(otelContext::userId);
             Optional.ofNullable(responseBody).map(ZaasTokenResponse::getDistributedIds).ifPresent(otelContext::distributedIds);
             Optional.ofNullable(responseBody).map(ZaasTokenResponse::getAuthSourceType).ifPresent(otelContext::authSourceType);
-            Optional.ofNullable(responseBody).map(ZaasTokenResponse::getErrorType).ifPresent(otelContext::authErrorType);
 
             if (!StringUtils.isEmpty(response.get().getCookieName())) {
                 request = cleanHeadersOnAuthSuccess(exchange);
@@ -104,9 +103,7 @@ public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFa
                     request = request.mutate().headers(httpHeaders -> httpHeaders.add(ApimlConstants.AUTH_FAIL_HEADER, failureHeader.get())).build();
                     exchange = exchange.mutate().request(request).build();
                 }
-                if (exchange.getResponse() != null) {
-                    exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, failureHeader.get());
-                }
+                exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, failureHeader.get());
             }
         }
         if (request == null) {
