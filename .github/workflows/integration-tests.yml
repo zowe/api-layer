@@ -2247,7 +2247,6 @@ jobs:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
                     APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
-                    SERVER_SSL_KEYSTORETYPE: "PKCS12"
                     CACHING_STORAGE_INFINISPAN_NUMSEGMENTS: "16"
                     CACHING_STORAGE_MODE: "infinispan"
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
@@ -2261,7 +2260,6 @@ jobs:
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
                     APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
                     APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    SERVER_SSL_KEYSTORETYPE: "PKCS12"
                     APIML_SERVICE_HOSTNAME: "apiml-2"
                     logbackService: ZWEAGW2
                     CACHING_STORAGE_INFINISPAN_NUMSEGMENTS: "16"
