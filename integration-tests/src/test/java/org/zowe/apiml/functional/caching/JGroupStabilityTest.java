@@ -173,6 +173,7 @@ public class JGroupStabilityTest {
             log.info("Starting {} on ports based on {}", service, basePort);
 
             var env = new HashMap<String, String>();
+            env.put("ZWE_configs_debug", "true");
             env.put("ZWE_haInstance_id", "localhost_" + (isModulith ? "Single" : "Multi") + "_" + (isAttls ? "Attls" : "NativeTls") + "_" + (index + 1));
             env.put("APIML_ENABLED", isModulith ? "true" : "false");
             env.put("logbackService", (isModulith ? "ZWEGW" : "ZWEACS") + (index + 1));

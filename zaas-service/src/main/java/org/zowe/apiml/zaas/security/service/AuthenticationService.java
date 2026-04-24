@@ -84,8 +84,8 @@ public class AuthenticationService {
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
     private boolean isModulithMode;
-    private Cache validatedJwtTokensCache;
-    private Cache invalidatedJwtTokensCache;
+    private volatile Cache validatedJwtTokensCache;
+    private volatile Cache invalidatedJwtTokensCache;
 
     @PostConstruct
     public void afterPropertiesSet() {
