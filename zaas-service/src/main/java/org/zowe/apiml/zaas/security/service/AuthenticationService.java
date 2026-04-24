@@ -52,6 +52,7 @@ import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.zowe.apiml.security.common.util.JwtUtils.getJwtClaims;
 import static org.zowe.apiml.security.common.util.JwtUtils.handleJwtParserException;
@@ -84,8 +85,8 @@ public class AuthenticationService {
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
     private boolean isModulithMode;
-    private volatile Cache validatedJwtTokensCache;
-    private volatile Cache invalidatedJwtTokensCache;
+    private final AtomicReference<Cache> validatedJwtTokensCache = new AtomicReference<>();
+    private final AtomicReference<Cache> invalidatedJwtTokensCache = new AtomicReference<>();
 
     @PostConstruct
     public void afterPropertiesSet() {
@@ -93,25 +94,29 @@ public class AuthenticationService {
     }
 
     private Cache getValidatedJwtTokensCache() {
-        if (validatedJwtTokensCache == null) {
-            synchronized (AuthenticationService.class) {
-                if (validatedJwtTokensCache == null) {
-                    validatedJwtTokensCache = cacheManager.getCache(CACHE_VALIDATED_JWT_TOKENS);
+        var cacheValidatedJwtTokensCache = this.validatedJwtTokensCache.get();
+        if (cacheValidatedJwtTokensCache == null) {
+            synchronized (validatedJwtTokensCache) {
+                cacheValidatedJwtTokensCache = validatedJwtTokensCache.get();
+                if (cacheValidatedJwtTokensCache == null) {
+                    validatedJwtTokensCache.set(cacheManager.getCache(CACHE_VALIDATED_JWT_TOKENS));
                 }
             }
         }
-        return validatedJwtTokensCache;
+        return validatedJwtTokensCache.get();
     }
 
     private Cache getInvalidatedJwtTokensCache() {
-        if (invalidatedJwtTokensCache == null) {
-            synchronized (AuthenticationService.class) {
-                if (invalidatedJwtTokensCache == null) {
-                    invalidatedJwtTokensCache = cacheManager.getCache(CACHE_INVALIDATED_JWT_TOKENS);
+        var cacheInvalidatedJwtTokensCache = this.invalidatedJwtTokensCache.get();
+        if (cacheInvalidatedJwtTokensCache == null) {
+            synchronized (invalidatedJwtTokensCache) {
+                cacheInvalidatedJwtTokensCache = this.invalidatedJwtTokensCache.get();
+                if (cacheInvalidatedJwtTokensCache == null) {
+                    invalidatedJwtTokensCache.set(cacheManager.getCache(CACHE_INVALIDATED_JWT_TOKENS));
                 }
             }
         }
-        return invalidatedJwtTokensCache;
+        return invalidatedJwtTokensCache.get();
     }
 
     /**
