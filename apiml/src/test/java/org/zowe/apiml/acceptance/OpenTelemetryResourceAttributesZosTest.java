@@ -212,7 +212,7 @@ class OpenTelemetryResourceAttributesZosTest {
         class WhenRequestToAPIML {
 
             @Test
-            void givenLoginEndpoint_thenLog() {
+            void givenLoginEndpoint_failure_thenLog() {
                 given()
                     .auth().preemptive()
                     .basic("wronguser", "wrongpass")
@@ -228,7 +228,7 @@ class OpenTelemetryResourceAttributesZosTest {
                 assertEquals("POST", getAttribute(logBody, "http.request.method"));
                 assertEquals("ERROR", getAttribute(logBody, "auth.status"));
                 assertEquals("EACCES: Permission is denied; the specified password is incorrect", getAttribute(logBody, "auth.error.message"));
-                assertEquals("Unauthorized", getAttribute(logBody, "auth.error.type"));
+                assertEquals("org.zowe.apiml.security.common.error.ZosAuthenticationException", getAttribute(logBody, "auth.error.type"));
                 assertEquals("localhost:gateway:" + port, getAttribute(logBody, "service.instance.id"));
                 assertEquals("401", getAttribute(logBody, "service.response_code"));
                 assertEquals("/gateway/api/v1/auth/login", getAttribute(logBody, "url.path"));
@@ -642,15 +642,28 @@ class OpenTelemetryResourceAttributesZosTest {
             class WhenAuthAbsent {
 
                 @Test
-                void whenNoPassTicketProvided_thenLog() {
+                void whenNoTokenProvided_thenLog() {
                     given()
-                        .get(basePath + "/testservicept/api/v1/401")
+                        .get(basePath + "/testservicept/api/v1/200")
                     .then()
-                        .statusCode(401);
+                        .statusCode(200);
 
-                    var logRecord = assertOneLogRecordExported("/testservicept/api/v1/401");
-
-                    // TODO Complete
+                    var logRecord = assertOneLogRecordExported("/testservicept/api/v1/200");
+                    assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                    @SuppressWarnings("null")
+                    var logBody = logRecord.getBodyValue().asString();
+                    assertNull(getAttribute(logBody, "user.id"));
+                    assertEquals("testservicept", getAttribute(logBody, "service.id"));
+                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                    assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                    assertEquals("localhost:testservicept:" + mockServicePassTicket.getPort(), getAttribute(logBody, "service.instance.id"));
+                    assertEquals("200", getAttribute(logBody, "service.response_code"));
+                    assertEquals("/testservicept/api/v1/200", getAttribute(logBody, "url.path"));
+                    assertEquals("https", getAttribute(logBody, "url.scheme"));
+                    assertEquals("httpBasicPassTicket", getAttribute(logBody, "auth.service.auth.method"));
+                    assertNull(getAttribute(logBody, "auth.method"));
+                    assertEquals("ZWEAG160E No authentication provided in the request", getAttribute(logBody, "auth.error.message"));
+                    assertEquals("org.springframework.security.authentication.InsufficientAuthenticationException", getAttribute(logBody, "auth.error.type"));
                 }
 
             }
@@ -737,7 +750,27 @@ class OpenTelemetryResourceAttributesZosTest {
 
                 @Test
                 void whenFailure_thenLog() {
+                    given()
+                        .cookie("apimlAuthenticationToken", "invalid.jwt.token")
+                        .get(basePath + "/testservicesafidt/api/v1/401")
+                    .then()
+                        .statusCode(401);
 
+                    var logRecord = assertOneLogRecordExported("/testservicesafidt/api/v1/401");
+                    assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                    @SuppressWarnings("null")
+                    var logBody = logRecord.getBodyValue().asString();
+                    assertEquals("testservicesafidt", getAttribute(logBody, "service.id"));
+                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                    assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                    assertEquals("ZWEAO402E The request has not been applied because it lacks valid authentication credentials.", getAttribute(logBody, "auth.error.message"));
+                    assertEquals("org.zowe.apiml.security.common.token.TokenNotValidException", getAttribute(logBody, "auth.error.type"));
+                    assertEquals("localhost:testservicesafidt:" + mockServiceSafIdt.getPort(), getAttribute(logBody, "service.instance.id"));
+                    assertEquals("401", getAttribute(logBody, "service.response_code"));
+                    assertEquals("/testservicesafidt/api/v1/401", getAttribute(logBody, "url.path"));
+                    assertEquals("https", getAttribute(logBody, "url.scheme"));
+                    assertEquals("safIdt", getAttribute(logBody, "auth.service.auth.method"));
+                    assertEquals("JWT", getAttribute(logBody, "auth.method"));
                 }
 
             }
