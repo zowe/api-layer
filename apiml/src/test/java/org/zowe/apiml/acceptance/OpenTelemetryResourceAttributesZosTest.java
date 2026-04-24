@@ -42,7 +42,7 @@ import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 import org.zowe.apiml.zaas.security.mapping.OIDCExternalMapper;
 import org.zowe.apiml.zaas.security.mapping.X509NativeMapper;
-import org.zowe.apiml.zaas.security.service.saf.SafIdtProvider;
+import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 
 import java.net.URI;
@@ -154,6 +154,9 @@ class OpenTelemetryResourceAttributesZosTest {
 
         @MockitoBean
         private X509NativeMapper x509TokenProvider;
+
+        @MockitoBean
+        private TokenCreationService tokenCreationService;
 
         @BeforeAll
         void startMockServices() throws Exception {
@@ -706,9 +709,6 @@ class OpenTelemetryResourceAttributesZosTest {
         @TestInstance(TestInstance.Lifecycle.PER_CLASS)
         class WhenServiceRequiresSafIdt {
 
-            @MockitoBean
-            private SafIdtProvider safIdtProvider;
-
             private MockService mockServiceSafIdt;
 
             @BeforeAll
@@ -716,6 +716,7 @@ class OpenTelemetryResourceAttributesZosTest {
                 mockServiceSafIdt = mockService("testservicesafidt")
                     .scope(Scope.CLASS)
                     .authenticationScheme(AuthenticationScheme.SAF_IDT)
+                    .applid("TSTSVRID")
                     .addEndpoint("/testservicesafidt/200")
                     .responseCode(200)
                 .and().start();
@@ -726,6 +727,7 @@ class OpenTelemetryResourceAttributesZosTest {
 
                 @Test
                 void whenSuccess_thenLog() {
+                    when(tokenCreationService.createSafIdTokenWithoutCredentials("USER", "TSTSVRID")).thenReturn("validsafidt");
                     given()
                         .cookie(AUTH_COOKIE, login())
                         .get(basePath + "/testservicesafidt/api/v1/200")
@@ -786,8 +788,20 @@ class OpenTelemetryResourceAttributesZosTest {
                         .statusCode(401);
 
                     var logRecord = assertOneLogRecordExported("/testservice/api/v1/401");
-
-                    // TODO Complete
+                    assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                    @SuppressWarnings("null")
+                    var logBody = logRecord.getBodyValue().asString();
+                    assertEquals("testservicesafidt", getAttribute(logBody, "service.id"));
+                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                    assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                    assertEquals("ZWEAO402E The request has not been applied because it lacks valid authentication credentials.", getAttribute(logBody, "auth.error.message"));
+                    assertEquals("org.zowe.apiml.security.common.token.TokenNotValidException", getAttribute(logBody, "auth.error.type"));
+                    assertEquals("localhost:testservicesafidt:" + mockServiceSafIdt.getPort(), getAttribute(logBody, "service.instance.id"));
+                    assertEquals("401", getAttribute(logBody, "service.response_code"));
+                    assertEquals("/testservicesafidt/api/v1/401", getAttribute(logBody, "url.path"));
+                    assertEquals("https", getAttribute(logBody, "url.scheme"));
+                    assertEquals("safIdt", getAttribute(logBody, "auth.service.auth.method"));
+                    assertEquals("JWT", getAttribute(logBody, "auth.method"));
                 }
 
             }
