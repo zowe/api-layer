@@ -157,8 +157,10 @@ class OpenTelemetryResourceAttributesZosTest {
 
         @BeforeAll
         void startMockServices() throws Exception {
-            SslContextConfigurer configurer = new SslContextConfigurer("password".toCharArray(), "../keystore/client_cert/client-certs.p12", "../keystore/localhost/localhost.keystore.p12");
-            SslContext.prepareSslAuthentication(configurer);
+            if (!SslContext.isInitialized()) {
+                SslContextConfigurer configurer = new SslContextConfigurer("password".toCharArray(), "../keystore/client_cert/client-certs.p12", "../keystore/localhost/localhost.keystore.p12");
+                SslContext.prepareSslAuthentication(configurer);
+            }
         }
 
         @AfterAll
