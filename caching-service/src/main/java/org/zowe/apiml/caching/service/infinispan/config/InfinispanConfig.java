@@ -211,12 +211,11 @@ public class InfinispanConfig implements InitializingBean {
         System.setProperty("infinispan.ssl.trustStore", trustStore);
         System.setProperty("infinispan.ssl.trustStorePassword", trustStorePass);
 
-        var caches = Stream.of(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN)
-            .collect(Collectors.toMap( cacheName -> cacheName, cacheName -> getDistributedCacheConfig()));
+        var caches = new HashMap<String, ConfigurationBuilder>();
+        caches.put(CACHE_ZOWE, getDistributedCacheConfig());
+        caches.put(CACHE_ZOWE_INVALIDATED_TOKEN, getDistributedCacheConfig());
 
         if (applicationInfo.isModulith()) {
-            caches.put(CACHE_ZOWE, getDistributedCacheConfig());
-            caches.put(CACHE_ZOWE_INVALIDATED_TOKEN, getDistributedCacheConfig());
             caches.put("invalidatedJwtTokens", getDistributedCacheConfig());
 
             // 1 minute to force zosmf tokens validation against zosmf for invalidated tokens
