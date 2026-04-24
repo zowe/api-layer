@@ -7,5 +7,9 @@
   },
   "dependencies": {
     "express": "5.2.1"
+  },
+  "overrides": {
+    "path-to-regexp": "8.4.2",
+    "qs" : "6.15.1"
   }
 }
