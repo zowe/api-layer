@@ -19,6 +19,7 @@ import java.util.List;
 public class Analyser {
 
     public static int mainWithExitCode(String[] args) {
+        ensureSafkeyringHandler();
         try {
             ApimlConf conf = new ApimlConf();
             CommandLine cmd = new CommandLine(conf);
@@ -60,6 +61,20 @@ public class Analyser {
             System.err.println(e.getMessage());
         }
         return 4;
+    }
+
+    /**
+     * Registers the IBM SAF keyring URL protocol handler so that
+     * {@code new URL("safkeyring://...")} works on z/OS without requiring the
+     * caller to pass {@code -Djava.protocol.handler.pkgs=com.ibm.crypto.provider}.
+     * On non-z/OS platforms the handler class is simply not found and is ignored.
+     */
+    static void ensureSafkeyringHandler() {
+        String existing = System.getProperty("java.protocol.handler.pkgs", "");
+        if (!existing.contains("com.ibm.crypto.provider")) {
+            System.setProperty("java.protocol.handler.pkgs",
+                existing.isEmpty() ? "com.ibm.crypto.provider" : existing + "|com.ibm.crypto.provider");
+        }
     }
 
     public static final void main(String[] args) {
