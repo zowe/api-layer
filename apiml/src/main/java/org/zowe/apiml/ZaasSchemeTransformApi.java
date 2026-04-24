@@ -27,6 +27,7 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.filters.*;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.passticket.ApplicationNameNotProvidedException;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.ticket.TicketResponse;
@@ -114,7 +115,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         var applicationName = requestCredentials.getApplId();
         if (StringUtils.isBlank(applicationName)) {
             // TODO update errorType when passticket ApplId is missing
-            return createAuthorizationResponse(createErrorMessage("ApplicationName not provided."), TicketResponse.builder().errorType("").build());
+            return createAuthorizationResponse(createErrorMessage("ApplicationName not provided."), TicketResponse.builder().errorType(ApplicationNameNotProvidedException.class.getName()).build());
         }
 
         try {
