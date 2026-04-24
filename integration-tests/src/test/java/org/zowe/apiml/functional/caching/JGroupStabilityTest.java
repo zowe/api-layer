@@ -82,7 +82,7 @@ public class JGroupStabilityTest {
             cachingServices.forEach(CachingService::start);
             await()
                 .pollDelay(10, TimeUnit.SECONDS)
-                .timeout(2, TimeUnit.MINUTES)
+                .timeout(isModulith ? 8 : 2, TimeUnit.MINUTES)
                 .until(() -> cachingServices.stream().allMatch(CachingService::isUp));
 
             cachingServices.get(0).pause();
@@ -169,10 +169,10 @@ public class JGroupStabilityTest {
             int basePort = BASE_PORTS[index];
             String service = isModulith ? "apiml" : "caching-service";
 
-            log.info("Starting {} on port {}", service, basePort);
+            log.info("Starting {} on ports based on {}", service, basePort);
 
             var env = new HashMap<String, String>();
-            env.put("ZWE_haInstance_id", "localhost" + String.valueOf(basePort).charAt(0));
+            env.put("ZWE_haInstance_id", "localhost" + (index + 1));
             env.put("APIML_ENABLED", isModulith ? "true" : "false");
             env.put("logbackService", (isModulith ? "ZWEGW" : "ZWEACS") + (index + 1));
             env.put("LAUNCH_COMPONENT", service + "/build/libs");
@@ -180,7 +180,8 @@ public class JGroupStabilityTest {
             env.put("ZWE_configs_port", String.valueOf(basePort + 25));
 
             env.put("ZWE_configs_storage_infinispan_jgroups_port", String.valueOf(basePort + 600));
-            env.put("ZWE_configs_storage_infinispan_jgroups_keyExchange_port", String.valueOf(BASE_PORTS[0] + 601));
+            env.put("ZWE_configs_storage_infinispan_jgroups_host", "localhost");
+            env.put("ZWE_configs_storage_infinispan_jgroups_keyExchange_port", String.valueOf(basePort + 601));
             env.put("ZWE_configs_storage_infinispan_initialHosts", Arrays.stream(BASE_PORTS).mapToObj(bp -> "localhost[" + (bp + 600) + "]").collect(Collectors.joining(",")));
             env.put("ZWE_configs_storage_mode", "infinispan");
 
@@ -194,11 +195,13 @@ public class JGroupStabilityTest {
 
             env.put("ZWE_configs_apiml_health_protected", "false");
             env.put("attlsEnabledOnInfinispanTest", isAttls ? "true" : "false");
-            env.put("ZWE_zowe_network_client_tls_attls", isAttls ? "true" : "false");
 
             if (isModulith) {
+                env.put("CMMN_LB", "build/libs/api-layer-lite-lib-all.jar");
                 env.put("ZWE_configs_internal_discovery_port", String.valueOf(basePort + 1));
                 env.put("ZWE_configs_apiml_security_authorization_provider", "dummy");
+                env.put("ZWE_components_gateway_apiml_security_auth_provider", "saf");
+                env.put("ZWE_DISCOVERY_SERVICES_LIST", Arrays.stream(BASE_PORTS).mapToObj(bp -> "https://localhost:" + (bp + 1) + "/eureka/").collect(Collectors.joining(",")));
             }
 
             ProcessBuilder builder = new ProcessBuilder(service + "-package/src/main/resources/bin/start.sh");
@@ -271,7 +274,7 @@ public class JGroupStabilityTest {
 
         public boolean isUp() {
             int basePort = BASE_PORTS[index];
-            HttpGet request = new HttpGet("https://localhost:" + (basePort + 25) + "/cachingservice/application/health");
+            HttpGet request = new HttpGet("https://localhost:" + (basePort + 25) + (isModulith ? "" : "/cachingservice") + "/application/health");
             request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
             try (CloseableHttpClient client = HttpClients.custom().setSSLContext(ignoreSslContext()).setSSLHostnameVerifier(new NoopHostnameVerifier()).build()) {
                 final HttpResponse response = client.execute(request);
@@ -279,7 +282,7 @@ public class JGroupStabilityTest {
                 log.trace("URI: {}, JsonResponse is {}", request.getURI().toString(), jsonResponse);
 
                 if (StringUtils.isNotEmpty(jsonResponse)) {
-                    var status = JsonPath.parse(jsonResponse).read("components.caching.details.infinispan.cluster.status", String.class);
+                    var status = JsonPath.parse(jsonResponse).read(isModulith ? "components.infinispan.status" : "components.caching.details.infinispan.cluster.status", String.class);
                     return "UP".equals(status);
                 }
                 return false;
