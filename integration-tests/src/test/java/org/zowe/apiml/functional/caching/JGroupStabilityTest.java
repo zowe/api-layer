@@ -81,7 +81,7 @@ public class JGroupStabilityTest {
         try {
             cachingServices.forEach(CachingService::start);
             await()
-                .pollDelay(10, TimeUnit.SECONDS)
+                .pollDelay(20, TimeUnit.SECONDS)
                 .timeout(isModulith ? 8 : 2, TimeUnit.MINUTES)
                 .until(() -> cachingServices.stream().allMatch(CachingService::isUp));
 
@@ -283,7 +283,11 @@ public class JGroupStabilityTest {
 
                 if (StringUtils.isNotEmpty(jsonResponse)) {
                     var status = JsonPath.parse(jsonResponse).read(isModulith ? "components.infinispan.status" : "components.caching.details.infinispan.cluster.status", String.class);
-                    return "UP".equals(status);
+                    boolean isUp = "UP".equals(status);
+                    if (!isUp) {
+                        log.warn("URI: {}, JsonResponse is {}", request.getURI().toString(), jsonResponse);
+                    }
+                    return isUp;
                 }
                 return false;
             } catch (Exception e) {
