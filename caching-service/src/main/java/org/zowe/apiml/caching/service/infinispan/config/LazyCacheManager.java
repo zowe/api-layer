@@ -12,6 +12,7 @@ package org.zowe.apiml.caching.service.infinispan.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.codehaus.commons.compiler.util.Producer;
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.api.CacheContainerAdmin;
@@ -31,16 +32,16 @@ import org.infinispan.stats.CacheContainerStats;
 
 import javax.security.auth.Subject;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class LazyCacheManager extends DefaultCacheManager {
 
-    private static final int RETRY = 2;
-
-    private final AtomicReference<DefaultCacheManager> cacheManager = new AtomicReference<>();
+    private final AtomicReference<Producer<DefaultCacheManager>> cacheManager;
     private final CacheInitializer cacheInitializer;
 
     public LazyCacheManager(
@@ -49,20 +50,13 @@ public class LazyCacheManager extends DefaultCacheManager {
     ) {
         super(cacheManagerConfig, false);
         cacheInitializer = new CacheInitializer(cacheManagerConfig, caches);
+        cacheManager = new AtomicReference<>(cacheInitializer::getDefaultCacheManager);
     }
 
     private DefaultCacheManager getCacheManager() {
-        var container = cacheManager.get();
+        var container = cacheManager.get().produce();
         if (container == null) {
-            synchronized (this) {
-                container = cacheManager.get();
-                if (container == null) {
-                    container = cacheInitializer.getDefaultCacheManager();
-                }
-            }
-            if (container == null) {
-                throw new IllegalStateException("Cache container is not initialized yet");
-            }
+            throw new IllegalStateException("Cache container is not initialized yet");
         }
         return container;
     }
@@ -275,46 +269,47 @@ public class LazyCacheManager extends DefaultCacheManager {
         }
 
         public DefaultCacheManager getDefaultCacheManager() {
-            if (underInit == null) {
-                for (int i = 0; i < 1 + RETRY; i++) {
+            synchronized (LazyCacheManager.class) {
+                if (underInit == null) {
+                    log.debug("attempt to create cache manager");
                     try {
                         underInit = startDefaultCacheManager();
-                        break;
+                        log.debug("cache manager was created");
                     } catch (Exception e) {
                         log.warn("Cannot initialize DefaultCacheManager", e);
+                        return null;
                     }
                 }
             }
 
-            if (underInit == null) {
-                return null;
-            }
+            while (true) {
+                String cacheName;
+                ConfigurationBuilder cacheBuilder;
+                synchronized (LazyCacheManager.class) {
+                    var i = caches.entrySet().iterator();
+                    if (i.hasNext()) {
+                        var entry = i.next();
+                        cacheName = entry.getKey();
+                        cacheBuilder = entry.getValue();
+                        i.remove();
+                    } else {
+                        cacheManager.set(() -> underInit);
+                        return underInit;
+                    }
+                }
 
-            for (int i = 0; i < 1 + RETRY; i++) {
-                if (createCaches()) {
-                    break;
+                try {
+                    createCache(cacheName, cacheBuilder);
+                } catch (Throwable t) {
+                    caches.put(cacheName, cacheBuilder);
+                    cacheManager.set(this::getDefaultCacheManager);
+                    return underInit;
                 }
             }
-
-            if (caches.isEmpty()) {
-                cacheManager.set(underInit);
-            }
-
-            return underInit;
         }
 
-        private boolean createCaches() {
-            for (Iterator<String> i = caches.keySet().iterator(); i.hasNext();) {
-                String cacheName = i.next();
-                if (createCache(cacheName)) {
-                    i.remove();
-                }
-            }
-            return caches.isEmpty();
-        }
-
-        private boolean createCache(String cacheName) {
-            var cacheConfig = caches.get(cacheName).build();
+        private boolean createCache(String cacheName, ConfigurationBuilder cacheBuilder) {
+            var cacheConfig = cacheBuilder.build();
             log.debug("Initializing cache {} with config {}", cacheName, cacheConfig);
             try {
                 underInit.administration()

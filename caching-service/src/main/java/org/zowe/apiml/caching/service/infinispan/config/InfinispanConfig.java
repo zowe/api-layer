@@ -24,6 +24,7 @@ import org.infinispan.lock.api.ClusteredLock;
 import org.infinispan.lock.api.ClusteredLockManager;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.partitionhandling.AvailabilityException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -193,7 +194,7 @@ public class InfinispanConfig implements InitializingBean {
     }
 
     @Bean(destroyMethod = "stop")
-    synchronized LazyCacheManager cacheManager(ResourceLoader resourceLoader, ApplicationInfo applicationInfo) {
+    LazyCacheManager cacheManager(ResourceLoader resourceLoader, ApplicationInfo applicationInfo) {
         System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
         System.setProperty("jgroups.bind.port", port);
         System.setProperty("jgroups.bind.address", address);
@@ -234,27 +235,22 @@ public class InfinispanConfig implements InitializingBean {
     }
 
     private ClusteredLock lock(CacheContainer cacheManager) {
-        ClusteredLock lock = zoweInvalidatedTokenLock.get();
-        if (lock != null) {
-            return lock;
-        }
-
-        try {
-            synchronized (zoweInvalidatedTokenLock) {
-                lock = zoweInvalidatedTokenLock.get();
-                if (lock == null && cacheManager instanceof LazyCacheManager lazyCacheManager) {
-                    ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(lazyCacheManager.getOriginal());
-                    // it can throw AvailabilityException
-                    clm.defineLock(LOCK_ZOWE_INVALIDATED);
-                    lock = clm.get(LOCK_ZOWE_INVALIDATED);
-                }
-                zoweInvalidatedTokenLock.set(lock);
+        return zoweInvalidatedTokenLock.updateAndGet(prev -> {
+            if (prev != null) {
+                return prev;
             }
-            return lock;
-        } catch (AvailabilityException ae) {
-            log.debug("Cannot obtain lock", ae);
-            throw new StorageException(Messages.CACHE_NOT_AVAILABLE.getKey(), Messages.CACHE_NOT_AVAILABLE.getStatus(), ae.getMessage());
-        }
+
+            EmbeddedCacheManager cm = (cacheManager instanceof LazyCacheManager lazyCacheManager) ? lazyCacheManager.getOriginal() : (EmbeddedCacheManager) cacheManager;
+            try {
+                ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(cm);
+                // it can throw AvailabilityException
+                clm.defineLock(LOCK_ZOWE_INVALIDATED);
+                return clm.get(LOCK_ZOWE_INVALIDATED);
+            } catch (AvailabilityException ae) {
+                log.debug("Cannot obtain lock", ae);
+                throw new StorageException(Messages.CACHE_NOT_AVAILABLE.getKey(), Messages.CACHE_NOT_AVAILABLE.getStatus(), ae.getMessage());
+            }
+        });
     }
 
     @Bean

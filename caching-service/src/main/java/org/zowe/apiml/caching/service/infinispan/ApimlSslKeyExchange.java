@@ -126,11 +126,12 @@ public class ApimlSslKeyExchange extends SSL_KEY_EXCHANGE {
 
     @Override
     public void init() throws Exception {
+        super.init();
         synchronized (ApimlSslKeyExchange.class) {
-            boolean update = (client_ssl_ctx == null || server_ssl_ctx == null);
-            super.init();
-            if (update) {
+            if (!(super.client_ssl_ctx instanceof SSLContextWrapper)) {
                 super.client_ssl_ctx = update(super.client_ssl_ctx);
+            }
+            if (!(super.server_ssl_ctx instanceof SSLContextWrapper)) {
                 super.server_ssl_ctx = update(super.server_ssl_ctx);
             }
         }
