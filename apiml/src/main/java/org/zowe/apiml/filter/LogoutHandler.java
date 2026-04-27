@@ -11,7 +11,9 @@
 package org.zowe.apiml.filter;
 
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -38,6 +40,14 @@ public class LogoutHandler implements ServerLogoutHandler {
     private final FailedAuthenticationWebHandler failure;
     private final PeerAwareInstanceRegistryImpl peerAwareInstanceRegistry;
     private final HttpUtils httpUtils;
+    private final ApplicationContext applicationContext;
+
+    private boolean distribute;
+
+    @PostConstruct
+    void init() {
+        distribute = !applicationContext.containsBean("infinispanConfig");
+    }
 
     @Override
     public Mono<Void> logout(WebFilterExchange exchange, Authentication authentication) {
@@ -51,21 +61,21 @@ public class LogoutHandler implements ServerLogoutHandler {
             );
         }
 
-        if (Boolean.TRUE.equals(authenticationService.isInvalidated(token))) {
-           return failure.onAuthenticationFailure(exchange,new TokenNotValidException("The token you are trying to logout is not valid"));
+        if (authenticationService.isInvalidated(token)) {
+            return failure.onAuthenticationFailure(exchange, new TokenNotValidException("The token you are trying to logout is not valid"));
         } else {
             try {
                 var app = peerAwareInstanceRegistry.getApplications().getRegisteredApplications(CoreService.GATEWAY.getServiceId());
-                authenticationService.invalidateJwtTokenGateway(token, true, app);
+                authenticationService.invalidateJwtTokenGateway(token, distribute, app);
             } catch (TokenNotValidException e) {
                 // TokenNotValidException thrown in cases where the format is not valid
-               return failure.onAuthenticationFailure(exchange,new TokenFormatNotValidException(e.getMessage()));
+                return failure.onAuthenticationFailure(exchange, new TokenFormatNotValidException(e.getMessage()));
             } catch (AuthenticationException e) {
                 return failure.onAuthenticationFailure(exchange, e);
             } catch (Exception e) {
                 // Catch any issue like ServiceNotAccessibleException, throw TokenNotValidException
                 // so a 401 is returned. Returning 500 gives information about the system and is thus avoided.
-               return failure.onAuthenticationFailure(exchange, new TokenNotValidException("Error while logging out token"));
+                return failure.onAuthenticationFailure(exchange, new TokenNotValidException("Error while logging out token"));
             }
             return Mono.empty();
         }
