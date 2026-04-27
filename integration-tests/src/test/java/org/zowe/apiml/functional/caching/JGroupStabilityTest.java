@@ -203,7 +203,7 @@ public class JGroupStabilityTest {
                 env.put("CMMN_LB", "build/libs/api-layer-lite-lib-all.jar");
                 env.put("ZWE_configs_internal_discovery_port", String.valueOf(basePort + 1));
                 env.put("ZWE_configs_apiml_security_authorization_provider", "dummy");
-                env.put("ZWE_components_gateway_apiml_security_auth_provider", "saf");
+                env.put("ZWE_configs_apiml_security_auth_provider", "saf");
                 env.put("ZWE_DISCOVERY_SERVICES_LIST", Arrays.stream(BASE_PORTS).mapToObj(bp -> "https://localhost:" + (bp + 1) + "/eureka/").collect(Collectors.joining(",")));
             }
 
