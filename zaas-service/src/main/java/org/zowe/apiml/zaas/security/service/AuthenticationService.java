@@ -52,6 +52,7 @@ import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.zowe.apiml.security.common.util.JwtUtils.getJwtClaims;
 import static org.zowe.apiml.security.common.util.JwtUtils.handleJwtParserException;
@@ -84,8 +85,8 @@ public class AuthenticationService {
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
     private boolean isModulithMode;
-    private volatile Cache validatedJwtTokensCache;
-    private volatile Cache invalidatedJwtTokensCache;
+    private final AtomicReference<Cache> validatedJwtTokensCache = new AtomicReference<>();
+    private final AtomicReference<Cache> invalidatedJwtTokensCache = new AtomicReference<>();
 
     @PostConstruct
     public void afterPropertiesSet() {
@@ -93,25 +94,29 @@ public class AuthenticationService {
     }
 
     private Cache getValidatedJwtTokensCache() {
-        if (validatedJwtTokensCache == null) {
-            synchronized (AuthenticationService.class) {
-                if (validatedJwtTokensCache == null) {
-                    validatedJwtTokensCache = cacheManager.getCache(CACHE_VALIDATED_JWT_TOKENS);
+        var cacheValidatedJwtTokensCache = this.validatedJwtTokensCache.get();
+        if (cacheValidatedJwtTokensCache == null) {
+            synchronized (validatedJwtTokensCache) {
+                cacheValidatedJwtTokensCache = validatedJwtTokensCache.get();
+                if (cacheValidatedJwtTokensCache == null) {
+                    validatedJwtTokensCache.set(cacheManager.getCache(CACHE_VALIDATED_JWT_TOKENS));
                 }
             }
         }
-        return validatedJwtTokensCache;
+        return validatedJwtTokensCache.get();
     }
 
     private Cache getInvalidatedJwtTokensCache() {
-        if (invalidatedJwtTokensCache == null) {
-            synchronized (AuthenticationService.class) {
-                if (invalidatedJwtTokensCache == null) {
-                    invalidatedJwtTokensCache = cacheManager.getCache(CACHE_INVALIDATED_JWT_TOKENS);
+        var cacheInvalidatedJwtTokensCache = this.invalidatedJwtTokensCache.get();
+        if (cacheInvalidatedJwtTokensCache == null) {
+            synchronized (invalidatedJwtTokensCache) {
+                cacheInvalidatedJwtTokensCache = this.invalidatedJwtTokensCache.get();
+                if (cacheInvalidatedJwtTokensCache == null) {
+                    invalidatedJwtTokensCache.set(cacheManager.getCache(CACHE_INVALIDATED_JWT_TOKENS));
                 }
             }
         }
-        return invalidatedJwtTokensCache;
+        return invalidatedJwtTokensCache.get();
     }
 
     /**
@@ -244,23 +249,23 @@ public class AuthenticationService {
     }
 
     private void putValidationCache(String jwtToken, TokenAuthentication tokenAuthentication) {
-        var validatedJwtTokensCache = getValidatedJwtTokensCache();
-        if (jwtToken != null && validatedJwtTokensCache != null) {
-            validatedJwtTokensCache.put(jwtToken, tokenAuthentication);
+        var cacheValidatedJwtTokens = getValidatedJwtTokensCache();
+        if (jwtToken != null && cacheValidatedJwtTokens != null) {
+            cacheValidatedJwtTokens.put(jwtToken, tokenAuthentication);
         }
     }
 
     private void evictValidationCache(String jwtToken) {
-        var validatedJwtTokensCache = getValidatedJwtTokensCache();
-        if (validatedJwtTokensCache != null) {
-            validatedJwtTokensCache.evict(jwtToken);
+        var cacheValidatedJwtTokens = getValidatedJwtTokensCache();
+        if (cacheValidatedJwtTokens != null) {
+            cacheValidatedJwtTokens.evict(jwtToken);
         }
     }
 
     private void putInvalidatedCache(String jwtToken) {
-        var invalidatedJwtTokensCache = getInvalidatedJwtTokensCache();
-        if (invalidatedJwtTokensCache != null) {
-            invalidatedJwtTokensCache.put(jwtToken, Boolean.TRUE);
+        var cacheInvalidatedJwtTokens = getInvalidatedJwtTokensCache();
+        if (cacheInvalidatedJwtTokens != null) {
+            cacheInvalidatedJwtTokens.put(jwtToken, Boolean.TRUE);
         }
     }
 
@@ -325,11 +330,11 @@ public class AuthenticationService {
      * @return true - token is invalidated, otherwise token is still valid
      */
     public boolean isInvalidated(String jwtToken) {
-        var invalidatedJwtTokensCache = getInvalidatedJwtTokensCache();
-        if (invalidatedJwtTokensCache == null) {
+        var cacheInvalidatedJwtTokens = getInvalidatedJwtTokensCache();
+        if (cacheInvalidatedJwtTokens == null) {
             return false;
         }
-        Cache.ValueWrapper wrapper = invalidatedJwtTokensCache.get(jwtToken);
+        Cache.ValueWrapper wrapper = cacheInvalidatedJwtTokens.get(jwtToken);
         boolean result = wrapper != null && Boolean.TRUE.equals(wrapper.get());
         log.debug("Token invalidation check for ...{}: {}", StringUtils.right(jwtToken, 15), result);
         return result;
@@ -380,9 +385,9 @@ public class AuthenticationService {
             throw new TokenNotValidException("Token ...%s was invalidated.".formatted(StringUtils.right(jwtToken, 15)));
         }
 
-        var validatedJwtTokensCache = getValidatedJwtTokensCache();
-        if (validatedJwtTokensCache != null) {
-            Cache.ValueWrapper cached = validatedJwtTokensCache.get(jwtToken);
+        var cacheValidatedJwtTokens = getValidatedJwtTokensCache();
+        if (cacheValidatedJwtTokens != null) {
+            Cache.ValueWrapper cached = cacheValidatedJwtTokens.get(jwtToken);
             if (cached != null) {
                 var tokenAuthentication = (TokenAuthentication) cached.get();
                 log.debug("JWT ...{} found in the cache. Is authenticated: {}", StringUtils.right(jwtToken, 15), tokenAuthentication.isAuthenticated());

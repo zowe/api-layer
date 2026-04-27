@@ -55,7 +55,7 @@ jobs:
 
                   # Get API ML's released version and apply to enabler if it applies
                   released_version=$(cat gradle.properties | grep "version=" | sed "s/version=//g")
-                  sed -i "/REACT_APP_ZOWE_BUILD_INFO=/c\REACT_APP_ZOWE_BUILD_INFO=${released_version}" api-catalog-ui/frontend/.env
+                  sed -i "/VITE_ZOWE_BUILD_INFO=/c\VITE_ZOWE_BUILD_INFO=${released_version}" api-catalog-ui/frontend/.env
                   git add api-catalog-ui/frontend/.env
                   git commit -m "[skip ci] Update version"
 
