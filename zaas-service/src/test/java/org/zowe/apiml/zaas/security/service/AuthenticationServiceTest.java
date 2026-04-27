@@ -127,8 +127,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         authConfigurationProperties = new AuthConfigurationProperties();
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        when(cacheManager.getCache("validatedJwtTokens")).thenReturn(validatedJwtTokensCache);
-        when(cacheManager.getCache("invalidatedJwtTokens")).thenReturn(invalidatedJwtTokensCache);
+        lenient().when(cacheManager.getCache("validatedJwtTokens")).thenReturn(validatedJwtTokensCache);
+        lenient().when(cacheManager.getCache("invalidatedJwtTokens")).thenReturn(invalidatedJwtTokensCache);
 
         authService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer,
