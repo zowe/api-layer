@@ -1,9 +1,9 @@
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:15.0 https://infinispan.org/schemas/infinispan-config-15.2.xsd
-                        urn:infinispan:server:15.0 https://infinispan.org/schemas/infinispan-server-15.2.xsd
-                        urn:org:jgroups http://www.jgroups.org/schema/jgroups-5.4.xsd"
-    xmlns="urn:infinispan:config:15.2">
+    xsi:schemaLocation="urn:infinispan:config:16.1 https://infinispan.org/schemas/infinispan-config-16.1.xsd
+                        urn:infinispan:server:16.1 https://infinispan.org/schemas/infinispan-server-16.1.xsd
+                        urn:org:jgroups http://www.jgroups.org/schema/jgroups-5.5.xsd"
+    xmlns="urn:infinispan:config:16.1">
     <jgroups>
         <stack name="prod">
             <!-- jgroups.tcp.address is deprecated and will be removed, see ISPN-11867 -->
@@ -21,12 +21,13 @@
                 thread_pool.keep_alive_time="60000"
                 diag.enabled="${jgroups.tcp.diag.enabled:false}"
             />
+
             <TCPPING
                 initial_hosts="${jgroups.tcpping.initial_hosts}"
                 port_range="0"
             />
 
-            <org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange
+            <SSL_KEY_EXCHANGE
                 keystore_name="${infinispan.ssl.keyStore}"
                 keystore_type="${infinispan.ssl.keyStoreType}"
                 keystore_password="${infinispan.ssl.keyStorePassword}"
@@ -74,7 +75,6 @@
                 timeout_check_interval="1000"
             />
 
-
             <MERGE3
                 min_interval="10000"
                 max_interval="30000"
@@ -105,9 +105,11 @@
     </jgroups>
     <cache-container name="default" statistics="true">
         <!-- Configures the cluster to use the JGroups stack. -->
-        <transport cluster="zowe-cluster"
-                   stack="prod"
-                   node-name="${infinispan.node.name:}"/>
+        <transport
+            cluster="zowe-cluster"
+            stack="prod"
+            node-name="${infinispan.node.name:}"
+        />
 
         <serialization marshaller="org.infinispan.jboss.marshalling.commons.GenericJBossMarshaller">
             <allow-list>

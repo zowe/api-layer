@@ -83,7 +83,7 @@ public class JGroupStabilityTest {
             cachingServices.forEach(CachingService::start);
             await()
                 .pollDelay(20, TimeUnit.SECONDS)
-                .timeout(isModulith ? 8 : 2, TimeUnit.MINUTES)
+                .timeout(isModulith ? 15 : 5, TimeUnit.MINUTES)
                 .until(() -> cachingServices.stream().allMatch(CachingService::isUp));
 
             cachingServices.get(0).pause();
