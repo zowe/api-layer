@@ -39,10 +39,13 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -67,6 +70,29 @@ public class JGroupStabilityTest {
         executorService.shutdownNow();
     }
 
+    private AtomicInteger offset = new AtomicInteger(0);
+
+    private boolean is(List<CachingService> cachingServices, Function<CachingService, Boolean> check) {
+        int begin = offset.updateAndGet(prev -> prev + 1 >= cachingServices.size() ? 0 : prev + 1);
+
+        for (int i = 0; i < cachingServices.size(); i++) {
+            var cacheService = cachingServices.get(begin + i);
+            if (!check.apply(cacheService)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean isUp(List<CachingService> cachingServiceList) {
+        return is(cachingServiceList, CachingService::isUp);
+    }
+
+    private boolean isDown(List<CachingService> cachingServiceList) {
+        return is(cachingServiceList, CachingService::isDown);
+    }
+
     @ParameterizedTest(name = "Environment setup -> isModulith: {0}; isAttls: {1}")
     @CsvSource({
         "false,false",
@@ -84,21 +110,22 @@ public class JGroupStabilityTest {
             await()
                 .pollDelay(20, TimeUnit.SECONDS)
                 .timeout(isModulith ? 15 : 5, TimeUnit.MINUTES)
-                .until(() -> cachingServices.stream().allMatch(CachingService::isUp));
+                .until(() -> isUp(cachingServices));
 
             cachingServices.get(0).pause();
 
+            var nonPaused = cachingServices.subList(1, cachingServices.size()).stream().toList();
             await()
                 .pollDelay(10, TimeUnit.SECONDS)
                 .timeout(1, TimeUnit.MINUTES)
-                .until(() -> cachingServices.subList(1, cachingServices.size()).stream().allMatch(CachingService::isDown));
+                .until(() -> isDown(nonPaused));
 
             cachingServices.get(0).resume();
 
             await()
                 .pollDelay(10, TimeUnit.SECONDS)
                 .timeout(2, TimeUnit.MINUTES)
-                .until(() -> cachingServices.stream().allMatch(CachingService::isUp));
+                .until(() -> isUp(cachingServices));
         } finally {
             cachingServices.forEach(CachingService::kill);
         }
@@ -184,7 +211,7 @@ public class JGroupStabilityTest {
             env.put("LOGGING_LEVEL_ORG_INFINISPAN", "DEBUG");
 
             env.put("ZWE_haInstance_id", "localhost_" + (isModulith ? "Single" : "Multi") + "_" + (isAttls ? "Attls" : "NativeTls") + "_" + (index + 1));
-            env.put("APIML_ENABLED", isModulith ? "true" : "false");
+            //env.put("APIML_ENABLED", isModulith ? "true" : "false");
             env.put("logbackService", (isModulith ? "ZWEGW" : "ZWEACS") + (index + 1));
             env.put("LAUNCH_COMPONENT", service + "/build/libs");
 
