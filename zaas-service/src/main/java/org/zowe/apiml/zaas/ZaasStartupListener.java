@@ -22,6 +22,7 @@ import org.zowe.apiml.zaas.security.login.Providers;
 import java.time.Duration;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 @RequiredArgsConstructor
@@ -34,12 +35,12 @@ public class ZaasStartupListener implements ApplicationListener<ApplicationReady
     private final ApplicationEventPublisher publisher;
     private final ServiceStartupEventHandler handler;
 
-    private Timer timer;
+    private AtomicReference<Timer> timer = new AtomicReference<>();
 
     public void onApplicationEvent(ApplicationReadyEvent event) {
         if (providers.isZosfmUsed()) {
-            timer = new Timer();
-            timer.scheduleAtFixedRate(new TimerTask() {
+            timer.set(new Timer());
+            timer.get().scheduleAtFixedRate(new TimerTask() {
 
                 @Override
                 public void run() {
@@ -61,9 +62,9 @@ public class ZaasStartupListener implements ApplicationListener<ApplicationReady
     }
 
     void onContextClosed() {
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
+        if (timer.get() != null) {
+            timer.get().cancel();
+            timer.set(null);
         }
     }
 
