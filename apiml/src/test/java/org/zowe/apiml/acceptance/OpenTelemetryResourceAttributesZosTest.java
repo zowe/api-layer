@@ -44,6 +44,7 @@ import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 import org.zowe.apiml.zaas.security.mapping.OIDCExternalMapper;
 import org.zowe.apiml.zaas.security.mapping.X509NativeMapper;
+import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 
@@ -65,6 +66,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.zowe.apiml.constants.ApimlConstants.PAT_HEADER_NAME;
 import static org.zowe.apiml.security.common.util.JWTTestUtils.createExpiredZoweJwtToken;
 
 class OpenTelemetryResourceAttributesZosTest {
@@ -132,7 +134,8 @@ class OpenTelemetryResourceAttributesZosTest {
             "apiml.security.oidc.validationType=endpoint",
             "apiml.security.oidc.enabled=true",
             "apiml.security.oidc.userInfo.uri=https://oidc.provider.com/user/info",
-            "apiml.security.filterChainConfiguration=new"
+            "apiml.security.filterChainConfiguration=new",
+            "apiml.security.personalAccessToken.enabled=true"
         }
     )
     @ActiveProfiles({"OpenTelemetryTest", "zos"})
@@ -162,6 +165,9 @@ class OpenTelemetryResourceAttributesZosTest {
 
         @MockitoBean
         private TokenCreationService tokenCreationService;
+
+        @MockitoBean
+        private AuthenticationService authenticationService;
 
         @BeforeAll
         void startMockServices() throws Exception {
@@ -442,7 +448,7 @@ class OpenTelemetryResourceAttributesZosTest {
                     @Test
                     void givenRouted_withPAT_success_thenLog() {
                         given()
-                            .header(ApimlConstants.PAT_HEADER_NAME, "validpat")
+                            .header(PAT_HEADER_NAME, "validpat")
                             .get(basePath + "/testservice/api/v1/200")
                         .then()
                             .statusCode(200);
@@ -698,38 +704,6 @@ class OpenTelemetryResourceAttributesZosTest {
                     assertEquals("ZWEAG160E No authentication provided in the request", getAttribute(logBody, "auth.error.message"));
                     assertEquals("org.springframework.security.authentication.InsufficientAuthenticationException", getAttribute(logBody, "auth.error.type"));
                 }
-
-            }
-
-        }
-
-        @Nested
-        @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-        class WhenServiceRequiresX509 {
-
-            @MockitoBean
-            private X509NativeMapper x509TokenProvider;
-
-            private MockService mockServiceX509;
-
-            @BeforeAll
-            void init() {
-                mockServiceX509 = mockService("testservicex509")
-                    .scope(Scope.CLASS)
-                    .authenticationScheme(AuthenticationScheme.X509)
-                    .addEndpoint("/testservicex509/200")
-                    .responseCode(200)
-                .and().start();
-            }
-
-            @Nested
-            class WhenAuthPresent {
-
-
-            }
-
-            @Nested
-            class WhenAuthAbsent {
 
             }
 

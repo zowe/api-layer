@@ -24,9 +24,11 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.NestedTestConfiguration;
+import org.springframework.test.context.NestedTestConfiguration.EnclosingConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
@@ -48,6 +50,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@NestedTestConfiguration(EnclosingConfiguration.OVERRIDE)
 class StartupMessageAcceptanceTest {
 
     abstract static class BaseStartupTest extends AcceptanceTestWithMockServices {
@@ -81,7 +84,6 @@ class StartupMessageAcceptanceTest {
     @Nested
     @AcceptanceTest
     @TestInstance(Lifecycle.PER_CLASS)
-    @DirtiesContext
     @ExtendWith({MockitoExtension.class, OutputCaptureExtension.class})
     @ActiveProfiles({"default"})
     class GivenDefaultProfile extends BaseStartupTest {
@@ -96,7 +98,6 @@ class StartupMessageAcceptanceTest {
     @Nested
     @AcceptanceTest
     @TestInstance(Lifecycle.PER_CLASS)
-    @DirtiesContext
     @ExtendWith({MockitoExtension.class, OutputCaptureExtension.class})
     @ActiveProfiles({"attlsClient", "attlsServer"})
     class GivenAttlsProfile extends BaseStartupTest {
@@ -125,7 +126,7 @@ class StartupMessageAcceptanceTest {
 
         @MockitoBean
         private ApimlTomcatCustomizer apimlTomcatCustomizer;
-        @MockitoBean
+        @MockitoSpyBean
         private ApimlInstanceRegistry apimlInstanceRegistry;
         @Mock
         private AttlsContext attlsContext;
