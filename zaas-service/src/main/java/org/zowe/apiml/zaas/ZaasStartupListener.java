@@ -34,12 +34,20 @@ public class ZaasStartupListener implements ApplicationListener<ApplicationReady
     private final ApplicationEventPublisher publisher;
     private final ServiceStartupEventHandler handler;
 
+    private Timer timer;
+
     public void onApplicationEvent(ApplicationReadyEvent event) {
         if (providers.isZosfmUsed()) {
-            new Timer().scheduleAtFixedRate(new TimerTask() {
+            timer = new Timer();
+            timer.scheduleAtFixedRate(new TimerTask() {
 
                 @Override
                 public void run() {
+                    if (event.getApplicationContext() != null && !event.getApplicationContext().isActive()) {
+                        cancel();
+                        return;
+                    }
+
                     if (providers.isZosmfAvailableAndOnline()) {
                         cancel();
                         notifyStartup();
@@ -52,9 +60,17 @@ public class ZaasStartupListener implements ApplicationListener<ApplicationReady
         }
     }
 
+    void onContextClosed() {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+    }
+
     public void notifyStartup() {
         handler.onServiceStartup("ZAAS",
             ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
         publisher.publishEvent(new ZaasServiceAvailableEvent(providers.isZosfmUsed() ? "zosmf" : "saf"));
     }
+
 }
