@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.filter;
 
+import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -25,6 +27,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.handler.FailedAuthenticationWebHandler;
+import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -46,6 +49,7 @@ class LogoutHandlerTest {
     @Mock private AuthenticationService authenticationService;
     @Mock private FailedAuthenticationWebHandler failureHandler;
     @Mock private PeerAwareInstanceRegistryImpl registry;
+    @Mock private ApplicationContext applicationContext;
     private HttpUtils httpUtils = new HttpUtils(new AuthConfigurationProperties()) {
         {
             readConfig();
@@ -56,7 +60,7 @@ class LogoutHandlerTest {
 
     @BeforeEach
     void setUp() {
-        logoutHandler = new LogoutHandler(authenticationService, failureHandler, registry, httpUtils);
+        logoutHandler = new LogoutHandler(authenticationService, failureHandler, registry, httpUtils, applicationContext);
     }
 
     @Test
@@ -119,7 +123,7 @@ class LogoutHandlerTest {
     }
 
     @Test
-    void shouldInvalidateValidTokenSuccessfully() {
+    void shouldInvalidateValidTokenSuccessfully_WithInfinispan() {
         var request = MockServerHttpRequest.get("/logout")
             .header(HttpHeaders.AUTHORIZATION, "Bearer token123")
             .build();
@@ -127,14 +131,41 @@ class LogoutHandlerTest {
         WebFilterChain mockChain = mock(WebFilterChain.class);
         var webFilterExchange = new WebFilterExchange(exchange, mockChain);
 
+        when(applicationContext.containsBean("infinispanConfig")).thenReturn(true);
+        logoutHandler.init();
+
         when(authenticationService.isInvalidated("token123")).thenReturn(false);
         Applications mockApplications = mock(Applications.class);
         when(registry.getApplications()).thenReturn(mockApplications);
-
+        var application = mock(Application.class);
+        when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(application);
         StepVerifier.create(logoutHandler.logout(webFilterExchange, mock(Authentication.class)))
             .verifyComplete();
 
-        verify(authenticationService).invalidateJwtTokenGateway(eq("token123"), eq(true), any());
+        verify(authenticationService).invalidateJwtTokenGateway(eq("token123"), eq(false), eq(application));
+    }
+
+    @Test
+    void shouldInvalidateValidTokenSuccessfully_WithoutInfinispan() {
+        var request = MockServerHttpRequest.get("/logout")
+            .header(HttpHeaders.AUTHORIZATION, "Bearer token123")
+            .build();
+        var exchange = MockServerWebExchange.from(request);
+        WebFilterChain mockChain = mock(WebFilterChain.class);
+        var webFilterExchange = new WebFilterExchange(exchange, mockChain);
+
+        when(applicationContext.containsBean("infinispanConfig")).thenReturn(false);
+        logoutHandler.init();
+
+        when(authenticationService.isInvalidated("token123")).thenReturn(false);
+        Applications mockApplications = mock(Applications.class);
+        when(registry.getApplications()).thenReturn(mockApplications);
+        var application = mock(Application.class);
+        when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(application);
+        StepVerifier.create(logoutHandler.logout(webFilterExchange, mock(Authentication.class)))
+            .verifyComplete();
+
+        verify(authenticationService).invalidateJwtTokenGateway(eq("token123"), eq(true), eq(application));
     }
 
     @Test
