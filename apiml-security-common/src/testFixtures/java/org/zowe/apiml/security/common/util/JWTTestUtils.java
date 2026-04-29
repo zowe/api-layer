@@ -12,6 +12,7 @@ package org.zowe.apiml.security.common.util;
 
 import io.jsonwebtoken.Jwts;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.zowe.apiml.security.HttpsConfig;
@@ -31,49 +32,74 @@ import java.util.UUID;
 public class JWTTestUtils {
 
     public static String createZoweJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
-        return createToken(username, domain, ltpaToken, config, "APIML");
+        return createToken(username, domain, ltpaToken, null, config, "APIML");
     }
 
     public static String createExpiredZoweJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
-        return createExpiredToken(username, domain, ltpaToken, config, "APIML");
+        return createExpiredToken(username, domain, ltpaToken, null, config, "APIML");
     }
 
     public static String createZosmfJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
-        return createToken(username, domain, ltpaToken, config, "zOSMF");
+        return createToken(username, domain, ltpaToken, null, config, "zOSMF");
     }
 
-    public static String createToken(String username, String domain, String ltpaToken, HttpsConfig config, String issuer) {
+    public static String createZowePatJwtToken(String username, String domain, List<String> scopes, HttpsConfig config) {
+        return createToken(username, domain, null, scopes, config, "APIML_PAT");
+    }
+
+    public static String createToken(String username, String domain, String ltpaToken, List<String> scopes, HttpsConfig config, String issuer) {
         long now = System.currentTimeMillis();
         long expiration = now + 100_000L;
         Key jwtSecret = SecurityUtils.loadKey(config);
 
-        return Jwts.builder()
+        var builder = Jwts.builder();
+
+        builder
             .subject(username)
             .claim("dom", domain)
-            .claim("ltpa", ltpaToken)
             .issuedAt(new Date(now))
             .expiration(new Date(expiration))
             .issuer(issuer)
             .id(UUID.randomUUID().toString())
-            .signWith(jwtSecret)
-            .compact();
+            .signWith(jwtSecret);
+
+        if (!StringUtils.isEmpty(ltpaToken)) {
+            builder.claim("ltpa", ltpaToken);
+        }
+
+        if (scopes != null && scopes.size() > 0) {
+            builder.claim("scopes", scopes);
+        }
+
+        return builder.compact();
     }
 
-    public static String createExpiredToken(String username, String domain, String ltpaToken, HttpsConfig config, String issuer) {
+    public static String createExpiredToken(String username, String domain, String ltpaToken, List<String> scopes, HttpsConfig config, String issuer) {
         long now = System.currentTimeMillis();
         long expiration = now - 200_000L;
         Key jwtSecret = SecurityUtils.loadKey(config);
 
-        return Jwts.builder()
+        var builder = Jwts.builder();
+
+        builder
             .subject(username)
             .claim("dom", domain)
-            .claim("ltpa", ltpaToken)
             .issuedAt(new Date(now))
             .expiration(new Date(expiration))
             .issuer(issuer)
             .id(UUID.randomUUID().toString())
             .signWith(jwtSecret)
             .compact();
+
+        if (!StringUtils.isEmpty(ltpaToken)) {
+            builder.claim("ltpa", ltpaToken);
+        }
+
+        if (scopes != null && scopes.size() > 0) {
+            builder.claim("scopes", scopes);
+        }
+
+        return builder.compact();
     }
 
     public static String createDummyJwtToken(String username, String issuer, long expiration) {

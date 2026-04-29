@@ -31,8 +31,8 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.NestedTestConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.NestedTestConfiguration.EnclosingConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
@@ -44,8 +44,8 @@ import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 import org.zowe.apiml.zaas.security.mapping.OIDCExternalMapper;
 import org.zowe.apiml.zaas.security.mapping.X509NativeMapper;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
+import org.zowe.apiml.zaas.security.service.token.ApimlAccessTokenProvider;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 
 import java.net.URI;
@@ -68,6 +68,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.ApimlConstants.PAT_HEADER_NAME;
 import static org.zowe.apiml.security.common.util.JWTTestUtils.createExpiredZoweJwtToken;
+import static org.zowe.apiml.security.common.util.JWTTestUtils.createZowePatJwtToken;
 
 class OpenTelemetryResourceAttributesZosTest {
 
@@ -144,9 +145,6 @@ class OpenTelemetryResourceAttributesZosTest {
     class WhenOnboardedService extends AcceptanceTestWithMockServices {
 
         private static final String VALID_OIDC_TOKEN = "ewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiCn0.c29tZVNpZ25lZEhhc2hDb2Rl";
-        private static final String VALID_PAT = "validpat";
-
-        private static final List<String> CUSTOM_APIML_ATTRIBUTES = List.of("user.distributed.id", "auth.service.auth.method");
 
         @Autowired
         private LogRecordExporter logExporter;
@@ -167,7 +165,7 @@ class OpenTelemetryResourceAttributesZosTest {
         private TokenCreationService tokenCreationService;
 
         @MockitoBean
-        private AuthenticationService authenticationService;
+        private ApimlAccessTokenProvider apimlAccessTokenProvider;
 
         @BeforeAll
         void startMockServices() throws Exception {
@@ -447,8 +445,11 @@ class OpenTelemetryResourceAttributesZosTest {
 
                     @Test
                     void givenRouted_withPAT_success_thenLog() {
+                        var pat = createZowePatJwtToken("USER", "z/OS", List.of("testservice"), httpConfig.getHttpsConfig());
+                        when(apimlAccessTokenProvider.isValidForScopes(pat, "testservice")).thenReturn(true);
+                        when(apimlAccessTokenProvider.isInvalidated(pat)).thenReturn(false);
                         given()
-                            .header(PAT_HEADER_NAME, "validpat")
+                            .header(PAT_HEADER_NAME, pat)
                             .get(basePath + "/testservice/api/v1/200")
                         .then()
                             .statusCode(200);
@@ -458,7 +459,6 @@ class OpenTelemetryResourceAttributesZosTest {
                         @SuppressWarnings("null")
                         var logBody = logRecord.getBodyValue().asString();
                         assertEquals("USER", getAttribute(logBody, "user.id"));
-                        assertEquals(List.of("oidc.username"), getAttribute(logBody, "user.distributed.id"));
                         assertEquals("testservice", getAttribute(logBody, "service.id"));
                         assertEquals("GET", getAttribute(logBody, "http.request.method"));
                         assertEquals("OK", getAttribute(logBody, "auth.status"));
@@ -467,7 +467,7 @@ class OpenTelemetryResourceAttributesZosTest {
                         assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
                         assertEquals("https", getAttribute(logBody, "url.scheme"));
                         assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
-                        assertEquals("OIDC", getAttribute(logBody, "auth.method"));
+                        assertEquals("PAT", getAttribute(logBody, "auth.method"));
                     }
 
                 }
@@ -475,7 +475,6 @@ class OpenTelemetryResourceAttributesZosTest {
                 @Nested
                 class WhenAuthFailure {
 
-                    // Is this test the same as whenNoJwtProvided_thenLog?
                     @Test
                     void givenRouted_whenAuthFail_thenLog() {
                         given()
