@@ -162,7 +162,6 @@ class AbstractTokenFilterFactoryTest {
 
             verify(otelRequestContext, times(1)).authenticationFailed();
             verify(otelRequestContext, times(1)).authErrorMessage("test");
-            // TODO ? verify(otelRequestContext, times(1)).authErrorType(HttpStatus.FORBIDDEN.getReasonPhrase());
         }
 
         @Test

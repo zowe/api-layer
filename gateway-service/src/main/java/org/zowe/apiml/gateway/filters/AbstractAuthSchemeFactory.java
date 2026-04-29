@@ -216,7 +216,6 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
         var otelContext = OtelRequestContext.of(exchange);
         otelContext.authenticationFailed();
         otelContext.authErrorMessage(errorMessage);
-        // missing error type ?
         Optional.ofNullable(getAuthenticationScheme()).ifPresent(otelContext::authMethod);
 
         return exchange.getRequest().mutate().headers(headers -> {
