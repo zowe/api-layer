@@ -24,7 +24,6 @@ import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -81,7 +80,6 @@ class StartupMessageAcceptanceTest {
     @Nested
     @AcceptanceTest
     @TestInstance(Lifecycle.PER_CLASS)
-    @DirtiesContext
     @ExtendWith({MockitoExtension.class, OutputCaptureExtension.class})
     @ActiveProfiles({"default"})
     class GivenDefaultProfile extends BaseStartupTest {
@@ -96,7 +94,6 @@ class StartupMessageAcceptanceTest {
     @Nested
     @AcceptanceTest
     @TestInstance(Lifecycle.PER_CLASS)
-    @DirtiesContext
     @ExtendWith({MockitoExtension.class, OutputCaptureExtension.class})
     @ActiveProfiles({"attlsClient", "attlsServer"})
     class GivenAttlsProfile extends BaseStartupTest {
