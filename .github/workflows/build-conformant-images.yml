@@ -39,6 +39,7 @@ on:
 env:
     IMAGE_BASE_DIR: ./containers
     SNAPSHOT_POSTFIX: "-SNAPSHOT"
+    JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
 
 jobs:
 
@@ -79,6 +80,15 @@ jobs:
                 with:
                     build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
                 timeout-minutes: 60
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ${{ github.job }}-${{ matrix.service }}-${{ matrix.os }}-${{ env.JOB_ID }}
+                    path: |
+                        **/build/reports/**
+                        **/build/test-results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -129,6 +139,15 @@ jobs:
                     redhat-registry-password: ${{ secrets.redhat-registry-password }}
                 timeout-minutes: 60
 
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ${{ github.job }}-${{ matrix.service }}-${{ matrix.os }}-${{ env.JOB_ID }}
+                    path: |
+                        **/build/reports/**
+                        **/build/test-results/**
+
             -   uses: ./.github/actions/teardown
 
     define-manifest-all-services:
@@ -166,6 +185,15 @@ jobs:
                     linux-distro: ${{ matrix.os }}
                     cpu-arch-list: "amd64 s390x"
                 timeout-minutes: 2
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ${{ github.job }}-${{ matrix.service }}-${{ matrix.os }}-${{ env.JOB_ID }}
+                    path: |
+                        **/build/reports/**
+                        **/build/test-results/**
 
             -   uses: ./.github/actions/teardown
 
@@ -224,6 +252,15 @@ jobs:
                     redhat-registry-password: ${{ secrets.redhat-registry-password }}
                 timeout-minutes: 60
 
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ${{ github.job }}-${{ matrix.service }}-${{ matrix.os }}-${{ env.JOB_ID }}
+                    path: |
+                        **/build/reports/**
+                        **/build/test-results/**
+
             -   uses: ./.github/actions/teardown
 
     define-manifest-single-service:
@@ -259,5 +296,14 @@ jobs:
                     linux-distro: ${{ matrix.os }}
                     cpu-arch-list: "amd64 s390x"
                 timeout-minutes: 2
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ${{ github.job }}-${{ matrix.service }}-${{ matrix.os }}-${{ env.JOB_ID }}
+                    path: |
+                        **/build/reports/**
+                        **/build/test-results/**
 
             -   uses: ./.github/actions/teardown
