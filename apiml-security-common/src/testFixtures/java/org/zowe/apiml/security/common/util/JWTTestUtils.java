@@ -88,8 +88,7 @@ public class JWTTestUtils {
             .expiration(new Date(expiration))
             .issuer(issuer)
             .id(UUID.randomUUID().toString())
-            .signWith(jwtSecret)
-            .compact();
+            .signWith(jwtSecret);
 
         if (!StringUtils.isEmpty(ltpaToken)) {
             builder.claim("ltpa", ltpaToken);

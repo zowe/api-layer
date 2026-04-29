@@ -298,7 +298,7 @@ class ApiCatalogAuthenticationTest {
                         )
                         .then()
                         .statusCode(is(SC_OK))
-                        .onFailMessage("On Gateway URL: " + endpoint);;
+                        .onFailMessage("On Gateway URL: " + endpoint);
                 }
             }
 

@@ -508,10 +508,22 @@ class OpenTelemetryResourceAttributesZosTest {
                         .then()
                             .statusCode(200);
 
-                        // TODO assertions
                         var logRecord = assertOneLogRecordExported("/testservice/api/v1/200");
 
                         assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                        @SuppressWarnings("null")
+                        var logBody = logRecord.getBodyValue().asString();
+                        assertEquals("testservice", getAttribute(logBody, "service.id"));
+                        assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                        assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                        assertEquals("ZWEAG160E No authentication provided in the request", getAttribute(logBody, "auth.error.message"));
+                        assertEquals("org.springframework.security.authentication.InsufficientAuthenticationException", getAttribute(logBody, "auth.error.type"));
+                        assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
+                        assertEquals("200", getAttribute(logBody, "service.response_code"));
+                        assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
+                        assertEquals("https", getAttribute(logBody, "url.scheme"));
+                        assertNull(getAttribute(logBody, "auth.method"));
+                        assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
                     }
 
                     @Test
