@@ -788,7 +788,6 @@ class OpenTelemetryResourceAttributesZosTest {
                     assertEquals("testservicesafidt", getAttribute(logBody, "service.id"));
                     assertEquals("GET", getAttribute(logBody, "http.request.method"));
                     assertEquals("ERROR", getAttribute(logBody, "auth.status"));
-                    // assertEquals("ZWEAO402E The request has not been applied because it lacks valid authentication credentials.", getAttribute(logBody, "auth.error.message"));
                     assertEquals("Test exception", getAttribute(logBody, "auth.error.message"));
                     assertEquals("org.zowe.apiml.passticket.PassTicketException", getAttribute(logBody, "auth.error.type"));
                     assertEquals("localhost:testservicesafidt:" + mockServiceSafIdt.getPort(), getAttribute(logBody, "service.instance.id"));
@@ -796,7 +795,6 @@ class OpenTelemetryResourceAttributesZosTest {
                     assertEquals("/testservicesafidt/api/v1/200", getAttribute(logBody, "url.path"));
                     assertEquals("https", getAttribute(logBody, "url.scheme"));
                     assertEquals("safIdt", getAttribute(logBody, "auth.service.auth.method"));
-                    // assertEquals("JWT", getAttribute(logBody, "auth.method"));
                     assertNull(getAttribute(logBody, "auth.method"));
                 }
 
