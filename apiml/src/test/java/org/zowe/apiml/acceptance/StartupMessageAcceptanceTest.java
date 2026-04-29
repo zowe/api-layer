@@ -126,7 +126,7 @@ class StartupMessageAcceptanceTest {
 
         @MockitoBean
         private ApimlTomcatCustomizer apimlTomcatCustomizer;
-        @MockitoSpyBean
+        @MockitoBean
         private ApimlInstanceRegistry apimlInstanceRegistry;
         @Mock
         private AttlsContext attlsContext;
