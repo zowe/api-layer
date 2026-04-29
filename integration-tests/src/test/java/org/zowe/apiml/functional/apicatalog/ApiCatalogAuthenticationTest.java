@@ -283,7 +283,7 @@ class ApiCatalogAuthenticationTest {
                         .then()
                         .log().all()
                         .statusCode(HttpStatus.OK.value())
-                        .onFailMessage("On Gateway URL: " + endpoint);;
+                        .onFailMessage("On Gateway URL: " + endpoint);
                 }
 
                 @ParameterizedTest(name = "givenValidCertificateAndBasicAuth {index} {0} ")
