@@ -76,7 +76,7 @@ public class JGroupStabilityTest {
         int begin = offset.updateAndGet(prev -> prev + 1 >= cachingServices.size() ? 0 : prev + 1);
 
         for (int i = 0; i < cachingServices.size(); i++) {
-            var cacheService = cachingServices.get(begin + i);
+            var cacheService = cachingServices.get((begin + i) % cachingServices.size());
             if (!check.apply(cacheService)) {
                 return false;
             }
