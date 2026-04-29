@@ -193,7 +193,11 @@ class TokenAuthFilterTest {
             void thenContinueChain() {
                 when(httpRequest.getHeaders()).thenReturn(HttpHeaders.EMPTY);
                 when(httpRequest.getCookies()).thenReturn(new LinkedMultiValueMap<>());
-                tokenAuthFilter.filter(serverWebExchange, chain);
+                when(chain.filter(any())).thenReturn(Mono.empty());
+
+                StepVerifier.create(tokenAuthFilter.filter(serverWebExchange, chain))
+                    .verifyComplete();
+
                 verify(chain, times(1)).filter(any());
             }
 
