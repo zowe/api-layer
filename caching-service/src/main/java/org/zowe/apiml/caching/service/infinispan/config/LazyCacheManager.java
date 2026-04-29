@@ -315,7 +315,7 @@ public class LazyCacheManager extends DefaultCacheManager {
 
                     try {
                         createCache(cacheName, cacheBuilder);
-                    } catch (Throwable t) {
+                    } catch (Exception e) {
                         caches.put(cacheName, cacheBuilder);
                         cacheManager.set(this::getDefaultCacheManager);
                         return underInit;
@@ -325,8 +325,11 @@ public class LazyCacheManager extends DefaultCacheManager {
                 threadCounter.arriveAndDeregister();
                 try {
                     threadCounter.awaitAdvanceInterruptibly(0, 1, TimeUnit.MINUTES);
-                } catch (InterruptedException | TimeoutException e) {
-                    log.warn("Timeout while initializing of caches: {}", e.getMessage());
+                } catch (InterruptedException ie) {
+                    log.error("Thread was interrupted", ie);
+                    Thread.currentThread().interrupt();
+                } catch (TimeoutException te) {
+                    log.warn("Timeout while initializing of caches: {}", te.getMessage());
                 }
             }
         }

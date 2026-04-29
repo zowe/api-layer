@@ -170,7 +170,7 @@ public class InfinispanConfig implements InitializingBean {
         }
 
         String config = sb.toString();
-        config = config.replaceAll("jgroup:SSL_KEY_EXCHANGE", ApimlSslKeyExchange.class.getCanonicalName());
+        config = config.replace("jgroup:SSL_KEY_EXCHANGE", ApimlSslKeyExchange.class.getCanonicalName());
         return config;
     }
 
