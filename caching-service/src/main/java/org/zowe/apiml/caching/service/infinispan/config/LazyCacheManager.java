@@ -29,6 +29,8 @@ import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.stats.CacheContainerStats;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 
 import javax.security.auth.Subject;
 import java.io.IOException;
@@ -36,6 +38,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Phaser;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
@@ -244,6 +249,11 @@ public class LazyCacheManager extends DefaultCacheManager {
         return getCacheManager().removeListenerAsync(listener);
     }
 
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationStart() {
+        cacheInitializer.onApplicationStart();
+    }
+
     @RequiredArgsConstructor
     class CacheInitializer {
 
@@ -251,6 +261,8 @@ public class LazyCacheManager extends DefaultCacheManager {
 
         private final ConfigurationBuilderHolder cacheManagerConfig;
         private final Map<String, ConfigurationBuilder> caches;
+
+        private final Phaser threadCounter = new Phaser();
 
         private DefaultCacheManager startDefaultCacheManager() {
             var defaultCacheManager = new DefaultCacheManager(cacheManagerConfig, false);
@@ -269,41 +281,52 @@ public class LazyCacheManager extends DefaultCacheManager {
         }
 
         public DefaultCacheManager getDefaultCacheManager() {
-            synchronized (LazyCacheManager.class) {
-                if (underInit == null) {
-                    log.debug("attempt to create cache manager");
-                    try {
-                        underInit = startDefaultCacheManager();
-                        log.debug("cache manager was created");
-                    } catch (Exception e) {
-                        log.warn("Cannot initialize DefaultCacheManager", e);
-                        return null;
+            try {
+                threadCounter.register();
+
+                synchronized (LazyCacheManager.class) {
+                    if (underInit == null) {
+                        log.debug("attempt to create cache manager");
+                        try {
+                            underInit = startDefaultCacheManager();
+                            log.debug("cache manager was created");
+                        } catch (Exception e) {
+                            log.warn("Cannot initialize DefaultCacheManager", e);
+                            return null;
+                        }
                     }
                 }
-            }
 
-            while (true) {
-                String cacheName;
-                ConfigurationBuilder cacheBuilder;
-                synchronized (LazyCacheManager.class) {
-                    var i = caches.entrySet().iterator();
-                    if (i.hasNext()) {
-                        var entry = i.next();
-                        cacheName = entry.getKey();
-                        cacheBuilder = entry.getValue();
-                        i.remove();
-                    } else {
-                        cacheManager.set(() -> underInit);
+                while (true) {
+                    String cacheName;
+                    ConfigurationBuilder cacheBuilder;
+                    synchronized (LazyCacheManager.class) {
+                        var i = caches.entrySet().iterator();
+                        if (i.hasNext()) {
+                            var entry = i.next();
+                            cacheName = entry.getKey();
+                            cacheBuilder = entry.getValue();
+                            i.remove();
+                        } else {
+                            cacheManager.set(() -> underInit);
+                            return underInit;
+                        }
+                    }
+
+                    try {
+                        createCache(cacheName, cacheBuilder);
+                    } catch (Throwable t) {
+                        caches.put(cacheName, cacheBuilder);
+                        cacheManager.set(this::getDefaultCacheManager);
                         return underInit;
                     }
                 }
-
+            } finally {
+                threadCounter.arriveAndDeregister();
                 try {
-                    createCache(cacheName, cacheBuilder);
-                } catch (Throwable t) {
-                    caches.put(cacheName, cacheBuilder);
-                    cacheManager.set(this::getDefaultCacheManager);
-                    return underInit;
+                    threadCounter.awaitAdvanceInterruptibly(0, 1, TimeUnit.MINUTES);
+                } catch (InterruptedException | TimeoutException e) {
+                    log.warn("Timeout while initializing of caches: {}", e.getMessage());
                 }
             }
         }
@@ -331,6 +354,12 @@ public class LazyCacheManager extends DefaultCacheManager {
 
         public boolean isInitialized() {
             return underInit != null && caches.isEmpty();
+        }
+
+        public void onApplicationStart() {
+            if (!isInitialized() && (threadCounter.getUnarrivedParties() == 0)) {
+                getDefaultCacheManager();
+            }
         }
 
     }
