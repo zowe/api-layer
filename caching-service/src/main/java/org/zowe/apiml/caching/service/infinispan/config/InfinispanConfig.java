@@ -36,12 +36,16 @@ import org.springframework.core.io.ResourceLoader;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.service.Messages;
+import org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange;
 import org.zowe.apiml.caching.service.infinispan.exception.InfinispanConfigException;
 import org.zowe.apiml.caching.service.infinispan.storage.InfinispanStorage;
 import org.zowe.apiml.config.ApplicationInfo;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.HashMap;
@@ -149,13 +153,30 @@ public class InfinispanConfig implements InitializingBean {
         return isServerAttlsEnabled ? "infinispan-attls.xml" : "infinispan.xml";
     }
 
-    private ConfigurationBuilderHolder getCacheManagerConfig(ResourceLoader resourceLoader) {
-        ConfigurationBuilderHolder holder;
-        try (InputStream configurationStream = resourceLoader.getResource("classpath:" + getInfinispanConfigFile()).getInputStream()) {
-            holder = new ParserRegistry().parse(configurationStream, MediaType.APPLICATION_XML);
-        } catch (IOException e) {
-            throw new InfinispanConfigException("Can't read configuration file", e);
+    private String loadInfinispanConfigFile(ResourceLoader resourceLoader) {
+        String fileName = getInfinispanConfigFile();
+        StringBuilder sb = new StringBuilder();
+        try (
+            InputStream is = resourceLoader.getResource("classpath:" + fileName).getInputStream();
+            InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
+            BufferedReader br = new BufferedReader(isr)
+        ) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append('\n');
+            }
+        } catch (IOException ioe) {
+            throw new InfinispanConfigException("Can't read configuration file", ioe);
         }
+
+        String config = sb.toString();
+        config = config.replaceAll("jgroup:SSL_KEY_EXCHANGE", ApimlSslKeyExchange.class.getCanonicalName());
+        return config;
+    }
+
+    private ConfigurationBuilderHolder getCacheManagerConfig(ResourceLoader resourceLoader) {
+        String config = loadInfinispanConfigFile(resourceLoader);
+        ConfigurationBuilderHolder holder = new ParserRegistry().parse(config, MediaType.APPLICATION_XML);
         holder.getGlobalConfigurationBuilder().globalState().persistentLocation(getRootFolder()).enable();
         holder.newConfigurationBuilder("default")
             .persistence()
