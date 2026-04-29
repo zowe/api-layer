@@ -205,13 +205,7 @@ public class JGroupStabilityTest {
             env.put("ZWE_java_home", javaHome);
             env.put("JAVA_HOME", javaHome);
 
-            env.put("ZWE_configs_debug", "false");
-            env.put("LOGGING_LEVEL_ORG_JGROUPS", "TRACE");
-            env.put("LOGGING_LEVEL_ORG_JGROUPS_PROTOCOLS", "TRACE");
-            env.put("LOGGING_LEVEL_ORG_INFINISPAN", "DEBUG");
-
             env.put("ZWE_haInstance_id", "localhost_" + (isModulith ? "Single" : "Multi") + "_" + (isAttls ? "Attls" : "NativeTls") + "_" + (index + 1));
-            //env.put("APIML_ENABLED", isModulith ? "true" : "false");
             env.put("logbackService", (isModulith ? "ZWEGW" : "ZWEACS") + (index + 1));
             env.put("LAUNCH_COMPONENT", service + "/build/libs");
 
