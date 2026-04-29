@@ -88,7 +88,7 @@ dependencyResolutionManagement {
                 strictly '[1.2.13, 1.3['
                 prefer '1.2.13'
             }
-            version('lombok', '1.18.44')
+            version('lombok', '1.18.46')
             version('mockitoCore') {
                 // version 5.x requires Java 11
                 strictly '[4.11.0, 5.0.0['
@@ -128,12 +128,12 @@ dependencyResolutionManagement {
                 strictly '[1.6.15, 1.7.0['
                 prefer '1.6.15'
             }
-            version('swagger3Core', '2.2.48')
-            version('swagger3Parser', '2.1.40')
+            version('swagger3Core', '2.2.49')
+            version('swagger3Parser', '2.1.41')
             version('swaggerCore', '1.6.16')
             version('swaggerInflector', '2.0.17')
-            version('swaggerJaxrs2', '2.2.48')
-            version('thymeleaf', '3.1.4.RELEASE')
+            version('swaggerJaxrs2', '2.2.49')
+            version('thymeleaf', '3.1.5.RELEASE')
             version('tomcat', '9.0.117')
             version('velocity', '2.4.1')
             version('woodstoxCore', '7.1.1')
@@ -162,7 +162,7 @@ dependencyResolutionManagement {
             version('testLogger', '4.0.0')
             version('mailapi', '1.6.8')
             // version 4.x is not compatible with Java 8
-            version('micronaut', '3.10.5')
+            version('micronaut', '3.10.6')
             version('micronautPlugin', '3.7.10')
             version('shadow', '8.1.1')
             version('gradleTomcatPlugin', '2.7.0')
