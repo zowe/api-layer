@@ -41,11 +41,10 @@ import org.zowe.apiml.caching.service.infinispan.exception.InfinispanConfigExcep
 import org.zowe.apiml.caching.service.infinispan.storage.InfinispanStorage;
 import org.zowe.apiml.config.ApplicationInfo;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.HashMap;
@@ -155,23 +154,14 @@ public class InfinispanConfig implements InitializingBean {
 
     private String loadInfinispanConfigFile(ResourceLoader resourceLoader) {
         String fileName = getInfinispanConfigFile();
-        StringBuilder sb = new StringBuilder();
-        try (
-            InputStream is = resourceLoader.getResource("classpath:" + fileName).getInputStream();
-            InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
-            BufferedReader br = new BufferedReader(isr)
-        ) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                sb.append(line).append('\n');
-            }
-        } catch (IOException ioe) {
-            throw new InfinispanConfigException("Can't read configuration file", ioe);
+        try {
+            var path = Path.of(ClassLoader.getSystemResource(fileName).toURI());
+            String config = Files.readString(path);
+            config = config.replace("jgroup:SSL_KEY_EXCHANGE", ApimlSslKeyExchange.class.getCanonicalName());
+            return config;
+        } catch (IOException | URISyntaxException e) {
+            throw new InfinispanConfigException("Can't read configuration file", e);
         }
-
-        String config = sb.toString();
-        config = config.replace("jgroup:SSL_KEY_EXCHANGE", ApimlSslKeyExchange.class.getCanonicalName());
-        return config;
     }
 
     private ConfigurationBuilderHolder getCacheManagerConfig(ResourceLoader resourceLoader) {
