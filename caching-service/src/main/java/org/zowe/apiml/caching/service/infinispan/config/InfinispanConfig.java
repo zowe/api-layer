@@ -153,7 +153,7 @@ public class InfinispanConfig implements InitializingBean {
 
     private String loadInfinispanConfigFile(ResourceLoader resourceLoader) {
         String fileName = getInfinispanConfigFile();
-        try (var inputStream = ClassLoader.getSystemResource(fileName).openStream()) {
+        try (var inputStream = resourceLoader.getResource("classpath:" + fileName).getInputStream()) {
             String config = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             config = config.replace("jgroup:SSL_KEY_EXCHANGE", ApimlSslKeyExchange.class.getCanonicalName());
             return config;
