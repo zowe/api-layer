@@ -22,6 +22,7 @@ import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.lock.EmbeddedClusteredLockManagerFactory;
 import org.infinispan.lock.api.ClusteredLock;
 import org.infinispan.lock.api.ClusteredLockManager;
+import org.infinispan.lock.exception.ClusteredLockException;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -254,11 +255,10 @@ public class InfinispanConfig implements InitializingBean {
             EmbeddedCacheManager cm = (cacheManager instanceof LazyCacheManager lazyCacheManager) ? lazyCacheManager.getOriginal() : (EmbeddedCacheManager) cacheManager;
             try {
                 ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(cm);
-                // it can throw AvailabilityException
-                clm.defineLock(LOCK_ZOWE_INVALIDATED);
+                clm.defineLock(LOCK_ZOWE_INVALIDATED); // it can throw AvailabilityException
                 return clm.get(LOCK_ZOWE_INVALIDATED);
-            } catch (AvailabilityException ae) {
-                log.debug("Cannot obtain lock", ae);
+            } catch (AvailabilityException | ClusteredLockException e) {
+                log.debug("Cannot obtain lock", e);
                 throw new StorageException(Messages.CACHE_NOT_AVAILABLE.getKey(), Messages.CACHE_NOT_AVAILABLE.getStatus(), ae.getMessage());
             }
         });
