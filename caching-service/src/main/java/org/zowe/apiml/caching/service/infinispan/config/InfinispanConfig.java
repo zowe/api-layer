@@ -43,9 +43,7 @@ import org.zowe.apiml.caching.service.infinispan.storage.InfinispanStorage;
 import org.zowe.apiml.config.ApplicationInfo;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.HashMap;
@@ -155,13 +153,12 @@ public class InfinispanConfig implements InitializingBean {
 
     private String loadInfinispanConfigFile(ResourceLoader resourceLoader) {
         String fileName = getInfinispanConfigFile();
-        try {
-            var path = Path.of(ClassLoader.getSystemResource(fileName).toURI());
-            String config = Files.readString(path);
+        try (var inputStream = ClassLoader.getSystemResource(fileName).openStream()) {
+            String config = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             config = config.replace("jgroup:SSL_KEY_EXCHANGE", ApimlSslKeyExchange.class.getCanonicalName());
             return config;
-        } catch (IOException | URISyntaxException e) {
-            throw new InfinispanConfigException("Can't read configuration file", e);
+        } catch (IOException ioe) {
+            throw new InfinispanConfigException("Can't read configuration file", ioe);
         }
     }
 
@@ -259,7 +256,7 @@ public class InfinispanConfig implements InitializingBean {
                 return clm.get(LOCK_ZOWE_INVALIDATED);
             } catch (AvailabilityException | ClusteredLockException e) {
                 log.debug("Cannot obtain lock", e);
-                throw new StorageException(Messages.CACHE_NOT_AVAILABLE.getKey(), Messages.CACHE_NOT_AVAILABLE.getStatus(), ae.getMessage());
+                throw new StorageException(Messages.CACHE_NOT_AVAILABLE.getKey(), Messages.CACHE_NOT_AVAILABLE.getStatus(), e.getMessage());
             }
         });
     }
