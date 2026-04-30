@@ -121,6 +121,12 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         return Mono.just(new AuthorizationResponse<>(headers, response));
     }
 
+    private <R> Mono<AuthorizationResponse<R>> handleMissingOrInvalidAuth(OtelRequestContext context) {
+        var response = createMissingAuthenticationErrorMessage();
+        context.authErrorType(response.getBody());
+        return createAuthorizationResponse((ErrorHeaders) response.getHeaders(), null);
+    }
+
     @Override
     public Mono<AuthorizationResponse<TicketResponse>> passticket(RequestCredentials requestCredentials, ServerWebExchange exchange) {
         var applicationName = requestCredentials.getApplId();
@@ -133,17 +139,12 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         try {
             var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
-            AuthorizationResponse<String> missingAuthenticationErrorResponse;
             if (authSource.isEmpty()) {
-                missingAuthenticationErrorResponse = createMissingAuthenticationErrorMessage();
-                otelRequestContext.authErrorType(missingAuthenticationErrorResponse.getBody());
-                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), null);
+                return handleMissingOrInvalidAuth(otelRequestContext);
             }
             updateServiceId(authSource, request);
             if (!authSourceService.isValid(authSource.get())) {
-                missingAuthenticationErrorResponse = createMissingAuthenticationErrorMessage();
-                otelRequestContext.authErrorType(missingAuthenticationErrorResponse.getBody());
-                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), null);
+                return handleMissingOrInvalidAuth(otelRequestContext);
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
@@ -191,17 +192,12 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         try {
             var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
-            AuthorizationResponse<String> missingAuthenticationErrorResponse;
             if (authSource.isEmpty()) {
-                missingAuthenticationErrorResponse = createMissingAuthenticationErrorMessage();
-                otelRequestContext.authErrorType(missingAuthenticationErrorResponse.getBody());
-                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), null);
+                return handleMissingOrInvalidAuth(otelRequestContext);
             }
             updateServiceId(authSource, request);
             if (!authSourceService.isValid(authSource.get())) {
-                missingAuthenticationErrorResponse = createMissingAuthenticationErrorMessage();
-                otelRequestContext.authErrorType(missingAuthenticationErrorResponse.getBody());
-                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), null);
+                return handleMissingOrInvalidAuth(otelRequestContext);
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
@@ -231,17 +227,12 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         try {
             var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
-            AuthorizationResponse<String> missingAuthenticationErrorResponse;
             if (authSource.isEmpty()) {
-                missingAuthenticationErrorResponse = createMissingAuthenticationErrorMessage();
-                otelRequestContext.authErrorType(missingAuthenticationErrorResponse.getBody());
-                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), null);
+                return handleMissingOrInvalidAuth(otelRequestContext);
             }
             updateServiceId(authSource, request);
             if (!authSourceService.isValid(authSource.get())) {
-                missingAuthenticationErrorResponse = createMissingAuthenticationErrorMessage();
-                otelRequestContext.authErrorType(missingAuthenticationErrorResponse.getBody());
-                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), null);
+                return handleMissingOrInvalidAuth(otelRequestContext);
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
 
@@ -267,17 +258,12 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         try {
             var request = new RequestCredentialsHttpServletRequestAdapter(requestCredentials);
             Optional<AuthSource> authSource = authSourceService.getAuthSourceFromRequest(request);
-            AuthorizationResponse<String> missingAuthenticationErrorResponse;
             if (authSource.isEmpty()) {
-                missingAuthenticationErrorResponse = createMissingAuthenticationErrorMessage();
-                otelRequestContext.authErrorType(missingAuthenticationErrorResponse.getBody());
-                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), null);
+                return handleMissingOrInvalidAuth(otelRequestContext);
             }
             updateServiceId(authSource, request);
             if (!authSourceService.isValid(authSource.get())) {
-                missingAuthenticationErrorResponse = createMissingAuthenticationErrorMessage();
-                otelRequestContext.authErrorType(missingAuthenticationErrorResponse.getBody());
-                return createAuthorizationResponse((ErrorHeaders) missingAuthenticationErrorResponse.getHeaders(), null);
+                return handleMissingOrInvalidAuth(otelRequestContext);
             }
             var authSourceParsed = authSourceService.parse(authSource.get());
             var token = authSourceService.getJWT(authSource.get());
