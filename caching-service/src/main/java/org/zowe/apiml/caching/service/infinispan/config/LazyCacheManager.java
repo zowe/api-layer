@@ -286,7 +286,7 @@ public class LazyCacheManager extends DefaultCacheManager {
         /**
          * This method is responsible for initializing of CacheManager. The method could be called by
          * multiple threads. The aim is to split work in this case and then return the fully initialized
-         * cache manager. In cache of failure the original instance of lazy manager or partially initialized
+         * cache manager. In case of failure the original instance of lazy manager or partially initialized
          * bean could be returned. The next invocation should initiate it.
          * @return partially or fully initialized cache manager
          */
