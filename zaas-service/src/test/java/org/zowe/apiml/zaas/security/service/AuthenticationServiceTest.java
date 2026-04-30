@@ -245,6 +245,21 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         }
 
         @Test
+        void givenExpiredTokenInvalidatedJwtTokensCache_thenThrowsTokenExpireException() {
+            var jwtToken = createExpiredJwtToken(privateKey);
+            when(validatedJwtTokensCache.get(jwtToken)).thenReturn(new SimpleValueWrapper( new TokenAuthentication(jwtToken)));
+
+            assertThrows(
+                TokenExpireException.class,
+                () -> authService.validateJwtToken(jwtToken)
+            );
+
+            verify(validatedJwtTokensCache, times(1)).get(jwtToken);
+            verify(jwtSecurityInitializer, never()).getJwtVerifier();
+            verify(zosmfService, never()).validate(any());
+        }
+
+        @Test
         void whenParseJWT_thenThrowTokenNotValidException() {
             String invalidToken = "invalidToken";
 
