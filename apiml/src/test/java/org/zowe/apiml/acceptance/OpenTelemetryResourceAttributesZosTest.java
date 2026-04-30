@@ -824,7 +824,6 @@ class OpenTelemetryResourceAttributesZosTest {
                     assertEquals("/testservicesafidt/api/v1/200", getAttribute(logBody, "url.path"));
                     assertEquals("https", getAttribute(logBody, "url.scheme"));
                     assertEquals("safIdt", getAttribute(logBody, "auth.service.auth.method"));
-                    // assertEquals("JWT", getAttribute(logBody, "auth.method"));
                     assertNull(getAttribute(logBody, "auth.method"));
                 }
 
