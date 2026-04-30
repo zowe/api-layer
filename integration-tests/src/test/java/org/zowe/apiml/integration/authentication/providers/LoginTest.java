@@ -14,6 +14,7 @@ import io.jsonwebtoken.Claims;
 import io.restassured.RestAssured;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.Cookie;
+import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.StringUtils;
@@ -40,10 +41,8 @@ import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
@@ -58,12 +57,14 @@ import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.isTestForICSF;
 import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 import static org.zowe.apiml.util.SecurityUtils.assertThatTokenIsValid;
 import static org.zowe.apiml.util.SecurityUtils.assertValidAuthToken;
 import static org.zowe.apiml.util.SecurityUtils.parseJwtStringUnsecure;
+import static org.zowe.apiml.util.requests.Endpoints.JWK_CURRENT;
 import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGIN;
 
 /**
@@ -153,6 +154,35 @@ class LoginTest implements TestWithStartedInstances {
                 Claims claims = parseJwtStringUnsecure(untrustedJwtString);
                 assertThatTokenIsValid(claims);
             }
+
+            @ParameterizedTest(name = "givenSuccessfullLogin_thenKidMatch {index} {0} ")
+            @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
+            void givenSuccessfullLogin_thenKidMatch(URI loginUrl) {
+                Response response = given()
+                    .when()
+                        .get(HttpRequestUtils.getUriFromGateway(JWK_CURRENT));
+
+                var keysKids = response.jsonPath().getList("keys").stream()
+                    .map( m -> (Map<String,String>) m)
+                    .map( m -> m.get("kid"))
+                    .collect(Collectors.toSet());
+
+                String token = given()
+                    .auth().preemptive().basic(getUsername(), getPassword())
+                    .contentType(JSON)
+                .when()
+                    .post(loginUrl)
+                .then()
+                    .statusCode(is(SC_NO_CONTENT))
+                    .extract().cookie(COOKIE_NAME);
+
+                var tokenHeaderBase64 = token.substring(0, token.indexOf("."));
+                var tokenHeaderJsonString = new String(Base64.getDecoder().decode(tokenHeaderBase64));
+                var tokenHeader = JsonPath.from(tokenHeaderJsonString);
+                assertTrue(keysKids.contains(tokenHeader.get("kid")));
+
+            }
+
         }
 
         @Nested
