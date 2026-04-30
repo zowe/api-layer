@@ -51,12 +51,8 @@ import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.zowe.apiml.security.common.util.JwtUtils.getJwtClaims;
 import static org.zowe.apiml.security.common.util.JwtUtils.handleJwtParserException;
@@ -89,14 +85,38 @@ public class AuthenticationService {
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
     private boolean isModulithMode;
-    private Cache validatedJwtTokensCache;
-    private Cache invalidatedJwtTokensCache;
+    private final AtomicReference<Cache> validatedJwtTokensCache = new AtomicReference<>();
+    private final AtomicReference<Cache> invalidatedJwtTokensCache = new AtomicReference<>();
 
     @PostConstruct
     public void afterPropertiesSet() {
         isModulithMode = applicationContext.containsBean("modulithConfig");
-        validatedJwtTokensCache = cacheManager.getCache(CACHE_VALIDATED_JWT_TOKENS);
-        invalidatedJwtTokensCache = cacheManager.getCache(CACHE_INVALIDATED_JWT_TOKENS);
+    }
+
+    private Cache getValidatedJwtTokensCache() {
+        var cacheValidatedJwtTokensCache = this.validatedJwtTokensCache.get();
+        if (cacheValidatedJwtTokensCache == null) {
+            synchronized (validatedJwtTokensCache) {
+                cacheValidatedJwtTokensCache = validatedJwtTokensCache.get();
+                if (cacheValidatedJwtTokensCache == null) {
+                    validatedJwtTokensCache.set(cacheManager.getCache(CACHE_VALIDATED_JWT_TOKENS));
+                }
+            }
+        }
+        return validatedJwtTokensCache.get();
+    }
+
+    private Cache getInvalidatedJwtTokensCache() {
+        var cacheInvalidatedJwtTokensCache = this.invalidatedJwtTokensCache.get();
+        if (cacheInvalidatedJwtTokensCache == null) {
+            synchronized (invalidatedJwtTokensCache) {
+                cacheInvalidatedJwtTokensCache = this.invalidatedJwtTokensCache.get();
+                if (cacheInvalidatedJwtTokensCache == null) {
+                    invalidatedJwtTokensCache.set(cacheManager.getCache(CACHE_INVALIDATED_JWT_TOKENS));
+                }
+            }
+        }
+        return invalidatedJwtTokensCache.get();
     }
 
     /**
@@ -141,14 +161,18 @@ public class AuthenticationService {
                 claims.forEach(newClaims::setClaim);
             }
 
+            var kid = jwtSecurityInitializer.getJwkPublicKey()
+                .orElseThrow(() -> new IllegalStateException("Unable to get JWK.")).getKeyId();
+
             var jws = new JsonWebSignature();
             jws.setPayload(newClaims.toJson());
+            jws.setKeyIdHeaderValue(kid);
             jws.setKey(jwtSecurityInitializer.getJwtSecret());
             jws.setHeader("typ", "JWT");
             jws.setAlgorithmHeaderValue(jwtSecurityInitializer.getJwtAlgorithm());
             jws.setDoKeyValidation(false);
             String token = jws.getCompactSerialization();
-            log.debug("JWT created, last chars of signature: ...{}", StringUtils.right(token, 15));
+            log.debug("JWT created with kid ...{}, last chars of signature: ...{}", StringUtils.right(kid, 15), StringUtils.right(token, 15));
             return token;
         } catch (JoseException e) {
             throw new UncheckedJoseException(e.getMessage(), e);
@@ -229,20 +253,23 @@ public class AuthenticationService {
     }
 
     private void putValidationCache(String jwtToken, TokenAuthentication tokenAuthentication) {
-        if (jwtToken != null && validatedJwtTokensCache != null) {
-            validatedJwtTokensCache.put(jwtToken, tokenAuthentication);
+        var cacheValidatedJwtTokens = getValidatedJwtTokensCache();
+        if (jwtToken != null && cacheValidatedJwtTokens != null) {
+            cacheValidatedJwtTokens.put(jwtToken, tokenAuthentication);
         }
     }
 
     private void evictValidationCache(String jwtToken) {
-        if (validatedJwtTokensCache != null) {
-            validatedJwtTokensCache.evict(jwtToken);
+        var cacheValidatedJwtTokens = getValidatedJwtTokensCache();
+        if (cacheValidatedJwtTokens != null) {
+            cacheValidatedJwtTokens.evict(jwtToken);
         }
     }
 
     private void putInvalidatedCache(String jwtToken) {
-        if (invalidatedJwtTokensCache != null) {
-            invalidatedJwtTokensCache.put(jwtToken, Boolean.TRUE);
+        var cacheInvalidatedJwtTokens = getInvalidatedJwtTokensCache();
+        if (cacheInvalidatedJwtTokens != null) {
+            cacheInvalidatedJwtTokens.put(jwtToken, Boolean.TRUE);
         }
     }
 
@@ -307,10 +334,11 @@ public class AuthenticationService {
      * @return true - token is invalidated, otherwise token is still valid
      */
     public boolean isInvalidated(String jwtToken) {
-        if (invalidatedJwtTokensCache == null) {
+        var cacheInvalidatedJwtTokens = getInvalidatedJwtTokensCache();
+        if (cacheInvalidatedJwtTokens == null) {
             return false;
         }
-        Cache.ValueWrapper wrapper = invalidatedJwtTokensCache.get(jwtToken);
+        Cache.ValueWrapper wrapper = cacheInvalidatedJwtTokens.get(jwtToken);
         boolean result = wrapper != null && Boolean.TRUE.equals(wrapper.get());
         log.debug("Token invalidation check for ...{}: {}", StringUtils.right(jwtToken, 15), result);
         return result;
@@ -361,8 +389,9 @@ public class AuthenticationService {
             throw new TokenNotValidException("Token ...%s was invalidated.".formatted(StringUtils.right(jwtToken, 15)));
         }
 
-        if (validatedJwtTokensCache != null) {
-            Cache.ValueWrapper cached = validatedJwtTokensCache.get(jwtToken);
+        var cacheValidatedJwtTokens = getValidatedJwtTokensCache();
+        if (cacheValidatedJwtTokens != null) {
+            Cache.ValueWrapper cached = cacheValidatedJwtTokens.get(jwtToken);
             if (cached != null) {
                 var tokenAuthentication = (TokenAuthentication) cached.get();
                 log.debug("JWT ...{} found in the cache. Is authenticated: {}", StringUtils.right(jwtToken, 15), tokenAuthentication.isAuthenticated());

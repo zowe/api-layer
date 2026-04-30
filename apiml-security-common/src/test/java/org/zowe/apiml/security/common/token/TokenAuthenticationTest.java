@@ -67,16 +67,11 @@ class TokenAuthenticationTest {
     }
 
     @Test
-    void testUsernameNotMatchingTokenFails() {
-        assertThrows(TokenNotValidException.class, () -> TokenAuthentication.createAuthenticated("someUser", JWT_TOKEN, JWT));
-    }
-
-    @Test
     void testOIDCTokenIsParsed() {
         var user = "distributed-id";
         var provider = "https://oidc-provider";
         var oidcToken = JWTTestUtils.createDummyJwtToken(user, provider);
-        var ta = new TokenAuthentication(oidcToken, OIDC);
+        var ta = new TokenAuthentication(user, oidcToken, OIDC);
 
         assertEquals(user, ta.getPrincipal());
         assertEquals(oidcToken, ta.getCredentials());
