@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.discovery.EurekaClient;
 import com.nimbusds.jose.JWSAlgorithm;
 
+import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,12 +42,14 @@ import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -112,6 +115,9 @@ class SuccessfulQueryHandlerTest {
             eurekaClient, restTemplate, cacheManager, new CacheUtils());
         lenient().when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
         lenient().when(jwtSecurityInitializer.getJwtAlgorithm()).thenReturn(AlgorithmIdentifiers.RSA_USING_SHA256);
+        var jwk = mock(JsonWebKey.class);
+        when(jwk.getKeyId()).thenReturn("kid");
+        when(jwtSecurityInitializer.getJwkPublicKey()).thenReturn(Optional.of(jwk));
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
 
         jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
