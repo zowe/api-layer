@@ -292,7 +292,7 @@ public class LazyCacheManager extends DefaultCacheManager {
          */
         public DefaultCacheManager getDefaultCacheManager() {
             try {
-                // register to the barrier to check that the treat will leave method after each cache is initiated
+                // register to the barrier to check that the thread will leave method after each cache is initiated
                 threadCounter.register();
 
                 // start cache manager (only one thread could do that)
