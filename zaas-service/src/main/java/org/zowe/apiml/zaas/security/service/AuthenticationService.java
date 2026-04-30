@@ -149,14 +149,18 @@ public class AuthenticationService {
                 claims.forEach(newClaims::setClaim);
             }
 
+            var kid = jwtSecurityInitializer.getJwkPublicKey()
+                .orElseThrow(() -> new IllegalStateException("Unable to get JWK.")).getKeyId();
+
             var jws = new JsonWebSignature();
             jws.setPayload(newClaims.toJson());
+            jws.setKeyIdHeaderValue(kid);
             jws.setKey(jwtSecurityInitializer.getJwtSecret());
             jws.setHeader("typ", "JWT");
             jws.setAlgorithmHeaderValue(jwtSecurityInitializer.getJwtAlgorithm());
             jws.setDoKeyValidation(false);
             String token = jws.getCompactSerialization();
-            log.debug("JWT created, last chars of signature: ...{}", StringUtils.right(token, 15));
+            log.debug("JWT created with kid ...{}, last chars of signature: ...{}", StringUtils.right(kid, 15), StringUtils.right(token, 15));
             return token;
         } catch (JoseException e) {
             throw new UncheckedJoseException(e.getMessage(), e);
