@@ -206,7 +206,7 @@ public class JGroupStabilityTest {
             env.put("JAVA_HOME", javaHome);
 
             env.put("ZWE_haInstance_id", "localhost_" + (isModulith ? "Single" : "Multi") + "_" + (isAttls ? "Attls" : "NativeTls") + "_" + (index + 1));
-            env.put("logbackService", (isModulith ? "ZWEGW" : "ZWEACS") + (index + 1));
+            env.put("logbackService", (isModulith ? "ZWEAGW" : "ZWEACS") + (index + 1));
             env.put("LAUNCH_COMPONENT", service + "/build/libs");
 
             env.put("ZWE_configs_port", String.valueOf(basePort + 25));
