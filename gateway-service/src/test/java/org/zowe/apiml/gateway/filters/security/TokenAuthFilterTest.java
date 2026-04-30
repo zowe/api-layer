@@ -16,10 +16,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -40,6 +43,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.quality.Strictness.LENIENT;
 import static org.springframework.util.CollectionUtils.toMultiValueMap;
 
 @ExtendWith(MockitoExtension.class)
@@ -201,6 +205,26 @@ class TokenAuthFilterTest {
                 verify(chain, times(1)).filter(any());
             }
 
+        }
+
+        @Nested
+        @MockitoSettings(strictness = LENIENT)
+        class WhenAlreadyAuthenticated {
+
+            @Test
+            void thenSkipTokenValidationAndContinueChain() {
+                Authentication authentication = mock(Authentication.class);
+                when(authentication.isAuthenticated()).thenReturn(true);
+
+                when(chain.filter(any())).thenReturn(Mono.empty());
+
+                StepVerifier.create(tokenAuthFilter.filter(serverWebExchange, chain)
+                        .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication)))
+                    .verifyComplete();
+
+                verify(chain, times(1)).filter(serverWebExchange);
+                verify(tokenProvider, never()).validateToken(any());
+            }
         }
 
     }
