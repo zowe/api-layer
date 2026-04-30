@@ -14,6 +14,7 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -51,7 +52,29 @@ import java.util.stream.IntStream;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
+/**
+ * The purpose of this test is a complex test of Infinispan implementation in both services apiml and caching service.
+ * The aim is to verify the Infinispan is configured well because in the past there was a configuration that was not
+ * stable. It was possible to establish cluster test the application but in case of any interruption it completely
+ * stopped working. For example in case of a network or performance issue.
+ *
+ * The test start two instances of a service (caching or apiml) via start.sh and waiting till Infinispan is connected
+ * each other. To verify it health endpoint is used (it checks only the caching part, other indicators are not
+ * relevant for this test). When the cluster is established we simulate an issue by pausing one of the process. After
+ * disconnecting the status of service is down, so we resume the process (simulating of solving an issue) and waiting
+ * for recovering of the cluster. This recovery phase was failing in the past.
+ *
+ * Because there are two configuration of Infinispan (AT-TLS and regular one) the test is parametrized to verify all
+ * combinations.
+ *
+ * It is possible to test with more than 2 instance just adding another base port in {@link #BASE_PORTS}. But is should
+ * be covered by integration test org.zowe.apiml.integration.ha.CachingServiceTests.
+ *
+ * This test requires Unix-based system to be executed (see running shell script, command kill (supporting arguments
+ * -STOP and -CONT).
+ */
 @Slf4j
 @Tag("InfinispanJGroupStabilityTest")
 public class JGroupStabilityTest {
@@ -62,6 +85,8 @@ public class JGroupStabilityTest {
 
     @BeforeEach
     void init() {
+        assumeFalse(Strings.CI.contains(System.getProperty("os.name"), "win"), "This test is meant to run on UNIX-based systems");
+
         executorService = Executors.newFixedThreadPool(BASE_PORTS.length + 1);
     }
 
@@ -101,32 +126,41 @@ public class JGroupStabilityTest {
         "true,true"
     })
     void givenTwoInstances_whenOneHasADelay_thenClusterIsRebuilt(boolean isModulith, boolean isAttls) {
+        // prepare list of services to be started
         var cachingServices = IntStream.range(0, BASE_PORTS.length)
             .mapToObj(index -> new CachingService(index, isModulith, isAttls))
             .toList();
 
         try {
+            // initiate start of services
             cachingServices.forEach(CachingService::start);
+
+            // wait till all services are ready
             await()
                 .pollDelay(20, TimeUnit.SECONDS)
                 .timeout(isModulith ? 3 : 5, TimeUnit.MINUTES)
                 .until(() -> isUp(cachingServices));
 
+            // pause the first process to simulate an issue (not responding service)
             cachingServices.get(0).pause();
 
             var nonPaused = cachingServices.subList(1, cachingServices.size()).stream().toList();
+            // wait till other nodes recognize disconnection (cluster does not contain all participants)
             await()
                 .pollDelay(10, TimeUnit.SECONDS)
                 .timeout(1, TimeUnit.MINUTES)
                 .until(() -> isDown(nonPaused));
 
+            // simulation of solving the issue (first process begin answering again)
             cachingServices.get(0).resume();
 
+            // wait till the cluster is recovered
             await()
                 .pollDelay(10, TimeUnit.SECONDS)
                 .timeout(2, TimeUnit.MINUTES)
                 .until(() -> isUp(cachingServices));
         } finally {
+            // stop all service used in the test
             cachingServices.forEach(CachingService::kill);
         }
     }
