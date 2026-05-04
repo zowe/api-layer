@@ -55,24 +55,24 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
- * The purpose of this test is a complex test of Infinispan implementation in both services apiml and caching service.
- * The aim is to verify the Infinispan is configured well because in the past there was a configuration that was not
- * stable. It was possible to establish cluster test the application but in case of any interruption it completely
+ * The purpose of this test is a complex test of the Infinispan implementation in both apiml and caching service.
+ * The aim is to verify Infinispan is configured well because in the past there was a configuration that was not
+ * stable. It was possible to establish a cluster and test the application but in case of an interruption it completely
  * stopped working. For example in case of a network or performance issue.
  *
- * The test start two instances of a service (caching or apiml) via start.sh and waiting till Infinispan is connected
- * each other. To verify it health endpoint is used (it checks only the caching part, other indicators are not
- * relevant for this test). When the cluster is established we simulate an issue by pausing one of the process. After
- * disconnecting the status of service is down, so we resume the process (simulating of solving an issue) and waiting
- * for recovering of the cluster. This recovery phase was failing in the past.
+ * The test starts two instances of a service (caching or apiml) via start.sh and waits until Infinispan is connected
+ * to each other. To verify it, the health endpoint is used (it checks only the caching part, other indicators are not
+ * relevant for this test). When the cluster is stablished we simulate an issue by pausing one of the processes. After
+ * disconnecting the status of service becomes down, so we resume the process (simulating solving an issue) and waiting
+ * for cluster recovery. This recovery phase was failing in the past.
  *
  * Because there are two configuration of Infinispan (AT-TLS and regular one) the test is parametrized to verify all
  * combinations.
  *
- * It is possible to test with more than 2 instance just adding another base port in {@link #BASE_PORTS}. But is should
+ * It is possible to test with more than 2 instances by simply adding another base port in {@link #BASE_PORTS}. But is should
  * be covered by integration test org.zowe.apiml.integration.ha.CachingServiceTests.
  *
- * This test requires Unix-based system to be executed (see running shell script, command kill (supporting arguments
+ * This test requires a Unix-based system to be executed (see running shell script, command kill supporting arguments
  * -STOP and -CONT).
  */
 @Slf4j
