@@ -77,7 +77,7 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
  */
 @Slf4j
 @Tag("InfinispanJGroupStabilityTest")
-public class JGroupStabilityTest {
+class JGroupStabilityTest {
 
     private static final int[] BASE_PORTS = {17000, 27000};
 
