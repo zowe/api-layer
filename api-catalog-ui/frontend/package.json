@@ -51,8 +51,7 @@
         "stream": "0.0.3",
         "swagger-ui-react": "5.32.4",
         "url": "0.11.4",
-        "util": "0.12.5",
-        "uuid": "10.0.0"
+        "util": "0.12.5"
     },
     "scripts": {
         "lint": "eslint \"src/**/*.{js,jsx}\"",
@@ -149,7 +148,6 @@
         "cosmiconfig": {
             "yaml": "1.10.3"
         },
-
         "nth-check": "2.1.1",
         "jsdom": "16.7.0",
         "got": "14.6.6",
@@ -172,15 +170,14 @@
         "qs": "6.15.1",
         "path-to-regexp": "8.4.2",
         "minimatch": "3.1.5",
-        "brace-expansion"  : "1.1.14"
+        "brace-expansion": "1.1.14"
     },
     "engines": {
         "npm": "=10.9.8",
         "node": "=20.20.2"
     },
     "notes": {
-      "uuid": "Cannot be upgraded to v14 because tests fail. import { v4 as uuidv4 } from 'uuid' gives 'Unexpected token export' in a number of places",
-      "jest": "Cannot be updated to v30 because tests fail with messages relating to the import of enzyme"
+        "jest": "Cannot be updated to v30 because tests fail with messages relating to the import of enzyme"
     },
     "browserslist": [
         ">0.2%",
