@@ -23,6 +23,7 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -36,7 +37,7 @@ public class JWTTestUtils {
     }
 
     public static String createExpiredZoweJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
-        return createExpiredToken(username, domain, ltpaToken, null, config, "APIML");
+        return createToken(username, domain, ltpaToken, System.currentTimeMillis() - Duration.ofDays(1).toMillis(), config, "APIML");
     }
 
     public static String createZosmfJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {

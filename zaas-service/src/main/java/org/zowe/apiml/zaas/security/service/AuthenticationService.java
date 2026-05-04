@@ -396,7 +396,6 @@ public class AuthenticationService {
                 var tokenAuthentication = (TokenAuthentication) cached.get();
                 log.debug("JWT ...{} found in the cache. Is authenticated: {}", StringUtils.right(jwtToken, 15), tokenAuthentication.isAuthenticated());
                 if (tokenAuthentication.isExpired()) {
-                    // add test
                     throw new TokenExpireException("Token ...%s expired on %s".formatted(StringUtils.right(jwtToken, 15), tokenAuthentication.getExpiration()));
                 }
                 return tokenAuthentication;
