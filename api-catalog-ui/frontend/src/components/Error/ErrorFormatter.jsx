@@ -7,9 +7,9 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import { Typography } from '@material-ui/core';
+import {Typography} from '@material-ui/core';
 import htmr from 'htmr';
-import { v4 as uuidv4 } from 'uuid';
+import {randomUUID} from "crypto";
 
 const colorDanger = '#de1b1b';
 const colorWarning = '#ad5f00';
@@ -33,7 +33,7 @@ function extractAjaxError(error) {
 
 function formatHtmlError(message, color) {
     return (
-        <Typography key={uuidv4()} variant="h5" style={{ color, fontWeight: 'semiBold' }}>
+        <Typography key={randomUUID()} variant="h5" style={{ color, fontWeight: 'semiBold' }}>
             {htmr(message)}
         </Typography>
     );
