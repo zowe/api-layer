@@ -14,7 +14,6 @@ import com.jayway.jsonpath.JsonPath;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -25,6 +24,8 @@ import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.http.MediaType;
@@ -52,7 +53,6 @@ import java.util.stream.IntStream;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 /**
  * The purpose of this test is a complex test of Infinispan implementation in both services apiml and caching service.
@@ -77,6 +77,7 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
  */
 @Slf4j
 @Tag("InfinispanJGroupStabilityTest")
+@DisabledOnOs(OS.WINDOWS)
 class JGroupStabilityTest {
 
     private static final int[] BASE_PORTS = {17000, 27000};
@@ -85,8 +86,6 @@ class JGroupStabilityTest {
 
     @BeforeEach
     void init() {
-        assumeFalse(Strings.CI.contains(System.getProperty("os.name"), "win"), "This test is meant to run on UNIX-based systems");
-
         executorService = Executors.newFixedThreadPool(BASE_PORTS.length + 1);
     }
 

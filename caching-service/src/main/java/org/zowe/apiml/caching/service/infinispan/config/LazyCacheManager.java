@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class LazyCacheManager extends DefaultCacheManager {
 
     // how many minutes wait thread to finish initialization by other threads
-    private static final int INIT_TIMEOUT = 1;
+    private static final int INIT_TIMEOUT_MINS = 1;
 
     private final AtomicReference<Producer<DefaultCacheManager>> cacheManager;
     private final CacheInitializer cacheInitializer;
@@ -342,11 +342,11 @@ public class LazyCacheManager extends DefaultCacheManager {
                 /**
                  * all caches should be initialized here or some caches initialization failed. Anyway, wait for other
                  * threads (to avoid partial initialization) before leaving the method. Waiting is limited by timeout
-                 * defined in {@link #INIT_TIMEOUT}
+                 * defined in {@link #INIT_TIMEOUT_MINS}
                  */
                 threadCounter.arriveAndDeregister();
                 try {
-                    threadCounter.awaitAdvanceInterruptibly(0, INIT_TIMEOUT, TimeUnit.MINUTES);
+                    threadCounter.awaitAdvanceInterruptibly(0, INIT_TIMEOUT_MINS, TimeUnit.MINUTES);
                 } catch (InterruptedException ie) {
                     log.error("Thread was interrupted", ie);
                     Thread.currentThread().interrupt();
