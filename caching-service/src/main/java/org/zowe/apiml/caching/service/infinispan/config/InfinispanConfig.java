@@ -44,7 +44,6 @@ import org.zowe.apiml.config.ApplicationInfo;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.HashMap;
@@ -154,9 +153,8 @@ public class InfinispanConfig implements InitializingBean {
 
     private String loadInfinispanConfigFile(ResourceLoader resourceLoader) {
         String fileName = getInfinispanConfigFile();
-        try {
-            var data = Files.readAllBytes(Paths.get("classpath:" + fileName));
-            String config = new String(data, StandardCharsets.UTF_8);
+        try (var inputStream = resourceLoader.getResource("classpath:" + fileName).getInputStream()) {
+            String config = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             config = config.replace("jgroup:SSL_KEY_EXCHANGE", ApimlSslKeyExchange.class.getCanonicalName());
             return config;
         } catch (IOException ioe) {
