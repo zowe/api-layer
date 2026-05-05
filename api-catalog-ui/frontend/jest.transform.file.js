@@ -8,9 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-const path = require('path');
+import path from 'node:path';
 
-module.exports = {
+export default {
     process(src, filename) {
         const assetFilename = JSON.stringify(path.basename(filename));
         return { code: `module.exports = ${assetFilename};` };

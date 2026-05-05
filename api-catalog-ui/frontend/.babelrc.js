@@ -1,6 +1,5 @@
-const base = require('../../.babelrc.json');
-
-module.exports = {
+import base from '../../.babelrc.json' with { type: 'json' };
+export default  {
     ...base,
     env: {
         test: {

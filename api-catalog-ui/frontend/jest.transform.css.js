@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-module.exports = {
+export default {
     process() {
         return { code: 'module.exports = {};' };
     },

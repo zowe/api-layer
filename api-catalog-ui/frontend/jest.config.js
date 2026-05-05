@@ -61,4 +61,4 @@ const config = {
     setupFilesAfterEnv: ['@testing-library/jest-dom', '<rootDir>/src/setupTests.js'],
 };
 
-module.exports = config;
+export default config;
