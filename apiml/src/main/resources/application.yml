@@ -346,7 +346,9 @@ logging:
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.ehcache: INFO
-        org.jgroups: DEBUG
+        org.jgroups: TRACE
+        org.jgroups.protocols: ERROR
+        org.infinispan: DEBUG
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.springframework.security: TRACE
         org.springframework.security.web: TRACE
