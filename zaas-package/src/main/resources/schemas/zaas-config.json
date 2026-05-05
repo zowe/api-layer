@@ -118,7 +118,7 @@
                                 "provider": {
                                     "type": "string",
                                     "description": "Which provider will be used to validate access authorization.",
-                                    "enum": ["endpoint","native","dummy"],
+                                    "enum": ["endpoint", "native", "dummy", ""],
                                     "default": "native"
                                 },
                                 "endpoint": {

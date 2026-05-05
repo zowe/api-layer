@@ -60,11 +60,7 @@ import javax.management.ServiceNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.LTPA;
@@ -487,9 +483,19 @@ public class ZosmfService extends AbstractZosmfService {
         return meAsProxy.jwtEndpointExists(headers);
     }
 
+    /**
+     * Validates jwt token with all available strategies.
+     *
+     * @param token
+     * @return true if at least one validation strategy evaluates token as valid
+     * @throws ServiceNotAccessibleException if all validation strategies failed because of an error
+     * @throws TokenNotValidException if all token validation strategies evaluate token as invalid
+     */
     public boolean validate(String token) {
-        log.debug("ZosmfService validating token: ....{}", StringUtils.right(token, 15));
+        log.debug("ZosmfService validating token: ...{}", StringUtils.right(token, 15));
         TokenValidationRequest request = new TokenValidationRequest(TokenType.JWT, token, getURI(getZosmfServiceId()), getEndpointMap());
+
+        var isTokenValid = Optional.<Boolean>empty();
 
         for (TokenValidationStrategy s : tokenValidationStrategy) {
             log.debug("Trying to validate token with strategy: {}", s.toString());
@@ -497,14 +503,22 @@ public class ZosmfService extends AbstractZosmfService {
                 s.validate(request);
                 if (requestIsAuthenticated(request)) {
                     log.debug("Token validity has been successfully determined: {}", request.getAuthenticated());
-                    return true;
+                    isTokenValid = Optional.of(true);
+                    break;
+                } else {
+                    isTokenValid = Optional.of(false);
                 }
             } catch (RuntimeException re) {
                 log.debug("Exception during token validation:", re);
             }
         }
+
         log.debug("Token validation strategies exhausted, final validation status: {}", request.getAuthenticated());
-        return false;
+
+        if (isTokenValid.orElseThrow( () -> new ServiceNotAccessibleException("All token validation strategies has failed with " + request.getZosmfBaseUrl()))) {
+            return true;
+        }
+        throw new TokenNotValidException("Token is not valid by any of zosmf validation strategies");
     }
 
     private boolean requestIsAuthenticated(TokenValidationRequest request) {

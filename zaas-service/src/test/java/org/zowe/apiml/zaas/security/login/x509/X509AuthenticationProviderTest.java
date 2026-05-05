@@ -13,6 +13,7 @@ package org.zowe.apiml.zaas.security.login.x509;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.X509AuthSource;
@@ -74,7 +75,7 @@ class X509AuthenticationProviderTest {
         String validUsername = "validUsername";
 
         when(mapper.mapToMainframeUserId(x509AuthSource)).thenReturn(validUsername);
-        when(tokenCreationService.createJwtTokenWithoutCredentials(validUsername)).thenReturn("validJwtToken");
+        when(tokenCreationService.createJwtTokenWithoutCredentials(validUsername)).thenReturn(JWTTestUtils.createDummyAPIMLToken(validUsername));
 
         Authentication result = x509AuthenticationProvider.authenticate(new X509AuthenticationToken(x509Certificate));
         assertThat(result.isAuthenticated(), is(true));

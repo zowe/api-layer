@@ -87,7 +87,7 @@ public class JwtAuthSourceService extends TokenAuthSourceService {
         if (authSource instanceof JwtAuthSource) {
             String jwtToken = ((JwtAuthSource) authSource).getRawSource();
             logger.log(MessageType.DEBUG, "Parsing JWT token.");
-            QueryResponse queryResponse = jwtToken == null ? null : authenticationService.parseJwtToken(jwtToken);
+            QueryResponse queryResponse = jwtToken == null ? null : authenticationService.parseJwtToken(jwtToken).getQueryResponse();
             return queryResponse == null ? null : new ParsedTokenAuthSource(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(),
                 Origin.valueByTokenSource(queryResponse.getSource()));
         }

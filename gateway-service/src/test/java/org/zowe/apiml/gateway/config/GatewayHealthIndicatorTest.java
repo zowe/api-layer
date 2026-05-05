@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.zowe.apiml.product.constants.CoreService;
@@ -91,6 +92,7 @@ class GatewayHealthIndicatorTest {
 
     @Nested
     class GivenEverythingIsHealthy {
+
         @Test
         void whenHealthRequested_onceLogMessageAboutStartup() {
 
@@ -104,9 +106,13 @@ class GatewayHealthIndicatorTest {
 
             GatewayHealthIndicator healthIndicator = new GatewayHealthIndicator(discoveryClient, CoreService.API_CATALOG.getServiceId());
             Health.Builder builder = new Health.Builder();
+            healthIndicator.onApplicationEvent(mock(ApplicationReadyEvent.class));
+
             healthIndicator.doHealthCheck(builder);
 
             assertThat(healthIndicator.isStartedInformationPublished(), is(true));
         }
+
     }
+
 }

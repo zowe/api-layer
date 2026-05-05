@@ -18,6 +18,7 @@ import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotProvidedException;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.mockito.Mock;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -41,7 +42,7 @@ class QueryFilterTest {
     private MockHttpServletResponse httpServletResponse;
     private QueryFilter queryFilter;
 
-    private final String VALID_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJNZSIsImRvbSI6InRoaXMuY29tIiwibHRwYSI6Imx0cGFUb2tlbiIsImlhdCI6MTU1NDg4MzMzNCwiZXhwIjoxNTU0OTY5NzM0LCJpc3MiOiJBUElNTCIsImp0aSI6IjNkMzU3M2VhLWMxMzktNGE5Yy1iZDU5LWVjYmIyMmM0ZDcxZCJ9.bLe_d3b3bZC-K5K49fj1aHL_xDWMPsAgwKkrfewOrHhrxVL6lSphpGx52b8YvjaMUkFpVO12jCEDoYC1JLaQhQ";
+    private static final String VALID_TOKEN = JWTTestUtils.createDummyJwtToken("me", "APIML");
 
     @Mock
     private AuthenticationSuccessHandler authenticationSuccessHandler;
@@ -110,7 +111,7 @@ class QueryFilterTest {
         httpServletRequest = new MockHttpServletRequest();
         httpServletRequest.setMethod(HttpMethod.GET.name());
         httpServletResponse = new MockHttpServletResponse();
-        TokenAuthentication authentication = new TokenAuthentication("token");
+        TokenAuthentication authentication = new TokenAuthentication(JWTTestUtils.createDummyAPIMLToken("user"));
         authentication.setAuthenticated(true);
         SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
 
