@@ -31,7 +31,7 @@ function extractAjaxError(error) {
 }
 
 function formatHtmlError(message, color) {
-    const crypto = self.crypto ?? require("node:crypto");
+    const crypto = globalThis.crypto ?? require("node:crypto");
     return (
         <Typography key={crypto.randomUUID()} variant="h5" style={{ color, fontWeight: 'semiBold' }}>
             {htmr(message)}

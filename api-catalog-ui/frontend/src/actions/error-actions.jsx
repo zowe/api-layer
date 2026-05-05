@@ -12,7 +12,7 @@ import * as log from 'loglevel';
 import {CLEAR_ALL_ERRORS, SEND_ERROR} from '../constants/error-constants';
 
 export function sendError(error) {
-    const crypto = self.crypto ?? require("node:crypto");
+    const crypto = globalThis.crypto ?? require("node:crypto");
     const uuid = crypto.randomUUID();
     const err = { id: uuid, timestamp: new Date(), error };
     log.error(`Error: ${err}`);
