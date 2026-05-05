@@ -27,7 +27,7 @@
         "path-to-regexp" : "This should be able to be removed once express is at a higher level than 5.2.1"
     },
     "engines": {
-        "npm": ">=10.9.4",
-        "node": ">=20.19.6"
+        "npm": ">=10.9.0",
+        "node": ">=24.10.0"
     }
 }
