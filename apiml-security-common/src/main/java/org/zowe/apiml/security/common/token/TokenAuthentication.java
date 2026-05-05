@@ -37,6 +37,7 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
     private static final String DOMAIN_CLAIM_NAME = "dom";
     private static final String SCOPES = "scopes";
 
+    private final String userId;
     @Getter
     private final JWT jwt;
     private final JWTClaimsSet claims;
@@ -50,10 +51,11 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
         OIDC
     }
 
-    public TokenAuthentication(String tokenString, Type type) {
+    public TokenAuthentication(String userId, String tokenString, Type type) {
         super(Collections.emptyList());
 
         try {
+            this.userId = userId;
             this.jwt = JWTParser.parse(tokenString);
             this.claims = jwt.getJWTClaimsSet();
             this.queryResponse = parseQueryResponse(claims);
@@ -63,13 +65,12 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
         }
     }
 
-    public TokenAuthentication(String tokenString) {
-        this(tokenString, Type.JWT);
+    public TokenAuthentication(String tokenString, Type type) {
+        this(null, tokenString, type);
     }
 
-    public TokenAuthentication(String userId, String tokenString, Type type) {
-        this(tokenString, type);
-        checkUserId(userId);
+    public TokenAuthentication(String tokenString) {
+        this(tokenString, Type.JWT);
     }
 
     public static TokenAuthentication createAuthenticated(String tokenString, Type type) {
@@ -120,6 +121,10 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
      */
     @Override
     public String getPrincipal() {
+        if (type == Type.OIDC) {
+            return userId;
+        }
+
         return queryResponse.getUserId();
     }
 
@@ -151,14 +156,6 @@ public class TokenAuthentication extends AbstractAuthenticationToken {
             );
         } catch (ParseException e) {
             throw new TokenNotValidException(e.getMessage(), e);
-        }
-    }
-
-    private void checkUserId(String userId) {
-        var principal = getPrincipal();
-        if (userId == null || !userId.equalsIgnoreCase(principal)) {
-            log.debug("Username '{}' does not match the one in token '{}' or is null", userId, principal);
-            throw new TokenNotValidException("Token is not valid for provided username");
         }
     }
 }
