@@ -23,6 +23,7 @@ import org.springframework.mock.http.server.reactive.MockServerHttpResponse;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -87,7 +88,7 @@ public class BasicAuthFilterTest {
             void givenAuthIsValid_whenFilter_thenAuthenticate() {
                 mockBasicAuth(VALID_BASIC_CREDENTIALS);
                 when(basicAuthProvider.getToken("Basic dXNlcjpwYXNz"))
-                    .thenReturn(Mono.just("token"));
+                    .thenReturn(Mono.just(JWTTestUtils.createDummyAPIMLToken("user")));
                 Mono<Void> monoSpy = spy(Mono.empty());
                 when(chain.filter(any())).thenReturn(monoSpy);
 

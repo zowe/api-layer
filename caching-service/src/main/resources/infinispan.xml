@@ -33,7 +33,8 @@
                     timeout_check_interval="1000"
             />
             <VERIFY_SUSPECT timeout="1000"/>
-            <SSL_KEY_EXCHANGE keystore_name="${infinispan.ssl.keyStore}"
+            <!-- replacement of SSL_KEY_EXCHANGE -->
+            <org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange keystore_name="${infinispan.ssl.keyStore}"
                               keystore_type="${infinispan.ssl.keyStoreType}"
                               keystore_password="${infinispan.ssl.keyStorePassword}"
                               truststore_name="${infinispan.ssl.trustStore}"
@@ -41,12 +42,14 @@
                               truststore_password="${infinispan.ssl.trustStorePassword}"
                               secret_key_algorithm="AES"
                               port="${jgroups.keyExchange.port}"
+                              port_range="0"
+                              socket_timeout="${jgroups.keyExchange.socketTimeout:5000}"
                               stack.combine="INSERT_AFTER"
                               stack.position="VERIFY_SUSPECT"
                               require_client_authentication="false"
             />
             <!-- Configures ASYM_ENCRYPT -->
-            <!-- The use_external_key_exchange = "true" attribute configures nodes to use the `SSL_KEY_EXCHANGE` protocol for certificate authentication. -->
+            <!-- The use_external_key_exchange = "true" attribute configures nodes to use the `org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange` protocol for certificate authentication. -->
             <ASYM_ENCRYPT asym_keylength="2048"
                           asym_algorithm="RSA"
                           change_key_on_coord_leave="true"
@@ -56,7 +59,7 @@
                           sym_algorithm="AES/CBC/PKCS5Padding"
                           sym_iv_length="16"
                           stack.combine="INSERT_AFTER"
-                          stack.position="SSL_KEY_EXCHANGE"
+                          stack.position="org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange"
             />
 
             <pbcast.NAKACK2/>
@@ -90,12 +93,12 @@
 
         <serialization marshaller="org.infinispan.jboss.marshalling.commons.GenericJBossMarshaller">
             <allow-list>
-                <class>org.zowe.apiml.caching.model.KeyValue</class>
-                <class>org.zowe.apiml.security.common.token.TokenAuthentication</class>
-                <class>org.zowe.apiml.security.common.token.TokenAuthentication$Type</class>
-                <class>java.util.HashMap</class>
-                <class>java.util.Arrays$ArrayList</class>
-                <class>java.security.cert.Certificate$CertificateRep</class>
+                <regex>org.zowe.apiml.caching.*</regex>
+                <regex>org.zowe.apiml.security.common.token.*</regex>
+                <regex>com.nimbusds.jwt.*</regex>
+                <regex>com.nimbusds.jose.*</regex>
+                <regex>java.util.*</regex>
+                <regex>java.security.cert.*</regex>
             </allow-list>
         </serialization>
 

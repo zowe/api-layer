@@ -12,6 +12,7 @@ package org.zowe.apiml.zaas.security.service.ticket;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.zaas.security.ticket.SuccessfulTicketHandler;
 import org.zowe.apiml.ticket.TicketRequest;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
@@ -33,8 +34,8 @@ import static org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl.
 
 
 class SuccessfulTicketHandlerTest {
-    private static final String TOKEN = "token";
     private static final String USER = "user";
+    private static final String TOKEN = JWTTestUtils.createDummyAPIMLToken(USER);
     private static final String APPLICATION_NAME = "app";
 
     private final MockHttpServletRequest httpServletRequest = new MockHttpServletRequest();
@@ -43,7 +44,7 @@ class SuccessfulTicketHandlerTest {
     private final MessageService messageService = new YamlMessageService("/zaas-messages.yml");
     private final PassTicketService passTicketService = new PassTicketService();
     private final SuccessfulTicketHandler successfulTicketHandlerHandler = new SuccessfulTicketHandler(mapper, passTicketService, messageService);
-    private final TokenAuthentication tokenAuthentication = new TokenAuthentication(USER, TOKEN);
+    private final TokenAuthentication tokenAuthentication = new TokenAuthentication(TOKEN);
 
     @BeforeEach
     void setUp() {
@@ -87,18 +88,6 @@ class SuccessfulTicketHandlerTest {
         httpServletRequest.setContent(mapper.writeValueAsBytes(new TicketRequest(UNKNOWN_APPLID)));
 
         successfulTicketHandlerHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, tokenAuthentication);
-
-        assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), httpServletResponse.getStatus());
-        assertTrue(httpServletResponse.getContentAsString().contains("ZWEAG141E"));
-        assertTrue(httpServletResponse.isCommitted());
-    }
-
-    @Test
-    void shouldFailWhenNoUsernameAvailable() throws JsonProcessingException, UnsupportedEncodingException {
-        httpServletRequest.setContent(mapper.writeValueAsBytes(new TicketRequest(APPLICATION_NAME)));
-
-        successfulTicketHandlerHandler.onAuthenticationSuccess(httpServletRequest, httpServletResponse, new TokenAuthentication(TOKEN));
 
         assertEquals(MediaType.APPLICATION_JSON_VALUE, httpServletResponse.getContentType());
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), httpServletResponse.getStatus());

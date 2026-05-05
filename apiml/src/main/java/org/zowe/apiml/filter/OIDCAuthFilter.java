@@ -26,9 +26,9 @@ import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
 import org.zowe.apiml.security.common.util.JwtUtils;
+import org.zowe.apiml.util.CookieUtil;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.service.schema.source.OIDCAuthSource;
-import org.zowe.apiml.util.CookieUtil;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -96,7 +96,7 @@ public class OIDCAuthFilter extends AbstractTokenAuthFilter {
                 if (authOpt.isPresent()) {
                     var sanitized = stripToken(exchange);
                     return chain.filter(sanitized)
-                        .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authOpt.get()));
+                        .contextWrite(context -> ReactiveSecurityContextHolder.withAuthentication(authOpt.get()));
                 }
                 return chain.filter(exchange);
             });

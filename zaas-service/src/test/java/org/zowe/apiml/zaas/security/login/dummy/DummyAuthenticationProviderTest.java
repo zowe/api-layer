@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.zaas.security.login.dummy;
 
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DummyAuthenticationProviderTest {
@@ -39,6 +42,7 @@ class DummyAuthenticationProviderTest {
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(10);
         UserDetailsService userDetailsService = new InMemoryUserDetailsService(encoder);
         AuthenticationService authenticationService = mock(AuthenticationService.class);
+        when(authenticationService.createJwtToken(any(),any(),any())).thenReturn(JWTTestUtils.createDummyAPIMLToken(USERNAME));
         ApplicationEventPublisher publisher = mock(ApplicationEventPublisher.class);
         dummyAuthenticationProvider = new DummyAuthenticationProvider(encoder, userDetailsService, authenticationService, publisher);
     }

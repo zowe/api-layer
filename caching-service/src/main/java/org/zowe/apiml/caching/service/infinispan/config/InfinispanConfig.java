@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.infinispan.commons.dataconversion.MediaType;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.lock.EmbeddedClusteredLockManagerFactory;
@@ -41,8 +42,8 @@ import org.zowe.apiml.config.ApplicationInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
+import java.time.Duration;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -61,6 +62,8 @@ public class InfinispanConfig implements InitializingBean {
     private static final String LOCK_ZOWE_INVALIDATED = "zoweInvalidatedTokenLock";
     public static final String CACHE_ZOWE = "zoweCache";
     public static final String CACHE_ZOWE_INVALIDATED_TOKEN = "zoweInvalidatedTokenCache";
+    private static final long SMALL_CACHE_SIZE = 10;
+    private static final long BIG_CACHE_SIZE = 1000;
 
     @Value("${caching.storage.infinispan.initialHosts}")
     private String initialHosts;
@@ -89,6 +92,9 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${jgroups.bind.address}")
     private String address;
 
+    @Value("${jgroups.keyExchange.socketTimeout:5000}")
+    private String keyExchangeSocketTimeout;
+
     @Value("${jgroups.keyExchange.port:7601}")
     private String keyExchangePort;
 
@@ -98,16 +104,13 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${attlsEnabledOnInfinispanTest:${server.attlsServer.enabled:false}}")
     private boolean isServerAttlsEnabled;
 
-    @Value("${apiml.service.hostname:localhost}")
-    private String hostname;
-
     @Value("${caching.storage.infinispan.distributedSyncTimeoutSecs:360}")
     private int distributedSyncTimeout;
 
     @Value("${caching.storage.infinispan.numSegments:256}")
     private int numSegments;
 
-    private AtomicReference<ClusteredLock> zoweInvalidatedTokenLock = new AtomicReference<>();
+    private final AtomicReference<ClusteredLock> zoweInvalidatedTokenLock = new AtomicReference<>();
 
     @Override
     public void afterPropertiesSet() {
@@ -164,7 +167,7 @@ public class InfinispanConfig implements InitializingBean {
         return holder;
     }
 
-    private ConfigurationBuilder getCacheConfig() {
+    private ConfigurationBuilder getDistributedCacheConfig() {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder
             .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
@@ -176,11 +179,25 @@ public class InfinispanConfig implements InitializingBean {
         return builder;
     }
 
+    private ConfigurationBuilder getSimpleCacheConfig(long maxCount, Duration lifeSpan) {
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder
+            .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
+            .memory()
+            .storage(StorageType.OFF_HEAP)
+            .maxCount(maxCount)
+            .simpleCache(true)
+            .expiration()
+            .lifespan(lifeSpan.toSeconds(), TimeUnit.SECONDS);
+        return builder;
+    }
+
     @Bean(destroyMethod = "stop")
     synchronized LazyCacheManager cacheManager(ResourceLoader resourceLoader, ApplicationInfo applicationInfo) {
         System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
         System.setProperty("jgroups.bind.port", port);
         System.setProperty("jgroups.bind.address", address);
+        System.setProperty("jgroups.keyExchange.socketTimeout", keyExchangeSocketTimeout);
         System.setProperty("jgroups.keyExchange.port", keyExchangePort);
         System.setProperty("jgroups.tcp.diag.enabled", String.valueOf(Boolean.parseBoolean(tcpDiagEnabled)));
 
@@ -192,14 +209,28 @@ public class InfinispanConfig implements InitializingBean {
         System.setProperty("infinispan.ssl.trustStore", trustStore);
         System.setProperty("infinispan.ssl.trustStorePassword", trustStorePass);
 
-        List<String> caches;
+        var caches = new HashMap<String, ConfigurationBuilder>();
+        caches.put(CACHE_ZOWE, getDistributedCacheConfig());
+        caches.put(CACHE_ZOWE_INVALIDATED_TOKEN, getDistributedCacheConfig());
+
         if (applicationInfo.isModulith()) {
-            caches = Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN, "zosmfAuthenticationEndpoint", "invalidatedJwtTokens", "validationJwtToken", "zosmfInfo", "zosmfJwtEndpoint", "trustedCertificates", "parseOIDCToken", "validationOIDCToken");
-        } else {
-            caches = Arrays.asList(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN);
+            caches.put("invalidatedJwtTokens", getDistributedCacheConfig());
+
+            // 1 minute to force zosmf tokens validation against zosmf for invalidated tokens
+            caches.put("validatedJwtTokens", getSimpleCacheConfig(BIG_CACHE_SIZE, Duration.ofMinutes(1)));
+
+            //Small local caches
+            caches.put("zosmfAuthenticationEndpoint", getSimpleCacheConfig(SMALL_CACHE_SIZE, Duration.ofHours(1)));
+            caches.put("zosmfInfo", getSimpleCacheConfig(SMALL_CACHE_SIZE, Duration.ofHours(1)));
+            caches.put("zosmfJwtEndpoint", getSimpleCacheConfig(SMALL_CACHE_SIZE, Duration.ofHours(1)));
+
+            //Big local caches
+            caches.put("trustedCertificates", getSimpleCacheConfig(BIG_CACHE_SIZE, Duration.ofHours(1)));
+            caches.put("parseOIDCToken", getSimpleCacheConfig(BIG_CACHE_SIZE, Duration.ofSeconds(20)));
+            caches.put("validationOIDCToken", getSimpleCacheConfig(BIG_CACHE_SIZE, Duration.ofSeconds(20)));
         }
 
-        return new LazyCacheManager(getCacheManagerConfig(resourceLoader), getCacheConfig(), caches);
+        return new LazyCacheManager(getCacheManagerConfig(resourceLoader), caches);
     }
 
     private ClusteredLock lock(CacheContainer cacheManager) {

@@ -97,7 +97,7 @@ fi
 ZOWE_CONSOLE_LOG_CHARSET=UTF-8
 if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
-    SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal"
+    SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal,silent"
 
     JAVA_VERSION=$(${JAVA_HOME}/bin/javap -J-Xms4m -J-Xmx16m -verbose java.lang.String \
         | grep "major version" \
@@ -218,6 +218,7 @@ client_ciphers=${ZWE_configs_zowe_network_client_tls_ciphers:-${ZWE_components_g
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
 key_alias="${ZWE_configs_certificate_keystore_alias:-${ZWE_zowe_certificate_keystore_alias}}"
+
 key_pass="${ZWE_configs_certificate_key_password:-${ZWE_zowe_certificate_key_password:-${keystore_pass}}}"
 truststore_type="${ZWE_configs_certificate_truststore_type:-${ZWE_zowe_certificate_truststore_type:-PKCS12}}"
 truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certificate_truststore_password}}"
@@ -225,16 +226,31 @@ truststore_pass="${ZWE_configs_certificate_truststore_password:-${ZWE_zowe_certi
 keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certificate_keystore_file}}"
 truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
 
+client_key_alias="${ZWE_configs_apiml_service_ssl_keystore_alias:-${ZWE_zowe_certificate_keystore_clientCertificateAlias:-${key_alias}}}"
+client_keystore_type="${ZWE_configs_apiml_service_ssl_keystore_type:-${keystore_type}}"
+client_keystore_pass="${ZWE_configs_apiml_service_ssl_keystore_password:-${keystore_pass}}"
+client_key_pass="${ZWE_configs_apiml_service_ssl_key_password:-${key_pass}}"
+client_keystore_location="${ZWE_configs_apiml_service_ssl_keystore_file:-${keystore_location}}"
+client_truststore_type="${ZWE_configs_apiml_service_ssl_truststore_type:-${truststore_type}}"
+client_truststore_pass="${ZWE_configs_apiml_service_ssl_truststore_password:-${truststore_pass}}"
+client_truststore_location="${ZWE_configs_apiml_service_ssl_truststore_file:-${truststore_location}}"
+
 # Handle RACF keyring URL transformations
 if [ "${keystore_type}" = "JCERACFKS" ]; then
     keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    client_keystore_location=$(echo "${client_keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
     truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
+    client_truststore_location=$(echo "${client_truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
 elif [ "${keystore_type}" = "JCECCARACFKS" ]; then
     keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    client_keystore_location=$(echo "${client_keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
     truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+    client_truststore_location=$(echo "${client_truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
 elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
     keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    client_keystore_location=$(echo "${client_keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
     truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+    client_truststore_location=$(echo "${client_truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
 fi
 
 ################################################################################
