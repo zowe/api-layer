@@ -355,10 +355,6 @@ logging:
         org.springframework.security.authentication: DEBUG
         org.springdoc.core: DEBUG
         org.zowe.apiml: DEBUG
-        reactor.netty: DEBUG
-        reactor.netty.http.client: DEBUG
-        reactor.netty.http.client.HttpClient: DEBUG
-        reactor.netty.http.client.HttpClientConnect: DEBUG
 
 management:
     endpoint:
@@ -416,3 +412,7 @@ logging:
     level:
         org.springframework: DEBUG
         org.infinispan: DEBUG
+        reactor.netty: DEBUG
+        reactor.netty.http.client: DEBUG
+        reactor.netty.http.client.HttpClient: DEBUG
+        reactor.netty.http.client.HttpClientConnect: DEBUG
