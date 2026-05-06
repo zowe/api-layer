@@ -1244,14 +1244,6 @@
             "index": "pypi",
             "version": "==4.9.0"
         },
-        "pickleshare": {
-            "hashes": [
-                "sha256:87683d47965c1da65cdacaf31c8441d12b8044cdec9aca500cd78fc2c683afca",
-                "sha256:9649af414d74d4df115d5d718f82acb59c9d418196b7b4290ed47a12ce62df56"
-            ],
-            "index": "pypi",
-            "version": "==0.7.5"
-        },
         "pipdeptree": {
             "hashes": [
                 "sha256:4bbcffe7d1edead00f5ca64c265b0bf902c919f872637e055924c3bea8c615d1",
