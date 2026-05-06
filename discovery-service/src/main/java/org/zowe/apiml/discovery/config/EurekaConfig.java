@@ -12,14 +12,13 @@ package org.zowe.apiml.discovery.config;
 
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.eureka.DefaultEurekaServerContext;
-import com.netflix.eureka.EurekaServerConfig;
-import com.netflix.eureka.EurekaServerContextHolder;
+import com.netflix.eureka.*;
 import com.netflix.eureka.cluster.PeerEurekaNodes;
 import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
 import com.netflix.eureka.util.EurekaMonitors;
 import jakarta.ws.rs.client.ClientRequestFilter;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -30,7 +29,6 @@ import org.springframework.cloud.netflix.eureka.server.InstanceRegistryPropertie
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.discovery.eureka.RefreshablePeerEurekaNodes;
@@ -79,17 +77,27 @@ public class EurekaConfig {
         EurekaClient eurekaClient,
         EurekaServerHttpClientFactory eurekaServerHttpClientFactory,
         InstanceRegistryProperties instanceRegistryProperties,
-        ApplicationContext appCntx,
-        Collection<ClientRequestFilter> replicationClientAdditionalFilters,
-        @Qualifier("secureSslContext") SSLContext secureSslContext
+        ApplicationContext appCntx
     ) {
         eurekaClient.getApplications(); // force initialization
 
-        var apimlInstanceRegistry = new ApimlInstanceRegistry(serverConfig, clientConfig, serverCodecs, eurekaClient, eurekaServerHttpClientFactory, instanceRegistryProperties, appCntx, new Tuple(tuple));
+        return new ApimlInstanceRegistry(serverConfig, clientConfig, serverCodecs, eurekaClient, eurekaServerHttpClientFactory, instanceRegistryProperties, appCntx, new Tuple(tuple));
+    }
 
+    @Bean
+    @Primary
+    public PeerEurekaNodes peerEurekaNodes(
+        EurekaServerConfig serverConfig,
+        EurekaClientConfig clientConfig,
+        ServerCodecs serverCodecs,
+        ApimlInstanceRegistry apimlInstanceRegistry,
+        EurekaClient eurekaClient,
+        Collection<ClientRequestFilter> replicationClientAdditionalFilters,
+        @Qualifier("secureSslContext") SSLContext secureSslContext
+    ) {
         var applicationInfoManager = eurekaClient.getApplicationInfoManager();
 
-        PeerEurekaNodes peerEurekaNodes = new RefreshablePeerEurekaNodes(
+        return new RefreshablePeerEurekaNodes(
             apimlInstanceRegistry,
             serverConfig,
             clientConfig,
@@ -99,7 +107,18 @@ public class EurekaConfig {
             secureSslContext,
             maxPeerRetries
         );
+    }
 
+    @Bean
+    @Primary
+    public EurekaServerContext eurekaServerContext(
+        EurekaServerConfig serverConfig,
+        ServerCodecs serverCodecs,
+        ApimlInstanceRegistry apimlInstanceRegistry,
+        EurekaClient eurekaClient,
+        PeerEurekaNodes peerEurekaNodes
+    ) {
+        var applicationInfoManager = eurekaClient.getApplicationInfoManager();
         var serverContext = new DefaultEurekaServerContext(
             serverConfig,
             serverCodecs,
@@ -113,23 +132,17 @@ public class EurekaConfig {
         serverContext.initialize();
         log.info("Initialized server context");
 
+        // For reference from the original Eureka implementation com.netflix.eureka.EurekaBootStrap#initEurekaServerContext()
         // Copy registry from neighboring eureka node
         //int registryCount = apimlInstanceRegistry.syncUp();
         //apimlInstanceRegistry.openForTraffic(applicationInfoManager, registryCount);
 
         // Register all monitoring statistics.
         EurekaMonitors.registerAllStats();
-
-        return apimlInstanceRegistry;
+        return serverContext;
     }
 
-    @Bean
-    @Primary
-    @DependsOn("apimlInstanceRegistry")
-    public PeerEurekaNodes peerEurekaNodes() {
-        return EurekaServerContextHolder.getInstance().getServerContext().getPeerEurekaNodes();
-    }
-
+    @Getter
     public static class Tuple {
 
         boolean valid;
@@ -143,18 +156,6 @@ public class EurekaConfig {
                 this.newPrefix = prefixes[1];
                 this.valid = true;
             }
-        }
-
-        public boolean isValid() {
-            return valid;
-        }
-
-        public String getOldPrefix() {
-            return oldPrefix;
-        }
-
-        public String getNewPrefix() {
-            return newPrefix;
         }
 
         public static boolean isValidTuple(String tuple) {

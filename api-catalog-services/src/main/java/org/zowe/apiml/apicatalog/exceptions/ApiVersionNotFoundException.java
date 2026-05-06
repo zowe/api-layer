@@ -22,7 +22,7 @@ public class ApiVersionNotFoundException extends RuntimeException {
      * Do not print a stack trace for this exception.
      */
     @Override
-    public synchronized Throwable fillInStackTrace() {
+    public Throwable fillInStackTrace() {
         return this;
     }
 
