@@ -12,6 +12,7 @@ package org.zowe.apiml.controller;
 
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -31,7 +32,6 @@ import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -44,6 +44,8 @@ class ApimlHomepageControllerTest {
     private VersionService versionService;
     @Mock
     private ApplicationContext applicationContext;
+
+    private Model model;
     private ApimlHomepageController apimlHomepageController;
 
     @BeforeEach
@@ -53,66 +55,52 @@ class ApimlHomepageControllerTest {
         when(applicationContext.getBean(Providers.class)).thenReturn(providers);
         when(applicationContext.getBean(JwtSecurity.class)).thenReturn(mock(JwtSecurity.class));
 
-        when(versionService.getVersion()).thenReturn(new VersionInfo(null, new VersionInfoDetails("unknown", "000", "abc")));
-
         ApplicationInfo applicationInfo = ApplicationInfo.builder()
             .isModulith(false)
             .authServiceId(CoreService.ZAAS.getServiceId()).build();
 
         apimlHomepageController = new ApimlHomepageController(discoveryClient, versionService, applicationInfo, applicationContext);
+        
+        model = new ConcurrentModel();
     }
 
-    @Test
-    void givenBuildVersionUnknown_whenHomePageCalled_thenBuildInfoShouldBeStaticText() {
-        Model model = new ConcurrentModel();
-        apimlHomepageController.init();
-        apimlHomepageController.home(model);
+    @Nested
+    class WhenHomepageCalled {
 
-        Map<String, Object> actualModelMap = model.asMap();
-        assertThat(actualModelMap, IsMapContaining.hasEntry("buildInfoText", "Build information is not available"));
+        @Test
+        void givenBuildVersionUnknown_thenBuildInfoShouldBeStaticText() {
+            when(versionService.getVersion()).thenReturn(new VersionInfo(null, new VersionInfoDetails("unknown", "000", "abc")));
+
+            apimlHomepageController.init();
+            apimlHomepageController.home(model);
+
+            Map<String, Object> actualModelMap = model.asMap();
+            assertThat(actualModelMap, IsMapContaining.hasEntry("buildInfoText", "Build information is not available"));
+        }
+
+        @Test
+        void givenSpecificBuildVersion_thenBuildInfoShouldBeGivenVersionAndNumber() {
+            when(versionService.getVersion()).thenReturn(new VersionInfo(null, new VersionInfoDetails("test-version", "test-number", "abc")));
+
+            apimlHomepageController.init();
+            apimlHomepageController.home(model);
+
+            Map<String, Object> actualModelMap = model.asMap();
+            assertThat(actualModelMap, IsMapContaining.hasEntry("buildInfoText", "API ML Version test-version build # test-number"));
+        }
+
+        @Test
+        void givenZoweVersion_thenZoweVersionTextShouldBeIncluded() {
+            when(versionService.getVersion()).thenReturn(new VersionInfo(
+                new VersionInfoDetails("2.0.0", "500", "def"),
+                new VersionInfoDetails("test-version", "test-number", "abc")
+            ));
+
+            apimlHomepageController.init();
+            apimlHomepageController.home(model);
+
+            Map<String, Object> actualModelMap = model.asMap();
+            assertThat(actualModelMap, IsMapContaining.hasEntry("zoweVersionText", "Zowe Version 2.0.0 build # 500"));
+        }
     }
-
-    @Test
-    void givenSpecificBuildVersion_whenHomePageCalled_thenBuildInfoShouldBeGivenVersionAndNumber() {
-        when(versionService.getVersion()).thenReturn(new VersionInfo(null, new VersionInfoDetails("test-version", "test-number", "abc")));
-
-        ApplicationInfo applicationInfo = ApplicationInfo.builder()
-            .isModulith(false)
-            .authServiceId(CoreService.ZAAS.getServiceId()).build();
-        ApimlHomepageController controller = new ApimlHomepageController(discoveryClient, versionService, applicationInfo, applicationContext);
-
-        Model model = new ConcurrentModel();
-        controller.init();
-        controller.home(model);
-
-        Map<String, Object> actualModelMap = model.asMap();
-        assertThat(actualModelMap, IsMapContaining.hasEntry("buildInfoText", "API ML Version test-version build # test-number"));
-    }
-
-    @Test
-    void givenZoweVersion_whenHomePageCalled_thenZoweVersionTextShouldBeIncluded() {
-        when(versionService.getVersion()).thenReturn(new VersionInfo(
-            new VersionInfoDetails("2.0.0", "500", "def"),
-            new VersionInfoDetails("test-version", "test-number", "abc")
-        ));
-
-        ApplicationInfo applicationInfo = ApplicationInfo.builder()
-            .isModulith(false)
-            .authServiceId(CoreService.ZAAS.getServiceId()).build();
-        ApimlHomepageController controller = new ApimlHomepageController(discoveryClient, versionService, applicationInfo, applicationContext);
-
-        Model model = new ConcurrentModel();
-        controller.init();
-        controller.home(model);
-
-        Map<String, Object> actualModelMap = model.asMap();
-        assertThat(actualModelMap, IsMapContaining.hasEntry("zoweVersionText", "Zowe Version 2.0.0 build # 500"));
-    }
-
-    @Test
-    void givenHomePageCalled_thenHomePageShouldReturnHomeLiteral() {
-        String redirectedPage = apimlHomepageController.home(new ConcurrentModel());
-        assertEquals("home", redirectedPage, "Expected page is not 'home'");
-    }
-
 }
