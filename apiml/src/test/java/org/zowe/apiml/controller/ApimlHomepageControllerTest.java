@@ -13,6 +13,9 @@ package org.zowe.apiml.controller;
 import org.hamcrest.collection.IsMapContaining;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ui.ConcurrentModel;
@@ -32,24 +35,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class ApimlHomepageControllerTest {
 
+    @Mock
     private DiscoveryClient discoveryClient;
+    @Mock
     private VersionService versionService;
+    @Mock
     private ApplicationContext applicationContext;
     private ApimlHomepageController apimlHomepageController;
 
     @BeforeEach
     void setup() {
-        discoveryClient = mock(DiscoveryClient.class);
-        applicationContext = mock(ApplicationContext.class);
-
         Providers providers = mock(Providers.class);
         when(providers.isZosfmUsed()).thenReturn(false);
         when(applicationContext.getBean(Providers.class)).thenReturn(providers);
         when(applicationContext.getBean(JwtSecurity.class)).thenReturn(mock(JwtSecurity.class));
 
-        versionService = mock(VersionService.class);
         when(versionService.getVersion()).thenReturn(new VersionInfo(null, new VersionInfoDetails("unknown", "000", "abc")));
 
         ApplicationInfo applicationInfo = ApplicationInfo.builder()
@@ -71,7 +74,6 @@ class ApimlHomepageControllerTest {
 
     @Test
     void givenSpecificBuildVersion_whenHomePageCalled_thenBuildInfoShouldBeGivenVersionAndNumber() {
-        VersionService versionService = mock(VersionService.class);
         when(versionService.getVersion()).thenReturn(new VersionInfo(null, new VersionInfoDetails("test-version", "test-number", "abc")));
 
         ApplicationInfo applicationInfo = ApplicationInfo.builder()
@@ -89,7 +91,6 @@ class ApimlHomepageControllerTest {
 
     @Test
     void givenZoweVersion_whenHomePageCalled_thenZoweVersionTextShouldBeIncluded() {
-        VersionService versionService = mock(VersionService.class);
         when(versionService.getVersion()).thenReturn(new VersionInfo(
             new VersionInfoDetails("2.0.0", "500", "def"),
             new VersionInfoDetails("test-version", "test-number", "abc")
