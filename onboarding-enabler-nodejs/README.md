@@ -1,6 +1,6 @@
 ## Onboarding Node.js enabler for Zowe API Mediation Layer
 
-This is the onboarding Node.js enabler for [Zowe API Mediation Layer](https://github.com/zowe/api-layer) (part of [Zowe](https://zowe.org)) that allows to register a NodeJS based service to the API Mediation Layer Discovery Service. It uses [eureka-js-client](https://www.npmjs.com/package/eureka-js-client).
+This is the onboarding Node.js enabler for [Zowe API Mediation Layer](https://github.com/zowe/api-layer) (part of [Zowe](https://zowe.org)) that allows to register a NodeJS based service to the API Mediation Layer Discovery Service.
 
 ### How to use
 
