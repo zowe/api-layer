@@ -96,15 +96,20 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
     }
 
     static boolean isServiceUnavailable(Throwable error) {
-        if (error != null) {
-            Throwable cause = e.getCause();
-            if (cause instanceof ConnectException
-                    || cause instanceof ConnectTimeoutException
-                    || cause instanceof NoRouteToHostException) {
-                return true;
-            }
+        if (error == null) {
+            return false;
         }
-        return false;
+        // Check the exception itself
+        if (error instanceof ConnectException
+                || error instanceof ConnectTimeoutException
+                || error instanceof NoRouteToHostException) {
+            return true;
+        }
+        // Check the cause
+        Throwable cause = error.getCause();
+        return cause instanceof ConnectException
+                || cause instanceof ConnectTimeoutException
+                || cause instanceof NoRouteToHostException;
     }
 
 }

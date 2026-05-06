@@ -30,6 +30,7 @@ import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLException;
 import java.net.ConnectException;
+import java.net.NoRouteToHostException;
 import java.nio.channels.ClosedChannelException;
 import java.time.Duration;
 
@@ -190,6 +191,19 @@ class NettyRoutingFilterApimlTest {
         @Test
         void givenSslException_whenIsServiceUnavailable_thenReturnsFalse() {
             assertFalse(NettyRoutingFilterApiml.isServiceUnavailable(new javax.net.ssl.SSLException("cert error")));
+        }
+
+        @Test
+        void givenNoRouteToHostException_whenIsServiceUnavailable_thenReturnsTrue() {
+            assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(new NoRouteToHostException("no route to host")));
+        }
+
+        @Test
+        void givenNoRouteToHostExceptionNested_whenIsServiceUnavailable_thenReturnsTrue() {
+            RuntimeException outer = new RuntimeException("wrapper");
+            NoRouteToHostException inner = new NoRouteToHostException("no route to host");
+            outer.initCause(inner);
+            assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(outer));
         }
 
     }
