@@ -24,6 +24,8 @@ import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.http.MediaType;
@@ -31,6 +33,7 @@ import org.springframework.http.MediaType;
 import javax.net.ssl.*;
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -38,19 +41,44 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.fail;
 
+/**
+ * The purpose of this test is a complex test of the Infinispan implementation in both apiml and caching service.
+ * The aim is to verify Infinispan is configured well because in the past there was a configuration that was not
+ * stable. It was possible to establish a cluster and test the application but in case of an interruption it completely
+ * stopped working. For example in case of a network or performance issue.
+ *
+ * The test starts two instances of a service (caching or apiml) via start.sh and waits until Infinispan is connected
+ * to each other. To verify it, the health endpoint is used (it checks only the caching part, other indicators are not
+ * relevant for this test). When the cluster is stablished we simulate an issue by pausing one of the processes. After
+ * disconnecting the status of service becomes down, so we resume the process (simulating solving an issue) and waiting
+ * for cluster recovery. This recovery phase was failing in the past.
+ *
+ * Because there are two configuration of Infinispan (AT-TLS and regular one) the test is parametrized to verify all
+ * combinations.
+ *
+ * It is possible to test with more than 2 instances by simply adding another base port in {@link #BASE_PORTS}. But is should
+ * be covered by integration test org.zowe.apiml.integration.ha.CachingServiceTests.
+ *
+ * This test requires a Unix-based system to be executed (see running shell script, command kill supporting arguments
+ * -STOP and -CONT).
+ */
 @Slf4j
 @Tag("InfinispanJGroupStabilityTest")
-public class JGroupStabilityTest {
+@DisabledOnOs(OS.WINDOWS)
+class JGroupStabilityTest {
 
     private static final int[] BASE_PORTS = {17000, 27000};
 
@@ -66,6 +94,29 @@ public class JGroupStabilityTest {
         executorService.shutdownNow();
     }
 
+    private AtomicInteger offset = new AtomicInteger(0);
+
+    private boolean is(List<CachingService> cachingServices, Function<CachingService, Boolean> check) {
+        int begin = offset.updateAndGet(prev -> prev + 1 >= cachingServices.size() ? 0 : prev + 1);
+
+        for (int i = 0; i < cachingServices.size(); i++) {
+            var cacheService = cachingServices.get((begin + i) % cachingServices.size());
+            if (!check.apply(cacheService)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private boolean isUp(List<CachingService> cachingServiceList) {
+        return is(cachingServiceList, CachingService::isUp);
+    }
+
+    private boolean isDown(List<CachingService> cachingServiceList) {
+        return is(cachingServiceList, CachingService::isDown);
+    }
+
     @ParameterizedTest(name = "Environment setup -> isModulith: {0}; isAttls: {1}")
     @CsvSource({
         "false,false",
@@ -74,31 +125,41 @@ public class JGroupStabilityTest {
         "true,true"
     })
     void givenTwoInstances_whenOneHasADelay_thenClusterIsRebuilt(boolean isModulith, boolean isAttls) {
+        // prepare list of services to be started
         var cachingServices = IntStream.range(0, BASE_PORTS.length)
             .mapToObj(index -> new CachingService(index, isModulith, isAttls))
             .toList();
 
         try {
+            // initiate start of services
             cachingServices.forEach(CachingService::start);
-            await()
-                .pollDelay(10, TimeUnit.SECONDS)
-                .timeout(2, TimeUnit.MINUTES)
-                .until(() -> cachingServices.stream().allMatch(CachingService::isUp));
 
+            // wait till all services are ready
+            await()
+                .pollDelay(20, TimeUnit.SECONDS)
+                .timeout(isModulith ? 3 : 5, TimeUnit.MINUTES)
+                .until(() -> isUp(cachingServices));
+
+            // pause the first process to simulate an issue (not responding service)
             cachingServices.get(0).pause();
 
+            var nonPaused = cachingServices.subList(1, cachingServices.size()).stream().toList();
+            // wait till other nodes recognize disconnection (cluster does not contain all participants)
             await()
                 .pollDelay(10, TimeUnit.SECONDS)
                 .timeout(1, TimeUnit.MINUTES)
-                .until(() -> cachingServices.subList(1, cachingServices.size()).stream().allMatch(CachingService::isDown));
+                .until(() -> isDown(nonPaused));
 
+            // simulation of solving the issue (first process begin answering again)
             cachingServices.get(0).resume();
 
+            // wait till the cluster is recovered
             await()
                 .pollDelay(10, TimeUnit.SECONDS)
                 .timeout(2, TimeUnit.MINUTES)
-                .until(() -> cachingServices.stream().allMatch(CachingService::isUp));
+                .until(() -> isUp(cachingServices));
         } finally {
+            // stop all service used in the test
             cachingServices.forEach(CachingService::kill);
         }
     }
@@ -167,20 +228,28 @@ public class JGroupStabilityTest {
 
         public void start() {
             int basePort = BASE_PORTS[index];
-            log.info("Starting caching service on port {}", basePort);
+            String service = isModulith ? "apiml" : "caching-service";
+
+            log.info("Starting {} on ports based on {}", service, basePort);
 
             var env = new HashMap<String, String>();
-            env.put("ZWE_haInstance_id", "localhost" + String.valueOf(basePort).charAt(0));
-            env.put("APIML_ENABLED", isModulith ? "true" : "false");
-            env.put("logbackService", "ZWEACS" + (index + 1));
-            env.put("LAUNCH_COMPONENT", "caching-service/build/libs");
+
+            String javaHome = System.getProperty("java.home");
+            env.put("ZWE_java_home", javaHome);
+            env.put("JAVA_HOME", javaHome);
+
+            env.put("ZWE_haInstance_id", "localhost_" + (isModulith ? "Single" : "Multi") + "_" + (isAttls ? "Attls" : "NativeTls") + "_" + (index + 1));
+            env.put("logbackService", (isModulith ? "ZWEAGW" : "ZWEACS") + (index + 1));
+            env.put("LAUNCH_COMPONENT", service + "/build/libs");
 
             env.put("ZWE_configs_port", String.valueOf(basePort + 25));
 
             env.put("ZWE_configs_storage_infinispan_jgroups_port", String.valueOf(basePort + 600));
-            env.put("ZWE_configs_storage_infinispan_jgroups_keyExchange_port", String.valueOf(BASE_PORTS[0] + 601));
+            env.put("ZWE_configs_storage_infinispan_jgroups_host", "localhost");
+            env.put("ZWE_configs_storage_infinispan_jgroups_keyExchange_port", String.valueOf(basePort + 601));
             env.put("ZWE_configs_storage_infinispan_initialHosts", Arrays.stream(BASE_PORTS).mapToObj(bp -> "localhost[" + (bp + 600) + "]").collect(Collectors.joining(",")));
             env.put("ZWE_configs_storage_mode", "infinispan");
+            env.put("ZWE_zowe_workspaceDirectory", Paths.get(".").toAbsolutePath().normalize().toString());
 
             env.put("ZWE_zowe_certificate_keystore_file", "keystore/localhost/localhost.keystore.p12");
             env.put("ZWE_zowe_certificate_keystore_password", "password");
@@ -192,9 +261,16 @@ public class JGroupStabilityTest {
 
             env.put("ZWE_configs_apiml_health_protected", "false");
             env.put("attlsEnabledOnInfinispanTest", isAttls ? "true" : "false");
-            env.put("ZWE_zowe_network_client_tls_attls", isAttls ? "true" : "false");
 
-            ProcessBuilder builder = new ProcessBuilder("caching-service-package/src/main/resources/bin/start.sh");
+            if (isModulith) {
+                env.put("CMMN_LB", "build/libs/api-layer-lite-lib-all.jar");
+                env.put("ZWE_configs_internal_discovery_port", String.valueOf(basePort + 1));
+                env.put("ZWE_configs_apiml_security_authorization_provider", "dummy");
+                env.put("ZWE_configs_apiml_security_auth_provider", "saf");
+                env.put("ZWE_DISCOVERY_SERVICES_LIST", Arrays.stream(BASE_PORTS).mapToObj(bp -> "https://localhost:" + (bp + 1) + "/eureka/").collect(Collectors.joining(",")));
+            }
+
+            ProcessBuilder builder = new ProcessBuilder(service + "-package/src/main/resources/bin/start.sh");
             builder.environment().putAll(env);
 
             File binFolder = new File("../");
@@ -229,6 +305,7 @@ public class JGroupStabilityTest {
 
         void issue(String... parts) {
             ProcessBuilder builder = new ProcessBuilder(parts);
+            builder.redirectErrorStream(true);
             try {
                 var process = builder.start();
                 readLogs(process, pid -> {
@@ -263,7 +340,7 @@ public class JGroupStabilityTest {
 
         public boolean isUp() {
             int basePort = BASE_PORTS[index];
-            HttpGet request = new HttpGet("https://localhost:" + (basePort + 25) + "/cachingservice/application/health");
+            HttpGet request = new HttpGet("https://localhost:" + (basePort + 25) + (isModulith ? "" : "/cachingservice") + "/application/health");
             request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
             try (CloseableHttpClient client = HttpClients.custom().setSSLContext(ignoreSslContext()).setSSLHostnameVerifier(new NoopHostnameVerifier()).build()) {
                 final HttpResponse response = client.execute(request);
@@ -271,8 +348,12 @@ public class JGroupStabilityTest {
                 log.trace("URI: {}, JsonResponse is {}", request.getURI().toString(), jsonResponse);
 
                 if (StringUtils.isNotEmpty(jsonResponse)) {
-                    var status = JsonPath.parse(jsonResponse).read("components.caching.details.infinispan.cluster.status", String.class);
-                    return "UP".equals(status);
+                    var status = JsonPath.parse(jsonResponse).read(isModulith ? "components.infinispan.status" : "components.caching.details.infinispan.cluster.status", String.class);
+                    boolean isUp = "UP".equals(status);
+                    if (!isUp) {
+                        log.warn("URI: {}, JsonResponse is {}", request.getURI().toString(), jsonResponse);
+                    }
+                    return isUp;
                 }
                 return false;
             } catch (Exception e) {

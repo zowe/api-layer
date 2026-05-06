@@ -22,6 +22,7 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -34,20 +35,26 @@ public class JWTTestUtils {
         return createToken(username, domain, ltpaToken, config, "APIML");
     }
 
+    public static String createExpiredZoweJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
+        return createToken(username, domain, ltpaToken, System.currentTimeMillis() - Duration.ofDays(1).toMillis(), config, "APIML");
+    }
+
     public static String createZosmfJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
         return createToken(username, domain, ltpaToken, config, "zOSMF");
     }
 
     public static String createToken(String username, String domain, String ltpaToken, HttpsConfig config, String issuer) {
-        long now = System.currentTimeMillis();
-        long expiration = now + 100_000L;
+        return createToken(username, domain, ltpaToken, System.currentTimeMillis() + 100_000L, config, issuer);
+    }
+
+    public static String createToken(String username, String domain, String ltpaToken, long expiration, HttpsConfig config, String issuer) {
         Key jwtSecret = SecurityUtils.loadKey(config);
 
         return Jwts.builder()
             .subject(username)
             .claim("dom", domain)
             .claim("ltpa", ltpaToken)
-            .issuedAt(new Date(now))
+            .issuedAt(new Date(System.currentTimeMillis()))
             .expiration(new Date(expiration))
             .issuer(issuer)
             .id(UUID.randomUUID().toString())
