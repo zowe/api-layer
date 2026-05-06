@@ -190,7 +190,10 @@
     </ul>
 </div>
 <footer>
-    <p class="footer" th:text="${buildInfoText}"/>
+    <div class="footer">
+        <p th:text="${buildInfoText}"/>
+        <p th:if="${zoweVersionText != null}" th:text="${zoweVersionText}"/>
+    </div>
 </footer>
 </body>
 </html>
