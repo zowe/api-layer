@@ -2,7 +2,7 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `APIML 3.5.14 / Zowe 3.5.0 (2026-05-20)`
+## `APIML 3.5.17 / Zowe 3.5.0 (2026-05-20)`
 
 * Feature:  OpenTelemetry configuration has been configured with API ML's `SSLContext` to handle secure connections to external OTel collectors. (#4537) ([a6d6863](https://github.com/zowe/api-layer/commit/a6d6863)), closes [#4537](https://github.com/zowe/api-layer/issues/4537)
 * Feature:  OpenTelemetry logging capability has been added to the routing and API ML-bound requests. (#4509) ([bff02c5](https://github.com/zowe/api-layer/commit/bff02c5)), closes [#4509](https://github.com/zowe/api-layer/issues/4509)
