@@ -99,7 +99,7 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
         if (error == null) {
             return false;
         }
-    static boolean isServiceUnavailable(Throwable error) {
+    
         // Check the full cause chain
         Throwable current = error;
         do {
@@ -111,7 +111,7 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
             error = current;
             current = current.getCause();
         } while (current != null && curent != error);
+     
         return false;
     }
-
 }
