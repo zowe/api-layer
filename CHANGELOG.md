@@ -32,7 +32,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Improved troubleshooting by logging details of certificates ignored during API Layer client authentication through a new shared utility class. (#4415) ([8e74e5f](https://github.com/zowe/api-layer/commit/8e74e5f)), closes [#4415](https://github.com/zowe/api-layer/issues/4415)
 * Bugfix:  Set JVM console encoding to IBM-1047 for Java 21. (#4482) ([0a636a4](https://github.com/zowe/api-layer/commit/0a636a4)), closes [#4482](https://github.com/zowe/api-layer/issues/4482)
 * Bugfix:  Fixed infinispan configuration, exception handling, and the overall cache operation. (v3) (#4450) ([c2133d8](https://github.com/zowe/api-layer/commit/c2133d8)), closes [#4450](https://github.com/zowe/api-layer/issues/4450)
-* Bugfix:  Fix caching service stability for Modulith (#4544)([215cc5](https://github.com/zowe/api-layer/commit/0b209f051b6c48171f7df18b4128062ad0215cc5)), closes [#4544](https://github.com/zowe/api-layer/issues/4544)
+* Bugfix:  Fixed Caching Service stability for single-service deployment (#4544)([215cc5](https://github.com/zowe/api-layer/commit/0b209f051b6c48171f7df18b4128062ad0215cc5)), closes [#4544](https://github.com/zowe/api-layer/issues/4544)
 
 ## `APIML 3.5.3 / Zowe 3.4.1 (2026-01-29)`
 
