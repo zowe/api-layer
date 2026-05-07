@@ -99,20 +99,18 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
         if (error == null) {
             return false;
         }
+    static boolean isServiceUnavailable(Throwable error) {
         // Check the full cause chain
         Throwable current = error;
-        while (current != null) {
+        do {
             if (current instanceof ConnectException
                     || current instanceof ConnectTimeoutException
                     || current instanceof NoRouteToHostException) {
                 return true;
             }
+            error = current;
             current = current.getCause();
-
-            if (current == current.getCause()) {
-                return false;
-            }
-        }
+        } while (current != null && curent != error);
         return false;
     }
 
