@@ -206,6 +206,35 @@ class NettyRoutingFilterApimlTest {
             assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(outer));
         }
 
+        @Test
+        void givenNull_whenIsServiceUnavailable_thenReturnsFalse() {
+            assertFalse(NettyRoutingFilterApiml.isServiceUnavailable(null));
+        }
+
+        @Test
+        void givenConnectTimeoutExceptionNested_whenIsServiceUnavailable_thenReturnsTrue() {
+            RuntimeException outer = new RuntimeException("wrapper");
+            ConnectTimeoutException inner = new ConnectTimeoutException("timed out");
+            outer.initCause(inner);
+            assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(outer));
+        }
+
+        @Test
+        void givenExceptionWithNullCause_whenIsServiceUnavailable_thenReturnsFalse() {
+            RuntimeException ex = new RuntimeException("no cause");
+            assertFalse(NettyRoutingFilterApiml.isServiceUnavailable(ex));
+        }
+
+        @Test
+        void givenMultiLevelNestedServiceUnavailableException_whenIsServiceUnavailable_thenReturnsTrue() {
+            RuntimeException level1 = new RuntimeException("level1");
+            RuntimeException level2 = new RuntimeException("level2");
+            ConnectException level3 = new ConnectException("no connection");
+            level1.initCause(level2);
+            level2.initCause(level3);
+            assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(level1));
+        }
+
     }
 
     @Nested

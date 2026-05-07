@@ -99,17 +99,17 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
         if (error == null) {
             return false;
         }
-        // Check the exception itself
-        if (error instanceof ConnectException
-                || error instanceof ConnectTimeoutException
-                || error instanceof NoRouteToHostException) {
-            return true;
+        // Check the full cause chain
+        Throwable current = error;
+        while (current != null) {
+            if (current instanceof ConnectException
+                    || current instanceof ConnectTimeoutException
+                    || current instanceof NoRouteToHostException) {
+                return true;
+            }
+            current = current.getCause();
         }
-        // Check the cause
-        Throwable cause = error.getCause();
-        return cause instanceof ConnectException
-                || cause instanceof ConnectTimeoutException
-                || cause instanceof NoRouteToHostException;
+        return false;
     }
 
 }
