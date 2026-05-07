@@ -33,24 +33,26 @@ import java.util.UUID;
 public class JWTTestUtils {
 
     public static String createZoweJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
-        return createToken(username, domain, ltpaToken, null, config, "APIML");
+        return createToken(username, domain, ltpaToken, null, null, config, "APIML");
     }
 
     public static String createExpiredZoweJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
-        return createToken(username, domain, ltpaToken, System.currentTimeMillis() - Duration.ofDays(1).toMillis(), config, "APIML");
+        return createToken(username, domain, ltpaToken, System.currentTimeMillis() - Duration.ofDays(1).toMillis(), null, config, "APIML");
     }
 
     public static String createZosmfJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
-        return createToken(username, domain, ltpaToken, null, config, "zOSMF");
+        return createToken(username, domain, ltpaToken, null, null, config, "zOSMF");
     }
 
     public static String createZowePatJwtToken(String username, String domain, List<String> scopes, HttpsConfig config) {
-        return createToken(username, domain, null, scopes, config, "APIML_PAT");
+        return createToken(username, domain, null, null, scopes, config, "APIML_PAT");
     }
 
-    public static String createToken(String username, String domain, String ltpaToken, List<String> scopes, HttpsConfig config, String issuer) {
+    public static String createToken(String username, String domain, String ltpaToken, Long expiration, List<String> scopes, HttpsConfig config, String issuer) {
         long now = System.currentTimeMillis();
-        long expiration = now + 100_000L;
+        if (expiration == null) {
+            expiration = now + 100_000L;
+        }
         Key jwtSecret = SecurityUtils.loadKey(config);
 
         var builder = Jwts.builder();
