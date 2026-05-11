@@ -51,10 +51,10 @@
   "devDependencies": {
     "@eslint/js": "9.39.4",
     "@types/jest": "29.5.14",
-    "@types/node": "24.12.2",
+    "@types/node": "24.12.3",
     "@typescript-eslint/eslint-plugin": "8.59.2",
     "@typescript-eslint/parser": "8.59.2",
-    "@zowe/cli": "8.32.0",
+    "@zowe/cli": "8.32.1",
     "@zowe/cli-test-utils": "8.32.0",
     "@zowe/imperative": "8.32.0",
     "copyfiles": "2.4.1",
