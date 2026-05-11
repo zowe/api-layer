@@ -110,7 +110,7 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
             }
             error = current;
             current = current.getCause();
-        } while (current != null && curent != error);
+        } while (current != null && current != error);
      
         return false;
     }
