@@ -58,13 +58,21 @@ add_profile() {
 # Common library path setup
 ################################################################################
 if [ -z "${CMMN_LB}" ]; then
-    COMMON_LIB="../apiml-common-lib/bin/BOOT-INF/lib/"
+    if [ -d "apiml-common-lib/bin/BOOT-INF/lib/" ]; then
+        COMMON_LIB="apiml-common-lib/bin/BOOT-INF/lib/"
+    else
+        COMMON_LIB="../apiml-common-lib/bin/BOOT-INF/lib/"
+    fi
 else
     COMMON_LIB="${CMMN_LB}"
 fi
 
 if [ -z "${LIBRARY_PATH}" ]; then
-    LIBRARY_PATH="../common-java-lib/bin/"
+    if [ -d "common-java-lib/bin/" ]; then
+        LIBRARY_PATH="common-java-lib/bin/"
+    else
+        LIBRARY_PATH="../common-java-lib/bin/"
+    fi
 fi
 
 ################################################################################
@@ -72,7 +80,11 @@ fi
 ################################################################################
 JVM_SECURITY_PROPERTIES=""
 if [ "${JVM_SECURITY_PROPERTIES_OVERRIDE:-false}" = "true" ]; then
-    JVM_SECURITY_PROPERTIES="-Djava.security.properties=../apiml-common-lib/bin/jvm.security.override.properties"
+    if [ -f "apiml-common-lib/bin/jvm.security.override.properties" ]; then
+        JVM_SECURITY_PROPERTIES="-Djava.security.properties=apiml-common-lib/bin/jvm.security.override.properties"
+    else
+        JVM_SECURITY_PROPERTIES="-Djava.security.properties=../apiml-common-lib/bin/jvm.security.override.properties"
+    fi
 fi
 
 ################################################################################
