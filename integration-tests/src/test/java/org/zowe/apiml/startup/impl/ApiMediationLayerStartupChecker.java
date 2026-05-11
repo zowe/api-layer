@@ -14,6 +14,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import org.apache.commons.lang3.StringUtils;
@@ -21,8 +22,8 @@ import org.apache.commons.lang3.Strings;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -74,6 +75,7 @@ public class ApiMediationLayerStartupChecker {
     }
 
     @Data
+    @EqualsAndHashCode(of = {"hostname", "port", "serviceId"})
     private static class Instance {
 
         private final String scheme;
@@ -199,6 +201,7 @@ public class ApiMediationLayerStartupChecker {
                     }
                     return i;
                 })
+                .distinct()
                 .filter(instanceMatcher)
                 .collect(Collectors.toList());
         }

@@ -12,7 +12,7 @@
 # base image tag
 ARG ZOWE_BASE_IMAGE=3-ubuntu
 
-FROM node:20-alpine
+FROM node:24-alpine
 RUN npm install -g npm@10.9.4
 
 LABEL name="nodesampleapp"
