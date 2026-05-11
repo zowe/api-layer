@@ -107,7 +107,7 @@ if [ "$(uname)" = "OS/390" ]; then
 
     if [ "$JAVA_VERSION" -ge 65 ]; then # Java 21
         ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
-        JAVA21_CONSOLE_ENCODING="-Dconsole.encoding=${ZOWE_CONSOLE_LOG_CHARSET}"
+        JAVA21_CONSOLE_ENCODING="-Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET}"
     fi
 fi
 

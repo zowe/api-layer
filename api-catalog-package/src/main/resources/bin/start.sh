@@ -97,7 +97,7 @@ if [ -n "${externalProtocol}" ] && [ -n "${ZWE_zowe_externalDomains_0}" ] && [ -
 fi
 
 CATALOG_CODE=AC
-_BPXK_AUTOCVT=ALL
+_BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     -XX:+ExitOnOutOfMemoryError \
@@ -109,7 +109,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     ${JVM_SECURITY_PROPERTIES} \
     ${EXTERNAL_URL} \
     ${CUSTOM_JVM_OPTS} \
-    -Dfile.encoding=COMPAT \
+    -Dfile.encoding=UTF-8 \
     -Dibm.serversocket.recover=true \
     -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
