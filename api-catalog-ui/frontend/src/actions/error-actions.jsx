@@ -9,11 +9,11 @@
  */
 
 import * as log from 'loglevel';
-import { v4 as uuidv4 } from 'uuid';
-import { SEND_ERROR, CLEAR_ALL_ERRORS } from '../constants/error-constants';
+import {CLEAR_ALL_ERRORS, SEND_ERROR} from '../constants/error-constants';
 
 export function sendError(error) {
-    const uuid = uuidv4();
+    const crypto = globalThis.crypto ?? require("node:crypto");
+    const uuid = crypto.randomUUID();
     const err = { id: uuid, timestamp: new Date(), error };
     log.error(`Error: ${err}`);
     return {

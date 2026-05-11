@@ -17,18 +17,18 @@ import java.net.URL;
 @SuppressWarnings("squid:S106") //ignoring the System.out System.err warinings
 public class RemoteHandshake implements Verifier {
 
-    private SSLContextFactory sslContextFactory;
+    private SSLContextHolder sslContextHolder;
     private HttpClient httpClient;
 
-    public RemoteHandshake(SSLContextFactory sslContextFactory, HttpClient httpClient) {
-        this.sslContextFactory = sslContextFactory;
+    public RemoteHandshake(SSLContextHolder sslContextHolder, HttpClient httpClient) {
+        this.sslContextHolder = sslContextHolder;
         this.httpClient = httpClient;
     }
 
     @Override
     public boolean verify() {
-        String serviceAddress = sslContextFactory.getStores().getConf().getRemoteUrl();
-        String trustStore = sslContextFactory.getStores().getConf().getTrustStore();
+        String serviceAddress = sslContextHolder.getStores().getConf().getRemoteUrl();
+        String trustStore = sslContextHolder.getStores().getConf().getTrustStore();
 
         try {
             URL url = new URL(serviceAddress);

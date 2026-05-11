@@ -46,6 +46,7 @@ public class Endpoints {
 
     public static final String VALIDATE_OIDC_TOKEN = "/gateway/api/v1/auth/oidc-token/validate";
     public static final String JWK_ALL = "/gateway/api/v1/auth/keys/public/all";
+    public static final String JWK_CURRENT = "/gateway/api/v1/auth/keys/public/current";
 
     public static final String SAF_AUTH_CHECK = "/gateway/auth/check";
 

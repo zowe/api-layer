@@ -16,6 +16,7 @@ import com.nimbusds.jwt.proc.BadJWTException;
 import com.nimbusds.jwt.proc.ExpiredJWTException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.Request;
 import org.springframework.cloud.client.loadbalancer.RequestDataContext;
@@ -25,7 +26,6 @@ import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache.LoadBalancerCacheRecord;
 import reactor.core.publisher.Flux;
@@ -35,18 +35,12 @@ import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.zowe.apiml.constants.ApimlConstants.X_INSTANCEID;
 import static reactor.core.publisher.Flux.just;
-import static reactor.core.publisher.Mono.empty;
 
 /**
  * A sticky session load balancer that ensures requests from the same user are routed to the same service instance.
@@ -54,6 +48,7 @@ import static reactor.core.publisher.Mono.empty;
 @Slf4j
 public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInstanceListSupplier {
 
+    public static final String HEADER_PREFIX = "Bearer ";
     private static final String HEADER_NONE_SIGNATURE = Base64.getEncoder().encodeToString("{\"typ\":\"JWT\",\"alg\":\"none\"}".getBytes(StandardCharsets.UTF_8));
 
     private final LoadBalancerCache cache;
@@ -85,22 +80,47 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
         if (serviceId == null) {
             return Flux.empty();
         }
-        AtomicReference<String> principal = new AtomicReference<>();
+
+        var requestContext = request.getContext();
+        var instanceId = getInstanceId(requestContext);
+        if (instanceId != null) {
+            // if instanceId is set in headers use it
+            try {
+                return delegate.get(request)
+                    .map(serviceInstances -> checkInstanceIdHeader(instanceId, serviceInstances));
+            } catch (ResponseStatusException ex) {
+                return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Service instance not found for the provided instance ID"));
+            }
+        }
+
+        var userId = getSub(requestContext);
+        if (userId == null) {
+            // if no userId is available return all
+            log.debug("No authentication present on request, not filtering the service: {}", serviceId);
+            return delegate.get(request);
+        }
+
         return delegate.get(request)
-            .flatMap(serviceInstances -> getSub(request.getContext())
-                .switchIfEmpty(Mono.just(""))
-                .flatMap(user -> {
-                    if (user == null || user.isEmpty()) {
-                        log.debug("No authentication present on request, not filtering the service: {}", serviceId);
-                        return empty();
-                    } else {
-                        principal.set(user);
-                        return cache.retrieve(user, serviceId).onErrorResume(t -> Mono.empty());
-                    }
-                })
-                .switchIfEmpty(Mono.just(LoadBalancerCacheRecord.NONE))
-                .flatMapMany(cacheRecord -> filterInstances(principal.get(), serviceId, cacheRecord, serviceInstances, request.getContext()))
-            )
+            .flatMap(serviceInstances -> {
+                if (serviceInstances.isEmpty()) {
+                    // no instances available - just return
+                    log.debug("No services selected");
+                    return Flux.just(serviceInstances);
+                }
+
+                boolean stickySession = lbTypeIsAuthentication(serviceInstances.iterator().next());
+                if (!stickySession) {
+                    // service does not support sticky session by userId, just return
+                    log.debug("Service {} does not support sticky session", serviceId);
+                    return Flux.just(serviceInstances);
+                }
+
+                log.debug("Obtain service instances for {} from the cache", serviceId);
+                return cache.retrieve(userId, serviceId)
+                    .onErrorResume(t -> Mono.empty())
+                    .flatMapMany(cacheRecord -> filterInstances(userId, serviceId, cacheRecord, serviceInstances))
+                    .switchIfEmpty(Flux.just(serviceInstances));
+            })
             .doOnError(e -> log.debug("Error in determining service instances", e));
     }
 
@@ -115,30 +135,23 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
         return now.isAfter(cachedDate);
     }
 
-    private Mono<String> getSub(Object requestContext) {
+    private String getSub(Object requestContext) {
         if (requestContext instanceof RequestDataContext ctx) {
             var token = Optional.ofNullable(getTokenFromCookie(ctx))
                                 .orElseGet(() -> getTokenFromHeader(ctx));
-            return Mono.just(extractSubFromToken(token));
+            return extractSubFromToken(token);
         }
-        return Mono.just("");
+        return null;
     }
 
     private String getTokenFromCookie(RequestDataContext ctx) {
-        var tokens = ctx.getClientRequest().getCookies().get("apimlAuthenticationToken");
-        return tokens == null || tokens.isEmpty() ? null : tokens.get(0);
+        return ctx.getClientRequest().getCookies().getFirst("apimlAuthenticationToken");
     }
 
     private String getTokenFromHeader(RequestDataContext ctx) {
-        var authHeaderValues = ctx.getClientRequest().getHeaders().get(HttpHeaders.AUTHORIZATION);
-        var token = authHeaderValues == null || authHeaderValues.isEmpty() ? null : authHeaderValues.get(0);
-        if (token != null && token.startsWith(ApimlConstants.BEARER_AUTHENTICATION_PREFIX)) {
-            token = token.replaceFirst(ApimlConstants.BEARER_AUTHENTICATION_PREFIX, "").trim();
-            if (token.isEmpty()) {
-                return null;
-            }
-
-            return token;
+        var authHeaderValue = ctx.getClientRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (Strings.CS.startsWith(authHeaderValue, HEADER_PREFIX)) {
+            return authHeaderValue.substring(HEADER_PREFIX.length());
         }
         return null;
     }
@@ -157,27 +170,17 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
         String user,
         String serviceId,
         LoadBalancerCacheRecord cacheRecord,
-        List<ServiceInstance> serviceInstances,
-        Object requestContext) {
-
-        Flux<List<ServiceInstance>> result;
-        if (shouldIgnore(serviceInstances, user)) {
-            var instanceId = getInstanceId(requestContext);
-            try {
-                return just(checkInstanceIdHeader(instanceId, serviceInstances));
-            } catch (ResponseStatusException ex) {
-                return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND, "Service instance not found for the provided instance ID"));
+        List<ServiceInstance> serviceInstances
+    ) {
+        if (isNotBlank(cacheRecord.getInstanceId())) {
+            if (isTooOld(cacheRecord.getCreationTime())) {
+                return cache.delete(user, serviceId)
+                    .thenMany(chooseOne(user, serviceInstances));
             }
+            return chooseOne(cacheRecord.getInstanceId(), user, serviceInstances);
         }
-        if (isNotBlank(cacheRecord.getInstanceId()) && isTooOld(cacheRecord.getCreationTime())) {
-            result = cache.delete(user, serviceId)
-                .thenMany(chooseOne(user, serviceInstances));
-        } else if (isNotBlank(cacheRecord.getInstanceId())) {
-            result = chooseOne(cacheRecord.getInstanceId(), user, serviceInstances);
-        } else {
-            result = chooseOne(user, serviceInstances);
-        }
-        return result;
+
+        return chooseOne(user, serviceInstances);
     }
 
     /**
@@ -253,10 +256,6 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
         return chooseOne(null, user, serviceInstances);
     }
 
-    boolean shouldIgnore(List<ServiceInstance> instances, String user) {
-        return StringUtils.isEmpty(user) || instances.isEmpty() || !lbTypeIsAuthentication(instances.get(0));
-    }
-
     private boolean lbTypeIsAuthentication(ServiceInstance instance) {
         Map<String, String> metadata = instance.getMetadata();
         if (metadata != null) {
@@ -305,6 +304,7 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
                 return claims.getSubject();
             }
         }
-        return "";
+        return null;
     }
+
 }

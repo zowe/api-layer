@@ -316,7 +316,7 @@
                                 },
                                 "provider": {
                                     "type": "string",
-                                    "enum": ["endpoint", "native", "dummy"],
+                                    "enum": ["endpoint", "native", "dummy", ""],
                                     "default": "native",
                                     "description": "Specifies security provider to be used by the Gateway."
                                 },
@@ -681,6 +681,11 @@
                                                     "type": "integer",
                                                     "description": "The port number used by Infinispan to exchange encryption key among Caching Service instances.",
                                                     "default": 7601
+                                                },
+                                                "socketTimeout": {
+                                                    "type": "integer",
+                                                    "description": "Timeout (in ms) for a socket read. This applies for example to the initial SSL handshake, e.g. if the client connects to a non-JGroups service accidentally running on the same port",
+                                                    "default": 5000
                                                 }
                                             }
                                         },

@@ -23,6 +23,9 @@ import java.util.regex.Pattern;
 public class LocalVerifier implements Verifier {
 
     private static final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss. SSSZ");
+    private static final String OID_SERVER_AUTH = "1.3.6.1.5.5.7.3.1";
+    private static final String OID_CLIENT_AUTH = "1.3.6.1.5.5.7.3.2";
+    private static final String OID_SHA256_RSA = "1.2.840.113549.1.1.11";
 
     private final Stores stores;
     private final String[] requiredHostnames;
@@ -131,50 +134,42 @@ public class LocalVerifier implements Verifier {
         return notMatching.isEmpty();
     }
 
-    boolean verifyServer(X509Certificate serverCert) {
-        try {
-            boolean serverAuth = serverCert.getExtendedKeyUsage().contains("1.3.6.1.5.5.7.3.1");
+    boolean verifyServer(List<String> extendedKeyUsage) {
 
-            System.out.println("++++++++");
-            if (serverAuth) {
-                System.out.println("Certificate can be used for web server.");
-            } else {
-                System.out.println("Certificate can't be used for web server. " +
-                    "Provide certificate with extended key usage: 1.3.6.1.5.5.7.3.1");
-            }
-            System.out.println("++++++++");
+        System.out.println("++++++++");
 
-            return serverAuth;
-        } catch (CertificateParsingException e) {
-            System.err.println(e.getMessage());
+        boolean serverAuth = extendedKeyUsage.contains(OID_SERVER_AUTH);
+
+        if (serverAuth) {
+            System.out.println("Certificate can be used for web server.");
+        } else {
+            System.out.println("Certificate can't be used for web server. " +
+                "Provide certificate with Extended Key Usage (EKU) extension serverAuth OID " + OID_SERVER_AUTH);
         }
+        System.out.println("++++++++");
 
-        return false;
+        return serverAuth;
+
     }
 
-    boolean verifyX509(X509Certificate serverCert) {
-        try {
-            boolean clientAuth = serverCert.getExtendedKeyUsage().contains("1.3.6.1.5.5.7.3.2");
+    boolean verifyX509(List<String> extendedKeyUsage) {
 
-            System.out.println("++++++++");
-            if (clientAuth) {
-                System.out.println("Certificate can be used for client authentication.");
-            } else {
-                System.out.println("Certificate can't be used for client authentication. " +
-                    "Provide certificate with extended key usage: 1.3.6.1.5.5.7.3.2");
-            }
-            System.out.println("++++++++");
+        boolean clientAuth = extendedKeyUsage.contains(OID_CLIENT_AUTH);
 
-            return clientAuth;
-        } catch (CertificateParsingException e) {
-            System.err.println(e.getMessage());
+        System.out.println("++++++++");
+        if (clientAuth) {
+            System.out.println("Certificate can be used for client authentication.");
+        } else {
+            System.out.println("Certificate can't be used for client authentication. " +
+                "Provide certificate with Extended Key Usage (EKU) extension clientAuth OID " + OID_CLIENT_AUTH);
         }
+        System.out.println("++++++++");
 
-        return false;
+        return clientAuth;
     }
 
     boolean verifyJwt(X509Certificate serverCert) {
-        boolean supportedAlgorithm = serverCert.getSigAlgOID().contains("1.2.840.113549.1.1.11");
+        boolean supportedAlgorithm = serverCert.getSigAlgOID() != null && serverCert.getSigAlgOID().contains(OID_SHA256_RSA);
 
         System.out.println("++++++++");
         if (supportedAlgorithm) {
@@ -199,8 +194,23 @@ public class LocalVerifier implements Verifier {
         if (requiredHostnames != null) {
             hostNameCheck = verifyHostnames(serverCert);
         }
-        boolean serverCheck = verifyServer(serverCert);
-        boolean x509Check = verifyX509(serverCert);
+        boolean serverCheck = false;
+        boolean x509Check = false;
+        try {
+            if (serverCert.getExtendedKeyUsage() == null) {
+                System.out.println("Certificate does not contain extended key usage.");
+                serverCheck = true;
+                System.out.println("Certificate can be used for web server.");
+                x509Check = true;
+                System.out.println("Certificate can be used for client authentication.");
+            } else {
+                serverCheck = verifyServer(serverCert.getExtendedKeyUsage());
+                x509Check = verifyX509(serverCert.getExtendedKeyUsage());
+            }
+
+        } catch (CertificateParsingException e) {
+            System.err.println(e.getMessage());
+        }
         boolean verifyJwt = verifyJwt(serverCert);
 
         return expirationCheck && hostNameCheck && serverCheck && x509Check && verifyJwt;

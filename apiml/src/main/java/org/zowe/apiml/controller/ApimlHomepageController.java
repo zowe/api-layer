@@ -21,8 +21,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.zowe.apiml.config.ApplicationInfo;
-import org.zowe.apiml.product.version.BuildInfo;
-import org.zowe.apiml.product.version.BuildInfoDetails;
+import org.zowe.apiml.product.version.VersionInfo;
+import org.zowe.apiml.product.version.VersionInfoDetails;
+import org.zowe.apiml.product.version.VersionService;
 import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 
@@ -40,12 +41,13 @@ public class ApimlHomepageController {
     private static final String WARNING_ICON_NAME = "warning";
 
     private final DiscoveryClient discoveryClient;
-    private final BuildInfo buildInfo;
+    private final VersionService versionService;
 
     private final ApplicationInfo applicationInfo;
     private final ApplicationContext applicationContext;
 
     private String buildString;
+    private String zoweVersionText;
 
     @PostConstruct
     public void init() {
@@ -61,10 +63,15 @@ public class ApimlHomepageController {
     }
 
     private void initializeBuildInfos() {
-        BuildInfoDetails buildInfoDetails = buildInfo.getBuildInfoDetails();
+        VersionInfo versionInfo = versionService.getVersion();
+        VersionInfoDetails apiml = versionInfo.getApiml();
         buildString = "Build information is not available";
-        if (!buildInfoDetails.getVersion().equalsIgnoreCase("unknown")) {
-            buildString = String.format("Version %s build # %s", buildInfoDetails.getVersion(), buildInfoDetails.getNumber());
+        if (apiml != null && apiml.getVersion() != null && !apiml.getVersion().equalsIgnoreCase("unknown")) {
+            buildString = String.format("API ML Version %s build # %s", apiml.getVersion(), apiml.getBuildNumber());
+        }
+        VersionInfoDetails zowe = versionInfo.getZowe();
+        if (zowe != null && zowe.getVersion() != null && !zowe.getVersion().equalsIgnoreCase("unknown")) {
+            zoweVersionText = String.format("Zowe Version %s build # %s", zowe.getVersion(), zowe.getBuildNumber());
         }
     }
 
@@ -86,6 +93,7 @@ public class ApimlHomepageController {
         model.addAttribute("catalogLinkEnabled", true);
         model.addAttribute("catalogStatusText", "The API Catalog");
         model.addAttribute("buildInfoText", buildString);
+        model.addAttribute("zoweVersionText", zoweVersionText);
     }
 
     private boolean isAuthReady() {
