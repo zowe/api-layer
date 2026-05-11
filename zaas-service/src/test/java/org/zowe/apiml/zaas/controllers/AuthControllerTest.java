@@ -376,7 +376,10 @@ class AuthControllerTest {
                 @Test
                 void thenInvalidateOwnTokens() throws Exception {
                     SecurityContext context = new SecurityContextImpl();
-                    context.setAuthentication(TokenAuthentication.createAuthenticated("user", "token", TokenAuthentication.Type.JWT));
+                    var tokenAuthenticationMock = mock(TokenAuthentication.class);
+                    when(tokenAuthenticationMock.getPrincipal()).thenReturn("user");
+                    when(tokenAuthenticationMock.getType()).thenReturn(TokenAuthentication.Type.JWT);
+                    context.setAuthentication(tokenAuthenticationMock);
                     SecurityContextHolder.setContext(context);
                     body = new JSONObject()
                         .put("timestamp", "1234");

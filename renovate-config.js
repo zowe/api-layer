@@ -1,4 +1,5 @@
 module.exports = {
+    binarySource: "install",
     globalExtends: ["config:recommended"], // using this instead of "extends" solves the problem with order of the configuration
     repositories: ['zowe/api-layer'],
     baseBranches: ["v2.x.x", "v3.x.x"],

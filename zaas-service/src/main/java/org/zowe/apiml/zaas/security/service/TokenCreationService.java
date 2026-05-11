@@ -65,7 +65,7 @@ public class TokenCreationService {
             final String domain = "security-domain";
             log.debug("ZOSMF is not available or used. Generating APIML's JWT.");
             final String jwtTokenString = authenticationService.createJwtToken(user, domain, null);
-            log.debug("Succesfuly generated API ML JWT");
+            log.debug("Successfully generated API ML JWT");
             return authenticationService.createTokenAuthentication(user, jwtTokenString).getCredentials();
         }
     }

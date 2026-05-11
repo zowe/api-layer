@@ -22,8 +22,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.zowe.apiml.config.ApplicationInfo;
-import org.zowe.apiml.product.version.BuildInfo;
-import org.zowe.apiml.product.version.BuildInfoDetails;
+import org.zowe.apiml.product.version.VersionInfo;
+import org.zowe.apiml.product.version.VersionInfoDetails;
+import org.zowe.apiml.product.version.VersionService;
 
 import java.util.List;
 
@@ -43,12 +44,13 @@ public class GatewayHomepageController {
     private static final String UI_V1_ROUTE = "%s.ui-v1.%s";
 
     private final DiscoveryClient discoveryClient;
-    private final BuildInfo buildInfo;
+    private final VersionService versionService;
     @Value("${apiml.catalog.serviceId:}")
     private String apiCatalogServiceId;
 
     private final ApplicationInfo applicationInfo;
     private String buildString;
+    private String zoweVersionText;
 
     @PostConstruct
     public void init() {
@@ -63,14 +65,20 @@ public class GatewayHomepageController {
         initializeAuthenticationAttributes(model);
 
         model.addAttribute("buildInfoText", buildString);
+        model.addAttribute("zoweVersionText", zoweVersionText);
         return "home";
     }
 
     private void initializeBuildInfos() {
-        BuildInfoDetails buildInfoDetails = buildInfo.getBuildInfoDetails();
+        VersionInfo versionInfo = versionService.getVersion();
+        VersionInfoDetails apiml = versionInfo.getApiml();
         buildString = "Build information is not available";
-        if (!buildInfoDetails.getVersion().equalsIgnoreCase("unknown")) {
-            buildString = String.format("Version %s build # %s", buildInfoDetails.getVersion(), buildInfoDetails.getNumber());
+        if (apiml != null && apiml.getVersion() != null && !apiml.getVersion().equalsIgnoreCase("unknown")) {
+            buildString = String.format("API ML Version %s build # %s", apiml.getVersion(), apiml.getBuildNumber());
+        }
+        VersionInfoDetails zowe = versionInfo.getZowe();
+        if (zowe != null && zowe.getVersion() != null && !zowe.getVersion().equalsIgnoreCase("unknown")) {
+            zoweVersionText = String.format("Zowe Version %s build # %s", zowe.getVersion(), zowe.getBuildNumber());
         }
     }
 

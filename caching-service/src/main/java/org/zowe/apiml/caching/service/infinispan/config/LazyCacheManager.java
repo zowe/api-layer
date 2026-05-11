@@ -12,6 +12,7 @@ package org.zowe.apiml.caching.service.infinispan.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.codehaus.commons.compiler.util.Producer;
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.api.CacheContainerAdmin;
@@ -28,42 +29,42 @@ import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.stats.CacheContainerStats;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 
 import javax.security.auth.Subject;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Phaser;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 public class LazyCacheManager extends DefaultCacheManager {
 
-    private static final int RETRY = 2;
+    // how many minutes wait thread to finish initialization by other threads
+    private static final int INIT_TIMEOUT_MINS = 1;
 
-    private final AtomicReference<DefaultCacheManager> cacheManager = new AtomicReference<>();
+    private final AtomicReference<Producer<DefaultCacheManager>> cacheManager;
     private final CacheInitializer cacheInitializer;
 
     public LazyCacheManager(
         ConfigurationBuilderHolder cacheManagerConfig,
-        ConfigurationBuilder cacheConfig,
-        Collection<String> cacheNames
+        Map<String, ConfigurationBuilder> caches
     ) {
         super(cacheManagerConfig, false);
-        cacheInitializer = new CacheInitializer(cacheManagerConfig, cacheConfig, new ArrayList<>(cacheNames));
+        cacheInitializer = new CacheInitializer(cacheManagerConfig, caches);
+        cacheManager = new AtomicReference<>(cacheInitializer::getDefaultCacheManager);
     }
 
     private DefaultCacheManager getCacheManager() {
-        var container = cacheManager.get();
+        var container = cacheManager.get().produce();
         if (container == null) {
-            synchronized (this) {
-                container = cacheManager.get();
-                if (container == null) {
-                    container = cacheInitializer.getDefaultCacheManager();
-                }
-            }
-            if (container == null) {
-                throw new IllegalStateException("Cache container is not initialized yet");
-            }
+            throw new IllegalStateException("Cache container is not initialized yet");
         }
         return container;
     }
@@ -251,14 +252,20 @@ public class LazyCacheManager extends DefaultCacheManager {
         return getCacheManager().removeListenerAsync(listener);
     }
 
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationStart() {
+        cacheInitializer.onApplicationStart();
+    }
+
     @RequiredArgsConstructor
     class CacheInitializer {
 
         private DefaultCacheManager underInit;
 
         private final ConfigurationBuilderHolder cacheManagerConfig;
-        private final ConfigurationBuilder cacheConfig;
-        private final Collection<String> cacheNames;
+        private final Map<String, ConfigurationBuilder> caches;
+
+        private final Phaser threadCounter = new Phaser();
 
         private DefaultCacheManager startDefaultCacheManager() {
             var defaultCacheManager = new DefaultCacheManager(cacheManagerConfig, false);
@@ -276,54 +283,94 @@ public class LazyCacheManager extends DefaultCacheManager {
             }
         }
 
+        /**
+         * This method is responsible for initializing of CacheManager. The method could be called by
+         * multiple threads. The aim is to split work in this case and then return the fully initialized
+         * cache manager. In case of failure the original instance of lazy manager or partially initialized
+         * bean could be returned. The next invocation should initiate it.
+         * @return partially or fully initialized cache manager
+         */
         public DefaultCacheManager getDefaultCacheManager() {
-            if (underInit == null) {
-                for (int i = 0; i < 1 + RETRY; i++) {
-                    try {
-                        underInit = startDefaultCacheManager();
-                        break;
-                    } catch (Exception e) {
-                        log.warn("Cannot initialize DefaultCacheManager", e);
+            try {
+                // register to the barrier to check that the thread will leave method after each cache is initiated
+                threadCounter.register();
+
+                // start cache manager (only one thread could do that)
+                synchronized (LazyCacheManager.class) {
+                    if (underInit == null) {
+                        log.debug("attempt to create cache manager");
+                        try {
+                            underInit = startDefaultCacheManager();
+                            log.debug("cache manager was created");
+                        } catch (Exception e) {
+                            log.warn("Cannot initialize DefaultCacheManager", e);
+                            return null;
+                        }
                     }
                 }
-            }
 
-            if (underInit == null) {
-                return null;
-            }
+                while (true) {
+                    String cacheName;
+                    ConfigurationBuilder cacheBuilder;
+                    // obtain name and builder of one cache (to initiate it only in one thread)
+                    synchronized (LazyCacheManager.class) {
+                        var i = caches.entrySet().iterator();
+                        if (i.hasNext()) {
+                            var entry = i.next();
+                            cacheName = entry.getKey();
+                            cacheBuilder = entry.getValue();
+                            i.remove();
+                        } else {
+                            // if there is no cache to be initiated return instance and avoid using this method in the next calls
+                            cacheManager.set(() -> underInit);
+                            return underInit;
+                        }
+                    }
 
-            for (int i = 0; i < 1 + RETRY; i++) {
-                if (createCaches()) {
-                    break;
+                    try {
+                        createCache(cacheName, cacheBuilder);
+                    } catch (Exception e) {
+                        // initialization of cache failed. Put it back to be initialized again next invocation
+                        synchronized (LazyCacheManager.class) {
+                            caches.put(cacheName, cacheBuilder);
+                        }
+                        cacheManager.set(this::getDefaultCacheManager);
+                        return underInit;
+                    }
+                }
+            } finally {
+                /**
+                 * all caches should be initialized here or some caches initialization failed. Anyway, wait for other
+                 * threads (to avoid partial initialization) before leaving the method. Waiting is limited by timeout
+                 * defined in {@link #INIT_TIMEOUT_MINS}
+                 */
+                threadCounter.arriveAndDeregister();
+                try {
+                    threadCounter.awaitAdvanceInterruptibly(0, INIT_TIMEOUT_MINS, TimeUnit.MINUTES);
+                } catch (InterruptedException ie) {
+                    log.error("Thread was interrupted", ie);
+                    Thread.currentThread().interrupt();
+                } catch (TimeoutException te) {
+                    log.warn("Timeout while initializing of caches: {}", te.getMessage());
                 }
             }
-
-            if (cacheNames.isEmpty()) {
-                cacheManager.set(underInit);
-            }
-
-            return underInit;
         }
 
-        private boolean createCaches() {
-            for (Iterator<String> i = cacheNames.iterator(); i.hasNext();) {
-                String cacheName = i.next();
-                if (createCache(cacheName)) {
-                    i.remove();
-                }
-            }
-            return cacheNames.isEmpty();
-        }
-
-        private boolean createCache(String cacheName) {
+        private boolean createCache(String cacheName, ConfigurationBuilder cacheBuilder) {
+            var cacheConfig = cacheBuilder.build();
+            log.debug("Initializing cache {} with config {}", cacheName, cacheConfig);
             try {
                 underInit.administration()
                     .withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)
-                    .getOrCreateCache(cacheName, cacheConfig.build());
+                    .getOrCreateCache(cacheName, cacheConfig);
                 return true;
             } catch (CacheConfigurationException cce) {
                 log.warn("Error during initialization of cache {}", cacheName, cce);
-                underInit.defineConfiguration(cacheName, cacheConfig.build());
+                try {
+                    underInit.defineConfiguration(cacheName, cacheConfig);
+                } catch (Exception e) {
+                    log.warn("Configuration for cache {} already exists", cacheName, e);
+                }
             } catch (Exception e) {
                 log.warn("Error during initialization of cache {}", cacheName, e);
             }
@@ -331,7 +378,17 @@ public class LazyCacheManager extends DefaultCacheManager {
         }
 
         public boolean isInitialized() {
-            return underInit != null && cacheNames.isEmpty();
+            return underInit != null && caches.isEmpty();
+        }
+
+        public void onApplicationStart() {
+            if (!isInitialized() && (threadCounter.getUnarrivedParties() == 0)) {
+                /**
+                 * spring context is ready and no thread initialized the cache manager yet. Do it to avoid situation
+                 * when service is not fully ready till any bean need a specific cache.
+                 */
+                getDefaultCacheManager();
+            }
         }
 
     }

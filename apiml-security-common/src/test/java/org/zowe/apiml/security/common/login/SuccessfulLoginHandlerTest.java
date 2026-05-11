@@ -20,11 +20,12 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import jakarta.servlet.http.Cookie;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class SuccessfulLoginHandlerTest {
-    private final TokenAuthentication dummyAuth = new TokenAuthentication("TEST_TOKEN_STRING");
+    private final TokenAuthentication dummyAuth = new TokenAuthentication(JWTTestUtils.createDummyAPIMLToken("user"));
 
     private AuthConfigurationProperties authConfigurationProperties;
     private MockHttpServletRequest httpServletRequest;

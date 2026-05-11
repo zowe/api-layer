@@ -22,16 +22,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AnalyserTest {
     private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream errStream = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
+    private final PrintStream originalErr = System.err;
 
     @BeforeEach
     void setupStreams() {
         System.setOut(new PrintStream(outputStream));
+        System.setErr(new PrintStream(errStream));
     }
 
     @AfterEach
     void restoreStreams() {
         System.setOut(originalOut);
+        System.setErr(originalErr);
     }
 
 
@@ -44,5 +48,47 @@ class AnalyserTest {
             "-l"};
         assertEquals(0, Analyser.mainWithExitCode(args));
         assertTrue(outputStream.toString().contains("Trusted certificate is stored under alias:"));
+    }
+
+    @Test
+    void whenHelpRequested_thenHelpIsPrintedAndExitCodeIs8() {
+        String[] args = {"-h"};
+        assertEquals(8, Analyser.mainWithExitCode(args));
+        assertTrue(outputStream.toString().contains("Usage:"));
+        assertTrue(outputStream.toString().contains("Display a help message"));
+    }
+
+    @Test
+    void whenNoRemoteUrlProvided_thenMessageIsPrinted() {
+        String[] args = {};
+        assertEquals(4, Analyser.mainWithExitCode(args));
+        assertTrue(outputStream.toString().contains("No remote will be verified."));
+    }
+
+    @Test
+    void whenRemoteUrlProvidedWithoutClientCert_thenHandshakeIsAttempted() {
+        String[] args = {"-r", "https://localhost:12345"};
+        assertEquals(4, Analyser.mainWithExitCode(args));
+        assertTrue(outputStream.toString().contains("Start of the remote SSL handshake."));
+    }
+
+    @Test
+    void whenRemoteUrlProvidedWithClientCert_thenHandshakeIsAttempted() {
+        String[] args = {
+            "-r", "https://localhost:12345",
+            "-c",
+            "--keystore", "../keystore/localhost/localhost.keystore.p12",
+            "--truststore", "../keystore/localhost/localhost.truststore.p12",
+            "--keypasswd", "password"
+        };
+        assertEquals(4, Analyser.mainWithExitCode(args));
+        assertTrue(outputStream.toString().contains("Start of the remote SSL handshake."));
+    }
+
+    @Test
+    void whenInvalidKeystorePath_thenExceptionIsCaughtAndExitCodeIs4() {
+        String[] args = {"--keystore", "invalid/path/to/keystore.p12"};
+        assertEquals(4, Analyser.mainWithExitCode(args));
+        assertTrue(errStream.toString().contains("Error while loading keystore file"));
     }
 }
