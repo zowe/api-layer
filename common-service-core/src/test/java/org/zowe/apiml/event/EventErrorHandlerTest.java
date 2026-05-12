@@ -71,7 +71,8 @@ class EventErrorHandlerTest {
         var exception2 = assertThrows(IllegalArgumentException.class, () -> handler.handleError(exception));
         assertSame(exception, exception2);
         verify(mockedAppender, atLeast(1)).doAppend(loggingCaptor.capture());
-        assertTrue(loggingCaptor.getValue().getFormattedMessage().contains(exception.getMessage()));
+        assertEquals("Error occurred during processing an event", loggingCaptor.getValue().getFormattedMessage());
+        assertTrue(loggingCaptor.getValue().getThrowableProxy().getMessage().contains(exception.getMessage()));
     }
 
     @Test
@@ -80,7 +81,8 @@ class EventErrorHandlerTest {
         var exception2 = assertThrows(RuntimeException.class, () -> handler.handleError(exception));
         assertSame(exception, exception2.getCause());
         verify(mockedAppender, atLeast(1)).doAppend(loggingCaptor.capture());
-        assertTrue(loggingCaptor.getValue().getFormattedMessage().contains(exception.getMessage()));
+        assertEquals("Error occurred during processing an event", loggingCaptor.getValue().getFormattedMessage());
+        assertTrue(loggingCaptor.getValue().getThrowableProxy().getMessage().contains(exception.getMessage()));
     }
 
 }
