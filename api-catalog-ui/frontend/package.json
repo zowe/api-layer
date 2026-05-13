@@ -46,7 +46,7 @@
         "rxjs": "7.8.2",
         "sass": "1.99.0",
         "stream": "0.0.3",
-        "swagger-ui-react": "5.32.5",
+        "swagger-ui-react": "5.32.6",
         "url": "0.11.4",
         "util": "0.12.5"
     },
@@ -96,7 +96,7 @@
         "caniuse-lite": "1.0.30001792",
         "concurrently": "9.2.1",
         "cors": "2.8.6",
-        "cypress": "15.14.2",
+        "cypress": "15.15.0",
         "cypress-file-upload": "5.0.8",
         "dotenv": "17.4.2",
         "enzyme": "3.11.0",
@@ -132,18 +132,18 @@
         "start-server-and-test": "2.1.5",
         "tmpl": "1.0.5",
         "undici": "6.19.8",
-        "vite": "8.0.11",
+        "vite": "8.0.12",
         "vite-plugin-node-polyfills": "0.26.0",
-        "yaml": "2.8.4"
+        "yaml": "2.9.0"
     },
     "overrides": {
         "openapi-snippet": {
             "openapi-sampler": {
-                "fast-xml-parser": "5.7.3"
+                "fast-xml-parser": "5.8.0"
             }
         },
         "cosmiconfig": {
-            "yaml": "2.8.4"
+            "yaml": "2.9.0"
         },
         "nth-check": "2.1.1",
         "jsdom": "16.7.0",

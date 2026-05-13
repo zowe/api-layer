@@ -27,6 +27,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.zowe.apiml.security.common.error.PlatformPwdErrno;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -55,6 +56,7 @@ class ApiCatalogAuthenticationTest {
 
     private final static String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
+    private static final String AUTH_PROVIDER = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getAuthProvider();
 
     private static final String CATALOG_SERVICE_ID = "apicatalog";
     private static final String CATALOG_SERVICE_ID_PATH = "/" + CATALOG_SERVICE_ID;
@@ -206,6 +208,11 @@ class ApiCatalogAuthenticationTest {
             @MethodSource("org.zowe.apiml.functional.apicatalog.ApiCatalogAuthenticationTest#requestsToTest")
             void givenInvalidBasicAuthentication(String endpoint, Request request) {
                 String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID_PATH + (IS_MODULITH_ENABLED ? CATALOG_PREFIX : "") + endpoint + "'";
+                String expectedMessageNumber = UNAUTHENTICATED_ERROR_NUMBER;
+                if ("saf".equalsIgnoreCase(AUTH_PROVIDER)) {
+                    expectedMessage = "The platform returned error: " + PlatformPwdErrno.EINVAL.shortErrorName + ": " + PlatformPwdErrno.EINVAL.explanation;
+                    expectedMessageNumber = "ZWEAT416E";
+                }
 
                 request.execute(
                         given()
@@ -218,7 +225,7 @@ class ApiCatalogAuthenticationTest {
                         .statusCode(is(SC_UNAUTHORIZED))
                         .onFailMessage("On Gateway URL: " + endpoint)
                         .body(
-                            "messages.find { it.messageNumber == '" + UNAUTHENTICATED_ERROR_NUMBER + "' }.messageContent", equalTo(expectedMessage)
+                            "messages.find { it.messageNumber == '" + expectedMessageNumber + "' }.messageContent", equalTo(expectedMessage)
                         );
             }
 
