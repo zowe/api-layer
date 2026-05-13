@@ -18,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.zowe.apiml.security.client.service.GatewaySecurityService;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 
 import java.util.Optional;
 
@@ -30,7 +31,7 @@ class GatewayLoginProviderTest {
     private static final String USER = "USER";
     private static final char[] VALID_PASSWORD = "PASS".toCharArray();
     private static final char[] INVALID_PASSWORD = "WORD".toCharArray();
-    private static final String VALID_TOKEN = "VALID_TOKEN";
+    private static final String VALID_TOKEN = JWTTestUtils.createDummyAPIMLToken(USER);
 
     private final GatewaySecurityService gatewaySecurityService = mock(GatewaySecurityService.class);
     private final GatewayLoginProvider gatewayLoginProvider = new GatewayLoginProvider(gatewaySecurityService);

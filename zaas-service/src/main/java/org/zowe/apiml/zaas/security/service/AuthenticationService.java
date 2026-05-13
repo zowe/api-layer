@@ -14,8 +14,6 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.BadJWTException;
 import com.nimbusds.jwt.proc.ExpiredJWTException;
@@ -45,11 +43,7 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenAuthentication;
-import org.zowe.apiml.security.common.token.TokenExpireException;
-import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.util.CacheUtils;
 import org.zowe.apiml.util.EurekaUtils;
 import org.zowe.apiml.zaas.controllers.AuthController;
@@ -57,15 +51,8 @@ import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
 import java.text.ParseException;
-import java.time.Clock;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.zowe.apiml.security.common.util.JwtUtils.getJwtClaims;
 import static org.zowe.apiml.security.common.util.JwtUtils.handleJwtParserException;
@@ -86,7 +73,7 @@ public class AuthenticationService {
     private static final String DOMAIN_CLAIM_NAME = "dom";
     private static final String AUTH_PROV_CLAIM = "auth.prov";
     private static final String SCOPES = "scopes";
-    private static final String CACHE_VALIDATION_JWT_TOKEN = "validationJwtToken";
+    private static final String CACHE_VALIDATED_JWT_TOKENS = "validatedJwtTokens";
     private static final String CACHE_INVALIDATED_JWT_TOKENS = "invalidatedJwtTokens";
 
     private final ApplicationContext applicationContext;
@@ -97,16 +84,27 @@ public class AuthenticationService {
     private final RestTemplate restTemplate;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
-    private final Clock clock;
     private boolean isModulithMode;
-    private Cache validationJwtTokenCache;
-    private Cache invalidatedJwtTokensCache;
+    private final AtomicReference<Cache> validatedJwtTokensCache = new AtomicReference<>();
+    private final AtomicReference<Cache> invalidatedJwtTokensCache = new AtomicReference<>();
 
     @PostConstruct
     public void afterPropertiesSet() {
         isModulithMode = applicationContext.containsBean("modulithConfig");
-        validationJwtTokenCache = cacheManager.getCache(CACHE_VALIDATION_JWT_TOKEN);
-        invalidatedJwtTokensCache = cacheManager.getCache(CACHE_INVALIDATED_JWT_TOKENS);
+    }
+
+    private Cache getCacheLazy(AtomicReference<Cache> holder, String cacheName) {
+        return holder.updateAndGet(prev ->
+            prev == null ? cacheManager.getCache(cacheName) : prev
+        );
+    }
+
+    private Optional<Cache> getValidatedJwtTokensCache() {
+        return Optional.ofNullable(getCacheLazy(validatedJwtTokensCache, CACHE_VALIDATED_JWT_TOKENS));
+    }
+
+    private Optional<Cache> getInvalidatedJwtTokensCache() {
+        return Optional.ofNullable(getCacheLazy(invalidatedJwtTokensCache, CACHE_INVALIDATED_JWT_TOKENS));
     }
 
     /**
@@ -151,14 +149,18 @@ public class AuthenticationService {
                 claims.forEach(newClaims::setClaim);
             }
 
+            var kid = jwtSecurityInitializer.getJwkPublicKey()
+                .orElseThrow(() -> new IllegalStateException("Unable to get JWK.")).getKeyId();
+
             var jws = new JsonWebSignature();
             jws.setPayload(newClaims.toJson());
+            jws.setKeyIdHeaderValue(kid);
             jws.setKey(jwtSecurityInitializer.getJwtSecret());
             jws.setHeader("typ", "JWT");
             jws.setAlgorithmHeaderValue(jwtSecurityInitializer.getJwtAlgorithm());
             jws.setDoKeyValidation(false);
             String token = jws.getCompactSerialization();
-            log.debug("JWT created, last chars of signature: ...{}", StringUtils.right(token, 15));
+            log.debug("JWT created with kid ...{}, last chars of signature: ...{}", StringUtils.right(kid, 15), StringUtils.right(token, 15));
             return token;
         } catch (JoseException e) {
             throw new UncheckedJoseException(e.getMessage(), e);
@@ -168,12 +170,9 @@ public class AuthenticationService {
     @SuppressWarnings("java:S5659")
     // It is checking the signature securely - https://github.com/zowe/api-layer/issues/3191
     public QueryResponse parseJwtWithSignature(String jwt) {
-        try {
-            var claims = validateAndParseLocalJwtToken(jwt);
-            return parseQueryResponse(claims);
-        } catch (RuntimeException exception) {
-            throw handleJwtParserException(exception);
-        }
+        var tokenAuthentication = new TokenAuthentication(jwt);
+        validateLocalJwtToken(tokenAuthentication);
+        return tokenAuthentication.getQueryResponse();
     }
 
     /**
@@ -181,7 +180,6 @@ public class AuthenticationService {
      * - on logout phase (distribute = true)
      * - from another ZAAS instance to notify about change (distribute = false)
      * <p>
-     * Note: This method should not be called from modulith-mode
      *
      * @param jwtToken   token to invalidate
      * @param distribute distribute invalidation to another instances?
@@ -220,7 +218,7 @@ public class AuthenticationService {
             }
         }
 
-        final QueryResponse queryResponse = parseJwtToken(jwtToken);
+        final QueryResponse queryResponse = parseJwtToken(jwtToken).getQueryResponse();
         try {
             switch (queryResponse.getSource()) {
                 case ZOWE:
@@ -243,21 +241,17 @@ public class AuthenticationService {
     }
 
     private void putValidationCache(String jwtToken, TokenAuthentication tokenAuthentication) {
-        if (jwtToken != null && validationJwtTokenCache != null) {
-            validationJwtTokenCache.put(jwtToken, tokenAuthentication);
+        if (jwtToken != null) {
+            getValidatedJwtTokensCache().ifPresent(cache -> cache.put(jwtToken, tokenAuthentication));
         }
     }
 
     private void evictValidationCache(String jwtToken) {
-        if (validationJwtTokenCache != null) {
-            validationJwtTokenCache.evict(jwtToken);
-        }
+        getValidatedJwtTokensCache().ifPresent(cache -> cache.evict(jwtToken));
     }
 
     private void putInvalidatedCache(String jwtToken) {
-        if (invalidatedJwtTokensCache != null) {
-            invalidatedJwtTokensCache.put(jwtToken, Boolean.TRUE);
-        }
+        getInvalidatedJwtTokensCache().ifPresent(cache -> cache.put(jwtToken, Boolean.TRUE));
     }
 
     /**
@@ -321,35 +315,30 @@ public class AuthenticationService {
      * @return true - token is invalidated, otherwise token is still valid
      */
     public boolean isInvalidated(String jwtToken) {
-        if (invalidatedJwtTokensCache == null) {
-            return false;
-        }
-        Cache.ValueWrapper wrapper = invalidatedJwtTokensCache.get(jwtToken);
-        boolean result = wrapper != null && Boolean.TRUE.equals(wrapper.get());
+        boolean result = getInvalidatedJwtTokensCache()
+            .map(cache -> cache.get(jwtToken))
+            .map(wrapper -> Boolean.TRUE.equals(wrapper.get()))
+            .orElse(false);
+
         log.debug("Token invalidation check for ...{}: {}", StringUtils.right(jwtToken, 15), result);
         return result;
     }
 
-    private JWTClaimsSet validateAndParseLocalJwtToken(String jwtToken) {
+    private void validateLocalJwtToken(TokenAuthentication tokenAuthentication) {
         try {
-            var parsedJwt = JWTParser.parse(jwtToken);
+            var parsedJwt = tokenAuthentication.getJwt();
             if (parsedJwt instanceof SignedJWT signedJwt) {
-                var verified = signedJwt.verify(jwtSecurityInitializer.getJwtVerifier());
-                if (verified) {
-                    var claims = parsedJwt.getJWTClaimsSet();
-                    if (claims.getExpirationTime().toInstant().isBefore(clock.instant())) {
-                        log.debug("JWT is expired, with expiration time: {}", claims.getExpirationTime().toInstant().toString());
-                        throw new ExpiredJWTException("JWT is expired");
+                if (signedJwt.verify(jwtSecurityInitializer.getJwtVerifier())) {
+                    if (tokenAuthentication.isExpired()) {
+                        throw new ExpiredJWTException("Token expired on %s".formatted(tokenAuthentication.getExpiration()));
                     }
-                    return claims;
+                    return;
                 }
-                log.debug("JWT signature verification failed, last chars of signature: ...{}", StringUtils.right(jwtToken, 15));
-                throw new BadJWTException("Token signature is invalid for public key: " + jwtSecurityInitializer.getJwkPublicKey().get().toString());
+                log.debug("JWT signature verification failed, last chars of signature: ...{}", StringUtils.right(tokenAuthentication.getJwt().getParsedString(), 15));
+                throw new BadJWTException("Token signature is invalid for public key: " + jwtSecurityInitializer.getJwkPublicKey().get());
             } else {
                 throw new BadJWTException("Token is not signed");
             }
-        } catch (ParseException e) {
-            throw handleJwtParserException(new BadJWTException(e.getMessage()));
         } catch (RuntimeException | BadJWTException | JOSEException exception) {
             throw handleJwtParserException(exception);
         }
@@ -371,30 +360,37 @@ public class AuthenticationService {
      * @return true if token is still valid, otherwise false
      */
     public TokenAuthentication validateJwtToken(String jwtToken) {
-        log.debug("Validating JWT: ...{}", StringUtils.right(jwtToken, 15));
-        if (jwtToken != null && validationJwtTokenCache != null) {
-            Cache.ValueWrapper cached = validationJwtTokenCache.get(jwtToken);
-            if (cached != null) {
-                log.debug("JWT found in the cache.");
-                return (TokenAuthentication) cached.get();
-            }
+        if (jwtToken == null) {
+            throw new TokenNotValidException("Token is null");
         }
 
-        QueryResponse queryResponse = parseJwtToken(jwtToken);
-        boolean isValid = switch (queryResponse.getSource()) {
-            case ZOWE -> {
-                validateAndParseLocalJwtToken(jwtToken);
-                yield true;
+        log.debug("Validating JWT: ...{}", StringUtils.right(jwtToken, 15));
+        if (isInvalidated(jwtToken)) {
+            throw new TokenNotValidException("Token ...%s was invalidated.".formatted(StringUtils.right(jwtToken, 15)));
+        }
+
+        var tokenAuthentication = getValidatedJwtTokensCache()
+            .map(wrapper -> wrapper.get(jwtToken))
+            .map(Cache.ValueWrapper::get)
+            .map(TokenAuthentication.class::cast)
+            .orElse(null);
+        if (tokenAuthentication != null) {
+            log.debug("JWT ...{} found in the cache. Is authenticated: {}", StringUtils.right(jwtToken, 15), tokenAuthentication.isAuthenticated());
+            if (tokenAuthentication.isExpired()) {
+                throw new TokenExpireException("Token ...%s expired on %s".formatted(StringUtils.right(jwtToken, 15), tokenAuthentication.getExpiration()));
             }
+            return tokenAuthentication;
+        }
+
+        tokenAuthentication = new TokenAuthentication(jwtToken);
+        switch (tokenAuthentication.getSource()) {
+            case ZOWE -> validateLocalJwtToken(tokenAuthentication);
             case ZOSMF -> zosmfService.validate(jwtToken);
             default -> throw new TokenNotValidException("Unknown token type.");
-        };
-        boolean notInvalidated = !isInvalidated(jwtToken);
-        TokenAuthentication tokenAuthentication = new TokenAuthentication(queryResponse.getUserId(), jwtToken, TokenAuthentication.Type.JWT);
-        tokenAuthentication.setAuthenticated(notInvalidated && isValid);
-
+        }
+        tokenAuthentication.setAuthenticated(true);
         putValidationCache(jwtToken, tokenAuthentication);
-        log.debug("JWT validation result: {}", tokenAuthentication.isAuthenticated());
+        log.debug("JWT token ...{} is valid", StringUtils.right(jwtToken, 15));
         return tokenAuthentication;
     }
 
@@ -456,11 +452,8 @@ public class AuthenticationService {
         if (token == null) {
             throw new TokenNotValidException("Null token.");
         }
-        parseJwtToken(token.getCredentials()); // throws on expired token, this needs to happen before cache
-        
-        var tokenAuth = validateJwtToken(token.getCredentials());
-        
-        return tokenAuth;
+
+        return validateJwtToken(token.getCredentials());
     }
 
     /**
@@ -470,31 +463,9 @@ public class AuthenticationService {
      * @param jwtToken the JWT token
      * @return the query response
      */
-    public QueryResponse parseJwtToken(String jwtToken) {
+    public TokenAuthentication parseJwtToken(String jwtToken) {
         log.debug("Parsing JWT: ...{}", StringUtils.right(jwtToken, 15));
-        var claims = getJwtClaims(jwtToken);
-        return parseQueryResponse(claims);
-    }
-
-    public QueryResponse parseQueryResponse(JWTClaimsSet claims) {
-        Object scopesObject = claims.getClaim(SCOPES);
-        List<String> scopes = Collections.emptyList();
-        if (scopesObject instanceof List<?>) {
-            scopes = (List<String>) scopesObject;
-        }
-        try {
-            return new QueryResponse(
-                claims.getClaimAsString(DOMAIN_CLAIM_NAME),
-                claims.getSubject(),
-                claims.getIssueTime(),
-                claims.getExpirationTime(),
-                claims.getIssuer(),
-                scopes,
-                QueryResponse.Source.valueByIssuer(claims.getIssuer())
-            );
-        } catch (ParseException e) {
-            throw new TokenNotValidException(e.getMessage(), e);
-        }
+        return new TokenAuthentication(jwtToken);
     }
 
     /**
@@ -518,7 +489,9 @@ public class AuthenticationService {
      */
     public String getLtpaTokenWithValidation(String jwtToken) {
         try {
-            return validateAndParseLocalJwtToken(jwtToken).getClaimAsString(LTPA_CLAIM_NAME);
+            var tokenAuthentication = new TokenAuthentication(jwtToken);
+            validateLocalJwtToken(tokenAuthentication);
+            return tokenAuthentication.getClaimAsString(LTPA_CLAIM_NAME);
         } catch (ParseException e) {
             throw new TokenNotValidException(e.getMessage(), e);
         }
@@ -595,7 +568,6 @@ public class AuthenticationService {
 
         return Optional.empty();
     }
-
 
     /**
      * Calculate the expiration time

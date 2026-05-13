@@ -22,9 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.security.client.service.GatewaySecurity;
 import org.zowe.apiml.security.common.login.LoginRequest;
-import org.zowe.apiml.security.common.token.OIDCProvider;
-import org.zowe.apiml.security.common.token.QueryResponse;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import lombok.extern.slf4j.Slf4j;
@@ -65,15 +63,15 @@ public class GatewaySecurityApi implements GatewaySecurity {
         var authentication = authenticationService.validateJwtToken(token);
         if (authentication.isAuthenticated()) {
             log.debug("JWT is valid. Parsing JWT.");
-            return authenticationService.parseJwtToken(token);
+            return authenticationService.parseJwtToken(token).getQueryResponse();
         }
         throw new TokenNotValidException(TOKEN_NOT_VALID.getDefaultMessage());
     }
 
     @Override
-    public QueryResponse verifyOidc(String token) {
+    public TokenAuthentication verifyOidc(String token) {
         if (oidcProvider != null && oidcProvider.isValid(token)) {
-            return new QueryResponse();
+            return new TokenAuthentication(token, TokenAuthentication.Type.OIDC);
         }
         throw new TokenNotValidException(TOKEN_NOT_VALID.getDefaultMessage());
     }

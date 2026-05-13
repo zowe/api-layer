@@ -53,9 +53,9 @@ class RemoteHandshakeTest {
         ApimlConf conf = new ApimlConf();
         CommandLine.ParseResult cmd = new CommandLine(conf).parseArgs(args);
         Stores stores = new Stores(conf);
-        SSLContextFactory sslContextFactory = SSLContextFactory.initSSLContextWithoutKeystore(stores);
+        SSLContextHolder sslContextHolder = SSLContextHolder.initSSLContextWithoutKeystore(stores);
         HttpClient client = mock(HttpClient.class);
-        RemoteHandshake remoteHandshake = new RemoteHandshake(sslContextFactory, client);
+        RemoteHandshake remoteHandshake = new RemoteHandshake(sslContextHolder, client);
         when(client.executeCall(any())).thenReturn(200);
         remoteHandshake.verify();
         String expectedMsg = "Start of the remote SSL handshake.\n" +
@@ -76,9 +76,9 @@ class RemoteHandshakeTest {
             ApimlConf conf = new ApimlConf();
             CommandLine.ParseResult cmd = new CommandLine(conf).parseArgs(args);
             Stores stores = new Stores(conf);
-            SSLContextFactory sslContextFactory = SSLContextFactory.initSSLContextWithoutKeystore(stores);
+            SSLContextHolder sslContextHolder = SSLContextHolder.initSSLContextWithoutKeystore(stores);
             HttpClient client = mock(HttpClient.class);
-            RemoteHandshake remoteHandshake = new RemoteHandshake(sslContextFactory, client);
+            RemoteHandshake remoteHandshake = new RemoteHandshake(sslContextHolder, client);
             remoteHandshake.verify();
             String expectedMsg = "Incorrect url \"malformedurl\". Error message: no protocol: malformedurl\n";
             assertEquals(expectedMsg, TerminalUtils.normalizeLineEnds(outputStream.toString()));
@@ -95,9 +95,9 @@ class RemoteHandshakeTest {
             ApimlConf conf = new ApimlConf();
             CommandLine.ParseResult cmd = new CommandLine(conf).parseArgs(args);
             Stores stores = new Stores(conf);
-            SSLContextFactory sslContextFactory = SSLContextFactory.initSSLContextWithoutKeystore(stores);
+            SSLContextHolder sslContextHolder = SSLContextHolder.initSSLContextWithoutKeystore(stores);
             HttpClient client = mock(HttpClient.class);
-            RemoteHandshake remoteHandshake = new RemoteHandshake(sslContextFactory, client);
+            RemoteHandshake remoteHandshake = new RemoteHandshake(sslContextHolder, client);
             String sslError = "Received fatal alert: handshake_failure";
             when(client.executeCall(any())).thenThrow(new SSLHandshakeException(sslError));
             remoteHandshake.verify();

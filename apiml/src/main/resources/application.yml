@@ -346,17 +346,15 @@ logging:
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.ehcache: INFO
-        org.jgroups: DEBUG
+        org.jgroups: TRACE
+        org.jgroups.protocols: ERROR
+        org.infinispan: DEBUG
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.springframework.security: TRACE
         org.springframework.security.web: TRACE
         org.springframework.security.authentication: DEBUG
         org.springdoc.core: DEBUG
         org.zowe.apiml: DEBUG
-        reactor.netty: DEBUG
-        reactor.netty.http.client: DEBUG
-        reactor.netty.http.client.HttpClient: DEBUG
-        reactor.netty.http.client.HttpClientConnect: DEBUG
 
 management:
     endpoint:
@@ -414,3 +412,7 @@ logging:
     level:
         org.springframework: DEBUG
         org.infinispan: DEBUG
+        reactor.netty: DEBUG
+        reactor.netty.http.client: DEBUG
+        reactor.netty.http.client.HttpClient: DEBUG
+        reactor.netty.http.client.HttpClientConnect: DEBUG
