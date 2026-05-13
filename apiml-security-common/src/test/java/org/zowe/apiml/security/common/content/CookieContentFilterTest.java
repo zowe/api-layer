@@ -25,6 +25,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -36,6 +37,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class CookieContentFilterTest {
+
+    public static final String  JWT_TOKEN = JWTTestUtils.createDummyAPIMLToken("userId");
 
     private CookieContentFilter cookieContentFilter;
     private final AuthConfigurationProperties authConfigurationProperties = new AuthConfigurationProperties();
@@ -56,10 +59,8 @@ class CookieContentFilterTest {
 
     @Test
     void authenticationWithValidTokenInsideCookie() throws ServletException, IOException {
-        String token = "token";
-
-        TokenAuthentication tokenAuthentication = new TokenAuthentication(token, TokenAuthentication.Type.JWT);
-        Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), token);
+        TokenAuthentication tokenAuthentication = new TokenAuthentication(JWT_TOKEN, TokenAuthentication.Type.JWT);
+        Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), JWT_TOKEN);
         request.setCookies(cookie);
 
         cookieContentFilter.doFilter(request, response, filterChain);
@@ -91,11 +92,10 @@ class CookieContentFilterTest {
 
     @Test
     void shouldNotAuthenticateWithBadCredentials() throws ServletException, IOException {
-        String token = "token";
         AuthenticationException exception = new BadCredentialsException("Token not valid");
 
-        TokenAuthentication tokenAuthentication = new TokenAuthentication(token, TokenAuthentication.Type.JWT);
-        Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), token);
+        TokenAuthentication tokenAuthentication = new TokenAuthentication(JWT_TOKEN, TokenAuthentication.Type.JWT);
+        Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), JWT_TOKEN);
         request.setCookies(cookie);
 
         when(authenticationManager.authenticate(tokenAuthentication)).thenThrow(exception);
@@ -110,10 +110,9 @@ class CookieContentFilterTest {
 
     @Test
     void shouldNotAuthenticateWithNoGateway() throws ServletException, IOException {
-        String token = "token";
         RuntimeException exception = new RuntimeException("No Gateway");
-        TokenAuthentication tokenAuthentication = new TokenAuthentication(token, TokenAuthentication.Type.JWT);
-        Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), token);
+        TokenAuthentication tokenAuthentication = new TokenAuthentication(JWT_TOKEN, TokenAuthentication.Type.JWT);
+        Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), JWT_TOKEN);
         request.setCookies(cookie);
 
         when(authenticationManager.authenticate(tokenAuthentication)).thenThrow(exception);
@@ -150,7 +149,7 @@ class CookieContentFilterTest {
 
     @Test
     void shouldExtractContent() {
-        Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), "cookie");
+        Cookie cookie = new Cookie(authConfigurationProperties.getCookieProperties().getCookieName(), JWT_TOKEN);
         request.setCookies(cookie);
 
         Optional<AbstractAuthenticationToken> content = cookieContentFilter.extractContent(request);

@@ -23,6 +23,9 @@
     "js-yaml": "4.1.1",
     "lodash": "4.18.1"
   },
+  "overrides": {
+      "path-to-regexp" : "8.4.2"
+  },
   "devDependencies": {
     "babel-core": "6.26.3",
     "babel-istanbul": "0.12.2",
@@ -51,8 +54,8 @@
       "gulp-mocha"
     ]
   },
-  "engines": {
-    "npm": ">=10.9.4",
-    "node": ">=20.19.6"
-  }
+    "engines": {
+        "npm": "=10.9.8",
+        "node": "=24.15.0"
+    }
 }

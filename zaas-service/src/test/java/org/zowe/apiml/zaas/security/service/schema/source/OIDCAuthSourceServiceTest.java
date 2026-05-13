@@ -39,7 +39,6 @@ import static org.zowe.apiml.security.common.util.JWTTestUtils.createTokenWithUs
 @ExtendWith(MockitoExtension.class)
 class OIDCAuthSourceServiceTest {
 
-
     private TokenCreationService tokenCreationService;
     private OIDCAuthSourceService service;
     private AuthenticationService authenticationService;
@@ -257,7 +256,9 @@ class OIDCAuthSourceServiceTest {
     private OIDCAuthSource mockValidAuthSource() {
         //No QueryResponse field is validated, so it can have dummy values to simplify mocking.
         QueryResponse tokenResponse = new QueryResponse("domain", "user", new Date(), new Date(), "issuer", Collections.emptyList(), QueryResponse.Source.OIDC);
-        when(authenticationService.parseJwtToken(TOKEN_WITH_USERNAME_FIELDS)).thenReturn(tokenResponse);
+        var tokenAuthenticationMock = mock(TokenAuthentication.class);
+        when(tokenAuthenticationMock.getQueryResponse()).thenReturn(tokenResponse);
+        when(authenticationService.parseJwtToken(TOKEN_WITH_USERNAME_FIELDS)).thenReturn(tokenAuthenticationMock);
         when(provider.isValid(TOKEN_WITH_USERNAME_FIELDS)).thenReturn(true);
         return new OIDCAuthSource(TOKEN_WITH_USERNAME_FIELDS);
     }

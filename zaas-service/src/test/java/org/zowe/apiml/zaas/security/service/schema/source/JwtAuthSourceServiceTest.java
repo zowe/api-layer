@@ -21,6 +21,7 @@ import org.zowe.apiml.security.common.token.QueryResponse.Source;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Parsed;
@@ -44,15 +45,15 @@ class JwtAuthSourceServiceTest {
     @InjectMocks
     private JwtAuthSourceService serviceUnderTest;
 
-    private final String token = "jwtToken";
+    private final String token = JWTTestUtils.createDummyAPIMLToken("user");
     private JwtAuthSource jwtAuthSource;
     private TokenAuthentication tokenAuthentication;
     private Parsed expectedParsedSource;
 
     @BeforeEach
     public void setup() {
-        jwtAuthSource = new JwtAuthSource("jwtToken");
-        tokenAuthentication = TokenAuthentication.createAuthenticated("user", token, TokenAuthentication.Type.JWT);
+        jwtAuthSource = new JwtAuthSource(token);
+        tokenAuthentication = TokenAuthentication.createAuthenticated(token, TokenAuthentication.Type.JWT);
         expectedParsedSource = new ParsedTokenAuthSource("user", new Date(111), new Date(222), Origin.ZOSMF);
     }
 
@@ -105,7 +106,7 @@ class JwtAuthSourceServiceTest {
 
     @Test
     void givenInvalidAuthSource_thenAuthSourceIsInvalid() {
-        TokenAuthentication tokenAuth = new TokenAuthentication("user");
+        TokenAuthentication tokenAuth = new TokenAuthentication(token);
         tokenAuth.setAuthenticated(false);
         when(authenticationService.validateJwtToken(anyString())).thenReturn(tokenAuth);
 
@@ -196,7 +197,9 @@ class JwtAuthSourceServiceTest {
 
         @Test
         void thenParseCorrectly() {
-            when(authenticationService.parseJwtToken(anyString())).thenReturn(new QueryResponse("domain", "user", new Date(111), new Date(222), "issuer", Collections.emptyList(), Source.ZOSMF));
+            var tokenAuthenticationMock = mock(TokenAuthentication.class);
+            when(tokenAuthenticationMock.getQueryResponse()).thenReturn(new QueryResponse("domain", "user", new Date(111), new Date(222), "issuer", Collections.emptyList(), Source.ZOSMF));
+            when(authenticationService.parseJwtToken(anyString())).thenReturn(tokenAuthenticationMock);
 
             Parsed parsedSource = serviceUnderTest.parse(jwtAuthSource);
 
@@ -262,7 +265,7 @@ class JwtAuthSourceServiceTest {
             when(authenticationService.validateJwtToken(anyString())).thenThrow(exception);
 
             assertThrows(TokenExpireException.class, () -> serviceUnderTest.isValid(jwtAuthSource));
-            verify(authenticationService, times(1)).validateJwtToken("jwtToken");
+            verify(authenticationService, times(1)).validateJwtToken(jwtAuthSource.getRawSource());
         }
 
         @Test

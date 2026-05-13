@@ -23,6 +23,8 @@ import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashSet;
@@ -36,7 +38,8 @@ import static org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter.T
 class SuccessfulAccessTokenHandlerTest {
 
     private static final String USERNAME = "user";
-    private final TokenAuthentication dummyAuth = new TokenAuthentication(USERNAME, "TEST_TOKEN_STRING");
+    public static final String JWT_TOKEN = JWTTestUtils.createDummyAPIMLToken(USERNAME);
+    private final TokenAuthentication dummyAuth = new TokenAuthentication(JWT_TOKEN);
     private SuccessfulAccessTokenHandler underTest;
     private AccessTokenProvider accessTokenProvider;
     private MockHttpServletRequest httpServletRequest;
@@ -71,7 +74,7 @@ class SuccessfulAccessTokenHandlerTest {
     class WhenCallingOnAuthentication {
         @Test
         void thenReturn200() throws IOException {
-            when(accessTokenProvider.getToken(any(), anyInt(), any())).thenReturn("jwtToken");
+            when(accessTokenProvider.getToken(any(), anyInt(), any())).thenReturn(JWT_TOKEN);
             executeLoginHandler();
 
             assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
@@ -79,7 +82,7 @@ class SuccessfulAccessTokenHandlerTest {
 
         @Test
         void givenNullExpiration_thenReturn200() throws IOException {
-            when(accessTokenProvider.getToken(any(), anyInt(), any())).thenReturn("jwtToken");
+            when(accessTokenProvider.getToken(any(), anyInt(), any())).thenReturn(JWT_TOKEN);
             executeLoginHandler();
 
             assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
@@ -87,7 +90,7 @@ class SuccessfulAccessTokenHandlerTest {
 
         @Test
         void givenResponseNotCommitted_thenThrowIOException() throws IOException {
-            when(accessTokenProvider.getToken(any(), anyInt(), any())).thenReturn("jwtToken");
+            when(accessTokenProvider.getToken(any(), anyInt(), any())).thenReturn(JWT_TOKEN);
             HttpServletResponse servletResponse = mock(HttpServletResponse.class);
             PrintWriter mockWriter = mock(PrintWriter.class);
             when(servletResponse.getWriter()).thenReturn(mockWriter);
@@ -112,7 +115,7 @@ class SuccessfulAccessTokenHandlerTest {
 
         @Test
         void whenProperInputs_thenRauditxIsGenerated() throws IOException {
-            doReturn("token").when(accessTokenProvider).getToken(anyString(), anyInt(), any());
+            doReturn(JWT_TOKEN).when(accessTokenProvider).getToken(anyString(), anyInt(), any());
 
             underTest.onAuthenticationSuccess(httpServletRequest, httpServletResponse, dummyAuth);
 

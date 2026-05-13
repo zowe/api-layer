@@ -13,6 +13,7 @@ package org.zowe.apiml.zaas.security.token;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.zaas.security.query.TokenAuthenticationProvider;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,7 +36,7 @@ class TokenAuthenticationProviderTest {
 
     @Test
     void authenticateWithValidToken() {
-        TokenAuthentication tokenAuthentication = new TokenAuthentication("token");
+        TokenAuthentication tokenAuthentication = new TokenAuthentication(JWTTestUtils.createDummyAPIMLToken("user"));
 
         when(tokenService.validateJwtToken(tokenAuthentication)).thenReturn(tokenAuthentication);
         TokenAuthenticationProvider authenticationProvider = new TokenAuthenticationProvider(tokenService);
