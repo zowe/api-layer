@@ -98,7 +98,7 @@ public class StaticServicesRegistrationService implements StaticServicesRegistra
                 try {
                     registry.cancel(info.getAppName(), info.getId(), false);
                 } catch (Exception e) {
-                    final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionRegistration", e.getMessage());
+                    final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionRegistration", staticApiDefinitionsDirectories, e.getMessage());
                     result.getErrors().add(msg);
                 }
             }
@@ -112,7 +112,7 @@ public class StaticServicesRegistrationService implements StaticServicesRegistra
             var registry = getRegistry();
             registry.registerStatically(instanceInfo, false, false);
         } catch (Exception e) {
-            final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionRegistration", e.getMessage());
+            final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionRegistration", staticApiDefinitionsDirectories, e.getMessage());
             result.getErrors().add(msg);
         }
     }
@@ -137,7 +137,7 @@ public class StaticServicesRegistrationService implements StaticServicesRegistra
                 register(result, instanceInfo);
             }
         } catch (Exception e) {
-            final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionUnexpectedError", e.getMessage());
+            final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionUnexpectedError", staticApiDefinitionsDirectories, e.getMessage());
             result.getErrors().add(msg);
         }
 

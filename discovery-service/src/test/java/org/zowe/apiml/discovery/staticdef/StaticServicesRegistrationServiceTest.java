@@ -210,7 +210,7 @@ class StaticServicesRegistrationServiceTest {
             doReturn(sourceSearchResult).when(serviceDefinitionProcessor).findStaticServicesData(any());
 
             doThrow(new RuntimeException("CannotCancelRegistration")).when(mockRegistry).registerStatically(any(), anyBoolean(), anyBoolean());
-            doReturn(testMessage).when(apimlLogger).log(eq("org.zowe.apiml.discovery.staticDefinitionRegistration"), any());
+            doReturn(testMessage).when(apimlLogger).log(eq("org.zowe.apiml.discovery.staticDefinitionRegistration"), any(), any());
 
             var result = service.registerServices(null);
             assertEquals(1, result.getErrors().size());
@@ -221,7 +221,7 @@ class StaticServicesRegistrationServiceTest {
         void givenError_whenCancel_thenStoreItInTheResult() {
             service.getStaticInstances().add(mock(InstanceInfo.class)); // simulate a previous registration
 
-            doReturn(testMessage).when(apimlLogger).log(eq("org.zowe.apiml.discovery.staticDefinitionRegistration"), any());
+            doReturn(testMessage).when(apimlLogger).log(eq("org.zowe.apiml.discovery.staticDefinitionRegistration"), any(), any());
             service = spy(service);
             doReturn(new StaticRegistrationResult()).when(service).registerServices(any());
             doThrow(new RuntimeException("CannotCancelRegistration")).when(mockRegistry).cancel(any(), any(), anyBoolean());

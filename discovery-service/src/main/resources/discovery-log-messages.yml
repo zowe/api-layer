@@ -84,14 +84,14 @@ messages:
     - key: org.zowe.apiml.discovery.staticDefinitionUnexpectedError
       number: ZWEAD705
       type: ERROR
-      text: "Discovery Service cannot load static definition of services: %s"
+      text: "Discovery Service cannot load static definition of services from %s: %s"
       reason: "The input files with static definition is not valid and cannot be applied at the moment."
       action: "Verify directory with static definition files and fix their content."
 
     - key: org.zowe.apiml.discovery.staticDefinitionRegistration
       number: ZWEAD706
       type: ERROR
-      text: "Some static services cannot be registered into Eureka: %s"
+      text: "Some static services cannot be registered into Eureka from %s: %s"
       reason: "Eureka is not initiated at the moment or static definition files contains an error."
       action: "Verify folder with static definition files or try it later."
 

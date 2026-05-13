@@ -124,7 +124,7 @@ public class ServiceDefinitionProcessor {
                 }
             }
         } catch (Exception e) {
-            final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionUnexpectedError", e.getMessage());
+            final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionUnexpectedError", staticApiDefinitionsDirectories, e.getMessage());
             context.getErrors().add(msg);
         }
 
