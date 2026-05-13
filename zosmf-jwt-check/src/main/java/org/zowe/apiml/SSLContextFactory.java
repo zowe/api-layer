@@ -27,6 +27,7 @@ import java.security.cert.X509Certificate;
  *   <li>{@link #initTrustAllSSLContext()} — trust-all mode for DISABLED verification</li>
  * </ul>
  */
+// TODO: REMOVE all "DEBUG [SSLContextFactory]" logging lines after SAF keyring issue is resolved
 @SuppressWarnings("squid:S106")
 public class SSLContextFactory {
 
@@ -48,15 +49,19 @@ public class SSLContextFactory {
      * @return factory holding the initialized SSLContext
      */
     public static SSLContextFactory initSSLContext(Stores stores) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException, CertificateException, IOException {
+        System.out.println("DEBUG [SSLContextFactory] initSSLContext() called");
         SSLContextFactory factory = new SSLContextFactory(stores);
 
+        System.out.println("DEBUG [SSLContextFactory] Initializing TrustManagerFactory with trustStore (type=" + stores.getTrustStore().getType() + ", size=" + stores.getTrustStore().size() + ")");
         TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustFactory.init(stores.getTrustStore());
 
         KeyManagerFactory keyFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         if (stores.getKeyStore() != null) {
+            System.out.println("DEBUG [SSLContextFactory] Initializing KeyManagerFactory with keyStore (type=" + stores.getKeyStore().getType() + ", size=" + stores.getKeyStore().size() + ")");
             keyFactory.init(stores.getKeyStore(), stores.getConf().getKeyStorePassword().toCharArray());
         } else {
+            System.out.println("DEBUG [SSLContextFactory] No keyStore, using empty keystore for KeyManagerFactory");
             KeyStore emptyKeystore = KeyStore.getInstance(KeyStore.getDefaultType());
             emptyKeystore.load(null, null);
             keyFactory.init(emptyKeystore, null);
@@ -64,6 +69,7 @@ public class SSLContextFactory {
 
         factory.sslContext = SSLContext.getInstance("TLSv1.2");
         factory.sslContext.init(keyFactory.getKeyManagers(), trustFactory.getTrustManagers(), new SecureRandom());
+        System.out.println("DEBUG [SSLContextFactory] SSLContext created successfully (protocol=" + factory.sslContext.getProtocol() + ")");
         return factory;
     }
 
