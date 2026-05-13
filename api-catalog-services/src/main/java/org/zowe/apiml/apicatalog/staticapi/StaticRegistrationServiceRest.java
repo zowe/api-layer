@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.apache.hc.core5.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -38,10 +39,10 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
 
     private static final String REFRESH_ENDPOINT = "discovery/api/v1/staticApi";
 
-    @Value("${apiml.discovery.userid:eureka}")
+    @Value("${apiml.discovery.userid:#{null}}")
     private String eurekaUserid;
 
-    @Value("${apiml.discovery.password:password}")
+    @Value("${apiml.discovery.password:#{null}}")
     private String eurekaPassword;
 
     @Qualifier("webClientClientCert")
@@ -52,6 +53,15 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
 
     private final DiscoveryConfigProperties discoveryConfigProperties;
 
+    private void setAuthorization(HttpHeaders headers) {
+        if (eurekaUserid == null || eurekaPassword == null) {
+            log.warn("Eureka userid or password not set");
+        } else {
+            String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
+            headers.add(HttpHeaders.AUTHORIZATION, basicToken);
+        }
+    }
+
     @Override
     public Mono<StaticAPIResponse> refresh() {
         return Flux.fromIterable(getDiscoveryServiceUrls())
@@ -61,8 +71,7 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
                 .headers(headers -> {
                     boolean isHttp = uri.startsWith("http://");
                     if (isHttp && !isServerAttlsEnabled) {
-                        String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
-                        headers.add(HttpHeaders.AUTHORIZATION, basicToken);
+                        setAuthorization(headers);
                     }
                 })
                 .exchangeToMono(response -> response

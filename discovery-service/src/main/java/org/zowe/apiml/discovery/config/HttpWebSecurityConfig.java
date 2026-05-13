@@ -11,7 +11,7 @@
 package org.zowe.apiml.discovery.config;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -51,10 +51,10 @@ import java.util.Collections;
 public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
-    @Value("${apiml.discovery.userid:eureka}")
+    @Value("${apiml.discovery.userid:#{null}}")
     private String eurekaUserid;
 
-    @Value("${apiml.discovery.password:password}")
+    @Value("${apiml.discovery.password:#{null}}")
     private char[] eurekaPassword;
 
     @Value("${apiml.health.protected:true}")
@@ -66,33 +66,42 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
         auth.authenticationProvider(new AuthenticationProvider() {
             private MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
+            private boolean isCredentialsSet() {
+                return eurekaUserid != null && eurekaPassword != null;
+            }
+
+            private char[] getPassword(Authentication authentication) {
+                if (authentication.getCredentials() instanceof char[]) {
+                    return (char[]) authentication.getCredentials();
+                }
+                return String.valueOf(authentication.getCredentials()).toCharArray();
+            }
+
+            private String getUser(Authentication authentication) {
+                if (authentication.getCredentials() == null) {
+                    return null;
+                }
+                return String.valueOf(authentication.getPrincipal());
+            }
+
             @Override
             public Authentication authenticate(Authentication authentication) throws AuthenticationException {
                 if (
-                    StringUtils.equals(eurekaUserid, String.valueOf(authentication.getPrincipal())) &&
-                        authentication.getCredentials() != null
+                    isCredentialsSet() &&
+                    Strings.CS.equals(eurekaUserid, getUser(authentication)) &&
+                    Arrays.equals(eurekaPassword, getPassword(authentication))
                 ) {
-                    char[] credentials;
-                    if (authentication.getCredentials() instanceof char[]) {
-                        credentials = (char[]) authentication.getCredentials();
-                    } else {
-                        credentials = String.valueOf(authentication.getCredentials()).toCharArray();
-                    }
-
-                    if (Arrays.equals(eurekaPassword, credentials)) {
-                        UsernamePasswordAuthenticationToken result = UsernamePasswordAuthenticationToken.authenticated(
-                            authentication.getPrincipal(),
-                            authentication.getCredentials(),
-                            Collections.singleton(new SimpleGrantedAuthority("EUREKA"))
-                        );
-                        result.setDetails(authentication.getDetails());
-                        return result;
-                    }
+                    UsernamePasswordAuthenticationToken result = UsernamePasswordAuthenticationToken.authenticated(
+                        authentication.getPrincipal(),
+                        authentication.getCredentials(),
+                        Collections.singleton(new SimpleGrantedAuthority("EUREKA"))
+                    );
+                    result.setDetails(authentication.getDetails());
+                    return result;
                 }
 
                 throw new BadCredentialsException(this.messages
                     .getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
-
             }
 
             @Override
