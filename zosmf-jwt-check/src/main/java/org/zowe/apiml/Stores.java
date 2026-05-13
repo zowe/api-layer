@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyStore;
@@ -112,14 +113,9 @@ public class Stores {
         }
         if (isKeyring(conf.getTrustStore())) {
             System.out.println("DEBUG [Stores] initTruststore: Detected SAF keyring URI: " + conf.getTrustStore());
-            String formatted = formatKeyringUrl(conf.getTrustStore());
-            System.out.println("DEBUG [Stores] initTruststore: Formatted keyring URL: " + formatted);
-            System.out.println("DEBUG [Stores] initTruststore: Calling keyRingUrl()...");
-            URL url = keyRingUrl(conf.getTrustStore());
-            System.out.println("DEBUG [Stores] initTruststore: URL object created: " + url + " (protocol=" + url.getProtocol() + ")");
-            System.out.println("DEBUG [Stores] initTruststore: Calling url.openStream()...");
-            try (InputStream trustStoreIStream = url.openStream()) {
-                System.out.println("DEBUG [Stores] initTruststore: openStream() succeeded. Loading keystore type=" + conf.getTrustStoreType());
+            System.out.println("DEBUG [Stores] initTruststore: Opening keyring stream (URL with RACFInputStream fallback)...");
+            try (InputStream trustStoreIStream = openKeyringStream(conf.getTrustStore(), conf.getTrustStorePassword().toCharArray())) {
+                System.out.println("DEBUG [Stores] initTruststore: Stream opened. Loading keystore type=" + conf.getTrustStoreType());
                 this.trustStore = readKeyStore(trustStoreIStream, conf.getTrustStorePassword().toCharArray(), conf.getTrustStoreType());
                 System.out.println("DEBUG [Stores] initTruststore: Truststore loaded from keyring. Aliases count=" + trustStore.size());
             }
@@ -139,7 +135,7 @@ public class Stores {
         }
         if (isKeyring(conf.getKeyStore())) {
             System.out.println("DEBUG [Stores] initKeystore: Detected SAF keyring URI: " + conf.getKeyStore());
-            try (InputStream keyringIStream = keyRingUrl(conf.getKeyStore()).openStream()) {
+            try (InputStream keyringIStream = openKeyringStream(conf.getKeyStore(), conf.getKeyStorePassword().toCharArray())) {
                 this.keyStore = readKeyStore(keyringIStream, conf.getKeyStorePassword().toCharArray(), conf.getKeyStoreType());
                 this.trustStore = this.keyStore;
                 System.out.println("DEBUG [Stores] initKeystore: Keystore loaded from keyring. Aliases count=" + keyStore.size());
@@ -191,6 +187,77 @@ public class Stores {
             System.err.println("DEBUG [Stores] keyRingUrl: MalformedURLException for '" + formatted + "': " + e.getMessage());
             System.err.println("DEBUG [Stores] keyRingUrl: java.protocol.handler.pkgs=" + System.getProperty("java.protocol.handler.pkgs", "<not set>"));
             throw e;
+        }
+    }
+
+    /**
+     * Opens an InputStream to a SAF keyring. Tries the standard URL-based approach first,
+     * then falls back to IBM's RACFInputStream (loaded via reflection) if the URL protocol
+     * handler is not available.
+     */
+    // TODO: REMOVE debug logging after SAF keyring issue is resolved
+    @SuppressWarnings("squid:S3011")
+    static InputStream openKeyringStream(String uri, char[] password) throws IOException {
+        String formatted = formatKeyringUrl(uri);
+        System.out.println("DEBUG [Stores] openKeyringStream: uri='" + uri + "' formatted='" + formatted + "'");
+        System.out.println("DEBUG [Stores] openKeyringStream: java.protocol.handler.pkgs="
+            + System.getProperty("java.protocol.handler.pkgs", "<not set>"));
+
+        // Try standard URL-based approach first (same as main API ML services)
+        try {
+            System.out.println("DEBUG [Stores] openKeyringStream: Attempting new URL('" + formatted + "')...");
+            URL url = new URL(formatted);
+            System.out.println("DEBUG [Stores] openKeyringStream: URL created. protocol=" + url.getProtocol()
+                + " host=" + url.getHost() + " path=" + url.getPath()
+                + " class=" + url.getClass().getName());
+            System.out.println("DEBUG [Stores] openKeyringStream: Calling url.openStream()...");
+            InputStream is = url.openStream();
+            System.out.println("DEBUG [Stores] openKeyringStream: URL.openStream() SUCCEEDED (stream class=" + is.getClass().getName() + ")");
+            return is;
+        } catch (MalformedURLException urlEx) {
+            System.err.println("DEBUG [Stores] openKeyringStream: URL approach FAILED with MalformedURLException: " + urlEx.getMessage());
+        } catch (IOException ioEx) {
+            System.err.println("DEBUG [Stores] openKeyringStream: URL.openStream() FAILED with IOException: "
+                + ioEx.getClass().getName() + ": " + ioEx.getMessage());
+            ioEx.printStackTrace(System.err);
+            // Re-throw IO errors from openStream — the URL was valid but the stream failed
+            throw ioEx;
+        }
+
+        // Fallback: use com.ibm.crypto.zsecurity.provider.RACFInputStream via reflection
+        // This class is available on z/OS IBM JDKs and bypasses the URL protocol handler
+        System.out.println("DEBUG [Stores] openKeyringStream: URL handler not available, attempting RACFInputStream fallback...");
+
+        Matcher matcher = KEYRING_PATTERN.matcher(uri);
+        if (!matcher.matches()) {
+            matcher = KEYRING_PATTERN.matcher(formatted);
+            if (!matcher.matches()) {
+                throw new IOException("Cannot open keyring: invalid URI format: " + uri);
+            }
+        }
+
+        String userId = matcher.group(2);
+        String ringName = matcher.group(3);
+        System.out.println("DEBUG [Stores] openKeyringStream: Parsed userId='" + userId + "' ringName='" + ringName + "'");
+
+        try {
+            System.out.println("DEBUG [Stores] openKeyringStream: Loading class com.ibm.crypto.zsecurity.provider.RACFInputStream...");
+            Class<?> racfClass = Class.forName("com.ibm.crypto.zsecurity.provider.RACFInputStream");
+            System.out.println("DEBUG [Stores] openKeyringStream: RACFInputStream class loaded (classLoader=" + racfClass.getClassLoader() + ")");
+            Constructor<?> ctor = racfClass.getConstructor(String.class, String.class, char[].class);
+            System.out.println("DEBUG [Stores] openKeyringStream: Invoking RACFInputStream('" + userId + "', '" + ringName + "', <password>)...");
+            InputStream is = (InputStream) ctor.newInstance(userId, ringName, password);
+            System.out.println("DEBUG [Stores] openKeyringStream: RACFInputStream SUCCEEDED (stream class=" + is.getClass().getName() + ")");
+            return is;
+        } catch (ClassNotFoundException cnfe) {
+            System.err.println("DEBUG [Stores] openKeyringStream: RACFInputStream class NOT FOUND: " + cnfe.getMessage());
+            throw new IOException("Cannot open keyring '" + uri + "': URL protocol handler not available " +
+                "and RACFInputStream class not found. Ensure running on z/OS with IBM JDK.", cnfe);
+        } catch (Exception e) {
+            System.err.println("DEBUG [Stores] openKeyringStream: RACFInputStream FAILED: " + e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace(System.err);
+            throw new IOException("Cannot open keyring '" + uri + "': URL protocol handler not available " +
+                "and RACFInputStream fallback failed: " + e.getMessage(), e);
         }
     }
 }
