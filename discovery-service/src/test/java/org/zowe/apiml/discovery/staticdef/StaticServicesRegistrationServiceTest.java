@@ -67,7 +67,6 @@ class StaticServicesRegistrationServiceTest {
 
         @Test
         void testFindServicesInDirectoryNoFiles() throws URISyntaxException {
-            EurekaServerContext mockEurekaServerContext = mock(EurekaServerContext.class);
             EurekaServerContextHolder.initialize(mockEurekaServerContext);
             ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
 

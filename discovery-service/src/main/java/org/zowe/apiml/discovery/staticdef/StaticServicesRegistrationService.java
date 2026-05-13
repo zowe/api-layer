@@ -107,6 +107,16 @@ public class StaticServicesRegistrationService implements StaticServicesRegistra
         return result;
     }
 
+    void register(StaticRegistrationResult result, InstanceInfo instanceInfo) {
+        try {
+            var registry = getRegistry();
+            registry.registerStatically(instanceInfo, false, false);
+        } catch (Exception e) {
+            final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionRegistration", e.getMessage());
+            result.getErrors().add(msg);
+        }
+    }
+
     /**
      * Registers all statically defined APIs in a directory.
      */
@@ -114,7 +124,6 @@ public class StaticServicesRegistrationService implements StaticServicesRegistra
         StaticRegistrationResult result = new StaticRegistrationResult();
 
         try {
-            var registry = getRegistry();
             result = serviceDefinitionProcessor.findStaticServicesData(staticApiDefinitionsDirectories);
 
             // at first register service additional data, because static could be also updated
@@ -125,12 +134,7 @@ public class StaticServicesRegistrationService implements StaticServicesRegistra
             for (InstanceInfo instanceInfo : result.getInstances()) {
                 result.getRegisteredServices().add(instanceInfo.getInstanceId());
                 staticInstances.add(instanceInfo);
-                try {
-                    registry.registerStatically(instanceInfo, false, false);
-                } catch (Exception e) {
-                    final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionRegistration", e.getMessage());
-                    result.getErrors().add(msg);
-                }
+                register(result, instanceInfo);
             }
         } catch (Exception e) {
             final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionUnexpectedError", e.getMessage());
