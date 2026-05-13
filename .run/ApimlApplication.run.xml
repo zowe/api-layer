@@ -1,15 +1,3 @@
-<!--
-  ~ /*
-  ~  * This program and the accompanying materials are made available under the terms of the
-  ~  * Eclipse Public License v2.0 which accompanies this distribution, and is available at
-  ~  * https://www.eclipse.org/legal/epl-v20.html
-  ~  *
-  ~  * SPDX-License-Identifier: EPL-2.0
-  ~  *
-  ~  * Copyright Contributors to the Zowe Project.
-  ~  */
-  -->
-
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="ApimlApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
     <additionalParameters>
@@ -18,7 +6,35 @@
         <option name="name" value="spring.config.additional-location" />
         <option name="value" value="file:./config/local/apiml-service.yml" />
       </param>
+      <param>
+        <option name="enabled" value="true" />
+        <option name="name" value="apiml.discovery.allPeersUrls" />
+        <option name="value" value="https://localhost:10021/eureka,https://localhost:10011/eureka" />
+      </param>
+      <param>
+        <option name="enabled" value="true" />
+        <option name="name" value="apiml.service.port" />
+        <option name="value" value="10010" />
+      </param>
+      <param>
+        <option name="enabled" value="true" />
+        <option name="name" value="apiml.internal-discovery.port" />
+        <option name="value" value="10011" />
+      </param>
+      <param>
+        <option name="enabled" value="true" />
+        <option name="name" value="apiml.service.discoveryServiceUrls" />
+        <option name="value" value="https://localhost:10021/eureka,https://localhost:10011/eureka" />
+      </param>
+      <param>
+        <option name="enabled" value="true" />
+        <option name="name" value="jgroups.keyExchange.port" />
+        <option name="value" value="10601" />
+      </param>
     </additionalParameters>
+    <envs>
+      <env name="ZWE_haInstance_id" value="apiml1" />
+    </envs>
     <module name="api-layer.apiml.main" />
     <option name="SHORTEN_COMMAND_LINE" value="ARGS_FILE" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.ApimlApplication" />
