@@ -86,7 +86,7 @@ messages:
       type: ERROR
       text: "Discovery Service cannot load static definition of services: %s"
       reason: "The input files with static definition is not valid and cannot be applied at the moment."
-      action: "Verify folder with static definition files and fix their content."
+      action: "Verify directory with static definition files and fix their content."
 
     - key: org.zowe.apiml.discovery.staticDefinitionRegistration
       number: ZWEAD706
