@@ -100,27 +100,32 @@ public class ServiceDefinitionProcessor {
     public StaticRegistrationResult findStaticServicesData(String staticApiDefinitionsDirectories) {
         final StaticRegistrationResult context = new StaticRegistrationResult();
 
-        final List<File> directories = getFiles(context, staticApiDefinitionsDirectories);
-        for (final File directory : directories) {
-            log.info("Scanning directory with static services definition: " + directory);
-            final File[] files = directory.listFiles((dir, name) -> name.endsWith(".yml"));
+        try {
+            final List<File> directories = getFiles(context, staticApiDefinitionsDirectories);
+            for (final File directory : directories) {
+                log.info("Scanning directory with static services definition: " + directory);
+                final File[] files = directory.listFiles((dir, name) -> name.endsWith(".yml"));
 
-            if (files == null) {
-                final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorReadingStaticDefinitionFolder", directory.getAbsolutePath());
-                context.getErrors().add(msg);
-                continue;
+                if (files == null) {
+                    final Message msg = apimlLog.log("org.zowe.apiml.discovery.errorReadingStaticDefinitionFolder", directory.getAbsolutePath());
+                    context.getErrors().add(msg);
+                    continue;
+                }
+
+                if (files.length == 0) {
+                    log.info("No static service definition found in directory: {}", directory.getAbsolutePath());
+                }
+
+                for (final File file : files) {
+                    final Definition definition = loadDefinition(context, file);
+                    if (definition == null) continue;
+
+                    process(context, file.getAbsolutePath(), definition);
+                }
             }
-
-            if (files.length == 0) {
-                log.info("No static service definition found in directory: {}", directory.getAbsolutePath());
-            }
-
-            for (final File file : files) {
-                final Definition definition = loadDefinition(context, file);
-                if (definition == null) continue;
-
-                process(context, file.getAbsolutePath(), definition);
-            }
+        } catch (Exception e) {
+            final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionUnexpectedError", staticApiDefinitionsDirectories, e.getMessage());
+            context.getErrors().add(msg);
         }
 
         return context;

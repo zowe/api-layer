@@ -20,9 +20,12 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.discovery.EurekaRegistryAvailableListener;
 import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.discovery.ServiceOverrideData;
 import org.zowe.apiml.product.discovery.StaticRegistrationResult;
 import org.zowe.apiml.product.discovery.StaticServicesRegistration;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +40,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 @Component
 public class StaticServicesRegistrationService implements StaticServicesRegistration {
+
     @Value("${apiml.discovery.staticApiDefinitionsDirectories:#{null}}")
     private String staticApiDefinitionsDirectories;
+
+    @InjectApimlLogger
+    private ApimlLogger apimlLog = ApimlLogger.empty();
 
     private final ServiceDefinitionProcessor serviceDefinitionProcessor;
     private final MetadataDefaultsService metadataDefaultsService;
@@ -61,7 +68,17 @@ public class StaticServicesRegistrationService implements StaticServicesRegistra
      * Registers all statically defined APIs in locations specified by configuration.
      */
     public void registerServices() {
-        registerServices(staticApiDefinitionsDirectories);
+        try {
+            var result = registerServices(staticApiDefinitionsDirectories);
+
+            if (result.hasError()) {
+                log.error("Loading static definition failed: {}", result);
+            } else {
+                log.debug("Loaded static definition ended with the result: {}", result);
+            }
+        } catch (Exception e) {
+            log.error("Cannot load static definition of services", e);
+        }
     }
 
     /**
@@ -78,29 +95,50 @@ public class StaticServicesRegistrationService implements StaticServicesRegistra
         for (InstanceInfo info : oldStaticInstances) {
             if (!result.getRegisteredServices().contains(info.getInstanceId())) {
                 log.info("Instance {} is not defined in the new static API definitions. It will be removed", info.getInstanceId());
-                registry.cancel(info.getAppName(), info.getId(), false);
+                try {
+                    registry.cancel(info.getAppName(), info.getId(), false);
+                } catch (Exception e) {
+                    final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionRegistration", staticApiDefinitionsDirectories, e.getMessage());
+                    result.getErrors().add(msg);
+                }
             }
         }
 
         return result;
     }
 
+    void register(StaticRegistrationResult result, InstanceInfo instanceInfo) {
+        try {
+            var registry = getRegistry();
+            registry.registerStatically(instanceInfo, false, false);
+        } catch (Exception e) {
+            final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionRegistration", staticApiDefinitionsDirectories, e.getMessage());
+            result.getErrors().add(msg);
+        }
+    }
+
     /**
      * Registers all statically defined APIs in a directory.
      */
     StaticRegistrationResult registerServices(String staticApiDefinitionsDirectories) {
-        var registry = getRegistry();
-        StaticRegistrationResult result = serviceDefinitionProcessor.findStaticServicesData(staticApiDefinitionsDirectories);
+        StaticRegistrationResult result = new StaticRegistrationResult();
 
-        // at first register service additional data, because static could be also updated
-        final Map<String, ServiceOverrideData> additionalServiceMetadata = result.getAdditionalServiceMetadata();
-        metadataDefaultsService.setAdditionalServiceMetadata(additionalServiceMetadata);
+        try {
+            result = serviceDefinitionProcessor.findStaticServicesData(staticApiDefinitionsDirectories);
 
-        // register static services
-        for (InstanceInfo instanceInfo : result.getInstances()) {
-            result.getRegisteredServices().add(instanceInfo.getInstanceId());
-            staticInstances.add(instanceInfo);
-            registry.registerStatically(instanceInfo, false, false);
+            // at first register service additional data, because static could be also updated
+            final Map<String, ServiceOverrideData> additionalServiceMetadata = result.getAdditionalServiceMetadata();
+            metadataDefaultsService.setAdditionalServiceMetadata(additionalServiceMetadata);
+
+            // register static services
+            for (InstanceInfo instanceInfo : result.getInstances()) {
+                result.getRegisteredServices().add(instanceInfo.getInstanceId());
+                staticInstances.add(instanceInfo);
+                register(result, instanceInfo);
+            }
+        } catch (Exception e) {
+            final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionUnexpectedError", staticApiDefinitionsDirectories, e.getMessage());
+            result.getErrors().add(msg);
         }
 
         return result;
