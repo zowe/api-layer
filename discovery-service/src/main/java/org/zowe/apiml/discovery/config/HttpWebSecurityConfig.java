@@ -11,6 +11,7 @@
 package org.zowe.apiml.discovery.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Strings;
@@ -46,6 +47,7 @@ import java.util.Collections;
  * <p>
  * This configuration is applied if "https" Spring profile is not active
  */
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 @Profile("!https & !attlsServer")
@@ -69,7 +71,12 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
             private MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
             private boolean isCredentialsSet() {
-                return !StringUtils.isEmpty(eurekaUserid) && !ArrayUtils.isEmpty(eurekaPassword);
+                if (!StringUtils.isEmpty(eurekaUserid) && !ArrayUtils.isEmpty(eurekaPassword)) {
+                    return true;
+                }
+
+                log.warn("Eureka credentials are not set. Please configure properties `apiml.discovery.userid` and `apiml.discovery.password` or change type of Eureka authentication.");
+                return false;
             }
 
             private char[] getPassword(Authentication authentication) {
