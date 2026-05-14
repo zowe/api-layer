@@ -51,10 +51,10 @@
   "devDependencies": {
     "@eslint/js": "9.39.4",
     "@types/jest": "29.5.14",
-    "@types/node": "24.10.0",
-    "@typescript-eslint/eslint-plugin": "8.59.1",
-    "@typescript-eslint/parser": "8.59.1",
-    "@zowe/cli": "8.32.0",
+    "@types/node": "24.12.4",
+    "@typescript-eslint/eslint-plugin": "8.59.3",
+    "@typescript-eslint/parser": "8.59.3",
+    "@zowe/cli": "8.32.1",
     "@zowe/cli-test-utils": "8.32.0",
     "@zowe/imperative": "8.32.0",
     "copyfiles": "2.4.1",
@@ -85,8 +85,8 @@
     "@zowe/imperative": "8.32.0"
   },
     "engines": {
-        "npm": "=10.9.0",
-        "node": "=24.10.0"
+        "npm": "=10.9.8",
+        "node": "=24.15.0"
     },
   "jest": {
     "modulePathIgnorePatterns": [

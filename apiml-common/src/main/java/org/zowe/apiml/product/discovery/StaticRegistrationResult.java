@@ -14,7 +14,10 @@ import com.netflix.appinfo.InstanceInfo;
 import lombok.Data;
 import org.zowe.apiml.message.core.Message;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Result of registration of static services
@@ -22,8 +25,14 @@ import java.util.*;
  */
 @Data
 public class StaticRegistrationResult {
+
     private final List<Message> errors = new LinkedList<>();
     private final List<InstanceInfo> instances = new LinkedList<>();
     private final Map<String, ServiceOverrideData> additionalServiceMetadata = new HashMap<>();
     private final List<String> registeredServices = new LinkedList<>();
+
+    public boolean hasError() {
+        return !errors.isEmpty();
+    }
+
 }
