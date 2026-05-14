@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.function.Consumer;
 
 import static org.apache.hc.core5.http.HttpHeaders.ACCEPT;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -54,7 +53,7 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
     private final DiscoveryConfigProperties discoveryConfigProperties;
 
     private void setAuthorization(HttpHeaders headers) {
-        if (eurekaUserid == null || eurekaPassword == null) {
+        if (StringUtils.isEmpty(eurekaUserid) || StringUtils.isEmpty(eurekaPassword)) {
             log.warn("Eureka userid or password not set");
         } else {
             String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());

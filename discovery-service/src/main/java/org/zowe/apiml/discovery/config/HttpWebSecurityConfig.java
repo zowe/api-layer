@@ -11,6 +11,8 @@
 package org.zowe.apiml.discovery.config;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,7 +69,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
             private MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
             private boolean isCredentialsSet() {
-                return eurekaUserid != null && eurekaPassword != null;
+                return !StringUtils.isEmpty(eurekaUserid) && !ArrayUtils.isEmpty(eurekaPassword);
             }
 
             private char[] getPassword(Authentication authentication) {
