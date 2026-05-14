@@ -30,9 +30,9 @@ import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.params.ClientPNames;
-import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -227,8 +227,11 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
 
                 // Common properties to all clients
                 ConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(secureSslContext, NoopHostnameVerifier.INSTANCE);
-                Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create().register("https", socketFactory).build();
-                var cm = new PoolingHttpClientConnectionManager(registry);
+                var registry = RegistryBuilder.<ConnectionSocketFactory>create();
+                registry.register("https", socketFactory);
+                registry.register("http", new PlainConnectionSocketFactory());
+
+                var cm = new PoolingHttpClientConnectionManager(registry.build());
                 cm.setDefaultMaxPerRoute(config.getPeerNodeTotalConnectionsPerHost());
                 cm.setMaxTotal(config.getPeerNodeTotalConnections());
                 property(ApacheClientProperties.CONNECTION_MANAGER, cm);
