@@ -2,7 +2,7 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `APIML 3.5.17 / Zowe 3.5.0 (2026-05-20)`
+## `APIML 3.5.19 / Zowe 3.5.0 (2026-05-20)`
 
 * Feature:  OpenTelemetry configuration has been configured with API ML's `SSLContext` to handle secure connections to external OTel collectors. (#4537) ([a6d6863](https://github.com/zowe/api-layer/commit/a6d6863)), closes [#4537](https://github.com/zowe/api-layer/issues/4537)
 * Feature:  OpenTelemetry logging capability has been added to the routing and API ML-bound requests. (#4509) ([bff02c5](https://github.com/zowe/api-layer/commit/bff02c5)), closes [#4509](https://github.com/zowe/api-layer/issues/4509)
@@ -11,6 +11,8 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Feature:  The Apache license to nodejs and Python enablers has been added. (#4500) ([9040130](https://github.com/zowe/api-layer/commit/9040130)), closes [#4500](https://github.com/zowe/api-layer/issues/4500)
 * Feature:  JVM parameters are now read from the zowe.yaml. (#4485) ([dd51ee1](https://github.com/zowe/api-layer/commit/dd51ee1)), closes [#4485](https://github.com/zowe/api-layer/issues/4485)
 * Feature:  Binding on multiple network interfaces is now supported. Each service can now define a list in configuration value `server.address`. (#4457) ([581217a](https://github.com/zowe/api-layer/commit/581217a)), closes [#4457](https://github.com/zowe/api-layer/issues/4457)
+* Feature: Add Zowe version to the Gateway Homepage (#4569)([4c4b540](https://github.com/zowe/api-layer/commit/4c4b540cf90f1cd51bcb61397064039fceb83927)), closes [#4569](https://github.com/zowe/api-layer/issues/4569)
+
 
 
 * Bugfix:  Enabled API Catalog access with OIDC in single-service deployments. (#4536) ([938f023](https://github.com/zowe/api-layer/commit/938f023)), closes [#4536](https://github.com/zowe/api-layer/issues/4536)
@@ -33,6 +35,8 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  Set JVM console encoding to IBM-1047 for Java 21. (#4482) ([0a636a4](https://github.com/zowe/api-layer/commit/0a636a4)), closes [#4482](https://github.com/zowe/api-layer/issues/4482)
 * Bugfix:  Fixed infinispan configuration, exception handling, and the overall cache operation. (v3) (#4450) ([c2133d8](https://github.com/zowe/api-layer/commit/c2133d8)), closes [#4450](https://github.com/zowe/api-layer/issues/4450)
 * Bugfix:  Fixed Caching Service stability for single-service deployment (#4544)([215cc5](https://github.com/zowe/api-layer/commit/0b209f051b6c48171f7df18b4128062ad0215cc5)), closes [#4544](https://github.com/zowe/api-layer/issues/4544)
+* Bugfix: Catch the issues with service unavailable other than the Connect Timeout (#4590)[2042eff](https://github.com/zowe/api-layer/commit/2042eff2a514208ae23155800ab385e7a36cf120), closes [#4590](https://github.com/zowe/api-layer/issues/4590)
+
 
 ## `APIML 3.5.3 / Zowe 3.4.1 (2026-01-29)`
 
