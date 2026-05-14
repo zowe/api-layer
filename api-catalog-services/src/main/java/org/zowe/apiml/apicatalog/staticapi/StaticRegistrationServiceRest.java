@@ -52,7 +52,7 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
 
     private final DiscoveryConfigProperties discoveryConfigProperties;
 
-    private void setAuthorization(HttpHeaders headers) {
+    void setAuthorization(HttpHeaders headers) {
         if (StringUtils.isEmpty(eurekaUserid) || StringUtils.isEmpty(eurekaPassword)) {
             log.warn("Eureka userid or password not set");
         } else {
