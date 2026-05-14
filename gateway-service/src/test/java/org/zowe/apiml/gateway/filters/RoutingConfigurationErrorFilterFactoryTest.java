@@ -24,6 +24,7 @@ import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -35,16 +36,16 @@ class RoutingConfigurationErrorFilterFactoryTest {
     private GatewayFilter filter;
 
     private MockServerHttpRequest request = MockServerHttpRequest.get("https://localhost/some/url").build();
-    private MockServerWebExchange exchange = MockServerWebExchange.from(request);
+    private MockServerWebExchange exchange;
+    private OtelRequestContext otelContext;
 
     @Spy
     private RoutingConfigurationErrorFilterFactory underTest = new RoutingConfigurationErrorFilterFactory(null, null);
-    @Spy
-    private OtelRequestContext otelContext = OtelRequestContext.of(exchange);
 
     @BeforeEach
     void init() {
         exchange = MockServerWebExchange.from(request);
+        otelContext = spy(OtelRequestContext.of(exchange));
         var config = new RoutingConfigurationErrorFilterFactory.Config();
         config.setMessage(MESSAGE);
         config.setAuthenticationScheme("safIdt");

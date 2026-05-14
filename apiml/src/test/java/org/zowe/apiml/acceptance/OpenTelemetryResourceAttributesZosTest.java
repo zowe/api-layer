@@ -19,12 +19,7 @@ import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
 import io.restassured.http.ContentType;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -34,10 +29,12 @@ import org.springframework.test.context.NestedTestConfiguration;
 import org.springframework.test.context.NestedTestConfiguration.EnclosingConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.MockService.Scope;
+import org.zowe.apiml.gateway.filters.X509FilterFactory;
 import org.zowe.apiml.passticket.PassTicketException;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.util.config.SslContext;
@@ -48,7 +45,9 @@ import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.token.ApimlAccessTokenProvider;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 
+import javax.naming.InvalidNameException;
 import java.net.URI;
+import java.security.cert.CertificateEncodingException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,13 +57,9 @@ import java.util.stream.Collectors;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 import static io.restassured.RestAssured.given;
 import static org.awaitility.Awaitility.await;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.ApimlConstants.PAT_HEADER_NAME;
 import static org.zowe.apiml.security.common.util.JWTTestUtils.createExpiredZoweJwtToken;
@@ -167,6 +162,9 @@ class OpenTelemetryResourceAttributesZosTest {
         @MockitoBean
         private ApimlAccessTokenProvider apimlAccessTokenProvider;
 
+        @MockitoSpyBean
+        private X509FilterFactory x509FilterFactory;
+
         @BeforeAll
         void startMockServices() throws Exception {
             if (!SslContext.isInitialized()) {
@@ -245,7 +243,7 @@ class OpenTelemetryResourceAttributesZosTest {
                 assertEquals("401", getAttribute(logBody, "service.response_code"));
                 assertEquals("/gateway/api/v1/auth/login", getAttribute(logBody, "url.path"));
                 assertEquals("https", getAttribute(logBody, "url.scheme"));
-                assertEquals("basicAuth", getAttribute(logBody, "auth.service.auth.method"));
+                assertEquals("BASIC", getAttribute(logBody, "auth.method"));
             }
 
             @Test
@@ -268,6 +266,217 @@ class OpenTelemetryResourceAttributesZosTest {
                 assertEquals("/apicatalog/ui/v1/index.html", getAttribute(logBody, "url.path"));
                 assertEquals("https", getAttribute(logBody, "url.scheme"));
                 assertNull(getAttribute(logBody, "auth.method"));
+            }
+
+            @Test
+            void givenProtectedCatalogEndpoint_withBasicAuth_success_thenLog() {
+                given()
+                    .auth().preemptive()
+                    .basic("USER", "validPassword")
+                    .get(basePath + "/apicatalog/api/v1/containers")
+                .then()
+                    .statusCode(200);
+
+                var logRecord = assertOneLogRecordExported("/apicatalog/api/v1/containers");
+                assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                @SuppressWarnings("null")
+                var logBody = logRecord.getBodyValue().asString();
+                assertNull(getAttribute(logBody, "user.id"));
+                assertEquals("apicatalog", getAttribute(logBody, "service.id"));
+                assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                assertNull(getAttribute(logBody, "auth.status"));
+                assertNull(getAttribute(logBody, "auth.error.message"));
+                assertNull(getAttribute(logBody, "auth.error.type"));
+                assertEquals("localhost:apicatalog:" + port, getAttribute(logBody, "service.instance.id"));
+                assertEquals("200", getAttribute(logBody, "service.response_code"));
+                assertEquals("/apicatalog/api/v1/containers", getAttribute(logBody, "url.path"));
+                assertEquals("https", getAttribute(logBody, "url.scheme"));
+                assertEquals("BASIC", getAttribute(logBody, "auth.method"));
+            }
+
+            @Test
+            void givenProtectedCatalogEndpoint_withBasicAuth_failure_thenLog() {
+                given()
+                    .auth().preemptive()
+                    .basic("USER", "wrongPassword")
+                    .get(basePath + "/apicatalog/api/v1/containers")
+                .then()
+                    .statusCode(401);
+
+                var logRecord = assertOneLogRecordExported("/apicatalog/api/v1/containers");
+                assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                @SuppressWarnings("null")
+                var logBody = logRecord.getBodyValue().asString();
+                assertNull(getAttribute(logBody, "user.id"));
+                assertEquals("apicatalog", getAttribute(logBody, "service.id"));
+                assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                assertEquals("EACCES: Permission is denied; the specified password is incorrect", getAttribute(logBody, "auth.error.message"));
+                assertEquals("org.zowe.apiml.security.common.error.ZosAuthenticationException", getAttribute(logBody, "auth.error.type"));
+                assertEquals("localhost:apicatalog:" + port, getAttribute(logBody, "service.instance.id"));
+                assertEquals("401", getAttribute(logBody, "service.response_code"));
+                assertEquals("/apicatalog/api/v1/containers", getAttribute(logBody, "url.path"));
+                assertEquals("https", getAttribute(logBody, "url.scheme"));
+                assertEquals("BASIC", getAttribute(logBody, "auth.method"));
+            }
+
+            @Test
+            void givenProtectedCatalogEndpoint_withJwt_success_thenLog() {
+                given()
+                    .cookie(AUTH_COOKIE, login())
+                    .get(basePath + "/apicatalog/api/v1/containers")
+                .then()
+                    .statusCode(200);
+
+                var logRecord = assertOneLogRecordExported("/apicatalog/api/v1/containers");
+                assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                @SuppressWarnings("null")
+                var logBody = logRecord.getBodyValue().asString();
+                assertNull(getAttribute(logBody, "user.id"));
+                assertEquals("apicatalog", getAttribute(logBody, "service.id"));
+                assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                assertNull(getAttribute(logBody, "auth.status"));
+                assertNull(getAttribute(logBody, "auth.error.message"));
+                assertNull(getAttribute(logBody, "auth.error.type"));
+                assertEquals("localhost:apicatalog:" + port, getAttribute(logBody, "service.instance.id"));
+                assertEquals("200", getAttribute(logBody, "service.response_code"));
+                assertEquals("/apicatalog/api/v1/containers", getAttribute(logBody, "url.path"));
+                assertEquals("https", getAttribute(logBody, "url.scheme"));
+                assertEquals("JWT", getAttribute(logBody, "auth.method"));
+            }
+
+            @Test
+            void givenProtectedCatalogEndpoint_withInvalidJwt_thenLog() {
+                given()
+                    .cookie(AUTH_COOKIE, "invalid.jwt.token")
+                    .get(basePath + "/apicatalog/api/v1/containers")
+                .then()
+                    .statusCode(401);
+
+                var logRecord = assertOneLogRecordExported("/apicatalog/api/v1/containers");
+                assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                @SuppressWarnings("null")
+                var logBody = logRecord.getBodyValue().asString();
+                assertNull(getAttribute(logBody, "user.id"));
+                assertEquals("apicatalog", getAttribute(logBody, "service.id"));
+                assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                assertEquals("ZWEAO402E The request has not been applied because it lacks valid authentication credentials.", getAttribute(logBody, "auth.error.message"));
+                assertEquals("org.zowe.apiml.security.common.token.TokenNotValidException", getAttribute(logBody, "auth.error.type"));
+                assertEquals("localhost:apicatalog:" + port, getAttribute(logBody, "service.instance.id"));
+                assertEquals("401", getAttribute(logBody, "service.response_code"));
+                assertEquals("/apicatalog/api/v1/containers", getAttribute(logBody, "url.path"));
+                assertEquals("https", getAttribute(logBody, "url.scheme"));
+                assertEquals("JWT", getAttribute(logBody, "auth.method"));
+            }
+
+            @Test
+            void givenProtectedCatalogEndpoint_withExpiredJwt_thenLog() {
+                given()
+                    .cookie(AUTH_COOKIE, createExpiredZoweJwtToken("USER", "z/OS", "Ltpa", httpConfig.getHttpsConfig()))
+                    .get(basePath + "/apicatalog/api/v1/containers")
+                .then()
+                    .statusCode(401);
+
+                var logRecord = assertOneLogRecordExported("/apicatalog/api/v1/containers");
+                assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                @SuppressWarnings("null")
+                var logBody = logRecord.getBodyValue().asString();
+                assertNull(getAttribute(logBody, "user.id"));
+                assertEquals("apicatalog", getAttribute(logBody, "service.id"));
+                assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                assertEquals("ZWEAO402E The request has not been applied because it lacks valid authentication credentials.", getAttribute(logBody, "auth.error.message"));
+                assertEquals("org.zowe.apiml.security.common.token.TokenNotValidException", getAttribute(logBody, "auth.error.type"));
+                assertEquals("localhost:apicatalog:" + port, getAttribute(logBody, "service.instance.id"));
+                assertEquals("401", getAttribute(logBody, "service.response_code"));
+                assertEquals("/apicatalog/api/v1/containers", getAttribute(logBody, "url.path"));
+                assertEquals("https", getAttribute(logBody, "url.scheme"));
+                assertEquals("JWT", getAttribute(logBody, "auth.method"));
+            }
+
+            @Nested
+            class WhenMultipleAuthorization {
+                @Test
+                void givenProtectedCatalogEndpoint_withCorrectJwtAndCorrectBasic_success_thenLog() {
+                    given()
+                        .cookie(AUTH_COOKIE, login())
+                        .auth().preemptive()
+                        .basic("USER", "validPassword")
+                        .get(basePath + "/apicatalog/api/v1/containers")
+                    .then()
+                        .statusCode(200);
+
+                    var logRecord = assertOneLogRecordExported("/apicatalog/api/v1/containers");
+                    assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                    @SuppressWarnings("null")
+                    var logBody = logRecord.getBodyValue().asString();
+                    assertNull(getAttribute(logBody, "user.id"));
+                    assertEquals("apicatalog", getAttribute(logBody, "service.id"));
+                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                    assertNull(getAttribute(logBody, "auth.status"));
+                    assertNull(getAttribute(logBody, "auth.error.message"));
+                    assertNull(getAttribute(logBody, "auth.error.type"));
+                    assertEquals("localhost:apicatalog:" + port, getAttribute(logBody, "service.instance.id"));
+                    assertEquals("200", getAttribute(logBody, "service.response_code"));
+                    assertEquals("/apicatalog/api/v1/containers", getAttribute(logBody, "url.path"));
+                    assertEquals("https", getAttribute(logBody, "url.scheme"));
+                    assertEquals("BASIC", getAttribute(logBody, "auth.method")); // From JWT was reset to BASIC
+                }
+
+                @Test
+                void givenProtectedCatalogEndpoint_withCorrectJwtAndInvalidBasic_failure_thenLog() {
+                    given()
+                        .cookie(AUTH_COOKIE, login())
+                        .auth().preemptive()
+                        .basic("USER", "invalidPassword")
+                        .get(basePath + "/apicatalog/api/v1/containers")
+                    .then()
+                        .statusCode(401);
+
+                    var logRecord = assertOneLogRecordExported("/apicatalog/api/v1/containers");
+                    assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                    @SuppressWarnings("null")
+                    var logBody = logRecord.getBodyValue().asString();
+                    assertNull(getAttribute(logBody, "user.id"));
+                    assertEquals("apicatalog", getAttribute(logBody, "service.id"));
+                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                    assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                    assertEquals("EACCES: Permission is denied; the specified password is incorrect", getAttribute(logBody, "auth.error.message"));
+                    assertEquals("org.zowe.apiml.security.common.error.ZosAuthenticationException", getAttribute(logBody, "auth.error.type"));
+                    assertEquals("localhost:apicatalog:" + port, getAttribute(logBody, "service.instance.id"));
+                    assertEquals("401", getAttribute(logBody, "service.response_code"));
+                    assertEquals("/apicatalog/api/v1/containers", getAttribute(logBody, "url.path"));
+                    assertEquals("https", getAttribute(logBody, "url.scheme"));
+                    assertEquals("BASIC", getAttribute(logBody, "auth.method")); // From JWT was reset to BASIC
+                }
+
+                @Test
+                void givenProtectedCatalogEndpoint_withInvalidJwtAndValidBasic_success_thenLog() {
+                    given()
+                        .cookie(AUTH_COOKIE, "invalid.jwt.token")
+                        .auth().preemptive()
+                        .basic("USER", "validPassword")
+                        .get(basePath + "/apicatalog/api/v1/containers")
+                    .then()
+                        .statusCode(401);
+
+                    var logRecord = assertOneLogRecordExported("/apicatalog/api/v1/containers");
+                    assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                    @SuppressWarnings("null")
+                    var logBody = logRecord.getBodyValue().asString();
+                    assertNull(getAttribute(logBody, "user.id"));
+                    assertEquals("apicatalog", getAttribute(logBody, "service.id"));
+                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                    assertEquals("ERROR", getAttribute(logBody, "auth.status")); // From ERROR was reset to null
+                    assertEquals("ZWEAO402E The request has not been applied because it lacks valid authentication credentials.", getAttribute(logBody, "auth.error.message")); // From "ZWEAO402E The request has not been applied because it lacks valid authentication credentials." was reset to null
+                    assertEquals("org.zowe.apiml.security.common.token.TokenNotValidException", getAttribute(logBody, "auth.error.type")); // From "org.zowe.apiml.security.common.token.TokenNotValidException" was reset to null
+                    assertEquals("localhost:apicatalog:" + port, getAttribute(logBody, "service.instance.id"));
+                    assertEquals("401", getAttribute(logBody, "service.response_code"));
+                    assertEquals("/apicatalog/api/v1/containers", getAttribute(logBody, "url.path"));
+                    assertEquals("https", getAttribute(logBody, "url.scheme"));
+                    assertEquals("JWT", getAttribute(logBody, "auth.method")); // From JWT was reset to BASIC
+                }
             }
 
         }
@@ -824,6 +1033,136 @@ class OpenTelemetryResourceAttributesZosTest {
                     assertEquals("/testservicesafidt/api/v1/200", getAttribute(logBody, "url.path"));
                     assertEquals("https", getAttribute(logBody, "url.scheme"));
                     assertEquals("safIdt", getAttribute(logBody, "auth.service.auth.method"));
+                    assertNull(getAttribute(logBody, "auth.method"));
+                }
+
+            }
+
+        }
+
+        @Nested
+        @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+        class WhenServiceRequiresX509 {
+
+            private MockService mockServiceX509;
+
+            @BeforeAll
+            void init() {
+                mockServiceX509 = mockService("testservicex509")
+                    .scope(Scope.CLASS)
+                    .authenticationScheme(AuthenticationScheme.X509)
+                    .additionalMetadata(Map.of(
+                        "apiml.authentication.headers", "X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName"))
+                    .addEndpoint("/testservicex509/200")
+                        .assertion(exchange -> assertTrue(exchange.getRequestHeaders().containsKey("X-Certificate-Public")))
+                        .assertion(exchange -> assertTrue(exchange.getRequestHeaders().containsKey("X-Certificate-DistinguishedName")))
+                        .assertion(exchange -> assertTrue(exchange.getRequestHeaders().containsKey("X-Certificate-CommonName")))
+                        .assertion(exchange -> assertFalse(exchange.getRequestHeaders().containsKey("X-zowe-auth-failure")))
+                        .responseCode(200)
+                    .and().addEndpoint("/testservicex509/401")
+                        .assertion(exchange -> assertFalse(exchange.getRequestHeaders().containsKey("X-Certificate-Public")))
+                        .assertion(exchange -> assertFalse(exchange.getRequestHeaders().containsKey("X-Certificate-DistinguishedName")))
+                        .assertion(exchange -> assertFalse(exchange.getRequestHeaders().containsKey("X-Certificate-CommonName")))
+                        .assertion(exchange -> assertEquals("Invalid client certificate in request. Error message: Test Exception", exchange.getRequestHeaders().get("X-zowe-auth-failure").get(0)))
+                        .responseCode(401)
+                    .and().addEndpoint("/testservicex509/400")
+                        .assertion(exchange -> assertFalse(exchange.getRequestHeaders().containsKey("X-Certificate-Public")))
+                        .assertion(exchange -> assertFalse(exchange.getRequestHeaders().containsKey("X-Certificate-DistinguishedName")))
+                        .assertion(exchange -> assertFalse(exchange.getRequestHeaders().containsKey("X-Certificate-CommonName")))
+                        .assertion(exchange -> assertEquals("ZWEAG167E No client certificate provided in the request", exchange.getRequestHeaders().get("X-zowe-auth-failure").get(0)))
+                        .responseCode(401)
+                    .and().start();
+            }
+
+            @BeforeEach
+            void setUp() {
+                Mockito.reset(x509FilterFactory);
+            }
+
+            @Nested
+            class WhenAuthPresent {
+
+                @Test
+                void whenSuccess_thenLog() {
+                    given()
+                        .config(SslContext.clientCertUser)
+                        .get(basePath + "/testservicex509/api/v1/200")
+                    .then()
+                        .statusCode(200);
+
+                    var logRecord = assertOneLogRecordExported("/testservicex509/api/v1/200");
+                    assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                    @SuppressWarnings("null")
+                    var logBody = logRecord.getBodyValue().asString();
+                    assertNull(getAttribute(logBody, "user.id"));
+                    assertNull(getAttribute(logBody, "auth.status"));
+                    assertNull(getAttribute(logBody, "auth.error.message"));
+                    assertNull(getAttribute(logBody, "auth.error.type"));
+                    assertEquals("testservicex509", getAttribute(logBody, "service.id"));
+                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                    assertEquals("localhost:testservicex509:" + mockServiceX509.getPort(), getAttribute(logBody, "service.instance.id"));
+                    assertEquals("200", getAttribute(logBody, "service.response_code"));
+                    assertEquals("/testservicex509/api/v1/200", getAttribute(logBody, "url.path"));
+                    assertEquals("https", getAttribute(logBody, "url.scheme"));
+                    assertEquals("x509", getAttribute(logBody, "auth.service.auth.method"));
+                    assertEquals("CLIENT_CERT", getAttribute(logBody, "auth.method"));
+                }
+
+                @Test
+                void whenFailure_thenLog() throws InvalidNameException, CertificateEncodingException {
+                    doThrow(new InvalidNameException("Test Exception")).when(x509FilterFactory).setHeader(any(), any(), any());
+
+                    given()
+                        .config(SslContext.clientCertUser)
+                        .get(basePath + "/testservicex509/api/v1/401")
+                    .then()
+                        .statusCode(401);
+
+                    var logRecord = assertOneLogRecordExported("/testservicex509/api/v1/401");
+                    assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                    @SuppressWarnings("null")
+                    var logBody = logRecord.getBodyValue().asString();
+                    assertNull(getAttribute(logBody, "user.id"));
+                    assertNull(getAttribute(logBody, "auth.status"));
+                    assertNull(getAttribute(logBody, "auth.error.message"));
+                    assertNull(getAttribute(logBody, "auth.error.type"));
+                    assertEquals("testservicex509", getAttribute(logBody, "service.id"));
+                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                    assertEquals("localhost:testservicex509:" + mockServiceX509.getPort(), getAttribute(logBody, "service.instance.id"));
+                    assertEquals("401", getAttribute(logBody, "service.response_code"));
+                    assertEquals("/testservicex509/api/v1/401", getAttribute(logBody, "url.path"));
+                    assertEquals("https", getAttribute(logBody, "url.scheme"));
+                    assertEquals("x509", getAttribute(logBody, "auth.service.auth.method"));
+                    assertEquals("CLIENT_CERT", getAttribute(logBody, "auth.method"));
+                }
+
+            }
+
+            @Nested
+            class WhenAuthAbsent {
+
+                @Test
+                void thenLog() {
+                    given()
+                        .get(basePath + "/testservicex509/api/v1/400")
+                    .then()
+                        .statusCode(401);
+
+                    var logRecord = assertOneLogRecordExported("/testservicex509/api/v1/400");
+                    assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                    @SuppressWarnings("null")
+                    var logBody = logRecord.getBodyValue().asString();
+                    assertNull(getAttribute(logBody, "user.id"));
+                    assertNull(getAttribute(logBody, "auth.status"));
+                    assertNull(getAttribute(logBody, "auth.error.message"));
+                    assertNull(getAttribute(logBody, "auth.error.type"));
+                    assertEquals("testservicex509", getAttribute(logBody, "service.id"));
+                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                    assertEquals("localhost:testservicex509:" + mockServiceX509.getPort(), getAttribute(logBody, "service.instance.id"));
+                    assertEquals("401", getAttribute(logBody, "service.response_code"));
+                    assertEquals("/testservicex509/api/v1/400", getAttribute(logBody, "url.path"));
+                    assertEquals("https", getAttribute(logBody, "url.scheme"));
+                    assertEquals("x509", getAttribute(logBody, "auth.service.auth.method"));
                     assertNull(getAttribute(logBody, "auth.method"));
                 }
 

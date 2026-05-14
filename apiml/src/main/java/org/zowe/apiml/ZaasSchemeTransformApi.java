@@ -127,13 +127,17 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         return createAuthorizationResponse((ErrorHeaders) response.getHeaders(), null);
     }
 
+    private <R> Mono<AuthorizationResponse<R>> handleMissingApplicationName(OtelRequestContext context) {
+        context.authErrorType(ApplicationNameNotProvidedException.class.getName());
+        return createAuthorizationResponse(createErrorMessage("ApplicationName not provided."),null);
+    }
+
     @Override
     public Mono<AuthorizationResponse<TicketResponse>> passticket(RequestCredentials requestCredentials, ServerWebExchange exchange) {
         var applicationName = requestCredentials.getApplId();
         var otelRequestContext = OtelRequestContext.of(exchange);
         if (StringUtils.isBlank(applicationName)) {
-            otelRequestContext.authErrorType(ApplicationNameNotProvidedException.class.getName());
-            return createAuthorizationResponse(createErrorMessage("ApplicationName not provided."),null);
+            return handleMissingApplicationName(otelRequestContext);
         }
 
         try {
@@ -185,8 +189,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         var applicationName = requestCredentials.getApplId();
         var otelRequestContext = OtelRequestContext.of(exchange);
         if (StringUtils.isBlank(applicationName)) {
-            otelRequestContext.authErrorType(ApplicationNameNotProvidedException.class.getName());
-            return createAuthorizationResponse(createErrorMessage("ApplicationName not provided."), null);
+            return handleMissingApplicationName(otelRequestContext);
         }
 
         try {

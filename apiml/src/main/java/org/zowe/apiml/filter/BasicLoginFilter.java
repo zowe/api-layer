@@ -73,16 +73,17 @@ public class BasicLoginFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         var hasBody = Optional.ofNullable(exchange.getAttribute(CachedBodyFilter.CACHED_BODY_ATTR)).isPresent();
-        var otelContext = OtelRequestContext.of(exchange);
-        otelContext.authMethod(OtelRequestContext.BASIC_AUTH_TYPE);
         exchange.getAttributes().put(X509AuthFilter.SKIP_X509_AUTH_ATTR, hasBody);
         return extractBasicAuth(exchange)
             .map(this::useCredentials)
             .switchIfEmpty(Mono.<AbstractAuthenticationToken>defer(() -> chain.filter(exchange).then(Mono.empty())))
-            .flatMap(credentials ->
-                authenticationManager.authenticate(credentials)
+            .flatMap(credentials -> {
+                var otelContext = OtelRequestContext.of(exchange);
+                otelContext.authSourceType(OtelRequestContext.BASIC_AUTH_TYPE);
+                return authenticationManager.authenticate(credentials)
                     .flatMap(authentication -> chain.filter(exchange)
-                        .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication))))
+                        .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication)));
+            })
             .onErrorResume(AuthenticationException.class, ex -> failedAuthenticationWebHandler.onAuthenticationFailure(new WebFilterExchange(exchange.mutate().response(new ServerHttpResponseDecorator(exchange.getResponse()) {
 
                 @Override
