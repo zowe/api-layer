@@ -73,9 +73,9 @@ class HttpWebSecurityConfigTest {
                         return USER;
                     }
                 };
-                Authentication VALID_AUTHENTICATION = new UsernamePasswordAuthenticationToken(user, PASSWORD, Collections.singleton(new SimpleGrantedAuthority("EUREKA")));
-                var authentication = provider.authenticate(VALID_AUTHENTICATION);
-                assertNotSame(VALID_AUTHENTICATION, authentication);
+                Authentication validAuthentication = new UsernamePasswordAuthenticationToken(user, PASSWORD, Collections.singleton(new SimpleGrantedAuthority("EUREKA")));
+                var authentication = provider.authenticate(validAuthentication);
+                assertNotSame(validAuthentication, authentication);
                 assertTrue(authentication.isAuthenticated());
                 assertEquals(USER, String.valueOf(authentication.getPrincipal()));
                 assertEquals(PASSWORD, String.valueOf(authentication.getCredentials()));
