@@ -284,7 +284,8 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         try {
             EurekaUtils.validateServiceId(serviceId);
         } catch (MetadataValidationException e) {
-            log.warn("Conformance criteria violation in serviceId or instanceId for '{}'. Cause: {}", info.getInstanceId(), e.getMessage());}
+            log.warn("Conformance criteria violation in serviceId or instanceId for '{}'. Cause: {}", info.getInstanceId(), e.getMessage());
+        }
 
         if (!Objects.equals(appName, StringUtils.lowerCase(serviceId))) {
             log.warn(
