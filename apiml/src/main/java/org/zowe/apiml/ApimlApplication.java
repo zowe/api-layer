@@ -52,7 +52,6 @@ import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
         )
     }
 )
-// Change application class so all of the tests actually run
 public class ApimlApplication {
 
     public static void main(String[] args) {
