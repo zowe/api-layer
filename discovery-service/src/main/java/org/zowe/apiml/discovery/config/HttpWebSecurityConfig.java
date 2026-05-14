@@ -67,57 +67,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) {
         // we cannot use `auth.inMemoryAuthentication()` because it does not support char array
-        auth.authenticationProvider(new AuthenticationProvider() {
-            private MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
-
-            private boolean isCredentialsSet() {
-                if (!StringUtils.isEmpty(eurekaUserid) && !ArrayUtils.isEmpty(eurekaPassword)) {
-                    return true;
-                }
-
-                log.warn("Eureka credentials are not set. Please configure properties `apiml.discovery.userid` and `apiml.discovery.password` or change type of Eureka authentication.");
-                return false;
-            }
-
-            private char[] getPassword(Authentication authentication) {
-                if (authentication.getCredentials() instanceof char[]) {
-                    return (char[]) authentication.getCredentials();
-                }
-                return String.valueOf(authentication.getCredentials()).toCharArray();
-            }
-
-            private String getUser(Authentication authentication) {
-                if (authentication.getCredentials() == null) {
-                    return null;
-                }
-                return String.valueOf(authentication.getPrincipal());
-            }
-
-            @Override
-            public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-                if (
-                    isCredentialsSet() &&
-                    Strings.CS.equals(eurekaUserid, getUser(authentication)) &&
-                    Arrays.equals(eurekaPassword, getPassword(authentication))
-                ) {
-                    UsernamePasswordAuthenticationToken result = UsernamePasswordAuthenticationToken.authenticated(
-                        authentication.getPrincipal(),
-                        authentication.getCredentials(),
-                        Collections.singleton(new SimpleGrantedAuthority("EUREKA"))
-                    );
-                    result.setDetails(authentication.getDetails());
-                    return result;
-                }
-
-                throw new BadCredentialsException(this.messages
-                    .getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
-            }
-
-            @Override
-            public boolean supports(Class<?> authentication) {
-                return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication));
-            }
-        });
+        auth.authenticationProvider(new EurekaBasicAuthenticationProvider(eurekaUserid, eurekaPassword));
     }
 
     private final HandlerInitializer handlerInitializer;
@@ -165,4 +115,63 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
             return new BasicContentFilter(authenticationManager, handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler());
         }
     }
+
+    @RequiredArgsConstructor
+    static class EurekaBasicAuthenticationProvider implements AuthenticationProvider {
+
+        private final String eurekaUserid;
+        private final char[] eurekaPassword;
+
+        private final MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
+
+        private boolean isCredentialsSet() {
+            if (!StringUtils.isEmpty(eurekaUserid) && !ArrayUtils.isEmpty(eurekaPassword)) {
+                return true;
+            }
+
+            log.warn("Eureka credentials are not set. Please configure properties `apiml.discovery.userid` and `apiml.discovery.password` or change type of Eureka authentication.");
+            return false;
+        }
+
+        private char[] getPassword(Authentication authentication) {
+            if (authentication.getCredentials() instanceof char[]) {
+                return (char[]) authentication.getCredentials();
+            }
+            return String.valueOf(authentication.getCredentials()).toCharArray();
+        }
+
+        private String getUser(Authentication authentication) {
+            if (authentication.getCredentials() == null) {
+                return null;
+            }
+            return String.valueOf(authentication.getPrincipal());
+        }
+
+        @Override
+        public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+            if (
+                isCredentialsSet() &&
+                    Strings.CS.equals(eurekaUserid, getUser(authentication)) &&
+                    Arrays.equals(eurekaPassword, getPassword(authentication))
+            ) {
+                UsernamePasswordAuthenticationToken result = UsernamePasswordAuthenticationToken.authenticated(
+                    authentication.getPrincipal(),
+                    authentication.getCredentials(),
+                    Collections.singleton(new SimpleGrantedAuthority("EUREKA"))
+                );
+                result.setDetails(authentication.getDetails());
+                return result;
+            }
+
+            throw new BadCredentialsException(this.messages
+                .getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
+        }
+
+        @Override
+        public boolean supports(Class<?> authentication) {
+            return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication));
+        }
+
+    }
+
 }
