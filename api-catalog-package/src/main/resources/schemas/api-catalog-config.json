@@ -180,6 +180,14 @@
                                     "default": false
                                 }
                             }
+                        },
+                        "eurekaUserName": {
+                            "type": "string",
+                            "description": "Username for authentication against discovery service. It is used only when TLS is disabled and AT-TLS is not enabled."
+                        },
+                        "eurekaUserPassword": {
+                            "type": "string",
+                            "description": "Password for authentication against discovery service. It is used only when TLS is disabled and AT-TLS is not enabled."
                         }
                     }
                 }
