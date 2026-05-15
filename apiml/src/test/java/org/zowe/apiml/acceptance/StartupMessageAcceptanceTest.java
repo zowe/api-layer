@@ -25,8 +25,6 @@ import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.NestedTestConfiguration;
-import org.springframework.test.context.NestedTestConfiguration.EnclosingConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
@@ -49,7 +47,6 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@NestedTestConfiguration(EnclosingConfiguration.OVERRIDE)
 class StartupMessageAcceptanceTest {
 
     abstract static class BaseStartupTest extends AcceptanceTestWithMockServices {
