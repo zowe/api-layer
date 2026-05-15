@@ -36,6 +36,7 @@ import org.zowe.apiml.passticket.ApplicationNameNotProvidedException;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.ticket.TicketResponse;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
@@ -240,6 +241,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             var authSourceParsed = authSourceService.parse(authSource.get());
 
             var response = zosmfService.exchangeAuthenticationForZosmfToken(authSource.get().getRawSource().toString(), authSourceParsed);
+            response.setAuthSourceType(authSource.map(AuthSource::getType).map(Enum::name).orElse(null));
 
             authSource.filter(OIDCAuthSource.class::isInstance)
                 .map(OIDCAuthSource.class::cast)
@@ -250,6 +252,9 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             return Mono.just(new AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot obtain z/OSMF token", e);
+            if (e.getCause() instanceof BadJWTException || e.getCause() instanceof ExpiredJWTException || e instanceof TokenNotValidException) {
+                otelRequestContext.authSourceType(AuthSource.AuthSourceType.JWT.name());
+            }
             otelRequestContext.authErrorType(e.getClass().getName());
             return createAuthorizationResponse(createErrorMessage(e.getMessage()), null);
         }

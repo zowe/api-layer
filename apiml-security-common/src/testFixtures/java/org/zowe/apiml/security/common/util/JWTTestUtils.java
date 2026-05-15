@@ -77,33 +77,6 @@ public class JWTTestUtils {
         return builder.compact();
     }
 
-    public static String createExpiredToken(String username, String domain, String ltpaToken, List<String> scopes, HttpsConfig config, String issuer) {
-        long now = System.currentTimeMillis();
-        long expiration = now - 200_000L;
-        Key jwtSecret = SecurityUtils.loadKey(config);
-
-        var builder = Jwts.builder();
-
-        builder
-            .subject(username)
-            .claim("dom", domain)
-            .issuedAt(new Date(now))
-            .expiration(new Date(expiration))
-            .issuer(issuer)
-            .id(UUID.randomUUID().toString())
-            .signWith(jwtSecret);
-
-        if (!StringUtils.isEmpty(ltpaToken)) {
-            builder.claim("ltpa", ltpaToken);
-        }
-
-        if (scopes != null && scopes.size() > 0) {
-            builder.claim("scopes", scopes);
-        }
-
-        return builder.compact();
-    }
-
     public static String createDummyJwtToken(String username, String issuer, long expiration) {
         long now = System.currentTimeMillis();
         return Jwts.builder()
