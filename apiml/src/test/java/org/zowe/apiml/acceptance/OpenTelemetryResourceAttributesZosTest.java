@@ -63,6 +63,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.ApimlConstants.PAT_HEADER_NAME;
 import static org.zowe.apiml.security.common.util.JWTTestUtils.createExpiredZoweJwtToken;
+import static org.zowe.apiml.security.common.util.JWTTestUtils.createZoweJwtToken;
 import static org.zowe.apiml.security.common.util.JWTTestUtils.createZowePatJwtToken;
 
 class OpenTelemetryResourceAttributesZosTest {
@@ -685,29 +686,6 @@ class OpenTelemetryResourceAttributesZosTest {
                 class WhenAuthFailure {
 
                     @Test
-                    void givenRouted_whenAuthFail_thenLog() {
-                        given()
-                            .get(basePath + "/testservice/api/v1/200")
-                        .then()
-                            .statusCode(200);
-
-                        var logRecord = assertOneLogRecordExported("/testservice/api/v1/200");
-
-                        assertAttributesBase(logRecord.getResource().getAttributes(), port);
-                        @SuppressWarnings("null")
-                        var logBody = logRecord.getBodyValue().asString();
-                        assertEquals("testservice", getAttribute(logBody, "service.id"));
-                        assertEquals("GET", getAttribute(logBody, "http.request.method"));
-                        assertEquals("ERROR", getAttribute(logBody, "auth.status"));
-                        assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
-                        assertEquals("200", getAttribute(logBody, "service.response_code"));
-                        assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
-                        assertEquals("https", getAttribute(logBody, "url.scheme"));
-                        assertNull(getAttribute(logBody, "auth.method"));
-                        assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
-                    }
-
-                    @Test
                     void whenOidcTokenInvalid_thenLog() {
                         when(oidcTokenProvider.isValid(VALID_OIDC_TOKEN)).thenReturn(false);
 
@@ -731,8 +709,8 @@ class OpenTelemetryResourceAttributesZosTest {
                         assertEquals("200", getAttribute(logBody, "service.response_code"));
                         assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
                         assertEquals("https", getAttribute(logBody, "url.scheme"));
-                        assertNull(getAttribute(logBody, "auth.method"));
                         assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
+                        assertNull(getAttribute(logBody, "auth.method"));
                     }
 
                     @Test
@@ -755,7 +733,7 @@ class OpenTelemetryResourceAttributesZosTest {
                         assertEquals("/testservice/api/v1/401", getAttribute(logBody, "url.path"));
                         assertEquals("https", getAttribute(logBody, "url.scheme"));
                         assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
-                        assertEquals("JWT", getAttribute(logBody, "auth.method"));
+                        assertNull(getAttribute(logBody, "auth.method"));
                     }
 
                     @Test
@@ -778,7 +756,7 @@ class OpenTelemetryResourceAttributesZosTest {
                         assertEquals("/testservice/api/v1/401", getAttribute(logBody, "url.path"));
                         assertEquals("https", getAttribute(logBody, "url.scheme"));
                         assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
-                        assertEquals("JWT", getAttribute(logBody, "auth.method"));
+                        assertNull(getAttribute(logBody, "auth.method"));
                     }
 
                 }
@@ -1163,6 +1141,145 @@ class OpenTelemetryResourceAttributesZosTest {
                     assertEquals("/testservicex509/api/v1/400", getAttribute(logBody, "url.path"));
                     assertEquals("https", getAttribute(logBody, "url.scheme"));
                     assertEquals("x509", getAttribute(logBody, "auth.service.auth.method"));
+                    assertNull(getAttribute(logBody, "auth.method"));
+                }
+
+            }
+
+        }
+
+        @Nested
+        @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+        class WhenServiceRequiresZosmf {
+
+            private MockService mockServicezosmf;
+
+            @BeforeAll
+            void init() {
+                mockServicezosmf = mockService("testservicezosmf")
+                    .scope(Scope.CLASS)
+                    .authenticationScheme(AuthenticationScheme.ZOSMF)
+                    .addEndpoint("/testservicezosmf/200")
+                    .responseCode(200)
+                .and()
+                    .addEndpoint("/testservicezosmf/401")
+                    .responseCode(401)
+                .and().start();
+            }
+
+            @Nested
+            class WhenAuthPresent {
+
+                @Test
+                void whenSuccess_thenLog() {
+                    given()
+                        .cookie(AUTH_COOKIE, createZoweJwtToken("USER", "z/OS", "Ltpa", httpConfig.getHttpsConfig()))
+                        .get(basePath + "/testservicezosmf/api/v1/200")
+                    .then()
+                        .statusCode(200);
+
+                    var logRecord = assertOneLogRecordExported("/testservicezosmf/api/v1/200");
+                    assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                    @SuppressWarnings("null")
+                    var logBody = logRecord.getBodyValue().asString();
+                    assertNull(getAttribute(logBody, "user.id"));
+                    assertEquals("OK", getAttribute(logBody, "auth.status"));
+                    assertNull(getAttribute(logBody, "auth.error.message"));
+                    assertNull(getAttribute(logBody, "auth.error.type"));
+                    assertEquals("testservicezosmf", getAttribute(logBody, "service.id"));
+                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                    assertEquals("localhost:testservicezosmf:" + mockServicezosmf.getPort(), getAttribute(logBody, "service.instance.id"));
+                    assertEquals("200", getAttribute(logBody, "service.response_code"));
+                    assertEquals("/testservicezosmf/api/v1/200", getAttribute(logBody, "url.path"));
+                    assertEquals("https", getAttribute(logBody, "url.scheme"));
+                    assertEquals("zosmf", getAttribute(logBody, "auth.service.auth.method"));
+                    assertEquals("JWT", getAttribute(logBody, "auth.method"));
+                }
+
+                @Nested
+                class WhenAuthFailure {
+
+                    @Test
+                    void whenInvalidToken_thenLog() {
+                        given()
+                            .cookie(AUTH_COOKIE, "invalid.jwt.token")
+                            .get(basePath + "/testservicezosmf/api/v1/401")
+                        .then()
+                            .statusCode(401);
+
+                        var logRecord = assertOneLogRecordExported("/testservicezosmf/api/v1/401");
+                        assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                        @SuppressWarnings("null")
+                        var logBody = logRecord.getBodyValue().asString();
+                        assertNull(getAttribute(logBody, "user.id"));
+                        assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                        assertEquals("Token is not valid.", getAttribute(logBody, "auth.error.message"));
+                        assertEquals("org.zowe.apiml.security.common.token.TokenNotValidException", getAttribute(logBody, "auth.error.type"));
+                        assertEquals("testservicezosmf", getAttribute(logBody, "service.id"));
+                        assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                        assertEquals("localhost:testservicezosmf:" + mockServicezosmf.getPort(), getAttribute(logBody, "service.instance.id"));
+                        assertEquals("401", getAttribute(logBody, "service.response_code"));
+                        assertEquals("/testservicezosmf/api/v1/401", getAttribute(logBody, "url.path"));
+                        assertEquals("https", getAttribute(logBody, "url.scheme"));
+                        assertEquals("zosmf", getAttribute(logBody, "auth.service.auth.method"));
+                        assertNull(getAttribute(logBody, "auth.method"));
+                    }
+
+                    @Test
+                    void whenExpiredToken_thenLog() {
+                        given()
+                            .cookie(AUTH_COOKIE, createExpiredZoweJwtToken("USER", "z/OS", "Ltpa", httpConfig.getHttpsConfig()))
+                            .get(basePath + "/testservicezosmf/api/v1/401")
+                        .then()
+                            .statusCode(401);
+
+                        var logRecord = assertOneLogRecordExported("/testservicezosmf/api/v1/401");
+                        assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                        @SuppressWarnings("null")
+                        var logBody = logRecord.getBodyValue().asString();
+                        assertNull(getAttribute(logBody, "user.id"));
+                        assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                        assertEquals("Token is expired.", getAttribute(logBody, "auth.error.message"));
+                        assertEquals("org.zowe.apiml.security.common.token.TokenExpireException", getAttribute(logBody, "auth.error.type"));
+                        assertEquals("testservicezosmf", getAttribute(logBody, "service.id"));
+                        assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                        assertEquals("localhost:testservicezosmf:" + mockServicezosmf.getPort(), getAttribute(logBody, "service.instance.id"));
+                        assertEquals("401", getAttribute(logBody, "service.response_code"));
+                        assertEquals("/testservicezosmf/api/v1/401", getAttribute(logBody, "url.path"));
+                        assertEquals("https", getAttribute(logBody, "url.scheme"));
+                        assertEquals("zosmf", getAttribute(logBody, "auth.service.auth.method"));
+                        assertNull(getAttribute(logBody, "auth.method"));
+                    }
+
+                }
+
+            }
+
+            @Nested
+            class WhenAuthAbsent {
+
+                @Test
+                void thenLog() {
+                    given()
+                        .get(basePath + "/testservicezosmf/api/v1/401")
+                    .then()
+                        .statusCode(401);
+
+                    var logRecord = assertOneLogRecordExported("/testservicezosmf/api/v1/401");
+                    assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                    @SuppressWarnings("null")
+                    var logBody = logRecord.getBodyValue().asString();
+                    assertNull(getAttribute(logBody, "user.id"));
+                    assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                    assertEquals("ZWEAG160E No authentication provided in the request", getAttribute(logBody, "auth.error.message"));
+                    assertEquals("org.springframework.security.authentication.InsufficientAuthenticationException", getAttribute(logBody, "auth.error.type"));
+                    assertEquals("testservicezosmf", getAttribute(logBody, "service.id"));
+                    assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                    assertEquals("localhost:testservicezosmf:" + mockServicezosmf.getPort(), getAttribute(logBody, "service.instance.id"));
+                    assertEquals("401", getAttribute(logBody, "service.response_code"));
+                    assertEquals("/testservicezosmf/api/v1/401", getAttribute(logBody, "url.path"));
+                    assertEquals("https", getAttribute(logBody, "url.scheme"));
+                    assertEquals("zosmf", getAttribute(logBody, "auth.service.auth.method"));
                     assertNull(getAttribute(logBody, "auth.method"));
                 }
 

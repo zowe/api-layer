@@ -10,8 +10,6 @@
 
 package org.zowe.apiml;
 
-import com.nimbusds.jwt.proc.BadJWTException;
-import com.nimbusds.jwt.proc.ExpiredJWTException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpUpgradeHandler;
@@ -49,7 +47,6 @@ import reactor.core.publisher.Mono;
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
@@ -240,6 +237,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             var authSourceParsed = authSourceService.parse(authSource.get());
 
             var response = zosmfService.exchangeAuthenticationForZosmfToken(authSource.get().getRawSource().toString(), authSourceParsed);
+            response.setAuthSourceType(authSource.map(AuthSource::getType).map(Enum::name).orElse(null));
 
             authSource.filter(OIDCAuthSource.class::isInstance)
                 .map(OIDCAuthSource.class::cast)
@@ -283,9 +281,6 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             return Mono.just(new AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot obtain Zowe JWT token", e);
-            if (e.getCause() instanceof BadJWTException || e.getCause() instanceof ParseException || e.getCause() instanceof ExpiredJWTException) {
-                otelRequestContext.authSourceType(AuthSource.AuthSourceType.JWT.name());
-            }
             otelRequestContext.authErrorType(e.getClass().getName());
             return createInvalidAuthenticationErrorMessage();
         }
