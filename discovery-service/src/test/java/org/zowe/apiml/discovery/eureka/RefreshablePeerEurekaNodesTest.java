@@ -87,7 +87,7 @@ class RefreshablePeerEurekaNodesTest {
 
     @BeforeEach
     void setUp() {
-        eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, secureSslContextWithoutKeystore, DEFAULT_MAX_RETRIES);
+        eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, secureSslContextWithoutKeystore, DEFAULT_MAX_RETRIES, false);
     }
 
     @Test
