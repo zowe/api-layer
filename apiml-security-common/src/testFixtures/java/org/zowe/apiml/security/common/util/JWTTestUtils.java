@@ -32,6 +32,10 @@ import java.util.UUID;
 
 public class JWTTestUtils {
 
+    public static String createZoweJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
+        return createToken(username, domain, ltpaToken, null, null, config, "APIML");
+    }
+
     public static String createExpiredZoweJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
         return createToken(username, domain, ltpaToken, System.currentTimeMillis() - Duration.ofDays(1).toMillis(), null, config, "APIML");
     }
