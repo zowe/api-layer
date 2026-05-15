@@ -201,7 +201,7 @@ class ApiCatalogAuthenticationTest {
             void givenInvalidBasicAuthentication(String endpoint, Request request) {
                 String expectedMessage = "Invalid username or password for URL '" + CATALOG_SERVICE_ID_PATH + (IS_MODULITH_ENABLED ? CATALOG_PREFIX : "") + endpoint + "'";
                 String expectedMessageNumber = UNAUTHENTICATED_ERROR_NUMBER;
-                if ("saf".equalsIgnoreCase(AUTH_PROVIDER)) {
+                if ("saf".equalsIgnoreCase(AUTH_PROVIDER) && IS_MODULITH_ENABLED) {
                     expectedMessage = "The platform returned error: " + PlatformPwdErrno.EINVAL.shortErrorName + ": " + PlatformPwdErrno.EINVAL.explanation;
                     expectedMessageNumber = "ZWEAT416E";
                 }
