@@ -10,8 +10,6 @@
 
 package org.zowe.apiml;
 
-import com.nimbusds.jwt.proc.BadJWTException;
-import com.nimbusds.jwt.proc.ExpiredJWTException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpUpgradeHandler;
@@ -36,7 +34,6 @@ import org.zowe.apiml.passticket.ApplicationNameNotProvidedException;
 import org.zowe.apiml.passticket.IRRPassTicketGenerationException;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
-import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.ticket.TicketResponse;
 import org.zowe.apiml.zaas.ZaasTokenResponse;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
@@ -50,7 +47,6 @@ import reactor.core.publisher.Mono;
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
