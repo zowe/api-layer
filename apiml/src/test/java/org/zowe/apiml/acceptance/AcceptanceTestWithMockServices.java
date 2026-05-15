@@ -22,6 +22,7 @@ import org.springframework.cloud.gateway.event.RefreshRoutesEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.zowe.apiml.gateway.ApplicationRegistry;
 import org.zowe.apiml.gateway.MockService;
+import org.zowe.apiml.gateway.MockWebSocketService;
 
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -74,6 +75,15 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
                 if (applicationRegistry.update(mockService)) {
                     updateRoutingRules();
                 }
+            })
+            .serviceId(serviceId);
+    }
+
+    protected MockWebSocketService.MockWsServiceBuilder mockServiceWs(String serviceId) {
+        return MockWebSocketService.wsBuilder()
+            .statusChangedListener(mockService -> {
+                applicationRegistry.update(mockService);
+                updateRoutingRules();
             })
             .serviceId(serviceId);
     }
