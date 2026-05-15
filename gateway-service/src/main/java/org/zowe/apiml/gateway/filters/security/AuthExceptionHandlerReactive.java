@@ -16,8 +16,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.constants.ApimlConstants;
-import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
+import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
@@ -36,17 +38,20 @@ public class AuthExceptionHandlerReactive {
 
     public Mono<Void> handleTokenNotValid(ServerWebExchange exchange) {
         var response = exchange.getResponse();
+        var otelContext = OtelRequestContext.of(exchange);
         response.setStatusCode(UNAUTHORIZED);
         response.getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, "Invalid token");
         response.getHeaders().add(CONTENT_TYPE, APPLICATION_JSON_VALUE);
 
-        ApiMessageView message = messageService
-            .createMessage("org.zowe.apiml.common.unauthorized", exchange.getRequest().getPath())
-            .mapToView();
+        var message = messageService.createMessage("org.zowe.apiml.common.unauthorized", exchange.getRequest().getPath());
+
+        otelContext.authenticationFailed();
+        otelContext.authErrorMessage(message.mapToLogMessage());
+        otelContext.authErrorType(TokenNotValidException.class.getName());
 
         byte[] bytes;
         try {
-            bytes = objectMapper.writeValueAsBytes(message);
+            bytes = objectMapper.writeValueAsBytes(message.mapToView());
         } catch (JsonProcessingException e) {
             bytes = "{\"message\":\"Invalid token\"}".getBytes(StandardCharsets.UTF_8);
         }
@@ -56,16 +61,18 @@ public class AuthExceptionHandlerReactive {
 
     public Mono<Void> handleServiceUnavailable(ServerWebExchange exchange) {
         var response = exchange.getResponse();
+        var otelContext = OtelRequestContext.of(exchange);
         response.setStatusCode(SERVICE_UNAVAILABLE);
         response.getHeaders().add(CONTENT_TYPE, APPLICATION_JSON_VALUE);
 
-        ApiMessageView message = messageService
-            .createMessage("org.zowe.apiml.common.serviceUnavailable", exchange.getRequest().getPath())
-            .mapToView();
+        var message = messageService.createMessage("org.zowe.apiml.common.serviceUnavailable", exchange.getRequest().getPath());
+        otelContext.authenticationFailed();
+        otelContext.authErrorMessage(message.mapToLogMessage());
+        otelContext.authErrorType(ServiceNotAccessibleException.class.getName());
 
         byte[] bytes;
         try {
-            bytes = objectMapper.writeValueAsBytes(message);
+            bytes = objectMapper.writeValueAsBytes(message.mapToView());
         } catch (JsonProcessingException e) {
             bytes = "{\"message\":\"service unavailable\"}".getBytes(StandardCharsets.UTF_8);
         }

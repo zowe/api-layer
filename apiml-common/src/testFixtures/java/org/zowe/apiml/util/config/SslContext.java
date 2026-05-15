@@ -56,6 +56,10 @@ public class SslContext {
         isInitialized.set(false);
     }
 
+    public static boolean isInitialized() {
+        return isInitialized.get();
+    }
+
     public synchronized static void prepareSslAuthentication(SslContextConfigurer providedConfigurer) throws Exception {
 
         if (configurer.get() != null && !configurer.get().equals(providedConfigurer)) {
@@ -174,7 +178,7 @@ public class SslContext {
 
             isInitialized.set(true);
         }
+
     }
+
 }
-
-

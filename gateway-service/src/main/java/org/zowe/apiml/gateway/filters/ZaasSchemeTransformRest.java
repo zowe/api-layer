@@ -24,6 +24,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.ticket.TicketRequest;
@@ -133,7 +134,7 @@ public class ZaasSchemeTransformRest implements ZaasSchemeTransform {
     }
 
     @Override
-    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<TicketResponse>> passticket(RequestCredentials requestCredentials) {
+    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<TicketResponse>> passticket(RequestCredentials requestCredentials, ServerWebExchange exchange) {
         try {
             var jsonBody = WRITER.writeValueAsString(new TicketRequest(requestCredentials.getApplId()));
             return call(
@@ -152,7 +153,7 @@ public class ZaasSchemeTransformRest implements ZaasSchemeTransform {
     }
 
     @Override
-    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> safIdt(RequestCredentials requestCredentials) {
+    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> safIdt(RequestCredentials requestCredentials, ServerWebExchange exchange) {
         try {
             String jsonBody = WRITER.writeValueAsString(new TicketRequest(requestCredentials.getApplId()));
             return call(
@@ -172,7 +173,7 @@ public class ZaasSchemeTransformRest implements ZaasSchemeTransform {
     }
 
     @Override
-    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> zosmf(RequestCredentials requestCredentials) {
+    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> zosmf(RequestCredentials requestCredentials, ServerWebExchange exchange) {
         return call(
             ZaasTokenResponse.class,
             instance -> createRequest(
@@ -184,7 +185,7 @@ public class ZaasSchemeTransformRest implements ZaasSchemeTransform {
     }
 
     @Override
-    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> zoweJwt(RequestCredentials requestCredentials) {
+    public Mono<AbstractAuthSchemeFactory.AuthorizationResponse<ZaasTokenResponse>> zoweJwt(RequestCredentials requestCredentials, ServerWebExchange exchange) {
         return call(
             ZaasTokenResponse.class,
             instance -> createRequest(
