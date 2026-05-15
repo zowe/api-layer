@@ -709,8 +709,8 @@ class OpenTelemetryResourceAttributesZosTest {
                         assertEquals("200", getAttribute(logBody, "service.response_code"));
                         assertEquals("/testservice/api/v1/200", getAttribute(logBody, "url.path"));
                         assertEquals("https", getAttribute(logBody, "url.scheme"));
-                        assertNull(getAttribute(logBody, "auth.method"));
                         assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
+                        assertNull(getAttribute(logBody, "auth.method"));
                     }
 
                     @Test
@@ -733,7 +733,7 @@ class OpenTelemetryResourceAttributesZosTest {
                         assertEquals("/testservice/api/v1/401", getAttribute(logBody, "url.path"));
                         assertEquals("https", getAttribute(logBody, "url.scheme"));
                         assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
-                        assertEquals("JWT", getAttribute(logBody, "auth.method"));
+                        assertNull(getAttribute(logBody, "auth.method"));
                     }
 
                     @Test
@@ -756,7 +756,7 @@ class OpenTelemetryResourceAttributesZosTest {
                         assertEquals("/testservice/api/v1/401", getAttribute(logBody, "url.path"));
                         assertEquals("https", getAttribute(logBody, "url.scheme"));
                         assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
-                        assertEquals("JWT", getAttribute(logBody, "auth.method"));
+                        assertNull(getAttribute(logBody, "auth.method"));
                     }
 
                 }
@@ -1222,7 +1222,7 @@ class OpenTelemetryResourceAttributesZosTest {
                         assertEquals("/testservicezosmf/api/v1/401", getAttribute(logBody, "url.path"));
                         assertEquals("https", getAttribute(logBody, "url.scheme"));
                         assertEquals("zosmf", getAttribute(logBody, "auth.service.auth.method"));
-                        assertEquals("JWT", getAttribute(logBody, "auth.method"));
+                        assertNull(getAttribute(logBody, "auth.method"));
                     }
 
                     @Test
@@ -1248,7 +1248,7 @@ class OpenTelemetryResourceAttributesZosTest {
                         assertEquals("/testservicezosmf/api/v1/401", getAttribute(logBody, "url.path"));
                         assertEquals("https", getAttribute(logBody, "url.scheme"));
                         assertEquals("zosmf", getAttribute(logBody, "auth.service.auth.method"));
-                        assertEquals("JWT", getAttribute(logBody, "auth.method"));
+                        assertNull(getAttribute(logBody, "auth.method"));
                     }
 
                 }

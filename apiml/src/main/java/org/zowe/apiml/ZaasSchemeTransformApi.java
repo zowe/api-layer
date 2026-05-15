@@ -252,9 +252,6 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             return Mono.just(new AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot obtain z/OSMF token", e);
-            if (e.getCause() instanceof BadJWTException || e.getCause() instanceof ExpiredJWTException || e instanceof TokenNotValidException) {
-                otelRequestContext.authSourceType(AuthSource.AuthSourceType.JWT.name());
-            }
             otelRequestContext.authErrorType(e.getClass().getName());
             return createAuthorizationResponse(createErrorMessage(e.getMessage()), null);
         }
@@ -288,9 +285,6 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
             return Mono.just(new AuthorizationResponse<>(EMPTY_HEADERS, response));
         } catch (Exception e) {
             log.debug("Cannot obtain Zowe JWT token", e);
-            if (e.getCause() instanceof BadJWTException || e.getCause() instanceof ParseException || e.getCause() instanceof ExpiredJWTException) {
-                otelRequestContext.authSourceType(AuthSource.AuthSourceType.JWT.name());
-            }
             otelRequestContext.authErrorType(e.getClass().getName());
             return createInvalidAuthenticationErrorMessage();
         }
