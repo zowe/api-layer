@@ -48,10 +48,6 @@ public class JWTTestUtils {
         return createToken(username, domain, null, null, scopes, config, "APIML_PAT");
     }
 
-    public static String createZoweJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
-        return createToken(username, domain, ltpaToken, null, null, config, "APIML");
-    }
-
     public static String createToken(String username, String domain, String ltpaToken, Long expiration, List<String> scopes, HttpsConfig config, String issuer) {
         long now = System.currentTimeMillis();
         if (expiration == null) {
