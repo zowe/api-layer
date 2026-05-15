@@ -157,7 +157,6 @@ class AbstractTokenFilterFactoryTest {
 
         @Test
         void givenOtelRequestContext_whenFail_thenCallAuthenticationFailed() {
-            exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
             spy(AbstractAuthSchemeFactory.class).cleanHeadersOnAuthFail(exchange, "test");
 
             verify(otelRequestContext, times(1)).authenticationFailed();

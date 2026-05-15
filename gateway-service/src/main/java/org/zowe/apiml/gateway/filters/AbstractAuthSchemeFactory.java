@@ -122,7 +122,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     private static final Predicate<HttpCookie> CREDENTIALS_COOKIE_INPUT = cookie ->
         Strings.CI.equals(cookie.getName(), PAT_COOKIE_AUTH_NAME) ||
             Strings.CI.equals(cookie.getName(), COOKIE_AUTH_NAME) ||
-            StringUtils.startsWithIgnoreCase(cookie.getName(), COOKIE_AUTH_NAME + ".");
+            Strings.CI.startsWith(cookie.getName(), COOKIE_AUTH_NAME + ".");
 
     private static final Predicate<HttpCookie> CREDENTIALS_COOKIE = cookie ->
         CREDENTIALS_COOKIE_INPUT.test(cookie) ||
