@@ -70,7 +70,11 @@ public class SpringSecurityConfig {
             ).x509(x509spec -> x509spec.principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager()));
         } else {
-            http.authorizeExchange(exchange -> exchange.anyExchange().permitAll());
+            http.authorizeExchange(exchange -> exchange
+                .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
+                .anyExchange()
+                .permitAll()
+            );
         }
 
         return http.build();
