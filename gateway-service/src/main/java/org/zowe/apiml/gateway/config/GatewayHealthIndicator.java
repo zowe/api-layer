@@ -41,7 +41,7 @@ import static org.springframework.boot.actuate.health.Status.UP;
 @Slf4j
 public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
-    @Value("${apiml.service.hostname")
+    @Value("${apiml.service.hostname}")
     private String hostname;
 
     protected final DiscoveryClient discoveryClient;
