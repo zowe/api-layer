@@ -32,8 +32,8 @@
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "react-error-boundary": "5.0.0",
-        "react-hook-form": "7.75.0",
-        "react-redux": "9.2.0",
+        "react-hook-form": "7.76.0",
+        "react-redux": "9.3.0",
         "react-router": "7.15.1",
         "react-toastify": "10.0.6",
         "redux": "5.0.1",
@@ -83,7 +83,7 @@
         "@cfaester/enzyme-adapter-react-18": "0.8.0",
         "@eslint/compat": "1.4.1",
         "@eslint/js": "9.39.4",
-        "@reduxjs/toolkit": "2.11.2",
+        "@reduxjs/toolkit": "2.12.0",
         "@testing-library/dom": "10.4.1",
         "@testing-library/jest-dom": "6.9.1",
         "@testing-library/react": "16.3.2",
@@ -93,7 +93,7 @@
         "ansi-regex": "6.2.2",
         "babel-plugin-transform-vite-meta-env": "1.0.3",
         "body-parser": "2.2.2",
-        "caniuse-lite": "1.0.30001792",
+        "caniuse-lite": "1.0.30001793",
         "concurrently": "9.2.1",
         "cors": "2.8.6",
         "cypress": "15.15.0",
@@ -133,7 +133,7 @@
         "tmpl": "1.0.5",
         "undici": "6.19.8",
         "vite": "8.0.13",
-        "vite-plugin-node-polyfills": "0.26.0",
+        "vite-plugin-node-polyfills": "0.27.0",
         "yaml": "2.9.0"
     },
     "overrides": {
@@ -164,7 +164,7 @@
             "prismjs": "1.30.0"
         },
         "js-yaml": "4.1.1",
-        "qs": "6.15.1",
+        "qs": "6.15.2",
         "path-to-regexp": "8.4.2",
         "minimatch": "3.1.5",
         "brace-expansion": "1.1.14"
