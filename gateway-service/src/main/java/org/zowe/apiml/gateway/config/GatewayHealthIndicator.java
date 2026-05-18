@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
@@ -37,6 +38,7 @@ import static org.springframework.boot.actuate.health.Status.UP;
  */
 @Component
 @ConditionalOnMissingBean(name = "modulithConfig")
+@Slf4j
 public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
     @Value("${apiml.service.hostname")
@@ -86,6 +88,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
     private boolean isThisDeploymentServiceUp(String serviceId) {
         var instances = this.discoveryClient.getInstances(serviceId);
+        log.error("instances: {}, hostname: {}", instances, hostname);
         return !instances.isEmpty() && instances.stream().anyMatch(instance -> instance.getInstanceId().contains(hostname));
     }
 
