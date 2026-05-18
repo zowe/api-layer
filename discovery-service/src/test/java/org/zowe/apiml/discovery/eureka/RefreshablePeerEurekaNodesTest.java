@@ -18,16 +18,16 @@ import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.servo.monitor.StatsMonitor;
 import jakarta.ws.rs.client.ClientRequestFilter;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
 import javax.net.ssl.SSLContext;
@@ -43,8 +43,8 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -132,4 +132,37 @@ class RefreshablePeerEurekaNodesTest {
         when(clientConfig.shouldUseDnsForFetchingServiceUrls()).thenReturn(false);
         assertFalse(eurekaNodes.shouldUpdate(new HashSet<>()));
     }
+
+    @Nested
+    class HostVerifier {
+
+        @BeforeEach
+        void setUp() {
+            doReturn(100).when(serverConfig).getPeerNodeTotalConnections();
+            doReturn(10).when(serverConfig).getPeerNodeTotalConnectionsPerHost();
+        }
+
+        private RefreshablePeerEurekaNodes.CustomEurekaJersey3ClientBuilder.CustomClientConfig createConfig() {
+            var builder = eurekaNodes.new CustomEurekaJersey3ClientBuilder(null, serverConfig);
+            return builder.new CustomClientConfig(null, serverConfig);
+        }
+
+        @Test
+        void givenNonStrictValidation_whenConstructClient_thenUseNoopHostVerifier() {
+            var config = createConfig();
+            ReflectionTestUtils.setField(eurekaNodes, "nonStrictVerifySslCertificatesOfServices", true);
+
+            assertSame(NoopHostnameVerifier.INSTANCE, config.getHostnameVerifier());
+        }
+
+        @Test
+        void givenStrictValidation_whenConstructClient_thenUseDefaultHostnameVerifier() {
+            var config = createConfig();
+            ReflectionTestUtils.setField(eurekaNodes, "nonStrictVerifySslCertificatesOfServices", false);
+
+            assertTrue(config.getHostnameVerifier() instanceof DefaultHostnameVerifier);
+        }
+
+    }
+
 }
