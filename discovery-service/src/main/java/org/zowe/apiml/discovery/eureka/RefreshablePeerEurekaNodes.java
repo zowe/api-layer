@@ -64,7 +64,7 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
     private Collection<ClientRequestFilter> replicationClientAdditionalFilters;
     private SSLContext secureSslContext;
     private int maxPeerRetries;
-    private final boolean isServerAttlsEnabled;
+    private final boolean isClientAttlsEnabled;
 
     public RefreshablePeerEurekaNodes(final PeerAwareInstanceRegistry registry,
                                       final EurekaServerConfig serverConfig,
@@ -73,13 +73,13 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
                                       final Collection<ClientRequestFilter> replicationClientAdditionalFilters,
                                       final @Qualifier("secureSslContext") SSLContext secureSslContext,
                                       final int maxPeerRetries,
-                                      final boolean isServerAttlsEnabled) {
+                                      final boolean isClientAttlsEnabled) {
         super(registry, serverConfig, clientConfig, serverCodecs,
             applicationInfoManager);
         this.replicationClientAdditionalFilters = replicationClientAdditionalFilters;
         this.secureSslContext = secureSslContext;
         this.maxPeerRetries = maxPeerRetries;
-        this.isServerAttlsEnabled = isServerAttlsEnabled;
+        this.isClientAttlsEnabled = isClientAttlsEnabled;
     }
 
     @Override
@@ -232,7 +232,7 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
                 ConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(secureSslContext, NoopHostnameVerifier.INSTANCE);
                 var registry = RegistryBuilder.<ConnectionSocketFactory>create();
                 registry.register("https", socketFactory);
-                if (isServerAttlsEnabled) {
+                if (isClientAttlsEnabled) {
                     registry.register("http", new PlainConnectionSocketFactory());
                 }
 
