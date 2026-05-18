@@ -39,6 +39,9 @@ import static org.springframework.boot.actuate.health.Status.UP;
 @ConditionalOnMissingBean(name = "modulithConfig")
 public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
+    @Value("${apiml.service.hostname")
+    private String hostname;
+
     protected final DiscoveryClient discoveryClient;
     private final String apiCatalogServiceId;
     @InjectApimlLogger
@@ -60,8 +63,8 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
         // When DS goes 'down' after it was already 'up', the new status is not shown. This is probably feature of
         // Eureka client which caches the status of services. When DS is down the cache is not refreshed.
-        var discoveryUp = !this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).isEmpty();
-        var zaasUp = !this.discoveryClient.getInstances(CoreService.ZAAS.getServiceId()).isEmpty();
+        var discoveryUp = isThisDeploymentServiceUp(CoreService.DISCOVERY.getServiceId());
+        var zaasUp = isThisDeploymentServiceUp(CoreService.ZAAS.getServiceId());
 
         var gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
         var zaasCount = this.discoveryClient.getInstances(CoreService.ZAAS.getServiceId()).size();
@@ -79,6 +82,11 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         if (discoveryUp && apiCatalogUp && zaasUp && applicationReady.get()) {
             onFullyUp();
         }
+    }
+
+    private boolean isThisDeploymentServiceUp(String serviceId) {
+        var instances = this.discoveryClient.getInstances(serviceId);
+        return !instances.isEmpty() && instances.stream().anyMatch(instance -> instance.getInstanceId().contains(hostname));
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -99,4 +107,5 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private Status toStatus(boolean up) {
         return up ? UP : DOWN;
     }
+
 }
