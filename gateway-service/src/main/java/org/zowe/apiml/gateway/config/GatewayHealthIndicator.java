@@ -88,7 +88,6 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
     private boolean isThisDeploymentServiceUp(String serviceId) {
         var instances = this.discoveryClient.getInstances(serviceId);
-        log.error("instances: {}, hostname: {}", instances, hostname);
         return !instances.isEmpty() && instances.stream().anyMatch(instance -> instance.getInstanceId().contains(hostname));
     }
 
