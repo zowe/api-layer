@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
@@ -65,10 +66,11 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
         // When DS goes 'down' after it was already 'up', the new status is not shown. This is probably feature of
         // Eureka client which caches the status of services. When DS is down the cache is not refreshed.
-        var discoveryUp = isThisDeploymentServiceUp(CoreService.DISCOVERY.getServiceId());
-        var zaasUp = isThisDeploymentServiceUp(CoreService.ZAAS.getServiceId());
+        var discoveryUp = !this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).isEmpty();
+        var zaasUp = !this.discoveryClient.getInstances(CoreService.ZAAS.getServiceId()).isEmpty();
 
         var gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
+        var discoveryCount = this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).size();
         var zaasCount = this.discoveryClient.getInstances(CoreService.ZAAS.getServiceId()).size();
 
         builder.status(toStatus(discoveryUp))
@@ -82,13 +84,14 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         }
 
         if (discoveryUp && apiCatalogUp && zaasUp && applicationReady.get()) {
+            var instancesCount = NumberUtils.max(gatewayCount, zaasCount, discoveryCount);
+            if (instancesCount > 1 && (gatewayCount != discoveryCount || gatewayCount != zaasCount)) {
+                log.debug("instancesCount: {}, gatewayCount: {}, zaasCount: {}, discoveryCount: {}", instancesCount, gatewayCount, zaasCount, discoveryCount);
+                return;
+            }
+
             onFullyUp();
         }
-    }
-
-    private boolean isThisDeploymentServiceUp(String serviceId) {
-        var instances = this.discoveryClient.getInstances(serviceId);
-        return !instances.isEmpty() && instances.stream().anyMatch(instance -> instance.getInstanceId().contains(hostname));
     }
 
     @EventListener(ApplicationReadyEvent.class)
