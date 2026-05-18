@@ -63,18 +63,22 @@ public class SpringSecurityConfig {
                 exceptionHandlingSpec.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.FORBIDDEN))
             );
 
+        http.authorizeExchange(exchange -> exchange
+            .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
+            .anyExchange().authenticated());
+
         if (verifyCertificates) {
-            http.authorizeExchange(exchange -> exchange
-                .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
-                .anyExchange().authenticated()
-            ).x509(x509spec -> x509spec.principalExtractor(X509Util.x509PrincipalExtractor())
+            http.x509(x509spec -> x509spec.principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager()));
+<<<<<<< Updated upstream
         } else {
             http.authorizeExchange(exchange -> exchange
                 .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
                 .anyExchange()
                 .permitAll()
             );
+=======
+>>>>>>> Stashed changes
         }
 
         return http.build();
