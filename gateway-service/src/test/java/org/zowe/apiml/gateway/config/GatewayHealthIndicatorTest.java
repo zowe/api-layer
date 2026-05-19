@@ -21,7 +21,6 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.constants.CoreService;
 
 import java.util.Collections;
@@ -43,7 +42,6 @@ class GatewayHealthIndicatorTest {
     @BeforeEach
     void setUp() {
         this.healthIndicator = new GatewayHealthIndicator(discoveryClient, CoreService.API_CATALOG.getServiceId());
-        ReflectionTestUtils.setField(healthIndicator, "hostname", "host");
     }
 
     private DefaultServiceInstance getDefaultServiceInstance(String serviceId, String hostname, int port) {
@@ -97,7 +95,6 @@ class GatewayHealthIndicatorTest {
                 Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
 
             var healthIndicator = new GatewayHealthIndicator(discoveryClient, customCatalogServiceId);
-            ReflectionTestUtils.setField(healthIndicator, "hostname", "host");
 
             Health.Builder builder = new Health.Builder();
             healthIndicator.doHealthCheck(builder);
