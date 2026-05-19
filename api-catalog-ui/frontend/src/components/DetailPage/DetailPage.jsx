@@ -18,6 +18,7 @@ import formatError from '../Error/ErrorFormatter';
 import ServiceTabContainer from '../ServiceTab/ServiceTabContainer';
 import PageNotFound from '../PageNotFound/PageNotFound';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
+import BigShieldWrapper from '../ErrorBoundary/BigShield/BigShieldWrapper';
 import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import countAdditionalContents, { customUIStyle, isAPIPortal, closeMobileMenu } from '../../utils/utilFunctions';
@@ -34,7 +35,6 @@ const FeedbackButton = React.lazy(loadFeedbackButton);
 export default function DetailPage(props) {
     const navigate = useNavigate();
     const location = useLocation();
-    const match = useMatch({ path: location.pathname });
 
     const {
         isLoading,
@@ -237,9 +237,9 @@ export default function DetailPage(props) {
                                 />
                                 <Route
                                     element={
-                                        <BigShield>
+                                        <BigShieldWrapper>
                                             <PageNotFound />
-                                        </BigShield>
+                                        </BigShieldWrapper>
                                     }
                                 />
                             </Routes>
@@ -255,6 +255,13 @@ export default function DetailPage(props) {
         </div>
     );
 }
+
+DetailPage.defaultProps = {
+    fetchTilesError: null,
+    selectedTile: null,
+    services: null,
+    currentTileId: null,
+};
 
 DetailPage.propTypes = {
     selectedService: PropTypes.object.isRequired,

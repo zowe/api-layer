@@ -55,7 +55,7 @@ function login(credentials, navigate) {
     };
 }
 
-function logout() {
+function logout(navigate) {
     function request() {
         return { type: userConstants.USERS_LOGOUT_REQUEST };
     }
@@ -80,7 +80,7 @@ function logout() {
     };
 }
 
-function authenticationFailure(error) {
+function authenticationFailure(error, navigate) {
     function failure(err) {
         return { type: userConstants.AUTHENTICATION_FAILURE, err };
     }
@@ -119,9 +119,4 @@ export const userActions = {
     returnToLogin,
     validateInput,
     closeAlert,
-};
-seAlert,
-};
-;
-seAlert,
 };

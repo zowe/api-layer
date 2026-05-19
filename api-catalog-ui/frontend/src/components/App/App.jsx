@@ -8,9 +8,10 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { Suspense, useEffect } from 'react';
-import { Navigate, Routes, Route } from 'react-router';
+import { Navigate, Routes, Route, useNavigate, useLocation } from 'react-router';
 import { ToastContainer } from 'react-toastify';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
+import BigShieldWrapper from '../ErrorBoundary/BigShield/BigShieldWrapper';
 import ErrorContainer from '../Error/ErrorContainer';
 import '../../assets/css/APIMReactToastify.css';
 import PageNotFound from '../PageNotFound/PageNotFound';
@@ -20,6 +21,9 @@ import { closeMobileMenu, isAPIPortal } from '../../utils/utilFunctions';
 import { AsyncDashboardContainer, AsyncDetailPageContainer, AsyncLoginContainer } from './AsyncModules'; // eslint-disable-line import/no-cycle
 
 function App() {
+    const navigate = useNavigate();
+    const location = useLocation();
+
     useEffect(() => {
         // workaround for missing process polyfill in webpack 5
         window.process = { ...window.process };
@@ -36,7 +40,7 @@ function App() {
 
     return (
         <div className="App">
-            <BigShield>
+            <BigShield navigate={navigate} pathname={location.pathname}>
                 <ToastContainer />
                 <ErrorContainer />
                 <Suspense fallback={<Spinner isLoading={isLoading} />}>

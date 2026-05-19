@@ -32,7 +32,6 @@ export default function ServiceTab(props) {
         documentation,
         selectService,
         currentTileId,
-        fetchTilesStop,
     } = props;
 
     const [selectedVersion, setSelectedVersion] = useState(null);
@@ -48,7 +47,7 @@ export default function ServiceTab(props) {
         if (tiles && tiles.length > 0 && tiles[0] && tiles[0].services) {
             tiles[0].services.forEach((service) => {
                 if (service.serviceId === urlServiceId) {
-                    if (service.serviceId !== selectedService.serviceId || currentTileId !== currentTileId) {
+                    if (service.serviceId !== selectedService.serviceId) {
                         selectService(service, currentTileId);
                     }
                     result = service;
@@ -419,5 +418,9 @@ ServiceTab.propTypes = {
     selectService: PropTypes.func.isRequired,
     currentTileId: PropTypes.any,
     tiles: PropTypes.arrayOf(PropTypes.any),
-    fetchTilesStop: PropTypes.func,
+};
+
+ServiceTab.defaultProps = {
+    currentTileId: null,
+    tiles: null,
 };
