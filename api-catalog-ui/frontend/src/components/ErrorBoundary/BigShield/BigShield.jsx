@@ -9,7 +9,7 @@
  */
 import { useState, useCallback } from 'react';
 import { Typography, Button } from '@material-ui/core';
-import ArrowBackIosNewIcon from '@material-ui/icons/ArrowBackIosNew';
+import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
 import PropTypes from 'prop-types';
 import { useNavigate, useLocation } from 'react-router';
 import './BigShield.css';
@@ -42,7 +42,7 @@ export default function BigShield(props) {
                                 primary
                                 onClick={handleGoToHome}
                                 size="medium"
-                                iconStart={<ArrowBackIosNewIcon />}
+                                startIcon={<ArrowBackIosIcon />}
                             >
                                 Go to Dashboard
                             </Button>

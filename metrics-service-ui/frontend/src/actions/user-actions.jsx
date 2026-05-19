@@ -10,9 +10,8 @@
 
 import userConstants from '../constants/user-constants';
 import { userService } from '../services';
-import history from '../helpers/history';
 
-function login(credentials) {
+function login(credentials, navigate) {
     function request(user) {
         return { type: userConstants.USERS_LOGIN_REQUEST, user };
     }
@@ -40,7 +39,7 @@ function login(credentials) {
     };
 }
 
-function logout() {
+function logout(navigate) {
     function request() {
         return { type: userConstants.USERS_LOGOUT_REQUEST };
     }
@@ -56,7 +55,7 @@ function logout() {
         userService.logout().then(
             () => {
                 dispatch(success());
-                history.push('/login');
+                navigate('/login');
             },
             (error) => {
                 dispatch(failure(error));
@@ -65,13 +64,13 @@ function logout() {
     };
 }
 
-function authenticationFailure(error) {
+function authenticationFailure(error, navigate) {
     function failure(err) {
         return { type: userConstants.AUTHENTICATION_FAILURE, err };
     }
     return (dispatch) => {
         dispatch(failure(error));
-        history.push('/login');
+        navigate('/login');
     };
 }
 
@@ -81,6 +80,3 @@ export const userActions = {
     logout,
     authenticationFailure,
 };
-Failure,
-};
-;

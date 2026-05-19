@@ -9,7 +9,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Navigate, Route, Routes } from 'react-router';
+import { Navigate } from 'react-router';
 
 import Spinner from '../Spinner/Spinner';
 import { userService } from '../../services';
