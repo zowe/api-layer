@@ -18,6 +18,7 @@ import org.zowe.apiml.util.requests.Apps;
 import org.zowe.apiml.util.requests.ha.HADiscoveryRequests;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -35,6 +36,7 @@ class DistributedLoadBalancingTest {
 
     private final HAGatewayRequests haGatewayRequests = new HAGatewayRequests();
     private final HADiscoveryRequests haDiscoveryRequests = new HADiscoveryRequests();
+    private static final String X_INSTANCEID = "X-InstanceId";
 
     @BeforeEach
     void setUp() {
@@ -42,7 +44,7 @@ class DistributedLoadBalancingTest {
     }
 
     @Test
-    void loadBalancerHAtest() {
+    void loadBalancerHAtest() throws URISyntaxException {
 
         assumeTrue(haGatewayRequests.existing() > 1);
         assertThat(haDiscoveryRequests.getAmountOfRegisteredInstancesForService(0, Apps.DISCOVERABLE_CLIENT), is(2));
@@ -51,8 +53,8 @@ class DistributedLoadBalancingTest {
 
         String routedInstanceId = given()
             .cookie(COOKIE_NAME, jwt)
-            .get("https://gateway-service:10010" + DISCOVERABLE_GREET)
-            .header("X-InstanceId");
+            .get(haGatewayRequests.getGatewayUrl(0, DISCOVERABLE_GREET))
+            .header(X_INSTANCEID);
 
         assertThat(routedInstanceId, is(notNullValue()));
 
@@ -61,8 +63,8 @@ class DistributedLoadBalancingTest {
         for (int i = 0; i < 10; i++) {
             String routedInstanceIdOnOtherGateway = given()
                 .cookie(COOKIE_NAME, jwt)
-                .get("https://gateway-service:10010" + DISCOVERABLE_GREET)
-                .header("X-InstanceId");
+                .get(haGatewayRequests.getGatewayUrl(0, DISCOVERABLE_GREET))
+                .header(X_INSTANCEID);
             results1[i] = routedInstanceId.equals(routedInstanceIdOnOtherGateway) ? "match" : "nomatch";
         }
 
@@ -75,8 +77,8 @@ class DistributedLoadBalancingTest {
         for (int i = 0; i < 10; i++) {
             String routedInstanceIdOnOtherGateway = given()
                 .cookie(COOKIE_NAME, jwt)
-                .get("https://gateway-service-2:10010" + DISCOVERABLE_GREET)
-                .header("X-InstanceId");
+                .get(haGatewayRequests.getGatewayUrl(1, DISCOVERABLE_GREET))
+                .header(X_INSTANCEID);
             results2[i] = routedInstanceId.equals(routedInstanceIdOnOtherGateway) ? "match" : "nomatch";
         }
 
