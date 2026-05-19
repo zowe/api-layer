@@ -37,19 +37,12 @@ describe('ServiceNavigationBar Container', () => {
                 text: 'test',
             },
         });
-        const history = {
-            location: {
-                pathname: {},
-            },
-            push: jest.fn(),
-            listen: jest.fn(),
-        };
         container = render(
-            <Router history={history}>
+            <MemoryRouter>
                 <Provider store={store}>
                     <ServicesNavigationBarContainer services={tiles.services} />
                 </Provider>
-            </Router>
+            </MemoryRouter>
         );
     });
 

@@ -39,19 +39,12 @@ describe('ServiceTab Container', () => {
                 },
             },
         });
-        const history = {
-            location: {
-                pathname: {},
-            },
-            push: jest.fn(),
-            listen: jest.fn(),
-        };
         container = render(
-            <Router history={history}>
+            <MemoryRouter>
                 <Provider store={store}>
                     <ServiceTabContainer tiles={tiles} />
                 </Provider>
-            </Router>
+            </MemoryRouter>
         );
     });
 

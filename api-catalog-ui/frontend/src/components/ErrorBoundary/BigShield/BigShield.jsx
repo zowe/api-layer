@@ -58,12 +58,8 @@ export default function BigShield(props) {
                             You are seeing this page because an unexpected error occurred while rendering your page.
                             <br />
                             <br />
-                            {disableButton && (
-                                <b>The Dashboard is broken, you cannot navigate away from this page.</b>
-                            )}
-                            {!disableButton && (
-                                <b>You can return to the Dashboard by clicking on the button above.</b>
-                            )}
+                            {disableButton && <b>The Dashboard is broken, you cannot navigate away from this page.</b>}
+                            {!disableButton && <b>You can return to the Dashboard by clicking on the button above.</b>}
                         </Typography>
                         <Typography variant="h6" color="#de1b1b">
                             <pre>

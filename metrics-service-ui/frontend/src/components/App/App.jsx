@@ -34,7 +34,14 @@ function App() {
                         <Routes>
                             <Route path="/" element={<Navigate replace to="/dashboard" />} />
                             <Route path="/login" element={<AsyncLoginContainer />} />
-                            <Route path="/dashboard" element={<AuthRoute><DashboardContainer /></AuthRoute>} />
+                            <Route
+                                path="/dashboard"
+                                element={
+                                    <AuthRoute>
+                                        <DashboardContainer />
+                                    </AuthRoute>
+                                }
+                            />
                         </Routes>
                     </div>
                 </Suspense>

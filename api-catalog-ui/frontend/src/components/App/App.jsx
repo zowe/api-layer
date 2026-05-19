@@ -53,10 +53,7 @@ function App() {
                                 )}
 
                                 <Route path="/" element={<Navigate replace to={dashboardPath} />} />
-                                <Route
-                                    path="/login"
-                                    element={<AsyncLoginContainer />}
-                                />
+                                <Route path="/login" element={<AsyncLoginContainer />} />
                                 <Route
                                     path={dashboardPath}
                                     element={

@@ -111,15 +111,18 @@ export default function ServiceTab(props) {
         });
     }, [containsVersion, currentService, selectedVersion]);
 
-    const handleDialogOpen = useCallback((service) => {
-        if (selectedVersion === null) {
-            setPreviousVersion(service.defaultApiVersion);
-        } else {
-            setPreviousVersion(selectedVersion);
-        }
-        setSelectedVersion('diff');
-        setIsDialogOpen(true);
-    }, [selectedVersion]);
+    const handleDialogOpen = useCallback(
+        (service) => {
+            if (selectedVersion === null) {
+                setPreviousVersion(service.defaultApiVersion);
+            } else {
+                setPreviousVersion(selectedVersion);
+            }
+            setSelectedVersion('diff');
+            setIsDialogOpen(true);
+        },
+        [selectedVersion]
+    );
 
     const handleDialogClose = useCallback(() => {
         setIsDialogOpen(false);

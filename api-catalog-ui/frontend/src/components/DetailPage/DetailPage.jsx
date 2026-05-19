@@ -151,13 +151,8 @@ export default function DetailPage(props) {
                         </IconButton>
                         <br />
                         <br />
-                        <Typography
-                            style={{ color: '#de1b1b' }}
-                            data-testid="detail-page-error"
-                            variant="subtitle2"
-                        >
-                            Tile details for "{currentTileId}" could not be retrieved, the following error was
-                            returned:
+                        <Typography style={{ color: '#de1b1b' }} data-testid="detail-page-error" variant="subtitle2">
+                            Tile details for "{currentTileId}" could not be retrieved, the following error was returned:
                         </Typography>
                         {error}
                     </div>
@@ -201,28 +196,16 @@ export default function DetailPage(props) {
                                     On this page
                                 </Typography>
                                 <Container>
-                                    <Link
-                                        className="links"
-                                        onClick={(e) => handleLinkClick(e, '#swagger-label')}
-                                    >
+                                    <Link className="links" onClick={(e) => handleLinkClick(e, '#swagger-label')}>
                                         Swagger
                                     </Link>
-                                    <Link
-                                        className="links"
-                                        onClick={(e) => handleLinkClick(e, '#use-cases-label')}
-                                    >
+                                    <Link className="links" onClick={(e) => handleLinkClick(e, '#use-cases-label')}>
                                         Use cases ({useCasesCounter})
                                     </Link>
-                                    <Link
-                                        className="links"
-                                        onClick={(e) => handleLinkClick(e, '#tutorials-label')}
-                                    >
+                                    <Link className="links" onClick={(e) => handleLinkClick(e, '#tutorials-label')}>
                                         Getting Started ({tutorialsCounter})
                                     </Link>
-                                    <Link
-                                        className="links"
-                                        onClick={(e) => handleLinkClick(e, '#videos-label')}
-                                    >
+                                    <Link className="links" onClick={(e) => handleLinkClick(e, '#videos-label')}>
                                         Videos ({videosCounter})
                                     </Link>
                                 </Container>
@@ -234,15 +217,7 @@ export default function DetailPage(props) {
                     {tiles !== undefined && tiles.length === 1 && (
                         <Suspense>
                             <Routes>
-                                <Route
-                                    index
-                                    element={
-                                        <Navigate
-                                            replace
-                                            to={`${tiles[0].services[0].serviceId}`}
-                                        />
-                                    }
-                                />
+                                <Route index element={<Navigate replace to={`${tiles[0].services[0].serviceId}`} />} />
                                 <Route
                                     path=":serviceId"
                                     element={
