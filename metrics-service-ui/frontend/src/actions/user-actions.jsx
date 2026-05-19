@@ -31,7 +31,7 @@ function login(credentials) {
         userService.login(credentials).then(
             (token) => {
                 dispatch(success(token));
-                history.push('/dashboard');
+                navigate('/dashboard');
             },
             (error) => {
                 dispatch(failure(error));
@@ -81,3 +81,6 @@ export const userActions = {
     logout,
     authenticationFailure,
 };
+Failure,
+};
+;

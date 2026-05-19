@@ -10,7 +10,7 @@
 
 import { Component } from 'react';
 import { Tab, Tabs, Tooltip, Typography, withStyles, Button, IconButton } from '@material-ui/core';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router';
 import PropTypes from 'prop-types';
 import Shield from '../ErrorBoundary/Shield/Shield';
 import SearchCriteria from '../Search/SearchCriteria';

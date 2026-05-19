@@ -8,8 +8,8 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import React, { Component, Suspense } from 'react';
-import { Redirect, Route, Router, Switch } from 'react-router-dom';
+import React, { Suspense } from 'react';
+import { Navigate, Routes, Route } from 'react-router';
 import { ThemeProvider } from '@material-ui/core/styles';
 
 import AuthRoute from '../AuthRoute/AuthRouteContainer';
@@ -19,38 +19,28 @@ import HeaderContainer from '../Header/HeaderContainer';
 import DashboardContainer from '../Dashboard/DashboardContainer';
 import theme from '../../helpers/theme';
 
-class App extends Component {
-    render() {
-        const { history } = this.props;
-        const isLoading = true;
-        return (
-            <div className="App">
-                <ThemeProvider theme={theme}>
-                    <Suspense fallback={<Spinner isLoading={isLoading} />}>
-                        <Router history={history}>
-                            <div className="content">
-                                {/* Switch is used to render header for every path except /login */}
-                                <Switch>
-                                    <Route path="/login" exact render={null} />
-                                    <Route component={HeaderContainer} />
-                                </Switch>
+function App() {
+    const isLoading = true;
+    return (
+        <div className="App">
+            <ThemeProvider theme={theme}>
+                <Suspense fallback={<Spinner isLoading={isLoading} />}>
+                    <div className="content">
+                        <Routes>
+                            <Route path="/login" element={null} />
+                            <Route path="*" element={<HeaderContainer />} />
+                        </Routes>
 
-                                <Switch>
-                                    <AuthRoute path="/" exact render={() => <Redirect replace to="/dashboard" />} />
-                                    <Route
-                                        path="/login"
-                                        exact
-                                        render={(props, state) => <AsyncLoginContainer {...props} {...state} />}
-                                    />
-                                    <AuthRoute path="/dashboard" component={DashboardContainer} />
-                                </Switch>
-                            </div>
-                        </Router>
-                    </Suspense>
-                </ThemeProvider>
-            </div>
-        );
-    }
+                        <Routes>
+                            <Route path="/" element={<Navigate replace to="/dashboard" />} />
+                            <Route path="/login" element={<AsyncLoginContainer />} />
+                            <Route path="/dashboard" element={<AuthRoute><DashboardContainer /></AuthRoute>} />
+                        </Routes>
+                    </div>
+                </Suspense>
+            </ThemeProvider>
+        </div>
+    );
 }
 
 export default App;

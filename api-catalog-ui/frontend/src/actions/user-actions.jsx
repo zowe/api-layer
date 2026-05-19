@@ -10,9 +10,8 @@
 
 import userConstants from '../constants/user-constants';
 import { userService } from '../services';
-import history from '../helpers/history';
 
-function login(credentials) {
+function login(credentials, navigate) {
     function request(user) {
         return { type: userConstants.USERS_LOGIN_REQUEST, user };
     }
@@ -41,7 +40,7 @@ function login(credentials) {
                     showUpdatePassSuccess = true;
                 }
                 dispatch(success(token, showUpdatePassSuccess));
-                history.push('/dashboard');
+                navigate('/dashboard');
             },
             (error) => {
                 if (error.messageNumber === 'ZWEAT413E') {
@@ -72,7 +71,7 @@ function logout() {
         userService.logout().then(
             () => {
                 dispatch(success());
-                history.push('/login');
+                navigate('/login');
             },
             (error) => {
                 dispatch(failure(error));
@@ -90,7 +89,7 @@ function authenticationFailure(error) {
         if (error.xhr.getResponseHeader('WWW-Authenticate')) {
             window.location.href = process.env.REACT_APP_CATALOG_HOMEPAGE;
         } else {
-            history.push('/login');
+            navigate('/login');
         }
     };
 }
@@ -120,4 +119,9 @@ export const userActions = {
     returnToLogin,
     validateInput,
     closeAlert,
+};
+seAlert,
+};
+;
+seAlert,
 };

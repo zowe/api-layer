@@ -9,7 +9,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Redirect, Route } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 
 import Spinner from '../Spinner/Spinner';
 import { userService } from '../../services';
@@ -36,8 +36,8 @@ export default function AuthRoute(props) {
     }
 
     if (!isAuthenticated) {
-        return <Redirect replace to="/login" />;
+        return <Navigate replace to="/login" />;
     }
 
-    return <Route {...props} />;
+    return props.children;
 }

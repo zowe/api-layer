@@ -9,6 +9,7 @@
  */
 
 import { connect } from 'react-redux';
+import { useNavigate } from 'react-router';
 import Login from './Login';
 import { userActions } from '../../actions/user-actions';
 import { createLoadingSelector } from '../../selectors';
@@ -20,9 +21,16 @@ const mapStateToProps = (state) => ({
     isFetching: loadingSelector(state),
 });
 
-const mapDispatchToProps = {
-    login: (credentials) => userActions.login(credentials),
-    logout: () => userActions.logout(),
-};
+function LoginContainer(props) {
+    const navigate = useNavigate();
+    const { dispatch, authentication, isFetching } = props;
 
-export default connect(mapStateToProps, mapDispatchToProps)(Login);
+    const boundActions = {
+        login: (credentials) => dispatch(userActions.login(credentials, navigate)),
+        logout: () => dispatch(userActions.logout(navigate)),
+    };
+
+    return <Login {...props} {...boundActions} authentication={authentication} isFetching={isFetching} />;
+}
+
+export default connect(mapStateToProps)(LoginContainer);

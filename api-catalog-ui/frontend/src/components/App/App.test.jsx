@@ -9,7 +9,7 @@
  */
 import { shallow } from 'enzyme';
 import { fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import App from './App';
 
 describe('>>> App component tests', () => {
@@ -18,18 +18,14 @@ describe('>>> App component tests', () => {
     });
 
     it('should call render', () => {
-        const history = { push: jest.fn() };
-        const wrapper = shallow(<App history={history} />);
-        const instance = wrapper.instance();
-        expect(instance).not.toBeNull();
+        const wrapper = shallow(<App />);
+        expect(wrapper.exists()).toBe(true);
     });
 
     it('should call render when portal enabled', () => {
         process.env.REACT_APP_API_PORTAL = true;
-        const history = { push: jest.fn() };
-        const wrapper = shallow(<App history={history} />);
-        const instance = wrapper.instance();
-        expect(instance).not.toBeNull();
+        const wrapper = shallow(<App />);
+        expect(wrapper.exists()).toBe(true);
     });
 
     it('should not show header on login route', () => {

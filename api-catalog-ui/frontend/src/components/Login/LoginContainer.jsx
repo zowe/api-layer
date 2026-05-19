@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Login from './Login';
 import { userActions } from '../../actions/user-actions';
 import { createLoadingSelector } from '../../selectors/selectors';
@@ -20,11 +20,18 @@ const mapStateToProps = (state) => ({
     isFetching: loadingSelector(state),
 });
 
-const mapDispatchToProps = {
-    login: (credentials) => userActions.login(credentials),
-    logout: () => userActions.logout(),
-    returnToLogin: () => userActions.returnToLogin(),
-    validateInput: (credentials) => userActions.validateInput(credentials),
-};
+function LoginContainer(props) {
+    const navigate = useNavigate();
+    const { dispatch, authentication, isFetching } = props;
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Login));
+    const boundActions = {
+        login: (credentials) => dispatch(userActions.login(credentials, navigate)),
+        logout: () => dispatch(userActions.logout(navigate)),
+        returnToLogin: () => dispatch(userActions.returnToLogin()),
+        validateInput: (credentials) => dispatch(userActions.validateInput(credentials)),
+    };
+
+    return <Login {...props} {...boundActions} authentication={authentication} isFetching={isFetching} />;
+}
+
+export default connect(mapStateToProps)(LoginContainer);
