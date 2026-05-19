@@ -26,6 +26,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.zowe.apiml.security.FixedHeadersConfigurer;
 import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.login.GatewayLoginProvider;
 import org.zowe.apiml.security.client.token.GatewayTokenProvider;
@@ -111,7 +112,7 @@ public class SpringSecurityConfiguration {
             .antMatchers("/application/health", "/application/info").permitAll()
             .and().apply(new CustomSecurityFilters());
 
-        return http.build();
+        return FixedHeadersConfigurer.fix(http).build();
     }
 
     private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {

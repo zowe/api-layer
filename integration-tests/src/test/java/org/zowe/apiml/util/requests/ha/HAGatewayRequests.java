@@ -35,7 +35,7 @@ public class HAGatewayRequests {
         String[] internalPorts = environmentConfiguration().getGatewayServiceConfiguration().getInternalPorts().split(",");
         for (int i = 0; i < gatewayHosts.length; i++) {
             String host = gatewayHosts[i];
-            String internalPort = internalPorts[i];
+            String internalPort = internalPorts.length > i ? internalPorts[i] : internalPorts[0];
 
             gatewayServices.add(new GatewayRequests(scheme, host, internalPort));
         }
