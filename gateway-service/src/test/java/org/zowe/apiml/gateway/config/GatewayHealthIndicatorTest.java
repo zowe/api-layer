@@ -20,15 +20,20 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.client.DefaultServiceInstance;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.constants.CoreService;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -123,6 +128,34 @@ class GatewayHealthIndicatorTest {
             healthIndicator.doHealthCheck(builder);
 
             assertThat(healthIndicator.isStartedInformationPublished(), is(true));
+        }
+
+    }
+
+    @Nested
+    class WhenHAIsNotComplete {
+
+        @Mock
+        private ApimlLogger apimlLogger;
+
+        @BeforeEach
+        void setUp() {
+            ReflectionTestUtils.setField(healthIndicator, "apimlLog", apimlLogger);
+        }
+
+        @Test
+        void whenHealthRequested_skipLog() {
+            // var gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
+            when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(List.of(mock(ServiceInstance.class), mock(ServiceInstance.class)));
+            when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(List.of(mock(ServiceInstance.class)));
+            when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(List.of(mock(ServiceInstance.class)));
+            when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(List.of(mock(ServiceInstance.class)));
+            healthIndicator.onApplicationEvent(mock(ApplicationReadyEvent.class));
+
+            var builder = new Health.Builder();
+            healthIndicator.doHealthCheck(builder);
+
+            verifyNoInteractions(apimlLogger);
         }
 
     }
