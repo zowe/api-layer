@@ -145,7 +145,6 @@ class GatewayHealthIndicatorTest {
 
         @Test
         void whenHealthRequested_skipLog() {
-            // var gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
             when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(List.of(mock(ServiceInstance.class), mock(ServiceInstance.class)));
             when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(List.of(mock(ServiceInstance.class)));
             when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(List.of(mock(ServiceInstance.class)));
