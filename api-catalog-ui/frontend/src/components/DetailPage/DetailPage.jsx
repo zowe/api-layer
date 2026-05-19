@@ -10,14 +10,13 @@
 import React, { Suspense, useEffect, useCallback } from 'react';
 import { Container, Divider, IconButton, Link, Typography } from '@material-ui/core';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import { Navigate, Routes, Route, useNavigate, useLocation, useMatch } from 'react-router';
+import { Navigate, Routes, Route, useNavigate, useLocation } from 'react-router';
 import PropTypes from 'prop-types';
 import Footer from '../Footer/Footer';
 import Spinner from '../Spinner/Spinner';
 import formatError from '../Error/ErrorFormatter';
 import ServiceTabContainer from '../ServiceTab/ServiceTabContainer';
 import PageNotFound from '../PageNotFound/PageNotFound';
-import BigShield from '../ErrorBoundary/BigShield/BigShield';
 import BigShieldWrapper from '../ErrorBoundary/BigShield/BigShieldWrapper';
 import ServicesNavigationBarContainer from '../ServicesNavigationBar/ServicesNavigationBarContainer';
 import Shield from '../ErrorBoundary/Shield/Shield';

@@ -11,7 +11,6 @@ import { Suspense, useEffect } from 'react';
 import { Navigate, Routes, Route, useNavigate, useLocation } from 'react-router';
 import { ToastContainer } from 'react-toastify';
 import BigShield from '../ErrorBoundary/BigShield/BigShield';
-import BigShieldWrapper from '../ErrorBoundary/BigShield/BigShieldWrapper';
 import ErrorContainer from '../Error/ErrorContainer';
 import '../../assets/css/APIMReactToastify.css';
 import PageNotFound from '../PageNotFound/PageNotFound';
@@ -61,7 +60,7 @@ function App() {
                                 <Route
                                     path={dashboardPath}
                                     element={
-                                        <BigShield>
+                                        <BigShield navigate={navigate} pathname={location.pathname}>
                                             <AsyncDashboardContainer />
                                         </BigShield>
                                     }
@@ -69,14 +68,14 @@ function App() {
                                 <Route
                                     path="/service/*"
                                     element={
-                                        <BigShield>
+                                        <BigShield navigate={navigate} pathname={location.pathname}>
                                             <AsyncDetailPageContainer />
                                         </BigShield>
                                     }
                                 />
                                 <Route
                                     element={
-                                        <BigShield>
+                                        <BigShield navigate={navigate} pathname={location.pathname}>
                                             <PageNotFound />
                                         </BigShield>
                                     }
