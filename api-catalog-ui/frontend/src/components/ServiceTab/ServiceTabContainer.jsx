@@ -23,5 +23,4 @@ const mapDispatchToProps = (dispatch) => ({
     selectService: (service, tileId) => dispatch(selectService(service, tileId)),
 });
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ServiceTab));
-, mapDispatchToProps)(ServiceTab);
+export default connect(mapStateToProps, mapDispatchToProps)(ServiceTab);

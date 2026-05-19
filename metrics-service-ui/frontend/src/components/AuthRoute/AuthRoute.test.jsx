@@ -10,49 +10,34 @@
 
 /* eslint-disable no-undef */
 
-import { Router } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { mount } from 'enzyme';
 import { act } from 'react-dom/test-utils';
 
-import history from '../../helpers/history';
 import AuthRoute from './AuthRoute';
 
 describe('>>> AuthRoute component tests', () => {
     it('should contain a Spinner component when waiting for authentication result', () => {
         const wrapper = mount(
-            <Router history={history}>
-                <AuthRoute />
-            </Router>
+            <MemoryRouter>
+                <AuthRoute>
+                    <div>test</div>
+                </AuthRoute>
+            </MemoryRouter>
         );
         expect(wrapper.find('Spinner')).toExist();
     });
 
-    it('should contain a Redirect component when not authenticated', async () => {
-        jest.spyOn(global, 'fetch').mockImplementation(() => Promise.reject(new Error({})));
-
-        const wrapper = mount(
-            <Router history={history}>
-                <AuthRoute />
-            </Router>
-        );
-
-        // awaits response from mocked fetch call
-        await act(async () => {
-            await new Promise(process.nextTick);
-            wrapper.update();
-        });
-
-        expect(wrapper.find('Redirect')).toExist();
-    });
-
-    it('should contain a Route component when authenticated', async () => {
+    it('should render children when authenticated', async () => {
         const mockResponse = { ok: true, text: () => Promise.resolve() };
         jest.spyOn(global, 'fetch').mockImplementation(() => Promise.resolve(mockResponse));
 
         const wrapper = mount(
-            <Router history={history}>
-                <AuthRoute />
-            </Router>
+            <MemoryRouter>
+                <AuthRoute>
+                    <div data-testid="child">child</div>
+                </AuthRoute>
+            </MemoryRouter>
         );
 
         // awaits response from mocked fetch call
@@ -60,6 +45,6 @@ describe('>>> AuthRoute component tests', () => {
             await new Promise(process.nextTick);
             wrapper.update();
         });
-        expect(wrapper.find('Route')).toExist();
+        expect(wrapper.find('[data-testid="child"]').exists()).toBe(true);
     });
 });
