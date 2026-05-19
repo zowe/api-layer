@@ -50,11 +50,13 @@ public class X509FilterFactory extends AbstractGatewayFilterFactory<X509FilterFa
     @Override
     public GatewayFilter apply(Config config) {
         return ((exchange, chain) -> {
-            OtelRequestContext.of(exchange).authMethod(AuthenticationScheme.X509);
+            var otelRequestContext = OtelRequestContext.of(exchange);
+            otelRequestContext.authMethod(AuthenticationScheme.X509);
 
             if (exchange.getRequest().getSslInfo() != null) {
                 X509Certificate[] certificates = exchange.getRequest().getSslInfo().getPeerCertificates();
                 if (certificates != null && certificates.length > 0) {
+                    otelRequestContext.authSourceType("CLIENT_CERT");
                     ServerHttpRequest request = exchange.getRequest().mutate().headers(headers -> {
                         try {
                             exchange.getAttributes().put(HTTP_CLIENT_USE_CLIENT_CERTIFICATE, Boolean.TRUE);
@@ -78,7 +80,7 @@ public class X509FilterFactory extends AbstractGatewayFilterFactory<X509FilterFa
     }
 
 
-    private void setHeader(HttpHeaders headers, String[] headerNames, X509Certificate certificate) throws CertificateEncodingException, InvalidNameException {
+    public void setHeader(HttpHeaders headers, String[] headerNames, X509Certificate certificate) throws CertificateEncodingException, InvalidNameException {
         for (String headerName : headerNames) {
             switch (headerName.trim()) {
                 case COMMON_NAME:

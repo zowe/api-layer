@@ -32,7 +32,8 @@ public final class OtelRequestContext {
     public static final String OTEL_CONTEXT = "otel-context";
 
     private static final String OK = "OK";
-    private static final String FAILED = "FAILED";
+    private static final String ERROR = "ERROR";
+    public static final String BASIC_AUTH_TYPE = "BASIC";
 
     private static final String OTEL_ATTRIBUTE_METHOD = "http.request.method";
     private static final String OTEL_ATTRIBUTE_SCHEME = "url.scheme";
@@ -43,6 +44,8 @@ public final class OtelRequestContext {
     private static final String OTEL_ATTRIBUTE_AUTH_METHOD = "auth.service.auth.method";
     private static final String OTEL_ATTRIBUTE_AUTH_SOURCE_TYPE = "auth.method";
     private static final String OTEL_ATTRIBUTE_AUTH_STATUS = "auth.status";
+    private static final String OTEL_ATTRIBUTE_AUTH_ERROR_TYPE = "auth.error.type";
+    private static final String OTEL_ATTRIBUTE_AUTH_ERROR_MESSAGE = "auth.error.message";
     private static final String OTEL_ATTRIBUTE_USER_ID = "user.id";
     private static final String OTEL_ATTRIBUTE_DISTRIBUTED_USER_ID = "user.distributed.id";
 
@@ -97,8 +100,20 @@ public final class OtelRequestContext {
         return put(OTEL_ATTRIBUTE_AUTH_METHOD, String.valueOf(authenticationScheme));
     }
 
+    public OtelRequestContext authMethod(String authenticationScheme) {
+        return put(OTEL_ATTRIBUTE_AUTH_METHOD, authenticationScheme);
+    }
+
     public OtelRequestContext authenticationFailed() {
-        return put(OTEL_ATTRIBUTE_AUTH_STATUS, FAILED);
+        return put(OTEL_ATTRIBUTE_AUTH_STATUS, ERROR);
+    }
+
+    public OtelRequestContext authErrorType(String authErrorType) {
+        return put(OTEL_ATTRIBUTE_AUTH_ERROR_TYPE, authErrorType);
+    }
+
+    public OtelRequestContext authErrorMessage(String authErrorMessage) {
+        return put(OTEL_ATTRIBUTE_AUTH_ERROR_MESSAGE, authErrorMessage);
     }
 
     public OtelRequestContext authenticationSuccess() {

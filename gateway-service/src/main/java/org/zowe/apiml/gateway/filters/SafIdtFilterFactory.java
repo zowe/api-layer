@@ -39,8 +39,8 @@ public class SafIdtFilterFactory extends AbstractTokenFilterFactory<SafIdtFilter
     }
 
     @Override
-    protected Function<RequestCredentials, Mono<AuthorizationResponse<ZaasTokenResponse>>> getAuthorizationResponseTransformer() {
-        return zaasSchemeTransform::safIdt;
+    protected Function<RequestCredentials, Mono<AuthorizationResponse<ZaasTokenResponse>>> getAuthorizationResponseTransformer(ServerWebExchange exchange) {
+        return requestCredentials -> zaasSchemeTransform.safIdt(requestCredentials, exchange);
     }
 
     @Override
