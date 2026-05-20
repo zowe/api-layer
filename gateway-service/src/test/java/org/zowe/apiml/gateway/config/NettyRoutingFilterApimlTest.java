@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.config;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.ConnectTimeoutException;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import org.hamcrest.Matchers;
@@ -28,6 +29,9 @@ import org.zowe.apiml.ticket.TicketResponse;
 import reactor.netty.http.client.HttpClient;
 
 import javax.net.ssl.SSLException;
+import java.net.ConnectException;
+import java.net.NoRouteToHostException;
+import java.nio.channels.ClosedChannelException;
 import java.time.Duration;
 
 import static io.restassured.RestAssured.given;
@@ -154,6 +158,81 @@ class NettyRoutingFilterApimlTest {
                 verify(httpClientWithCert).responseTimeout(Duration.ofMillis(23));
             }
 
+        }
+
+    }
+
+    @Nested
+    class IsServiceUnavailable {
+
+        @Test
+        void givenConnectTimeoutException_whenIsServiceUnavailable_thenReturnsTrue() {
+            assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(new ConnectTimeoutException("connect timed out")));
+        }
+
+        @Test
+        void givenConnectException_whenIsServiceUnavailable_thenReturnsTrue() {
+            assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(new ConnectException("connection refused")));
+        }
+
+        @Test
+        void givenConnectExceptionNestedInClosedChannelException_whenIsServiceUnavailable_thenReturnsTrue() {
+            ClosedChannelException outer = new ClosedChannelException();
+            ConnectException inner = new ConnectException("connection refused");
+            outer.initCause(inner);
+            assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(outer));
+        }
+
+        @Test
+        void givenUnrelatedException_whenIsServiceUnavailable_thenReturnsFalse() {
+            assertFalse(NettyRoutingFilterApiml.isServiceUnavailable(new RuntimeException("some other error")));
+        }
+
+        @Test
+        void givenSslException_whenIsServiceUnavailable_thenReturnsFalse() {
+            assertFalse(NettyRoutingFilterApiml.isServiceUnavailable(new javax.net.ssl.SSLException("cert error")));
+        }
+
+        @Test
+        void givenNoRouteToHostException_whenIsServiceUnavailable_thenReturnsTrue() {
+            assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(new NoRouteToHostException("no route to host")));
+        }
+
+        @Test
+        void givenNoRouteToHostExceptionNested_whenIsServiceUnavailable_thenReturnsTrue() {
+            RuntimeException outer = new RuntimeException("wrapper");
+            NoRouteToHostException inner = new NoRouteToHostException("no route to host");
+            outer.initCause(inner);
+            assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(outer));
+        }
+
+        @Test
+        void givenNull_whenIsServiceUnavailable_thenReturnsFalse() {
+            assertFalse(NettyRoutingFilterApiml.isServiceUnavailable(null));
+        }
+
+        @Test
+        void givenConnectTimeoutExceptionNested_whenIsServiceUnavailable_thenReturnsTrue() {
+            RuntimeException outer = new RuntimeException("wrapper");
+            ConnectTimeoutException inner = new ConnectTimeoutException("timed out");
+            outer.initCause(inner);
+            assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(outer));
+        }
+
+        @Test
+        void givenExceptionWithNullCause_whenIsServiceUnavailable_thenReturnsFalse() {
+            RuntimeException ex = new RuntimeException("no cause");
+            assertFalse(NettyRoutingFilterApiml.isServiceUnavailable(ex));
+        }
+
+        @Test
+        void givenMultiLevelNestedServiceUnavailableException_whenIsServiceUnavailable_thenReturnsTrue() {
+            RuntimeException level1 = new RuntimeException("level1");
+            RuntimeException level2 = new RuntimeException("level2");
+            ConnectException level3 = new ConnectException("no connection");
+            level1.initCause(level2);
+            level2.initCause(level3);
+            assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(level1));
         }
 
     }

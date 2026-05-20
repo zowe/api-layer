@@ -78,7 +78,7 @@ fi
 ################################################################################
 # Certificate verification configuration
 ################################################################################
-verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates}" | tr '[:lower:]' '[:upper:]')
+verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates:-STRICT}" | tr '[:lower:]' '[:upper:]')
 if [ "${verify_certificates_config}" = "DISABLED" ]; then
     verifySslCertificatesOfServices=false
     nonStrictVerifySslCertificatesOfServices=false

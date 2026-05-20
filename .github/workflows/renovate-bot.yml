@@ -4,25 +4,30 @@ on:
     schedule:
         - cron: '0 0 * * 1-5' #UTC
     workflow_dispatch:
+        inputs:
+            log_level:
+                description: Renovate LOG_LEVEL (see https://docs.renovatebot.com/troubleshooting/#log-levels)
+                required: false
+                default: info
+                type: choice
+                options:
+                    - trace
+                    - debug
+                    - info
 
 jobs:
     renovate:
         runs-on: ubuntu-latest
-
-        container:
-            image: ghcr.io/renovatebot/renovate
-            options: --user root # workaround for checkout
 
         steps:
             - name: Check out repository
               uses: actions/checkout@v4 # using checkout to access workspace
 
             - name: Run Renovate
+              uses: renovatebot/github-action@v46.1.14
+              with:
+                  configurationFile: ${{ github.workspace }}/renovate-config.js
+                  token: ${{ secrets.ROBOT_PAT }}
               env:
-                  # RENOVATE_TOKEN should have access :read_user, api, write_repository (repo checkbox)
-                  RENOVATE_TOKEN: ${{ secrets.ROBOT_PAT }}
-                  RENOVATE_CONFIG_FILE: ${{ github.workspace }}/renovate-config.js
                   RENOVATE_GIT_AUTHOR: "Renovate Bot <renovate@whitesourcesoftware.com>"
-                  LOG_LEVEL: error
-              run: |
-                  renovate
+                  LOG_LEVEL: ${{ github.event_name == 'workflow_dispatch' && inputs.log_level || 'info' }}

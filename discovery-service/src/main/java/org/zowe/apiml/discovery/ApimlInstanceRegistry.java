@@ -277,22 +277,19 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         try {
             EurekaUtils.validateServiceId(appName);
         } catch (MetadataValidationException e) {
-            log.warn("Conformance criteria violation in serviceId or app in instanceInfo: {}. Cause: {}" , info, e.getMessage());
+            log.warn("Conformance criteria violation in serviceId or app in instanceId for: '{}'. Cause: {}" , info.getInstanceId(), e.getMessage());
         }
 
         String serviceId = EurekaUtils.getServiceIdFromInstanceId(instanceId);
         try {
             EurekaUtils.validateServiceId(serviceId);
         } catch (MetadataValidationException e) {
-            log.warn("Conformance criteria violation in serviceId or instanceId, instanceId expected format 'hostname:serviceid:port' but is '{}' in instanceInfo: {}. Cause: {}",
-                info.getInstanceId(), info, e.getMessage());
+            log.warn("Conformance criteria violation in serviceId or instanceId for '{}'. Cause: {}", info.getInstanceId(), e.getMessage());
         }
 
         if (!Objects.equals(appName, StringUtils.lowerCase(serviceId))) {
             log.warn(
-                "Inconsistent service identity: instanceId contains serviceId '{}' but appName='{}'. The service will not register in future releases. InstanceInfo: {}",
-                serviceId, appName, info
-            );
+                "Inconsistent service identity: instanceId contains serviceId '{}' but appName='{}'", serviceId, appName);
         }
     }
 

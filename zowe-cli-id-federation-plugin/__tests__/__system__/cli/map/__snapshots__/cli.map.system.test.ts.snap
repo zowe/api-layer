@@ -100,6 +100,10 @@ exports[`id-federation map system test should display the help 1`] = `
 
       The file path to a certificate key file to use for authentication
 
+   --cert-account (string)
+
+      The account name for PKCS 12 certificate stored in credential manager
+
  GLOBAL OPTIONS
  --------------
 

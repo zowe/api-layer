@@ -11,6 +11,7 @@
 package org.zowe.apiml.gateway.filters;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
 import org.zowe.apiml.message.core.MessageService;
@@ -36,8 +37,8 @@ public class ZosmfFilterFactory extends AbstractTokenFilterFactory<AbstractToken
     }
 
     @Override
-    protected Function<RequestCredentials, Mono<AuthorizationResponse<ZaasTokenResponse>>> getAuthorizationResponseTransformer() {
-        return zaasSchemeTransform::zosmf;
+    protected Function<RequestCredentials, Mono<AuthorizationResponse<ZaasTokenResponse>>> getAuthorizationResponseTransformer(ServerWebExchange exchange) {
+        return requestCredentials -> zaasSchemeTransform.zosmf(requestCredentials, exchange);
     }
 
 }
