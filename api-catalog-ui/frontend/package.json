@@ -149,7 +149,7 @@
         "serve-static": "1.16.3",
         "body-parser": "2.2.2",
         "axios": "1.13.6",
-        "path-to-regexp": "8.4.0",
+        "path-to-regexp": "1.9.0",
         "cookie": "0.7.2",
         "sha.js": "2.4.12",
         "tar-fs": "2.1.4",
