@@ -15,7 +15,7 @@
         "@mui/material": "9.0.0",
         "@types/enzyme": "3.10.19",
         "@types/jest": "29.5.14",
-        "@types/react": "18.3.28",
+        "@types/react": "18.3.29",
         "agentkeepalive": "4.6.0",
         "buffer": "6.0.3",
         "emotion-theming": "11.0.0",
