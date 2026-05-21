@@ -10,16 +10,21 @@
 
 package org.zowe.apiml.gateway.caching;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import reactor.core.publisher.Mono;
+
+import java.util.Base64;
 
 import static reactor.core.publisher.Mono.empty;
 import static reactor.core.publisher.Mono.error;
@@ -33,6 +38,12 @@ public class CachingServiceClientRest implements CachingServiceClient {
 
     @Value("${apiml.cachingServiceClient.apiPath:/cachingservice/api/v1/cache}")
     private String CACHING_API_PATH;
+
+    @Value("${apiml.service.http.userId:#{null}}")
+    private String cachingServiceUserId ;
+
+    @Value("${apiml.service.http.password:#{null}}")
+    private String cachingServicePassword;
 
     private volatile String cachingBalancerUrl;
     private final GatewayClient gatewayClient;
@@ -51,6 +62,16 @@ public class CachingServiceClientRest implements CachingServiceClient {
     ) {
         this.gatewayClient = gatewayClient;
         this.webClient = webClientClientCert;
+    }
+
+    @PostConstruct
+    public void init() {
+        if (StringUtils.isEmpty(cachingServiceUserId) || StringUtils.isEmpty(cachingServicePassword)) {
+            log.warn("Caching-service userid or password not set");
+        } else {
+            String basicToken = "Basic " + Base64.getEncoder().encodeToString((cachingServiceUserId + ":" + cachingServicePassword).getBytes());
+            defaultHeaders.add(HttpHeaders.AUTHORIZATION, basicToken);
+        }
     }
 
     void updateUrl() {

@@ -12,9 +12,11 @@ package org.zowe.apiml.zaas.cache;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -24,6 +26,7 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 
+import java.util.Base64;
 import java.util.Map;
 
 
@@ -37,10 +40,18 @@ public class CachingServiceClient implements CachingClient {
 
     private final GatewayClient gatewayClient;
     private final RestTemplate restTemplate;
+
     @Value("${apiml.cachingServiceClient.apiPath:/cachingservice/api/v1/cache}")
     private String CACHING_API_PATH;
+
     @Value("${apiml.cachingServiceClient.list.apiPath:/cachingservice/api/v1/cache-list/}")
     private String CACHING_LIST_API_PATH;
+
+    @Value("${apiml.service.http.userId:#{null}}")
+    private String cachingServiceUserId ;
+
+    @Value("${apiml.service.http.password:#{null}}")
+    private String cachingServicePassword;
 
     private static final HttpHeaders defaultHeaders = new HttpHeaders();
 
@@ -58,6 +69,16 @@ public class CachingServiceClient implements CachingClient {
             throw new IllegalStateException("RestTemplate instance cannot be null");
         }
         this.restTemplate = restTemplate;
+    }
+
+    @PostConstruct
+    public void init() {
+        if (StringUtils.isEmpty(cachingServiceUserId) || StringUtils.isEmpty(cachingServicePassword)) {
+            log.warn("Caching-service userid or password not set");
+        } else {
+            String basicToken = "Basic " + Base64.getEncoder().encodeToString((cachingServiceUserId + ":" + cachingServicePassword).getBytes());
+            defaultHeaders.add(HttpHeaders.AUTHORIZATION, basicToken);
+        }
     }
 
     private String getGatewayAddress() {

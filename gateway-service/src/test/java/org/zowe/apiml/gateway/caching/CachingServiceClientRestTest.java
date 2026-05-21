@@ -17,10 +17,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
@@ -33,10 +37,13 @@ import reactor.test.StepVerifier;
 
 import java.util.function.Predicate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static reactor.core.publisher.Mono.empty;
 import static reactor.core.publisher.Mono.just;
+
 @ExtendWith(MockitoExtension.class)
 class CachingServiceClientRestTest {
 
@@ -220,6 +227,40 @@ class CachingServiceClientRestTest {
                     .verifyErrorMatches(assertCachingServiceClientException(404));
             }
 
+        }
+
+    }
+
+    @Nested
+    class CachingServiceAuthorization {
+
+        @Test
+        void givenCredentials_whenSetCredentials_thenSetAuthorizationHeader() {
+            var service = new CachingServiceClientRest(null, null);
+            ReflectionTestUtils.setField(service, "cachingServiceUserId", "user");
+            ReflectionTestUtils.setField(service, "cachingServicePassword", "password");
+
+            service.init();
+
+            var headers = (MultiValueMap<String, String>) ReflectionTestUtils.getField(service, "defaultHeaders");
+            assertEquals(headers.get(HttpHeaders.AUTHORIZATION).get(0), "Basic dXNlcjpwYXNzd29yZA==");
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            ",password,,",
+            "user,,",
+            ",,"
+        })
+        void givenIncompleteCredentials_whenSetCredentials_thenDoNotSetAuthorization(String userId, String password) {
+            var service = new CachingServiceClientRest(null, null);
+            ReflectionTestUtils.setField(service, "cachingServiceUserId", userId);
+            ReflectionTestUtils.setField(service, "cachingServicePassword", password);
+
+            service.init();
+
+            var headers = (MultiValueMap<String, String>) ReflectionTestUtils.getField(service, "defaultHeaders");
+            assertNull(headers.get(HttpHeaders.AUTHORIZATION));
         }
 
     }

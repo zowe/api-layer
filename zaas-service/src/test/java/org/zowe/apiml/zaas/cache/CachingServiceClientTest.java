@@ -15,9 +15,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -250,6 +253,40 @@ class CachingServiceClientTest {
             doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
             assertThrows(CachingServiceClientException.class, () -> underTest.evictTokens("invalidTokens"));
             assertThrows(CachingServiceClientException.class, () -> underTest.evictRules("invalidScopes"));
+        }
+
+    }
+
+    @Nested
+    class CachingServiceAuthorization {
+
+        @Test
+        void givenCredentials_whenSetCredentials_thenSetAuthorizationHeader() {
+            var service = new CachingServiceClient(mock(RestTemplate.class), null);
+            ReflectionTestUtils.setField(service, "cachingServiceUserId", "user");
+            ReflectionTestUtils.setField(service, "cachingServicePassword", "password");
+
+            service.init();
+
+            var headers = (MultiValueMap<String, String>) ReflectionTestUtils.getField(service, "defaultHeaders");
+            assertEquals(headers.get(HttpHeaders.AUTHORIZATION).get(0), "Basic dXNlcjpwYXNzd29yZA==");
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            ",password,,",
+            "user,,",
+            ",,"
+        })
+        void givenIncompleteCredentials_whenSetCredentials_thenDoNotSetAuthorization(String userId, String password) {
+            var service = new CachingServiceClient(mock(RestTemplate.class), null);
+            ReflectionTestUtils.setField(service, "cachingServiceUserId", userId);
+            ReflectionTestUtils.setField(service, "cachingServicePassword", password);
+
+            service.init();
+
+            var headers = (MultiValueMap<String, String>) ReflectionTestUtils.getField(service, "defaultHeaders");
+            assertNull(headers.get(HttpHeaders.AUTHORIZATION));
         }
 
     }
