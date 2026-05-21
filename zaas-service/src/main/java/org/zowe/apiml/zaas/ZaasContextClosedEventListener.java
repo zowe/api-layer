@@ -8,23 +8,22 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml;
+package org.zowe.apiml.zaas;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService;
 
 @Component
 @RequiredArgsConstructor
-public class ApplicationReadyListener implements ApplicationListener<ApplicationReadyEvent> {
+public class ZaasContextClosedEventListener implements ApplicationListener<ContextClosedEvent> {
 
-    private final StaticServicesRegistrationService registrationService;
+    private final ZaasStartupListener zaasStartupListener;
 
     @Override
-    public void onApplicationEvent(ApplicationReadyEvent event) {
-        registrationService.registerServices();
+    public void onApplicationEvent(ContextClosedEvent event) {
+        zaasStartupListener.onContextClosed();
     }
 
 }

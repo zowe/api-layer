@@ -22,8 +22,10 @@ import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.lock.EmbeddedClusteredLockManagerFactory;
 import org.infinispan.lock.api.ClusteredLock;
 import org.infinispan.lock.api.ClusteredLockManager;
+import org.infinispan.lock.exception.ClusteredLockException;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.partitionhandling.AvailabilityException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,19 +37,18 @@ import org.springframework.core.io.ResourceLoader;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.service.Messages;
+import org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange;
 import org.zowe.apiml.caching.service.infinispan.exception.InfinispanConfigException;
 import org.zowe.apiml.caching.service.infinispan.storage.InfinispanStorage;
 import org.zowe.apiml.config.ApplicationInfo;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.*;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
 import static org.zowe.apiml.security.SecurityUtils.isKeyring;
@@ -150,13 +151,20 @@ public class InfinispanConfig implements InitializingBean {
         return isServerAttlsEnabled ? "infinispan-attls.xml" : "infinispan.xml";
     }
 
-    private ConfigurationBuilderHolder getCacheManagerConfig(ResourceLoader resourceLoader) {
-        ConfigurationBuilderHolder holder;
-        try (InputStream configurationStream = resourceLoader.getResource("classpath:" + getInfinispanConfigFile()).getInputStream()) {
-            holder = new ParserRegistry().parse(configurationStream, MediaType.APPLICATION_XML);
-        } catch (IOException e) {
-            throw new InfinispanConfigException("Can't read configuration file", e);
+    private String loadInfinispanConfigFile(ResourceLoader resourceLoader) {
+        String fileName = getInfinispanConfigFile();
+        try (var inputStream = resourceLoader.getResource("classpath:" + fileName).getInputStream()) {
+            String config = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            config = config.replace("jgroup:SSL_KEY_EXCHANGE", ApimlSslKeyExchange.class.getCanonicalName());
+            return config;
+        } catch (IOException ioe) {
+            throw new InfinispanConfigException("Can't read configuration file", ioe);
         }
+    }
+
+    private ConfigurationBuilderHolder getCacheManagerConfig(ResourceLoader resourceLoader) {
+        String config = loadInfinispanConfigFile(resourceLoader);
+        ConfigurationBuilderHolder holder = new ParserRegistry().parse(config, MediaType.APPLICATION_XML);
         holder.getGlobalConfigurationBuilder().globalState().persistentLocation(getRootFolder()).enable();
         holder.newConfigurationBuilder("default")
             .persistence()
@@ -195,7 +203,7 @@ public class InfinispanConfig implements InitializingBean {
     }
 
     @Bean(destroyMethod = "stop")
-    synchronized LazyCacheManager cacheManager(ResourceLoader resourceLoader, ApplicationInfo applicationInfo) {
+    LazyCacheManager cacheManager(ResourceLoader resourceLoader, ApplicationInfo applicationInfo) {
         System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
         System.setProperty("jgroups.bind.port", port);
         System.setProperty("jgroups.bind.address", address);
@@ -211,12 +219,11 @@ public class InfinispanConfig implements InitializingBean {
         System.setProperty("infinispan.ssl.trustStore", trustStore);
         System.setProperty("infinispan.ssl.trustStorePassword", trustStorePass);
 
-        var caches = Stream.of(CACHE_ZOWE, CACHE_ZOWE_INVALIDATED_TOKEN)
-            .collect(Collectors.toMap( cacheName -> cacheName, cacheName -> getDistributedCacheConfig()));
+        var caches = new HashMap<String, ConfigurationBuilder>();
+        caches.put(CACHE_ZOWE, getDistributedCacheConfig());
+        caches.put(CACHE_ZOWE_INVALIDATED_TOKEN, getDistributedCacheConfig());
 
         if (applicationInfo.isModulith()) {
-            caches.put(CACHE_ZOWE, getDistributedCacheConfig());
-            caches.put(CACHE_ZOWE_INVALIDATED_TOKEN, getDistributedCacheConfig());
             caches.put("invalidatedJwtTokens", getDistributedCacheConfig());
 
             // 1 minute to force zosmf tokens validation against zosmf for invalidated tokens
@@ -237,27 +244,21 @@ public class InfinispanConfig implements InitializingBean {
     }
 
     private ClusteredLock lock(CacheContainer cacheManager) {
-        ClusteredLock lock = zoweInvalidatedTokenLock.get();
-        if (lock != null) {
-            return lock;
-        }
-
-        try {
-            synchronized (zoweInvalidatedTokenLock) {
-                lock = zoweInvalidatedTokenLock.get();
-                if (lock == null && cacheManager instanceof LazyCacheManager lazyCacheManager) {
-                    ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(lazyCacheManager.getOriginal());
-                    // it can throw AvailabilityException
-                    clm.defineLock(LOCK_ZOWE_INVALIDATED);
-                    lock = clm.get(LOCK_ZOWE_INVALIDATED);
-                }
-                zoweInvalidatedTokenLock.set(lock);
+        return zoweInvalidatedTokenLock.updateAndGet(prev -> {
+            if (prev != null) {
+                return prev;
             }
-            return lock;
-        } catch (AvailabilityException ae) {
-            log.debug("Cannot obtain lock", ae);
-            throw new StorageException(Messages.CACHE_NOT_AVAILABLE.getKey(), Messages.CACHE_NOT_AVAILABLE.getStatus(), ae.getMessage());
-        }
+
+            EmbeddedCacheManager cm = (cacheManager instanceof LazyCacheManager lazyCacheManager) ? lazyCacheManager.getOriginal() : (EmbeddedCacheManager) cacheManager;
+            try {
+                ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(cm);
+                clm.defineLock(LOCK_ZOWE_INVALIDATED); // it can throw AvailabilityException
+                return clm.get(LOCK_ZOWE_INVALIDATED);
+            } catch (AvailabilityException | ClusteredLockException e) {
+                log.debug("Cannot obtain lock", e);
+                throw new StorageException(Messages.CACHE_NOT_AVAILABLE.getKey(), Messages.CACHE_NOT_AVAILABLE.getStatus(), e.getMessage());
+            }
+        });
     }
 
     @Bean

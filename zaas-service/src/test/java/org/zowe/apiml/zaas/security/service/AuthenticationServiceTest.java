@@ -22,6 +22,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
 import org.apache.commons.lang.time.DateUtils;
+import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -127,8 +128,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         authConfigurationProperties = new AuthConfigurationProperties();
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        when(cacheManager.getCache("validatedJwtTokens")).thenReturn(validatedJwtTokensCache);
-        when(cacheManager.getCache("invalidatedJwtTokens")).thenReturn(invalidatedJwtTokensCache);
+        lenient().when(cacheManager.getCache("validatedJwtTokens")).thenReturn(validatedJwtTokensCache);
+        lenient().when(cacheManager.getCache("invalidatedJwtTokens")).thenReturn(invalidatedJwtTokensCache);
 
         authService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer,
@@ -241,6 +242,21 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             );
 
             verify(validatedJwtTokensCache, times(1)).get(jwtToken);
+        }
+
+        @Test
+        void givenExpiredTokenInvalidatedJwtTokensCache_thenThrowsTokenExpireException() {
+            var jwtToken = createExpiredJwtToken(privateKey);
+            when(validatedJwtTokensCache.get(jwtToken)).thenReturn(new SimpleValueWrapper( new TokenAuthentication(jwtToken)));
+
+            assertThrows(
+                TokenExpireException.class,
+                () -> authService.validateJwtToken(jwtToken)
+            );
+
+            verify(validatedJwtTokensCache, times(1)).get(jwtToken);
+            verify(jwtSecurityInitializer, never()).getJwtVerifier();
+            verify(zosmfService, never()).validate(any());
         }
 
         @Test
@@ -574,6 +590,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     void stubJWTSecurityForSign() {
         lenient().when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(ALGORITHM);
         lenient().when(jwtSecurityInitializer.getJwtAlgorithm()).thenReturn(AlgorithmIdentifiers.RSA_USING_SHA256);
+        var jwk = mock(JsonWebKey.class);
+        when(jwk.getKeyId()).thenReturn("kid");
+        when(jwtSecurityInitializer.getJwkPublicKey()).thenReturn(Optional.of(jwk));
         when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
     }
 
@@ -634,6 +653,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
             when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
             when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
+            var jwk = mock(JsonWebKey.class);
+            when(jwk.getKeyId()).thenReturn("kid");
+            when(jwtSecurityInitializer.getJwkPublicKey()).thenReturn(Optional.of(jwk));
             String jwtToken01 = authService.createJwtToken("user01", "domain01", "ltpa01");
             String jwtToken02 = authService.createJwtToken("user02", "domain02", "ltpa02");
 

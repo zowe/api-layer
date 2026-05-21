@@ -12,6 +12,7 @@ package org.zowe.apiml;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.metrics.cache.CacheMetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.ReactiveOAuth2ClientAutoConfiguration;
@@ -23,26 +24,13 @@ import org.zowe.apiml.enable.config.EnableApiDiscoveryConfig;
 import org.zowe.apiml.enable.register.RegisterToApiLayer;
 import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
 
-@SpringBootApplication(
-    exclude = {
-        ReactiveOAuth2ClientAutoConfiguration.class,
-        OpenTelemetryAutoConfiguration.class,
-        OpenTelemetryLoggingAutoConfiguration.class,
-        io.opentelemetry.instrumentation.spring.autoconfigure.OpenTelemetryAutoConfiguration.class
-    },
-    scanBasePackages = {
-        "org.zowe.apiml.filter",
-        "org.zowe.apiml.gateway",
-        "org.zowe.apiml.product.eureka.web",
-        "org.zowe.apiml.product.web",
-        "org.zowe.apiml.product.gateway",
-        "org.zowe.apiml.product.version",
-        "org.zowe.apiml.product.logging",
-        "org.zowe.apiml.product.security",
-        "org.zowe.apiml.product.service",
-        "org.zowe.apiml.security",
-        "org.zowe.apiml.discovery"
-    })
+@SpringBootApplication(exclude = {
+    ReactiveOAuth2ClientAutoConfiguration.class,
+    OpenTelemetryAutoConfiguration.class,
+    OpenTelemetryLoggingAutoConfiguration.class,
+    io.opentelemetry.instrumentation.spring.autoconfigure.OpenTelemetryAutoConfiguration.class,
+    CacheMetricsAutoConfiguration.class
+})
 @ComponentScan(
     excludeFilters = {
         @ComponentScan.Filter(

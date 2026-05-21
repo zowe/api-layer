@@ -51,12 +51,8 @@ import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.zowe.apiml.security.common.util.JwtUtils.getJwtClaims;
 import static org.zowe.apiml.security.common.util.JwtUtils.handleJwtParserException;
@@ -89,14 +85,26 @@ public class AuthenticationService {
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
     private boolean isModulithMode;
-    private Cache validatedJwtTokensCache;
-    private Cache invalidatedJwtTokensCache;
+    private final AtomicReference<Cache> validatedJwtTokensCache = new AtomicReference<>();
+    private final AtomicReference<Cache> invalidatedJwtTokensCache = new AtomicReference<>();
 
     @PostConstruct
     public void afterPropertiesSet() {
         isModulithMode = applicationContext.containsBean("modulithConfig");
-        validatedJwtTokensCache = cacheManager.getCache(CACHE_VALIDATED_JWT_TOKENS);
-        invalidatedJwtTokensCache = cacheManager.getCache(CACHE_INVALIDATED_JWT_TOKENS);
+    }
+
+    private Cache getCacheLazy(AtomicReference<Cache> holder, String cacheName) {
+        return holder.updateAndGet(prev ->
+            prev == null ? cacheManager.getCache(cacheName) : prev
+        );
+    }
+
+    private Optional<Cache> getValidatedJwtTokensCache() {
+        return Optional.ofNullable(getCacheLazy(validatedJwtTokensCache, CACHE_VALIDATED_JWT_TOKENS));
+    }
+
+    private Optional<Cache> getInvalidatedJwtTokensCache() {
+        return Optional.ofNullable(getCacheLazy(invalidatedJwtTokensCache, CACHE_INVALIDATED_JWT_TOKENS));
     }
 
     /**
@@ -141,14 +149,18 @@ public class AuthenticationService {
                 claims.forEach(newClaims::setClaim);
             }
 
+            var kid = jwtSecurityInitializer.getJwkPublicKey()
+                .orElseThrow(() -> new IllegalStateException("Unable to get JWK.")).getKeyId();
+
             var jws = new JsonWebSignature();
             jws.setPayload(newClaims.toJson());
+            jws.setKeyIdHeaderValue(kid);
             jws.setKey(jwtSecurityInitializer.getJwtSecret());
             jws.setHeader("typ", "JWT");
             jws.setAlgorithmHeaderValue(jwtSecurityInitializer.getJwtAlgorithm());
             jws.setDoKeyValidation(false);
             String token = jws.getCompactSerialization();
-            log.debug("JWT created, last chars of signature: ...{}", StringUtils.right(token, 15));
+            log.debug("JWT created with kid ...{}, last chars of signature: ...{}", StringUtils.right(kid, 15), StringUtils.right(token, 15));
             return token;
         } catch (JoseException e) {
             throw new UncheckedJoseException(e.getMessage(), e);
@@ -229,21 +241,17 @@ public class AuthenticationService {
     }
 
     private void putValidationCache(String jwtToken, TokenAuthentication tokenAuthentication) {
-        if (jwtToken != null && validatedJwtTokensCache != null) {
-            validatedJwtTokensCache.put(jwtToken, tokenAuthentication);
+        if (jwtToken != null) {
+            getValidatedJwtTokensCache().ifPresent(cache -> cache.put(jwtToken, tokenAuthentication));
         }
     }
 
     private void evictValidationCache(String jwtToken) {
-        if (validatedJwtTokensCache != null) {
-            validatedJwtTokensCache.evict(jwtToken);
-        }
+        getValidatedJwtTokensCache().ifPresent(cache -> cache.evict(jwtToken));
     }
 
     private void putInvalidatedCache(String jwtToken) {
-        if (invalidatedJwtTokensCache != null) {
-            invalidatedJwtTokensCache.put(jwtToken, Boolean.TRUE);
-        }
+        getInvalidatedJwtTokensCache().ifPresent(cache -> cache.put(jwtToken, Boolean.TRUE));
     }
 
     /**
@@ -307,11 +315,11 @@ public class AuthenticationService {
      * @return true - token is invalidated, otherwise token is still valid
      */
     public boolean isInvalidated(String jwtToken) {
-        if (invalidatedJwtTokensCache == null) {
-            return false;
-        }
-        Cache.ValueWrapper wrapper = invalidatedJwtTokensCache.get(jwtToken);
-        boolean result = wrapper != null && Boolean.TRUE.equals(wrapper.get());
+        boolean result = getInvalidatedJwtTokensCache()
+            .map(cache -> cache.get(jwtToken))
+            .map(wrapper -> Boolean.TRUE.equals(wrapper.get()))
+            .orElse(false);
+
         log.debug("Token invalidation check for ...{}: {}", StringUtils.right(jwtToken, 15), result);
         return result;
     }
@@ -361,20 +369,20 @@ public class AuthenticationService {
             throw new TokenNotValidException("Token ...%s was invalidated.".formatted(StringUtils.right(jwtToken, 15)));
         }
 
-        if (validatedJwtTokensCache != null) {
-            Cache.ValueWrapper cached = validatedJwtTokensCache.get(jwtToken);
-            if (cached != null) {
-                var tokenAuthentication = (TokenAuthentication) cached.get();
-                log.debug("JWT ...{} found in the cache. Is authenticated: {}", StringUtils.right(jwtToken, 15), tokenAuthentication.isAuthenticated());
-                if (tokenAuthentication.isExpired()) {
-                    // add test
-                    throw new TokenExpireException("Token ...%s expired on %s".formatted(StringUtils.right(jwtToken, 15), tokenAuthentication.getExpiration()));
-                }
-                return tokenAuthentication;
+        var tokenAuthentication = getValidatedJwtTokensCache()
+            .map(wrapper -> wrapper.get(jwtToken))
+            .map(Cache.ValueWrapper::get)
+            .map(TokenAuthentication.class::cast)
+            .orElse(null);
+        if (tokenAuthentication != null) {
+            log.debug("JWT ...{} found in the cache. Is authenticated: {}", StringUtils.right(jwtToken, 15), tokenAuthentication.isAuthenticated());
+            if (tokenAuthentication.isExpired()) {
+                throw new TokenExpireException("Token ...%s expired on %s".formatted(StringUtils.right(jwtToken, 15), tokenAuthentication.getExpiration()));
             }
+            return tokenAuthentication;
         }
 
-        var tokenAuthentication = new TokenAuthentication(jwtToken);
+        tokenAuthentication = new TokenAuthentication(jwtToken);
         switch (tokenAuthentication.getSource()) {
             case ZOWE -> validateLocalJwtToken(tokenAuthentication);
             case ZOSMF -> zosmfService.validate(jwtToken);
