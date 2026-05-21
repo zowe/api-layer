@@ -116,14 +116,6 @@
                         "serviceIdPrefixReplacer": {
                             "type": "string",
                             "description": "A comma separated tuple to replace service ID with new one in API ML registry."
-                        },
-                        "userid": {
-                            "type": "string",
-                            "description": "Username used for authentication to Eureka by other services. It is used only when TLS is disabled and AT-TLS is not enabled."
-                        },
-                        "password": {
-                            "type": "string",
-                            "description": "Password used for authentication to Eureka by other services. It is used only when TLS is disabled and AT-TLS is not enabled."
                         }
                     }
                 },
@@ -572,6 +564,20 @@
                             "type": "string",
                             "description": "List of allowed HTTP methods when CORS is enabled.",
                             "default": "GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS"
+                        },
+                        "http": {
+                            "type": "object",
+                            "description": "Configuration for service running in HTTP mode",
+                            "properties": {
+                                "userId": {
+                                    "type": "string",
+                                    "description": "Username used for internal authentication inside APIML. It is used only when TLS is disabled and AT-TLS is not enabled."
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "description": "Password used for internal authentication inside APIML. It is used only when TLS is disabled and AT-TLS is not enabled."
+                                }
+                            }
                         },
                         "ssl": {
                             "type": "object",
