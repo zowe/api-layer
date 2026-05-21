@@ -29,7 +29,6 @@ public class ZosmfJwtCheck {
     static final String VERIFY_DISABLED = "DISABLED";
 
     public static int mainWithExitCode(String[] args) {
-        ensureSafkeyringHandler();
         try {
             ZosmfJwtCheckConf conf = new ZosmfJwtCheckConf();
             CommandLine cmd = new CommandLine(conf);
@@ -96,20 +95,6 @@ public class ZosmfJwtCheck {
             if (conf.getTrustStorePassword() == null) {
                 throw new IllegalArgumentException("--truststore-password is required when --scheme=https and verification is not DISABLED.");
             }
-        }
-    }
-
-    /**
-     * Registers the IBM SAF keyring URL protocol handler so that
-     * {@code new URL("safkeyring://...")} works on z/OS without requiring the
-     * caller to pass {@code -Djava.protocol.handler.pkgs=com.ibm.crypto.provider}.
-     * On non-z/OS platforms the handler class is simply not found and is ignored.
-     */
-    static void ensureSafkeyringHandler() {
-        String existing = System.getProperty("java.protocol.handler.pkgs", "");
-        if (!existing.contains("com.ibm.crypto.provider")) {
-            System.setProperty("java.protocol.handler.pkgs",
-                existing.isEmpty() ? "com.ibm.crypto.provider" : existing + "|com.ibm.crypto.provider");
         }
     }
 
