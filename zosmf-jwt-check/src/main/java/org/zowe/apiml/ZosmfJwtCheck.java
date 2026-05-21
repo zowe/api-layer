@@ -21,7 +21,6 @@ import javax.net.ssl.HostnameVerifier;
  *
  * <p>Exit codes: 0 = success, 4 = failure/error, 8 = help displayed.</p>
  */
-// TODO: REMOVE all "DEBUG [ZosmfJwtCheck]" logging lines after SAF keyring issue is resolved
 @SuppressWarnings("squid:S106")
 public class ZosmfJwtCheck {
 
@@ -30,18 +29,7 @@ public class ZosmfJwtCheck {
     static final String VERIFY_DISABLED = "DISABLED";
 
     public static int mainWithExitCode(String[] args) {
-        System.out.println("DEBUG [ZosmfJwtCheck] ===== zosmf-jwt-check starting =====");
-        System.out.println("DEBUG [ZosmfJwtCheck] Java version: " + System.getProperty("java.version"));
-        System.out.println("DEBUG [ZosmfJwtCheck] Java vendor:  " + System.getProperty("java.vendor"));
-        System.out.println("DEBUG [ZosmfJwtCheck] OS name:      " + System.getProperty("os.name"));
-        System.out.println("DEBUG [ZosmfJwtCheck] java.protocol.handler.pkgs (BEFORE ensureSafkeyringHandler): "
-            + System.getProperty("java.protocol.handler.pkgs", "<not set>"));
-
         ensureSafkeyringHandler();
-
-        System.out.println("DEBUG [ZosmfJwtCheck] java.protocol.handler.pkgs (AFTER  ensureSafkeyringHandler): "
-            + System.getProperty("java.protocol.handler.pkgs", "<not set>"));
-
         try {
             ZosmfJwtCheckConf conf = new ZosmfJwtCheckConf();
             CommandLine cmd = new CommandLine(conf);
@@ -52,17 +40,6 @@ public class ZosmfJwtCheck {
                 CommandLine.usage(new ZosmfJwtCheckConf(), System.out);
                 return 8;
             }
-
-            System.out.println("DEBUG [ZosmfJwtCheck] Parsed config:");
-            System.out.println("DEBUG [ZosmfJwtCheck]   zosmf-host=" + conf.getZosmfHost());
-            System.out.println("DEBUG [ZosmfJwtCheck]   zosmf-port=" + conf.getZosmfPort());
-            System.out.println("DEBUG [ZosmfJwtCheck]   scheme=" + conf.getScheme());
-            System.out.println("DEBUG [ZosmfJwtCheck]   verify-certificates=" + conf.getVerifyCertificates());
-            System.out.println("DEBUG [ZosmfJwtCheck]   truststore-file=" + conf.getTrustStore());
-            System.out.println("DEBUG [ZosmfJwtCheck]   truststore-type=" + conf.getTrustStoreType());
-            System.out.println("DEBUG [ZosmfJwtCheck]   truststore-isKeyring=" + Stores.isKeyring(conf.getTrustStore()));
-            System.out.println("DEBUG [ZosmfJwtCheck]   keystore-file=" + conf.getKeyStore());
-            System.out.println("DEBUG [ZosmfJwtCheck]   keystore-type=" + conf.getKeyStoreType());
 
             validateConfig(conf);
 
@@ -75,11 +52,8 @@ public class ZosmfJwtCheck {
                     HostnameVerifier noopVerifier = (hostname, session) -> true;
                     httpClient = new HttpClientWrapper(sslContextFactory.getSslContext(), noopVerifier);
                 } else {
-                    System.out.println("DEBUG [ZosmfJwtCheck] Creating Stores (truststore/keystore)...");
                     Stores stores = new Stores(conf);
-                    System.out.println("DEBUG [ZosmfJwtCheck] Stores created successfully. Building SSLContext...");
                     SSLContextFactory sslContextFactory = SSLContextFactory.initSSLContext(stores);
-                    System.out.println("DEBUG [ZosmfJwtCheck] SSLContext created successfully.");
 
                     HostnameVerifier hostnameVerifier;
                     if (VERIFY_NONSTRICT.equals(verifyMode)) {
@@ -95,14 +69,10 @@ public class ZosmfJwtCheck {
             }
 
             JwkEndpointChecker checker = new JwkEndpointChecker(httpClient, conf);
-            System.out.println("DEBUG [ZosmfJwtCheck] Calling JwkEndpointChecker.check()...");
             boolean success = checker.check();
-            System.out.println("DEBUG [ZosmfJwtCheck] JwkEndpointChecker.check() returned: " + success);
             return success ? 0 : 4;
         } catch (Exception e) {
             System.err.println("ERROR: " + e.getMessage());
-            System.err.println("DEBUG [ZosmfJwtCheck] Exception class: " + e.getClass().getName());
-            e.printStackTrace(System.err);
             return 4;
         }
     }

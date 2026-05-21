@@ -24,7 +24,6 @@ import java.util.regex.Pattern;
  * Checks z/OSMF JWK endpoint availability at {@code /jwt/ibm/api/zOSMFBuilder/jwk}.
  * Interprets the HTTP response code to determine if the endpoint is functional
  */
-// TODO: REMOVE all "DEBUG [JwkEndpointChecker]" logging lines after SAF keyring issue is resolved
 @SuppressWarnings("squid:S106")
 public class JwkEndpointChecker {
 
@@ -46,19 +45,11 @@ public class JwkEndpointChecker {
         Map<String, String> headers = new HashMap<>();
         headers.put(ZOSMF_CSRF_HEADER, "");
 
-        System.out.println("DEBUG [JwkEndpointChecker] check() called");
-        System.out.println("DEBUG [JwkEndpointChecker]   target URL=" + urlString);
-        System.out.println("DEBUG [JwkEndpointChecker]   headers=" + headers);
-
         try {
             URL url = new URL(urlString);
             System.out.println("Checking z/OSMF JWK endpoint: " + urlString);
-            System.out.println("DEBUG [JwkEndpointChecker] Calling httpClient.executeCall()...");
 
             HttpClientWrapper.Response response = httpClient.executeCall(url, headers);
-
-            System.out.println("DEBUG [JwkEndpointChecker] Response received: HTTP " + response.getStatusCode());
-            System.out.println("DEBUG [JwkEndpointChecker] Response body length=" + (response.getBody() != null ? response.getBody().length() : "<null>"));
             if (conf.isVerbose() && response.getBody() != null) {
                 System.out.println("Response body:\n" + response.getBody());
             }
@@ -67,34 +58,24 @@ public class JwkEndpointChecker {
             System.err.println("FAILURE: SSL handshake failed when connecting to " + urlString + ".");
             System.err.println("Verify that the truststore contains the z/OSMF server certificate.");
             System.err.println("Details: " + e.getMessage());
-            System.err.println("DEBUG [JwkEndpointChecker] SSLHandshakeException stack trace:");
-            e.printStackTrace(System.err);
             return false;
         } catch (ConnectException e) {
             System.err.println("FAILURE: Cannot connect to " + conf.getZosmfHost() + ":" + conf.getZosmfPort() + ".");
             System.err.println("Verify the host and port are correct and z/OSMF is running.");
             System.err.println("Details: " + e.getMessage());
-            System.err.println("DEBUG [JwkEndpointChecker] ConnectException stack trace:");
-            e.printStackTrace(System.err);
             return false;
         } catch (SocketTimeoutException e) {
             System.err.println("FAILURE: Connection timed out to " + conf.getZosmfHost() + ":" + conf.getZosmfPort() + ".");
             System.err.println("This is commonly caused by an incorrect host/port or a firewall blocking the connection.");
             System.err.println("Verify the z/OSMF host and port are correct and that no firewall is blocking access.");
-            System.err.println("DEBUG [JwkEndpointChecker] SocketTimeoutException stack trace:");
-            e.printStackTrace(System.err);
             return false;
         } catch (UnknownHostException e) {
             System.err.println("FAILURE: Error when calling " + urlString + " verify hostname and port.");
             System.err.println("The host '" + conf.getZosmfHost() + "' could not be resolved.");
-            System.err.println("DEBUG [JwkEndpointChecker] UnknownHostException stack trace:");
-            e.printStackTrace(System.err);
             return false;
         } catch (Exception e) {
             System.err.println("FAILURE: Error when calling " + urlString + " verify hostname and port.");
             System.err.println("Details: " + e.getMessage());
-            System.err.println("DEBUG [JwkEndpointChecker] Exception class=" + e.getClass().getName());
-            e.printStackTrace(System.err);
             return false;
         }
     }
