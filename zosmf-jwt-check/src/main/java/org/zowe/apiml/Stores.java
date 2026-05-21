@@ -15,14 +15,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.Provider;
-import java.security.Security;
 import java.security.cert.CertificateException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -116,9 +113,12 @@ public class Stores {
         }
         if (isKeyring(conf.getTrustStore())) {
             System.out.println("DEBUG [Stores] initTruststore: Detected SAF keyring URI: " + conf.getTrustStore());
-            System.out.println("DEBUG [Stores] initTruststore: Loading keyring truststore (multi-strategy)...");
-            this.trustStore = loadKeyringKeyStore(conf.getTrustStore(), conf.getTrustStorePassword().toCharArray(), conf.getTrustStoreType());
-            System.out.println("DEBUG [Stores] initTruststore: Truststore loaded from keyring. Aliases count=" + trustStore.size());
+            System.out.println("DEBUG [Stores] initTruststore: Opening keyring stream (URL with RACFInputStream fallback)...");
+            try (InputStream trustStoreIStream = openKeyringStream(conf.getTrustStore(), conf.getTrustStorePassword().toCharArray())) {
+                System.out.println("DEBUG [Stores] initTruststore: Stream opened. Loading keystore type=" + conf.getTrustStoreType());
+                this.trustStore = readKeyStore(trustStoreIStream, conf.getTrustStorePassword().toCharArray(), conf.getTrustStoreType());
+                System.out.println("DEBUG [Stores] initTruststore: Truststore loaded from keyring. Aliases count=" + trustStore.size());
+            }
         } else {
             System.out.println("DEBUG [Stores] initTruststore: Loading from file: " + conf.getTrustStore());
             try (InputStream trustStoreIStream = new FileInputStream(conf.getTrustStore())) {
@@ -135,8 +135,8 @@ public class Stores {
         }
         if (isKeyring(conf.getKeyStore())) {
             System.out.println("DEBUG [Stores] initKeystore: Detected SAF keyring URI: " + conf.getKeyStore());
-            try {
-                this.keyStore = loadKeyringKeyStore(conf.getKeyStore(), conf.getKeyStorePassword().toCharArray(), conf.getKeyStoreType());
+            try (InputStream keyringIStream = openKeyringStream(conf.getKeyStore(), conf.getKeyStorePassword().toCharArray())) {
+                this.keyStore = readKeyStore(keyringIStream, conf.getKeyStorePassword().toCharArray(), conf.getKeyStoreType());
                 this.trustStore = this.keyStore;
                 System.out.println("DEBUG [Stores] initKeystore: Keystore loaded from keyring. Aliases count=" + keyStore.size());
             } catch (Exception e) {
@@ -191,152 +191,73 @@ public class Stores {
     }
 
     /**
-     * Loads a KeyStore from a SAF keyring using multiple strategies in order:
-     * <ol>
-     *   <li>Standard URL approach: {@code new URL("safkeyring://...").openStream()}</li>
-     *   <li>RACFInputStream via reflection (bypasses URL handler)</li>
-     *   <li>Direct JCERACFKS load via IBMZSecurity provider (no InputStream needed)</li>
-     * </ol>
+     * Opens an InputStream to a SAF keyring. Tries the standard URL-based approach first,
+     * then falls back to IBM's RACFInputStream (loaded via reflection) if the URL protocol
+     * handler is not available.
      */
     // TODO: REMOVE debug logging after SAF keyring issue is resolved
     @SuppressWarnings("squid:S3011")
-    static KeyStore loadKeyringKeyStore(String uri, char[] password, String type) throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException {
+    static InputStream openKeyringStream(String uri, char[] password) throws IOException {
         String formatted = formatKeyringUrl(uri);
-        System.out.println("DEBUG [Stores] loadKeyringKeyStore: uri='" + uri + "' formatted='" + formatted + "' type=" + type);
-        System.out.println("DEBUG [Stores] loadKeyringKeyStore: java.protocol.handler.pkgs="
+        System.out.println("DEBUG [Stores] openKeyringStream: uri='" + uri + "' formatted='" + formatted + "'");
+        System.out.println("DEBUG [Stores] openKeyringStream: java.protocol.handler.pkgs="
             + System.getProperty("java.protocol.handler.pkgs", "<not set>"));
+
+        // Try standard URL-based approach first (same as main API ML services)
+        try {
+            System.out.println("DEBUG [Stores] openKeyringStream: Attempting new URL('" + formatted + "')...");
+            URL url = new URL(formatted);
+            System.out.println("DEBUG [Stores] openKeyringStream: URL created. protocol=" + url.getProtocol()
+                + " host=" + url.getHost() + " path=" + url.getPath()
+                + " class=" + url.getClass().getName());
+            System.out.println("DEBUG [Stores] openKeyringStream: Calling url.openStream()...");
+            InputStream is = url.openStream();
+            System.out.println("DEBUG [Stores] openKeyringStream: URL.openStream() SUCCEEDED (stream class=" + is.getClass().getName() + ")");
+            return is;
+        } catch (MalformedURLException urlEx) {
+            System.err.println("DEBUG [Stores] openKeyringStream: URL approach FAILED with MalformedURLException: " + urlEx.getMessage());
+        } catch (IOException ioEx) {
+            System.err.println("DEBUG [Stores] openKeyringStream: URL.openStream() FAILED with IOException: "
+                + ioEx.getClass().getName() + ": " + ioEx.getMessage());
+            ioEx.printStackTrace(System.err);
+            // Re-throw IO errors from openStream — the URL was valid but the stream failed
+            throw ioEx;
+        }
+
+        // Fallback: use com.ibm.crypto.zsecurity.provider.RACFInputStream via reflection
+        // This class is available on z/OS IBM JDKs and bypasses the URL protocol handler
+        System.out.println("DEBUG [Stores] openKeyringStream: URL handler not available, attempting RACFInputStream fallback...");
 
         Matcher matcher = KEYRING_PATTERN.matcher(uri);
         if (!matcher.matches()) {
             matcher = KEYRING_PATTERN.matcher(formatted);
+            if (!matcher.matches()) {
+                throw new IOException("Cannot open keyring: invalid URI format: " + uri);
+            }
         }
-        String userId = matcher.matches() ? matcher.group(2) : null;
-        String ringName = matcher.matches() ? matcher.group(3) : null;
 
-        // Strategy 1: Standard URL-based approach (same as main API ML services)
+        String userId = matcher.group(2);
+        String ringName = matcher.group(3);
+        System.out.println("DEBUG [Stores] openKeyringStream: Parsed userId='" + userId + "' ringName='" + ringName + "'");
+
         try {
-            System.out.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 1 - URL approach...");
-            URL url = new URL(formatted);
-            System.out.println("DEBUG [Stores] loadKeyringKeyStore: URL created. protocol=" + url.getProtocol());
-            try (InputStream is = url.openStream()) {
-                System.out.println("DEBUG [Stores] loadKeyringKeyStore: URL.openStream() SUCCEEDED (stream class=" + is.getClass().getName() + ")");
-                KeyStore ks = KeyStore.getInstance(type);
-                ks.load(is, password);
-                System.out.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 1 SUCCEEDED. Aliases count=" + ks.size());
-                return ks;
-            }
-        } catch (MalformedURLException urlEx) {
-            System.err.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 1 FAILED (MalformedURLException): " + urlEx.getMessage());
-        } catch (IOException ioEx) {
-            System.err.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 1 FAILED (IOException on openStream): "
-                + ioEx.getClass().getName() + ": " + ioEx.getMessage());
+            System.out.println("DEBUG [Stores] openKeyringStream: Loading class com.ibm.crypto.zsecurity.provider.RACFInputStream...");
+            Class<?> racfClass = Class.forName("com.ibm.crypto.zsecurity.provider.RACFInputStream");
+            System.out.println("DEBUG [Stores] openKeyringStream: RACFInputStream class loaded (classLoader=" + racfClass.getClassLoader() + ")");
+            Constructor<?> ctor = racfClass.getConstructor(String.class, String.class, char[].class);
+            System.out.println("DEBUG [Stores] openKeyringStream: Invoking RACFInputStream('" + userId + "', '" + ringName + "', <password>)...");
+            InputStream is = (InputStream) ctor.newInstance(userId, ringName, password);
+            System.out.println("DEBUG [Stores] openKeyringStream: RACFInputStream SUCCEEDED (stream class=" + is.getClass().getName() + ")");
+            return is;
+        } catch (ClassNotFoundException cnfe) {
+            System.err.println("DEBUG [Stores] openKeyringStream: RACFInputStream class NOT FOUND: " + cnfe.getMessage());
+            throw new IOException("Cannot open keyring '" + uri + "': URL protocol handler not available " +
+                "and RACFInputStream class not found. Ensure running on z/OS with IBM JDK.", cnfe);
+        } catch (Exception e) {
+            System.err.println("DEBUG [Stores] openKeyringStream: RACFInputStream FAILED: " + e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace(System.err);
+            throw new IOException("Cannot open keyring '" + uri + "': URL protocol handler not available " +
+                "and RACFInputStream fallback failed: " + e.getMessage(), e);
         }
-
-        // Strategy 2: RACFInputStream via reflection
-        if (userId != null && ringName != null) {
-            try {
-                System.out.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 2 - RACFInputStream('" + userId + "', '" + ringName + "')...");
-                Class<?> racfClass = Class.forName("com.ibm.crypto.zsecurity.provider.RACFInputStream");
-                System.out.println("DEBUG [Stores] loadKeyringKeyStore: RACFInputStream class loaded (classLoader=" + racfClass.getClassLoader() + ")");
-                Constructor<?> ctor = racfClass.getConstructor(String.class, String.class, char[].class);
-                InputStream is = (InputStream) ctor.newInstance(userId, ringName, password);
-                System.out.println("DEBUG [Stores] loadKeyringKeyStore: RACFInputStream created. Loading KeyStore...");
-                KeyStore ks = KeyStore.getInstance(type);
-                ks.load(is, password);
-                System.out.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 2 SUCCEEDED. Aliases count=" + ks.size());
-                return ks;
-            } catch (InvocationTargetException ite) {
-                Throwable cause = ite.getCause();
-                String causeMsg = cause != null ? cause.getMessage() : ite.getMessage();
-                System.err.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 2 FAILED (RACFInputStream constructor threw): " + causeMsg);
-                if (cause != null) {
-                    cause.printStackTrace(System.err);
-                }
-                // If the error is about private key access, try Strategy 3
-                if (cause instanceof IOException && causeMsg != null && causeMsg.contains("private key")) {
-                    System.out.println("DEBUG [Stores] loadKeyringKeyStore: Private key permission error detected."
-                        + " This likely means the running user does not have RACF authority to access"
-                        + " private keys in keyring " + userId + "/" + ringName + "."
-                        + " Trying Strategy 3 (direct JCERACFKS load)...");
-                } else {
-                    // Non-private-key error — still try Strategy 3 but log the original error
-                    System.err.println("DEBUG [Stores] loadKeyringKeyStore: RACFInputStream failed with non-private-key error. Trying Strategy 3...");
-                }
-            } catch (ClassNotFoundException cnfe) {
-                System.err.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 2 FAILED (class not found): " + cnfe.getMessage());
-            } catch (Exception e) {
-                System.err.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 2 FAILED: " + e.getClass().getName() + ": " + e.getMessage());
-                e.printStackTrace(System.err);
-            }
-        }
-
-        // Strategy 3: Direct JCERACFKS KeyStore load using IBMZSecurity provider
-        // On IBM z/OS JDK, the JCERACFKS KeyStore SPI can load keyrings directly
-        // when the keyring URL is provided as the password/loadStoreParameter.
-        // This approach does NOT use RACFInputStream and may handle inaccessible
-        // private keys gracefully (loading only certificates the user can access).
-        Provider ibmZSecurityProvider = Security.getProvider("IBMZSecurity");
-        if (ibmZSecurityProvider != null) {
-            System.out.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 3 - Direct JCERACFKS via IBMZSecurity provider...");
-            try {
-                KeyStore ks = KeyStore.getInstance(type, ibmZSecurityProvider);
-                System.out.println("DEBUG [Stores] loadKeyringKeyStore: KeyStore.getInstance('" + type + "', IBMZSecurity) succeeded.");
-
-                // Try loading with the keyring URL as the password
-                // Some IBM implementations accept safkeyring://userId/ring as load parameter
-                System.out.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 3a - load(null, ringUrl as password)...");
-                try {
-                    ks.load(null, formatted.toCharArray());
-                    System.out.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 3a SUCCEEDED. Aliases count=" + ks.size());
-                    return ks;
-                } catch (Exception e3a) {
-                    System.err.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 3a FAILED: " + e3a.getClass().getName() + ": " + e3a.getMessage());
-                }
-
-                // Try loading with a DomainLoadStoreParameter-style approach
-                // Pass the ring name in format "userId/ringName" as password
-                System.out.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 3b - load(null, userId/ringName as password)...");
-                try {
-                    ks = KeyStore.getInstance(type, ibmZSecurityProvider);
-                    ks.load(null, (userId + "/" + ringName).toCharArray());
-                    System.out.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 3b SUCCEEDED. Aliases count=" + ks.size());
-                    return ks;
-                } catch (Exception e3b) {
-                    System.err.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 3b FAILED: " + e3b.getClass().getName() + ": " + e3b.getMessage());
-                }
-
-                // Try with standard password and null stream
-                System.out.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 3c - load(null, 'password')...");
-                try {
-                    ks = KeyStore.getInstance(type, ibmZSecurityProvider);
-                    ks.load(null, password);
-                    System.out.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 3c SUCCEEDED. Aliases count=" + ks.size());
-                    if (ks.size() > 0) {
-                        return ks;
-                    }
-                    System.out.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 3c returned empty keystore, not useful.");
-                } catch (Exception e3c) {
-                    System.err.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 3c FAILED: " + e3c.getClass().getName() + ": " + e3c.getMessage());
-                }
-            } catch (Exception e3) {
-                System.err.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 3 setup FAILED: " + e3.getClass().getName() + ": " + e3.getMessage());
-                e3.printStackTrace(System.err);
-            }
-        } else {
-            System.out.println("DEBUG [Stores] loadKeyringKeyStore: Strategy 3 SKIPPED (IBMZSecurity provider not available)");
-        }
-
-        // All strategies failed
-        String errorMsg = "Cannot load keyring '" + uri + "': all strategies exhausted.\n"
-            + "  - URL handler: safkeyring protocol handler not found in this JDK.\n"
-            + "  - RACFInputStream: likely failed due to RACF authority.\n"
-            + "Ensure the user running 'zwe validate' has READ access to the keyring.\n"
-            + "RACF commands to verify/grant access:\n"
-            + "  RLIST FACILITY IRR.DIGTCERT.LISTRING ALL\n"
-            + "  PERMIT IRR.DIGTCERT.LISTRING CLASS(FACILITY) ID(<running-user>) ACCESS(READ)\n"
-            + "  SETROPTS RACLIST(FACILITY) REFRESH";
-        System.err.println("DEBUG [Stores] loadKeyringKeyStore: ALL STRATEGIES FAILED.");
-        System.err.println(errorMsg);
-        throw new IOException(errorMsg);
     }
 }
