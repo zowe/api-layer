@@ -33,13 +33,7 @@ public class ZosmfJwtCheck {
         System.out.println("DEBUG [ZosmfJwtCheck] ===== zosmf-jwt-check starting =====");
         System.out.println("DEBUG [ZosmfJwtCheck] Java version: " + System.getProperty("java.version"));
         System.out.println("DEBUG [ZosmfJwtCheck] Java vendor:  " + System.getProperty("java.vendor"));
-        System.out.println("DEBUG [ZosmfJwtCheck] Java home:    " + System.getProperty("java.home"));
         System.out.println("DEBUG [ZosmfJwtCheck] OS name:      " + System.getProperty("os.name"));
-        System.out.println("DEBUG [ZosmfJwtCheck] java.class.path: " + System.getProperty("java.class.path", "<not set>"));
-        System.out.println("DEBUG [ZosmfJwtCheck] java.ext.dirs:   " + System.getProperty("java.ext.dirs", "<not set>"));
-        System.out.println("DEBUG [ZosmfJwtCheck] Classloader chain: app=" + ZosmfJwtCheck.class.getClassLoader()
-            + " parent=" + (ZosmfJwtCheck.class.getClassLoader() != null ? ZosmfJwtCheck.class.getClassLoader().getParent() : "null")
-            + " threadCtx=" + Thread.currentThread().getContextClassLoader());
         System.out.println("DEBUG [ZosmfJwtCheck] java.protocol.handler.pkgs (BEFORE ensureSafkeyringHandler): "
             + System.getProperty("java.protocol.handler.pkgs", "<not set>"));
 
@@ -143,58 +137,9 @@ public class ZosmfJwtCheck {
      */
     static void ensureSafkeyringHandler() {
         String existing = System.getProperty("java.protocol.handler.pkgs", "");
-        System.out.println("DEBUG [ZosmfJwtCheck] ensureSafkeyringHandler: current value='" + existing + "'");
         if (!existing.contains("com.ibm.crypto.provider")) {
-            String newValue = existing.isEmpty() ? "com.ibm.crypto.provider" : existing + "|com.ibm.crypto.provider";
-            System.setProperty("java.protocol.handler.pkgs", newValue);
-            System.out.println("DEBUG [ZosmfJwtCheck] ensureSafkeyringHandler: SET to '" + newValue + "'");
-        } else {
-            System.out.println("DEBUG [ZosmfJwtCheck] ensureSafkeyringHandler: already contains com.ibm.crypto.provider, no change");
-        }
-
-        // TODO: REMOVE diagnostic checks after SAF keyring issue is resolved
-        // Check which IBM z/OS keyring-related classes are available on the classpath
-        String[] classesToCheck = {
-            "com.ibm.crypto.provider.safkeyring.Handler",
-            "com.ibm.crypto.provider.safkeyringjce.Handler",
-            "com.ibm.crypto.provider.safkeyringjcecca.Handler",
-            "com.ibm.crypto.provider.safkeyringjceccaracfks.Handler",
-            "com.ibm.crypto.provider.safkeyringjcehybrid.Handler",
-            "com.ibm.crypto.zsecurity.provider.RACFInputStream",
-            "com.ibm.jsse2.IBMJSSEProvider2",
-        };
-        for (String className : classesToCheck) {
-            try {
-                Class<?> cls = Class.forName(className);
-                System.out.println("DEBUG [ZosmfJwtCheck] Class FOUND: " + className
-                    + " (classLoader=" + cls.getClassLoader() + ")");
-            } catch (ClassNotFoundException e) {
-                System.out.println("DEBUG [ZosmfJwtCheck] Class NOT FOUND: " + className);
-            }
-        }
-
-        // List installed security providers
-        System.out.println("DEBUG [ZosmfJwtCheck] Installed security providers:");
-        for (java.security.Provider p : java.security.Security.getProviders()) {
-            System.out.println("DEBUG [ZosmfJwtCheck]   " + p.getName() + " v" + p.getVersionStr()
-                + " (" + p.getClass().getName() + ")");
-        }
-
-        // Test URL creation inline to capture exact failure point
-        System.out.println("DEBUG [ZosmfJwtCheck] Testing URL creation for 'safkeyring://test/test'...");
-        try {
-            java.net.URL testUrl = new java.net.URL("safkeyring://test/test");
-            System.out.println("DEBUG [ZosmfJwtCheck] URL creation SUCCEEDED: " + testUrl);
-        } catch (java.net.MalformedURLException e) {
-            System.out.println("DEBUG [ZosmfJwtCheck] URL creation FAILED: " + e.getMessage());
-            // If the handler class was FOUND above but URL creation FAILED, that confirms
-            // the bootstrap classloader theory: Class.forName from our code can find it,
-            // but java.net.URL (loaded by bootstrap classloader) cannot.
-            System.out.println("DEBUG [ZosmfJwtCheck] URL class classLoader: " + java.net.URL.class.getClassLoader());
-            System.out.println("DEBUG [ZosmfJwtCheck] This class classLoader: " + ZosmfJwtCheck.class.getClassLoader());
-            System.out.println("DEBUG [ZosmfJwtCheck] If handler class was FOUND above but URL creation FAILED,");
-            System.out.println("DEBUG [ZosmfJwtCheck]   this indicates a classloader visibility issue.");
-            System.out.println("DEBUG [ZosmfJwtCheck]   The RACFInputStream fallback in openKeyringStream() will be used instead.");
+            System.setProperty("java.protocol.handler.pkgs",
+                existing.isEmpty() ? "com.ibm.crypto.provider" : existing + "|com.ibm.crypto.provider");
         }
     }
 
