@@ -35,7 +35,7 @@ apiml:
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
         preferIpAddress: false
     discovery:
-        allPeersUrls: http://${apiml.service.hostname}:${apiml.service.port}/eureka/
+        allPeersUrls: 'http://#{("${apiml.discovery.userid:}".isEmpty() or "${apiml.discovery.password:}".isEmpty()) ? "" : "${apiml.discovery.userid:}:${apiml.discovery.password:}@"}${apiml.service.hostname}:${apiml.service.port}/eureka/'
     health:
         protected: true
 
