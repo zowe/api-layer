@@ -117,11 +117,11 @@
                             "properties": {
                                 "userId": {
                                     "type": "string",
-                                    "description": "Username used for internal authentication inside APIML."
+                                    "description": "Username used for internal authentication inside APIML. It is used only when SSL certificate verification is disabled."
                                 },
                                 "password": {
                                     "type": "string",
-                                    "description": "Password used for internal authentication inside APIML."
+                                    "description": "Password used for internal authentication inside APIML. It is used only when SSL certificate verification is disabled."
                                 }
                             }
                         }

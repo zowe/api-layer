@@ -126,8 +126,8 @@ public class SpringSecurityConfig {
         }
 
         private char[] getPassword(Authentication authentication) {
-            if (authentication.getCredentials() instanceof char[]) {
-                return (char[]) authentication.getCredentials();
+            if (authentication.getCredentials() instanceof char[] password) {
+                return password;
             }
             return String.valueOf(authentication.getCredentials()).toCharArray();
         }

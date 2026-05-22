@@ -49,9 +49,9 @@ public class SpringSecurityConfigTest {
     private static final String PASSWORD = "password";
 
     private static final AbstractAuthenticationToken VALID_AUTHENTICATION = new UsernamePasswordAuthenticationToken(USER, PASSWORD.toCharArray(), Collections.singleton(new SimpleGrantedAuthority("CACHING_SERVICE")));
-    private static final String validBasicAuth = "Basic " + Base64.getEncoder().encodeToString((USER + ":" + PASSWORD).getBytes());
-    private static final String invalidBasicAuth = "Basic " + Base64.getEncoder().encodeToString((USER + ":invalidPassword").getBytes());
-    private static final String serviceIdHeader = "X-CS-Service-ID";
+    private static final String VALID_BASIC_AUTH = "Basic " + Base64.getEncoder().encodeToString((USER + ":" + PASSWORD).getBytes());
+    private static final String INVALID_BASIC_AUTH = "Basic " + Base64.getEncoder().encodeToString((USER + ":invalidPassword").getBytes());
+    private static final String X_CS_SERVICE_ID = "X-CS-Service-ID";
 
     @BeforeAll
     static void init() throws Exception {
@@ -92,7 +92,7 @@ public class SpringSecurityConfigTest {
             @Test
             void thenReturnForbidden() {
                 given()
-                    .header(new Header(serviceIdHeader, "apimtst"))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -107,8 +107,8 @@ public class SpringSecurityConfigTest {
             @Test
             void whenValidBasicAuth_thenReturnSuccess() {
                 given()
-                    .header(new Header(serviceIdHeader, "apimtst"))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, validBasicAuth))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
+                    .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -118,8 +118,8 @@ public class SpringSecurityConfigTest {
             @Test
             void whenInvalidBasicAuth_thenReturnUnauthorized() {
                 given()
-                    .header(new Header(serviceIdHeader, "apimtst"))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, invalidBasicAuth))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
+                    .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -153,7 +153,7 @@ public class SpringSecurityConfigTest {
             @Test
             void thenReturnForbidden() {
                 given()
-                    .header(new Header(serviceIdHeader, "apimtst"))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -168,8 +168,8 @@ public class SpringSecurityConfigTest {
             @Test
             void whenValidBasicAuth_thenReturnUnauthorized() {
                 given()
-                    .header(new Header(serviceIdHeader, "apimtst"))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, validBasicAuth))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
+                    .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -179,8 +179,8 @@ public class SpringSecurityConfigTest {
             @Test
             void whenInvalidBasicAuth_thenReturnUnauthorized() {
                 given()
-                    .header(new Header(serviceIdHeader, "apimtst"))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, invalidBasicAuth))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
+                    .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -216,7 +216,7 @@ public class SpringSecurityConfigTest {
             @Test
             void whenNoBasicAuth_thenReturnForbidden() {
                 given()
-                    .header(new Header(serviceIdHeader, "apimtst"))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -226,8 +226,8 @@ public class SpringSecurityConfigTest {
             @Test
             void whenValidBasicAuth_thenReturnForbidden() {
                 given()
-                    .header(new Header(serviceIdHeader, "apimtst"))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, validBasicAuth))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
+                    .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -237,8 +237,8 @@ public class SpringSecurityConfigTest {
             @Test
             void whenInvalidBasicAuth_thenReturnForbidden() {
                 given()
-                    .header(new Header(serviceIdHeader, "apimtst"))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, invalidBasicAuth))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
+                    .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -253,7 +253,7 @@ public class SpringSecurityConfigTest {
             void whenNoBasicAuth_thenReturnSuccess() {
                 given()
                     .config(SslContext.clientCertApiml)
-                    .header(new Header(serviceIdHeader, "apimtst"))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -264,8 +264,8 @@ public class SpringSecurityConfigTest {
             void whenValidBasicAuth_thenReturnSuccess() {
                 given()
                     .config(SslContext.clientCertApiml)
-                    .header(new Header(serviceIdHeader, "apimtst"))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, validBasicAuth))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
+                    .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -276,8 +276,8 @@ public class SpringSecurityConfigTest {
             void whenInvalidBasicAuth_thenReturnSuccess() {
                 given()
                     .config(SslContext.clientCertApiml)
-                    .header(new Header(serviceIdHeader, "apimtst"))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, invalidBasicAuth))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
+                    .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -312,7 +312,7 @@ public class SpringSecurityConfigTest {
             @Test
             void whenNoBasicAuth_thenReturnForbidden() {
                 given()
-                    .header(new Header(serviceIdHeader, "apimtst"))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -322,8 +322,8 @@ public class SpringSecurityConfigTest {
             @Test
             void whenValidBasicAuth_thenReturnForbidden() {
                 given()
-                    .header(new Header(serviceIdHeader, "apimtst"))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, validBasicAuth))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
+                    .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -333,8 +333,8 @@ public class SpringSecurityConfigTest {
             @Test
             void whenInvalidBasicAuth_thenReturnForbidden() {
                 given()
-                    .header(new Header(serviceIdHeader, "apimtst"))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, invalidBasicAuth))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
+                    .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -349,7 +349,7 @@ public class SpringSecurityConfigTest {
             void whenNoBasicAuth_thenReturnSuccess() {
                 given()
                     .config(SslContext.clientCertApiml)
-                    .header(new Header(serviceIdHeader, "apimtst"))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -360,8 +360,8 @@ public class SpringSecurityConfigTest {
             void whenValidBasicAuth_thenReturnSuccess() {
                 given()
                     .config(SslContext.clientCertApiml)
-                    .header(new Header(serviceIdHeader, "apimtst"))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, validBasicAuth))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
+                    .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -372,8 +372,8 @@ public class SpringSecurityConfigTest {
             void whenInvalidBasicAuth_thenReturnSuccess() {
                 given()
                     .config(SslContext.clientCertApiml)
-                    .header(new Header(serviceIdHeader, "apimtst"))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, invalidBasicAuth))
+                    .header(new Header(X_CS_SERVICE_ID, "apimtst"))
+                    .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()

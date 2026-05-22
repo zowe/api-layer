@@ -243,7 +243,7 @@ class CachingServiceClientRestTest {
             service.init();
 
             var headers = (MultiValueMap<String, String>) ReflectionTestUtils.getField(service, "defaultHeaders");
-            assertEquals(headers.get(HttpHeaders.AUTHORIZATION).get(0), "Basic dXNlcjpwYXNzd29yZA==");
+            assertEquals("Basic dXNlcjpwYXNzd29yZA==", headers.get(HttpHeaders.AUTHORIZATION).get(0));
         }
 
         @ParameterizedTest

@@ -53,6 +53,9 @@ public class CachingServiceClient implements CachingClient {
     @Value("${apiml.service.http.password:#{null}}")
     private String cachingServicePassword;
 
+    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
+    private boolean verifyCertificates;
+
     private static final HttpHeaders defaultHeaders = new HttpHeaders();
 
     static {
@@ -73,11 +76,13 @@ public class CachingServiceClient implements CachingClient {
 
     @PostConstruct
     public void init() {
-        if (StringUtils.isEmpty(cachingServiceUserId) || StringUtils.isEmpty(cachingServicePassword)) {
-            log.warn("Caching-service userid or password not set");
-        } else {
-            String basicToken = "Basic " + Base64.getEncoder().encodeToString((cachingServiceUserId + ":" + cachingServicePassword).getBytes());
-            defaultHeaders.add(HttpHeaders.AUTHORIZATION, basicToken);
+        if (!verifyCertificates) {
+            if (StringUtils.isEmpty(cachingServiceUserId) || StringUtils.isEmpty(cachingServicePassword)) {
+                log.warn("Caching-service userid or password not set");
+            } else {
+                String basicToken = "Basic " + Base64.getEncoder().encodeToString((cachingServiceUserId + ":" + cachingServicePassword).getBytes());
+                defaultHeaders.add(HttpHeaders.AUTHORIZATION, basicToken);
+            }
         }
     }
 
