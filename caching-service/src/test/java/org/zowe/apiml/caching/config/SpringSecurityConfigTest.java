@@ -224,25 +224,25 @@ public class SpringSecurityConfigTest {
             }
 
             @Test
-            void whenValidBasicAuth_thenReturnSuccess() {
+            void whenValidBasicAuth_thenReturnForbidden() {
                 given()
                     .header(new Header(serviceIdHeader, "apimtst"))
                     .header(new Header(HttpHeaders.AUTHORIZATION, validBasicAuth))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
-                    .statusCode(HttpStatus.OK.value());
+                    .statusCode(HttpStatus.FORBIDDEN.value());
             }
 
             @Test
-            void whenInvalidBasicAuth_thenReturnUnauthorized() {
+            void whenInvalidBasicAuth_thenReturnForbidden() {
                 given()
                     .header(new Header(serviceIdHeader, "apimtst"))
                     .header(new Header(HttpHeaders.AUTHORIZATION, invalidBasicAuth))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
-                    .statusCode(HttpStatus.UNAUTHORIZED.value());
+                    .statusCode(HttpStatus.FORBIDDEN.value());
             }
         }
 
@@ -273,7 +273,7 @@ public class SpringSecurityConfigTest {
             }
 
             @Test
-            void whenInvalidBasicAuth_thenReturnUnauthorized() {
+            void whenInvalidBasicAuth_thenReturnSuccess() {
                 given()
                     .config(SslContext.clientCertApiml)
                     .header(new Header(serviceIdHeader, "apimtst"))
@@ -281,7 +281,7 @@ public class SpringSecurityConfigTest {
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
-                    .statusCode(HttpStatus.UNAUTHORIZED.value());
+                    .statusCode(HttpStatus.OK.value());
             }
         }
 
@@ -320,25 +320,25 @@ public class SpringSecurityConfigTest {
             }
 
             @Test
-            void whenValidBasicAuth_thenReturnUnauthorized() {
+            void whenValidBasicAuth_thenReturnForbidden() {
                 given()
                     .header(new Header(serviceIdHeader, "apimtst"))
                     .header(new Header(HttpHeaders.AUTHORIZATION, validBasicAuth))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
-                    .statusCode(HttpStatus.UNAUTHORIZED.value());
+                    .statusCode(HttpStatus.FORBIDDEN.value());
             }
 
             @Test
-            void whenInvalidBasicAuth_thenReturnUnauthorized() {
+            void whenInvalidBasicAuth_thenReturnForbidden() {
                 given()
                     .header(new Header(serviceIdHeader, "apimtst"))
                     .header(new Header(HttpHeaders.AUTHORIZATION, invalidBasicAuth))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
-                    .statusCode(HttpStatus.UNAUTHORIZED.value());
+                    .statusCode(HttpStatus.FORBIDDEN.value());
             }
         }
 
@@ -357,7 +357,7 @@ public class SpringSecurityConfigTest {
             }
 
             @Test
-            void whenValidBasicAuth_thenReturnUnauthorized() {
+            void whenValidBasicAuth_thenReturnSuccess() {
                 given()
                     .config(SslContext.clientCertApiml)
                     .header(new Header(serviceIdHeader, "apimtst"))
@@ -365,11 +365,11 @@ public class SpringSecurityConfigTest {
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
-                    .statusCode(HttpStatus.UNAUTHORIZED.value());
+                    .statusCode(HttpStatus.OK.value());
             }
 
             @Test
-            void whenInvalidBasicAuth_thenReturnUnauthorized() {
+            void whenInvalidBasicAuth_thenReturnSuccess() {
                 given()
                     .config(SslContext.clientCertApiml)
                     .header(new Header(serviceIdHeader, "apimtst"))
@@ -377,7 +377,7 @@ public class SpringSecurityConfigTest {
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
-                    .statusCode(HttpStatus.UNAUTHORIZED.value());
+                    .statusCode(HttpStatus.OK.value());
             }
         }
 

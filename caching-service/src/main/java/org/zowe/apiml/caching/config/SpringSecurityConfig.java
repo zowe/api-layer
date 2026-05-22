@@ -84,13 +84,15 @@ public class SpringSecurityConfig {
             );
 
         http.authorizeExchange(exchange -> exchange
-                .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
-                .anyExchange().authenticated())
-            .httpBasic(httpBasicSpec -> httpBasicSpec.authenticationManager(new BasicAuthenticationManager(cachingServiceUserId, cachingServicePassword)));
+            .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
+            .anyExchange().authenticated());
 
         if (verifyCertificates) {
             http.x509(x509spec -> x509spec.principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager()));
+        } else {
+            http.httpBasic(httpBasicSpec -> httpBasicSpec.authenticationManager(
+                new BasicAuthenticationManager(cachingServiceUserId, cachingServicePassword)));
         }
 
         return http.build();
