@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
  * Supports custom {@link SSLContext} and {@link HostnameVerifier} for
  * STRICT, NONSTRICT, and DISABLED certificate verification modes.
  */
+// TODO: REMOVE all "DEBUG [HttpClientWrapper]" logging lines after SAF keyring issue is resolved
 @SuppressWarnings("squid:S106")
 public class HttpClientWrapper {
 
@@ -64,6 +65,11 @@ public class HttpClientWrapper {
     }
 
     public Response executeCall(URL url, Map<String, String> headers) throws IOException {
+        System.out.println("DEBUG [HttpClientWrapper] executeCall() URL=" + url);
+        System.out.println("DEBUG [HttpClientWrapper]   useHttps=" + useHttps);
+        System.out.println("DEBUG [HttpClientWrapper]   sslContext=" + (sslContext != null ? sslContext.getProtocol() : "<null>"));
+        System.out.println("DEBUG [HttpClientWrapper]   hostnameVerifier=" + (hostnameVerifier != null ? hostnameVerifier.getClass().getName() : "<default JDK>"));
+
         HttpURLConnection con;
         if (useHttps) {
             HttpsURLConnection httpsCon = (HttpsURLConnection) url.openConnection();
@@ -72,8 +78,10 @@ public class HttpClientWrapper {
                 httpsCon.setHostnameVerifier(hostnameVerifier);
             }
             con = httpsCon;
+            System.out.println("DEBUG [HttpClientWrapper] HTTPS connection opened");
         } else {
             con = (HttpURLConnection) url.openConnection();
+            System.out.println("DEBUG [HttpClientWrapper] HTTP connection opened");
         }
 
         con.setRequestMethod("GET");
@@ -86,10 +94,16 @@ public class HttpClientWrapper {
             }
         }
 
+        System.out.println("DEBUG [HttpClientWrapper] Sending GET request (connectTimeout=" + CONNECT_TIMEOUT + "ms, readTimeout=" + READ_TIMEOUT + "ms)...");
         try {
             int responseCode = con.getResponseCode();
+            System.out.println("DEBUG [HttpClientWrapper] Response code=" + responseCode);
             String body = readBody(con);
+            System.out.println("DEBUG [HttpClientWrapper] Response body read, length=" + (body != null ? body.length() : "<null>"));
             return new Response(responseCode, body);
+        } catch (IOException e) {
+            System.err.println("DEBUG [HttpClientWrapper] IOException during request: " + e.getClass().getName() + ": " + e.getMessage());
+            throw e;
         } finally {
             con.disconnect();
         }
