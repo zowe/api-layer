@@ -147,10 +147,15 @@ public class Stores {
         }
         String formatted = formatKeyringUrl(uri);
         try {
-            return new URL(formatted);
+            URL url = new URL(formatted);
+            System.out.println("DIAG: new URL('" + formatted + "') succeeded via java.protocol.handler.pkgs");
+            return url;
         } catch (MalformedURLException e) {
+            System.out.println("DIAG: new URL('" + formatted + "') failed: " + e.getMessage());
+            System.out.println("DIAG: Attempting explicit handler fallback...");
             URL fallbackUrl = createUrlWithExplicitHandler(formatted);
             if (fallbackUrl != null) {
+                System.out.println("DIAG: Fallback succeeded for '" + formatted + "'");
                 return fallbackUrl;
             }
             System.err.println("ERROR: Unknown protocol in '" + formatted + "': " + e.getMessage());
@@ -160,23 +165,23 @@ public class Stores {
     }
 
     /**
-     * Fallback for IBM Java 17/21+ on z/OS where the safkeyring handler is registered
-     * via the {@code java.net.spi.URLStreamHandlerProvider} SPI mechanism in modules
+     * Fallback for IBM Java 17/21+ on z/OS where the safkeyring handler may be
+     * registered via the {@code java.net.spi.URLStreamHandlerProvider} SPI or
+     * via a legacy {@code <pkg>.<protocol>.Handler} class in modules
      * {@code ibm.crypto.zsecurity} and {@code ibm.crypto.hdwrcca}.
      *
-     * <p>If the modules are resolved (via {@code --add-modules}), the standard
-     * {@code new URL()} constructor works via ServiceLoader. This fallback handles
-     * the unlikely case where the module IS resolved but the automatic ServiceLoader
-     * discovery failed, by reflectively instantiating the SPI provider directly.</p>
+     * <p>Requires the modules to be resolved via {@code --add-modules}.</p>
      */
     private static URL createUrlWithExplicitHandler(String formatted) {
         String protocol = formatted.substring(0, formatted.indexOf(':'));
 
+        // Try 1: SPI URLStreamHandlerProvider classes
         String[] spiProviderClasses = {
             "com.ibm.crypto.zsecurity.provider.safkeyring.Provider",
             "com.ibm.crypto.hdwrCCA.provider.safkeyring.Provider"
         };
 
+        String[] loaderNames = {"SystemCL", "PlatformCL", "ContextCL", "StoresCL"};
         ClassLoader[] loaders = {
             ClassLoader.getSystemClassLoader(),
             ClassLoader.getPlatformClassLoader(),
@@ -184,8 +189,11 @@ public class Stores {
             Stores.class.getClassLoader()
         };
 
+        System.out.println("DIAG: createUrlWithExplicitHandler: protocol='" + protocol + "'");
+        System.out.println("DIAG: Trying SPI providers...");
         for (String providerClassName : spiProviderClasses) {
-            for (ClassLoader loader : loaders) {
+            for (int i = 0; i < loaders.length; i++) {
+                ClassLoader loader = loaders[i];
                 if (loader == null) continue;
                 try {
                     Class<?> cls = Class.forName(providerClassName, true, loader);
@@ -193,13 +201,45 @@ public class Stores {
                         (java.net.spi.URLStreamHandlerProvider) cls.getDeclaredConstructor().newInstance();
                     java.net.URLStreamHandler handler = provider.createURLStreamHandler(protocol);
                     if (handler != null) {
+                        System.out.println("DIAG: SUCCESS via SPI: " + providerClassName + " [" + loaderNames[i] + "]");
                         return new URL(null, formatted, handler);
+                    } else {
+                        System.out.println("DIAG: SPI " + providerClassName + " [" + loaderNames[i] + "] returned null handler");
                     }
-                } catch (Exception ignored) {
-                    // Try next combination
+                } catch (ClassNotFoundException e) {
+                    System.out.println("DIAG: SPI " + providerClassName + " [" + loaderNames[i] + "] ClassNotFound");
+                } catch (Exception e) {
+                    System.out.println("DIAG: SPI " + providerClassName + " [" + loaderNames[i] + "] " + e.getClass().getSimpleName() + ": " + e.getMessage());
                 }
             }
         }
+
+        // Try 2: Legacy Handler classes (e.g. <pkg>.safkeyring.Handler)
+        String[] handlerPackages = {
+            "com.ibm.crypto.zsecurity.provider",
+            "com.ibm.crypto.hdwrCCA.provider"
+        };
+
+        System.out.println("DIAG: Trying legacy Handler classes...");
+        for (String pkg : handlerPackages) {
+            String className = pkg + "." + protocol + ".Handler";
+            for (int i = 0; i < loaders.length; i++) {
+                ClassLoader loader = loaders[i];
+                if (loader == null) continue;
+                try {
+                    Class<?> cls = Class.forName(className, true, loader);
+                    java.net.URLStreamHandler handler = (java.net.URLStreamHandler) cls.getDeclaredConstructor().newInstance();
+                    System.out.println("DIAG: SUCCESS via Handler: " + className + " [" + loaderNames[i] + "]");
+                    return new URL(null, formatted, handler);
+                } catch (ClassNotFoundException e) {
+                    System.out.println("DIAG: Handler " + className + " [" + loaderNames[i] + "] ClassNotFound");
+                } catch (Exception e) {
+                    System.out.println("DIAG: Handler " + className + " [" + loaderNames[i] + "] " + e.getClass().getSimpleName() + ": " + e.getMessage());
+                }
+            }
+        }
+
+        System.out.println("DIAG: createUrlWithExplicitHandler: ALL attempts failed");
         return null;
     }
 }
