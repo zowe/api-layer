@@ -14,6 +14,7 @@ import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.cluster.PeerEurekaNodes;
 import jakarta.ws.rs.client.Client;
 import org.apache.http.HttpStatus;
+import org.apache.http.config.Registry;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.glassfish.jersey.apache.connector.ApacheClientProperties;
 import org.glassfish.jersey.client.ClientConfig;
@@ -64,9 +65,7 @@ class AttlsConfigTest {
             assertNotNull(apacheClient, "The client Jersey must be not null");
 
             ClientConfig clientConfigObj = (ClientConfig) apacheClient.getConfiguration();
-            var cm = (PoolingHttpClientConnectionManager) clientConfigObj.getProperty(
-                ApacheClientProperties.CONNECTION_MANAGER
-            );
+            var cm = (PoolingHttpClientConnectionManager) clientConfigObj.getProperty(ApacheClientProperties.CONNECTION_MANAGER);
 
             assertNotNull(cm);
             Field operatorField = PoolingHttpClientConnectionManager.class.getDeclaredField("connectionOperator");
@@ -75,7 +74,7 @@ class AttlsConfigTest {
 
             Field registryField = connectionOperator.getClass().getDeclaredField("socketFactoryRegistry");
             registryField.setAccessible(true);
-            var registry = (org.apache.http.config.Registry<?>) registryField.get(connectionOperator);
+            var registry = (Registry<?>) registryField.get(connectionOperator);
 
             assertNotNull(registry.lookup("http"));
             assertNotNull(registry.lookup("https"));
