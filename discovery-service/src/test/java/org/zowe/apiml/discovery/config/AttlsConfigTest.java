@@ -54,7 +54,7 @@ class AttlsConfigTest {
         }
 
         @Test
-        void whenAttlsClientEnabled_thenHttpConnectionManagerIsConfigured() throws Exception {
+        void whenAttlsClientEnabled_thenHttpSocketFactoryIsRegistered() throws Exception {
             assertInstanceOf(RefreshablePeerEurekaNodes.class, peerEurekaNodes, "The injected bean must be instance of RefreshablePeerEurekaNodes");
 
             var refreshableNodes = (RefreshablePeerEurekaNodes) peerEurekaNodes;
