@@ -10,26 +10,14 @@
 
 package org.zowe.apiml.caching.config;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.SpringSecurityMessageSource;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,12 +25,11 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
+import org.zowe.apiml.security.common.auth.BasicAuthenticationManager;
 import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @Configuration
@@ -92,7 +79,7 @@ public class SpringSecurityConfig {
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager()));
         } else {
             http.httpBasic(httpBasicSpec -> httpBasicSpec.authenticationManager(
-                new BasicAuthenticationManager(cachingServiceUserId, cachingServicePassword)));
+                new BasicAuthenticationManager(cachingServiceUserId, cachingServicePassword, "CACHING_SERVICE")));
         }
 
         return http.build();
@@ -108,45 +95,4 @@ public class SpringSecurityConfig {
         };
     }
 
-    @RequiredArgsConstructor
-    @Slf4j
-    static class BasicAuthenticationManager implements ReactiveAuthenticationManager {
-
-        private final String cachingServiceUserId;
-        private final char[] cachingServicePassword;
-        private final MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
-
-        private boolean isCredentialsSet() {
-            if (!StringUtils.isEmpty(cachingServiceUserId) && !ArrayUtils.isEmpty(cachingServicePassword)) {
-                return true;
-            }
-
-            log.warn("Caching-service credentials are not set. Please configure properties `apiml.service.http.userid` and `apiml.service.http.password`.");
-            return false;
-        }
-
-        private char[] getPassword(Authentication authentication) {
-            if (authentication.getCredentials() instanceof char[] password) {
-                return password;
-            }
-            return String.valueOf(authentication.getCredentials()).toCharArray();
-        }
-
-        @Override
-        public Mono<Authentication> authenticate(Authentication authentication) {
-            String username = authentication.getName();
-            char[] password = getPassword(authentication);
-
-            if (isCredentialsSet() && Strings.CS.equals(cachingServiceUserId, username) &&
-                Arrays.equals(cachingServicePassword, password)) {
-                // Return an authenticated token with a default role
-                return Mono.just(new UsernamePasswordAuthenticationToken(username, password,
-                    Collections.singletonList(new SimpleGrantedAuthority("CACHING_SERVICE"))));
-            }
-
-            // Reject anything else
-            return Mono.error(new BadCredentialsException(this.messages
-                .getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials")));
-        }
-    }
 }

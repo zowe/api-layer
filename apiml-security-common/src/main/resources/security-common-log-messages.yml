@@ -161,6 +161,13 @@ messages:
       reason: "Re-entered password does not match for password update."
       action: "Enter the same value as the one entered for new password."
 
+    - key: org.zowe.apiml.security.common.auth.missingDefaultCredentials
+      number: ZWEAT611
+      type: WARNING
+      text: "APIML credentials are not set."
+      reason: "Basic authentication is required when SSL certificate verification is disabled."
+      action: "Ensure that the parameters `apiml.service.http.userId` and `apiml.service.http.password` are correctly configured."
+
     # Personal access token messages
     - key: org.zowe.apiml.security.query.invalidAccessTokenBody
       number: ZWEAT605

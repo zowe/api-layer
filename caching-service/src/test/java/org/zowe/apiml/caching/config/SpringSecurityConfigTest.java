@@ -32,6 +32,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.caching.CachingServiceApplication;
+import org.zowe.apiml.security.common.auth.BasicAuthenticationManager;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 import reactor.test.StepVerifier;
@@ -47,6 +48,7 @@ public class SpringSecurityConfigTest {
 
     private static final String USER = "user";
     private static final String PASSWORD = "password";
+    private static final String ROLE = "CACHING_SERVICE";
 
     private static final AbstractAuthenticationToken VALID_AUTHENTICATION = new UsernamePasswordAuthenticationToken(USER, PASSWORD.toCharArray(), Collections.singleton(new SimpleGrantedAuthority("CACHING_SERVICE")));
     private static final String VALID_BASIC_AUTH = "Basic " + Base64.getEncoder().encodeToString((USER + ":" + PASSWORD).getBytes());
@@ -384,7 +386,7 @@ public class SpringSecurityConfigTest {
     }
 
     @Nested
-    class BasicAuthenticationManager {
+    class BasicAuthentication {
 
         @Nested
         class MissingCredentials {
@@ -396,7 +398,7 @@ public class SpringSecurityConfigTest {
                 ",password,"
             })
             void givenNoCompleteCredentials_whenAuthorize_thenThrowException(String user, String password) {
-                var authenticationManager = new SpringSecurityConfig.BasicAuthenticationManager(user, password == null ? null : password.toCharArray());
+                var authenticationManager = new BasicAuthenticationManager(user, password == null ? null : password.toCharArray(), ROLE);
                 StepVerifier.create(authenticationManager.authenticate(VALID_AUTHENTICATION))
                     .expectError(BadCredentialsException.class)
                     .verify();
@@ -407,7 +409,7 @@ public class SpringSecurityConfigTest {
         @Nested
         class ValidCredentials {
 
-            private ReactiveAuthenticationManager basicAuthenticationManager = new SpringSecurityConfig.BasicAuthenticationManager(USER, PASSWORD.toCharArray());
+            private ReactiveAuthenticationManager basicAuthenticationManager = new BasicAuthenticationManager(USER, PASSWORD.toCharArray(), ROLE);
 
             @Test
             void givenValidCredentials_whenAuthenticate_thenSuccess() {
@@ -430,7 +432,7 @@ public class SpringSecurityConfigTest {
                         return USER;
                     }
                 };
-                Authentication validAuthentication = new UsernamePasswordAuthenticationToken(user, PASSWORD, Collections.singleton(new SimpleGrantedAuthority("CACHING_SERVICE")));
+                Authentication validAuthentication = new UsernamePasswordAuthenticationToken(user, PASSWORD, Collections.singleton(new SimpleGrantedAuthority(ROLE)));
                 StepVerifier.create(basicAuthenticationManager.authenticate(validAuthentication))
                     .assertNext(authentication -> {
                         assertNotSame(validAuthentication, authentication);
@@ -450,7 +452,7 @@ public class SpringSecurityConfigTest {
                 "attacker,attempt"
             })
             void givenInvalidCredentials_whenAuthenticate_thenThrowException(String user, String password) {
-                var authentication = new UsernamePasswordAuthenticationToken(user, password == null ? null : password.toCharArray(), Collections.singleton(new SimpleGrantedAuthority("CACHING_SERVICE")));
+                var authentication = new UsernamePasswordAuthenticationToken(user, password == null ? null : password.toCharArray(), Collections.singleton(new SimpleGrantedAuthority(ROLE)));
                 StepVerifier.create(basicAuthenticationManager.authenticate(authentication))
                     .expectError(BadCredentialsException.class)
                     .verify();

@@ -40,7 +40,7 @@ public class CachingServiceClientRest implements CachingServiceClient {
     private String CACHING_API_PATH;
 
     @Value("${apiml.service.http.userId:#{null}}")
-    private String cachingServiceUserId ;
+    private String cachingServiceUserId;
 
     @Value("${apiml.service.http.password:#{null}}")
     private String cachingServicePassword;
