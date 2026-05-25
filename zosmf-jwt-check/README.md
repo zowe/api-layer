@@ -307,7 +307,7 @@ java -jar zosmf-jwt-check-<version>.jar --zosmf-host nonexistent.host --zosmf-po
 On z/OS, if you are using SAF keyrings instead of file-based keystores/truststores, provide the keyring path in the `safkeyring://` format and add the IBM crypto modules to the JVM module graph:
 
 ```bash
-java --add-modules ibm.crypto.zsecurity \
+java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
   -jar zosmf-jwt-check-<version>.jar \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 11443 \
@@ -316,7 +316,7 @@ java --add-modules ibm.crypto.zsecurity \
   --truststore-type JCERACFKS
 ```
 
-> **Note:** On IBM Java 17/21, the safkeyring URL protocol handler is provided via the
-> `java.net.spi.URLStreamHandlerProvider` SPI in module `ibm.crypto.zsecurity`.
-> The legacy `-Djava.protocol.handler.pkgs=com.ibm.crypto.provider` property
-> has no effect on Java 17+ and should not be used.
+> **Note:** On IBM Java 17/21, the `--add-modules` flag resolves the IBM crypto modules,
+> making the safkeyring URL protocol handler classes accessible. The tool also sets
+> `java.protocol.handler.pkgs` internally to register the handler packages with
+> the `URL` class. Both mechanisms work together to enable `safkeyring://` URLs.

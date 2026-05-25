@@ -29,20 +29,7 @@ public class ZosmfJwtCheck {
     static final String VERIFY_DISABLED = "DISABLED";
 
     public static int mainWithExitCode(String[] args) {
-        System.out.println("DIAG: Java=" + System.getProperty("java.version") + " Vendor=" + System.getProperty("java.vendor"));
-        System.out.println("DIAG: java.protocol.handler.pkgs (before)=" + System.getProperty("java.protocol.handler.pkgs", "<not set>"));
-
         ensureSafkeyringHandler();
-
-        System.out.println("DIAG: java.protocol.handler.pkgs (after)=" + System.getProperty("java.protocol.handler.pkgs", "<not set>"));
-
-        // Check if ibm.crypto.zsecurity module is resolved (confirms --add-modules worked)
-        try {
-            Class<?> testClass = Class.forName("com.ibm.crypto.zsecurity.provider.safkeyring.Provider");
-            System.out.println("DIAG: Module ibm.crypto.zsecurity IS resolved (class found: " + testClass.getName() + ")");
-        } catch (ClassNotFoundException e) {
-            System.out.println("DIAG: Module ibm.crypto.zsecurity NOT resolved (ClassNotFoundException). --add-modules may be missing.");
-        }
 
         try {
             ZosmfJwtCheckConf conf = new ZosmfJwtCheckConf();
