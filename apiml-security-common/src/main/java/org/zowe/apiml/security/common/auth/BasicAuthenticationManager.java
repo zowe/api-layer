@@ -23,7 +23,6 @@ import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageService;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
@@ -37,44 +36,38 @@ public class BasicAuthenticationManager implements ReactiveAuthenticationManager
     private final String role;
     private final MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.of(BasicAuthenticationManager.class,
-        new YamlMessageService("/security-common-log-messages.yml"));
-
     public BasicAuthenticationManager(String userId, char[] password, String role) {
         this.userId = userId;
         this.password = password;
         this.role = role;
 
         if (!isCredentialsSet()) {
+            ApimlLogger apimlLog = ApimlLogger.of(BasicAuthenticationManager.class,
+                new YamlMessageService("/security-common-log-messages.yml"));
             apimlLog.log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
         }
     }
 
     private boolean isCredentialsSet() {
-        if (!StringUtils.isEmpty(userId) && !ArrayUtils.isEmpty(password)) {
-            return true;
-        }
-
-        return false;
+        return !StringUtils.isEmpty(this.userId) && !ArrayUtils.isEmpty(this.password);
     }
 
     private char[] getPassword(Authentication authentication) {
-        if (authentication.getCredentials() instanceof char[] password) {
-            return password;
+        if (authentication.getCredentials() instanceof char[] authPassword) {
+            return authPassword;
         }
         return String.valueOf(authentication.getCredentials()).toCharArray();
     }
 
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {
-        String username = authentication.getName();
-        char[] password = getPassword(authentication);
+        String authUsername = authentication.getName();
+        char[] authPassword = getPassword(authentication);
 
-        if (isCredentialsSet() && Strings.CS.equals(userId, username) &&
-            Arrays.equals(this.password, password)) {
+        if (isCredentialsSet() && Strings.CS.equals(this.userId, authUsername) &&
+            Arrays.equals(this.password, authPassword)) {
             // Return an authenticated token with a default role
-            return Mono.just(new UsernamePasswordAuthenticationToken(username, password,
+            return Mono.just(new UsernamePasswordAuthenticationToken(authUsername, authPassword,
                 Collections.singletonList(new SimpleGrantedAuthority(role))));
         }
 
