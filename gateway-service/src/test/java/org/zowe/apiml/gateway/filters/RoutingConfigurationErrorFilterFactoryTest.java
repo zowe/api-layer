@@ -10,9 +10,12 @@
 
 package org.zowe.apiml.gateway.filters;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
@@ -25,35 +28,41 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ExtendWith(MockitoExtension.class)
 class RoutingConfigurationErrorFilterFactoryTest {
 
     private static final String MESSAGE = "test message";
 
-    private RoutingConfigurationErrorFilterFactory underTest;
     private GatewayFilter filter;
 
     private MockServerHttpRequest request = MockServerHttpRequest.get("https://localhost/some/url").build();
-    private MockServerWebExchange exchange = MockServerWebExchange.from(request);
+    private MockServerWebExchange exchange;
+    private OtelRequestContext otelContext;
 
-    @BeforeAll
+    @Spy
+    private RoutingConfigurationErrorFilterFactory underTest = new RoutingConfigurationErrorFilterFactory(null, null);
+
+    @BeforeEach
     void init() {
+        exchange = MockServerWebExchange.from(request);
+        otelContext = spy(OtelRequestContext.of(exchange));
         var config = new RoutingConfigurationErrorFilterFactory.Config();
         config.setMessage(MESSAGE);
         config.setAuthenticationScheme("safIdt");
         config.setServiceId("serviceId");
 
-        underTest = spy(new RoutingConfigurationErrorFilterFactory(null, null));
         filter = underTest.apply(config);
     }
 
     @Test
-    void givenConfig_whenApply_thenSetAuthInformation() {
-        var otelContext = spy(OtelRequestContext.of(exchange));
+    void givenConfig_whenApply_thenSetAuthInformationWithoutErrorType() {
         exchange.getAttributes().put(OtelRequestContext.OTEL_CONTEXT, otelContext);
 
         StepVerifier.create(filter.filter(exchange, e -> Mono.empty())).verifyComplete();
 
         verify(otelContext).authenticationFailed();
+        verify(otelContext).authErrorMessage(MESSAGE);
+
         verify(otelContext).authMethod(AuthenticationScheme.SAF_IDT);
         verify(underTest).cleanHeadersOnAuthFail(exchange, MESSAGE);
     }

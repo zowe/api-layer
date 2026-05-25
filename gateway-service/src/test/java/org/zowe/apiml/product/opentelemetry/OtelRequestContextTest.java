@@ -113,7 +113,19 @@ class OtelRequestContextTest {
     @Test
     void givenOtelContext_whenAuthenticationFailed_thenStoreFailedStringAsStatus() {
         OtelRequestContext.of(exchange).authenticationFailed();
-        assertEquals("FAILED", getValue("auth.status"));
+        assertEquals("ERROR", getValue("auth.status"));
+    }
+
+    @Test
+    void givenOtelContext_whenAuthErrorMessage_thenStoreMessageAsAuthErrorMessage() {
+        OtelRequestContext.of(exchange).authErrorMessage("Invalid credentials");
+        assertEquals("Invalid credentials", getValue("auth.error.message"));
+    }
+
+    @Test
+    void givenOtelContext_whenAuthErrorType_thenStoreErrorTypeAsAuthErrorType() {
+        OtelRequestContext.of(exchange).authErrorType("Forbidden");
+        assertEquals("Forbidden", getValue("auth.error.type"));
     }
 
     @Test
@@ -154,7 +166,8 @@ class OtelRequestContextTest {
         exchange = MockServerWebExchange.from(request);
         var objectMapper = mock(ObjectMapper.class);
         var otelRequestContext = spy(OtelRequestContext.of(exchange));
-        var jsonProcessingException = new JsonProcessingException("test") {};
+        var jsonProcessingException = new JsonProcessingException("test") {
+        };
 
         doReturn(objectMapper).when(otelRequestContext).getObjectMapper();
         doThrow(jsonProcessingException).when(objectMapper).writeValueAsString(any());
