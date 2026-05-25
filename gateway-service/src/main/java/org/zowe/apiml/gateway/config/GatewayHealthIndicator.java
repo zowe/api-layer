@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.config;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
@@ -27,6 +28,8 @@ import org.zowe.apiml.product.compatibility.ApimlHealthCheckHandler;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.springframework.boot.actuate.health.Status.DOWN;
@@ -42,6 +45,8 @@ import static org.springframework.boot.actuate.health.Status.UP;
 @Slf4j
 public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
+    private static final String ZWE_DISCOVERY_SERVICES_LIST = "ZWE_DISCOVERY_SERVICES_LIST";
+
     protected final DiscoveryClient discoveryClient;
     private final String apiCatalogServiceId;
     @InjectApimlLogger
@@ -50,10 +55,13 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private AtomicBoolean startedInformationPublished = new AtomicBoolean(false);
     private AtomicBoolean applicationReady = new AtomicBoolean(false);
 
+    private final int expectedInstanceCount;
+
     public GatewayHealthIndicator(DiscoveryClient discoveryClient,
                                   @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId) {
         this.discoveryClient = discoveryClient;
         this.apiCatalogServiceId = apiCatalogServiceId;
+        this.expectedInstanceCount = Optional.ofNullable(System.getenv(ZWE_DISCOVERY_SERVICES_LIST)).map(list -> Arrays.stream(list.split(",")).count()).orElse(1L).intValue();
     }
 
     @Override
@@ -80,6 +88,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
             builder.withDetail(CoreService.API_CATALOG.getServiceId(), toStatus(apiCatalogUp).getCode());
         }
 
+        // check number of instances (non-modulith)
         if (discoveryUp && apiCatalogUp && zaasUp && applicationReady.get()) {
             var instancesCount = NumberUtils.max(gatewayCount, zaasCount, discoveryCount);
             if (instancesCount > 1 && (gatewayCount != discoveryCount || gatewayCount != zaasCount)) {

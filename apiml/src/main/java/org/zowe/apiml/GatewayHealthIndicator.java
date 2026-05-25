@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health.Builder;
@@ -46,7 +47,7 @@ import static org.springframework.boot.actuate.health.Status.UP;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class GatewayHealthIndicator extends AbstractHealthIndicator {
+public class GatewayHealthIndicator extends AbstractHealthIndicator implements InitializingBean {
 
     private final ApplicationContext applicationContext;
     private final ServiceStartupEventHandler serviceStartupEventHandler;
@@ -62,6 +63,11 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private AtomicBoolean catalogAvailable = new AtomicBoolean(false);
 
     private AtomicBoolean startedInformationPublished = new AtomicBoolean(false);
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        // load ZWE_ discovery services list environment variable as a proxy to know how many instances were defined?
+    }
 
     @Override
     protected void doHealthCheck(Builder builder) throws Exception {
@@ -90,7 +96,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
             builder.withDetail(CoreService.API_CATALOG.getServiceId(), toStatus(catalogAvailable.get()).getCode());
         }
 
-        if (isFullyUp()) {
+        if (isFullyUp()) { // check number of instances (non-modulith)
             onFullyUp();
         }
     }
