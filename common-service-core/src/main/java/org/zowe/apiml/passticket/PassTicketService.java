@@ -51,8 +51,11 @@ public class PassTicketService {
     // IRRPassTicket is not thread-safe, must be synchronized
     public synchronized String generate(String userId, String applId) throws PassTicketException {
         try {
+            log.debug("Generating PassTicket for user: {} and ZOSMF applid: {}", userId, applId);
             validateUserIdAndApplId(userId, applId);
-            return irrPassTicket.generate(userId.toUpperCase(), applId.toUpperCase());
+            var passTicket = irrPassTicket.generate(userId.toUpperCase(), applId.toUpperCase());
+            log.debug("Generated PassTicket: {}", passTicket);
+            return passTicket;
         } catch (RuntimeException e) {
             log.debug("Error during pass ticket generation, userId={}, applid={}, exception={}", userId, applId, e);
             throw e;
