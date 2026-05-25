@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import reactor.core.publisher.Mono;
 
@@ -48,7 +49,11 @@ public class FailedAuthenticationWebHandler implements ServerAuthenticationFailu
     public Mono<Void> onAuthenticationFailure(WebFilterExchange webFilterExchange, AuthenticationException exception) {
         var exchange = webFilterExchange.getExchange();
         var requestUri = exchange.getRequest().getURI().getPath();
+        var otelContext = OtelRequestContext.of(exchange);
         log.debug("Unauthorized access to '{}' endpoint", requestUri);
+        otelContext.authenticationFailed();
+        otelContext.authErrorMessage(exception.getMessage());
+        otelContext.authErrorType(exception.getClass().getName());
         var bufferFactory = new DefaultDataBufferFactory();
         AtomicReference<DefaultDataBuffer> buffer = new AtomicReference<>();
         BiConsumer<ApiMessageView, HttpStatus> consumer = (message, status) -> {
@@ -64,7 +69,7 @@ public class FailedAuthenticationWebHandler implements ServerAuthenticationFailu
                 buffer.set(bufferFactory.wrap(new byte[0]));
             }
         };
-        var addHeader = (BiConsumer<String, String>)(name, value) -> exchange.getResponse().getHeaders().add(name, value);
+        var addHeader = (BiConsumer<String, String>) (name, value) -> exchange.getResponse().getHeaders().add(name, value);
         try {
             handler.handleException(requestUri, consumer, addHeader, exception);
         } catch (ServletException e) {

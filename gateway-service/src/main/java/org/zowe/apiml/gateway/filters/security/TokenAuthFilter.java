@@ -20,6 +20,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.gateway.service.TokenProvider;
+import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import reactor.core.publisher.Mono;
@@ -54,24 +55,26 @@ public class TokenAuthFilter extends AbstractTokenAuthFilter {
 
                 var token = resolveToken(exchange.getRequest()).filter(StringUtils::isNotBlank);
                 return token
-                    .map(jwt -> tokenProvider
-                        .validateToken(jwt)
-                        .flatMap(resp -> {
-                            if (StringUtils.isNotBlank(resp.getUserId())) {
-                                Authentication authentication = createAuthenticated(resp.getUserId(), jwt, TokenAuthentication.Type.JWT);
-                                return chain.filter(exchange)
-                                    .contextWrite(context -> ReactiveSecurityContextHolder.withAuthentication(authentication));
-                            }
-                            return authExceptionHandlerReactive.handleTokenNotValid(exchange);
-
-                        }).onErrorResume(ex -> {
-                            if (isServiceUnavailable(ex)) {
-                                return authExceptionHandlerReactive.handleServiceUnavailable(exchange);
-                            } else {
+                    .map(jwt -> {
+                        var otelContext = OtelRequestContext.of(exchange);
+                        otelContext.authSourceType("JWT");
+                        return tokenProvider
+                            .validateToken(jwt)
+                            .flatMap(resp -> {
+                                if (StringUtils.isNotBlank(resp.getUserId())) {
+                                    Authentication authentication = createAuthenticated(resp.getUserId(), jwt, TokenAuthentication.Type.JWT);
+                                    return chain.filter(exchange)
+                                        .contextWrite(context -> ReactiveSecurityContextHolder.withAuthentication(authentication));
+                                }
                                 return authExceptionHandlerReactive.handleTokenNotValid(exchange);
-                            }
-                        })
-                    ).orElseGet(() -> chain.filter(exchange));
+                            }).onErrorResume(ex -> {
+                                if (isServiceUnavailable(ex)) {
+                                    return authExceptionHandlerReactive.handleServiceUnavailable(exchange);
+                                } else {
+                                    return authExceptionHandlerReactive.handleTokenNotValid(exchange);
+                                }
+                            });
+                    }).orElseGet(() -> chain.filter(exchange));
             });
 
     }

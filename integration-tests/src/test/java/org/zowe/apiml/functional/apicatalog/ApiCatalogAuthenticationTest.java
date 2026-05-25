@@ -16,7 +16,11 @@ import io.restassured.config.SSLConfig;
 import io.restassured.response.Validatable;
 import io.restassured.specification.RequestSpecification;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -141,6 +145,7 @@ class ApiCatalogAuthenticationTest {
                     )
                     .then()
                     .log().all()
+                    .onFailMessage("On Gateway URL: " + endpoint)
                     .statusCode(is(SC_OK));
             }
 
@@ -155,7 +160,8 @@ class ApiCatalogAuthenticationTest {
                         endpoint
                     )
                     .then()
-                    .statusCode(is(SC_OK));
+                    .statusCode(is(SC_OK))
+                    .onFailMessage("On Gateway URL: " + endpoint);
             }
 
             @ParameterizedTest(name = "givenValidBasicAuthenticationAndCertificate {index} {0} ")
@@ -170,7 +176,8 @@ class ApiCatalogAuthenticationTest {
                     )
                     .then()
                     .log().all()
-                    .statusCode(is(SC_OK));
+                    .statusCode(is(SC_OK))
+                    .onFailMessage("On Gateway URL: " + endpoint);
             }
         }
 
@@ -193,7 +200,8 @@ class ApiCatalogAuthenticationTest {
                     .header(HttpHeaders.WWW_AUTHENTICATE, BASIC_AUTHENTICATION_PREFIX)
                     .body(
                         "messages.find { it.messageNumber == '" + UNAUTHENTICATED_ERROR_NUMBER + "' }.messageContent", equalTo(expectedMessage)
-                    );
+                    )
+                    .onFailMessage("On Gateway URL: " + endpoint);
             }
 
             @ParameterizedTest(name = "givenInvalidBasicAuthentication {index} {0}")
@@ -215,6 +223,7 @@ class ApiCatalogAuthenticationTest {
                     )
                     .then()
                         .statusCode(is(SC_UNAUTHORIZED))
+                        .onFailMessage("On Gateway URL: " + endpoint)
                         .body(
                             "messages.find { it.messageNumber == '" + expectedMessageNumber + "' }.messageContent", equalTo(expectedMessage)
                         );
@@ -233,6 +242,7 @@ class ApiCatalogAuthenticationTest {
                     )
                     .then()
                     .log().ifValidationFails()
+                    .onFailMessage("On Gateway URL: " + endpoint)
                     .body(
                         "messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage)
                     ).statusCode(is(SC_UNAUTHORIZED));
@@ -254,7 +264,8 @@ class ApiCatalogAuthenticationTest {
                     .statusCode(is(SC_UNAUTHORIZED))
                     .body(
                         "messages.find { it.messageNumber == 'ZWEAO402E' }.messageContent", equalTo(expectedMessage)
-                    );
+                    )
+                    .onFailMessage("On Gateway URL: " + endpoint);
             }
         }
     }
@@ -278,7 +289,8 @@ class ApiCatalogAuthenticationTest {
                         )
                         .then()
                         .log().all()
-                        .statusCode(HttpStatus.OK.value());
+                        .statusCode(HttpStatus.OK.value())
+                        .onFailMessage("On Gateway URL: " + endpoint);
                 }
 
                 @ParameterizedTest(name = "givenValidCertificateAndBasicAuth {index} {0} ")
@@ -292,7 +304,8 @@ class ApiCatalogAuthenticationTest {
                             endpoint
                         )
                         .then()
-                        .statusCode(is(SC_OK));
+                        .statusCode(is(SC_OK))
+                        .onFailMessage("On Gateway URL: " + endpoint);
                 }
             }
 
@@ -308,7 +321,8 @@ class ApiCatalogAuthenticationTest {
                             endpoint
                         )
                         .then()
-                        .statusCode(HttpStatus.UNAUTHORIZED.value());
+                        .statusCode(HttpStatus.UNAUTHORIZED.value())
+                        .onFailMessage("On Gateway URL: " + endpoint);
                 }
 
                 @ParameterizedTest(name = "givenNoCertificateAndNoBasicAuth_thenReturnUnauthorized {index} {0} ")
@@ -320,7 +334,8 @@ class ApiCatalogAuthenticationTest {
                             endpoint
                         )
                         .then()
-                        .statusCode(HttpStatus.UNAUTHORIZED.value());
+                        .statusCode(HttpStatus.UNAUTHORIZED.value())
+                        .onFailMessage("On Gateway URL: " + endpoint);
                 }
             }
         }

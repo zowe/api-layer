@@ -15,7 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -34,7 +34,11 @@ import reactor.core.publisher.Mono;
 
 import java.net.HttpCookie;
 import java.security.cert.CertificateEncodingException;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -96,7 +100,6 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
  *   public static class Config extends AbstractAuthSchemeFactory.AbstractConfig {
  *   }
  * }
- *
  * @Data class MyResponse {
  * private String token;
  * }
@@ -111,28 +114,30 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     };
 
     private static final Predicate<String> CERTIFICATE_HEADERS_TEST = headerName ->
-        StringUtils.equalsIgnoreCase(headerName, CERTIFICATE_HEADERS[0]) ||
-        StringUtils.equalsIgnoreCase(headerName, CERTIFICATE_HEADERS[1]) ||
-        StringUtils.equalsIgnoreCase(headerName, CERTIFICATE_HEADERS[2]);
+        Strings.CI.equals(headerName, CERTIFICATE_HEADERS[0]) ||
+            Strings.CI.equals(headerName, CERTIFICATE_HEADERS[1]) ||
+            Strings.CI.equals(headerName, CERTIFICATE_HEADERS[2]);
 
     private static final Predicate<HttpCookie> CREDENTIALS_COOKIE_INPUT = cookie ->
-        StringUtils.equalsIgnoreCase(cookie.getName(), PAT_COOKIE_AUTH_NAME) ||
-        StringUtils.equalsIgnoreCase(cookie.getName(), COOKIE_AUTH_NAME) ||
-        StringUtils.startsWithIgnoreCase(cookie.getName(), COOKIE_AUTH_NAME + ".");
+        Strings.CI.equals(cookie.getName(), PAT_COOKIE_AUTH_NAME) ||
+            Strings.CI.equals(cookie.getName(), COOKIE_AUTH_NAME) ||
+            Strings.CI.startsWith(cookie.getName(), COOKIE_AUTH_NAME + ".");
+
     private static final Predicate<HttpCookie> CREDENTIALS_COOKIE = cookie ->
         CREDENTIALS_COOKIE_INPUT.test(cookie) ||
-        StringUtils.equalsIgnoreCase(cookie.getName(), "jwtToken") ||
-        StringUtils.equalsIgnoreCase(cookie.getName(), "LtpaToken2");
+            Strings.CI.equals(cookie.getName(), "jwtToken") ||
+            Strings.CI.equals(cookie.getName(), "LtpaToken2");
 
     private static final Predicate<String> CREDENTIALS_HEADER_INPUT = headerName ->
-        StringUtils.equalsIgnoreCase(headerName, HttpHeaders.AUTHORIZATION) ||
-        StringUtils.equalsIgnoreCase(headerName, PAT_HEADER_NAME);
+        Strings.CI.equals(headerName, HttpHeaders.AUTHORIZATION) ||
+            Strings.CI.equals(headerName, PAT_HEADER_NAME);
+
     private static final Predicate<String> CREDENTIALS_HEADER = headerName ->
         CREDENTIALS_HEADER_INPUT.test(headerName) ||
-        CERTIFICATE_HEADERS_TEST.test(headerName) ||
-        StringUtils.equalsIgnoreCase(headerName, "X-SAF-Token") ||
-        StringUtils.equalsIgnoreCase(headerName, CLIENT_CERT_HEADER) ||
-        StringUtils.equalsIgnoreCase(headerName, HttpHeaders.COOKIE);
+            CERTIFICATE_HEADERS_TEST.test(headerName) ||
+            Strings.CI.equals(headerName, "X-SAF-Token") ||
+            Strings.CI.equals(headerName, CLIENT_CERT_HEADER) ||
+            Strings.CI.equals(headerName, HttpHeaders.COOKIE);
 
     protected final InstanceInfoService instanceInfoService;
     protected final MessageService messageService;
@@ -150,7 +155,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
 
     protected abstract AuthenticationScheme getAuthenticationScheme();
 
-    protected abstract Function<RequestCredentials, Mono<AbstractAuthSchemeFactory.AuthorizationResponse<R>>> getAuthorizationResponseTransformer();
+    protected abstract Function<RequestCredentials, Mono<AbstractAuthSchemeFactory.AuthorizationResponse<R>>> getAuthorizationResponseTransformer(ServerWebExchange exchange);
 
     /**
      * The method responsible for reading a response from a ZAAS component and decorating of user request (i.e. set
@@ -196,7 +201,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     }
 
     /**
-     * This method remove a necessary subset of credentials in case of authentication fail. If ZAAS cannot generate a
+     * This method removes a necessary subset of credentials in case of authentication fail. If ZAAS cannot generate a
      * new credentials (i.e. because of basic authentication, expired token, etc.) the Gateway should provide the original
      * credentials passed by a user. But there are headers that could be removed to avoid misusing (see forwarding
      * certificate - user cannot provide a public certificate to take foreign privileges).
@@ -209,6 +214,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     protected ServerHttpRequest cleanHeadersOnAuthFail(ServerWebExchange exchange, String errorMessage) {
         var otelContext = OtelRequestContext.of(exchange);
         otelContext.authenticationFailed();
+        otelContext.authErrorMessage(errorMessage);
         Optional.ofNullable(getAuthenticationScheme()).ifPresent(otelContext::authMethod);
 
         return exchange.getRequest().mutate().headers(headers -> {
@@ -253,7 +259,7 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     }
 
     protected GatewayFilter createGatewayFilter(T config) {
-        return (exchange, chain) -> getAuthorizationResponseTransformer()
+        return (exchange, chain) -> getAuthorizationResponseTransformer(exchange)
             .apply(createRequestCredentials(exchange, config).build())
             .flatMap(response -> processResponse(exchange, chain, response));
     }

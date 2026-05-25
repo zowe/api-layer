@@ -15,7 +15,7 @@
         "@mui/material": "9.0.0",
         "@types/enzyme": "3.10.19",
         "@types/jest": "29.5.14",
-        "@types/react": "18.3.28",
+        "@types/react": "18.3.29",
         "agentkeepalive": "4.6.0",
         "buffer": "6.0.3",
         "emotion-theming": "11.0.0",
@@ -32,8 +32,8 @@
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "react-error-boundary": "5.0.0",
-        "react-hook-form": "7.75.0",
-        "react-redux": "9.2.0",
+        "react-hook-form": "7.76.1",
+        "react-redux": "9.3.0",
         "react-router": "7.15.1",
         "react-toastify": "10.0.6",
         "redux": "5.0.1",
@@ -44,7 +44,7 @@
         "redux-persist-transform-filter": "0.0.22",
         "redux-thunk": "3.1.0",
         "rxjs": "7.8.2",
-        "sass": "1.99.0",
+        "sass": "1.100.0",
         "stream": "0.0.3",
         "swagger-ui-react": "5.32.6",
         "url": "0.11.4",
@@ -83,7 +83,7 @@
         "@cfaester/enzyme-adapter-react-18": "0.8.0",
         "@eslint/compat": "1.4.1",
         "@eslint/js": "9.39.4",
-        "@reduxjs/toolkit": "2.11.2",
+        "@reduxjs/toolkit": "2.12.0",
         "@testing-library/dom": "10.4.1",
         "@testing-library/jest-dom": "6.9.1",
         "@testing-library/react": "16.3.2",
@@ -93,7 +93,7 @@
         "ansi-regex": "6.2.2",
         "babel-plugin-transform-vite-meta-env": "1.0.3",
         "body-parser": "2.2.2",
-        "caniuse-lite": "1.0.30001792",
+        "caniuse-lite": "1.0.30001793",
         "concurrently": "9.2.1",
         "cors": "2.8.6",
         "cypress": "15.15.0",
@@ -132,8 +132,8 @@
         "start-server-and-test": "2.1.5",
         "tmpl": "1.0.5",
         "undici": "6.19.8",
-        "vite": "8.0.13",
-        "vite-plugin-node-polyfills": "0.26.0",
+        "vite": "8.0.14",
+        "vite-plugin-node-polyfills": "0.28.0",
         "yaml": "2.9.0"
     },
     "overrides": {
@@ -152,7 +152,7 @@
         "@braintree/sanitize-url": "7.1.2",
         "resolve-url-loader": "5.0.0",
         "lodash": "4.18.1",
-        "semver": "7.8.0",
+        "semver": "7.8.1",
         "@babel/traverse": "7.29.0",
         "axios": "1.16.1",
         "form-data": "3.0.4",
@@ -164,14 +164,14 @@
             "prismjs": "1.30.0"
         },
         "js-yaml": "4.1.1",
-        "qs": "6.15.1",
+        "qs": "6.15.2",
         "path-to-regexp": "8.4.2",
         "minimatch": "3.1.5",
         "brace-expansion": "1.1.14"
     },
     "engines": {
         "npm": "=10.9.8",
-        "node": "=24.15.0"
+        "node": "=24.16.0"
     },
     "notes": {
         "jest": "Cannot be updated to v30 because tests fail with messages relating to the import of enzyme"
