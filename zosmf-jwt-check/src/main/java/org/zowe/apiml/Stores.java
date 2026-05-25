@@ -188,9 +188,108 @@ public class Stores {
                 + " host=" + url.getHost() + " path=" + url.getPath());
             return url;
         } catch (MalformedURLException e) {
+            System.out.println("DEBUG [Stores] keyRingUrl: Standard URL creation failed, trying explicit handler lookup...");
+            URL fallbackUrl = createUrlWithExplicitHandler(formatted);
+            if (fallbackUrl != null) {
+                System.out.println("DEBUG [Stores] keyRingUrl: URL created via explicit handler. protocol=" + fallbackUrl.getProtocol());
+                return fallbackUrl;
+            }
             System.err.println("DEBUG [Stores] keyRingUrl: MalformedURLException for '" + formatted + "': " + e.getMessage());
             System.err.println("DEBUG [Stores] keyRingUrl: java.protocol.handler.pkgs=" + System.getProperty("java.protocol.handler.pkgs", "<not set>"));
             throw e;
         }
+    }
+
+    /**
+     * Fallback for IBM Java 17/21+ on z/OS where the safkeyring handler is registered
+     * via the {@code java.net.spi.URLStreamHandlerProvider} SPI mechanism in modules
+     * {@code ibm.crypto.zsecurity} and {@code ibm.crypto.hdwrcca}.
+     *
+     * <p>If the modules are resolved (via {@code --add-modules}), the standard
+     * {@code new URL()} works. This fallback handles the case where the module IS
+     * resolved but the ServiceLoader lookup failed, or where we can reflectively
+     * instantiate the provider and obtain a handler.</p>
+     */
+    private static URL createUrlWithExplicitHandler(String formatted) {
+        // Extract protocol from the formatted URI (e.g., "safkeyring", "safkeyringjce", etc.)
+        String protocol = formatted.substring(0, formatted.indexOf(':'));
+        System.out.println("DEBUG [Stores] createUrlWithExplicitHandler: protocol='" + protocol + "' formatted='" + formatted + "'");
+
+        // Try 1: Use the URLStreamHandlerProvider SPI classes directly (Java 17/21 on z/OS)
+        // These are the actual provider classes found in ibm.crypto.zsecurity and ibm.crypto.hdwrcca
+        String[] spiProviderClasses = {
+            "com.ibm.crypto.zsecurity.provider.safkeyring.Provider",
+            "com.ibm.crypto.hdwrCCA.provider.safkeyring.Provider"
+        };
+
+        ClassLoader[] loaders = {
+            ClassLoader.getSystemClassLoader(),
+            ClassLoader.getPlatformClassLoader(),
+            Thread.currentThread().getContextClassLoader(),
+            Stores.class.getClassLoader()
+        };
+        String[] loaderNames = {"SystemClassLoader", "PlatformClassLoader", "ContextClassLoader", "StoresClassLoader"};
+
+        System.out.println("DEBUG [Stores] createUrlWithExplicitHandler: Trying SPI providers...");
+        for (String providerClassName : spiProviderClasses) {
+            for (int i = 0; i < loaders.length; i++) {
+                ClassLoader loader = loaders[i];
+                if (loader == null) {
+                    System.out.println("DEBUG [Stores]   Skipping null loader: " + loaderNames[i]);
+                    continue;
+                }
+                try {
+                    System.out.println("DEBUG [Stores]   Trying SPI class=" + providerClassName + " loader=" + loaderNames[i] + " (" + loader.getClass().getName() + ")");
+                    Class<?> cls = Class.forName(providerClassName, true, loader);
+                    System.out.println("DEBUG [Stores]   Class loaded successfully: " + cls.getName());
+                    java.net.spi.URLStreamHandlerProvider provider =
+                        (java.net.spi.URLStreamHandlerProvider) cls.getDeclaredConstructor().newInstance();
+                    System.out.println("DEBUG [Stores]   Provider instantiated: " + provider.getClass().getName());
+                    java.net.URLStreamHandler handler = provider.createURLStreamHandler(protocol);
+                    if (handler != null) {
+                        System.out.println("DEBUG [Stores]   SUCCESS: Handler obtained for protocol '" + protocol + "' from " + providerClassName + " via " + loaderNames[i]);
+                        return new URL(null, formatted, handler);
+                    } else {
+                        System.out.println("DEBUG [Stores]   Provider returned null handler for protocol '" + protocol + "' (not supported by this provider)");
+                    }
+                } catch (ClassNotFoundException e) {
+                    System.out.println("DEBUG [Stores]   ClassNotFoundException: " + providerClassName + " not found via " + loaderNames[i]);
+                } catch (Exception e) {
+                    System.out.println("DEBUG [Stores]   Exception: " + e.getClass().getName() + ": " + e.getMessage());
+                }
+            }
+        }
+
+        // Try 2: Legacy approach - look for Handler class directly (Java 8 style)
+        System.out.println("DEBUG [Stores] createUrlWithExplicitHandler: SPI providers not found. Trying legacy Handler classes...");
+        String[] handlerPackages = {
+            "com.ibm.crypto.provider",
+            "com.ibm.crypto.zsecurity.provider",
+            "com.ibm.crypto.hdwrCCA.provider"
+        };
+
+        for (String pkg : handlerPackages) {
+            String className = pkg + "." + protocol + ".Handler";
+            for (int i = 0; i < loaders.length; i++) {
+                ClassLoader loader = loaders[i];
+                if (loader == null) continue;
+                try {
+                    System.out.println("DEBUG [Stores]   Trying Handler class=" + className + " loader=" + loaderNames[i]);
+                    Class<?> cls = Class.forName(className, true, loader);
+                    java.net.URLStreamHandler handler = (java.net.URLStreamHandler) cls.getDeclaredConstructor().newInstance();
+                    System.out.println("DEBUG [Stores]   SUCCESS: Handler instantiated: " + className + " via " + loaderNames[i]);
+                    return new URL(null, formatted, handler);
+                } catch (ClassNotFoundException e) {
+                    System.out.println("DEBUG [Stores]   ClassNotFoundException: " + className + " not found via " + loaderNames[i]);
+                } catch (Exception e) {
+                    System.out.println("DEBUG [Stores]   Exception: " + e.getClass().getName() + ": " + e.getMessage());
+                }
+            }
+        }
+
+        System.err.println("DEBUG [Stores] createUrlWithExplicitHandler: FAILED - Could not find handler for protocol '" + protocol + "' in any known location.");
+        System.err.println("DEBUG [Stores] createUrlWithExplicitHandler: Ensure the JVM is started with: --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca");
+        System.err.println("DEBUG [Stores] createUrlWithExplicitHandler: Resolved modules can be checked with: java --show-module-resolution --add-modules ibm.crypto.zsecurity -version");
+        return null;
     }
 }

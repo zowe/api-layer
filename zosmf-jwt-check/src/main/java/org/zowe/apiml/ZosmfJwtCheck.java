@@ -130,17 +130,39 @@ public class ZosmfJwtCheck {
     }
 
     /**
-     * Registers the IBM SAF keyring URL protocol handler so that
-     * {@code new URL("safkeyring://...")} works on z/OS without requiring the
-     * caller to pass {@code -Djava.protocol.handler.pkgs=com.ibm.crypto.provider}.
-     * On non-z/OS platforms the handler class is simply not found and is ignored.
+     * Attempts to register the IBM SAF keyring URL protocol handler via the legacy
+     * {@code java.protocol.handler.pkgs} system property.
+     *
+     * <p><b>Note:</b> On IBM Java 17/21 (z/OS), the safkeyring handler is registered
+     * via the {@code java.net.spi.URLStreamHandlerProvider} SPI in module
+     * {@code ibm.crypto.zsecurity}, so this property has no effect. The real fix is
+     * to launch the JVM with {@code --add-modules ibm.crypto.zsecurity}.
+     * This method is retained only as a best-effort fallback for IBM Java 8.</p>
      */
     static void ensureSafkeyringHandler() {
+        String[] packagePrefixes = {
+            "com.ibm.crypto.zsecurity.provider",
+            "com.ibm.crypto.hdwrCCA.provider"
+        };
         String existing = System.getProperty("java.protocol.handler.pkgs", "");
-        if (!existing.contains("com.ibm.crypto.provider")) {
-            System.setProperty("java.protocol.handler.pkgs",
-                existing.isEmpty() ? "com.ibm.crypto.provider" : existing + "|com.ibm.crypto.provider");
+        System.out.println("DEBUG [ZosmfJwtCheck] ensureSafkeyringHandler: existing java.protocol.handler.pkgs='" + existing + "'");
+        StringBuilder sb = new StringBuilder(existing);
+        for (String prefix : packagePrefixes) {
+            if (!existing.contains(prefix)) {
+                if (sb.length() > 0) {
+                    sb.append('|');
+                }
+                sb.append(prefix);
+                System.out.println("DEBUG [ZosmfJwtCheck] ensureSafkeyringHandler: Adding package prefix: " + prefix);
+            } else {
+                System.out.println("DEBUG [ZosmfJwtCheck] ensureSafkeyringHandler: Already present: " + prefix);
+            }
         }
+        String finalValue = sb.toString();
+        System.setProperty("java.protocol.handler.pkgs", finalValue);
+        System.out.println("DEBUG [ZosmfJwtCheck] ensureSafkeyringHandler: Final java.protocol.handler.pkgs='" + finalValue + "'");
+        System.out.println("DEBUG [ZosmfJwtCheck] ensureSafkeyringHandler: NOTE - On Java 17/21, this property has no effect.");
+        System.out.println("DEBUG [ZosmfJwtCheck] ensureSafkeyringHandler: The safkeyring handler is loaded via SPI from module ibm.crypto.zsecurity (requires --add-modules).");
     }
 
     public static void main(String[] args) {
