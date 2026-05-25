@@ -92,9 +92,8 @@ class AttlsConfigTest {
                 jerseyClientField = replicationClient.getClass().getSuperclass().getDeclaredField("jerseyClient");
             }
             jerseyClientField.setAccessible(true);
-            Object rawClient = jerseyClientField.get(replicationClient);
 
-            return (Client) rawClient;
+            return (Client) jerseyClientField.get(replicationClient);
         }
 
         @Test
