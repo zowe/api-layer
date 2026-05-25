@@ -21,7 +21,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import reactor.core.publisher.Mono;
 
 import java.util.Base64;
@@ -35,6 +38,10 @@ import static reactor.core.publisher.Mono.error;
 public class CachingServiceClientRest implements CachingServiceClient {
 
     private static final String CACHING_SERVICE_RETURNED = ". Caching service returned: ";
+
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.of(CachingServiceClientRest.class,
+        new YamlMessageService("/security-common-log-messages.yml"));
 
     @Value("${apiml.cachingServiceClient.apiPath:/cachingservice/api/v1/cache}")
     private String CACHING_API_PATH;
@@ -71,7 +78,7 @@ public class CachingServiceClientRest implements CachingServiceClient {
     public void init() {
         if (!verifyCertificates) {
             if (StringUtils.isEmpty(cachingServiceUserId) || StringUtils.isEmpty(cachingServicePassword)) {
-                log.warn("Caching-service userid or password not set");
+                apimlLog.log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
             } else {
                 String basicToken = "Basic " + Base64.getEncoder().encodeToString((cachingServiceUserId + ":" + cachingServicePassword).getBytes());
                 defaultHeaders.add(HttpHeaders.AUTHORIZATION, basicToken);

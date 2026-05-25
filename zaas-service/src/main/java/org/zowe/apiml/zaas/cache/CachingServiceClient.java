@@ -23,8 +23,11 @@ import org.springframework.http.*;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.util.Base64;
 import java.util.Map;
@@ -41,6 +44,10 @@ public class CachingServiceClient implements CachingClient {
     private final GatewayClient gatewayClient;
     private final RestTemplate restTemplate;
 
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.of(CachingServiceClient.class,
+        new YamlMessageService("/security-common-log-messages.yml"));
+
     @Value("${apiml.cachingServiceClient.apiPath:/cachingservice/api/v1/cache}")
     private String CACHING_API_PATH;
 
@@ -48,7 +55,7 @@ public class CachingServiceClient implements CachingClient {
     private String CACHING_LIST_API_PATH;
 
     @Value("${apiml.service.http.userId:#{null}}")
-    private String cachingServiceUserId ;
+    private String cachingServiceUserId;
 
     @Value("${apiml.service.http.password:#{null}}")
     private String cachingServicePassword;
@@ -78,7 +85,7 @@ public class CachingServiceClient implements CachingClient {
     public void init() {
         if (!verifyCertificates) {
             if (StringUtils.isEmpty(cachingServiceUserId) || StringUtils.isEmpty(cachingServicePassword)) {
-                log.warn("Caching-service userid or password not set");
+                apimlLog.log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
             } else {
                 String basicToken = "Basic " + Base64.getEncoder().encodeToString((cachingServiceUserId + ":" + cachingServicePassword).getBytes());
                 defaultHeaders.add(HttpHeaders.AUTHORIZATION, basicToken);
