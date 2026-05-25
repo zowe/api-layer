@@ -10,21 +10,30 @@
 
 package org.zowe.apiml.discovery.config;
 
+import com.netflix.eureka.cluster.PeerEurekaNode;
+import com.netflix.eureka.cluster.PeerEurekaNodes;
+import jakarta.ws.rs.client.Client;
 import org.apache.http.HttpStatus;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.glassfish.jersey.apache.connector.ApacheClientProperties;
+import org.glassfish.jersey.client.ClientConfig;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.zowe.apiml.discovery.eureka.RefreshablePeerEurekaNodes;
 import org.zowe.apiml.discovery.functional.DiscoveryFunctionalTest;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(Lifecycle.PER_CLASS)
 class AttlsConfigTest {
@@ -35,22 +44,69 @@ class AttlsConfigTest {
     @Nested
     class GivenAttlsModeEnabled extends DiscoveryFunctionalTest {
 
+        @Autowired
+        PeerEurekaNodes peerEurekaNodes;
+
         @Override
         protected String getProtocol() {
             return protocol;
         }
 
         @Test
+        void whenAttlsClientEnabled_thenHttpConnectionManagerIsConfigured() throws Exception {
+            assertInstanceOf(RefreshablePeerEurekaNodes.class, peerEurekaNodes, "The injected bean must be instance of RefreshablePeerEurekaNodes");
+
+            var refreshableNodes = (RefreshablePeerEurekaNodes) peerEurekaNodes;
+            var testPeerNode = refreshableNodes.createPeerEurekaNode("http://localhost:10011/eureka/");
+            assertNotNull(testPeerNode, "The generated peer node must be not null");
+
+            Client apacheClient = getClient(testPeerNode);
+            assertNotNull(apacheClient, "The client Jersey must be not null");
+
+            ClientConfig clientConfigObj = (ClientConfig) apacheClient.getConfiguration();
+            var cm = (PoolingHttpClientConnectionManager) clientConfigObj.getProperty(
+                ApacheClientProperties.CONNECTION_MANAGER
+            );
+
+            assertNotNull(cm);
+            Field operatorField = PoolingHttpClientConnectionManager.class.getDeclaredField("connectionOperator");
+            operatorField.setAccessible(true);
+            Object connectionOperator = operatorField.get(cm);
+
+            Field registryField = connectionOperator.getClass().getDeclaredField("socketFactoryRegistry");
+            registryField.setAccessible(true);
+            var registry = (org.apache.http.config.Registry<?>) registryField.get(connectionOperator);
+
+            assertNotNull(registry.lookup("http"));
+            assertNotNull(registry.lookup("https"));
+        }
+
+        private static Client getClient(PeerEurekaNode testPeerNode) throws NoSuchFieldException, IllegalAccessException {
+            var replicationClientField = testPeerNode.getClass().getSuperclass().getDeclaredField("replicationClient");
+            replicationClientField.setAccessible(true);
+            Object replicationClient = replicationClientField.get(testPeerNode);
+
+            Field jerseyClientField;
+            try {
+                jerseyClientField = replicationClient.getClass().getDeclaredField("eurekaJerseyClient");
+            } catch (NoSuchFieldException e) {
+                jerseyClientField = replicationClient.getClass().getSuperclass().getDeclaredField("jerseyClient");
+            }
+            jerseyClientField.setAccessible(true);
+            Object rawClient = jerseyClientField.get(replicationClient);
+
+            return (Client) rawClient;
+        }
+
+        @Test
         void whenContextLoads_requestFailsWithHttps() {
             protocol = "https";
-            assertThrows(IOException.class, () -> {
-                given()
-                    .log().all()
-                .when()
-                    .get(getDiscoveryUriWithPath("/application/info"))
-                .then()
-                    .log().all();
-            });
+            assertThrows(IOException.class, () -> given()
+                .log().all()
+            .when()
+                .get(getDiscoveryUriWithPath("/application/info"))
+            .then()
+                .log().all());
         }
 
         /**
