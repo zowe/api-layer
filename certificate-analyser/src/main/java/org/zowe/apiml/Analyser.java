@@ -64,17 +64,31 @@ public class Analyser {
     }
 
     /**
-     * Registers the IBM SAF keyring URL protocol handler so that
-     * {@code new URL("safkeyring://...")} works on z/OS without requiring the
-     * caller to pass {@code -Djava.protocol.handler.pkgs=com.ibm.crypto.provider}.
-     * On non-z/OS platforms the handler class is simply not found and is ignored.
+     * Registers IBM SAF keyring URL protocol handler packages via the
+     * {@code java.protocol.handler.pkgs} system property.
+     *
+     * <p>On IBM Java 17/21 (z/OS), this property works in conjunction with
+     * {@code --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca} to enable
+     * the {@code safkeyring://} URL protocol. The {@code --add-modules} flag
+     * resolves the module (making classes accessible), while this property tells
+     * the {@link java.net.URL} class which packages to search for the handler.</p>
      */
     static void ensureSafkeyringHandler() {
+        String[] packagePrefixes = {
+            "com.ibm.crypto.zsecurity.provider",
+            "com.ibm.crypto.hdwrCCA.provider"
+        };
         String existing = System.getProperty("java.protocol.handler.pkgs", "");
-        if (!existing.contains("com.ibm.crypto.provider")) {
-            System.setProperty("java.protocol.handler.pkgs",
-                existing.isEmpty() ? "com.ibm.crypto.provider" : existing + "|com.ibm.crypto.provider");
+        StringBuilder sb = new StringBuilder(existing);
+        for (String prefix : packagePrefixes) {
+            if (!existing.contains(prefix)) {
+                if (sb.length() > 0) {
+                    sb.append('|');
+                }
+                sb.append(prefix);
+            }
         }
+        System.setProperty("java.protocol.handler.pkgs", sb.toString());
     }
 
     public static final void main(String[] args) {
