@@ -82,7 +82,7 @@ public class Analyser {
         StringBuilder sb = new StringBuilder(existing);
         for (String prefix : packagePrefixes) {
             if (!existing.contains(prefix)) {
-                if (sb.length() > 0) {
+                if (!sb.isEmpty()) {
                     sb.append('|');
                 }
                 sb.append(prefix);
