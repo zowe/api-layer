@@ -59,17 +59,13 @@ class AttlsConfigTest {
 
             var refreshableNodes = (RefreshablePeerEurekaNodes) peerEurekaNodes;
             var testPeerNode = refreshableNodes.createPeerEurekaNode("http://localhost:10011/eureka/");
-            assertNotNull(testPeerNode, "The generated peer node must be not null");
 
             Client apacheClient = getClient(testPeerNode);
-            assertNotNull(apacheClient, "The client Jersey must be not null");
 
             ClientConfig clientConfigObj = (ClientConfig) apacheClient.getConfiguration();
             var cm = (PoolingHttpClientConnectionManager) clientConfigObj.getProperty(ApacheClientProperties.CONNECTION_MANAGER);
 
-            assertNotNull(cm);
             Object connectionOperator = ReflectionTestUtils.getField(cm, "connectionOperator");
-            assertNotNull(connectionOperator);
 
             var registry = (Registry<?>) ReflectionTestUtils.getField(connectionOperator, "socketFactoryRegistry");
             assertNotNull(registry);
@@ -82,13 +78,7 @@ class AttlsConfigTest {
             Object replicationClient = ReflectionTestUtils.getField(testPeerNode, "replicationClient");
             assertNotNull(replicationClient);
 
-            Object jerseyClient;
-            try {
-                jerseyClient = ReflectionTestUtils.getField(replicationClient, "eurekaJerseyClient");
-            } catch (IllegalArgumentException e) {
-                jerseyClient = ReflectionTestUtils.getField(replicationClient, "jerseyClient");
-            }
-            return (Client) jerseyClient;
+            return (Client) ReflectionTestUtils.getField(replicationClient, "jerseyClient");
         }
 
         @Test
