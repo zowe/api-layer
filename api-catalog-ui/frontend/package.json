@@ -32,7 +32,7 @@
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "react-error-boundary": "5.0.0",
-        "react-hook-form": "7.76.0",
+        "react-hook-form": "7.76.1",
         "react-redux": "9.3.0",
         "react-router": "7.15.1",
         "react-toastify": "10.0.6",
@@ -44,7 +44,7 @@
         "redux-persist-transform-filter": "0.0.22",
         "redux-thunk": "3.1.0",
         "rxjs": "7.8.2",
-        "sass": "1.99.0",
+        "sass": "1.100.0",
         "stream": "0.0.3",
         "swagger-ui-react": "5.32.6",
         "url": "0.11.4",
@@ -75,11 +75,11 @@
         "includeFailureMsg": true
     },
     "devDependencies": {
-        "@babel/core": "7.29.0",
-        "@babel/eslint-parser": "7.28.6",
+        "@babel/core": "7.29.7",
+        "@babel/eslint-parser": "7.29.7",
         "@babel/plugin-proposal-private-property-in-object": "7.21.11",
-        "@babel/preset-env": "7.29.5",
-        "@babel/preset-react": "7.28.5",
+        "@babel/preset-env": "7.29.7",
+        "@babel/preset-react": "7.29.7",
         "@cfaester/enzyme-adapter-react-18": "0.8.0",
         "@eslint/compat": "1.4.1",
         "@eslint/js": "9.39.4",
@@ -132,7 +132,7 @@
         "start-server-and-test": "2.1.5",
         "tmpl": "1.0.5",
         "undici": "6.19.8",
-        "vite": "8.0.13",
+        "vite": "8.0.14",
         "vite-plugin-node-polyfills": "0.28.0",
         "yaml": "2.9.0"
     },
@@ -152,8 +152,8 @@
         "@braintree/sanitize-url": "7.1.2",
         "resolve-url-loader": "5.0.0",
         "lodash": "4.18.1",
-        "semver": "7.8.0",
-        "@babel/traverse": "7.29.0",
+        "semver": "7.8.1",
+        "@babel/traverse": "7.29.7",
         "axios": "1.16.1",
         "form-data": "3.0.4",
         "sha.js": "2.4.12",
@@ -171,7 +171,7 @@
     },
     "engines": {
         "npm": "=10.9.8",
-        "node": "=24.15.0"
+        "node": "=24.16.0"
     },
     "notes": {
         "jest": "Cannot be updated to v30 because tests fail with messages relating to the import of enzyme"
