@@ -21,7 +21,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -56,9 +55,14 @@ class BasicAuthenticationManagerTest {
             "user,,",
             ",password,"
         })
-        void givenNoCompleteCredentials_whenAuthorize_thenThrowException(String user, String password) {
-            var authenticationManager = new BasicAuthenticationManager(user, password == null ? null : password.toCharArray(), ROLE);
-            StepVerifier.create(authenticationManager.authenticate(VALID_AUTHENTICATION))
+        void givenNoCompleteCredentials_whenAuthorize_thenThrowException(String user, String password) throws Exception {
+            var basicAuthenticationManager = new BasicAuthenticationManager(user, password == null ? null : password.toCharArray(), ROLE);
+            ReflectionTestUtils.setField(basicAuthenticationManager, "apimlLog", apimlLog);
+
+            basicAuthenticationManager.afterPropertiesSet();
+            verify(apimlLog, times(1)).log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
+
+            StepVerifier.create(basicAuthenticationManager.authenticate(VALID_AUTHENTICATION))
                 .expectError(BadCredentialsException.class)
                 .verify();
         }
@@ -77,7 +81,10 @@ class BasicAuthenticationManagerTest {
         }
 
         @Test
-        void givenValidCredentials_whenAuthenticate_thenSuccess() {
+        void givenValidCredentials_whenAuthenticate_thenSuccess() throws Exception {
+            basicAuthenticationManager.afterPropertiesSet();
+            verify(apimlLog, times(0)).log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
+
             StepVerifier.create(basicAuthenticationManager.authenticate(VALID_AUTHENTICATION))
                 .assertNext(authentication -> {
                     assertNotSame(VALID_AUTHENTICATION, authentication);
@@ -90,7 +97,10 @@ class BasicAuthenticationManagerTest {
         }
 
         @Test
-        void givenValidCredentialsInAnotherForm_whenAuthenticate_thenSuccess() {
+        void givenValidCredentialsInAnotherForm_whenAuthenticate_thenSuccess() throws Exception {
+            basicAuthenticationManager.afterPropertiesSet();
+            verify(apimlLog, times(0)).log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
+
             var user = new Object() {
                 @Override
                 public String toString() {
@@ -116,18 +126,14 @@ class BasicAuthenticationManagerTest {
             ",password,",
             "attacker,attempt"
         })
-        void givenInvalidCredentials_whenAuthenticate_thenThrowException(String user, String password) {
+        void givenInvalidCredentials_whenAuthenticate_thenThrowException(String user, String password) throws Exception {
+            basicAuthenticationManager.afterPropertiesSet();
+            verify(apimlLog, times(0)).log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
+
             var authentication = new UsernamePasswordAuthenticationToken(user, password == null ? null : password.toCharArray(), Collections.singleton(new SimpleGrantedAuthority(ROLE)));
             StepVerifier.create(basicAuthenticationManager.authenticate(authentication))
                 .expectError(BadCredentialsException.class)
                 .verify();
-        }
-
-        @Test
-        void givenMissingCredentials_whenAuthenticate_thenLog() throws Exception {
-            ReflectionTestUtils.setField(basicAuthenticationManager, "userId", null);
-            basicAuthenticationManager.afterPropertiesSet();
-            verify(apimlLog, times(1)).log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
         }
 
     }

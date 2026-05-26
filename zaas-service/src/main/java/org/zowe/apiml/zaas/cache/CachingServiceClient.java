@@ -12,11 +12,11 @@ package org.zowe.apiml.zaas.cache;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -24,7 +24,6 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -39,14 +38,13 @@ import java.util.Map;
  */
 @Slf4j
 @SuppressWarnings({"squid:S1192"}) // literals are repeating in debug logs only
-public class CachingServiceClient implements CachingClient {
+public class CachingServiceClient implements CachingClient, InitializingBean {
 
     private final GatewayClient gatewayClient;
     private final RestTemplate restTemplate;
 
     @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.of(CachingServiceClient.class,
-        new YamlMessageService("/security-common-log-messages.yml"));
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Value("${apiml.cachingServiceClient.apiPath:/cachingservice/api/v1/cache}")
     private String CACHING_API_PATH;
@@ -81,8 +79,8 @@ public class CachingServiceClient implements CachingClient {
         this.restTemplate = restTemplate;
     }
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         if (!verifyCertificates) {
             if (StringUtils.isEmpty(cachingServiceUserId) || StringUtils.isEmpty(cachingServicePassword)) {
                 apimlLog.log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");

@@ -10,9 +10,9 @@
 
 package org.zowe.apiml.gateway.caching;
 
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -22,7 +22,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import reactor.core.publisher.Mono;
@@ -35,13 +34,12 @@ import static reactor.core.publisher.Mono.error;
 @Component
 @Slf4j
 @ConditionalOnMissingBean(name = "modulithConfig")
-public class CachingServiceClientRest implements CachingServiceClient {
+public class CachingServiceClientRest implements CachingServiceClient, InitializingBean {
 
     private static final String CACHING_SERVICE_RETURNED = ". Caching service returned: ";
 
     @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.of(CachingServiceClientRest.class,
-        new YamlMessageService("/security-common-log-messages.yml"));
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Value("${apiml.cachingServiceClient.apiPath:/cachingservice/api/v1/cache}")
     private String CACHING_API_PATH;
@@ -74,8 +72,8 @@ public class CachingServiceClientRest implements CachingServiceClient {
         this.webClient = webClientClientCert;
     }
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void afterPropertiesSet() {
         if (!verifyCertificates) {
             if (StringUtils.isEmpty(cachingServiceUserId) || StringUtils.isEmpty(cachingServicePassword)) {
                 apimlLog.log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");

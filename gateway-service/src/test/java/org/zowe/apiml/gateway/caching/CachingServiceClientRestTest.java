@@ -31,6 +31,7 @@ import org.springframework.web.reactive.function.client.ExchangeFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.gateway.caching.CachingServiceClient.ApiKeyValue;
 import org.zowe.apiml.gateway.caching.LoadBalancerCache.LoadBalancerCacheRecord;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import reactor.test.StepVerifier;
@@ -52,6 +53,9 @@ class CachingServiceClientRestTest {
 
     @Mock
     private ClientResponse clientResponse;
+
+    @Mock
+    private ApimlLogger apimlLogger;
 
     private CachingServiceClientRest client;
     private WebClient webClient;
@@ -239,9 +243,13 @@ class CachingServiceClientRestTest {
             var service = new CachingServiceClientRest(null, null);
             ReflectionTestUtils.setField(service, "cachingServiceUserId", "user");
             ReflectionTestUtils.setField(service, "cachingServicePassword", "password");
+            ReflectionTestUtils.setField(service, "apimlLog", apimlLogger);
 
-            service.init();
+            service.afterPropertiesSet();
 
+            // Verify that no warning is logged
+            verify(apimlLogger, times(0)).log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
+            // Verify that Basic authHeader is in the defaultHeaders map
             var headers = (MultiValueMap<String, String>) ReflectionTestUtils.getField(service, "defaultHeaders");
             assertEquals("Basic dXNlcjpwYXNzd29yZA==", headers.get(HttpHeaders.AUTHORIZATION).get(0));
         }
@@ -256,9 +264,13 @@ class CachingServiceClientRestTest {
             var service = new CachingServiceClientRest(null, null);
             ReflectionTestUtils.setField(service, "cachingServiceUserId", userId);
             ReflectionTestUtils.setField(service, "cachingServicePassword", password);
+            ReflectionTestUtils.setField(service, "apimlLog", apimlLogger);
 
-            service.init();
+            service.afterPropertiesSet();
 
+            // Verify that warning is logged
+            verify(apimlLogger, times(1)).log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
+            // Verify that Basic authHeader is not in the defaultHeaders map
             var headers = (MultiValueMap<String, String>) ReflectionTestUtils.getField(service, "defaultHeaders");
             assertNull(headers.get(HttpHeaders.AUTHORIZATION));
         }

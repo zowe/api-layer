@@ -15,8 +15,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -24,6 +27,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
@@ -47,8 +51,8 @@ class CachingServiceClientTest {
         ServiceAddress gatewayAddress = ServiceAddress.builder().scheme("https").hostname("localhost:10010").build();
         GatewayClient gatewayClient = new GatewayClient(gatewayAddress);
         underTest = new CachingServiceClient(restTemplate, gatewayClient);
-        ReflectionTestUtils.setField(underTest,"CACHING_API_PATH","/cachingservice/api/v1/cache");
-        ReflectionTestUtils.setField(underTest,"CACHING_LIST_API_PATH","/cachingservice/api/v1/cache-list/");
+        ReflectionTestUtils.setField(underTest, "CACHING_API_PATH", "/cachingservice/api/v1/cache");
+        ReflectionTestUtils.setField(underTest, "CACHING_LIST_API_PATH", "/cachingservice/api/v1/cache-list/");
     }
 
     @Nested
@@ -257,17 +261,25 @@ class CachingServiceClientTest {
 
     }
 
+    @ExtendWith(MockitoExtension.class)
     @Nested
     class CachingServiceAuthorization {
+
+        @Mock
+        private ApimlLogger apimlLogger;
 
         @Test
         void givenCredentials_whenSetCredentials_thenSetAuthorizationHeader() {
             var service = new CachingServiceClient(mock(RestTemplate.class), null);
             ReflectionTestUtils.setField(service, "cachingServiceUserId", "user");
             ReflectionTestUtils.setField(service, "cachingServicePassword", "password");
+            ReflectionTestUtils.setField(service, "apimlLog", apimlLogger);
 
-            service.init();
+            service.afterPropertiesSet();
 
+            // Verify that no warning is logged
+            verify(apimlLogger, times(0)).log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
+            // Verify that Basic authHeader is in the defaultHeaders map
             var headers = (MultiValueMap<String, String>) ReflectionTestUtils.getField(service, "defaultHeaders");
             assertEquals("Basic dXNlcjpwYXNzd29yZA==", headers.get(HttpHeaders.AUTHORIZATION).get(0));
         }
@@ -282,9 +294,13 @@ class CachingServiceClientTest {
             var service = new CachingServiceClient(mock(RestTemplate.class), null);
             ReflectionTestUtils.setField(service, "cachingServiceUserId", userId);
             ReflectionTestUtils.setField(service, "cachingServicePassword", password);
+            ReflectionTestUtils.setField(service, "apimlLog", apimlLogger);
 
-            service.init();
+            service.afterPropertiesSet();
 
+            // Verify that warning is logged
+            verify(apimlLogger, times(1)).log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
+            // Verify that Basic authHeader is not in the defaultHeaders map
             var headers = (MultiValueMap<String, String>) ReflectionTestUtils.getField(service, "defaultHeaders");
             assertNull(headers.get(HttpHeaders.AUTHORIZATION));
         }
