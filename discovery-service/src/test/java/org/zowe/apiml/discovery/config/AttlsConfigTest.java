@@ -25,11 +25,11 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.discovery.eureka.RefreshablePeerEurekaNodes;
 import org.zowe.apiml.discovery.functional.DiscoveryFunctionalTest;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
@@ -46,7 +46,7 @@ class AttlsConfigTest {
     class GivenAttlsModeEnabled extends DiscoveryFunctionalTest {
 
         @Autowired
-        PeerEurekaNodes peerEurekaNodes;
+        private PeerEurekaNodes peerEurekaNodes;
 
         @Override
         protected String getProtocol() {
@@ -68,32 +68,27 @@ class AttlsConfigTest {
             var cm = (PoolingHttpClientConnectionManager) clientConfigObj.getProperty(ApacheClientProperties.CONNECTION_MANAGER);
 
             assertNotNull(cm);
-            Field operatorField = PoolingHttpClientConnectionManager.class.getDeclaredField("connectionOperator");
-            operatorField.setAccessible(true);
-            Object connectionOperator = operatorField.get(cm);
+            Object connectionOperator = ReflectionTestUtils.getField(cm, "connectionOperator");
+            assertNotNull(connectionOperator);
 
-            Field registryField = connectionOperator.getClass().getDeclaredField("socketFactoryRegistry");
-            registryField.setAccessible(true);
-            var registry = (Registry<?>) registryField.get(connectionOperator);
+            var registry = (Registry<?>) ReflectionTestUtils.getField(connectionOperator, "socketFactoryRegistry");
+            assertNotNull(registry);
 
             assertNotNull(registry.lookup("http"));
             assertNotNull(registry.lookup("https"));
         }
 
-        private static Client getClient(PeerEurekaNode testPeerNode) throws NoSuchFieldException, IllegalAccessException {
-            var replicationClientField = testPeerNode.getClass().getSuperclass().getDeclaredField("replicationClient");
-            replicationClientField.setAccessible(true);
-            Object replicationClient = replicationClientField.get(testPeerNode);
+        private static Client getClient(PeerEurekaNode testPeerNode) {
+            Object replicationClient = ReflectionTestUtils.getField(testPeerNode, "replicationClient");
+            assertNotNull(replicationClient);
 
-            Field jerseyClientField;
+            Object jerseyClient;
             try {
-                jerseyClientField = replicationClient.getClass().getDeclaredField("eurekaJerseyClient");
-            } catch (NoSuchFieldException e) {
-                jerseyClientField = replicationClient.getClass().getSuperclass().getDeclaredField("jerseyClient");
+                jerseyClient = ReflectionTestUtils.getField(replicationClient, "eurekaJerseyClient");
+            } catch (IllegalArgumentException e) {
+                jerseyClient = ReflectionTestUtils.getField(replicationClient, "jerseyClient");
             }
-            jerseyClientField.setAccessible(true);
-
-            return (Client) jerseyClientField.get(replicationClient);
+            return (Client) jerseyClient;
         }
 
         @Test
