@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
@@ -22,28 +23,33 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
 import java.util.Collections;
 
 @Slf4j
-public class BasicAuthenticationManager implements ReactiveAuthenticationManager {
+public class BasicAuthenticationManager implements ReactiveAuthenticationManager, InitializingBean {
 
     private final String userId;
     private final char[] password;
     private final String role;
+
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
+
     private final MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
     public BasicAuthenticationManager(String userId, char[] password, String role) {
         this.userId = userId;
         this.password = password;
         this.role = role;
+    }
 
+    @Override
+    public void afterPropertiesSet() throws Exception {
         if (!isCredentialsSet()) {
-            ApimlLogger apimlLog = ApimlLogger.of(BasicAuthenticationManager.class,
-                new YamlMessageService("/security-common-log-messages.yml"));
             apimlLog.log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
         }
     }
@@ -76,4 +82,5 @@ public class BasicAuthenticationManager implements ReactiveAuthenticationManager
         return Mono.error(new BadCredentialsException(this.messages
             .getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials")));
     }
+
 }
