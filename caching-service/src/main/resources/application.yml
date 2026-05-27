@@ -54,7 +54,7 @@ apiml:
     enabled: true
     security:
             x509:
-                certificatesUrls: https://localhost:10010/gateway/certificates
+                certificatesUrl: https://localhost:10010/gateway/certificates
                 acceptForwardedCert: true
     service:
         preferIpAddress: false

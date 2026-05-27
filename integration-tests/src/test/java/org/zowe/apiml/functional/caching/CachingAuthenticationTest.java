@@ -138,7 +138,6 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
         void cachingApiEndpointsAccessible() {
             given()
                 .config(SslContext.clientCertApiml)
-                .header(CERT_HEADER_NAME, "value")
                 .when()
                 .get(caching_url + CACHING_PATH)
                 .then()
