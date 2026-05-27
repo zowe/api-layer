@@ -14,6 +14,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
+import java.net.MalformedURLException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class StoresTest {
@@ -77,6 +79,56 @@ class StoresTest {
                 e.getMessage().replace('\\', '/')
                     .contains("Error while loading keystore file. Error message:")
             );
+        }
+
+        @Test
+        void whenTruststoreIsKeyring_thenKeyRingUrlIsUsed() {
+            String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
+                "--truststore", "safkeyring://userId/keyRing",
+                "--keypasswd", "password",
+                "--keyalias", "localhost"};
+            ApimlConf conf = new ApimlConf();
+            new CommandLine(conf).parseArgs(args);
+            StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
+            assertEquals("unknown protocol: safkeyring", e.getMessage());
+        }
+
+        @Test
+        void givenValidKeyringUri_whenProtocolHandlerNotAvailable_thenThrowsMalformedURLException() {
+            assertThrows(MalformedURLException.class, () -> Stores.keyRingUrl("safkeyring://userId/keyRing"));
+        }
+
+        @Test
+        void whenKeyRingUrlCalledWithInvalidFormat_thenThrowsStoresNotInitializeException() {
+            StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class,
+                () -> Stores.keyRingUrl("notakeyring://bad/format/extra"));
+            assertTrue(e.getMessage().contains("Incorrect key ring format"));
+        }
+
+        @Test
+        void givenIsKeyring_whenValidSafkeyringUri_thenReturnsTrue() {
+            assertTrue(Stores.isKeyring("safkeyring://userId/keyRing"));
+            assertTrue(Stores.isKeyring("safkeyring:////userId/keyRing"));
+            assertTrue(Stores.isKeyring("safkeyringce://userId/keyRing"));
+        }
+
+        @Test
+        void givenIsKeyring_whenInvalidUri_thenReturnsFalse() {
+            assertFalse(Stores.isKeyring(null));
+            assertFalse(Stores.isKeyring(""));
+            assertFalse(Stores.isKeyring("/path/to/file.p12"));
+            assertFalse(Stores.isKeyring("keyring://userId/keyRing"));
+        }
+
+        @Test
+        void givenFormatKeyringUrl_whenUriHasExtraSlashes_thenNormalized() {
+            assertEquals("safkeyring://userId/keyRing", Stores.formatKeyringUrl("safkeyring:////userId/keyRing"));
+            assertEquals("safkeyring://userId/keyRing", Stores.formatKeyringUrl("safkeyring://userId/keyRing"));
+        }
+
+        @Test
+        void givenFormatKeyringUrl_whenNull_thenReturnsNull() {
+            assertNull(Stores.formatKeyringUrl(null));
         }
     }
 
