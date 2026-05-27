@@ -86,35 +86,35 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
         ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate();
 
         certsFromTlsOpt.ifPresent(certsFromTls -> {
-            Optional<X509Certificate> clientCertFromHeader = getClientCertFromHeader(exchange.getRequest());
-
-            log.debug("DEBUG: isForwardingEnabled = {}", certificateValidator.isForwardingEnabled());
-            log.debug("DEBUG: hasGatewayChain = {}", certificateValidator.hasGatewayChain(certsFromTls));
-            log.debug("DEBUG: clientCertFromHeader.isPresent = {}", clientCertFromHeader.isPresent());
 
             if (certificateValidator.isForwardingEnabled() &&
-                certificateValidator.hasGatewayChain(certsFromTls) &&
-                clientCertFromHeader.isPresent()) {
+                certificateValidator.hasGatewayChain(certsFromTls)) {
+                Optional<X509Certificate> clientCertFromHeader = getClientCertFromHeader(exchange.getRequest());
+                log.debug("DEBUG: clientCertFromHeader.isPresent = {}", clientCertFromHeader.isPresent());
+                if (clientCertFromHeader.isPresent()) {
+                    log.debug("DEBUG: isForwardingEnabled = {}", certificateValidator.isForwardingEnabled());
+                    log.debug("DEBUG: hasGatewayChain = {}", certificateValidator.hasGatewayChain(certsFromTls));
 
-                certificateValidator.updateAPIMLPublicKeyCertificates(certsFromTls);
+                    certificateValidator.updateAPIMLPublicKeyCertificates(certsFromTls);
 
-                X509Certificate[] clientAuthCerts = selectCerts(
-                    new X509Certificate[]{clientCertFromHeader.get()},
-                    certificateForClientAuth
-                );
+                    X509Certificate[] clientAuthCerts = selectCerts(
+                        new X509Certificate[]{clientCertFromHeader.get()},
+                        certificateForClientAuth
+                    );
 
-                log.debug("DEBUG: clientAuthCerts.length = {}", clientAuthCerts.length);
+                    log.debug("DEBUG: clientAuthCerts.length = {}", clientAuthCerts.length);
 
-                logIgnoredCertificates(new X509Certificate[]{clientCertFromHeader.get()}, clientAuthCerts);
+                    logIgnoredCertificates(new X509Certificate[]{clientCertFromHeader.get()}, clientAuthCerts);
 
-                exchange.getAttributes().put(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, clientAuthCerts);
-                log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, Arrays.toString(clientAuthCerts));
+                    exchange.getAttributes().put(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, clientAuthCerts);
+                    log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, Arrays.toString(clientAuthCerts));
 
-                exchange.getAttributes().put(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, certsFromTls);
-                log.debug("Retaining full TLS certificate chain in attribute {}: {}", ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, Arrays.toString(certsFromTls));
+                    exchange.getAttributes().put(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, certsFromTls);
+                    log.debug("Retaining full TLS certificate chain in attribute {}: {}", ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, Arrays.toString(certsFromTls));
 
-                var sslInfo = SimpleSslInfo.builder().peerCertificates(clientAuthCerts).build();
-                requestBuilder.sslInfo(sslInfo);
+                    var sslInfo = SimpleSslInfo.builder().peerCertificates(clientAuthCerts).build();
+                    requestBuilder.sslInfo(sslInfo);
+                }
 
             } else {
                 X509Certificate[] clientAuthCerts = selectCerts(certsFromTls, certificateForClientAuth);
