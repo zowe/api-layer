@@ -2191,6 +2191,8 @@ jobs:
                     CACHING_STORAGE_MODE: "infinispan"
                     APIML_SERVICE_PORT: "10022"
                     JGROUPS_BIND_ADDRESS: "caching-service"
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             caching-service-2:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -2202,6 +2204,8 @@ jobs:
                     JGROUPS_BIND_ADDRESS: "caching-service-2"
                     APIML_SERVICE_HOSTNAME: "caching-service-2"
                     logbackService: ZWEACS2
+                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
+                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
