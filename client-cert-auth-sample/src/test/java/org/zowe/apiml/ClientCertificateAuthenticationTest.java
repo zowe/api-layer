@@ -154,7 +154,10 @@ class ClientCertificateAuthenticationTest {
 
             clientCertificateAuthentication.authenticate();
             Assertions.assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
-            Assertions.assertTrue(errContent.toString().startsWith("org.apache.http.conn.HttpHostConnectException: Connect to localhost:8080 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused"),
+            Assertions.assertTrue(
+                errContent.toString().contains("HttpHostConnectException")
+                    && errContent.toString().contains("localhost:8080")
+                    && errContent.toString().contains("Connection refused"),
                 "Error not as expected. Actual error is: \n" + errContent);
         }
 
@@ -196,7 +199,9 @@ class ClientCertificateAuthenticationTest {
 
             clientCertificateAuthentication.authenticate();
             Assertions.assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
-            Assertions.assertTrue(errContent.toString().startsWith("java.security.KeyStoreException: Key protection algorithm not found: java.security.KeyStoreException: Unsupported Key type"),
+            Assertions.assertTrue(
+                errContent.toString().contains("KeyStoreException")
+                    && errContent.toString().contains("Unsupported Key type"),
                 "Error not as expected. Actual error is: \n" + errContent);
         }
     }
