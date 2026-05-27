@@ -11,15 +11,22 @@
 package org.zowe.apiml.gateway.caching;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.gateway.GatewayClient;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import reactor.core.publisher.Mono;
+
+import java.util.Base64;
 
 import static reactor.core.publisher.Mono.empty;
 import static reactor.core.publisher.Mono.error;
@@ -27,12 +34,24 @@ import static reactor.core.publisher.Mono.error;
 @Component
 @Slf4j
 @ConditionalOnMissingBean(name = "modulithConfig")
-public class CachingServiceClientRest implements CachingServiceClient {
+public class CachingServiceClientRest implements CachingServiceClient, InitializingBean {
 
     private static final String CACHING_SERVICE_RETURNED = ". Caching service returned: ";
 
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
+
     @Value("${apiml.cachingServiceClient.apiPath:/cachingservice/api/v1/cache}")
     private String CACHING_API_PATH;
+
+    @Value("${apiml.service.http.userId:#{null}}")
+    private String cachingServiceUserId;
+
+    @Value("${apiml.service.http.password:#{null}}")
+    private String cachingServicePassword;
+
+    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
+    private boolean verifyCertificates;
 
     private volatile String cachingBalancerUrl;
     private final GatewayClient gatewayClient;
@@ -51,6 +70,18 @@ public class CachingServiceClientRest implements CachingServiceClient {
     ) {
         this.gatewayClient = gatewayClient;
         this.webClient = webClientClientCert;
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        if (!verifyCertificates) {
+            if (StringUtils.isEmpty(cachingServiceUserId) || StringUtils.isEmpty(cachingServicePassword)) {
+                apimlLog.log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
+            } else {
+                String basicToken = "Basic " + Base64.getEncoder().encodeToString((cachingServiceUserId + ":" + cachingServicePassword).getBytes());
+                defaultHeaders.add(HttpHeaders.AUTHORIZATION, basicToken);
+            }
+        }
     }
 
     void updateUrl() {
