@@ -18,9 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.server.ServerWebExchange;
 import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.model.KeyValue;
@@ -28,8 +28,10 @@ import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import reactor.core.publisher.Mono;
 
+import java.security.cert.X509Certificate;
 import java.util.Optional;
 
 @Slf4j
@@ -297,16 +299,18 @@ public class CachingController {
     }
 
     private Optional<String> extractFromSslInfo(ServerWebExchange exchange) {
-        return extractFromAttribute(exchange)
-            .or(() -> Optional.ofNullable(exchange.getRequest().getSslInfo())
+        if (applicationInfo != null && applicationInfo.isModulith()) {
+            return Optional.ofNullable(exchange.getRequest().getSslInfo())
                 .map(SslInfo::getPeerCertificates)
                 .filter(certs -> certs.length > 0)
-                .map(certs -> certs[0].getSubjectX500Principal().getName()));
+                .map(certs -> certs[0].getSubjectX500Principal().getName());
+        }
+        return extractFromAttribute(exchange);
     }
 
     private Optional<String> extractFromAttribute(ServerWebExchange exchange) {
-        return Optional.ofNullable((java.security.cert.X509Certificate[]) exchange.getAttributes()
-                .get(org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE))
+        return Optional.ofNullable((X509Certificate[]) exchange.getAttributes()
+                .get(CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE))
             .filter(certs -> certs.length > 0)
             .map(certs -> certs[0].getSubjectX500Principal().getName());
     }

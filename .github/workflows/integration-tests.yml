@@ -2214,6 +2214,8 @@ jobs:
                     - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                enc:
+                    APIML_SERVICE_FORWARDCLIENTCERTENABLED: true
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
