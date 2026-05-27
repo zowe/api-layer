@@ -1,6 +1,6 @@
 apiml:
     discovery:
-        allPeersUrls: 'http://#{("${apiml.discovery.userid:}".isEmpty() or "${apiml.discovery.password:}".isEmpty()) ? "" : "${apiml.discovery.userid:}:${apiml.discovery.password:}@"}${apiml.service.hostname}:${apiml.service.port}/eureka/'
+        allPeersUrls: http://${apiml.service.hostname}:${apiml.service.port}/eureka/
     service:
         id: discovery
         hostname: localhost
