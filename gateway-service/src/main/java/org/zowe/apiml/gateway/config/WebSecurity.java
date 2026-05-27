@@ -541,7 +541,7 @@ public class WebSecurity {
     }
 
     @RequiredArgsConstructor
-    class ApimlStrictServerWebExchangeFirewall extends StrictServerWebExchangeFirewall {
+    static class ApimlStrictServerWebExchangeFirewall extends StrictServerWebExchangeFirewall {
 
         private static final String[] BASE_PATH_MICROSERVICES = {
             "/gateway",
@@ -551,7 +551,6 @@ public class WebSecurity {
         };
 
         private static final String[] BASE_PATHS_MODULITH = ArrayUtils.addAll(BASE_PATH_MICROSERVICES, new String[] {
-            "/discovery",
             "/apicatalog",
             "/cachingservice"
         });
