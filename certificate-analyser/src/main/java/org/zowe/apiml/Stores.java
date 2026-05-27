@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("squid:S106")
 public class Stores {
 
     private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)/([^/]+)$");
@@ -81,8 +82,14 @@ public class Stores {
             }
             return;
         }
-        try (InputStream trustStoreIStream = new FileInputStream(conf.getTrustStore())) {
-            this.trustStore = readKeyStore(trustStoreIStream, conf.getTrustPasswd().toCharArray(), conf.getTrustStoreType());
+        if (isKeyring(conf.getTrustStore())) {
+            try (InputStream trustStoreIStream = keyRingUrl(conf.getTrustStore()).openStream()) {
+                this.trustStore = readKeyStore(trustStoreIStream, conf.getTrustPasswd().toCharArray(), conf.getTrustStoreType());
+            }
+        } else {
+            try (InputStream trustStoreIStream = new FileInputStream(conf.getTrustStore())) {
+                this.trustStore = readKeyStore(trustStoreIStream, conf.getTrustPasswd().toCharArray(), conf.getTrustStoreType());
+            }
         }
 
     }
@@ -165,9 +172,14 @@ public class Stores {
             throw new StoresNotInitializeException("Incorrect key ring format: " + uri
                 + ". Make sure you use format safkeyring://userId/keyRing");
         }
-
-        return new URL(formatKeyringUrl(uri));
-
+        String formatted = formatKeyringUrl(uri);
+        try {
+            return new URL(formatted);
+        } catch (MalformedURLException e) {
+            System.err.println("ERROR: Unknown protocol in '" + formatted + "': " + e.getMessage());
+            System.err.println("Ensure the JVM is started with: --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca");
+            System.err.println("And that ensureSafkeyringHandler() has been called to set java.protocol.handler.pkgs");
+            throw e;
+        }
     }
-
 }
