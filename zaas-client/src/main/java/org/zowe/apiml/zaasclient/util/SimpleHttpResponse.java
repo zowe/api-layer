@@ -49,11 +49,11 @@ public class SimpleHttpResponse {
     }
 
     public SimpleHttpResponse(int code, String stringBody) {
-        this(code, stringBody.getBytes(StandardCharsets.UTF_8), stringBody, Map.of());
+        this(code, stringBody == null ? null : stringBody.getBytes(StandardCharsets.UTF_8), stringBody, Map.of());
     }
 
     public SimpleHttpResponse(int code, String stringBody, Map<String, List<Header>> headers) {
-        this(code, stringBody.getBytes(StandardCharsets.UTF_8), stringBody, headers);
+        this(code, stringBody == null ? null : stringBody.getBytes(StandardCharsets.UTF_8), stringBody, headers);
     }
 
     public SimpleHttpResponse(int code) {
