@@ -21,7 +21,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.caching.CachingServiceApplication;
+import org.zowe.apiml.security.common.verify.CertificateValidator;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 
@@ -87,6 +89,44 @@ public class SecurityConfigTest {
         @LocalServerPort
         int port;
 
+        @MockitoBean
+        private CertificateValidator certificateValidator;
+
+        private static final String MOCK_FORWARDED_CERT = """
+        MIID7zCCAtegAwIBAgIED0TPEjANBgkqhkiG9w0BAQsFADB6MQswCQYDVQQGEwJD
+        WjEPMA0GA1UECBMGUHJhZ3VlMQ8wDQYDVQQHEwZQcmFndWUxFDASBgNVBAoTC1pv
+        d2UgU2FtcGxlMRwwGgYDVQQLExNBUEkgTWVkaWF0aW9uIExheWVyMRUwEwYDVQQD
+        Ewxab3dlIFNlcnZpY2UwHhcNMTgxMjA3MTQ1NzIyWhcNMjgxMjA0MTQ1NzIyWjB6
+        MQswCQYDVQQGEwJDWjEPMA0GA1UECBMGUHJhZ3VlMQ8wDQYDVQQHEwZQcmFndWUx
+        FDASBgNVBAoTC1pvd2UgU2FtcGxlMRwwGgYDVQQLExNBUEkgTWVkaWF0aW9uIExh
+        eWVyMRUwEwYDVQQDEwxab3dlIFNlcnZpY2UwggEiMA0GCSqGSIb3DQEBAQUAA4IB
+        DwAwggEKAoIBAQC6Orc/EJ5/t2qam1DiYU/xVbHaQrjd6uvpj2HTvOOohtFZ7/Kx
+        yMAezgB8DBR4+77qXXsdP9ngnTl/i22yGwvo7Tlz6dhnQLnks7VFr1eGGC2ks+rL
+        BJsF/RQexmONG9ddexWD8SOYoW9RRapQqETbcllxOenvzXruOEzaXhMazkK9Cg+J
+        ucNb9HcfhIM0rjLZhqG8Gc8dAtCcxF/xHlVyFQq8fr4u2p/wGmARM14iZeQltQV7
+        F3gxmw3djfcNM5S3tirPrHlZb76ZmmQEn4QiLSP198Lm+4QKAOw1dUpMf4eELO4c
+        EFUHXQUCHLWc5NztZxWW40NrDbZEjcRI5ah7AgMBAAGjfTB7MB0GA1UdJQQWMBQG
+        CCsGAQUFBwMCBggrBgEFBQcDATAOBgNVHQ8BAf8EBAMCBPAwKwYDVR0RBCQwIoIV
+        bG9jYWxob3N0LmxvY2FsZG9tYWlugglsb2NhbGhvc3QwHQYDVR0OBBYEFHL1ygBb
+        UCI/ktdk3TgQA6EJlATIMA0GCSqGSIb3DQEBCwUAA4IBAQBHALBlFf0P1TBR1MHQ
+        vXYDFAW+PiyF7zP0HcrvQTAGYhF7uJtRIamapjUdIsDVbqY0RhoFnBOu8ti2z0pW
+        djw47f3X/yj98n+J2aYcO64Ar+ovx93P01MA8+Mz1u/LwXk4pmrbUIcOEtyNu+vT
+        a0jDobC++3Zfv5Y+iD2M8L+jacSMZNCqQByhKtTkAICXg9LMccx4XLYtJ65zGP2h
+        4TEK0MMfO2G1/vUmdb3tq17zKdukj3MUS254mENCck7ioNFR0Cc9lzuSHyBrdb0x
+        M/iHeamNblckK/r1roDjhCAQz9DtmETad/o7qGNFxDTRRShRV9Lww0fFB7PaV7u/
+        VPx2
+        """;
+
+        // Strip whitespace to match the format produced by X509Util.getEncodedClientCertificate()
+        // which uses Base64.getEncoder() (no line breaks). Base64.getDecoder() rejects whitespace.
+        private static final String MOCK_FORWARDED_CERT_HEADER = MOCK_FORWARDED_CERT.replaceAll("\\s+", "");
+
+        @org.junit.jupiter.api.BeforeEach
+        void setup() {
+            org.mockito.Mockito.when(certificateValidator.isForwardingEnabled()).thenReturn(true);
+            org.mockito.Mockito.when(certificateValidator.hasGatewayChain(org.mockito.Mockito.any())).thenReturn(true);
+        }
+
         @Test
         void whenNoClientCertificate_thenReturnUnauthorized() {
             given()
@@ -103,6 +143,7 @@ public class SecurityConfigTest {
             given()
                 .config(SslContext.clientCertApiml)
                 .header(new Header("X-CS-Service-ID", "apimtst"))
+                .header(new Header("Client-Cert", MOCK_FORWARDED_CERT_HEADER))
                 .get(getUri(hostname, port))
                 .then()
                 .log().ifValidationFails()

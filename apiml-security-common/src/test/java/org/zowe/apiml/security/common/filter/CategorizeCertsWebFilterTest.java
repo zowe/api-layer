@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.filter;
+package org.zowe.apiml.security.common.filter;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;

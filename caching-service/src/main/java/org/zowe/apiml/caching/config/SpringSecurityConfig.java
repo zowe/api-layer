@@ -26,6 +26,15 @@ import org.springframework.security.web.server.authentication.HttpStatusServerEn
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.zowe.apiml.security.common.util.X509Util;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Set;
+import org.zowe.apiml.security.common.filter.CategorizeCertsWebFilter;
+import org.zowe.apiml.security.common.verify.CertificateValidator;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
+import org.springframework.context.annotation.Import;
+import org.zowe.apiml.product.web.HttpConfig;
+import org.zowe.apiml.security.common.verify.TrustedCertificatesProvider;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
@@ -33,6 +42,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebFluxSecurity
+@Import({HttpConfig.class, CertificateValidator.class, TrustedCertificatesProvider.class})
 public class SpringSecurityConfig {
 
     @Value("${apiml.service.ssl.verifySslCertificatesOfServices:true}")
@@ -40,6 +50,13 @@ public class SpringSecurityConfig {
 
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
+
+    @Autowired
+    @Qualifier("publicKeyCertificatesBase64")
+    private Set<String> publicKeyCertificatesBase64;
+
+    @Autowired
+    private CertificateValidator certificateValidator;
 
     @Bean
     @Order(1)
@@ -61,7 +78,8 @@ public class SpringSecurityConfig {
             ))
             .exceptionHandling(exceptionHandlingSpec ->
                 exceptionHandlingSpec.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.FORBIDDEN))
-            );
+            )
+            .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST);
 
         if (verifyCertificates) {
             http.authorizeExchange(exchange -> exchange

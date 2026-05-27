@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.filter;
+package org.zowe.apiml.security.common.filter;
 
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -88,6 +88,10 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
         certsFromTlsOpt.ifPresent(certsFromTls -> {
             Optional<X509Certificate> clientCertFromHeader = getClientCertFromHeader(exchange.getRequest());
 
+            log.debug("DEBUG: isForwardingEnabled = {}", certificateValidator.isForwardingEnabled());
+            log.debug("DEBUG: hasGatewayChain = {}", certificateValidator.hasGatewayChain(certsFromTls));
+            log.debug("DEBUG: clientCertFromHeader.isPresent = {}", clientCertFromHeader.isPresent());
+
             if (certificateValidator.isForwardingEnabled() &&
                 certificateValidator.hasGatewayChain(certsFromTls) &&
                 clientCertFromHeader.isPresent()) {
@@ -98,6 +102,8 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                     new X509Certificate[]{clientCertFromHeader.get()},
                     certificateForClientAuth
                 );
+
+                log.debug("DEBUG: clientAuthCerts.length = {}", clientAuthCerts.length);
 
                 logIgnoredCertificates(new X509Certificate[]{clientCertFromHeader.get()}, clientAuthCerts);
 
@@ -112,6 +118,8 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
 
             } else {
                 X509Certificate[] clientAuthCerts = selectCerts(certsFromTls, certificateForClientAuth);
+
+                log.debug("DEBUG (else): clientAuthCerts.length = {}", clientAuthCerts.length);
 
                 logIgnoredCertificates(certsFromTls, clientAuthCerts);
 

@@ -52,6 +52,10 @@ eureka:
         registryFetchIntervalSeconds: 30
 apiml:
     enabled: true
+    security:
+            x509:
+                certificatesUrls: https://localhost:10010/gateway/certificates
+                acceptForwardedCert: true
     service:
         preferIpAddress: false
 
@@ -108,6 +112,8 @@ apiml:
                 gatewayPort: 10010
                 gatewayAuthEndpoint: /gateway/api/v1/auth
                 corsEnabled: false
+                service:
+                    supportClientCertForwarding: true
     health:
         protected: true
 spring:
