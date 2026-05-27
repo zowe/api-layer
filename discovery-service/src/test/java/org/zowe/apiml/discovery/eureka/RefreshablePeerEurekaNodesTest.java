@@ -43,8 +43,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -87,7 +86,7 @@ class RefreshablePeerEurekaNodesTest {
 
     @BeforeEach
     void setUp() {
-        eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, secureSslContextWithoutKeystore, DEFAULT_MAX_RETRIES);
+        eurekaNodes = new RefreshablePeerEurekaNodes(registry, serverConfig, clientConfig, serverCodecs, applicationInfoManager, replicationClientAdditionalFilters, secureSslContextWithoutKeystore, DEFAULT_MAX_RETRIES, false);
     }
 
     @Test
@@ -101,7 +100,7 @@ class RefreshablePeerEurekaNodesTest {
         defaultExecutor.set(null, Executors.newSingleThreadScheduledExecutor());
 
         PeerEurekaNode node = eurekaNodes.createPeerEurekaNode("https://localhost:10013/");
-        assertTrue(node instanceof ApimlPeerEurekaNode);
+        assertInstanceOf(ApimlPeerEurekaNode.class, node);
     }
 
     static Stream<Set<String>> values() {
