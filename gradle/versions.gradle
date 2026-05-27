@@ -129,7 +129,7 @@ dependencyResolutionManagement {
                 prefer '1.6.15'
             }
             version('swagger3Core', '2.2.50')
-            version('swagger3Parser', '2.1.42')
+            version('swagger3Parser', '2.1.43')
             version('swaggerCore', '1.6.16')
             version('swaggerInflector', '2.0.17')
             version('swaggerJaxrs2', '2.2.50')
