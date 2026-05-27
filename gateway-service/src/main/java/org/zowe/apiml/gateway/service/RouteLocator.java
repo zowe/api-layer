@@ -47,7 +47,7 @@ public class RouteLocator implements RouteDefinitionLocator {
     @Value("${apiml.routing.ignoredServices:}")
     private String[] ignoredServices;
 
-    @Value("${apiml.service.forwardClientCertEnabled:false}")
+    @Value("${apiml.service.forwardClientCertEnabled:true}")
     private boolean forwardingClientCertEnabled;
 
     @Value("${otel.sdk.disabled:true}")
@@ -118,9 +118,12 @@ public class RouteLocator implements RouteDefinitionLocator {
                     .map(Boolean::parseBoolean)
                     .orElse(false)
         ) {
+            log.debug("Forwarding client cert is enabled {}", serviceInstance.getServiceId());
             FilterDefinition forwardClientCertFilter = new FilterDefinition();
             forwardClientCertFilter.setName("ForwardClientCertFilterFactory");
             serviceRelated.add(forwardClientCertFilter);
+        } else {
+            log.debug("Forwarding client cert is not enabled {}", serviceInstance.getServiceId());
         }
         //Allow encoded characters by default
         if (!Optional.ofNullable(serviceInstance.getMetadata().get(ENABLE_URL_ENCODED_CHARACTERS))
