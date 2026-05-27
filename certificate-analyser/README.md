@@ -12,9 +12,7 @@ Usage: <main class> [-hl] [-kp[=<keyPasswd>]] [-tp[=<trustPasswd>]]
                 Alias under which this key is stored
   -h, --help    display a help message
   -k, --keystore=<keyStore>
-                Path to keystore file or keyring. When using keyring, pass
-                                  -Djava.protocol.handler.pkgs=com.ibm.crypto.provider in
-                                  command line.
+                Path to keystore file or keyring (safkeyring://userId/keyRing).
       -kp, --keypasswd[=<keyPasswd>]
                 Keystore password
       -kt, --keystoretype=<keyStoreType>
@@ -43,9 +41,22 @@ truststoretype - if this parameter is omitted completely, value from keystoretyp
 
 java -jar -Djavax.net.debug=ssl:handshake:verbose certificate-analyser-<version>.jar --keystore ../../../keystore/localhost/localhost.keystore.p12 --truststore ../../../keystore/localhost/localhost.truststore.p12 --keypasswd password --keyalias localhost --local
 
-### Keyring
+### SAF Keyrings
 
-If you are using SAF keyrings, you need to provide an additional parameter in command line `-Djava.protocol.handler.pkgs=com.ibm.crypto.provider`.
+On z/OS with IBM Java 17/21, if you are using SAF keyrings, add the IBM crypto modules to the JVM module graph:
+
+```bash
+java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
+  -jar certificate-analyser-<version>.jar \
+  --keystore safkeyring://userId/keyRing \
+  --keystoretype JCERACFKS \
+  --keypasswd password
+```
+
+> **Note:** The tool internally sets `java.protocol.handler.pkgs` to register the
+> `safkeyring://` URL protocol handler. The `--add-modules` flag resolves the IBM
+> crypto modules making the handler classes accessible. Both mechanisms work together
+> to enable `safkeyring://` URLs — no additional `-D` flags are needed.
 
 ### Possible issues
 
