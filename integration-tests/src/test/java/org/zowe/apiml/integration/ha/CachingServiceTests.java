@@ -133,7 +133,7 @@ class CachingServiceTests {
         // check the all records (tokenCache)
         given()
             .config(SslContext.clientCertApiml)
-            .header("X-Certificate-DistinguishedName", DN)
+
         .when()
             .get(baseUrls.get(index) + "/cachingservice/api/v1/cache-list")
         .then()
@@ -144,7 +144,7 @@ class CachingServiceTests {
         // check the all records (tokenCache)
         given()
             .config(SslContext.clientCertApiml)
-            .header("X-Certificate-DistinguishedName", DN)
+
         .when()
             .get(baseUrls.get(index) + "/cachingservice/api/v1/cache-list/" + MAP)
         .then()
@@ -155,7 +155,7 @@ class CachingServiceTests {
         // check the concrete record (cache)
         given()
             .config(SslContext.clientCertApiml)
-            .header("X-Certificate-DistinguishedName", DN)
+
         .when()
             .get(baseUrls.get(index) + "/cachingservice/api/v1/cache/" + KEY)
         .then()
@@ -171,13 +171,14 @@ class CachingServiceTests {
         log.info("Set value on the first instance to cache storage");
         //@formatter:off
         given()
+            .log().all()
             .config(SslContext.clientCertApiml)
             .contentType(JSON)
             .body(KEY_VALUE)
             .when()
             .post(baseUrls.get(0) + "/cachingservice/api/v1/cache")
             .then()
-            .log().ifValidationFails()
+            .log().all()
             .statusCode(201);
 
         log.info("Set value on the first instance to tokenCache storage");
