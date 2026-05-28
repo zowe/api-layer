@@ -53,7 +53,7 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
     @Getter
     private final Set<String> publicKeyCertificatesBase64;
     private final CertificateValidator certificateValidator;
-    private final boolean isCachingService;
+    private final boolean useCertFromTlsHandshake;
 
     @Setter
     private Predicate<X509Certificate> certificateForClientAuth = cert ->
@@ -117,7 +117,7 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                     requestBuilder.sslInfo(sslInfo);
                 }
 
-            } else if(!isCachingService) {
+            } else if(useCertFromTlsHandshake) {
                 X509Certificate[] clientAuthCerts = selectCerts(certsFromTls, certificateForClientAuth);
 
                 log.debug("DEBUG (else): clientAuthCerts.length = {}", clientAuthCerts.length);

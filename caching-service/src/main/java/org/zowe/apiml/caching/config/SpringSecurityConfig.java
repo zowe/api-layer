@@ -78,8 +78,8 @@ public class SpringSecurityConfig {
         if (!isHealthEndpointProtected) {
             antMatchersToIgnore.add("/cachingservice/application/health");
         }
-        // TODO: not sure if this is correct
-        var certFilter = new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator, true);
+        var certFilter = new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator, false);
+        // all certificates in the header coming from trusted proxy are allowed for client authentication, including API ML certificate
         certFilter.setCertificateForClientAuth((crt) -> true);
         http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
