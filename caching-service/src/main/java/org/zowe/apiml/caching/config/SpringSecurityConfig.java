@@ -71,6 +71,7 @@ public class SpringSecurityConfig {
         if (!isHealthEndpointProtected) {
             antMatchersToIgnore.add("/cachingservice/application/health");
         }
+        // TODO: not sure if this is correct
         var certFilter = new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator);
         certFilter.setCertificateForClientAuth((crt) -> true);
         http

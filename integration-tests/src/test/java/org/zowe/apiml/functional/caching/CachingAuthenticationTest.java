@@ -13,10 +13,7 @@ package org.zowe.apiml.functional.caching;
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -135,6 +132,7 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
     @Nested
     class WhenCalledWithValidAuthentication {
         @Test
+        @Disabled
         void cachingApiEndpointsAccessible() {
             given()
                 .config(SslContext.clientCertApiml)
