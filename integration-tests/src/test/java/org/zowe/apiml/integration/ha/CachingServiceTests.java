@@ -46,7 +46,7 @@ import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
 @Slf4j
 @HATest
 @ChaoticHATest
-@TestInstance(TestInstance.Lifecycle. PER_CLASS)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CachingServiceTests {
 
     private static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
@@ -172,23 +172,23 @@ class CachingServiceTests {
         //@formatter:off
         given()
             .config(SslContext.clientCertApiml)
-            .header("X-Certificate-DistinguishedName", DN)
             .contentType(JSON)
             .body(KEY_VALUE)
             .when()
             .post(baseUrls.get(0) + "/cachingservice/api/v1/cache")
             .then()
+            .log().ifValidationFails()
             .statusCode(201);
 
         log.info("Set value on the first instance to tokenCache storage");
         given()
             .config(SslContext.clientCertApiml)
-            .header("X-Certificate-DistinguishedName", DN)
             .contentType(JSON)
             .body(MAP_KEY_VALUE)
             .when()
             .post(baseUrls.get(0) + "/cachingservice/api/v1/cache-list/" + MAP)
             .then()
+            .log().ifValidationFails()
             .statusCode(201);
         //@formatter:on
 
