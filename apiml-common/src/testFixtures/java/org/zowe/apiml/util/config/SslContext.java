@@ -95,9 +95,11 @@ public class SslContext {
             try (FileInputStream fis = new FileInputStream(ResourceUtils.getFile(providedConfigurer.getKeystoreLocalhostJks()))) {
                 keystoreLocalhost.load(fis, providedConfigurer.getKeystorePassword());
             }
-            clientCertValidCert = Base64.getEncoder().encodeToString(keystoreLocalhost.getCertificate("apimtst").getEncoded());
-
-            log.debug("Loaded {}[apimtst]", providedConfigurer.getKeystoreLocalhostJks());
+            var apimtstcert = keystoreLocalhost.getCertificate("apimtst");
+            if (apimtstcert != null) {
+                clientCertValidCert = Base64.getEncoder().encodeToString(apimtstcert.getEncoded());
+                log.debug("Loaded {}[apimtst]", providedConfigurer.getKeystoreLocalhostJks());
+            }
 
             sslClientCertApiml = SSLContextBuilder
                 .create()
