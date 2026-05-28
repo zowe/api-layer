@@ -79,7 +79,7 @@ public class SpringSecurityConfig {
             antMatchersToIgnore.add("/cachingservice/application/health");
         }
         // TODO: not sure if this is correct
-        var certFilter = new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator);
+        var certFilter = new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator, true);
         certFilter.setCertificateForClientAuth((crt) -> true);
         http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)

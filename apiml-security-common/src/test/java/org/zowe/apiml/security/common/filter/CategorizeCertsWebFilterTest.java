@@ -87,7 +87,7 @@ class CategorizeCertsWebFilterTest {
         Set<String> gatewayPublicKeys = new HashSet<>();
         gatewayPublicKeys.add(CertificateLoggingUtils.base64EncodePublicKey(gatewayCert));
 
-        filter = new CategorizeCertsWebFilter(gatewayPublicKeys, mockCertificateValidator);
+        filter = new CategorizeCertsWebFilter(gatewayPublicKeys, mockCertificateValidator, false);
 
         when(mockExchange.getRequest()).thenReturn(mockRequest);
         when(mockExchange.mutate()).thenReturn(mockExchangeBuilder);
@@ -301,7 +301,6 @@ class CategorizeCertsWebFilterTest {
             return (X509Certificate) keystore.getCertificate(alias);
         }
     }
-
 
 
 }
