@@ -15,14 +15,21 @@ import io.restassured.config.SSLConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.X509HostnameVerifier;
-import org.apache.http.ssl.*;
+import org.apache.http.ssl.PrivateKeyDetails;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.TrustStrategy;
 import org.springframework.util.ResourceUtils;
+
 import javax.net.ssl.SSLContext;
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.Socket;
 import java.security.KeyStore;
-import java.security.cert.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -40,6 +47,7 @@ public class SslContext {
 
     public static SSLContext sslClientCertValid;
     public static SSLContext sslClientCertApiml;
+    public static String clientCertValidCert;
 
     private static AtomicBoolean isInitialized = new AtomicBoolean(false);
     private static AtomicReference<SslContextConfigurer> configurer = new AtomicReference<>();
@@ -52,6 +60,7 @@ public class SslContext {
         apimlRootCert = null;
         selfSignedUntrusted = null;
         tlsWithoutCert = null;
+        clientCertValidCert = null;
         configurer.set(null);
         isInitialized.set(false);
     }
@@ -81,6 +90,12 @@ public class SslContext {
                 .loadTrustMaterial(null, trustStrategy)
                 .build();
             clientCertValid = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslClientCertValid, hostnameVerifier)));
+
+            KeyStore keystoreLocalhost = KeyStore.getInstance("JKS");
+            try (FileInputStream fis = new FileInputStream(ResourceUtils.getFile(providedConfigurer.getKeystoreLocalhostJks()))) {
+                keystoreLocalhost.load(fis, providedConfigurer.getKeystorePassword());
+            }
+            clientCertValidCert = Base64.getEncoder().encodeToString(keystoreLocalhost.getCertificate("apimtst").getEncoded());
 
             log.debug("Loaded {}[apimtst]", providedConfigurer.getKeystoreLocalhostJks());
 

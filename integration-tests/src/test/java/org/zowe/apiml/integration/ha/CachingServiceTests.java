@@ -41,6 +41,7 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.CLIENT_CERT_HEADER;
 import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
 
 @Slf4j
@@ -58,7 +59,7 @@ class CachingServiceTests {
     private static final String MAP = "aMap";
     private static final String MAP_KEY = "aMapCacheKey" + new Random().nextInt();
     private static final String MAP_VALUE = "aMapCacheValue";
-    private static final String DN = "CN=Zowe Service, OU=API Mediation Layer, O=Zowe Sample, L=Prague, ST=Prague, C=CZ";
+    private static String CLIENT_CERT_VALUE;
 
     private static final KeyValue KEY_VALUE = new KeyValue(KEY, VALUE);
     private static final KeyValue MAP_KEY_VALUE = new KeyValue(MAP_KEY, MAP_VALUE);
@@ -106,7 +107,7 @@ class CachingServiceTests {
     void setUp() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
-
+        CLIENT_CERT_VALUE = SslContext.clientCertValidCert;
         EnvironmentConfiguration environmentConfiguration = environmentConfiguration();
         CachingServiceConfiguration cachingServiceConfiguration = environmentConfiguration.getCachingServiceConfiguration();
 
@@ -175,6 +176,7 @@ class CachingServiceTests {
             .config(SslContext.clientCertApiml)
             .contentType(JSON)
             .body(KEY_VALUE)
+            .header(CLIENT_CERT_HEADER, CLIENT_CERT_VALUE)
             .when()
             .post(baseUrls.get(0) + "/cachingservice/api/v1/cache")
             .then()
@@ -186,6 +188,7 @@ class CachingServiceTests {
             .config(SslContext.clientCertApiml)
             .contentType(JSON)
             .body(MAP_KEY_VALUE)
+            .header(CLIENT_CERT_HEADER, CLIENT_CERT_VALUE)
             .when()
             .post(baseUrls.get(0) + "/cachingservice/api/v1/cache-list/" + MAP)
             .then()
