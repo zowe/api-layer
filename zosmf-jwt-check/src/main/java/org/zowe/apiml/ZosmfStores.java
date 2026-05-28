@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
  * or z/OS SAF keyrings. Supports PKCS12, JKS, and {@code safkeyring://} URIs.
  */
 @SuppressWarnings("squid:S106")
-public class Stores {
+public class ZosmfStores {
 
     private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)/([^/]+)$");
 
@@ -36,7 +36,7 @@ public class Stores {
     private KeyStore trustStore;
     private final ZosmfJwtCheckConfig conf;
 
-    public Stores(ZosmfJwtCheckConfig conf) {
+    public ZosmfStores(ZosmfJwtCheckConfig conf) {
         this.conf = conf;
         init();
     }

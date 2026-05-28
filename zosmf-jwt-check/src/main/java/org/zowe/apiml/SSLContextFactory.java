@@ -23,17 +23,17 @@ import java.security.cert.X509Certificate;
 /**
  * Builds a TLSv1.2 {@link SSLContext} in two modes:
  * <ul>
- *   <li>{@link #initSSLContext(Stores)} — normal mode using real truststore/keystore</li>
+ *   <li>{@link #initSSLContext(ZosmfStores)} — normal mode using real truststore/keystore</li>
  *   <li>{@link #initTrustAllSSLContext()} — trust-all mode for DISABLED verification</li>
  * </ul>
  */
 @SuppressWarnings("squid:S106")
 public class SSLContextFactory {
 
-    private final Stores stores;
+    private final ZosmfStores stores;
     private SSLContext sslContext;
 
-    private SSLContextFactory(Stores stores) {
+    private SSLContextFactory(ZosmfStores stores) {
         this.stores = stores;
     }
 
@@ -47,7 +47,7 @@ public class SSLContextFactory {
      * @param stores loaded keystore/truststore pair
      * @return factory holding the initialized SSLContext
      */
-    public static SSLContextFactory initSSLContext(Stores stores) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException, CertificateException, IOException {
+    public static SSLContextFactory initSSLContext(ZosmfStores stores) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException, CertificateException, IOException {
         SSLContextFactory factory = new SSLContextFactory(stores);
 
         TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());

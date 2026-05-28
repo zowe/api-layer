@@ -60,6 +60,19 @@ class AnalyserTest {
     }
 
     @Test
+    void whenZosmfJwtCheckFlagPassed_thenDelegatesToZosmfJwtCheck() {
+        String[] args = {"--zosmf-jwt-check", "--help"};
+        assertEquals(8, Analyser.mainWithExitCode(args));
+        assertTrue(outputStream.toString().contains("z/OSMF JWT Check"));
+    }
+
+    @Test
+    void whenZosmfJwtCheckFlagWithNoArgs_thenReturnsExitCode4() {
+        String[] args = {"--zosmf-jwt-check"};
+        assertEquals(4, Analyser.mainWithExitCode(args));
+    }
+
+    @Test
     void whenNoRemoteUrlProvided_thenMessageIsPrinted() {
         String[] args = {};
         assertEquals(4, Analyser.mainWithExitCode(args));

@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation project(':zosmf-jwt-check')
     implementation libs.picocli
     annotationProcessor libs.picocli.codegen
 
@@ -16,6 +17,7 @@ compileJava {
 }
 
 jar {
+    dependsOn ':zosmf-jwt-check:jar'
     manifest {
         attributes(
             'Main-Class': 'org.zowe.apiml.Analyser'

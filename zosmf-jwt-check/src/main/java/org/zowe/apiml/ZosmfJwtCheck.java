@@ -53,7 +53,7 @@ public class ZosmfJwtCheck {
                     HostnameVerifier noopVerifier = (hostname, session) -> true;
                     httpClient = new HttpClientWrapper(sslContextFactory.getSslContext(), noopVerifier);
                 } else {
-                    Stores stores = new Stores(conf);
+                    ZosmfStores stores = new ZosmfStores(conf);
                     SSLContextFactory sslContextFactory = SSLContextFactory.initSSLContext(stores);
 
                     HostnameVerifier hostnameVerifier;

@@ -15,13 +15,6 @@ compileJava {
 }
 
 jar {
-    manifest {
-        attributes(
-            'Main-Class': 'org.zowe.apiml.ZosmfJwtCheck'
-        )
-    }
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-    }
+    // Thin JAR — consumed as a dependency by certificate-analyser's fat JAR.
+    // No Main-Class manifest; not intended to be run standalone.
 }

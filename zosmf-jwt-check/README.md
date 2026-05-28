@@ -2,11 +2,13 @@
 
 A Java utility that verifies connectivity to the z/OSMF JWK endpoint. This tool helps diagnose configuration issues early such as incorrect hostnames, unreachable ports, missing certificates, or misconfigured z/OSMF by performing a lightweight HTTP(S) call to the z/OSMF JWK endpoint at `/jwt/ibm/api/zOSMFBuilder/jwk`.
 
+> **Build Note:** This module no longer produces a standalone runnable JAR. Its functionality is bundled into the **certificate-analyser** fat JAR and accessed via the `--zosmf-jwt-check` CLI flag. See [Running via certificate-analyser](#running-via-certificate-analyser) below.
+
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
 - [Building](#building)
-- [Usage](#usage)
+- [Running via certificate-analyser](#running-via-certificate-analyser)
 - [CLI Flags Reference](#cli-flags-reference)
 - [Certificate Verification Modes](#certificate-verification-modes)
 - [Exit Codes](#exit-codes)
@@ -29,36 +31,46 @@ A Java utility that verifies connectivity to the z/OSMF JWK endpoint. This tool 
 
 ## Building
 
-From the root of the `api-layer` repository:
+From the root of the `api-layer` repository, build the unified certificate-analyser JAR (which includes this module):
 
 ```bash
-./gradlew :zosmf-jwt-check:build
+./gradlew :certificate-analyser:build
 ```
 
 On Windows:
 
 ```powershell
-.\gradlew :zosmf-jwt-check:build
+.\gradlew :certificate-analyser:build
 ```
 
-The fat JAR (with all dependencies bundled) will be generated at:
+The fat JAR will be generated at:
 
 ```
-zosmf-jwt-check/build/libs/zosmf-jwt-check-<version>.jar
+certificate-analyser/build/libs/certificate-analyser-<version>.jar
 ```
 
-For example: `zosmf-jwt-check/build/libs/zosmf-jwt-check-3.5.12-SNAPSHOT.jar`
-
-## Usage
+To compile and test this module independently (without producing a runnable JAR):
 
 ```bash
-java -jar zosmf-jwt-check-<version>.jar --zosmf-host <hostname> --zosmf-port <port> [options]
+./gradlew :zosmf-jwt-check:test
 ```
 
-**Minimal example (DISABLED mode,  quickest way to test):**
+### Build Architecture
+
+This module produces a **thin JAR** (no `Main-Class`, no bundled dependencies) that is consumed as a compile/runtime dependency by `certificate-analyser`. The `certificate-analyser` fat JAR bundles all classes from this module and exposes the z/OSMF JWT check functionality via the `--zosmf-jwt-check` CLI flag.
+
+## Running via certificate-analyser
 
 ```bash
-java -jar zosmf-jwt-check-<version>.jar \
+java -jar certificate-analyser/build/libs/certificate-analyser-<version>.jar --zosmf-jwt-check [options]
+```
+
+All arguments after `--zosmf-jwt-check` are passed directly to the z/OSMF JWT check tool.
+
+**Minimal example (DISABLED mode, quickest way to test):**
+
+```bash
+java -jar certificate-analyser/build/libs/certificate-analyser-<version>.jar --zosmf-jwt-check \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 11443 \
   --verify-certificates DISABLED
@@ -67,7 +79,7 @@ java -jar zosmf-jwt-check-<version>.jar \
 **Full example (STRICT mode with truststore):**
 
 ```bash
-java -jar zosmf-jwt-check-<version>.jar \
+java -jar certificate-analyser/build/libs/certificate-analyser-<version>.jar --zosmf-jwt-check \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 11443 \
   --truststore-file /path/to/truststore.p12 \
@@ -77,7 +89,7 @@ java -jar zosmf-jwt-check-<version>.jar \
 **Display help:**
 
 ```bash
-java -jar zosmf-jwt-check-<version>.jar --help
+java -jar certificate-analyser/build/libs/certificate-analyser-<version>.jar --zosmf-jwt-check --help
 ```
 
 ## CLI Flags Reference
@@ -192,7 +204,7 @@ Below are step-by-step commands for testing all modes. Replace `<version>` with 
 The fastest way to verify basic TCP + HTTP connectivity:
 
 ```bash
-java -jar zosmf-jwt-check/build/libs/zosmf-jwt-check-<version>.jar \
+java -jar certificate-analyser/build/libs/certificate-analyser-<version>.jar --zosmf-jwt-check \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 11443 \
   --verify-certificates DISABLED
@@ -211,7 +223,7 @@ SUCCESS: z/OSMF JWK endpoint exists (returned 401 Unauthorized — expected with
 Requires a truststore containing the z/OSMF server's CA certificate (see [Creating a Truststore](#creating-a-truststore)):
 
 ```bash
-java -jar zosmf-jwt-check/build/libs/zosmf-jwt-check-<version>.jar \
+java -jar certificate-analyser/build/libs/certificate-analyser-<version>.jar --zosmf-jwt-check \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 11443 \
   --truststore-file /path/to/zosmf-truststore.p12 \
@@ -238,7 +250,7 @@ Details: PKIX path building failed: ...unable to find valid certification path t
 Useful when connecting via IP address but the certificate has a DNS name:
 
 ```bash
-java -jar zosmf-jwt-check/build/libs/zosmf-jwt-check-<version>.jar \
+java -jar certificate-analyser/build/libs/certificate-analyser-<version>.jar --zosmf-jwt-check \
   --zosmf-host 10.0.0.50 \
   --zosmf-port 11443 \
   --truststore-file /path/to/zosmf-truststore.p12 \
@@ -259,47 +271,10 @@ SUCCESS: z/OSMF JWK endpoint exists (returned 401 Unauthorized — expected with
 For z/OSMF instances running on plain HTTP (uncommon):
 
 ```bash
-java -jar zosmf-jwt-check/build/libs/zosmf-jwt-check-<version>.jar \
+java -jar certificate-analyser/build/libs/certificate-analyser-<version>.jar --zosmf-jwt-check \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 80 \
   --scheme http
-```
-
-### 5. Validation Error Tests
-
-**Missing required flags:**
-
-```bash
-# No arguments at all
-java -jar zosmf-jwt-check-<version>.jar
-# Output: Missing required options: '--zosmf-host=<zosmfHost>', '--zosmf-port=<zosmfPort>'
-
-# Missing truststore in STRICT mode
-java -jar zosmf-jwt-check-<version>.jar --zosmf-host myhost --zosmf-port 443
-# Output: ERROR: --truststore-file is required when --scheme=https and verification is not DISABLED.
-
-# Missing truststore password
-java -jar zosmf-jwt-check-<version>.jar --zosmf-host myhost --zosmf-port 443 --truststore-file my.p12
-# Output: ERROR: --truststore-password is required when --scheme=https and verification is not DISABLED.
-```
-
-**Invalid values:**
-
-```bash
-# Invalid scheme
-java -jar zosmf-jwt-check-<version>.jar --zosmf-host myhost --zosmf-port 443 --scheme ftp
-# Output: ERROR: --scheme must be 'http' or 'https', got: ftp
-
-# Invalid verify mode
-java -jar zosmf-jwt-check-<version>.jar --zosmf-host myhost --zosmf-port 443 --verify-certificates INVALID
-# Output: ERROR: --verify-certificates must be STRICT, NONSTRICT, or DISABLED, got: INVALID
-```
-
-**Unreachable host:**
-
-```bash
-java -jar zosmf-jwt-check-<version>.jar --zosmf-host nonexistent.host --zosmf-port 443 --verify-certificates DISABLED
-# Output: FAILURE: Cannot connect to nonexistent.host:443.
 ```
 
 ## SAF Keyrings
@@ -308,7 +283,7 @@ On z/OS, if you are using SAF keyrings instead of file-based keystores/truststor
 
 ```bash
 java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
-  -jar zosmf-jwt-check-<version>.jar \
+  -jar certificate-analyser/build/libs/certificate-analyser-<version>.jar --zosmf-jwt-check \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 11443 \
   --truststore-file safkeyring://IZUSVR/ZoweKeyring \
