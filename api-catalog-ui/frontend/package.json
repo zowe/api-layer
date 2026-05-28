@@ -45,7 +45,7 @@
         "rxjs": "7.8.2",
         "sass": "1.100.0",
         "stream": "0.0.3",
-        "swagger-ui-react": "5.17.14",
+        "swagger-ui-react": "5.32.6",
         "url": "0.11.4",
         "util": "0.12.5",
         "uuid": "9.0.1"
