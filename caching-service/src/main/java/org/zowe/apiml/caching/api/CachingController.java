@@ -289,13 +289,14 @@ public class CachingController {
 
     private Optional<String> getServiceId(ServerWebExchange exchange) {
         Optional<String> certificateServiceId = extractFromSslInfo(exchange);
+        if (certificateServiceId.isEmpty()) {
+            return Optional.empty();
+        }
         Optional<String> specificServiceId = getHeader(exchange, "X-CS-Service-ID");
 
-        if (certificateServiceId.isPresent() && specificServiceId.isPresent()) {
-            return Optional.of(certificateServiceId.get() + ", SERVICE=" + specificServiceId.get());
-        }
+        return specificServiceId.map(s -> certificateServiceId.get() + ", SERVICE=" + s).or(() -> certificateServiceId);
 
-        return specificServiceId.or(() -> certificateServiceId);
+
     }
 
     private Optional<String> extractFromSslInfo(ServerWebExchange exchange) {

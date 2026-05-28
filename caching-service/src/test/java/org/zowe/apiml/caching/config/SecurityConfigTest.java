@@ -47,34 +47,6 @@ public class SecurityConfigTest {
     @Nested
     @TestPropertySource(
         properties = {
-            "apiml.service.ssl.verifySslCertificatesOfServices=false"
-        }
-    )
-    @SpringBootTest(
-        classes = CachingServiceApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-    )
-    class GivenDisabledSSLVerification {
-
-        @Value("${apiml.service.hostname:localhost}")
-        String hostname;
-        @LocalServerPort
-        int port;
-
-        @Test
-        void thenDoNotRequireAuth() {
-            given()
-                .header(new Header("X-CS-Service-ID", "apimtst"))
-                .get(getUri(hostname, port))
-                .then()
-                .log().ifValidationFails()
-                .statusCode(HttpStatus.OK.value());
-        }
-    }
-
-    @Nested
-    @TestPropertySource(
-        properties = {
             "apiml.service.ssl.verifySslCertificatesOfServices=true"
         }
     )
