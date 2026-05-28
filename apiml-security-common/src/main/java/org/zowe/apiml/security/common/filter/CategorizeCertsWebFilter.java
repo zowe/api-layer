@@ -117,7 +117,7 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                     requestBuilder.sslInfo(sslInfo);
                 }
 
-            } else if(useCertFromTlsHandshake) {
+            } else if (useCertFromTlsHandshake) {
                 X509Certificate[] clientAuthCerts = selectCerts(certsFromTls, certificateForClientAuth);
 
                 log.debug("DEBUG (else): clientAuthCerts.length = {}", clientAuthCerts.length);
