@@ -28,7 +28,9 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 import org.zowe.apiml.security.common.util.X509Util;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.Set;
+
 import org.zowe.apiml.security.common.filter.CategorizeCertsWebFilter;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
@@ -69,7 +71,8 @@ public class SpringSecurityConfig {
         if (!isHealthEndpointProtected) {
             antMatchersToIgnore.add("/cachingservice/application/health");
         }
-
+        var certFilter = new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator);
+        certFilter.setCertificateForClientAuth((crt) -> true);
         http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .headers(headers -> headers.hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable))
@@ -79,7 +82,7 @@ public class SpringSecurityConfig {
             .exceptionHandling(exceptionHandlingSpec ->
                 exceptionHandlingSpec.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.FORBIDDEN))
             )
-            .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST);
+            .addFilterAfter(certFilter, SecurityWebFiltersOrder.FIRST);
 
         if (verifyCertificates) {
             http.authorizeExchange(exchange -> exchange
