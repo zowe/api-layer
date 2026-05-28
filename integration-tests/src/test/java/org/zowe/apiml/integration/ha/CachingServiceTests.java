@@ -134,7 +134,7 @@ class CachingServiceTests {
         // check the all records (tokenCache)
         given()
             .config(SslContext.clientCertApiml)
-
+            .header(CLIENT_CERT_HEADER, CLIENT_CERT_VALUE)
         .when()
             .get(baseUrls.get(index) + "/cachingservice/api/v1/cache-list")
         .then()
@@ -145,7 +145,7 @@ class CachingServiceTests {
         // check the all records (tokenCache)
         given()
             .config(SslContext.clientCertApiml)
-
+            .header(CLIENT_CERT_HEADER, CLIENT_CERT_VALUE)
         .when()
             .get(baseUrls.get(index) + "/cachingservice/api/v1/cache-list/" + MAP)
         .then()
@@ -156,7 +156,7 @@ class CachingServiceTests {
         // check the concrete record (cache)
         given()
             .config(SslContext.clientCertApiml)
-
+            .header(CLIENT_CERT_HEADER, CLIENT_CERT_VALUE)
         .when()
             .get(baseUrls.get(index) + "/cachingservice/api/v1/cache/" + KEY)
         .then()
