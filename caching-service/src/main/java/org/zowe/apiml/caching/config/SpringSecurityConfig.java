@@ -25,6 +25,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
+import org.zowe.apiml.security.common.auth.BasicAuthenticationManager;
 import org.zowe.apiml.security.common.util.X509Util;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,12 @@ import java.util.List;
 @EnableWebFluxSecurity
 @Import({HttpConfig.class, CertificateValidator.class, TrustedCertificatesProvider.class})
 public class SpringSecurityConfig {
+
+    @Value("${apiml.service.http.userId:#{null}}")
+    private String cachingServiceUserId;
+
+    @Value("${apiml.service.http.password:#{null}}")
+    private char[] cachingServicePassword;
 
     @Value("${apiml.service.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifyCertificates;
@@ -85,19 +92,20 @@ public class SpringSecurityConfig {
             )
             .addFilterAfter(certFilter, SecurityWebFiltersOrder.FIRST);
 
+        http.authorizeExchange(exchange -> exchange
+            .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
+            .anyExchange().authenticated());
+
         if (verifyCertificates) {
-            http.authorizeExchange(exchange -> exchange
-                .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
-                .anyExchange().authenticated()
-            ).x509(x509spec -> x509spec.principalExtractor(X509Util.x509PrincipalExtractor())
+            http.x509(x509spec -> x509spec.principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager()));
         } else {
-            http.authorizeExchange(exchange -> exchange.anyExchange().permitAll());
+            http.httpBasic(httpBasicSpec -> httpBasicSpec.authenticationManager(
+                new BasicAuthenticationManager(cachingServiceUserId, cachingServicePassword, "CACHING_SERVICE")));
         }
 
         return http.build();
     }
-
 
     @Bean
     ReactiveUserDetailsService userDetailsService() {
@@ -108,4 +116,5 @@ public class SpringSecurityConfig {
             return Mono.just(userDetails);
         };
     }
+
 }

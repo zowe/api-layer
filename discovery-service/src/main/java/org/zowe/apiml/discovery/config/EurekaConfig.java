@@ -51,6 +51,9 @@ public class EurekaConfig {
     @Value("${apiml.discovery.maxPeerRetries:10}")
     private int maxPeerRetries;
 
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
+
     /**
      * This is a fix of impossible overriding of the original bean.
      *
@@ -105,7 +108,8 @@ public class EurekaConfig {
             applicationInfoManager,
             replicationClientAdditionalFilters,
             secureSslContext,
-            maxPeerRetries
+            maxPeerRetries,
+            isClientAttlsEnabled
         );
     }
 
