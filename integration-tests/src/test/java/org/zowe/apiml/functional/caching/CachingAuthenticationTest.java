@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
+import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.CLIENT_CERT_HEADER;
 
 /**
  * This test is specifically testing the access to the Caching service. It doesn't go through the Gateway.
@@ -44,11 +45,13 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
 
     private String caching_url = ConfigReader.environmentConfiguration().getCachingServiceConfiguration().getUrl();
     private static final String CERT_HEADER_NAME = "X-Certificate-DistinguishedName";
+    private static String CLIENT_CERT_VALUE;
 
     @BeforeAll
     static void setup() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
+        CLIENT_CERT_VALUE = SslContext.clientCertValidCert;
     }
 
     @BeforeEach
@@ -132,10 +135,10 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
     @Nested
     class WhenCalledWithValidAuthentication {
         @Test
-        @Disabled
         void cachingApiEndpointsAccessible() {
             given()
                 .config(SslContext.clientCertApiml)
+                .header(CLIENT_CERT_HEADER, CLIENT_CERT_VALUE)
                 .when()
                 .get(caching_url + CACHING_PATH)
                 .then()
