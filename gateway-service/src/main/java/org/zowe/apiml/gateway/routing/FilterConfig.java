@@ -10,19 +10,19 @@
 
 package org.zowe.apiml.gateway.routing;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.gateway.cache.LoadBalancerCache;
-import org.zowe.apiml.gateway.filters.post.*;
+import org.zowe.apiml.gateway.filters.post.PageRedirectionFilter;
+import org.zowe.apiml.gateway.filters.post.PostStoreLoadBalancerCacheFilter;
+import org.zowe.apiml.gateway.filters.post.RoutedInstanceIdFilter;
 import org.zowe.apiml.gateway.filters.pre.*;
 import org.zowe.apiml.gateway.security.service.AuthenticationService;
 import org.zowe.apiml.gateway.security.service.RequestAuthenticationService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.product.routing.transform.TransformService;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 @Configuration
 public class FilterConfig {
@@ -56,12 +56,6 @@ public class FilterConfig {
     public PageRedirectionFilter pageRedirectionFilter(DiscoveryClient discovery,
                                                        TransformService transformService) {
         return new PageRedirectionFilter(discovery, transformService);
-    }
-
-    @Bean
-    @Autowired
-    public ConvertAuthTokenInUriToCookieFilter convertAuthTokenInUriToCookieFilter(AuthConfigurationProperties authConfigurationProperties) {
-        return new ConvertAuthTokenInUriToCookieFilter(authConfigurationProperties);
     }
 
     @Bean
