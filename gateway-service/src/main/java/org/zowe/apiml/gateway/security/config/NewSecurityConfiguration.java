@@ -39,7 +39,6 @@ import org.springframework.security.web.firewall.StrictHttpFirewall;
 import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.filter.SecureConnectionFilter;
-import org.zowe.apiml.gateway.conformance.ValidateAPIController;
 import org.zowe.apiml.gateway.controllers.AuthController;
 import org.zowe.apiml.gateway.controllers.CacheServiceController;
 import org.zowe.apiml.gateway.controllers.SafResourceAccessController;
@@ -503,20 +502,16 @@ public class NewSecurityConfiguration {
             private final String[] protectedEndpoints = {
                 "/application",
                 SafResourceAccessController.FULL_CONTEXT_PATH,
-                ServicesInfoController.SERVICES_URL,
-                ValidateAPIController.VALIDATE_CONFORMANCE_URL,
-                ValidateAPIController.LEGACY_CONFORMANCE_URL
+                ServicesInfoController.SERVICES_URL
             };
 
             @Bean
             public SecurityFilterChain certificateOrAuthEndpointsFilterChain(HttpSecurity http) throws Exception {
                 baseConfigure(http.requestMatchers(matchers -> matchers
-                    .antMatchers("/application/**")
-                    .antMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
-                    .antMatchers(ServicesInfoController.SERVICES_URL + "/**")
-                    .antMatchers(ValidateAPIController.VALIDATE_CONFORMANCE_URL + "/**")
-                    .antMatchers(ValidateAPIController.LEGACY_CONFORMANCE_URL))
-                ).authorizeRequests(requests -> requests
+                        .antMatchers("/application/**")
+                        .antMatchers(HttpMethod.POST, SafResourceAccessController.FULL_CONTEXT_PATH)
+                        .antMatchers(ServicesInfoController.SERVICES_URL + "/**"))
+                    ).authorizeRequests(requests -> requests
                         .anyRequest().authenticated())
                     .logout(logout -> logout.disable());  // logout filter in this chain not needed
 
