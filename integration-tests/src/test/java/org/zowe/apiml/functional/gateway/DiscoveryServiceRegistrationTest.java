@@ -22,7 +22,7 @@ import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.service.DiscoveryUtils.getAdditionalDiscoveryUrl;
 
 @Tag("MultipleRegistrationsTest")
-public class DiscoveryServiceRegistrationTest {
+class DiscoveryServiceRegistrationTest {
 
     @BeforeAll
     public static void init() throws Exception {
@@ -37,4 +37,5 @@ public class DiscoveryServiceRegistrationTest {
             .then()
             .statusCode(is(SC_OK));
     }
+
 }

@@ -13,6 +13,7 @@ apiml:
         staticApiDefinitionsDirectories: /api-defs;/docker/api-defs
         allPeersUrls: https://discovery-service:10011/eureka
     security:
+        allowedDomains: discovery-service,discoverable-client,api-catalog-services,caching-service,gateway-service,zaas-service,mock-services
         ssl:
             verifySslCertificatesOfServices: true
     banner: console

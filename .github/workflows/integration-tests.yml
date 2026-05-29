@@ -954,10 +954,62 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
+                env:
+                    APIML_SECURITY_ALLOWED_DOMAINS: "discovery-service,discoverable-client,api-catalog-services,caching-service,gateway-service,zaas-service,mock-services"
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Ddiscovery.instances=1 -DcentralGateway.instances=0
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
+            -   name: Run CI Tests
+                run: >
+                    ./gradlew :integration-tests:runRegistrationTests -Denvironment.config=-docker
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+            # Coverage results are not stored in this job as it would not provide much additional data
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ContainerCITestsRegistration-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsRegistrationModulith:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 15
+
+        services:
+            apiml:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_SERVICE_HOSTNAME: apiml
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
