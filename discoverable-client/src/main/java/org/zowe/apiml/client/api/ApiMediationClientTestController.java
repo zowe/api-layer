@@ -13,10 +13,19 @@ package org.zowe.apiml.client.api;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.client.model.Registered;
 import org.zowe.apiml.client.service.ApiMediationClientService;
 import org.zowe.apiml.exception.ServiceDefinitionException;
+
+import java.util.Collections;
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/v1/apiMediationClient")
@@ -25,6 +34,7 @@ import org.zowe.apiml.exception.ServiceDefinitionException;
     name = "API Mediation Client test call"
 )
 public class ApiMediationClientTestController {
+
     private final ApiMediationClientService apiMediationClientService;
 
     public ApiMediationClientTestController(ApiMediationClientService apiMediationClientService) {
@@ -33,9 +43,11 @@ public class ApiMediationClientTestController {
 
     @PostMapping
     @Operation(summary = "Forward registration to discovery service via API mediation client")
-    public ResponseEntity<String> forwardRegistration() {
+    public ResponseEntity<String> forwardRegistration(
+        @RequestBody(required = false) Map<String, Object> additionalMetadata
+    ) {
         try {
-            apiMediationClientService.register();
+            apiMediationClientService.register(additionalMetadata == null ? Collections.emptyMap() : additionalMetadata);
             return ResponseEntity.ok().build();
         } catch (ServiceDefinitionException e) {
             return ResponseEntity.status(500).body(e.getMessage());
@@ -55,4 +67,5 @@ public class ApiMediationClientTestController {
         boolean isRegistered = apiMediationClientService.isRegistered();
         return new Registered(isRegistered);
     }
+
 }

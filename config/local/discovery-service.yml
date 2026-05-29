@@ -9,6 +9,7 @@ apiml:
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
     security:
+        allowedDomains: localhost,localhost2
         ssl.verifySslCertificatesOfServices: true
     banner: console
 
