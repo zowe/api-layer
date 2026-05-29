@@ -138,9 +138,6 @@ class CategorizeCertsWebFilterTest {
 
         when(mockCertificateValidator.isForwardingEnabled()).thenReturn(false);
 
-        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
-        when(mockHeaders.getFirst(CLIENT_CERT_HEADER)).thenReturn("");
-
         StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
 
         X509Certificate[] clientAuthCerts = (X509Certificate[]) attributes.get(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
@@ -169,8 +166,6 @@ class CategorizeCertsWebFilterTest {
         when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
         when(mockExchange.getAttributes()).thenReturn(attributes);
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
-        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
-        when(mockHeaders.getFirst(CLIENT_CERT_HEADER)).thenReturn("");
         when(mockCertificateValidator.isForwardingEnabled()).thenReturn(false);
 
         StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
@@ -212,8 +207,6 @@ class CategorizeCertsWebFilterTest {
         when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
         when(mockExchange.getAttributes()).thenReturn(attributes);
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
-        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
-        when(mockHeaders.getFirst(CLIENT_CERT_HEADER)).thenReturn("");
         when(mockCertificateValidator.isForwardingEnabled()).thenReturn(false);
 
         StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
@@ -280,8 +273,6 @@ class CategorizeCertsWebFilterTest {
         when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
         when(mockExchange.getAttributes()).thenReturn(new HashMap<>());
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
-        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
-        when(mockHeaders.getFirst(CLIENT_CERT_HEADER)).thenReturn("");
 
         StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
 
