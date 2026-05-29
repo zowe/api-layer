@@ -29,7 +29,7 @@ import static java.util.stream.Collectors.toList;
 @Slf4j
 public class MetadataFilterService implements InitializingBean {
 
-    @Value("${apiml.security.allowedDomains}")
+    @Value("${apiml.security.allowedDomains:${apiml.service.hostname}}")
     private String allowedDomains;
 
     private List<String> allowedDomainsList;
