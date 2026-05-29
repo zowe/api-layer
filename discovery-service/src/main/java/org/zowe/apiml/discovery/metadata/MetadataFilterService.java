@@ -43,15 +43,25 @@ public class MetadataFilterService implements InitializingBean {
         if (StringUtils.isBlank(domain)) {
             return true;
         }
-        return allowedDomainsList.stream().anyMatch(allowedDomain -> isAllowed(domain, allowedDomain));
+        return allowedDomainsList.stream().anyMatch(allowedDomain -> {
+            try {
+                return isAllowed(allowedDomain, domain);
+            } catch (MalformedURLException e) {
+                return false;
+            }
+        });
     }
 
-    private boolean isAllowed(String domain, String allowedDomain) {
-        if (allowedDomain.equals(domain)) {
+    private boolean isAllowed(String domain, String value) throws MalformedURLException {
+        log.error("checking URL {} against domain {}", value, domain);
+        if (isUrl(value)) {
+            value = new URL(value).getHost();
+        }
+        if (value.equals(domain)) {
             return true;
         }
-        if (allowedDomain.startsWith("*.")) {
-            return domain.endsWith(allowedDomain.substring(2));
+        if (value.startsWith("*.")) {
+            return domain.endsWith(value.substring(2));
         }
 
         return false;

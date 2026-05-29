@@ -99,7 +99,6 @@ class ValidatorFactoryTest {
 
     }
 
-
     @Nested
     class GivenMetadataAndEndpoints {
 
@@ -114,7 +113,6 @@ class ValidatorFactoryTest {
             metadata.put("apiml.apiInfo.0.gatewayUrl", "/api/v1");
             metadata.put("apiml.routes.api_v1.gatewayUrl", "/api/v1");
             metadata.put("apiml.routes.api_v1.serviceUrl", "/sampleservice");
-
         }
 
         @ParameterizedTest
