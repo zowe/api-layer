@@ -102,7 +102,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     protected void updateRenewsPerMinThreshold() {
         Integer correction = RENEW_CORRECTION.get();
         if (correction != null) {
-            this.numberOfRenewsPerMinThreshold += correction;
+            this.expectedNumberOfClientsSendingRenews += correction;
             RENEW_CORRECTION.remove();
         }
 

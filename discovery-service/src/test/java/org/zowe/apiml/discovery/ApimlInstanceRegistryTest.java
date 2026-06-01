@@ -294,4 +294,38 @@ class ApimlInstanceRegistryTest {
             .build();
     }
 
+    @Nested
+    class UpdateRenewsPerMinThreshold {
+
+        private ApimlInstanceRegistry registry;
+        private ThreadLocal<Integer> renewCorrection;
+
+        @BeforeEach
+        void setUp() {
+            registry = new ApimlInstanceRegistry(
+                serverConfig, clientConfig, serverCodecs, eurekaClient,
+                eurekaServerHttpClientFactory, instanceRegistryProperties, appCntx, new EurekaConfig.Tuple("")
+            );
+            renewCorrection = (ThreadLocal<Integer>) ReflectionTestUtils.getField(registry, "RENEW_CORRECTION");
+        }
+
+        @Test
+        void givenCorrection_whenUpdateRenewsPerMinThreshold_thenProcessOnce() {
+            ReflectionTestUtils.setField(registry, "expectedNumberOfClientsSendingRenews", 5);
+            renewCorrection.set(-2);
+            registry.updateRenewsPerMinThreshold();
+            assertEquals(3, ReflectionTestUtils.getField(registry, "expectedNumberOfClientsSendingRenews"));
+            assertNull(renewCorrection.get());
+        }
+
+        @Test
+        void givenNoCorrection_whenUpdateRenewsPerMinThreshold_thenDoNothing() {
+            ReflectionTestUtils.setField(registry, "expectedNumberOfClientsSendingRenews", 5);
+            registry.updateRenewsPerMinThreshold();
+            assertEquals(5, ReflectionTestUtils.getField(registry, "expectedNumberOfClientsSendingRenews"));
+            assertNull(renewCorrection.get());
+        }
+
+    }
+
 }
