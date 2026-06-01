@@ -598,7 +598,7 @@ public class NewSecurityConfiguration {
             // Web security only needs to be configured once, putting it to multiple filter chains causes multiple evaluations of the same rules
             @Bean
             public WebSecurityCustomizer webSecurityCustomizer() {
-                StrictHttpFirewall firewall = new StrictHttpFirewall();
+                StrictHttpFirewall firewall = new ApimlStrictServerWebExchangeFirewall();
                 firewall.setAllowUrlEncodedSlash(true);
                 firewall.setAllowBackSlash(true);
                 firewall.setAllowUrlEncodedPercent(true);
