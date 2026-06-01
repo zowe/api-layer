@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.caching.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -58,16 +57,9 @@ public class SpringSecurityConfig {
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
 
-    @Autowired
-    @Qualifier("publicKeyCertificatesBase64")
-    private Set<String> publicKeyCertificatesBase64;
-
-    @Autowired
-    private CertificateValidator certificateValidator;
-
     @Bean
     @Order(1)
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, @Qualifier("publicKeyCertificatesBase64") Set<String> publicKeyCertificatesBase64, CertificateValidator certificateValidator) {
 
         var antMatchersToIgnore = new ArrayList<String>();
         antMatchersToIgnore.add("/cachingservice/application/info");
