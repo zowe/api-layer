@@ -170,8 +170,7 @@ class ZaasJwtService implements TokenService {
 
         if (statusCode == 200) {
             var body = response.getStringBody();
-            var mapper = new ObjectMapper();
-            var claims = mapper.readValue(body, Map.class);
+            var claims = objectMapper.readValue(body, Map.class);
             return new ZaasOidcValidationResult(true, claims);
         }
 
