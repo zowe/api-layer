@@ -37,7 +37,7 @@ public class RoutingConfigurationErrorFilterFactory extends AbstractAuthSchemeFa
     }
 
     @Override
-    protected Function<RequestCredentials, Mono<AuthorizationResponse<Object>>> getAuthorizationResponseTransformer() {
+    protected Function<RequestCredentials, Mono<AuthorizationResponse<Object>>> getAuthorizationResponseTransformer(ServerWebExchange exchange) {
         throw new IllegalStateException("not implemented");
     }
 

@@ -38,7 +38,12 @@ import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 class AbstractTokenFilterFactoryTest {
 
@@ -52,7 +57,7 @@ class AbstractTokenFilterFactoryTest {
 
             new AbstractTokenFilterFactory<>(AbstractTokenFilterFactory.Config.class, null, null) {
                 @Override
-                protected Function<RequestCredentials, Mono<AuthorizationResponse<ZaasTokenResponse>>> getAuthorizationResponseTransformer() {
+                protected Function<RequestCredentials, Mono<AuthorizationResponse<ZaasTokenResponse>>> getAuthorizationResponseTransformer(ServerWebExchange exchange) {
                     return null;
                 }
 
@@ -73,7 +78,7 @@ class AbstractTokenFilterFactoryTest {
 
             @Test
             void givenHeaderResponse_whenHandling_thenUpdateTheRequest() {
-                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
+                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null, ZaasTokenResponse.builder()
                     .headerName("headerName")
                     .token("headerValue")
                     .build()
@@ -83,13 +88,13 @@ class AbstractTokenFilterFactoryTest {
 
             @Test
             void givenCookieResponse_whenHandling_thenUpdateTheRequest() {
-                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
+                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null, ZaasTokenResponse.builder()
                     .cookieName("cookieName")
                     .token("cookieValue")
                     .build()
                 ));
                 assertEquals("cookieName=cookieValue", request.getHeaders().getFirst("cookie"));
-                assertEquals("Bearer cookieValue" , request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION));
+                assertEquals("Bearer cookieValue", request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION));
             }
 
         }
@@ -126,7 +131,7 @@ class AbstractTokenFilterFactoryTest {
 
             @Test
             void givenCookieAndHeaderInResponse_whenHandling_thenSetBoth() {
-                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null,ZaasTokenResponse.builder()
+                var request = testRequestMutation(new AbstractAuthSchemeFactory.AuthorizationResponse<>(null, ZaasTokenResponse.builder()
                     .cookieName("cookie")
                     .headerName("header")
                     .token("jwt")
@@ -144,11 +149,12 @@ class AbstractTokenFilterFactoryTest {
     class Otel {
 
         MockServerHttpRequest request = MockServerHttpRequest.get("/aPath").build();
-        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+        MockServerWebExchange exchange;
         OtelRequestContext otelRequestContext;
 
         @BeforeEach
         void mockOtelContext() {
+            exchange = MockServerWebExchange.from(request);
             otelRequestContext = spy(OtelRequestContext.of(exchange));
             exchange.getAttributes().put("otel-context", otelRequestContext);
         }
@@ -158,6 +164,7 @@ class AbstractTokenFilterFactoryTest {
             spy(AbstractAuthSchemeFactory.class).cleanHeadersOnAuthFail(exchange, "test");
 
             verify(otelRequestContext, times(1)).authenticationFailed();
+            verify(otelRequestContext, times(1)).authErrorMessage("test");
         }
 
         @Test
