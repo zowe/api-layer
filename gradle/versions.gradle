@@ -93,7 +93,7 @@ dependencyResolutionManagement {
             version('swaggerCore', '2.2.50')
             version('swaggerInflector', '2.0.17')
             version('swagger2Parser', '1.0.76')
-            version('swagger3Parser', '2.1.42')
+            version('swagger3Parser', '2.1.43')
             version('thymeleaf', '3.1.5.RELEASE')
             version('velocity', '2.4.1')
             version('woodstoxCore', '7.2.0')
@@ -295,7 +295,7 @@ dependencyResolutionManagement {
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - do not use in Spring unless really necessary
-            version('logback', '1.5.32')
+            version('logback', '1.5.33')
             version('mockitoCore', '5.23.0')
             version('mockitoInline', '5.2.0')
             version('mockServer','5.15.0')
