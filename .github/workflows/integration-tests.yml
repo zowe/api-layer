@@ -453,9 +453,6 @@ jobs:
                     - /api-defs:/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -572,8 +569,6 @@ jobs:
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
@@ -1013,8 +1008,6 @@ jobs:
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "caching-service"
                     JGROUPS_BIND_PORT: "7600"
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             central-gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1109,9 +1102,6 @@ jobs:
                     - /api-defs:/api-defs
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
@@ -1413,9 +1403,6 @@ jobs:
                     logbackService: ZWEAAC2
             caching-service:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client-2:
@@ -1861,7 +1848,6 @@ jobs:
                     MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
                     MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             caching-service-2:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -1875,7 +1861,6 @@ jobs:
                     MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
                     MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
                     logbackService: ZWEACS2
             caching-service-3:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
@@ -1890,7 +1875,6 @@ jobs:
                     MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
                     MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
                     logbackService: ZWEACS3
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
@@ -2020,7 +2004,6 @@ jobs:
                     MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
                     MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             caching-service-2:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -2034,7 +2017,6 @@ jobs:
                     MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
                     MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
                     logbackService: ZWEACS2
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
@@ -2196,8 +2178,6 @@ jobs:
                     CACHING_STORAGE_MODE: "infinispan"
                     APIML_SERVICE_PORT: "10022"
                     JGROUPS_BIND_ADDRESS: "caching-service"
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             caching-service-2:
                 image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -2209,8 +2189,6 @@ jobs:
                     JGROUPS_BIND_ADDRESS: "caching-service-2"
                     APIML_SERVICE_HOSTNAME: "caching-service-2"
                     logbackService: ZWEACS2
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
@@ -2219,8 +2197,6 @@ jobs:
                     - /api-defs:/api-defs
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_FORWARDCLIENTCERTENABLED: true
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
