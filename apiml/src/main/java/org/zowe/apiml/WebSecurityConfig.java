@@ -81,10 +81,6 @@ public class WebSecurityConfig {
 
     private static final String CONTEXT_PATH = String.format("/%s", CoreService.GATEWAY.getServiceId());
     private static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry";
-    private static final String CONFORMANCE_SHORT_URL = CONTEXT_PATH + "/conformance/**";
-    private static final String CONFORMANCE_LONG_URL = CONTEXT_PATH + "/api/v1" + "/conformance/**";
-    private static final String VALIDATE_SHORT_URL = "gateway/validate";
-    private static final String VALIDATE_LONG_URL = "gateway/api/v1/validate";
     private static final String APPLICATION_HEALTH = "/application/health";
     private static final String APPLICATION_INFO = "/application/info";
 
@@ -658,8 +654,6 @@ public class WebSecurityConfig {
      * This security filter chain secures the Gateway's endpoints:
      * /services
      * /registry
-     * /conformance
-     * /validate
      *
      * @param http
      * @param authConfigurationProperties
@@ -675,11 +669,7 @@ public class WebSecurityConfig {
                 SERVICES_SHORT_URL,
                 SERVICES_SHORT_URL + "/**",
                 SERVICES_FULL_URL,
-                SERVICES_FULL_URL + "/**",
-                CONFORMANCE_SHORT_URL,
-                CONFORMANCE_LONG_URL,
-                VALIDATE_SHORT_URL,
-                VALIDATE_LONG_URL
+                SERVICES_FULL_URL + "/**"
             ))
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec
