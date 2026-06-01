@@ -52,7 +52,8 @@ dependencyResolutionManagement {
             version('hystrix', '1.5.18')
             // version 14.x requires Java 11
             version('infinispan', '13.0.22.Final')
-            version('jacksonCore', '2.19.2')
+            version('jacksonAnnotations', '2.21')
+            version('jacksonCore', '2.21.3')
             version('jacksonDatabind', '2.19.2')
             version('jacksonDataformatYaml', '2.19.2')
             version('jacksonMapperAsl', '1.9.16-TALEND')
@@ -258,7 +259,7 @@ dependencyResolutionManagement {
             library('infinispan_core', 'org.infinispan', 'infinispan-core').versionRef('infinispan')
             library('infinispan_lock', 'org.infinispan', 'infinispan-clustered-lock').versionRef('infinispan')
             library('infinispan_jboss_marshalling', 'org.infinispan', 'infinispan-jboss-marshalling').versionRef('infinispan')
-            library('jackson_annotations', 'com.fasterxml.jackson.core', 'jackson-annotations').versionRef('jacksonCore')
+            library('jackson_annotations', 'com.fasterxml.jackson.core', 'jackson-annotations').versionRef('jacksonAnnotations')
             library('jackson_core', 'com.fasterxml.jackson.core', 'jackson-core').versionRef('jacksonCore')
             library('jackson_databind', 'com.fasterxml.jackson.core', 'jackson-databind').versionRef('jacksonDatabind')
             library('jackson_dataformat_yaml', 'com.fasterxml.jackson.dataformat', 'jackson-dataformat-yaml').versionRef('jacksonDataformatYaml')

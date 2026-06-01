@@ -11,6 +11,10 @@ javaPlatform {
     allowDependencies()
 }
 
+configurations.all {
+    exclude group: 'com.fasterxml.jackson', module: 'jackson-bom'
+}
+
 /**
  * all transitive dependencies upgrades in the whole project
  * to use in other module use api(platform(project(":platform")))
