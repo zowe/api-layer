@@ -270,7 +270,7 @@ function Login(props) {
                                         onKeyDown={onKeyEvent}
                                         onKeyUp={onKeyEvent}
                                         onChange={(t) => handleChange(t.target, setPassword)}
-                                        autoComplete="on"
+                                        autoComplete="off"
                                         label="Password"
                                         endAdornment={
                                             <InputAdornment position="end">
@@ -327,7 +327,7 @@ function Login(props) {
                                         onKeyDown={onKeyEvent}
                                         onKeyUp={onKeyEvent}
                                         onChange={(t) => handleChange(t.target, setNewPassword)}
-                                        autoComplete="on"
+                                        autoComplete="off"
                                         label="New Password"
                                         endAdornment={
                                             <InputAdornment position="end">
@@ -359,7 +359,7 @@ function Login(props) {
                                         onKeyUp={onKeyEvent}
                                         onChange={(t) => handleChange(t.target, setRepeatNewPassword)}
                                         caption="Default: Repeat new password"
-                                        autoComplete="on"
+                                        autoComplete="off"
                                         label="Repeat New Password"
                                         endAdornment={
                                             <InputAdornment position="end">
