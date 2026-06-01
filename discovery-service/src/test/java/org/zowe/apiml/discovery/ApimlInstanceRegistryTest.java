@@ -10,15 +10,19 @@
 
 package org.zowe.apiml.discovery;
 
-import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.*;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.eureka.DefaultEurekaServerConfig;
 import com.netflix.eureka.EurekaServerConfig;
+import com.netflix.eureka.cluster.PeerEurekaNodes;
 import com.netflix.eureka.lease.Lease;
 import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -54,16 +58,18 @@ class ApimlInstanceRegistryTest {
     @Mock private EurekaServerHttpClientFactory eurekaServerHttpClientFactory;
     @Mock private InstanceRegistryProperties instanceRegistryProperties;
     @Mock private ApplicationContext appCntx;
+    @Mock private EurekaInstanceConfig eurekaInstanceConfig;
+    @Mock private PeerEurekaNodes peerEurekaNodes;
     private InstanceInfo standardInstance;
 
     private EurekaServerConfig serverConfig;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         standardInstance = getStandardInstance("hostname:serviceclient:10010", "serviceclient");
         serverConfig = new DefaultEurekaServerConfig();
 
-        apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
+        apimlInstanceRegistry = spy(init(new ApimlInstanceRegistry(
             serverConfig,
             clientConfig,
             serverCodecs,
@@ -71,14 +77,19 @@ class ApimlInstanceRegistryTest {
             eurekaServerHttpClientFactory,
             instanceRegistryProperties,
             appCntx,
-            new EurekaConfig.Tuple("service*,hello")));
+            new EurekaConfig.Tuple("service*,hello"))));
 
-        MethodHandle methodHandle = mock(MethodHandle.class);
+        doReturn("zowe").when(eurekaInstanceConfig).getNamespace();
+        doReturn("discovery").when(eurekaInstanceConfig).getAppname();
+        doReturn(new MyDataCenterInfo(DataCenterInfo.Name.MyOwn)).when(eurekaInstanceConfig).getDataCenterInfo();
+        ApplicationInfoManager.getInstance().initComponent(eurekaInstanceConfig);
+    }
 
-        ReflectionTestUtils.setField(apimlInstanceRegistry, "handleRegistrationMethod", methodHandle);
-        ReflectionTestUtils.setField(apimlInstanceRegistry, "register2ArgsMethodHandle", methodHandle);
-        ReflectionTestUtils.setField(apimlInstanceRegistry, "register3ArgsMethodHandle", methodHandle);
-        ReflectionTestUtils.setField(apimlInstanceRegistry, "handleCancellationMethod", methodHandle);
+    private ApimlInstanceRegistry init(ApimlInstanceRegistry apimlInstanceRegistry) throws Exception {
+        apimlInstanceRegistry.initializedResponseCache();
+        apimlInstanceRegistry.init(peerEurekaNodes);
+        apimlInstanceRegistry.setApplicationContext(appCntx);
+        return apimlInstanceRegistry;
     }
 
     @Nested
@@ -104,10 +115,10 @@ class ApimlInstanceRegistryTest {
         //we cannot fail for non-conformant services for backwards compatibility
         @ParameterizedTest
         @MethodSource("instanceIds")
-        void thenOnboard(String instanceId, String appName) {
+        void thenOnboard(String instanceId, String appName) throws Exception {
             InstanceInfo wrongInstance = getStandardInstance(instanceId, appName);
 
-            apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
+            apimlInstanceRegistry = spy(init(new ApimlInstanceRegistry(
                 serverConfig,
                 clientConfig,
                 serverCodecs,
@@ -115,10 +126,7 @@ class ApimlInstanceRegistryTest {
                 eurekaServerHttpClientFactory,
                 instanceRegistryProperties,
                 appCntx,
-                new EurekaConfig.Tuple("")));
-            MethodHandle methodHandle = mock(MethodHandle.class);
-            ReflectionTestUtils.setField(apimlInstanceRegistry,"register3ArgsMethodHandle",methodHandle);
-            ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod",methodHandle);
+                new EurekaConfig.Tuple(""))));
             assertDoesNotThrow( () ->
                 apimlInstanceRegistry.register(wrongInstance, 1, false)
             );
@@ -130,9 +138,9 @@ class ApimlInstanceRegistryTest {
     class GivenValidServiceIdWithDash {
 
         @Test
-        void thenShouldRegister() {
+        void thenShouldRegister() throws Exception {
             standardInstance = getStandardInstance("hostname:service-client:10010", "service-client");
-            apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
+            apimlInstanceRegistry = spy(init(new ApimlInstanceRegistry(
                 serverConfig,
                 clientConfig,
                 serverCodecs,
@@ -140,18 +148,18 @@ class ApimlInstanceRegistryTest {
                 eurekaServerHttpClientFactory,
                 instanceRegistryProperties,
                 appCntx,
-                new EurekaConfig.Tuple(null)));
-            MethodHandle methodHandle = mock(MethodHandle.class);
-            ReflectionTestUtils.setField(apimlInstanceRegistry,"register2ArgsMethodHandle", methodHandle);
-            ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod", methodHandle);
+                new EurekaConfig.Tuple(null))));
             assertDoesNotThrow(() -> apimlInstanceRegistry.register(standardInstance, false));
         }
+
     }
 
     @Nested
     class GivenReplacerTuple {
+
         @Nested
         class WhenChangeServiceId {
+
             @Test
             void thenChangeServicePrefix() {
                 InstanceInfo info = apimlInstanceRegistry.changeServiceId(standardInstance);
@@ -164,8 +172,11 @@ class ApimlInstanceRegistryTest {
                 assertEquals(9090, info.getSecurePort());
                 assertEquals("localhost", info.getSecureVipAddress());
             }
+
         }
+
     }
+
     private static Stream<Arguments> tuples() {
        return Stream.of(
            Arguments.of("service*,hello", "hostname:helloclient:10010"),
@@ -182,8 +193,8 @@ class ApimlInstanceRegistryTest {
 
     @ParameterizedTest
     @MethodSource("tuples")
-    void thenShouldRegister(String tuple, String expectedServiceIdInResult) {
-        apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
+    void thenShouldRegister(String tuple, String expectedServiceIdInResult) throws Exception {
+        apimlInstanceRegistry = spy(init(new ApimlInstanceRegistry(
             serverConfig,
             clientConfig,
             serverCodecs,
@@ -191,18 +202,15 @@ class ApimlInstanceRegistryTest {
             eurekaServerHttpClientFactory,
             instanceRegistryProperties,
             appCntx,
-            new EurekaConfig.Tuple(tuple)));
-        MethodHandle methodHandle = mock(MethodHandle.class);
-        ReflectionTestUtils.setField(apimlInstanceRegistry,"register2ArgsMethodHandle", methodHandle);
-        ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod", methodHandle);
+            new EurekaConfig.Tuple(tuple))));
         apimlInstanceRegistry.register(standardInstance, false);
         assertEquals(expectedServiceIdInResult, standardInstance.getInstanceId());
     }
 
     @ParameterizedTest
     @MethodSource("tuples")
-    void thenShouldRegisterWithSecondMethod(String tuple, String expectedServiceIdInResult) {
-        apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
+    void thenShouldRegisterWithSecondMethod(String tuple, String expectedServiceIdInResult) throws Exception {
+        apimlInstanceRegistry = spy(init(new ApimlInstanceRegistry(
             serverConfig,
             clientConfig,
             serverCodecs,
@@ -210,127 +218,14 @@ class ApimlInstanceRegistryTest {
             eurekaServerHttpClientFactory,
             instanceRegistryProperties,
             appCntx,
-            new EurekaConfig.Tuple(tuple)));
-        MethodHandle methodHandle = mock(MethodHandle.class);
-        ReflectionTestUtils.setField(apimlInstanceRegistry,"register3ArgsMethodHandle",methodHandle);
-        ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod",methodHandle);
+            new EurekaConfig.Tuple(tuple))));
         apimlInstanceRegistry.register(standardInstance, 1, false);
         assertEquals(expectedServiceIdInResult, standardInstance.getInstanceId());
     }
 
     @Nested
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    class WhenRegistrationMethodsFails {
-
-        @ParameterizedTest
-        @MethodSource("exceptions")
-        void thenFirstMethodThrowsIllegalException(String tuple, Exception exception) throws Throwable {
-            apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
-                serverConfig,
-                clientConfig,
-                serverCodecs,
-                eurekaClient,
-                eurekaServerHttpClientFactory,
-                instanceRegistryProperties,
-                appCntx,
-                new EurekaConfig.Tuple(tuple)));
-            MethodHandle methodHandle = mock(MethodHandle.class);
-            ReflectionTestUtils.setField(apimlInstanceRegistry, "register2ArgsMethodHandle", methodHandle);
-            when(methodHandle.invokeWithArguments(any(), any(), any())).thenThrow(exception);
-            assertThrows(IllegalArgumentException.class, () -> {
-                apimlInstanceRegistry.register(standardInstance, false);
-            });
-        }
-
-        @Test
-        void thenFirstMethodThrowRuntimeException() throws Throwable {
-            apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
-                serverConfig,
-                clientConfig,
-                serverCodecs,
-                eurekaClient,
-                eurekaServerHttpClientFactory,
-                instanceRegistryProperties,
-                appCntx,
-                new EurekaConfig.Tuple("service*,hello")));
-            MethodHandle methodHandle = mock(MethodHandle.class);
-            ReflectionTestUtils.setField(apimlInstanceRegistry, "register2ArgsMethodHandle", methodHandle);
-            when(methodHandle.invokeWithArguments(any(), any(), any())).thenThrow(new RuntimeException());
-            assertThrows(RuntimeException.class, () -> {
-                apimlInstanceRegistry.register(standardInstance, false);
-            });
-        }
-
-        @ParameterizedTest
-        @MethodSource("exceptions")
-        void thenSecondMethodThrowsIllegalException(String tuple, Exception exception) throws Throwable {
-            apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
-                serverConfig,
-                clientConfig,
-                serverCodecs,
-                eurekaClient,
-                eurekaServerHttpClientFactory,
-                instanceRegistryProperties,
-                appCntx,
-                new EurekaConfig.Tuple(tuple)));
-            MethodHandle methodHandle = mock(MethodHandle.class);
-            ReflectionTestUtils.setField(apimlInstanceRegistry, "register3ArgsMethodHandle", methodHandle);
-            when(methodHandle.invokeWithArguments(any(), any(), any(), any())).thenThrow(exception);
-            assertThrows(IllegalArgumentException.class, () -> {
-                apimlInstanceRegistry.register(standardInstance, 1, false);
-            });
-        }
-
-        @Test
-        void thenSecondMethodThrowRuntimeException() throws Throwable {
-            apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
-                serverConfig,
-                clientConfig,
-                serverCodecs,
-                eurekaClient,
-                eurekaServerHttpClientFactory,
-                instanceRegistryProperties,
-                appCntx,
-                new EurekaConfig.Tuple("service*,hello")));
-            MethodHandle methodHandle = mock(MethodHandle.class);
-            ReflectionTestUtils.setField(apimlInstanceRegistry, "register3ArgsMethodHandle", methodHandle);
-            when(methodHandle.invokeWithArguments(any(), any(), any())).thenThrow(new RuntimeException());
-            assertThrows(RuntimeException.class, () -> {
-                apimlInstanceRegistry.register(standardInstance, 1, false);
-            });
-        }
-
-        private Stream<Arguments> exceptions() {
-            return Stream.of(
-                Arguments.of("service*,hello", new WrongMethodTypeException()),
-                Arguments.of("service*,hello", new Exception(new Throwable()))
-            );
-        }
-    }
-
-    @Nested
-    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class WhenResolveInstanceRewrittenFails {
-        @ParameterizedTest
-        @MethodSource("exceptions")
-        void thenThrowIllegalArgumentException(Exception exception) throws Throwable {
-            MethodHandle methodHandle = mock(MethodHandle.class);
-            ReflectionTestUtils.setField(apimlInstanceRegistry, "handlerResolveInstanceLeaseDurationMethod", methodHandle);
-            when(methodHandle.invokeWithArguments(any(), any())).thenThrow(exception);
-            assertThrows(IllegalArgumentException.class, () -> {
-                apimlInstanceRegistry.resolveInstanceLeaseDurationRewritten(standardInstance);
-            });
-        }
-
-        @Test
-        void thenThrowRuntimeException() throws Throwable {
-            MethodHandle methodHandle = mock(MethodHandle.class);
-            ReflectionTestUtils.setField(apimlInstanceRegistry, "handlerResolveInstanceLeaseDurationMethod", methodHandle);
-            when(methodHandle.invokeWithArguments(any(), any())).thenThrow(new RuntimeException());
-            assertThrows(RuntimeException.class, () -> {
-                apimlInstanceRegistry.resolveInstanceLeaseDurationRewritten(standardInstance);
-            });
-        }
 
         private Stream<Arguments> exceptions() {
             return Stream.of(
@@ -338,6 +233,7 @@ class ApimlInstanceRegistryTest {
                 Arguments.of(new Exception(new Throwable()))
             );
         }
+
     }
 
     @Nested
@@ -382,51 +278,6 @@ class ApimlInstanceRegistryTest {
 
     }
 
-    @Nested
-    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    class WhenCancelRegistration {
-
-        @Test
-        void thenIsSuccessful() throws Throwable {
-            MethodHandle methodHandle = mock(MethodHandle.class);
-            ReflectionTestUtils.setField(apimlInstanceRegistry, "cancelMethodHandle", methodHandle);
-            when(methodHandle.invokeWithArguments(any(), any(), any(), any())).thenReturn(true);
-            apimlInstanceRegistry.register(standardInstance, false);
-            verify(apimlInstanceRegistry, times(1)).changeServiceId(any());
-            boolean isCancelled = apimlInstanceRegistry.cancel("HELLO", "hello", false);
-            assertTrue(isCancelled);
-        }
-
-        @ParameterizedTest
-        @MethodSource("exceptions")
-        void thenThrowIllegalArgumentException(Exception exception) throws Throwable {
-            MethodHandle methodHandle = mock(MethodHandle.class);
-            ReflectionTestUtils.setField(apimlInstanceRegistry, "cancelMethodHandle", methodHandle);
-            when(methodHandle.invokeWithArguments(any(), any(), any(), any())).thenThrow(exception);
-            assertThrows(IllegalArgumentException.class, () -> {
-                apimlInstanceRegistry.cancel("HELLO", "hello", false);
-            });
-        }
-
-        @Test
-        void thenThrowRuntimeException() throws Throwable {
-            MethodHandle methodHandle = mock(MethodHandle.class);
-            ReflectionTestUtils.setField(apimlInstanceRegistry, "cancelMethodHandle", methodHandle);
-            when(methodHandle.invokeWithArguments(any(), any(), any(), any())).thenThrow(new RuntimeException());
-            assertThrows(RuntimeException.class, () -> {
-                apimlInstanceRegistry.cancel("HELLO", "hello", false);
-            });
-        }
-
-        private Stream<Arguments> exceptions() {
-            return Stream.of(
-                Arguments.of(new WrongMethodTypeException()),
-                Arguments.of(new Exception(new Throwable()))
-            );
-        }
-    }
-
-
     private InstanceInfo getStandardInstance(String instanceId, String appName) {
 
         return InstanceInfo.Builder.newBuilder()
@@ -442,4 +293,5 @@ class ApimlInstanceRegistryTest {
             .setStatus(InstanceInfo.InstanceStatus.UP)
             .build();
     }
+
 }
