@@ -22,7 +22,6 @@ import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -35,7 +34,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.discovery.config.EurekaConfig;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.WrongMethodTypeException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -65,6 +63,7 @@ class ApimlInstanceRegistryTest {
     private EurekaServerConfig serverConfig;
 
     @BeforeEach
+    @SuppressWarnings("squid:S1874")
     void setUp() throws Exception {
         standardInstance = getStandardInstance("hostname:serviceclient:10010", "serviceclient");
         serverConfig = new DefaultEurekaServerConfig();
@@ -221,19 +220,6 @@ class ApimlInstanceRegistryTest {
             new EurekaConfig.Tuple(tuple))));
         apimlInstanceRegistry.register(standardInstance, 1, false);
         assertEquals(expectedServiceIdInResult, standardInstance.getInstanceId());
-    }
-
-    @Nested
-    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    class WhenResolveInstanceRewrittenFails {
-
-        private Stream<Arguments> exceptions() {
-            return Stream.of(
-                Arguments.of(new WrongMethodTypeException()),
-                Arguments.of(new Exception(new Throwable()))
-            );
-        }
-
     }
 
     @Nested

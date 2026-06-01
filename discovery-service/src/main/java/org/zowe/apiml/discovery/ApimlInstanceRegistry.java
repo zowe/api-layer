@@ -59,7 +59,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     private ConcurrentHashMap<String, Map<String, Lease<InstanceInfo>>> registry;
     private Set<String> staticRegistrationIds = Collections.synchronizedSet(new HashSet<>());
 
-    private final ThreadLocal<Integer> RENEW_CORRECTION = new ThreadLocal<>();
+    private static final ThreadLocal<Integer> RENEW_CORRECTION = new ThreadLocal<>();
 
     public ApimlInstanceRegistry(
         EurekaServerConfig serverConfig,
@@ -99,10 +99,13 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         }
     }
 
+    @Override
     protected void updateRenewsPerMinThreshold() {
         Integer correction = RENEW_CORRECTION.get();
         if (correction != null) {
-            this.expectedNumberOfClientsSendingRenews += correction;
+            synchronized (lock) {
+                this.expectedNumberOfClientsSendingRenews += correction;
+            }
             RENEW_CORRECTION.remove();
         }
 
